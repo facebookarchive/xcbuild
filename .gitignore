@@ -1,1 +1,12 @@
+# CMake
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+build.ninja
+cmake_install.cmake
+install_manifest.txt
+
+# OS X
 .DS_Store
+
