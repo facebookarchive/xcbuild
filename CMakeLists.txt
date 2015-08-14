@@ -4,43 +4,17 @@ project(pbxbuild C CXX)
 
 cmake_minimum_required(VERSION 2.8)
 
-include(${CMAKE_SOURCE_DIR}/BuildStuff/FindCXXFeatures.cmake)
-include(${CMAKE_SOURCE_DIR}/BuildStuff/FindLibClang.cmake)
-
 set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
 
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/libjson)
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/expat/lib)
 
-set(needed_features
-    CXXFeatures_auto
-    CXXFeatures_constexpr
-    CXXFeatures_cstdint_header
-    CXXFeatures_decltype
-    CXXFeatures_delegating_constructors
-    CXXFeatures_func_identifier
-    CXXFeatures_lambda
-    CXXFeatures_nullptr
-    CXXFeatures_rvalue_references
-    CXXFeatures_static_assert
-    CXXFeatures_variadic_templates
-    )
-
-foreach (feature ${needed_features})
-    if (NOT ${feature}_FOUND)
-        message(FATAL_ERROR "CXX feature \"${feature}\" is not supported by the compiler")
-    endif ()
-endforeach ()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
-
 add_subdirectory(ThirdParty/libjson)
 add_subdirectory(ThirdParty/expat)
 
 include_directories(Headers)
 include_directories(PrivateHeaders)
-include_directories("${LibClang_INCLUDE_DIR}")
 
 set(libutil_SOURCES
     Sources/libutil/FSUtil.cpp
@@ -177,14 +151,14 @@ set(libpbxspec_SOURCES
     Sources/pbxspec/XC/ToolSpecificationHeadermapGenerator.cpp
     )
 
-set(libpbxbuild_SOURCES
-    Sources/pbxbuild/Environment.cpp
-    Sources/pbxbuild/BuildSettings.cpp
-    Sources/pbxbuild/CPPProcess.cpp
-    Sources/pbxbuild/DependencyGenerator.cpp
-    Sources/pbxbuild/HeaderMap.cpp
-    Sources/pbxbuild/SystemDefaults.cpp
-    )
+# set(libpbxbuild_SOURCES
+#     Sources/pbxbuild/Environment.cpp
+#     Sources/pbxbuild/BuildSettings.cpp
+#     Sources/pbxbuild/CPPProcess.cpp
+#     Sources/pbxbuild/DependencyGenerator.cpp
+#     Sources/pbxbuild/HeaderMap.cpp
+#     Sources/pbxbuild/SystemDefaults.cpp
+#     )
 
 add_library(pbxproj SHARED ${libpbxproj_SOURCES})
 target_link_libraries(pbxproj pbxbase)
@@ -205,8 +179,8 @@ add_executable(hmap Tools/hmap.cpp)
 target_link_libraries(hmap pbxbuild)
 add_executable(pbxtool Tools/pbxtool.cpp)
 target_link_libraries(pbxtool pbxbuild)
-add_executable(depscan Tools/depscan.cpp)
-target_link_libraries(depscan pbxbuild)
+# add_executable(depscan Tools/depscan.cpp)
+# target_link_libraries(depscan pbxbuild)
 add_executable(xcspec Tools/xcspec.cpp)
 target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)
