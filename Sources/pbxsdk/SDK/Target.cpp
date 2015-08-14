@@ -35,6 +35,7 @@ parse(plist::Dictionary const *dict)
     auto CP   = dict->value <plist::String> ("CustomProperties");
     auto DP   = dict->value <plist::String> ("DefaultProperties");
     auto IBS  = dict->value <plist::Boolean> ("IsBaseSDK");
+    auto TCV  = dict->value <plist::Array> ("Toolchains");
 
     if (V != nullptr) {
         _version = V->value();
@@ -75,6 +76,15 @@ parse(plist::Dictionary const *dict)
 
     if (IBS != nullptr) {
         _isBaseSDK = IBS->value();
+    }
+
+    if (TCV != nullptr) {
+        for (size_t n = 0; n < TCV->count(); n++) {
+            auto TCI = TCV->value <plist::String> (n);
+            if (TCI != nullptr) {
+                // TODO(grp): Load toolchain.
+            }
+        }
     }
 
     return true;

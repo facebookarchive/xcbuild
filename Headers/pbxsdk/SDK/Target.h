@@ -4,6 +4,7 @@
 #define __pbxsdk_SDK_Target_h
 
 #include <pbxsdk/SDK/Product.h>
+#include <pbxsdk/SDK/Toolchain.h>
 
 namespace pbxsdk { namespace SDK {
 
@@ -19,7 +20,7 @@ protected:
     Platform            *_platform;
 
 public:
-    Product::shared_ptr  _product; 
+    Product::shared_ptr  _product;
     std::string          _path;
     std::string          _bundleName;
     std::string          _version;
@@ -31,6 +32,7 @@ public:
     plist::Dictionary   *_customProperties;
     plist::Dictionary   *_defaultProperties;
     bool                 _isBaseSDK;
+    Toolchain::vector    _toolchains;
 
 public:
     Target();
@@ -84,7 +86,11 @@ public:
 public:
     inline bool isBaseSDK() const
     { return _isBaseSDK; }
-    
+
+public:
+    inline Toolchain::vector const &toolchains() const
+    { return _toolchains; }
+
 public:
     static Target::shared_ptr Open(std::string const &path);
 

@@ -115,6 +115,7 @@ set(libpbxsdk_SOURCES
     Sources/pbxsdk/SDK/Platform.cpp
     Sources/pbxsdk/SDK/Product.cpp
     Sources/pbxsdk/SDK/Target.cpp
+    Sources/pbxsdk/SDK/Toolchain.cpp
     )
 
 set(libpbxspec_SOURCES
