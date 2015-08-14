@@ -43,7 +43,7 @@ Parse(plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
-        return false;
+        return nullptr;
 
     Tool::shared_ptr result;
 

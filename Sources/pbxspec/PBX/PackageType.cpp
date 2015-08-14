@@ -22,7 +22,7 @@ Parse(plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
-        return false;
+        return nullptr;
 
     PackageType::shared_ptr result;
     auto C = dict->value <plist::String> ("Class");
