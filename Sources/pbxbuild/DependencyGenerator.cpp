@@ -3,10 +3,12 @@
 #include <pbxbuild/DependencyGenerator.h>
 #include <libutil/FSUtil.h>
 
+/*
 //
 // Let's use the C version to simplify things.
 //
 #include <clang-c/Index.h>
+*/
 
 using pbxbuild::DependencyGenerator;
 using libutil::FSUtil;
@@ -82,6 +84,7 @@ struct VisitorContext {
     std::map <std::string, pbxbuild::DependencyFile::shared_ptr> filesMap;
 };
 
+/*
 static CXChildVisitResult
 ClangCursorVisitor(CXCursor cursor, CXCursor, CXClientData data)
 {
@@ -123,6 +126,7 @@ ClangCursorVisitor(CXCursor cursor, CXCursor, CXClientData data)
 
     return CXChildVisit_Continue;
 }
+*/
 
 int DependencyGenerator::
 scan(string_vector const &paths, string_vector const &arguments)
@@ -164,6 +168,7 @@ scan(string_vector const &paths, string_vector const &arguments,
 
         callback(thePath);
 
+/*
         unsigned flags = CXTranslationUnit_SkipFunctionBodies |
                          CXTranslationUnit_Incomplete |
                          CXTranslationUnit_DetailedPreprocessingRecord;
@@ -183,6 +188,7 @@ scan(string_vector const &paths, string_vector const &arguments,
         }
 
         clang_disposeIndex(idx);
+*/
     }
 
     return 0;

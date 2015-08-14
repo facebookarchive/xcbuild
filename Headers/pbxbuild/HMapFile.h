@@ -11,6 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include <libutil/libutil.h>
+
 //===----------------------------------------------------------------------===//
 // Data Structures and Manifest Constants
 //===----------------------------------------------------------------------===//
@@ -40,3 +42,15 @@ struct HMapHeader {
   // An array of 'NumBuckets' HMapBucket objects follows this header.
   // Strings follow the buckets, at StringsOffset.
 };
+
+/// HashHMapKey - This is the 'well known' hash function required by the file
+/// format, used to look up keys in the hash table.  The hash table uses simple
+/// linear probing based on this function.
+static inline unsigned HashHMapKey(std::string const &Str) {
+  unsigned Result = 0;
+  std::string::const_iterator S = Str.begin(), End = Str.end();
+
+  for (; S != End; S++)
+    Result += tolower(*S) * 13;
+  return Result;
+}

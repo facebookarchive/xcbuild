@@ -150,7 +150,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-#if 0
+#if 1
     fprintf(stderr, "parse ok\n");
     printf("Workspace File: %s\n", workspace->projectFile().c_str());
     printf("Base Path:      %s\n", workspace->basePath().c_str());

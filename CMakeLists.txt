@@ -155,14 +155,11 @@ set(libpbxspec_SOURCES
     Sources/pbxspec/XC/ToolSpecificationHeadermapGenerator.cpp
     )
 
-# set(libpbxbuild_SOURCES
-#     Sources/pbxbuild/Environment.cpp
-#     Sources/pbxbuild/BuildSettings.cpp
-#     Sources/pbxbuild/CPPProcess.cpp
-#     Sources/pbxbuild/DependencyGenerator.cpp
-#     Sources/pbxbuild/HeaderMap.cpp
-#     Sources/pbxbuild/SystemDefaults.cpp
-#     )
+set(libpbxbuild_SOURCES
+    Sources/pbxbuild/DependencyGenerator.cpp
+    Sources/pbxbuild/HeaderMap.cpp
+    Sources/pbxbuild/SystemDefaults.cpp
+    )
 
 add_library(pbxproj SHARED ${libpbxproj_SOURCES})
 target_link_libraries(pbxproj pbxbase)
@@ -170,8 +167,8 @@ target_link_libraries(pbxproj pbxbase)
 add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxproj)
 
-# add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-# target_link_libraries(pbxbuild pbxproj pbxspec "${LibClang_LIBRARY}")
+add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
+target_link_libraries(pbxbuild pbxproj pbxspec)
 
 add_executable(plist Tools/plist.cpp)
 target_link_libraries(plist pbxbase)
@@ -179,12 +176,10 @@ add_executable(sdktool Tools/sdktool.cpp)
 target_link_libraries(sdktool pbxproj)
 add_executable(xcconfig Tools/xcconfig.cpp)
 target_link_libraries(xcconfig pbxproj)
-# add_executable(hmap Tools/hmap.cpp)
-# target_link_libraries(hmap pbxbase)
+add_executable(hmap Tools/hmap.cpp)
+target_link_libraries(hmap pbxbase pbxbuild)
 add_executable(pbxtool Tools/pbxtool.cpp)
 target_link_libraries(pbxtool pbxbase pbxproj)
-# add_executable(depscan Tools/depscan.cpp)
-# target_link_libraries(depscan pbxbuild)
 add_executable(xcspec Tools/xcspec.cpp)
 target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)
