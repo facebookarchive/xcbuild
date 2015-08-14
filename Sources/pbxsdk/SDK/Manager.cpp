@@ -1,8 +1,8 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxproj/SDK/Manager.h>
+#include <pbxsdk/SDK/Manager.h>
 
-using pbxproj::SDK::Manager;
+using pbxsdk::SDK::Manager;
 using libutil::FSUtil;
 
 bool Manager::

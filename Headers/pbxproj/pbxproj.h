@@ -24,9 +24,4 @@
 #include <pbxproj/XC/WorkspaceGroup.h>
 #include <pbxproj/XC/WorkspaceFileRef.h>
 
-#include <pbxproj/SDK/Manager.h>
-#include <pbxproj/SDK/Platform.h>
-#include <pbxproj/SDK/Target.h>
-#include <pbxproj/SDK/Product.h>
-
 #endif  // !__pbxproj_pbxproj_h

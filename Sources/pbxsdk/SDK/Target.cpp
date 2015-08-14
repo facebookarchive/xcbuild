@@ -1,8 +1,8 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxproj/SDK/Target.h>
+#include <pbxsdk/SDK/Target.h>
 
-using pbxproj::SDK::Target;
+using pbxsdk::SDK::Target;
 using libutil::FSUtil;
 
 Target::Target() :
