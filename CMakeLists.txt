@@ -7,7 +7,11 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
+
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/libjson)
+include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/expat)
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/expat/lib)
 
 add_subdirectory(ThirdParty/libjson)
@@ -166,8 +170,8 @@ target_link_libraries(pbxproj pbxbase)
 add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxproj)
 
-add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-target_link_libraries(pbxbuild pbxproj pbxspec "${LibClang_LIBRARY}")
+# add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
+# target_link_libraries(pbxbuild pbxproj pbxspec "${LibClang_LIBRARY}")
 
 add_executable(plist Tools/plist.cpp)
 target_link_libraries(plist pbxbase)

@@ -4,6 +4,7 @@
 #define __pbxproj_ConfigFile_h
 
 #include <pbxproj/XC/Config.h>
+#include <sstream>
 
 namespace pbxproj {
 
