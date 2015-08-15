@@ -17,7 +17,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    SDK::Manager::shared_ptr manager = SDK::Manager::Open(argv[1]);
+    std::shared_ptr<SDK::Manager> manager = SDK::Manager::Open(argv[1]);
 
     if (!manager) {
         fprintf(stderr, "no SDK platforms found at %s\n", argv[1]);
@@ -34,6 +34,12 @@ main(int argc, char **argv)
         }
         printf("\n");
     }
+
+    printf("Toolchains:\n");
+    for (auto toolchain_value : manager->toolchains()) {
+        printf("\t%s\n", toolchain_value.second->identifier().c_str());
+    }
+    printf("\n");
 #endif
 
     for (auto platform : manager->platforms()) {
@@ -65,6 +71,12 @@ main(int argc, char **argv)
                 }
                 if (!product->version().empty()) {
                     printf("ProductVersion: %s\n", product->version().c_str());
+                }
+            }
+            if (!target->toolchains().empty()) {
+                printf("Toolchains:\n");
+                for (auto toolchain : target->toolchains()) {
+                    printf("\t%s\n", toolchain->identifier().c_str());
                 }
             }
             printf("\n");

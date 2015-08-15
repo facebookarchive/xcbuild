@@ -7,18 +7,26 @@
 
 namespace pbxsdk { namespace SDK {
 
+class Manager;
+
 class Toolchain {
 public:
     typedef std::shared_ptr <Toolchain> shared_ptr;
     typedef std::vector <shared_ptr> vector;
+    typedef std::map <std::string, shared_ptr> map;
 
 private:
-    std::string        _path;
-    std::string        _identifier;
+    std::weak_ptr<Manager> _manager;
+    std::string            _path;
+    std::string            _identifier;
 
 public:
     Toolchain();
     ~Toolchain();
+
+public:
+    inline std::shared_ptr<Manager> const manager() const
+    { return _manager.lock(); }
 
 public:
     inline std::string const &path() const
@@ -29,7 +37,7 @@ public:
     { return _identifier; }
 
 public:
-    static Toolchain::shared_ptr Open(std::string const &path);
+    static Toolchain::shared_ptr Open(std::shared_ptr<Manager> manager, std::string const &path);
 
 private:
     bool parse(plist::Dictionary const *dict);

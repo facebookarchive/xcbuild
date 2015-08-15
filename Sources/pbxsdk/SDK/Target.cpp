@@ -1,12 +1,12 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxsdk/SDK/Target.h>
+#include <pbxsdk/SDK/Manager.h>
 
 using pbxsdk::SDK::Target;
 using libutil::FSUtil;
 
 Target::Target() :
-    _platform         (nullptr),
     _customProperties (nullptr),
     _defaultProperties(nullptr)
 {
@@ -79,10 +79,20 @@ parse(plist::Dictionary const *dict)
     }
 
     if (TCV != nullptr) {
-        for (size_t n = 0; n < TCV->count(); n++) {
-            auto TCI = TCV->value <plist::String> (n);
-            if (TCI != nullptr) {
-                // TODO(grp): Load toolchain.
+        if (std::shared_ptr<Manager> manager = _manager.lock()) {
+            for (size_t n = 0; n < TCV->count(); n++) {
+                auto TCI = TCV->value <plist::String> (n);
+                if (TCI != nullptr) {
+                    auto TCS = manager->toolchains();
+                    auto TCII = TCS.find(TCI->value());
+                    if (TCII == TCS.end()) {
+                        TCII = TCS.find("com.apple.dt.toolchain.XcodeDefault");
+                    }
+
+                    if (TCII != TCS.end()) {
+                        _toolchains.push_back(TCII->second);
+                    }
+                }
             }
         }
     }
@@ -91,7 +101,7 @@ parse(plist::Dictionary const *dict)
 }
 
 Target::shared_ptr Target::
-Open(std::string const &path)
+Open(std::shared_ptr<Manager> manager, std::shared_ptr<Platform> platform, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
@@ -125,6 +135,8 @@ Open(std::string const &path)
     // Parse the SDK dictionary and create the object.
     //
     auto target = std::make_shared <Target> ();
+    target->_manager    = manager;
+    target->_platform   = platform;
 
     if (target->parse(plist)) {
         //

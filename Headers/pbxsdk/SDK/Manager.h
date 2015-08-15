@@ -8,14 +8,10 @@
 namespace pbxsdk { namespace SDK {
 
 class Manager {
-public:
-    typedef std::shared_ptr <Manager> shared_ptr;
-    typedef std::vector <shared_ptr> vector;
-
 private:
-    std::string          _path;
-    Platform::vector     _platforms;
-    Toolchain::vector    _toolchains;
+    std::string _path;
+    Platform::vector _platforms;
+    Toolchain::map _toolchains;
 
 public:
     Manager();
@@ -24,7 +20,7 @@ public:
 public:
     inline Platform::vector const &platforms() const
     { return _platforms; }
-    inline Toolchain::vector const &toolchains() const
+    inline Toolchain::map const &toolchains() const
     { return _toolchains; }
 
 public:
@@ -32,7 +28,7 @@ public:
     { return _path; }
 
 public:
-    static Manager::shared_ptr Open(std::string const &path);
+    static std::shared_ptr<Manager> Open(std::string const &path);
 };
 
 } }

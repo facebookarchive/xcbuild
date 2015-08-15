@@ -1,6 +1,7 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxsdk/SDK/Platform.h>
+#include <pbxsdk/SDK/Manager.h>
 
 using pbxsdk::SDK::Platform;
 using libutil::FSUtil;
@@ -79,7 +80,7 @@ parse(plist::Dictionary const *dict)
 }
 
 Platform::shared_ptr Platform::
-Open(std::string const &path)
+Open(std::shared_ptr<Manager> manager, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
@@ -109,6 +110,7 @@ Open(std::string const &path)
     // Parse the SDK platform dictionary and create the object.
     //
     auto platform = std::make_shared <Platform> ();
+    platform->_manager = manager;
 
     if (platform->parse(plist)) {
         //
@@ -132,8 +134,7 @@ Open(std::string const &path)
         FSUtil::EnumerateDirectory(sdksPath, "*.sdk",
                 [&](std::string const &filename) -> bool
                 {
-                    if (auto target = Target::Open(sdksPath + "/" + filename)) {
-                        target->_platform = platform.get();
+                    if (auto target = Target::Open(manager, platform, sdksPath + "/" + filename)) {
                         platform->_targets.push_back(target);
                     }
                     return true;

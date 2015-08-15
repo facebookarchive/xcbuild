@@ -13,22 +13,27 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    Target::vector     _targets;
-    std::string        _path;
-    std::string        _identifier;
-    std::string        _name;
-    std::string        _description;
-    std::string        _type;
-    std::string        _version;
-    std::string        _familyIdentifier;
-    std::string        _familyName;
-    std::string        _icon;
-    plist::Dictionary *_defaultDebuggerSettings;
-    plist::Dictionary *_defaultProperties;
+    std::weak_ptr<Manager> _manager;
+    Target::vector         _targets;
+    std::string            _path;
+    std::string            _identifier;
+    std::string            _name;
+    std::string            _description;
+    std::string            _type;
+    std::string            _version;
+    std::string            _familyIdentifier;
+    std::string            _familyName;
+    std::string            _icon;
+    plist::Dictionary     *_defaultDebuggerSettings;
+    plist::Dictionary     *_defaultProperties;
 
 public:
     Platform();
     ~Platform();
+
+public:
+    inline std::shared_ptr<Manager> manager() const
+    { return _manager.lock(); }
 
 public:
     inline Target::vector const &targets() const
@@ -69,7 +74,7 @@ public:
     { return _icon; }
 
 public:
-    static Platform::shared_ptr Open(std::string const &path);
+    static Platform::shared_ptr Open(std::shared_ptr<Manager> manager, std::string const &path);
 
 private:
     bool parse(plist::Dictionary const *dict);

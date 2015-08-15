@@ -26,7 +26,7 @@ parse(plist::Dictionary const *dict)
 }
 
 Toolchain::shared_ptr Toolchain::
-Open(std::string const &path)
+Open(std::shared_ptr<Manager> manager, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
@@ -56,6 +56,7 @@ Open(std::string const &path)
     // Parse the toolchain dictionary and create the object.
     //
     auto toolchain = std::make_shared <Toolchain> ();
+    toolchain->_manager = manager;
 
     if (toolchain->parse(plist)) {
         //

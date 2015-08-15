@@ -13,7 +13,7 @@ Manager::~Manager()
 {
 }
 
-Manager::shared_ptr Manager::
+std::shared_ptr<Manager> Manager::
 Open(std::string const &path)
 {
     if (path.empty()) {
@@ -21,13 +21,35 @@ Open(std::string const &path)
         return nullptr;
     }
 
-    Platform::vector platforms;
+    auto manager = std::make_shared <Manager> ();
+    manager->_path = path;
+
+    std::map<std::string, std::shared_ptr<Toolchain>> toolchains;
+
+    std::string toolchainsPath = path + "/Toolchains";
+    FSUtil::EnumerateDirectory(toolchainsPath, "*.xctoolchain",
+            [&](std::string const &filename) -> bool
+            {
+                auto toolchain = SDK::Toolchain::Open(manager, toolchainsPath + "/" + filename);
+                if (toolchain) {
+                    toolchains.insert({ toolchain->identifier(), toolchain });
+                }
+
+                return true;
+            });
+
+    if (toolchains.empty())
+        return nullptr;
+
+    manager->_toolchains = toolchains;
+
+    std::vector<std::shared_ptr<Platform>> platforms;
 
     std::string platformsPath = path + "/Platforms";
     FSUtil::EnumerateDirectory(platformsPath, "*.platform",
             [&](std::string const &filename) -> bool
             {
-                auto platform = SDK::Platform::Open(platformsPath + "/" + filename);
+                auto platform = SDK::Platform::Open(manager, platformsPath + "/" + filename);
                 if (platform) {
                     platforms.push_back(platform);
                 }
@@ -44,32 +66,7 @@ Open(std::string const &path)
                 return (a->description() < b->description());
             });
 
-    Toolchain::vector toolchains;
-
-    std::string toolchainsPath = path + "/Toolchains";
-    FSUtil::EnumerateDirectory(toolchainsPath, "*.xctoolchain",
-            [&](std::string const &filename) -> bool
-            {
-                auto toolchain = SDK::Toolchain::Open(toolchainsPath + "/" + filename);
-                if (toolchain) {
-                    toolchains.push_back(toolchain);
-                }
-
-                return true;
-            });
-
-    if (toolchains.empty())
-        return nullptr;
-
-    std::sort(toolchains.begin(), toolchains.end(),
-            [](Toolchain::shared_ptr const &a, Toolchain::shared_ptr const &b) -> bool
-            {
-                return (a->identifier() < b->identifier());
-            });
-
-    auto manager = std::make_shared <Manager> ();
-    manager->_path = path;
     manager->_platforms = platforms;
-    manager->_toolchains = toolchains;
+
     return manager;
 }

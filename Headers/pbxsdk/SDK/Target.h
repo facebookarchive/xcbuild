@@ -8,16 +8,18 @@
 
 namespace pbxsdk { namespace SDK {
 
+class Manager;
 class Platform;
 
 class Target {
 public:
     typedef std::shared_ptr <Target> shared_ptr;
+    typedef std::weak_ptr <Target> weak_ptr;
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    friend class Platform;
-    Platform            *_platform;
+    std::weak_ptr<Manager>  _manager;
+    std::weak_ptr<Platform> _platform;
 
 public:
     Product::shared_ptr  _product;
@@ -39,8 +41,10 @@ public:
     ~Target();
 
 public:
-    inline Platform *platform() const
-    { return const_cast <Target *> (this)->_platform; }
+    inline std::shared_ptr<Manager> manager() const
+    { return _manager.lock(); }
+    inline std::shared_ptr<Platform> platform() const
+    { return _platform.lock(); }
 
     inline std::string const &path() const
     { return _path; }
@@ -92,7 +96,7 @@ public:
     { return _toolchains; }
 
 public:
-    static Target::shared_ptr Open(std::string const &path);
+    static Target::shared_ptr Open(std::shared_ptr<Manager> manager, std::shared_ptr<Platform>, std::string const &path);
 
 private:
     bool parse(plist::Dictionary const *dict);
