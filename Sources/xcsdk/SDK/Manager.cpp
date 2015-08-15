@@ -1,8 +1,8 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxsdk/SDK/Manager.h>
+#include <xcsdk/SDK/Manager.h>
 
-using pbxsdk::SDK::Manager;
+using xcsdk::SDK::Manager;
 using libutil::FSUtil;
 
 Manager::Manager()

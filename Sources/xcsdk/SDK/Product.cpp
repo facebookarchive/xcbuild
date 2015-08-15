@@ -1,8 +1,8 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxsdk/SDK/Product.h>
+#include <xcsdk/SDK/Product.h>
 
-using pbxsdk::SDK::Product;
+using xcsdk::SDK::Product;
 using libutil::FSUtil;
 
 Product::Product()

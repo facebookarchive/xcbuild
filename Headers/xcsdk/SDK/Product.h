@@ -1,11 +1,11 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#ifndef __pbxsdk_SDK_Product_h
-#define __pbxsdk_SDK_Product_h
+#ifndef __xcsdk_SDK_Product_h
+#define __xcsdk_SDK_Product_h
 
-#include <pbxsdk/Base.h>
+#include <xcsdk/Base.h>
 
-namespace pbxsdk { namespace SDK {
+namespace xcsdk { namespace SDK {
 
 class Product {
 public:
@@ -42,4 +42,4 @@ private:
 
 } }
 
-#endif  // !__pbxsdk_SDK_Product_h
+#endif  // !__xcsdk_SDK_Product_h

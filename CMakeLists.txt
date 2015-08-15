@@ -110,12 +110,12 @@ set(libpbxproj_SOURCES
     Sources/pbxproj/XC/WorkspaceGroupItem.cpp
     )
 
-set(libpbxsdk_SOURCES
-    Sources/pbxsdk/SDK/Manager.cpp
-    Sources/pbxsdk/SDK/Platform.cpp
-    Sources/pbxsdk/SDK/Product.cpp
-    Sources/pbxsdk/SDK/Target.cpp
-    Sources/pbxsdk/SDK/Toolchain.cpp
+set(libxcsdk_SOURCES
+    Sources/xcsdk/SDK/Manager.cpp
+    Sources/xcsdk/SDK/Platform.cpp
+    Sources/xcsdk/SDK/Product.cpp
+    Sources/xcsdk/SDK/Target.cpp
+    Sources/xcsdk/SDK/Toolchain.cpp
     )
 
 set(libpbxspec_SOURCES
@@ -165,8 +165,8 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/SystemDefaults.cpp
     )
 
-add_library(pbxsdk SHARED ${libpbxsdk_SOURCES})
-target_link_libraries(pbxsdk pbxbase)
+add_library(xcsdk SHARED ${libxcsdk_SOURCES})
+target_link_libraries(xcsdk pbxbase)
 
 add_library(pbxproj SHARED ${libpbxproj_SOURCES})
 target_link_libraries(pbxproj pbxbase)
@@ -180,7 +180,7 @@ target_link_libraries(pbxbuild pbxproj pbxspec)
 add_executable(plist Tools/plist.cpp)
 target_link_libraries(plist pbxbase)
 add_executable(sdktool Tools/sdktool.cpp)
-target_link_libraries(sdktool pbxsdk)
+target_link_libraries(sdktool xcsdk)
 add_executable(xcconfig Tools/xcconfig.cpp)
 target_link_libraries(xcconfig pbxproj)
 add_executable(hmap Tools/hmap.cpp)

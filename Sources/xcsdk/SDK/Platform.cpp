@@ -1,9 +1,9 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxsdk/SDK/Platform.h>
-#include <pbxsdk/SDK/Manager.h>
+#include <xcsdk/SDK/Platform.h>
+#include <xcsdk/SDK/Manager.h>
 
-using pbxsdk::SDK::Platform;
+using xcsdk::SDK::Platform;
 using libutil::FSUtil;
 
 Platform::Platform() :

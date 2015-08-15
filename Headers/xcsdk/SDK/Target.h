@@ -1,12 +1,12 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#ifndef __pbxsdk_SDK_Target_h
-#define __pbxsdk_SDK_Target_h
+#ifndef __xcsdk_SDK_Target_h
+#define __xcsdk_SDK_Target_h
 
-#include <pbxsdk/SDK/Product.h>
-#include <pbxsdk/SDK/Toolchain.h>
+#include <xcsdk/SDK/Product.h>
+#include <xcsdk/SDK/Toolchain.h>
 
-namespace pbxsdk { namespace SDK {
+namespace xcsdk { namespace SDK {
 
 class Manager;
 class Platform;
@@ -104,4 +104,4 @@ private:
 
 } }
 
-#endif  // !__pbxsdk_SDK_Target_h
+#endif  // !__xcsdk_SDK_Target_h
