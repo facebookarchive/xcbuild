@@ -7,6 +7,9 @@
 #include <pbxspec/PBX/ApplicationWrapperFileType.h>
 #include <pbxspec/PBX/CFBundleWrapperFileType.h>
 #include <pbxspec/PBX/FrameworkWrapperFileType.h>
+#include <pbxspec/PBX/PlugInKitPluginWrapperFileType.h>
+#include <pbxspec/PBX/SpotlightImporternWrapperFileType.h>
+#include <pbxspec/PBX/XPCServiceWrapperFileType.h>
 #include <pbxspec/XC/StaticFrameworkWrapperFileType.h>
 #include <pbxspec/Manager.h>
 
@@ -143,6 +146,12 @@ Parse(plist::Dictionary const *dict)
         result.reset(new CFBundleWrapperFileType(true));
     } else if (C->value() == FrameworkWrapperFileType::Isa()) {
         result.reset(new FrameworkWrapperFileType(true));
+    } else if (C->value() == PlugInKitPluginWrapperFileType::Isa()) {
+        result.reset(new PlugInKitPluginWrapperFileType(true));
+    } else if (C->value() == SpotlightImporternWrapperFileType::Isa()) {
+        result.reset(new SpotlightImporternWrapperFileType(true));
+    } else if (C->value() == XPCServiceWrapperFileType::Isa()) {
+        result.reset(new XPCServiceWrapperFileType(true));
     } else if (C->value() == XC::StaticFrameworkWrapperFileType::Isa()) {
         result.reset(new XC::StaticFrameworkWrapperFileType(true));
     } else {

@@ -158,6 +158,7 @@ parse(plist::Dictionary const *dict)
         // Tool
         plist::MakeKey <plist::String> ("ExecPath"),
         plist::MakeKey <plist::String> ("ExecDescription"),
+        plist::MakeKey <plist::String> ("ProgressDescription"),
         plist::MakeKey <plist::String> ("CommandLine"),
         plist::MakeKey <plist::String> ("CommandInvocationClass"),
         plist::MakeKey <plist::Object> ("RuleName"),

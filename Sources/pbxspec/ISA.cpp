@@ -30,13 +30,19 @@ char const * const PBXLinkerSpecificationResMerger = "PBXLinkerSpecificationResM
 char const * const PBXMachOFileType = "PBXMachOFileType";
 char const * const PBXPackageType = "PBXPackageType";
 char const * const PBXPlistFileType = "PBXPlistFileType";
+char const * const PBXPlugInKitPluginWrapperFileType = "PBXPlugInKitPluginWrapperFileType";
 char const * const PBXProductType = "PBXProductType";
 char const * const PBXPropertyConditionFlavor = "PBXPropertyConditionFlavor";
 char const * const PBXSpecification = "PBXSpecification";
+char const * const PBXSpotlightImporternWrapperFileType = "PBXSpotlightImporternWrapperFileType";
 char const * const PBXStaticLibraryProductType = "PBXStaticLibraryProductType";
 char const * const PBXTool = "PBXTool";
+char const * const PBXXPCServiceWrapperFileType = "PBXXPCServiceWrapperFileType";
 char const * const XCCompilerSpecificationClang = "XCCompilerSpecificationClang";
 char const * const XCStaticFrameworkWrapperFileType = "XCStaticFrameworkWrapperFileType";
 char const * const XCToolSpecificationHeadermapGenerator = "XCToolSpecificationHeadermapGenerator";
+char const * const XCToolSpecificationCompilationDatabaseGenerator = "XCToolSpecificationCompilationDatabaseGenerator";
+char const * const XCProductPackagingUtilityToolSpecification = "XCProductPackagingUtilityToolSpecification";
+
 
 } }

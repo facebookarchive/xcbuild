@@ -16,6 +16,7 @@ public:
 protected:
     std::string             _execPath;
     std::string             _execDescription;
+    std::string             _progressDescription;
     std::string             _commandLine;
     std::string             _commandInvocationClass;
     plist::Object          *_ruleName;
@@ -56,6 +57,8 @@ public:
     { return _execPath; }
     inline std::string const &execDescription() const
     { return _execDescription; }
+    inline std::string const &progressDescription() const
+    { return _progressDescription; }
 
 public:
     inline std::string const &commandLine() const

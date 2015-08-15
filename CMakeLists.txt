@@ -148,15 +148,20 @@ set(libpbxspec_SOURCES
     Sources/pbxspec/PBX/MachOFileType.cpp
     Sources/pbxspec/PBX/PackageType.cpp
     Sources/pbxspec/PBX/PlistFileType.cpp
+    Sources/pbxspec/PBX/PlugInKitPluginWrapperFileType.cpp
     Sources/pbxspec/PBX/ProductType.cpp
     Sources/pbxspec/PBX/PropertyConditionFlavor.cpp
     Sources/pbxspec/PBX/PropertyOption.cpp
     Sources/pbxspec/PBX/Specification.cpp
+    Sources/pbxspec/PBX/SpotlightImporternWrapperFileType.cpp
     Sources/pbxspec/PBX/StaticLibraryProductType.cpp
     Sources/pbxspec/PBX/Tool.cpp
+    Sources/pbxspec/PBX/XPCServiceWrapperFileType.cpp
     Sources/pbxspec/XC/CompilerSpecificationClang.cpp
     Sources/pbxspec/XC/StaticFrameworkWrapperFileType.cpp
     Sources/pbxspec/XC/ToolSpecificationHeadermapGenerator.cpp
+    Sources/pbxspec/XC/ToolSpecificationCompilationDatabaseGenerator.cpp
+    Sources/pbxspec/XC/ProductPackagingUtilityToolSpecification.cpp
     )
 
 set(libpbxbuild_SOURCES

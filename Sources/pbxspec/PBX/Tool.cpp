@@ -7,6 +7,8 @@
 #include <pbxspec/PBX/CompilerSpecificationRez.h>
 #include <pbxspec/PBX/CompilerSpecificationYacc.h>
 #include <pbxspec/XC/ToolSpecificationHeadermapGenerator.h>
+#include <pbxspec/XC/ToolSpecificationCompilationDatabaseGenerator.h>
+#include <pbxspec/XC/ProductPackagingUtilityToolSpecification.h>
 
 using pbxspec::PBX::Tool;
 
@@ -62,6 +64,10 @@ Parse(plist::Dictionary const *dict)
         result.reset(new CompilerSpecificationYacc(true));
     } else if (C->value() == XC::ToolSpecificationHeadermapGenerator::Isa()) {
         result.reset(new XC::ToolSpecificationHeadermapGenerator(true));
+    } else if (C->value() == XC::ToolSpecificationCompilationDatabaseGenerator::Isa()) {
+        result.reset(new XC::ToolSpecificationCompilationDatabaseGenerator(true));
+    } else if (C->value() == XC::ProductPackagingUtilityToolSpecification::Isa()) {
+        result.reset(new XC::ProductPackagingUtilityToolSpecification(true));
     } else {
         fprintf(stderr, "warning: tool class '%s' not recognized\n",
                 C->value().c_str());
@@ -91,6 +97,7 @@ parse(plist::Dictionary const *dict, bool check)
                 // Tool
                 plist::MakeKey <plist::String> ("ExecPath"),
                 plist::MakeKey <plist::String> ("ExecDescription"),
+                plist::MakeKey <plist::String> ("ProgressDescription"),
                 plist::MakeKey <plist::String> ("CommandLine"),
                 plist::MakeKey <plist::String> ("CommandInvocationClass"),
                 plist::MakeKey <plist::Object> ("RuleName"),
@@ -117,6 +124,7 @@ parse(plist::Dictionary const *dict, bool check)
 
     auto EP     = dict->value <plist::String> ("ExecPath");
     auto ED     = dict->value <plist::String> ("ExecDescription");
+    auto PD     = dict->value <plist::String> ("ProgressDescription");
     auto CL     = dict->value <plist::String> ("CommandLine");
     auto CIC    = dict->value <plist::String> ("CommandInvocationClass");
     auto RN     = dict->value("RuleName");
@@ -143,6 +151,10 @@ parse(plist::Dictionary const *dict, bool check)
 
     if (ED != nullptr) {
         _execDescription = ED->value();
+    }
+
+    if (PD != nullptr) {
+        _progressDescription = PD->value();
     }
 
     if (CL != nullptr) {

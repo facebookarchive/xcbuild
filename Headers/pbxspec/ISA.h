@@ -31,14 +31,19 @@ extern char const * const PBXLinkerSpecificationResMerger;
 extern char const * const PBXMachOFileType;
 extern char const * const PBXPackageType;
 extern char const * const PBXPlistFileType;
+extern char const * const PBXPlugInKitPluginWrapperFileType;
 extern char const * const PBXProductType;
 extern char const * const PBXPropertyConditionFlavor;
 extern char const * const PBXSpecification;
+extern char const * const PBXSpotlightImporternWrapperFileType;
 extern char const * const PBXStaticLibraryProductType;
 extern char const * const PBXTool;
+extern char const * const PBXXPCServiceWrapperFileType;
 extern char const * const XCStaticFrameworkWrapperFileType;
 extern char const * const XCCompilerSpecificationClang;
 extern char const * const XCToolSpecificationHeadermapGenerator;
+extern char const * const XCToolSpecificationCompilationDatabaseGenerator;
+extern char const * const XCProductPackagingUtilityToolSpecification;
 
 } }
 
