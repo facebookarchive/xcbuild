@@ -17,15 +17,15 @@ main(int argc, char **argv)
         return -1;
     }
 
-    SDK::Platform::vector platforms;
+    SDK::Manager::shared_ptr manager = SDK::Manager::Open(argv[1]);
 
-    if (!SDK::Manager::GetPlatforms(argv[1], platforms)) {
+    if (!manager) {
         fprintf(stderr, "no SDK platforms found at %s\n", argv[1]);
         return -1;
     }
 
 #if 1
-    for (auto platform : platforms) {
+    for (auto platform : manager->platforms()) {
         printf("%s SDKs:\n", platform->description().c_str());
         for (auto target : platform->targets()) {
             printf("\t%-32s-sdk %s\n",
@@ -36,7 +36,7 @@ main(int argc, char **argv)
     }
 #endif
 
-    for (auto platform : platforms) {
+    for (auto platform : manager->platforms()) {
         for (auto target : platform->targets()) {
             printf("%s - %s (%s)\n",
                     target->bundleName().c_str(),
