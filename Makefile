@@ -13,6 +13,9 @@ all:
 	cd $(build) && $(cmake) $(cmake_flags) ..
 	cd $(build) && $(ninja) $(ninja_flags)
 
+test: all
+	build/test_*
+
 clean:
 	rm -rf $(build)
 
