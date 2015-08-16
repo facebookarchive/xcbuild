@@ -3,8 +3,8 @@
 #ifndef __libutil_Base_h
 #define __libutil_Base_h
 
-#include <algorithm> 
-#include <functional> 
+#include <algorithm>
+#include <functional>
 #include <cctype>
 #include <cassert>
 #include <locale>
@@ -12,7 +12,9 @@
 #include <vector>
 #include <memory>
 #include <set>
+#include <unordered_set>
 #include <map>
+#include <unordered_map>
 #include <iostream>
 
 namespace libutil {

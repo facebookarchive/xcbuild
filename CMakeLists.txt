@@ -57,6 +57,16 @@ set(libpbxbase_SOURCES
 add_library(pbxbase SHARED ${libpbxbase_SOURCES})
 target_link_libraries(pbxbase json expat)
 
+set(libpbxsetting_SOURCES
+    Sources/pbxsetting/Condition.cpp
+    Sources/pbxsetting/Level.cpp
+    Sources/pbxsetting/Environment.cpp
+    Sources/pbxsetting/Setting.cpp
+    )
+
+add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
+target_link_libraries(pbxsetting pbxbase)
+
 set(libpbxproj_SOURCES
     Sources/pbxproj/ConfigFile.cpp
     Sources/pbxproj/Context.cpp
