@@ -7,19 +7,32 @@ using pbxsetting::Setting;
 using pbxsetting::Condition;
 using libutil::trim;
 
-bool
-Setting::match(std::string const &name, Condition const &condition)
+Setting::
+Setting(std::string const &name, Condition const &condition, std::string const &value) :
+    _name(name),
+    _condition(condition),
+    _value(value)
+{
+}
+
+Setting::
+~Setting()
+{
+}
+
+bool Setting::
+match(std::string const &name, Condition const &condition)
 {
     return _name == name && _condition.match(condition);
 }
 
-bool
-Setting::match(std::string const &name)
+bool Setting::
+match(std::string const &name)
 {
     return _name == name;
 }
 
-static Setting
+Setting Setting::
 Parse(std::string const &string)
 {
     size_t equal;
@@ -42,10 +55,13 @@ Parse(std::string const &string)
     std::string key = string.substr(0, equal);
     std::string value = string.substr(equal + 1);
 
+    trim(key);
+    trim(value);
+
     return Setting(key, Condition(conditions), value);
 }
 
-static Setting
+Setting Setting::
 Parse(std::string const &key, std::string const &value)
 {
     return Parse(key + "=" + value);

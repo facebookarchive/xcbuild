@@ -15,11 +15,19 @@ private:
     std::string _value;
 
 public:
-    Setting(std::string const &name, Condition const &condition, std::string const &value) : _name(name), _condition(condition), _value(value) { };
+    Setting(std::string const &name, Condition const &condition, std::string const &value);
     ~Setting();
 
 public:
     friend class std::hash<Setting>;
+
+public:
+    std::string const &
+    name() { return _name; }
+    Condition const &
+    condition() { return _condition; }
+    std::string const &
+    value() { return _value; }
 
 public:
     bool

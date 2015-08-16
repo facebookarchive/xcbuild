@@ -206,3 +206,17 @@ add_executable(xcspec Tools/xcspec.cpp)
 target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)
 target_link_libraries(xctool pbxbase pbxproj)
+
+
+enable_testing()
+include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/gtest/include)
+add_subdirectory(ThirdParty/gtest)
+
+function (ADD_UNIT_GTEST NAME SOURCES)
+    add_executable("${NAME}" ${SOURCES})
+    target_link_libraries("${NAME}" gtest gtest_main)
+    add_test("${NAME}" "${NAME}")
+endfunction ()
+
+ADD_UNIT_GTEST(test_pbxsetting Tests/pbxsetting/test_pbxsetting.cpp)
+target_link_libraries(test_pbxsetting pbxsetting)

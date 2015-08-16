@@ -4,6 +4,17 @@
 
 using pbxsetting::Condition;
 
+Condition::
+Condition(std::unordered_map<std::string, std::string> values) :
+    _values(values)
+{
+}
+
+Condition::
+~Condition()
+{
+}
+
 static bool
 WildcardMatch(std::string const &first, std::string const &second)
 {
@@ -27,8 +38,8 @@ WildcardMatch(std::string const &first, std::string const &second)
     return true;
 }
 
-bool
-Condition::match(Condition const &condition)
+bool Condition::
+match(Condition const &condition)
 {
     auto OV = condition._values;
     for (auto const &TE : _values) {
