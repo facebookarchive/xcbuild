@@ -35,9 +35,10 @@ match(std::string const &name)
 Setting Setting::
 Parse(std::string const &string)
 {
-    size_t equal;
-    size_t sqbo;
-    size_t sqbc;
+    size_t equal = 0;
+    size_t sqbo  = 0;
+    size_t sqbc  = 0;
+    size_t comma = std::string::npos;
     std::unordered_map<std::string, std::string> conditions;
 
     do {
@@ -46,13 +47,22 @@ Parse(std::string const &string)
         sqbc  = string.find(']', sqbo);
 
         if (sqbo < sqbc && equal > sqbo && equal < sqbc) {
-            std::string key = string.substr(sqbo + 1, equal - sqbo - 1);
-            std::string value = string.substr(equal + 1, sqbc - equal - 1);
-            conditions.insert({ key, value });
+            do {
+                size_t start = (comma != std::string::npos && comma > sqbo ? comma : sqbo);
+                comma = string.find(',', start + 1);
+                equal = string.find('=', start + 1);
+                size_t end   = (comma != std::string::npos && comma < sqbc ? comma : sqbc);
+
+                std::string key   = string.substr(start + 1, equal - start - 1);
+                std::string value = string.substr(equal + 1, end - equal - 1);
+                conditions.insert({ key, value });
+            } while (comma != std::string::npos && comma < sqbc);
         }
     } while (sqbo < sqbc && equal > sqbo && equal < sqbc);
 
-    std::string key = string.substr(0, equal);
+    sqbo = string.find('[');
+
+    std::string key = string.substr(0, sqbo != std::string::npos ? sqbo : equal);
     std::string value = string.substr(equal + 1);
 
     trim(key);

@@ -5,7 +5,7 @@
 using pbxsetting::Condition;
 
 Condition::
-Condition(std::unordered_map<std::string, std::string> values) :
+Condition(std::unordered_map<std::string, std::string> const &values) :
     _values(values)
 {
 }

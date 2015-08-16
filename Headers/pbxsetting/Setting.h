@@ -23,11 +23,11 @@ public:
 
 public:
     std::string const &
-    name() { return _name; }
+    name() const { return _name; }
     Condition const &
-    condition() { return _condition; }
+    condition() const { return _condition; }
     std::string const &
-    value() { return _value; }
+    value() const { return _value; }
 
 public:
     bool

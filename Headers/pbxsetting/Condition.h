@@ -13,7 +13,7 @@ private:
     std::unordered_map<std::string, std::string> _values;
 
 public:
-    Condition(std::unordered_map<std::string, std::string> values);
+    Condition(std::unordered_map<std::string, std::string> const &values);
     ~Condition();
 
 public:
@@ -21,7 +21,7 @@ public:
 
 public:
     std::unordered_map<std::string, std::string> const &
-    values() { return _values; }
+    values() const { return _values; }
 
 public:
     bool
