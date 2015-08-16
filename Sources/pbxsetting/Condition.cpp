@@ -30,7 +30,7 @@ WildcardMatch(std::string const &first, std::string const &second)
                     return false;
                 }
             }
-        } else if (*fit != *(++sit)) {
+        } else if (*fit != *sit++) {
             return false;
         }
     }

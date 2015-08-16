@@ -4,7 +4,7 @@
 
 using namespace pbxsetting;
 
-TEST(pbxsetting, Condition)
+TEST(pbxsetting, ConditionCreate)
 {
     Condition cond = Condition(std::unordered_map<std::string, std::string>({ { "arch", "*" } }));
     ASSERT_EQ(cond.values().size(), 1);
@@ -19,7 +19,42 @@ TEST(pbxsetting, Condition)
     EXPECT_EQ(multiple.values().find("sdk")->second, "*");
 }
 
-TEST(pbxsetting, Setting)
+TEST(pbxsetting, ConditionMatchSingle)
+{
+    Condition arch_armv7 = Condition(std::unordered_map<std::string, std::string>({ { "arch", "armv7" } }));
+    Condition arch_i386 = Condition(std::unordered_map<std::string, std::string>({ { "arch", "i386" } }));
+    EXPECT_TRUE(arch_i386.match(arch_i386));
+    EXPECT_TRUE(arch_armv7.match(arch_armv7));
+    EXPECT_FALSE(arch_armv7.match(arch_i386));
+    EXPECT_FALSE(arch_i386.match(arch_armv7));
+
+    Condition arch_any = Condition(std::unordered_map<std::string, std::string>({ { "arch", "*" } }));
+    EXPECT_TRUE(arch_any.match(arch_armv7));
+    EXPECT_TRUE(arch_any.match(arch_i386));
+
+    Condition arch_some1 = Condition(std::unordered_map<std::string, std::string>({ { "arch", "arm*" } }));
+    Condition arch_some2 = Condition(std::unordered_map<std::string, std::string>({ { "arch", "*m*" } }));
+    Condition arch_some3 = Condition(std::unordered_map<std::string, std::string>({ { "arch", "arm*" } }));
+    Condition arch_some4 = Condition(std::unordered_map<std::string, std::string>({ { "arch", "arm*" } }));
+    EXPECT_TRUE(arch_some1.match(arch_armv7));
+    EXPECT_TRUE(arch_some2.match(arch_armv7));
+    EXPECT_TRUE(arch_some3.match(arch_armv7));
+    EXPECT_TRUE(arch_some4.match(arch_armv7));
+    EXPECT_FALSE(arch_some1.match(arch_i386));
+    EXPECT_FALSE(arch_some2.match(arch_i386));
+    EXPECT_FALSE(arch_some3.match(arch_i386));
+    EXPECT_FALSE(arch_some4.match(arch_i386));
+}
+
+TEST(pbxsetting, ConditionMatchMultiple)
+{
+    Condition arch = Condition(std::unordered_map<std::string, std::string>({ { "arch", "armv7" } }));
+    Condition arch_sdk = Condition(std::unordered_map<std::string, std::string>({ { "arch", "armv7" }, { "sdk", "macosx" } }));
+    EXPECT_TRUE(arch.match(arch_sdk));
+    EXPECT_FALSE(arch_sdk.match(arch));
+}
+
+TEST(pbxsetting, SettingCreate)
 {
     Setting basic = Setting::Parse("OTHER_CFLAGS = -Werror");
     EXPECT_EQ(basic.name(), "OTHER_CFLAGS");
