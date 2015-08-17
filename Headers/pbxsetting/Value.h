@@ -32,8 +32,12 @@ public:
     bool operator==(Value const &rhs) const;
 
 public:
-    std::vector<Entry> const &
-    entries() const { return _entries; }
+    std::vector<Entry> const &entries() const
+    { return _entries; }
+
+public:
+    std::string
+    raw() const;
 
 public:
     static Value

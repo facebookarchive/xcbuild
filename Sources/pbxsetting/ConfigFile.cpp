@@ -1,10 +1,14 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxsetting/ConfigFile.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Setting.h>
 
 #include <cstdio>
 
 using pbxsetting::ConfigFile;
+using pbxsetting::Level;
+using pbxsetting::Setting;
 using libutil::string_set;
 using libutil::string_map;
 using libutil::string_vector;
@@ -16,43 +20,29 @@ ConfigFile::ConfigFile()
     _current.fp = nullptr;
 }
 
-plist::Dictionary *ConfigFile::
-open(std::string const &path, XC::Config::error_function const &error)
+std::pair<bool, Level> ConfigFile::
+open(std::string const &path, Environment const &environment, XC::Config::error_function const &error)
 {
-    plist::Dictionary *settings = nullptr;
+    bool parsed = false;
+    std::vector<Setting> settings;
 
     _stop = false;
     _error = error;
 
-    if (parse(path) && !_stop) {
-        settings = plist::Dictionary::New();
+    if (parse(path, environment) && !_stop) {
+        parsed = true;
 
         std::string line;
         while (std::getline(_processed, line)) {
-            std::string key, value;
-            size_t      equal, sqbo, sqbc;
+            trim(line);
 
-            equal = line.find('=');
-            sqbo  = line.find('[');
-            sqbc  = line.find(']');
+            if (line.size() > 0) {
+                if (line.back() == ';') {
+                    line = line.substr(0, line.size() - 1);
+                }
 
-            if (sqbo < sqbc && equal > sqbo && equal < sqbc) {
-                equal = line.find('=', sqbc + 1);
-            }
-
-            key   = line.substr(0, equal);
-            value = line.substr(equal + 1);
-
-            trim(key);
-            trim(value);
-
-            settings->remove(key);
-            if (value == "YES" || value == "YES;") {
-                settings->set(key, plist::Boolean::New(true));
-            } else if (value == "NO" || value == "NO;") {
-                settings->set(key, plist::Boolean::New(false));
-            } else {
-                settings->set(key, plist::String::New(value));
+                Setting setting = Setting::Parse(line);
+                settings.push_back(setting);
             }
         }
     }
@@ -62,11 +52,11 @@ open(std::string const &path, XC::Config::error_function const &error)
     _error = nullptr;
     _stop = false;
 
-    return settings;
+    return std::make_pair(parsed, Level(settings));
 }
 
 bool ConfigFile::
-parse(std::string const &path)
+parse(std::string const &path, Environment const &environment)
 {
     std::string realPath = FSUtil::ResolvePath(path);
     if (realPath.empty()) {
@@ -76,11 +66,12 @@ parse(std::string const &path)
         return false;
     }
 
-    // 
+    //
     // Already processed?
     //
-    if (_included.find(realPath) != _included.end())
+    if (_included.find(realPath) != _included.end()) {
         return true;
+    }
 
     _included.insert(realPath);
 
@@ -92,7 +83,7 @@ parse(std::string const &path)
         return false;
     }
 
-    process();
+    process(environment);
 
     pop();
 
@@ -126,7 +117,7 @@ pop()
 }
 
 void ConfigFile::
-process()
+process(Environment const &environment)
 {
     enum {
         kNormal,
@@ -219,9 +210,20 @@ process()
                         break;
                 } else {
                     std::string filename = line.substr(1, line.length() - 2);
-                    if (!parse(FSUtil::GetDirectoryName(_current.path) + "/" + filename)) {
-                        error(lineno, "Unable to find included file \"%s\"",
-                                filename.c_str());
+
+                    std::string root_prefix = "/";
+                    std::string developer_prefix = "<DEVELOPER_DIR>";
+
+                    if (filename.compare(0, root_prefix.size(), root_prefix) == 0) {
+                    } else if (filename.compare(0, developer_prefix.size(), developer_prefix) == 0) {
+                        std::string developer_dir = environment.resolve("DEVELOPER_DIR");
+                        filename = developer_dir + filename.substr(developer_prefix.size());
+                    } else {
+                        filename = FSUtil::GetDirectoryName(_current.path) + "/" + filename;
+                    }
+
+                    if (!parse(filename, environment)) {
+                        error(lineno, "Unable to find included file \"%s\"", filename.c_str());
                     }
                     if (_stop)
                         break;

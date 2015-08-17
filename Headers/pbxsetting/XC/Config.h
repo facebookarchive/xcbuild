@@ -3,8 +3,9 @@
 #ifndef __pbxsetting_XC_Config_h
 #define __pbxsetting_XC_Config_h
 
-#include <plist/plist.h>
 #include <pbxsetting/Base.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Environment.h>
 
 namespace pbxsetting { namespace XC {
 
@@ -14,7 +15,7 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    plist::Dictionary *_settings;
+    Level _level;
 
 public:
     typedef std::function <bool(std::string const &filename, unsigned line,
@@ -25,15 +26,14 @@ public:
     ~Config();
 
 public:
-    inline plist::Dictionary const *settings() const
-    { return _settings; }
-    inline plist::Dictionary *settings()
-    { return _settings; }
+    inline Level const &level() const
+    { return _level; }
 
 public:
-    static Config::shared_ptr Open(std::string const &path);
-    static Config::shared_ptr Open(std::string const &path,
-            error_function const &error);
+    static Config::shared_ptr
+    Open(std::string const &path, Environment const &environment);
+    static Config::shared_ptr
+    Open(std::string const &path, Environment const &environment, error_function const &error);
 };
 
 } }

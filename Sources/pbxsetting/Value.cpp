@@ -29,6 +29,25 @@ Value::
 {
 }
 
+std::string Value::
+raw() const
+{
+    std::string out;
+    for (Value::Entry const &entry : _entries) {
+        switch (entry.type) {
+            case Value::Entry::String: {
+                out += entry.string;
+                break;
+            }
+            case Value::Entry::Value: {
+                out += "$(" + entry.value->raw() + ")";
+                break;
+            }
+        }
+    }
+    return out;
+}
+
 bool Value::
 operator==(Value const &rhs) const
 {

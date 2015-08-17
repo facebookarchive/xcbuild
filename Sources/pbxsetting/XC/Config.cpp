@@ -6,34 +6,32 @@
 using pbxsetting::XC::Config;
 
 Config::Config() :
-    _settings(nullptr)
+    _level(Level({ }))
 {
 }
 
 Config::~Config()
 {
-    if (_settings != nullptr) {
-        _settings->release();
-    }
 }
 
 Config::shared_ptr Config::
-Open(std::string const &path, error_function const &error)
+Open(std::string const &path, Environment const &environment, error_function const &error)
 {
-    plist::Dictionary *settings = ConfigFile().open(path, error);
-    if (settings == nullptr)
+    std::pair<bool, Level> result = ConfigFile().open(path, environment, error);
+    if (!result.first) {
         return nullptr;
+    }
 
     auto config = std::make_shared <Config> ();
-    config->_settings = settings;
+    config->_level = result.second;
 
     return config;
 }
 
 Config::shared_ptr Config::
-Open(std::string const &path)
+Open(std::string const &path, Environment const &environment)
 {
-    return Open(path,
+    return Open(path, environment,
             [](std::string const &, unsigned, std::string const &)
             {
                 return true;

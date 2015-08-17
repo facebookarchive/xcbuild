@@ -60,6 +60,7 @@ target_link_libraries(pbxbase json expat)
 set(libpbxsetting_SOURCES
     Sources/pbxsetting/ConfigFile.cpp
     Sources/pbxsetting/Condition.cpp
+    Sources/pbxsetting/ConfigFile.cpp
     Sources/pbxsetting/Level.cpp
     Sources/pbxsetting/Environment.cpp
     Sources/pbxsetting/Setting.cpp

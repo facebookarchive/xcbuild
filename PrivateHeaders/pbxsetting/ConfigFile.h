@@ -4,6 +4,8 @@
 #define __pbxsetting_ConfigFile_h
 
 #include <pbxsetting/XC/Config.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Environment.h>
 #include <sstream>
 
 namespace pbxsetting {
@@ -27,16 +29,16 @@ public:
     ConfigFile();
 
 public:
-    plist::Dictionary *open(std::string const &path,
-            XC::Config::error_function const &error);
+    std::pair<bool, Level>
+    open(std::string const &path, Environment const &environment, XC::Config::error_function const &error);
 
 private:
-    bool parse(std::string const &path);
+    bool parse(std::string const &path, Environment const &environment);
 
 private:
     void push();
     void pop();
-    void process();
+    void process(Environment const &environment);
 
 private:
     void error(unsigned line, std::string const &format, ...);
