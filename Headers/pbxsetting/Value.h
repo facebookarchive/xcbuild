@@ -38,6 +38,8 @@ public:
 public:
     static Value
     Parse(std::string const &value);
+    static Value const &
+    Empty(void);
 };
 
 }

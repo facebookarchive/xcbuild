@@ -4,14 +4,27 @@
 #define __pbxsetting_Level_h
 
 #include <pbxsetting/Base.h>
+#include <pbxsetting/Condition.h>
 #include <pbxsetting/Setting.h>
+#include <pbxsetting/Value.h>
 
 namespace pbxsetting {
 
 class Level {
 private:
-    std::string _name;
-    std::unordered_set<Setting> _settings;
+    std::vector<Setting> _settings;
+
+public:
+    Level(std::vector<Setting> const &settings);
+    ~Level();
+
+public:
+    std::vector<Setting> const &
+    settings() const { return _settings; }
+
+public:
+    std::pair<bool, Value>
+    get(std::string const &setting, Condition const &condition) const;
 };
 
 }

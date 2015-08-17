@@ -21,15 +21,9 @@ Setting::
 }
 
 bool Setting::
-match(std::string const &name, Condition const &condition)
+match(std::string const &name, Condition const &condition) const
 {
     return _name == name && _condition.match(condition);
-}
-
-bool Setting::
-match(std::string const &name)
-{
-    return _name == name;
 }
 
 Setting Setting::

@@ -25,7 +25,11 @@ public:
 
 public:
     bool
-    match(Condition const &condition);
+    match(Condition const &condition) const;
+
+public:
+    static Condition const &
+    Empty(void);
 };
 
 }

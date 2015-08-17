@@ -11,18 +11,24 @@ namespace pbxsetting {
 
 class Environment {
 private:
-    std::vector<Level> _inheritance;
     std::vector<Level> _assignment;
+    std::vector<Level> _inheritance;
+
+public:
+    Environment(std::vector<Level> const &assignment, std::vector<Level> const &inheritance);
+    ~Environment();
+
+public:
+    std::vector<Level> const &assignment() const
+    { return _assignment; }
+    std::vector<Level> const &inheritance() const
+    { return _inheritance; }
 
 public:
     std::string
-    resolve(std::string const &setting);
+    resolve(std::string const &setting, Condition const &condition) const;
     std::string
-    resolve(std::string const &setting, Condition const &condition);
-
-public:
-    static std::unique_ptr<Environment>
-    Create(std::vector<Level> const &levels);
+    resolve(std::string const &setting) const;
 };
 
 }

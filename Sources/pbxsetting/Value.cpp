@@ -91,3 +91,11 @@ Parse(std::string const &value)
 {
     return ParseValue(value, 0).value;
 }
+
+Value const &Value::
+Empty(void)
+{
+    static Value *value = new Value({ });
+    return *value;
+}
+

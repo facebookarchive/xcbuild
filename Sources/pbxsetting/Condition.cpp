@@ -39,7 +39,7 @@ WildcardMatch(std::string const &first, std::string const &second)
 }
 
 bool Condition::
-match(Condition const &condition)
+match(Condition const &condition) const
 {
     auto OV = condition._values;
     for (auto const &TE : _values) {
@@ -56,3 +56,9 @@ match(Condition const &condition)
     return true;
 }
 
+Condition const &Condition::
+Empty(void)
+{
+    static Condition *condition = new Condition({ });
+    return *condition;
+}

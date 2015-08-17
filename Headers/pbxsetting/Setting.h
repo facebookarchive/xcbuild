@@ -29,9 +29,7 @@ public:
 
 public:
     bool
-    match(std::string const &name, Condition const &condition);
-    bool
-    match(std::string const &name);
+    match(std::string const &name, Condition const &condition) const;
 
 public:
     static Setting

@@ -3,6 +3,8 @@
 #include <pbxsetting/Condition.h>
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/Value.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Environment.h>
 
 using namespace pbxsetting;
 
@@ -232,5 +234,123 @@ TEST(pbxsetting, SettingCreate)
     EXPECT_EQ(altcond2.condition().values().find("arch")->second, "*");
     ASSERT_NE(altcond2.condition().values().find("sdk"), altcond2.condition().values().end());
     EXPECT_EQ(altcond2.condition().values().find("sdk")->second, "ansdk*");
+}
+
+TEST(pbxsetting, Level)
+{
+    Level level = Level({
+        Setting::Parse("ONE = one"),
+        Setting::Parse("TWO = two"),
+        Setting::Parse("TWO = 2"),
+        Setting::Parse("THREE = three"),
+        Setting::Parse("THREE[arch=armv7] = 3"),
+    });
+    EXPECT_EQ(level.settings().size(), 5);
+    EXPECT_EQ(level.get("ONE", Condition::Empty()).first, true);
+    EXPECT_EQ(level.get("TWO", Condition::Empty()).first, true);
+    EXPECT_EQ(level.get("THREE", Condition::Empty()).first, true);
+    EXPECT_EQ(level.get("FOUR", Condition::Empty()).first, false);
+    EXPECT_EQ(level.get("TWO", Condition::Empty()).second, Value::Parse("2"));
+    EXPECT_EQ(level.get("THREE", Condition::Empty()).second, Value::Parse("three"));
+    Condition specific = Condition(std::unordered_map<std::string, std::string>({ { "arch", "armv7" } }));
+    EXPECT_EQ(level.get("THREE", specific).second, Value::Parse("3"));
+    // TODO(grp): Implement the proper lookup behavior here.
+    // Condition unspecific = Condition(std::unordered_map<std::string, std::string>({ { "arch", "*" } }));
+    // EXPECT_EQ(level.get("THREE", unspecific).second, Value::Parse("3"));
+}
+
+TEST(pbxsetting, EnvironmentLayering)
+{
+    std::vector<Level> layered_levels = {
+        Level({
+            Setting::Parse("LAYERED = command line, $(LAYERED)"),
+        }),
+        Level({
+            Setting::Parse("LAYERED = target, $(LAYERED)"),
+        }),
+        Level({
+            Setting::Parse("LAYERED = project, $(LAYERED)"),
+        }),
+        Level({
+            Setting::Parse("LAYERED = environment"),
+        }),
+    };
+    Environment layered = Environment(layered_levels, layered_levels);
+    EXPECT_EQ(layered.resolve("LAYERED"), "command line, target, project, environment");
+}
+
+TEST(pbxsetting, EnvironmentStaggered)
+{
+    std::vector<Level> staggered_levels = {
+        Level({
+            Setting::Parse("LAYERED = command line, $(LAYERED)"),
+        }),
+        Level({
+            Setting::Parse("STAGGERED = $(CAPTION): $(LAYERED)"),
+            Setting::Parse("LAYERED = target, $(LAYERED)"),
+        }),
+        Level({
+            Setting::Parse("LAYERED = project, $(LAYERED)"),
+            Setting::Parse("CAPTION = evaluation order"),
+        }),
+        Level({
+            Setting::Parse("LAYERED = environment"),
+        }),
+    };
+    Environment staggered = Environment(staggered_levels, staggered_levels);
+    EXPECT_EQ(staggered.resolve("STAGGERED"), "evaluation order: command line, target, project, environment");
+}
+
+TEST(pbxsetting, EnvironmentStaggeredOverride)
+{
+    std::vector<Level> staggered_levels = {
+        Level({
+            Setting::Parse("LAYERED = command line, $(LAYERED)"),
+        }),
+        Level({
+            Setting::Parse("STAGGERED = $(CAPTION): $(LAYERED)"),
+            Setting::Parse("LAYERED = target, $(LAYERED)"),
+            Setting::Parse("CAPTION = order of evaluation"),
+        }),
+        Level({
+            Setting::Parse("LAYERED = project, $(LAYERED)"),
+            Setting::Parse("CAPTION = evaluation order"),
+        }),
+        Level({
+            Setting::Parse("LAYERED = environment"),
+        }),
+    };
+    Environment staggered = Environment(staggered_levels, staggered_levels);
+    EXPECT_EQ(staggered.resolve("STAGGERED"), "order of evaluation: command line, target, project, environment");
+}
+
+TEST(pbxsetting, EnvironmentConcatenation)
+{
+    std::vector<Level> concat_levels = {
+        Level({
+            Setting::Parse("CURRENT_PROJECT_VERSION_app = 15.3.9"),
+            Setting::Parse("CURRENT_PROJECT_VERSION_xctest = 1.0.0"),
+            Setting::Parse("CURRENT_PROJECT_VERSION = $(CURRENT_PROJECT_VERSION_$(WRAPPER_EXTENSION))"),
+        }),
+        Level({
+            Setting::Parse("WRAPPER_EXTENSION = app"),
+        }),
+    };
+    Environment concat = Environment(concat_levels, concat_levels);
+    EXPECT_EQ(concat.resolve("CURRENT_PROJECT_VERSION"), "15.3.9");
+}
+
+TEST(pbxsetting, EnvironmentInherited)
+{
+    std::vector<Level> inherited_levels = {
+        Level({
+            Setting::Parse("OTHER_LDFLAGS = $(inherited) -framework Security"),
+        }),
+        Level({
+            Setting::Parse("OTHER_LDFLAGS = -ObjC"),
+        }),
+    };
+    Environment inherited = Environment(inherited_levels, inherited_levels);
+    EXPECT_EQ(inherited.resolve("OTHER_LDFLAGS"), "-ObjC -framework Security");
 }
 
