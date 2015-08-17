@@ -5,6 +5,7 @@
 
 #include <pbxsetting/Base.h>
 #include <pbxsetting/Condition.h>
+#include <pbxsetting/Value.h>
 
 namespace pbxsetting {
 
@@ -12,21 +13,18 @@ class Setting {
 private:
     std::string _name;
     Condition _condition;
-    std::string _value;
+    Value _value;
 
 public:
-    Setting(std::string const &name, Condition const &condition, std::string const &value);
+    Setting(std::string const &name, Condition const &condition, Value const &value);
     ~Setting();
-
-public:
-    friend class std::hash<Setting>;
 
 public:
     std::string const &
     name() const { return _name; }
     Condition const &
     condition() const { return _condition; }
-    std::string const &
+    Value const &
     value() const { return _value; }
 
 public:
@@ -42,15 +40,6 @@ public:
     Parse(std::string const &key, std::string const &value);
 };
 
-}
-
-namespace std {
-template<>
-struct hash<pbxsetting::Setting> {
-    size_t operator()(pbxsetting::Setting const &setting) const {
-        return std::hash<std::string>()(setting._name) ^ std::hash<pbxsetting::Condition>()(setting._condition) ^ std::hash<std::string>()(setting._value);
-    }
-};
 }
 
 #endif  // !__pbxsetting_Setting_h

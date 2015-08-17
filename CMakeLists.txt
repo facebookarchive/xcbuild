@@ -62,10 +62,8 @@ set(libpbxsetting_SOURCES
     Sources/pbxsetting/Level.cpp
     Sources/pbxsetting/Environment.cpp
     Sources/pbxsetting/Setting.cpp
+    Sources/pbxsetting/Value.cpp
     )
-
-add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
-target_link_libraries(pbxsetting pbxbase)
 
 set(libpbxproj_SOURCES
     Sources/pbxproj/ConfigFile.cpp
@@ -180,11 +178,14 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/SystemDefaults.cpp
     )
 
+add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
+target_link_libraries(pbxsetting pbxbase)
+
 add_library(xcsdk SHARED ${libxcsdk_SOURCES})
 target_link_libraries(xcsdk pbxbase)
 
 add_library(pbxproj SHARED ${libpbxproj_SOURCES})
-target_link_libraries(pbxproj pbxbase)
+target_link_libraries(pbxproj pbxsetting pbxbase)
 
 add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxproj)

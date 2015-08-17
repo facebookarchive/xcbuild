@@ -8,7 +8,7 @@ using pbxsetting::Condition;
 using libutil::trim;
 
 Setting::
-Setting(std::string const &name, Condition const &condition, std::string const &value) :
+Setting(std::string const &name, Condition const &condition, Value const &value) :
     _name(name),
     _condition(condition),
     _value(value)
@@ -68,7 +68,7 @@ Parse(std::string const &string)
     trim(key);
     trim(value);
 
-    return Setting(key, Condition(conditions), value);
+    return Setting(key, Condition(conditions), Value::Parse(value));
 }
 
 Setting Setting::
