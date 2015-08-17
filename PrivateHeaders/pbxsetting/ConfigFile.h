@@ -1,12 +1,12 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#ifndef __pbxproj_ConfigFile_h
-#define __pbxproj_ConfigFile_h
+#ifndef __pbxsetting_ConfigFile_h
+#define __pbxsetting_ConfigFile_h
 
-#include <pbxproj/XC/Config.h>
+#include <pbxsetting/XC/Config.h>
 #include <sstream>
 
-namespace pbxproj {
+namespace pbxsetting {
 
 class ConfigFile {
 private:
@@ -44,4 +44,4 @@ private:
 
 }
 
-#endif  // !__pbxproj_ConfigFile_h
+#endif  // !__pbxsetting_ConfigFile_h

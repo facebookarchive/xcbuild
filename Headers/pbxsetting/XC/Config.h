@@ -1,11 +1,12 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#ifndef __pbxproj_XC_Config_h
-#define __pbxproj_XC_Config_h
+#ifndef __pbxsetting_XC_Config_h
+#define __pbxsetting_XC_Config_h
 
-#include <pbxproj/Base.h>
+#include <plist/plist.h>
+#include <pbxsetting/Base.h>
 
-namespace pbxproj { namespace XC {
+namespace pbxsetting { namespace XC {
 
 class Config {
 public:
@@ -37,4 +38,4 @@ public:
 
 } }
 
-#endif  // !__pbxproj_XC_Config_h
+#endif  // !__pbxsetting_XC_Config_h

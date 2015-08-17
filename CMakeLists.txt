@@ -58,15 +58,16 @@ add_library(pbxbase SHARED ${libpbxbase_SOURCES})
 target_link_libraries(pbxbase json expat)
 
 set(libpbxsetting_SOURCES
+    Sources/pbxsetting/ConfigFile.cpp
     Sources/pbxsetting/Condition.cpp
     Sources/pbxsetting/Level.cpp
     Sources/pbxsetting/Environment.cpp
     Sources/pbxsetting/Setting.cpp
     Sources/pbxsetting/Value.cpp
+    Sources/pbxsetting/XC/Config.cpp
     )
 
 set(libpbxproj_SOURCES
-    Sources/pbxproj/ConfigFile.cpp
     Sources/pbxproj/Context.cpp
     Sources/pbxproj/ISA.cpp
     Sources/pbxproj/PlistHelpers.cpp
@@ -101,7 +102,6 @@ set(libpbxproj_SOURCES
     Sources/pbxproj/XC/BuildConfiguration.cpp
     Sources/pbxproj/XC/BuildableReference.cpp
     Sources/pbxproj/XC/CommandLineArgument.cpp
-    Sources/pbxproj/XC/Config.cpp
     Sources/pbxproj/XC/ConfigurationList.cpp
     Sources/pbxproj/XC/ExecuteAction.cpp
     Sources/pbxproj/XC/LaunchAction.cpp
@@ -198,11 +198,11 @@ target_link_libraries(plist pbxbase)
 add_executable(sdktool Tools/sdktool.cpp)
 target_link_libraries(sdktool xcsdk)
 add_executable(xcconfig Tools/xcconfig.cpp)
-target_link_libraries(xcconfig pbxproj)
+target_link_libraries(xcconfig pbxsetting)
 add_executable(hmap Tools/hmap.cpp)
 target_link_libraries(hmap pbxbase pbxbuild)
 add_executable(pbxtool Tools/pbxtool.cpp)
-target_link_libraries(pbxtool pbxbase pbxproj)
+target_link_libraries(pbxtool pbxbase pbxproj pbxsetting)
 add_executable(xcspec Tools/xcspec.cpp)
 target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)

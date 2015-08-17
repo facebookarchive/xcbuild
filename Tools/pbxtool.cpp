@@ -1,6 +1,7 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxproj/pbxproj.h>
+#include <pbxsetting/pbxsetting.h>
 
 #include <cstring>
 #include <cerrno>
@@ -91,7 +92,7 @@ GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
         }
 
         if (!path.empty()) {
-            auto config = XC::Config::Open(path,
+            auto config = pbxsetting::XC::Config::Open(path,
                     [](std::string const &filename, unsigned line,
                         std::string const &message) -> bool
                     {

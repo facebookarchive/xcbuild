@@ -8,5 +8,6 @@
 #include <pbxsetting/Environment.h>
 #include <pbxsetting/Level.h>
 #include <pbxsetting/Setting.h>
+#include <pbxsetting/XC/Config.h>
 
 #endif  // !__pbxsetting_pbxsetting_h

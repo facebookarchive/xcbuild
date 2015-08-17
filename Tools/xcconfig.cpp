@@ -1,10 +1,10 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxproj/pbxproj.h>
+#include <pbxsetting/pbxsetting.h>
 
 #include <cstdio>
 
-using pbxproj::XC::Config;
+using pbxsetting::XC::Config;
 using libutil::FSUtil;
 
 int

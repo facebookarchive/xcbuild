@@ -1,10 +1,10 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxproj/ConfigFile.h>
+#include <pbxsetting/ConfigFile.h>
 
 #include <cstdio>
 
-using pbxproj::ConfigFile;
+using pbxsetting::ConfigFile;
 using libutil::string_set;
 using libutil::string_map;
 using libutil::string_vector;

@@ -1,9 +1,9 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxproj/XC/Config.h>
-#include <pbxproj/ConfigFile.h>
+#include <pbxsetting/XC/Config.h>
+#include <pbxsetting/ConfigFile.h>
 
-using pbxproj::XC::Config;
+using pbxsetting::XC::Config;
 
 Config::Config() :
     _settings(nullptr)

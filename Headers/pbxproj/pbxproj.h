@@ -17,7 +17,6 @@
 #include <pbxproj/PBX/VariantGroup.h>
 
 #include <pbxproj/XC/BuildConfiguration.h>
-#include <pbxproj/XC/Config.h>
 #include <pbxproj/XC/ConfigurationList.h>
 #include <pbxproj/XC/VersionGroup.h>
 #include <pbxproj/XC/Workspace.h>
