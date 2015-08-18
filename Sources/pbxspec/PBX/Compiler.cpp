@@ -113,7 +113,7 @@ inherit(Compiler::shared_ptr const &b)
 }
 
 Compiler::shared_ptr Compiler::
-Parse(plist::Dictionary const *dict)
+Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     Compiler::shared_ptr result;
 
@@ -136,14 +136,14 @@ Parse(plist::Dictionary const *dict)
         result.reset(new Compiler(true));
     }
 
-    if (!result->parse(dict))
+    if (!result->parse(manager, dict))
         return nullptr;
 
     return result;
 }
 
 bool Compiler::
-parse(plist::Dictionary const *dict)
+parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "Compiler",
         // Specification
@@ -217,7 +217,7 @@ parse(plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("ShowInCompilerSelectionPopup"),
         plist::MakeKey <plist::Boolean> ("ShowOnlySelfDefinedProperties"));
 
-    if (!Tool::parse(dict, false))
+    if (!Tool::parse(manager, dict, false))
         return false;
 
     auto ED       = dict->value <plist::String> ("ExecutionDescription");

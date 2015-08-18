@@ -16,7 +16,7 @@ main(int argc, char **argv)
     }
 
     std::string path = argv[1];
-    Manager::Import(path);
+    Manager::shared_ptr manager = Manager::Open(path);
 
     return 0;
 }

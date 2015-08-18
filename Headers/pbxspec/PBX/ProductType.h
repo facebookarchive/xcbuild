@@ -79,14 +79,14 @@ public:
 
 protected:
     friend class Specification;
-    bool parse(plist::Dictionary const *dict) override;
+    bool parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict) override;
 
 protected:
     bool inherit(Specification::shared_ptr const &base) override;
     virtual bool inherit(ProductType::shared_ptr const &base);
 
 protected:
-    static ProductType::shared_ptr Parse(plist::Dictionary const *dict);
+    static ProductType::shared_ptr Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict);
 
 public:
     static inline char const *Isa()

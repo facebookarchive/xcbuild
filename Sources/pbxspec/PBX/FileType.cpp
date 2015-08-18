@@ -123,7 +123,7 @@ inherit(FileType::shared_ptr const &b)
 }
 
 FileType::shared_ptr FileType::
-Parse(plist::Dictionary const *dict)
+Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     FileType::shared_ptr result;
 
@@ -160,14 +160,14 @@ Parse(plist::Dictionary const *dict)
         result.reset(new FileType(true));
     }
 
-    if (!result->parse(dict))
+    if (!result->parse(manager, dict))
         return nullptr;
 
     return result;
 }
 
 bool FileType::
-parse(plist::Dictionary const *dict)
+parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "BuildPhase",
             // Specification
@@ -222,7 +222,7 @@ parse(plist::Dictionary const *dict)
             plist::MakeKey <plist::Boolean> ("ChangesCauseDependencyGraphInvalidation"),
             plist::MakeKey <plist::String> ("FallbackAutoroutingBuildPhase"));
 
-    if (!Specification::parse(dict))
+    if (!Specification::parse(manager, dict))
         return false;
 
     auto MTs   = dict->value <plist::Array> ("MIMETypes");

@@ -16,24 +16,32 @@ using pbxspec::PBX::PropertyConditionFlavor;
 using pbxspec::PBX::Tool;
 using libutil::FSUtil;
 
-namespace {
-
-typedef std::map <char const *, Specification::vector> spec_map;
-
+Manager::Manager()
+{
 }
 
-static spec_map s_Specifications;
+Manager::~Manager()
+{
+}
 
 template <typename T>
-static typename T::shared_ptr
-FindSpecification(std::string const &identifier,
-        char const *type = T::Type(),
-        bool onlyDefault = false)
+typename T::shared_ptr
+FindSpecification(
+    std::map<char const *, Specification::vector> const &specifications,
+    std::string const &identifier,
+    char const *type = T::Type(),
+    bool onlyDefault = false)
 {
-    if (type == nullptr)
+    if (type == nullptr) {
         return nullptr;
+    }
 
-    auto const &vector = s_Specifications[type];
+    auto const &it = specifications.find(type);
+    if (it == specifications.end()) {
+        return nullptr;
+    }
+
+    auto const &vector = it->second;
 
     //
     // Do an inverse find so that we can find the overrides.
@@ -63,70 +71,69 @@ FindSpecification(std::string const &identifier,
 }
 
 Specification::shared_ptr Manager::
-GetSpecification(char const *type, std::string const &identifier,
-        bool onlyDefault)
+GetSpecification(char const *type, std::string const &identifier, bool onlyDefault) const
 {
-    return FindSpecification <Specification> (identifier, type, onlyDefault);
+    return FindSpecification <Specification> (_specifications, identifier, type, onlyDefault);
 }
 
 Architecture::shared_ptr Manager::
-GetArchitecture(std::string const &identifier)
+GetArchitecture(std::string const &identifier) const
 {
-    return FindSpecification <Architecture> (identifier);
+    return FindSpecification <Architecture> (_specifications, identifier);
 }
 
 BuildPhase::shared_ptr Manager::
-GetBuildPhase(std::string const &identifier)
+GetBuildPhase(std::string const &identifier) const
 {
-    return FindSpecification <BuildPhase> (identifier);
+    return FindSpecification <BuildPhase> (_specifications, identifier);
 }
 
 BuildSystem::shared_ptr Manager::
-GetBuildSystem(std::string const &identifier)
+GetBuildSystem(std::string const &identifier) const
 {
-    return FindSpecification <BuildSystem> (identifier);
+    return FindSpecification <BuildSystem> (_specifications, identifier);
 }
 
 Compiler::shared_ptr Manager::
-GetCompiler(std::string const &identifier)
+GetCompiler(std::string const &identifier) const
 {
-    return FindSpecification <Compiler> (identifier);
+    return FindSpecification <Compiler> (_specifications, identifier);
 }
 
 FileType::shared_ptr Manager::
-GetFileType(std::string const &identifier)
+GetFileType(std::string const &identifier) const
 {
-    return FindSpecification <FileType> (identifier);
+    return FindSpecification <FileType> (_specifications, identifier);
 }
 
 Linker::shared_ptr Manager::
-GetLinker(std::string const &identifier)
+GetLinker(std::string const &identifier) const
 {
-    return FindSpecification <Linker> (identifier);
+    return FindSpecification <Linker> (_specifications, identifier);
 }
 
 PackageType::shared_ptr Manager::
-GetPackageType(std::string const &identifier)
+GetPackageType(std::string const &identifier) const
 {
-    return FindSpecification <PackageType> (identifier);
+    return FindSpecification <PackageType> (_specifications, identifier);
 }
 
 ProductType::shared_ptr Manager::
-GetProductType(std::string const &identifier)
+GetProductType(std::string const &identifier) const
 {
-    return FindSpecification <ProductType> (identifier);
+    return FindSpecification <ProductType> (_specifications, identifier);
 }
 
 PropertyConditionFlavor::shared_ptr Manager::
-GetPropertyConditionFlavor(std::string const &identifier)
+GetPropertyConditionFlavor(std::string const &identifier) const
 {
-    return FindSpecification <PropertyConditionFlavor> (identifier);
+    return FindSpecification <PropertyConditionFlavor> (_specifications, identifier);
 }
 
 Tool::shared_ptr Manager::
-GetTool(std::string const &identifier)
+GetTool(std::string const &identifier) const
 {
-    return FindSpecification <Tool> (identifier);
+    return FindSpecification <Tool> (_specifications, identifier);
 }
 
 void Manager::
@@ -153,26 +160,25 @@ AddSpecification(PBX::Specification::shared_ptr const &spec)
     fprintf(stderr, "adding %s spec '%s'%s\n",
             spec->type(), spec->identifier().c_str(),
             spec->isDefault() ? "" : " [override]");
-    s_Specifications[spec->type()].push_back(spec);
+    _specifications[spec->type()].push_back(spec);
 }
 
-bool Manager::
-Open(std::string const &filename)
+Manager::shared_ptr Manager::
+Open(std::string const &path)
 {
-    return Specification::Open(filename);
-}
+    Manager::shared_ptr manager = std::make_shared <Manager> ();
 
-void Manager::
-Import(std::string const &path)
-{
     FSUtil::EnumerateDirectory(path, "*.xcspec",
             [&](std::string const &filename) -> bool
             {
                 std::string fullPath = path + "/" + filename;
-                if (!Open(fullPath)) {
+
+                if (!Specification::Open(manager, fullPath)) {
                     fprintf(stderr, "warning: failed to import "
                         "specification '%s'\n", fullPath.c_str());
                 }
                 return true;
             });
+
+    return manager;
 }

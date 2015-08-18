@@ -188,7 +188,7 @@ public:
 
 protected:
     friend class Specification;
-    bool parse(plist::Dictionary const *dict) override;
+    bool parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict) override;
 
 protected:
     bool inherit(Specification::shared_ptr const &base) override;
@@ -196,7 +196,7 @@ protected:
     virtual bool inherit(Compiler::shared_ptr const &base);
 
 protected:
-    static Compiler::shared_ptr Parse(plist::Dictionary const *dict);
+    static Compiler::shared_ptr Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict);
 
 public:
     static inline char const *Isa()

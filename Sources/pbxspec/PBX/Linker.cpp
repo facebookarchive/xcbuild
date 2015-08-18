@@ -57,7 +57,7 @@ inherit(Linker::shared_ptr const &b)
 }
 
 Linker::shared_ptr Linker::
-Parse(plist::Dictionary const *dict)
+Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     Linker::shared_ptr result;
 
@@ -80,14 +80,14 @@ Parse(plist::Dictionary const *dict)
         result.reset(new Linker(true));
     }
 
-    if (!result->parse(dict))
+    if (!result->parse(manager, dict))
         return nullptr;
 
     return result;
 }
 
 bool Linker::
-parse(plist::Dictionary const *dict)
+parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "Linker",
         // Specification
@@ -127,7 +127,7 @@ parse(plist::Dictionary const *dict)
         plist::MakeKey <plist::String> ("DependencyInfoFile"),
         plist::MakeKey <plist::Boolean> ("SupportsInputFileList"));
 
-    if (!Tool::parse(dict, false))
+    if (!Tool::parse(manager, dict, false))
         return false;
 
     auto BFs  = dict->value <plist::Array> ("BinaryFormats");

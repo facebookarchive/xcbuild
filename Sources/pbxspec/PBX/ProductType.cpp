@@ -37,7 +37,7 @@ ProductType::~ProductType()
 }
 
 ProductType::shared_ptr ProductType::
-Parse(plist::Dictionary const *dict)
+Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
@@ -60,14 +60,14 @@ Parse(plist::Dictionary const *dict)
                 C->value().c_str());
         result.reset(new ProductType(true));
     }
-    if (!result->parse(dict))
+    if (!result->parse(manager, dict))
         return nullptr;
 
     return result;
 }
 
 bool ProductType::
-parse(plist::Dictionary const *dict)
+parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "ProductType",
         // Specification
@@ -91,7 +91,7 @@ parse(plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("SupportsZeroLink"),
         plist::MakeKey <plist::Boolean> ("AlwaysPerformSeparateStrip"));
 
-    if (!Specification::parse(dict))
+    if (!Specification::parse(manager, dict))
         return false;
 
     auto DTN  = dict->value <plist::String> ("DefaultTargetName");

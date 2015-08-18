@@ -40,7 +40,7 @@ inherit(Specification::shared_ptr const &base)
 }
 
 bool Specification::
-parse(plist::Dictionary const *dict)
+parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     auto C  = dict->value <plist::String> ("Class");
     auto I  = dict->value <plist::String> ("Identifier");
@@ -63,7 +63,7 @@ parse(plist::Dictionary const *dict)
             basedOn = basedOn.substr(8);
         }    
 
-        auto base = Manager::GetSpecification(type(), basedOn, onlyDefault);
+        auto base = manager->GetSpecification(type(), basedOn, onlyDefault);
         if (base == nullptr) {
             fprintf(stderr, "error: cannot find base %s specification '%s'\n",
                     type(), basedOn.c_str());
@@ -106,32 +106,32 @@ parse(plist::Dictionary const *dict)
 }
 
 Specification::shared_ptr Specification::
-Parse(plist::Dictionary const *dict)
+Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr)
         return nullptr;
 
     if (T->value() == Architecture::Type())
-        return Architecture::Parse(dict);
+        return Architecture::Parse(manager, dict);
     if (T->value() == BuildPhase::Type())
-        return BuildPhase::Parse(dict);
+        return BuildPhase::Parse(manager, dict);
     if (T->value() == BuildSystem::Type())
-        return BuildSystem::Parse(dict);
+        return BuildSystem::Parse(manager, dict);
     if (T->value() == Compiler::Type())
-        return Compiler::Parse(dict);
+        return Compiler::Parse(manager, dict);
     if (T->value() == FileType::Type())
-        return FileType::Parse(dict);
+        return FileType::Parse(manager, dict);
     if (T->value() == Linker::Type())
-        return Linker::Parse(dict);
+        return Linker::Parse(manager, dict);
     if (T->value() == PackageType::Type())
-        return PackageType::Parse(dict);
+        return PackageType::Parse(manager, dict);
     if (T->value() == ProductType::Type())
-        return ProductType::Parse(dict);
+        return ProductType::Parse(manager, dict);
     if (T->value() == PropertyConditionFlavor::Type())
-        return PropertyConditionFlavor::Parse(dict);
+        return PropertyConditionFlavor::Parse(manager, dict);
     if (T->value() == Tool::Type())
-        return Tool::Parse(dict);
+        return Tool::Parse(manager, dict);
 
     fprintf(stderr, "error: specification type '%s' not supported\n",
             T->value().c_str());
@@ -140,7 +140,7 @@ Parse(plist::Dictionary const *dict)
 }
 
 bool Specification::
-Open(std::string const &filename)
+Open(std::shared_ptr<Manager> manager, std::string const &filename)
 {
     if (filename.empty()) {
         errno = EINVAL;
@@ -148,15 +148,17 @@ Open(std::string const &filename)
     }
 
     std::string realPath = FSUtil::ResolvePath(filename);
-    if (realPath.empty())
+    if (realPath.empty()) {
         return false;
+    }
 
     //
     // Parse property list
     //
     plist::Object *plist = plist::Object::Parse(filename);
-    if (plist == nullptr)
+    if (plist == nullptr) {
         return false;
+    }
 
 #if 0
     plist->dump(stdout);
@@ -167,12 +169,12 @@ Open(std::string const &filename)
     // if it's an array then multiple specifications are present.
     //
     if (auto dict = plist::CastTo <plist::Dictionary> (plist)) {
-        auto spec = Parse(dict);
+        auto spec = Parse(manager, dict);
         if (spec != nullptr) {
             //
-            // Add specification to the manager.
+            // Add specification to manager.
             //
-            Manager::AddSpecification(spec);
+            manager->AddSpecification(spec);
         }
 
         plist->release();
@@ -182,17 +184,17 @@ Open(std::string const &filename)
         size_t count  = array->count();
         for (size_t n = 0; n < count; n++) {
             if (auto dict = array->value <plist::Dictionary> (n)) {
-                auto spec = Parse(dict);
+                auto spec = Parse(manager, dict);
                 if (spec == nullptr) {
                     errors++;
                 } else {
-                    Manager::AddSpecification(spec);
+                    manager->AddSpecification(spec);
                 }
             }
         }
 
         plist->release();
-        return errors < count;
+        return (errors < count);
     }
 
     fprintf(stderr, "error: specification file '%s' does not contain "

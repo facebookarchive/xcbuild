@@ -15,7 +15,7 @@ BuildSystem::~BuildSystem()
 }
 
 BuildSystem::shared_ptr BuildSystem::
-Parse(plist::Dictionary const *dict)
+Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
@@ -30,14 +30,14 @@ Parse(plist::Dictionary const *dict)
                 C->value().c_str());
         result.reset(new BuildSystem(true));
     }
-    if (!result->parse(dict))
+    if (!result->parse(manager, dict))
         return nullptr;
 
     return result;
 }
 
 bool BuildSystem::
-parse(plist::Dictionary const *dict)
+parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "BuildPhase",
         // Specification
@@ -54,7 +54,7 @@ parse(plist::Dictionary const *dict)
         plist::MakeKey <plist::Array> ("Options"),
         plist::MakeKey <plist::Array> ("Properties"));
 
-    if (!Specification::parse(dict))
+    if (!Specification::parse(manager, dict))
         return false;
 
     auto IGDIUI = dict->value <plist::Boolean> ("IsGlobalDomainInUI");

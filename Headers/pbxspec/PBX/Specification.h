@@ -53,7 +53,7 @@ public:
     { return _version; }
 
 protected:
-    virtual bool parse(plist::Dictionary const *dict);
+    virtual bool parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict);
 
 protected:
     virtual bool inherit(Specification::shared_ptr const &base);
@@ -63,12 +63,12 @@ public:
     { return Object::isa(); }
     bool isa(std::string const &isa) const override;
 
-protected:
+public:
     friend class pbxspec::Manager;
-    static bool Open(std::string const &filename);
+    static bool Open(std::shared_ptr<Manager> manager, std::string const &filename);
 
 private:
-    static Specification::shared_ptr Parse(plist::Dictionary const *dict);
+    static Specification::shared_ptr Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict);
 };
 
 } }

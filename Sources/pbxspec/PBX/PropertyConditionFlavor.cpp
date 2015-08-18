@@ -15,7 +15,7 @@ PropertyConditionFlavor::~PropertyConditionFlavor()
 }
 
 PropertyConditionFlavor::shared_ptr PropertyConditionFlavor::
-Parse(plist::Dictionary const *dict)
+Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
@@ -30,14 +30,14 @@ Parse(plist::Dictionary const *dict)
                 C->value().c_str());
         result.reset(new PropertyConditionFlavor(true));
     }
-    if (!result->parse(dict))
+    if (!result->parse(manager, dict))
         return nullptr;
 
     return result;
 }
 
 bool PropertyConditionFlavor::
-parse(plist::Dictionary const *dict)
+parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "PropertyConditionFlavor",
         // Specification
@@ -52,7 +52,7 @@ parse(plist::Dictionary const *dict)
         // PropertyConditionFlavor
         plist::MakeKey <plist::Integer> ("Precedence"));
 
-    if (!Specification::parse(dict))
+    if (!Specification::parse(manager, dict))
         return false;
 
     auto P = dict->value <plist::Integer> ("Precedence");

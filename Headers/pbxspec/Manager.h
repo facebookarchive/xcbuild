@@ -12,34 +12,56 @@
 #include <pbxspec/PBX/PackageType.h>
 #include <pbxspec/PBX/ProductType.h>
 #include <pbxspec/PBX/PropertyConditionFlavor.h>
+#include <pbxspec/PBX/Specification.h>
 #include <pbxspec/PBX/Tool.h>
 
 namespace pbxspec {
 
 class Manager {
 public:
-    static PBX::Specification::shared_ptr GetSpecification(char const *type,
-            std::string const &identifier, bool onlyDefault = false);
+    typedef std::shared_ptr <Manager> shared_ptr;
+
+private:
+    std::map<char const *, PBX::Specification::vector> _specifications;
 
 public:
-    static PBX::Architecture::shared_ptr GetArchitecture(std::string const &identifier);
-    static PBX::BuildSystem::shared_ptr GetBuildSystem(std::string const &identifier);
-    static PBX::BuildPhase::shared_ptr GetBuildPhase(std::string const &identifier);
-    static PBX::Compiler::shared_ptr GetCompiler(std::string const &identifier);
-    static PBX::FileType::shared_ptr GetFileType(std::string const &identifier);
-    static PBX::Linker::shared_ptr GetLinker(std::string const &identifier);
-    static PBX::PackageType::shared_ptr GetPackageType(std::string const &identifier);
-    static PBX::ProductType::shared_ptr GetProductType(std::string const &identifier);
-    static PBX::PropertyConditionFlavor::shared_ptr GetPropertyConditionFlavor(std::string const &identifier);
-    static PBX::Tool::shared_ptr GetTool(std::string const &identifier);
+    Manager();
+    ~Manager();
 
 public:
-    static bool Open(std::string const &filename);
-    static void Import(std::string const &path);
+    PBX::Specification::shared_ptr
+    GetSpecification(char const *type, std::string const &identifier, bool onlyDefault = false) const;
+
+public:
+    PBX::Architecture::shared_ptr
+    GetArchitecture(std::string const &identifier) const;
+    PBX::BuildSystem::shared_ptr
+    GetBuildSystem(std::string const &identifier) const;
+    PBX::BuildPhase::shared_ptr
+    GetBuildPhase(std::string const &identifier) const;
+    PBX::Compiler::shared_ptr
+    GetCompiler(std::string const &identifier) const;
+    PBX::FileType::shared_ptr
+    GetFileType(std::string const &identifier) const;
+    PBX::Linker::shared_ptr
+    GetLinker(std::string const &identifier) const;
+    PBX::PackageType::shared_ptr
+    GetPackageType(std::string const &identifier) const;
+    PBX::ProductType::shared_ptr
+    GetProductType(std::string const &identifier) const;
+    PBX::PropertyConditionFlavor::shared_ptr
+    GetPropertyConditionFlavor(std::string const &identifier) const;
+    PBX::Tool::shared_ptr
+    GetTool(std::string const &identifier) const;
 
 protected:
     friend class pbxspec::PBX::Specification;
-    static void AddSpecification(PBX::Specification::shared_ptr const &spec);
+    void
+    AddSpecification(PBX::Specification::shared_ptr const &spec);
+
+public:
+    static Manager::shared_ptr
+    Open(std::string const &path);
 };
 
 }
