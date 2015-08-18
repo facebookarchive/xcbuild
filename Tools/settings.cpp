@@ -93,13 +93,15 @@ main(int argc, char **argv)
     auto sdk = platform->targets().front();
     printf("SDK: %s\n", sdk->displayName().c_str());
 
+    pbxsetting::Level specDefaultSettings = spec_manager->defaultSettings();
+
     // TODO(grp): targetConfiguration->baseConfigurationReference()
     levels.push_back(targetConfiguration->buildSettings());
     // TODO(grp): projectConfiguration->baseConfigurationReference()
     levels.push_back(projectConfiguration->buildSettings());
 
     levels.push_back(platform->overrideProperties());
-    levels.push_back(spec_manager->defaultSettings());
+    levels.push_back(specDefaultSettings);
     levels.push_back(sdk->customProperties());
     levels.push_back(sdk->defaultProperties());
     levels.push_back(platform->defaultProperties());
@@ -119,7 +121,8 @@ main(int argc, char **argv)
 
     printf("\n\nBuild Settings:\n\n");
     for (auto const &value : orderedValues) {
-        if (!value.second.empty()) {
+        auto defaultValue = specDefaultSettings.get(value.first, condition);
+        if (!defaultValue.first || value.second != defaultValue.second.raw()) {
             printf("%s = %s\n", value.first.c_str(), value.second.c_str());
         }
     }
