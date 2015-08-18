@@ -4,6 +4,7 @@
 #define __xcsdk_Base_h
 
 #include <plist/plist.h>
+#include <pbxsetting/pbxsetting.h>
 
 namespace xcsdk {
 

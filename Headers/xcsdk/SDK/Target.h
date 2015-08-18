@@ -31,8 +31,8 @@ public:
     std::string          _minimalDisplayName;
     std::string          _maximumDeploymentTarget;
     string_vector        _supportedBuildToolsVersion;
-    plist::Dictionary   *_customProperties;
-    plist::Dictionary   *_defaultProperties;
+    pbxsetting::Level    _customProperties;
+    pbxsetting::Level    _defaultProperties;
     bool                 _isBaseSDK;
     Toolchain::vector    _toolchains;
 
@@ -81,10 +81,10 @@ public:
     { return _supportedBuildToolsVersion; }
 
 public:
-    inline plist::Dictionary const *customProperties() const
+    inline pbxsetting::Level const &customProperties() const
     { return _customProperties; }
 
-    inline plist::Dictionary const *defaultProperties() const
+    inline pbxsetting::Level const &defaultProperties() const
     { return _defaultProperties; }
 
 public:

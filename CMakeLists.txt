@@ -183,7 +183,7 @@ add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting pbxbase)
 
 add_library(xcsdk SHARED ${libxcsdk_SOURCES})
-target_link_libraries(xcsdk pbxbase)
+target_link_libraries(xcsdk pbxsetting pbxbase)
 
 add_library(pbxproj SHARED ${libpbxproj_SOURCES})
 target_link_libraries(pbxproj pbxsetting pbxbase)

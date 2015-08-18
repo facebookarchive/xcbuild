@@ -25,7 +25,8 @@ private:
     std::string            _familyName;
     std::string            _icon;
     plist::Dictionary     *_defaultDebuggerSettings;
-    plist::Dictionary     *_defaultProperties;
+    pbxsetting::Level      _defaultProperties;
+    pbxsetting::Level      _overrideProperties;
 
 public:
     Platform();
@@ -66,8 +67,10 @@ public:
 public:
     inline plist::Dictionary const *defaultDebuggerSettings() const
     { return _defaultDebuggerSettings; }
-    inline plist::Dictionary const *defaultProperties() const
+    inline pbxsetting::Level const &defaultProperties() const
     { return _defaultProperties; }
+    inline pbxsetting::Level const &overrideProperties() const
+    { return _overrideProperties; }
 
 public:
     inline std::string const &icon() const

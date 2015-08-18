@@ -4,19 +4,19 @@
 #include <xcsdk/SDK/Manager.h>
 
 using xcsdk::SDK::Platform;
+using pbxsetting::Level;
+using pbxsetting::Setting;
 using libutil::FSUtil;
 
 Platform::Platform() :
     _defaultDebuggerSettings(nullptr),
-    _defaultProperties      (nullptr)
+    _defaultProperties      (Level({ })),
+    _overrideProperties     (Level({ }))
 {
 }
 
 Platform::~Platform()
 {
-    if (_defaultProperties != nullptr) {
-        _defaultProperties->release();
-    }
     if (_defaultDebuggerSettings != nullptr) {
         _defaultDebuggerSettings->release();
     }
@@ -34,7 +34,8 @@ parse(plist::Dictionary const *dict)
     auto FN  = dict->value <plist::String> ("FamilyName");
     auto Ic  = dict->value <plist::String> ("Icon");
     auto DDS = dict->value <plist::String> ("DefaultDebuggerSettings");
-    auto DP  = dict->value <plist::String> ("DefaultProperties");
+    auto DP  = dict->value <plist::Dictionary> ("DefaultProperties");
+    auto OP  = dict->value <plist::Dictionary> ("OverrideProperties");
 
     if (I != nullptr) {
         _identifier = I->value();
@@ -73,7 +74,31 @@ parse(plist::Dictionary const *dict)
     }
 
     if (DP != nullptr) {
-        _defaultProperties = plist::CastTo <plist::Dictionary> (DP->copy());
+        std::vector<Setting> settings;
+        for (size_t n = 0; n < DP->count(); n++) {
+            auto DPK = DP->key(n);
+            auto DPV = DP->value <plist::String> (DPK);
+
+            if (DPV != nullptr) {
+                Setting setting = Setting::Parse(DPK, DPV->value());
+                settings.push_back(setting);
+            }
+        }
+        _defaultProperties = Level(settings);
+    }
+
+    if (OP != nullptr) {
+        std::vector<Setting> settings;
+        for (size_t n = 0; n < OP->count(); n++) {
+            auto OPK = OP->key(n);
+            auto OPV = OP->value <plist::String> (OPK);
+
+            if (OPV != nullptr) {
+                Setting setting = Setting::Parse(OPK, OPV->value());
+                settings.push_back(setting);
+            }
+        }
+        _overrideProperties = Level(settings);
     }
 
     return true;

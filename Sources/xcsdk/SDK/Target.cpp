@@ -4,23 +4,18 @@
 #include <xcsdk/SDK/Manager.h>
 
 using xcsdk::SDK::Target;
+using pbxsetting::Level;
+using pbxsetting::Setting;
 using libutil::FSUtil;
 
 Target::Target() :
-    _customProperties (nullptr),
-    _defaultProperties(nullptr)
+    _customProperties (Level({ })),
+    _defaultProperties(Level({ }))
 {
 }
 
 Target::~Target()
 {
-    if (_defaultProperties != nullptr) {
-        _defaultProperties->release();
-    }
-
-    if (_customProperties != nullptr) {
-        _customProperties->release();
-    }
 }
 
 bool Target::
@@ -32,15 +27,15 @@ parse(plist::Dictionary const *dict)
     auto MDN  = dict->value <plist::String> ("MinimalDisplayName");
     auto MDT  = dict->value <plist::String> ("MaximumDeploymentTarget");
     auto SBTV = dict->value <plist::Array> ("SupportedBuildToolsVersion");
-    auto CP   = dict->value <plist::String> ("CustomProperties");
-    auto DP   = dict->value <plist::String> ("DefaultProperties");
+    auto CP   = dict->value <plist::Dictionary> ("CustomProperties");
+    auto DP   = dict->value <plist::Dictionary> ("DefaultProperties");
     auto IBS  = dict->value <plist::Boolean> ("IsBaseSDK");
     auto TCV  = dict->value <plist::Array> ("Toolchains");
 
     if (V != nullptr) {
         _version = V->value();
     }
-    
+
     if (CN != nullptr) {
         _canonicalName = CN->value();
     }
@@ -67,11 +62,31 @@ parse(plist::Dictionary const *dict)
     }
 
     if (CP != nullptr) {
-        _customProperties = plist::CastTo <plist::Dictionary> (CP->copy());
+        std::vector<Setting> settings;
+        for (size_t n = 0; n < CP->count(); n++) {
+            auto CPK = CP->key(n);
+            auto CPV = CP->value <plist::String> (CPK);
+
+            if (CPV != nullptr) {
+                Setting setting = Setting::Parse(CPK, CPV->value());
+                settings.push_back(setting);
+            }
+        }
+        _customProperties = Level(settings);
     }
 
     if (DP != nullptr) {
-        _defaultProperties = plist::CastTo <plist::Dictionary> (DP->copy());
+        std::vector<Setting> settings;
+        for (size_t n = 0; n < DP->count(); n++) {
+            auto DPK = DP->key(n);
+            auto DPV = DP->value <plist::String> (DPK);
+
+            if (DPV != nullptr) {
+                Setting setting = Setting::Parse(DPK, DPV->value());
+                settings.push_back(setting);
+            }
+        }
+        _defaultProperties = Level(settings);
     }
 
     if (IBS != nullptr) {
