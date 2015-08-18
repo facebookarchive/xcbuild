@@ -3,6 +3,8 @@
 #include <xcsdk/SDK/Manager.h>
 
 using xcsdk::SDK::Manager;
+using pbxsetting::Setting;
+using pbxsetting::Level;
 using libutil::FSUtil;
 
 Manager::Manager()
@@ -11,6 +13,35 @@ Manager::Manager()
 
 Manager::~Manager()
 {
+}
+
+pbxsetting::Level Manager::
+computedSettings(void) const
+{
+    std::vector<Setting> settings = {
+        Setting::Parse("DEVELOPER_DIR", _path),
+        Setting::Parse("DEVELOPER_USR_DIR", "$(DEVELOPER_DIR)/usr"),
+        Setting::Parse("DEVELOPER_BIN_DIR", "$(DEVELOPER_DIR)/usr/bin"),
+        Setting::Parse("DEVELOPER_APPLICATION_DIR", "$(DEVELOPER_DIR)/Applications"),
+        Setting::Parse("DEVELOPER_FRAMEWORKS_DIR", "$(DEVELOPER_DIR)/Library/Frameworks"),
+        Setting::Parse("DEVELOPER_FRAMEWORKS_DIR_QUOTED", "$(DEVELOPER_DIR)/Library/Frameworks"),
+        Setting::Parse("DEVELOPER_LIBRARY_DIR", "$(DEVELOPER_DIR)/Library"),
+        Setting::Parse("DEVELOPER_TOOLS_DIR", "$(DEVELOPER_DIR)/Tools"),
+        Setting::Parse("DEVELOPER_SDK_DIR", "$(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs"), // TODO(grp): Verify.
+        Setting::Parse("LEGACY_DEVELOPER_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer"), // TODO(grp): Verify.
+        Setting::Parse("DT_TOOLCHAIN_DIR", _path + "/" + "Toolchains"),
+    };
+
+    std::string platforms;
+    for (Platform::shared_ptr const &platform : _platforms) {
+        if (&platform != &_platforms[0]) {
+            platforms += " ";
+        }
+        platforms += platform->name();
+    }
+    settings.push_back(Setting::Parse("AVAILABLE_PLATFORMS", platforms));
+
+    return Level(settings);
 }
 
 std::shared_ptr<Manager> Manager::

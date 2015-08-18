@@ -28,6 +28,9 @@ public:
     { return _path; }
 
 public:
+    pbxsetting::Level computedSettings(void) const;
+
+public:
     static std::shared_ptr<Manager> Open(std::string const &path);
 };
 

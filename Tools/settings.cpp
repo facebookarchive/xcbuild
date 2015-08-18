@@ -105,6 +105,7 @@ main(int argc, char **argv)
     levels.push_back(sdk->customProperties());
     levels.push_back(sdk->defaultProperties());
     levels.push_back(platform->defaultProperties());
+    levels.push_back(xcsdk_manager->computedSettings());
     // TODO(grp): system defaults?
     levels.push_back(environmentLevel());
 
