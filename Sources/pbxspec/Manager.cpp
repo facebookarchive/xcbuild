@@ -136,6 +136,37 @@ GetTool(std::string const &identifier) const
     return FindSpecification <Tool> (_specifications, identifier);
 }
 
+pbxsetting::Level Manager::
+defaultSettings(void) const
+{
+    std::vector<PBX::PropertyOption::shared_ptr> options;
+
+    auto const &bsit = _specifications.find(BuildSystem::Type());
+    if (bsit != _specifications.end()) {
+        for (std::shared_ptr<PBX::Specification> const &spec : bsit->second) {
+            std::shared_ptr<PBX::BuildSystem> buildSystem = reinterpret_cast <BuildSystem::shared_ptr const &> (spec);
+            options.insert(options.end(), buildSystem->properties().begin(), buildSystem->properties().end());
+            options.insert(options.end(), buildSystem->options().begin(), buildSystem->options().end());
+        }
+    }
+
+    auto const &toolit = _specifications.find(Tool::Type());
+    if (toolit != _specifications.end()) {
+        for (std::shared_ptr<PBX::Specification> const &spec : toolit->second) {
+            std::shared_ptr<PBX::Tool> tool = reinterpret_cast <Tool::shared_ptr const &> (spec);
+            options.insert(options.end(), tool->options().begin(), tool->options().end());
+        }
+    }
+
+    std::vector<pbxsetting::Setting> settings;
+    std::transform(options.begin(), options.end(), std::back_inserter(settings), [](PBX::PropertyOption::shared_ptr const &option) -> pbxsetting::Setting {
+        plist::String const *defaultValue = plist::CastTo <plist::String> (option->defaultValue());
+        return pbxsetting::Setting::Parse(option->name(), defaultValue ? defaultValue->value() : "");
+    });
+
+    return pbxsetting::Level(settings);
+}
+
 void Manager::
 AddSpecification(PBX::Specification::shared_ptr const &spec)
 {

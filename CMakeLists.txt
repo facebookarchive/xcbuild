@@ -209,7 +209,7 @@ target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)
 target_link_libraries(xctool pbxbase pbxproj)
 add_executable(settings Tools/settings.cpp)
-target_link_libraries(settings pbxbase pbxproj xcsdk pbxsetting)
+target_link_libraries(settings pbxbase pbxproj xcsdk pbxsetting pbxspec)
 
 
 enable_testing()

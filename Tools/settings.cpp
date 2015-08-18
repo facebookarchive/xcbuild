@@ -3,12 +3,46 @@
 #include <pbxsetting/pbxsetting.h>
 #include <xcsdk/xcsdk.h>
 #include <pbxproj/pbxproj.h>
+#include <pbxspec/pbxspec.h>
+
+extern char **environ;
+
+static std::map<std::string, std::string>
+environmentVariables(void)
+{
+    std::map<std::string, std::string> environment;
+
+    for (char **current = environ; *current; current++) {
+        std::string variable = *current;
+        std::string::size_type offset = variable.find('=');
+
+        std::string name = variable.substr(0, offset);
+        std::string value = variable.substr(offset + 1);
+        environment.insert(std::make_pair(name, value));
+    }
+
+    return environment;
+}
+
+static pbxsetting::Level
+environmentLevel(void)
+{
+    std::vector<pbxsetting::Setting> environmentSettings;
+    for (std::pair<std::string, std::string> const &variable : environmentVariables()) {
+        // TODO(grp): Is this right? Should this be filtered at another level?
+        if (variable.first.front() != '_') {
+            pbxsetting::Setting setting = pbxsetting::Setting::Parse(variable.first, variable.second);
+            environmentSettings.push_back(setting);
+        }
+    }
+    return pbxsetting::Level(environmentSettings);
+}
 
 int
 main(int argc, char **argv)
 {
-    if (argc < 3) {
-        fprintf(stderr, "usage: %s developer project\n", argv[0]);
+    if (argc < 4) {
+        fprintf(stderr, "usage: %s developer project specs\n", argv[0]);
         return -1;
     }
 
@@ -21,6 +55,12 @@ main(int argc, char **argv)
     auto project = pbxproj::PBX::Project::Open(argv[2]);
     if (!project) {
         fprintf(stderr, "error opening project at %s (%s)\n", argv[2], strerror(errno));
+        return -1;
+    }
+
+    auto spec_manager = pbxspec::Manager::Open(argv[3]);
+    if (!spec_manager) {
+        fprintf(stderr, "error opening specifications at %s (%s)\n", argv[3], strerror(errno));
         return -1;
     }
 
@@ -59,11 +99,12 @@ main(int argc, char **argv)
     levels.push_back(projectConfiguration->buildSettings());
 
     levels.push_back(platform->overrideProperties());
-    // TODO(grp): default from xcspec?
+    levels.push_back(spec_manager->defaultSettings());
     levels.push_back(sdk->customProperties());
     levels.push_back(sdk->defaultProperties());
     levels.push_back(platform->defaultProperties());
     // TODO(grp): system defaults?
+    levels.push_back(environmentLevel());
 
     pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);
 
@@ -78,7 +119,9 @@ main(int argc, char **argv)
 
     printf("\n\nBuild Settings:\n\n");
     for (auto const &value : orderedValues) {
-        printf("%s = %s\n", value.first.c_str(), value.second.c_str());
+        if (!value.second.empty()) {
+            printf("%s = %s\n", value.first.c_str(), value.second.c_str());
+        }
     }
 
     return 0;

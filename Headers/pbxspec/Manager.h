@@ -3,6 +3,7 @@
 #ifndef __pbxspec_Manager_h
 #define __pbxspec_Manager_h
 
+#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Architecture.h>
 #include <pbxspec/PBX/BuildPhase.h>
 #include <pbxspec/PBX/BuildSystem.h>
@@ -53,6 +54,10 @@ public:
     GetPropertyConditionFlavor(std::string const &identifier) const;
     PBX::Tool::shared_ptr
     GetTool(std::string const &identifier) const;
+
+public:
+    pbxsetting::Level
+    defaultSettings(void) const;
 
 protected:
     friend class pbxspec::PBX::Specification;
