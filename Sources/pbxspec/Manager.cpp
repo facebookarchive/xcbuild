@@ -158,10 +158,33 @@ defaultSettings(void) const
         }
     }
 
+    auto const &compilerit = _specifications.find(Compiler::Type());
+    if (compilerit != _specifications.end()) {
+        for (std::shared_ptr<PBX::Specification> const &spec : compilerit->second) {
+            std::shared_ptr<PBX::Compiler> compiler = reinterpret_cast <Compiler::shared_ptr const &> (spec);
+            options.insert(options.end(), compiler->options().begin(), compiler->options().end());
+        }
+    }
+
+    auto const &linkerit = _specifications.find(Linker::Type());
+    if (linkerit != _specifications.end()) {
+        for (std::shared_ptr<PBX::Specification> const &spec : linkerit->second) {
+            std::shared_ptr<PBX::Linker> linker = reinterpret_cast <Linker::shared_ptr const &> (spec);
+            options.insert(options.end(), linker->options().begin(), linker->options().end());
+        }
+    }
+
     std::vector<pbxsetting::Setting> settings;
     std::transform(options.begin(), options.end(), std::back_inserter(settings), [](PBX::PropertyOption::shared_ptr const &option) -> pbxsetting::Setting {
-        plist::String const *defaultValue = plist::CastTo <plist::String> (option->defaultValue());
-        return pbxsetting::Setting::Parse(option->name(), defaultValue ? defaultValue->value() : "");
+        if (plist::String const *stringValue = plist::CastTo <plist::String> (option->defaultValue())) {
+            return pbxsetting::Setting::Parse(option->name(), stringValue->value());
+        } else if (plist::Boolean const *booleanValue = plist::CastTo <plist::Boolean> (option->defaultValue())) {
+            return pbxsetting::Setting::Parse(option->name(), booleanValue->value() ? "YES" : "NO");
+        } else {
+            // TODO(grp): Handle additional types?
+            fprintf(stderr, "Warning: Unknown value type for setting %s.\n", option->name().c_str());
+            return pbxsetting::Setting::Parse(option->name(), "");
+        }
     });
 
     return pbxsetting::Level(settings);
