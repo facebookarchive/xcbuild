@@ -66,17 +66,14 @@ GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
         }
     }
 
-    auto baseSettings = plist::CastTo <plist::Dictionary> (BC.buildSettings());
-    if (baseSettings != nullptr) {
-        if (settings == nullptr) {
-            settings = plist::CastTo <plist::Dictionary> (baseSettings->copy());
-        } else {
-            for (auto K : *baseSettings) {
-                settings->set(K, baseSettings->value(K)->copy());
-            }
-        }
-    } else {
+    if (settings == nullptr) {
         settings = new plist::Dictionary;
+    }
+
+    for (pbxsetting::Setting const &setting : BC.buildSettings().settings()) {
+        std::string key = setting.name().c_str();
+        std::string value = setting.value().raw().c_str();
+        settings->set(key, plist::String::New(value));
     }
 
     if (auto baseConfigurationReference = BC.baseConfigurationReference()) {

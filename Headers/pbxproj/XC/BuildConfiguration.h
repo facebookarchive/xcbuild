@@ -16,7 +16,7 @@ public:
 private:
     std::string                     _name;
     PBX::FileReference::shared_ptr  _baseConfigurationReference;
-    plist::Object                  *_buildSettings;
+    pbxsetting::Level               _buildSettings;
 
 public:
     BuildConfiguration();
@@ -29,7 +29,7 @@ public:
     { return _baseConfigurationReference; }
 
 public:
-    inline plist::Object const *buildSettings() const
+    inline pbxsetting::Level const &buildSettings() const
     { return _buildSettings; }
 
 public:

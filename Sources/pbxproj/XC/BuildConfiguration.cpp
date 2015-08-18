@@ -3,18 +3,17 @@
 #include <pbxproj/XC/BuildConfiguration.h>
 
 using pbxproj::XC::BuildConfiguration;
+using pbxsetting::Level;
+using pbxsetting::Setting;
 
 BuildConfiguration::BuildConfiguration() :
     Object        (Isa()),
-    _buildSettings(nullptr)
+    _buildSettings(Level({ }))
 {
 }
 
 BuildConfiguration::~BuildConfiguration()
 {
-    if (_buildSettings != nullptr) {
-        _buildSettings->release();
-    }
 }
 
 bool BuildConfiguration::
@@ -34,7 +33,17 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (BS != nullptr) {
-        _buildSettings = BS->copy();
+        std::vector<Setting> settings;
+        for (size_t n = 0; n < BS->count(); n++) {
+            auto BSK = BS->key(n);
+            auto BSV = BS->value <plist::String> (BSK);
+
+            if (BSV != nullptr) {
+                Setting setting = Setting::Parse(BSK, BSV->value());
+                settings.push_back(setting);
+            }
+        }
+        _buildSettings = Level(settings);
     }
 
     if (N != nullptr) {

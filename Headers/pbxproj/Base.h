@@ -4,6 +4,7 @@
 #define __pbxproj_Base_h
 
 #include <plist/plist.h>
+#include <pbxsetting/pbxsetting.h>
 
 namespace pbxproj {
 
