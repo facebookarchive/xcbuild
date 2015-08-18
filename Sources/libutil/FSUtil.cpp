@@ -52,6 +52,16 @@ TestForDirectory(std::string const &path)
         return S_ISDIR(st.st_mode);
 }
 
+bool FSUtil::
+TestForSymlink(std::string const &path)
+{
+    struct stat st;
+    if (::lstat(path.c_str(), &st) < 0)
+        return false;
+    else
+        return S_ISLNK(st.st_mode);
+}
+
 std::string FSUtil::
 GetDirectoryName(std::string const &path)
 {
@@ -195,6 +205,31 @@ EnumerateDirectory(std::string const &path, std::string const &pattern,
     }
 
     ::bsd_globfree(&glob);
+
+    return true;
+}
+
+bool FSUtil::
+EnumerateRecursive(std::string const &path, std::string const &pattern,
+    std::function <bool(std::string const &)> const &cb, bool insensitive)
+{
+    EnumerateDirectory(path, pattern,
+        [&](std::string const &filename) -> bool
+        {
+            std::string full = path + "/" + filename;
+            cb(full);
+            return true;
+        }, insensitive);
+
+    EnumerateDirectory(path, std::string(),
+        [&](std::string const &filename) -> bool
+        {
+            std::string full = path + "/" + filename;
+            if (TestForDirectory(full) && !TestForSymlink(full)) {
+                EnumerateRecursive(full, pattern, cb, insensitive);
+            }
+            return true;
+        }, false);
 
     return true;
 }

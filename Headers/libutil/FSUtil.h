@@ -14,6 +14,7 @@ public:
     static bool TestForWrite(std::string const &path);
     static bool TestForExecute(std::string const &path);
     static bool TestForDirectory(std::string const &path);
+    static bool TestForSymlink(std::string const &path);
 
 public:
     static std::string GetDirectoryName(std::string const &path);
@@ -45,6 +46,17 @@ public:
             std::function <bool(std::string const &)> const &cb,
             bool insensitive = false)
     { return EnumerateDirectory(path, std::string(), cb, insensitive); }
+
+public:
+    static bool EnumerateRecursive(std::string const &path,
+            std::string const &pattern,
+            std::function <bool(std::string const &)> const &cb,
+            bool insensitive = false);
+
+    inline static bool EnumerateRecursive(std::string const &path,
+            std::function <bool(std::string const &)> const &cb,
+            bool insensitive = false)
+    { return EnumerateRecursive(path, std::string(), cb, insensitive); }
 
 public:
     static libutil::string_vector GetDirectoryContents(std::string const &path,

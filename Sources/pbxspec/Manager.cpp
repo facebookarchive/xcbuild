@@ -199,14 +199,12 @@ Open(std::string const &path)
 {
     Manager::shared_ptr manager = std::make_shared <Manager> ();
 
-    FSUtil::EnumerateDirectory(path, "*.xcspec",
+    FSUtil::EnumerateRecursive(path, "*.xcspec",
             [&](std::string const &filename) -> bool
             {
-                std::string fullPath = path + "/" + filename;
-
-                if (!Specification::Open(manager, fullPath)) {
+                if (!Specification::Open(manager, filename)) {
                     fprintf(stderr, "warning: failed to import "
-                        "specification '%s'\n", fullPath.c_str());
+                        "specification '%s'\n", filename.c_str());
                 }
                 return true;
             });
