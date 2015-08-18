@@ -208,6 +208,8 @@ add_executable(xcspec Tools/xcspec.cpp)
 target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)
 target_link_libraries(xctool pbxbase pbxproj)
+add_executable(settings Tools/settings.cpp)
+target_link_libraries(settings pbxbase pbxproj xcsdk pbxsetting)
 
 
 enable_testing()

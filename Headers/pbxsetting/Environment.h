@@ -29,6 +29,10 @@ public:
     resolve(std::string const &setting, Condition const &condition) const;
     std::string
     resolve(std::string const &setting) const;
+
+public:
+    std::unordered_map<std::string, std::string>
+    computeValues(Condition const &condition) const;
 };
 
 }

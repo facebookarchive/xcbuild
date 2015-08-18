@@ -107,3 +107,19 @@ resolve(std::string const &setting) const
     return resolve(setting, Condition::Empty());
 }
 
+std::unordered_map<std::string, std::string> Environment::
+computeValues(Condition const &condition) const
+{
+    std::unordered_map<std::string, std::string> values;
+
+    for (Level const &level : _assignment) {
+        for (Setting const &setting : level.settings()) {
+            if (values.find(setting.name()) == values.end()) {
+                values[setting.name()] = resolve(setting.name(), condition);
+            }
+        }
+    }
+
+    return values;
+}
+
