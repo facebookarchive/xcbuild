@@ -9,7 +9,7 @@ namespace pbxspec { class Manager; }
 
 namespace pbxspec { namespace PBX {
 
-class Specification : public pbxproj::PBX::Object {
+class Specification : public Object {
 public:
     typedef std::shared_ptr <Specification> shared_ptr;
     typedef std::vector <shared_ptr> vector;

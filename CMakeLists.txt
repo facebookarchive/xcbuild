@@ -155,6 +155,7 @@ set(libpbxspec_SOURCES
     Sources/pbxspec/PBX/LinkerSpecificationLibtool.cpp
     Sources/pbxspec/PBX/LinkerSpecificationResMerger.cpp
     Sources/pbxspec/PBX/MachOFileType.cpp
+    Sources/pbxspec/PBX/Object.cpp
     Sources/pbxspec/PBX/PackageType.cpp
     Sources/pbxspec/PBX/PlistFileType.cpp
     Sources/pbxspec/PBX/PlugInKitPluginWrapperFileType.cpp
@@ -189,7 +190,7 @@ add_library(pbxproj SHARED ${libpbxproj_SOURCES})
 target_link_libraries(pbxproj pbxsetting pbxbase)
 
 add_library(pbxspec SHARED ${libpbxspec_SOURCES})
-target_link_libraries(pbxspec pbxproj)
+target_link_libraries(pbxspec pbxsetting pbxbase)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
 target_link_libraries(pbxbuild pbxproj pbxspec)
