@@ -70,11 +70,16 @@ main(int argc, char **argv)
     levels.push_back(platform->overrideProperties());
     levels.push_back(specDefaultSettings);
     levels.push_back(sdk->customProperties());
+    levels.push_back(sdk->settings());
+    levels.push_back(platform->settings());
     levels.push_back(sdk->defaultProperties());
     levels.push_back(platform->defaultProperties());
     levels.push_back(xcsdk_manager->computedSettings());
     // TODO(grp): system defaults?
-    levels.push_back(pbxsetting::EnvironmentSettings::Default());
+    levels.push_back(pbxsetting::DefaultSettings::Environment());
+    levels.push_back(pbxsetting::DefaultSettings::Internal());
+    levels.push_back(pbxsetting::DefaultSettings::System());
+    levels.push_back(pbxsetting::DefaultSettings::Build());
 
     pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);
 
@@ -91,7 +96,7 @@ main(int argc, char **argv)
     for (auto const &value : orderedValues) {
         auto defaultValue = specDefaultSettings.get(value.first, condition);
         if (!defaultValue.first || value.second != defaultValue.second.raw()) {
-            printf("%s = %s\n", value.first.c_str(), value.second.c_str());
+            printf("    %s = %s\n", value.first.c_str(), value.second.c_str());
         }
     }
 

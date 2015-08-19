@@ -22,14 +22,13 @@ computedSettings(void) const
         Setting::Parse("DEVELOPER_DIR", _path),
         Setting::Parse("DEVELOPER_USR_DIR", "$(DEVELOPER_DIR)/usr"),
         Setting::Parse("DEVELOPER_BIN_DIR", "$(DEVELOPER_DIR)/usr/bin"),
-        Setting::Parse("DEVELOPER_APPLICATION_DIR", "$(DEVELOPER_DIR)/Applications"),
+        Setting::Parse("DEVELOPER_APPLICATIONS_DIR", "$(DEVELOPER_DIR)/Applications"),
         Setting::Parse("DEVELOPER_FRAMEWORKS_DIR", "$(DEVELOPER_DIR)/Library/Frameworks"),
         Setting::Parse("DEVELOPER_FRAMEWORKS_DIR_QUOTED", "$(DEVELOPER_DIR)/Library/Frameworks"),
         Setting::Parse("DEVELOPER_LIBRARY_DIR", "$(DEVELOPER_DIR)/Library"),
         Setting::Parse("DEVELOPER_TOOLS_DIR", "$(DEVELOPER_DIR)/Tools"),
         Setting::Parse("DEVELOPER_SDK_DIR", "$(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs"), // TODO(grp): Verify.
         Setting::Parse("LEGACY_DEVELOPER_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer"), // TODO(grp): Verify.
-        Setting::Parse("DT_TOOLCHAIN_DIR", _path + "/" + "Toolchains"),
     };
 
     std::string platforms;

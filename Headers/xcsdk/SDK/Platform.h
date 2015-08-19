@@ -77,6 +77,9 @@ public:
     { return _icon; }
 
 public:
+    pbxsetting::Level settings(void) const;
+
+public:
     static Platform::shared_ptr Open(std::shared_ptr<Manager> manager, std::string const &path);
 
 private:

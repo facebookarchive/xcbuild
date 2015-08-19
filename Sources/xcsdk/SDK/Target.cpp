@@ -18,6 +18,18 @@ Target::~Target()
 {
 }
 
+Level Target::
+settings(void) const
+{
+    std::vector<Setting> settings = {
+        Setting::Parse("SDK_NAME", _canonicalName),
+        Setting::Parse("SDK_DIR", _path),
+        // TODO(grp): Setting::Parse("SDK_PRODUCT_BUILD_VERSION", ),
+    };
+
+    return Level(settings);
+}
+
 bool Target::
 parse(plist::Dictionary const *dict)
 {

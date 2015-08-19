@@ -5,8 +5,8 @@
 
 #include <pbxsetting/Base.h>
 #include <pbxsetting/Condition.h>
+#include <pbxsetting/DefaultSettings.h>
 #include <pbxsetting/Environment.h>
-#include <pbxsetting/EnvironmentSettings.h>
 #include <pbxsetting/Level.h>
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/XC/Config.h>

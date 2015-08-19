@@ -96,6 +96,9 @@ public:
     { return _toolchains; }
 
 public:
+    pbxsetting::Level settings(void) const;
+
+public:
     static Target::shared_ptr Open(std::shared_ptr<Manager> manager, std::shared_ptr<Platform>, std::string const &path);
 
 private:

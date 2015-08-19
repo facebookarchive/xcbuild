@@ -22,6 +22,23 @@ Platform::~Platform()
     }
 }
 
+Level Platform::
+settings(void) const
+{
+    std::vector<Setting> settings = {
+        Setting::Parse("PLATFORM_NAME", _name),
+        Setting::Parse("PLATFORM_DIR", _path),
+        Setting::Parse("PLATFORM_DEVELOPER_USR_DIR", "$(PLATFORM_DIR)/Developer/usr"),
+        Setting::Parse("PLATFORM_DEVELOPER_BIN_DIR", "$(PLATFORM_DIR)/Developer/usr/bin"),
+        Setting::Parse("PLATFORM_DEVELOPER_APPLICATIONS_DIR", "$(PLATFORM_DIR)/Developer/Applications"),
+        Setting::Parse("PLATFORM_DEVELOPER_LIBRARY_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer/Library"), // TODO(grp): Verify.
+        Setting::Parse("PLATFORM_DEVELOPER_SDK_DIR", "$(PLATFORM_DIR)/Developer/SDKs"),
+        Setting::Parse("PLATFORM_DEVELOPER_TOOLS_DIR", "$(PLATFORM_DIR)/Developer/Tools"),
+    };
+
+    return Level(settings);
+}
+
 bool Platform::
 parse(plist::Dictionary const *dict)
 {
