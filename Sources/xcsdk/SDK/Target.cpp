@@ -27,6 +27,15 @@ settings(void) const
         // TODO(grp): Setting::Parse("SDK_PRODUCT_BUILD_VERSION", ),
     };
 
+    std::string toolchains;
+    for (Toolchain::shared_ptr const &toolchain : _toolchains) {
+        if (&toolchain != &_toolchains[0]) {
+            toolchains += " ";
+        }
+        toolchains += toolchain->identifier();
+    }
+    settings.push_back(Setting::Parse("TOOLCHAINS", toolchains));
+
     return Level(settings);
 }
 
