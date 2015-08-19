@@ -58,6 +58,9 @@ Environment(void)
         settings.push_back(Setting::Parse("GROUP", group->gr_name));
     }
 
+    settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
+    settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));
+
     return Level(settings);
 }
 
@@ -114,7 +117,7 @@ Level DefaultSettings::
 Build(void)
 {
     std::vector<Setting> settings = {
-        Setting::Parse("XCODE_PRODUCT_BUILD_VERSION", "OBUILD"),
+        Setting::Parse("XCODE_PRODUCT_BUILD_VERSION", "UNKNOWN"),
         Setting::Parse("XCODE_VERSION_ACTUAL", "0640"),
         Setting::Parse("XCODE_VERSION_MAJOR", "0600"),
         Setting::Parse("XCODE_VERSION_MINOR", "0640"),

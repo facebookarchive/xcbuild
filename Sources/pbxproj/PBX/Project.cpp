@@ -31,6 +31,7 @@ settings(void) const
         Setting::Parse("PROJECT", _name),
         Setting::Parse("PROJECT_NAME", _name),
         Setting::Parse("PROJECT_DIR", _basePath),
+        Setting::Parse("PROJECT_FILE_PATH", _projectFile),
         Setting::Parse("PROJECT_DERIVED_FILE_DIR", "$(PROJECT_TEMP_DIR)/DerivedSources"),
         Setting::Parse("PROJECT_TEMP_DIR", "$(PROJECT_TEMP_ROOT)/$(PROJECT_NAME).build"),
         Setting::Parse("PROJECT_TEMP_ROOT", "$(SRCROOT)/$(SYMROOT)"),
