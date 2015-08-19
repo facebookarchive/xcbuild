@@ -189,6 +189,24 @@ defaultSettings(void) const
         }
     });
 
+    auto const &archit = _specifications.find(Architecture::Type());
+    if (archit != _specifications.end()) {
+        for (std::shared_ptr<PBX::Specification> const &spec : archit->second) {
+            std::shared_ptr<PBX::Architecture> architecture = reinterpret_cast <Architecture::shared_ptr const &> (spec);
+            if (!architecture->architectureSetting().empty()) {
+                std::string value;
+                for (std::string const &arch : architecture->realArchitectures()) {
+                    if (&arch != &architecture->realArchitectures()[0]) {
+                        value += " ";
+                    }
+                    value += arch;
+                }
+
+                settings.push_back(pbxsetting::Setting::Parse(architecture->architectureSetting(), value));
+            }
+        }
+    }
+
     return pbxsetting::Level(settings);
 }
 
