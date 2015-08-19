@@ -63,11 +63,25 @@ main(int argc, char **argv)
     auto sdk = platform->targets().front();
     printf("SDK: %s\n", sdk->displayName().c_str());
 
+    // TODO(grp): Handle legacy targets.
+    assert(target->isa() == pbxproj::PBX::NativeTarget::Isa());
+    pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::dynamic_pointer_cast<pbxproj::PBX::NativeTarget>(target);
+    pbxspec::PBX::ProductType::shared_ptr productType = spec_manager->GetProductType(nativeTarget->productType());
+    pbxsetting::Level productTypeSettings = productType->defaultBuildProperties();
+
+    // TODO(grp): Should this always use the first package type?
+    pbxspec::PBX::PackageType::shared_ptr packageType = spec_manager->GetPackageType(productType->packageTypes().at(0));
+    pbxsetting::Level packageTypeSettings = packageType->defaultBuildSettings();
+
     pbxsetting::Level specDefaultSettings = spec_manager->defaultSettings();
 
     // TODO(grp): targetConfiguration->baseConfigurationReference()
     levels.push_back(targetConfiguration->buildSettings());
     levels.push_back(target->settings());
+
+    levels.push_back(packageTypeSettings);
+    levels.push_back(productTypeSettings);
+
     // TODO(grp): projectConfiguration->baseConfigurationReference()
     levels.push_back(projectConfiguration->buildSettings());
     levels.push_back(project->settings());
