@@ -61,6 +61,14 @@ Environment(void)
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));
 
+    // FIXME(grp): This is definitely not portable.
+    size_t len = confstr(_CS_DARWIN_USER_CACHE_DIR, NULL, 0);
+    char *cache = (char *)malloc(len);
+    confstr(_CS_DARWIN_USER_CACHE_DIR, cache, len);
+    std::string cache_root = std::string(cache) + "/com.apple.DeveloperTools/6.4-$(XCODE_PRODUCT_BUILD_VERSION)/Xcode";
+    settings.push_back(Setting::Parse("CACHE_ROOT", cache_root));
+    free(cache);
+
     return Level(settings);
 }
 
