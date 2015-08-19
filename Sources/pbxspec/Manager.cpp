@@ -211,9 +211,11 @@ AddSpecification(PBX::Specification::shared_ptr const &spec)
         }
     }
 
+#if 0
     fprintf(stderr, "adding %s spec '%s'%s\n",
             spec->type(), spec->identifier().c_str(),
             spec->isDefault() ? "" : " [override]");
+#endif
     _specifications[spec->type()].push_back(spec);
 }
 

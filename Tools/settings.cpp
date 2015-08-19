@@ -5,39 +5,6 @@
 #include <pbxproj/pbxproj.h>
 #include <pbxspec/pbxspec.h>
 
-extern char **environ;
-
-static std::map<std::string, std::string>
-environmentVariables(void)
-{
-    std::map<std::string, std::string> environment;
-
-    for (char **current = environ; *current; current++) {
-        std::string variable = *current;
-        std::string::size_type offset = variable.find('=');
-
-        std::string name = variable.substr(0, offset);
-        std::string value = variable.substr(offset + 1);
-        environment.insert(std::make_pair(name, value));
-    }
-
-    return environment;
-}
-
-static pbxsetting::Level
-environmentLevel(void)
-{
-    std::vector<pbxsetting::Setting> environmentSettings;
-    for (std::pair<std::string, std::string> const &variable : environmentVariables()) {
-        // TODO(grp): Is this right? Should this be filtered at another level?
-        if (variable.first.front() != '_') {
-            pbxsetting::Setting setting = pbxsetting::Setting::Parse(variable.first, variable.second);
-            environmentSettings.push_back(setting);
-        }
-    }
-    return pbxsetting::Level(environmentSettings);
-}
-
 int
 main(int argc, char **argv)
 {
@@ -107,7 +74,7 @@ main(int argc, char **argv)
     levels.push_back(platform->defaultProperties());
     levels.push_back(xcsdk_manager->computedSettings());
     // TODO(grp): system defaults?
-    levels.push_back(environmentLevel());
+    levels.push_back(pbxsetting::EnvironmentSettings::Default());
 
     pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);
 

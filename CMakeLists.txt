@@ -63,6 +63,7 @@ set(libpbxsetting_SOURCES
     Sources/pbxsetting/ConfigFile.cpp
     Sources/pbxsetting/Level.cpp
     Sources/pbxsetting/Environment.cpp
+    Sources/pbxsetting/EnvironmentSettings.cpp
     Sources/pbxsetting/Setting.cpp
     Sources/pbxsetting/Value.cpp
     Sources/pbxsetting/XC/Config.cpp
