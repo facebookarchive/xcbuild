@@ -64,8 +64,10 @@ main(int argc, char **argv)
 
     // TODO(grp): targetConfiguration->baseConfigurationReference()
     levels.push_back(targetConfiguration->buildSettings());
+    levels.push_back(target->settings());
     // TODO(grp): projectConfiguration->baseConfigurationReference()
     levels.push_back(projectConfiguration->buildSettings());
+    levels.push_back(project->settings());
 
     levels.push_back(platform->overrideProperties());
     levels.push_back(specDefaultSettings);

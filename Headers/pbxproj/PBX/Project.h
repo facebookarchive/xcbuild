@@ -145,6 +145,9 @@ public:
     }
 
 public:
+    pbxsetting::Level settings(void) const;
+
+public:
     bool parse(Context &context, plist::Dictionary const *dict);
 
 public:

@@ -66,6 +66,9 @@ public:
     { return _dependencies; }
 
 public:
+    pbxsetting::Level settings(void) const;
+
+public:
     bool parse(Context &context, plist::Dictionary const *dict);
 };
 

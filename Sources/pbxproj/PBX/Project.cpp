@@ -5,6 +5,8 @@
 #include <pbxproj/PBX/NativeTarget.h>
 
 using pbxproj::PBX::Project;
+using pbxsetting::Level;
+using pbxsetting::Setting;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
@@ -20,6 +22,21 @@ Project::Project(XC::Workspace *workspace) :
     _workspace             (workspace),
     _hasScannedForEncodings(false)
 {
+}
+
+Level Project::
+settings(void) const
+{
+    std::vector<Setting> settings = {
+        Setting::Parse("PROJECT", _name),
+        Setting::Parse("PROJECT_NAME", _name),
+        Setting::Parse("PROJECT_DIR", _basePath),
+        Setting::Parse("PROJECT_DERIVED_FILE_DIR", "$(PROJECT_TEMP_DIR)/DerivedSources"),
+        Setting::Parse("PROJECT_TEMP_DIR", "$(PROJECT_TEMP_ROOT)/$(PROJECT_NAME).build"),
+        Setting::Parse("PROJECT_TEMP_ROOT", "$(SRCROOT)/$(SYMROOT)"),
+    };
+
+    return Level(settings);
 }
 
 bool
