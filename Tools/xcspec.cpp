@@ -5,6 +5,7 @@
 #include <cstdio>
 
 using pbxspec::Manager;
+using pbxspec::PBX::Specification;
 using libutil::FSUtil;
 
 int
@@ -16,7 +17,8 @@ main(int argc, char **argv)
     }
 
     std::string path = argv[1];
-    Manager::shared_ptr manager = Manager::Open(path);
+    Manager::shared_ptr manager = Manager::Create();
+    Specification::OpenRecursive(manager, path);
 
     return 0;
 }

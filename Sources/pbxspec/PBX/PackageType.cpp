@@ -3,18 +3,17 @@
 #include <pbxspec/PBX/PackageType.h>
 
 using pbxspec::PBX::PackageType;
+using pbxsetting::Level;
+using pbxsetting::Setting;
 
 PackageType::PackageType(bool isDefault) :
     Specification        (ISA::PBXPackageType, isDefault),
-    _defaultBuildSettings(nullptr)
+    _defaultBuildSettings(Level({ }))
 {
 }
 
 PackageType::~PackageType()
 {
-    if (_defaultBuildSettings != nullptr) {
-        _defaultBuildSettings->release();
-    }
 }
 
 PackageType::shared_ptr PackageType::
@@ -70,11 +69,17 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
     }
 
     if (DBS != nullptr) {
-        if (_defaultBuildSettings != nullptr) {
-            _defaultBuildSettings->release();
-        }
+        std::vector<Setting> settings;
+        for (size_t n = 0; n < DBS->count(); n++) {
+            auto DBSK = DBS->key(n);
+            auto DBSV = DBS->value <plist::String> (DBSK);
 
-        _defaultBuildSettings = plist::Copy(DBS);
+            if (DBSV != nullptr) {
+                Setting setting = Setting::Parse(DBSK, DBSV->value());
+                settings.push_back(setting);
+            }
+        }
+        _defaultBuildSettings = Level(settings);
     }
 
     return true;
@@ -98,7 +103,7 @@ inherit(PackageType::shared_ptr const &b)
     auto base = this->base();
 
     _productReference     = base->productReference();
-    _defaultBuildSettings = plist::Copy(base->defaultBuildSettings());
+    _defaultBuildSettings = base->defaultBuildSettings();
 
     return true;
 }

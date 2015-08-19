@@ -66,7 +66,7 @@ protected:
 
 public:
     static Manager::shared_ptr
-    Open(std::string const &path);
+    Create(void);
 };
 
 }

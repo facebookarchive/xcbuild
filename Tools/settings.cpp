@@ -25,11 +25,12 @@ main(int argc, char **argv)
         return -1;
     }
 
-    auto spec_manager = pbxspec::Manager::Open(argv[3]);
+    auto spec_manager = pbxspec::Manager::Create();
     if (!spec_manager) {
-        fprintf(stderr, "error opening specifications at %s (%s)\n", argv[3], strerror(errno));
+        fprintf(stderr, "error opening specifications (%s)\n", strerror(errno));
         return -1;
     }
+    pbxspec::PBX::Specification::OpenRecursive(spec_manager, argv[3]);
 
     std::vector<pbxsetting::Level> levels;
 
@@ -56,6 +57,8 @@ main(int argc, char **argv)
         return platform->name() == "iphoneos";
     });
     printf("Platform: %s\n", platform->name().c_str());
+
+    pbxspec::PBX::Specification::OpenRecursive(spec_manager, platform->path() + "/Developer/Library/Xcode/Specifications");
 
     auto sdk = platform->targets().front();
     printf("SDK: %s\n", sdk->displayName().c_str());

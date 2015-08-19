@@ -7,6 +7,8 @@
 #include <pbxspec/PBX/StaticLibraryProductType.h>
 
 using pbxspec::PBX::ProductType;
+using pbxsetting::Level;
+using pbxsetting::Setting;
 
 ProductType::ProductType(bool isDefault) :
     ProductType(isDefault, ISA::PBXProductType)
@@ -15,7 +17,7 @@ ProductType::ProductType(bool isDefault) :
 
 ProductType::ProductType(bool isDefault, std::string const &isa) :
     Specification              (isa, isDefault),
-    _defaultBuildProperties      (nullptr),
+    _defaultBuildProperties    (Level({ })),
     _validation                (nullptr),
     _hasInfoPlist              (false),
     _hasInfoPlistStrings       (false),
@@ -29,10 +31,6 @@ ProductType::~ProductType()
 {
     if (_validation != nullptr) {
         _validation->release();
-    }
-
-    if (_defaultBuildProperties != nullptr) {
-        _defaultBuildProperties->release();
     }
 }
 
@@ -110,11 +108,17 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
     }
 
     if (DBP != nullptr) {
-        if (_defaultBuildProperties != nullptr) {
-            _defaultBuildProperties->release();
-        }
+        std::vector<Setting> settings;
+        for (size_t n = 0; n < DBP->count(); n++) {
+            auto DBPK = DBP->key(n);
+            auto DBPV = DBP->value <plist::String> (DBPK);
 
-        _defaultBuildProperties = plist::Copy(DBP);
+            if (DBPV != nullptr) {
+                Setting setting = Setting::Parse(DBPK, DBPV->value());
+                settings.push_back(setting);
+            }
+        }
+        _defaultBuildProperties = Level(settings);
     }
 
     if (V != nullptr) {
@@ -178,7 +182,7 @@ inherit(ProductType::shared_ptr const &b)
     auto base = this->base();
 
     _defaultTargetName          = base->defaultTargetName();
-    _defaultBuildProperties     = plist::Copy(base->defaultBuildProperties());
+    _defaultBuildProperties     = base->defaultBuildProperties();
     _validation                 = plist::Copy(base->validation());
     _iconNamePrefix             = base->iconNamePrefix();
     _packageTypes               = base->packageTypes();

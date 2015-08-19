@@ -3,6 +3,7 @@
 #ifndef __pbxspec_PBX_ProductType_h
 #define __pbxspec_PBX_ProductType_h
 
+#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
 namespace pbxspec { namespace PBX {
@@ -14,7 +15,7 @@ public:
 
 protected:
     std::string             _defaultTargetName;
-    plist::Dictionary      *_defaultBuildProperties;
+    pbxsetting::Level       _defaultBuildProperties;
     plist::Dictionary      *_validation;
     libutil::string_vector  _packageTypes;
     std::string             _iconNamePrefix;
@@ -44,7 +45,7 @@ public:
     { return _defaultTargetName; }
 
 public:
-    inline plist::Dictionary const *defaultBuildProperties() const
+    inline pbxsetting::Level const &defaultBuildProperties() const
     { return _defaultBuildProperties; }
 
 public:

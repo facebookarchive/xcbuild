@@ -3,6 +3,7 @@
 #ifndef __pbxspec_PBX_PackageType_h
 #define __pbxspec_PBX_PackageType_h
 
+#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
 namespace pbxspec { namespace PBX {
@@ -44,7 +45,7 @@ public:
     };
 
 protected:
-    plist::Dictionary            *_defaultBuildSettings;
+    pbxsetting::Level             _defaultBuildSettings;
     ProductReference::shared_ptr  _productReference;
 
 protected:
@@ -66,7 +67,7 @@ public:
     { return _productReference; }
 
 public:
-    inline plist::Dictionary const *defaultBuildSettings() const
+    inline pbxsetting::Level const &defaultBuildSettings() const
     { return _defaultBuildSettings; }
 
 protected:

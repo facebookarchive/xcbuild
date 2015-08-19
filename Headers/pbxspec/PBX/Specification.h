@@ -66,6 +66,7 @@ public:
 public:
     friend class pbxspec::Manager;
     static bool Open(std::shared_ptr<Manager> manager, std::string const &filename);
+    static void OpenRecursive(std::shared_ptr<Manager> manager, std::string const &path);
 
 private:
     static Specification::shared_ptr Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict);

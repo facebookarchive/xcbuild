@@ -222,19 +222,7 @@ AddSpecification(PBX::Specification::shared_ptr const &spec)
 }
 
 Manager::shared_ptr Manager::
-Open(std::string const &path)
+Create(void)
 {
-    Manager::shared_ptr manager = std::make_shared <Manager> ();
-
-    FSUtil::EnumerateRecursive(path, "*.xcspec",
-            [&](std::string const &filename) -> bool
-            {
-                if (!Specification::Open(manager, filename)) {
-                    fprintf(stderr, "warning: failed to import "
-                        "specification '%s'\n", filename.c_str());
-                }
-                return true;
-            });
-
-    return manager;
+    return std::make_shared <Manager> ();
 }

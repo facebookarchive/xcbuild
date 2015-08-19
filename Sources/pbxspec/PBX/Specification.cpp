@@ -203,6 +203,20 @@ Open(std::shared_ptr<Manager> manager, std::string const &filename)
     return false;
 }
 
+void Specification::
+OpenRecursive(std::shared_ptr<Manager> manager, std::string const &path)
+{
+    FSUtil::EnumerateRecursive(path, "*.xcspec",
+            [&](std::string const &filename) -> bool
+            {
+                if (!Open(manager, filename)) {
+                    fprintf(stderr, "warning: failed to import "
+                        "specification '%s'\n", filename.c_str());
+                }
+                return true;
+            });
+}
+
 bool Specification::
 isa(std::string const &isa) const
 {
@@ -214,3 +228,4 @@ isa(std::string const &isa) const
 
     return false;
 }
+
