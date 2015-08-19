@@ -176,7 +176,9 @@ defaultSettings(void) const
 
     std::vector<pbxsetting::Setting> settings;
     std::transform(options.begin(), options.end(), std::back_inserter(settings), [](PBX::PropertyOption::shared_ptr const &option) -> pbxsetting::Setting {
-        if (plist::String const *stringValue = plist::CastTo <plist::String> (option->defaultValue())) {
+        if (option->defaultValue() == nullptr) {
+            return pbxsetting::Setting::Parse(option->name(), "");
+        } else if (plist::String const *stringValue = plist::CastTo <plist::String> (option->defaultValue())) {
             return pbxsetting::Setting::Parse(option->name(), stringValue->value());
         } else if (plist::Boolean const *booleanValue = plist::CastTo <plist::Boolean> (option->defaultValue())) {
             return pbxsetting::Setting::Parse(option->name(), booleanValue->value() ? "YES" : "NO");
