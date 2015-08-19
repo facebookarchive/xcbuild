@@ -354,3 +354,39 @@ TEST(pbxsetting, EnvironmentInherited)
     EXPECT_EQ(inherited.resolve("OTHER_LDFLAGS"), "-ObjC -framework Security");
 }
 
+TEST(pbxsetting, EnvironmentOperations)
+{
+    std::vector<Level> levels = {
+        Level({
+            Setting::Parse("IDENTIFIER", "$(COMPLEX:identifier)"),
+            Setting::Parse("C99IDENTIFIER", "$(COMPLEX:c99extidentifier)"),
+            Setting::Parse("RFC1034IDENTIFIER", "$(COMPLEX:rfc1034identifier)"),
+            Setting::Parse("QUOTE", "$(COMPLEX:quote)"),
+            Setting::Parse("LOWER", "$(BASIC:lower)"),
+            Setting::Parse("UPPER", "$(BASIC:upper)"),
+            Setting::Parse("BASE", "$(PATH:base)"),
+            Setting::Parse("DIR", "$(PATH:dir)"),
+            Setting::Parse("FILE", "$(PATH:file)"),
+            Setting::Parse("SUFFIX", "$(PATH:suffix)"),
+            Setting::Parse("MULTIPLE", "$(COMPLEX:identifier:upper)"),
+        }),
+        Level({
+            Setting::Parse("BASIC", "Hello, world."),
+            Setting::Parse("COMPLEX", "-_'hello%."),
+            Setting::Parse("PATH", "/path/to/../file.ext"),
+        }),
+    };
+    Environment environment = Environment(levels, levels);
+    EXPECT_EQ(environment.resolve("IDENTIFIER"), "___hello__");
+    EXPECT_EQ(environment.resolve("C99IDENTIFIER"), "___hello__");
+    EXPECT_EQ(environment.resolve("RFC1034IDENTIFIER"), "---hello--");
+    EXPECT_EQ(environment.resolve("QUOTE"), "'-_'\"'\"'hello%.'");
+    EXPECT_EQ(environment.resolve("LOWER"), "hello, world.");
+    EXPECT_EQ(environment.resolve("UPPER"), "HELLO, WORLD.");
+    EXPECT_EQ(environment.resolve("BASE"), "file");
+    EXPECT_EQ(environment.resolve("DIR"), "/path/to/..");
+    EXPECT_EQ(environment.resolve("FILE"), "file.ext");
+    EXPECT_EQ(environment.resolve("SUFFIX"), ".ext");
+    EXPECT_EQ(environment.resolve("MULTIPLE"), "___HELLO__");
+}
+
