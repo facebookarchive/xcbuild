@@ -20,6 +20,8 @@ public:
     static Level
     Internal(void);
     static Level
+    Local(void);
+    static Level
     System(void);
     static Level
     Build(void);

@@ -79,6 +79,19 @@ Internal(void)
 }
 
 Level DefaultSettings::
+Local(void)
+{
+    std::vector<Setting> settings = {
+        Setting::Parse("LOCAL_ADMIN_APPS_DIR", "/Applications/Utilities"),
+        Setting::Parse("LOCAL_APPS_DIR", "/Applications"),
+        Setting::Parse("LOCAL_DEVELOPER_DIR", "/Library/Developer"),
+        Setting::Parse("LOCAL_LIBRARY_DIR", "/Library"),
+    };
+
+    return Level(settings);
+}
+
+Level DefaultSettings::
 System(void)
 {
     std::vector<Setting> settings = {

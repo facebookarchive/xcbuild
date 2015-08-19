@@ -94,9 +94,12 @@ main(int argc, char **argv)
     levels.push_back(sdk->defaultProperties());
     levels.push_back(platform->defaultProperties());
     levels.push_back(xcsdk_manager->computedSettings());
+
     // TODO(grp): system defaults?
+
     levels.push_back(pbxsetting::DefaultSettings::Environment());
     levels.push_back(pbxsetting::DefaultSettings::Internal());
+    levels.push_back(pbxsetting::DefaultSettings::Local());
     levels.push_back(pbxsetting::DefaultSettings::System());
     levels.push_back(pbxsetting::DefaultSettings::Build());
 
