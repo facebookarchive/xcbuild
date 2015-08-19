@@ -19,8 +19,6 @@ settings(void) const
     std::vector<Setting> settings = {
         Setting::Parse("TARGETNAME", _name),
         Setting::Parse("TARGET_NAME", _name),
-        Setting::Parse("TARGET_TEMP_DIR", "$(CONFIGURATION_TEMP_DIR)/$(TARGET_NAME).build"),
-        Setting::Parse("TARGET_BUILD_DIR", "$(SRCROOT)/$(SYMROOT)/$(CONFIGURATION_BUILD_DIR)"),
         Setting::Parse("PRODUCT_NAME", _productName),
     };
 

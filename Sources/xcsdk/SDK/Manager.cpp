@@ -29,6 +29,7 @@ computedSettings(void) const
         Setting::Parse("DEVELOPER_TOOLS_DIR", "$(DEVELOPER_DIR)/Tools"),
         Setting::Parse("DEVELOPER_SDK_DIR", "$(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs"), // TODO(grp): Verify.
         Setting::Parse("LEGACY_DEVELOPER_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer"), // TODO(grp): Verify.
+        Setting::Parse("DERIVED_DATA_DIR", "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData"),
     };
 
     std::string platforms;
