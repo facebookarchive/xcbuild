@@ -32,6 +32,7 @@ settings(void) const
         Setting::Parse("PROJECT_NAME", _name),
         Setting::Parse("PROJECT_DIR", _basePath),
         Setting::Parse("PROJECT_FILE_PATH", _projectFile),
+        Setting::Parse("DEVELOPMENT_LANGUAGE", _developmentRegion),
     };
 
     return Level(settings);
