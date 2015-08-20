@@ -25,14 +25,11 @@ main(int argc, char **argv)
         return -1;
     }
 
-    auto spec_manager = pbxspec::Manager::Create();
+    auto spec_manager = pbxspec::Manager::Open(nullptr, argv[3]);
     if (!spec_manager) {
-        fprintf(stderr, "error opening specifications (%s)\n", strerror(errno));
+        fprintf(stderr, "error opening specifications at %s (%s)\n", argv[3], strerror(errno));
         return -1;
     }
-    pbxspec::PBX::Specification::OpenRecursive(spec_manager, argv[3]);
-
-    std::vector<pbxsetting::Level> levels;
 
     printf("Project: %s\n", project->name().c_str());
 
@@ -59,7 +56,7 @@ main(int argc, char **argv)
     printf("Platform: %s\n", platform->name().c_str());
 
     // NOTE(grp): Some platforms have specifications in other directories besides the primary Specifications folder.
-    pbxspec::PBX::Specification::OpenRecursive(spec_manager, platform->path() + "/Developer/Library/Xcode");
+    auto platformSpecifications = pbxspec::Manager::Open(spec_manager, platform->path() + "/Developer/Library/Xcode");
 
     auto sdk = platform->targets().front();
     printf("SDK: %s\n", sdk->displayName().c_str());
@@ -68,10 +65,19 @@ main(int argc, char **argv)
     assert(target->isa() == pbxproj::PBX::NativeTarget::Isa());
     pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::dynamic_pointer_cast<pbxproj::PBX::NativeTarget>(target);
 
-    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = spec_manager->GetBuildSystem("com.apple.build-system.native");
-    pbxspec::PBX::ProductType::shared_ptr productType = spec_manager->GetProductType(nativeTarget->productType());
+    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = spec_manager->buildSystem("com.apple.build-system.native");
+    pbxspec::PBX::ProductType::shared_ptr productType = platformSpecifications->productType(nativeTarget->productType());
     // TODO(grp): Should this always use the first package type?
-    pbxspec::PBX::PackageType::shared_ptr packageType = spec_manager->GetPackageType(productType->packageTypes().at(0));
+    pbxspec::PBX::PackageType::shared_ptr packageType = platformSpecifications->packageType(productType->packageTypes().at(0));
+
+    pbxspec::PBX::Architecture::vector architectures = platformSpecifications->architectures();
+    std::vector<pbxsetting::Setting> architectureSettings;
+    for (pbxspec::PBX::Architecture::shared_ptr architecture : architectures) {
+        if (!architecture->architectureSetting().empty()) {
+            architectureSettings.push_back(architecture->defaultSetting());
+        }
+    }
+    pbxsetting::Level architectureLevel = pbxsetting::Level(architectureSettings);
 
     pbxsetting::Level config = pbxsetting::Level({
         pbxsetting::Setting::Parse("ACTION", "build"),
@@ -85,6 +91,8 @@ main(int argc, char **argv)
         pbxsetting::Setting::Parse("PACKAGE_TYPE", packageType->identifier()),
         pbxsetting::Setting::Parse("PRODUCT_TYPE", productType->identifier()),
     });
+
+    std::vector<pbxsetting::Level> levels;
 
     levels.push_back(config);
 
@@ -127,7 +135,7 @@ main(int argc, char **argv)
     levels.push_back(pbxsetting::DefaultSettings::Architecture());
     levels.push_back(pbxsetting::DefaultSettings::Build());
 
-    levels.push_back(spec_manager->defaultSettings());
+    levels.push_back(architectureLevel);
     levels.push_back(buildSystem->defaultSettings());
 
     pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);

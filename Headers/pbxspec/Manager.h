@@ -21,8 +21,10 @@ namespace pbxspec {
 class Manager {
 public:
     typedef std::shared_ptr <Manager> shared_ptr;
+    typedef std::weak_ptr <Manager> weak_ptr;
 
 private:
+    Manager::weak_ptr _parent;
     std::map<char const *, PBX::Specification::vector> _specifications;
 
 public:
@@ -30,43 +32,91 @@ public:
     ~Manager();
 
 public:
+    Manager::shared_ptr parent()
+    { return _parent.lock(); }
+
+public:
     PBX::Specification::shared_ptr
-    GetSpecification(char const *type, std::string const &identifier, bool onlyDefault = false) const;
+    specification(char const *type, std::string const &identifier, bool onlyDefault = false, bool scoped = false) const;
+    PBX::Specification::vector
+    specifications(char const *type, bool scoped = false) const;
 
 public:
     PBX::Architecture::shared_ptr
-    GetArchitecture(std::string const &identifier) const;
-    PBX::BuildSystem::shared_ptr
-    GetBuildSystem(std::string const &identifier) const;
-    PBX::BuildPhase::shared_ptr
-    GetBuildPhase(std::string const &identifier) const;
-    PBX::Compiler::shared_ptr
-    GetCompiler(std::string const &identifier) const;
-    PBX::FileType::shared_ptr
-    GetFileType(std::string const &identifier) const;
-    PBX::Linker::shared_ptr
-    GetLinker(std::string const &identifier) const;
-    PBX::PackageType::shared_ptr
-    GetPackageType(std::string const &identifier) const;
-    PBX::ProductType::shared_ptr
-    GetProductType(std::string const &identifier) const;
-    PBX::PropertyConditionFlavor::shared_ptr
-    GetPropertyConditionFlavor(std::string const &identifier) const;
-    PBX::Tool::shared_ptr
-    GetTool(std::string const &identifier) const;
+    architecture(std::string const &identifier, bool scoped = false) const;
+    PBX::Architecture::vector
+    architectures(bool scoped = false) const;
 
 public:
-    pbxsetting::Level
-    defaultSettings(void) const;
+    PBX::BuildSystem::shared_ptr
+    buildSystem(std::string const &identifier, bool scoped = false) const;
+    PBX::BuildSystem::vector
+    buildSystems(bool scoped = false) const;
+
+public:
+    PBX::BuildPhase::shared_ptr
+    buildPhase(std::string const &identifier, bool scoped = false) const;
+    PBX::BuildPhase::vector
+    buildPhases(bool scoped = false) const;
+
+public:
+    PBX::Compiler::shared_ptr
+    compiler(std::string const &identifier, bool scoped = false) const;
+    PBX::Compiler::vector
+    compilers(bool scoped = false) const;
+
+public:
+    PBX::FileType::shared_ptr
+    fileType(std::string const &identifier, bool scoped = false) const;
+    PBX::FileType::vector
+    fileTypes(bool scoped = false) const;
+
+public:
+    PBX::Linker::shared_ptr
+    linker(std::string const &identifier, bool scoped = false) const;
+    PBX::Linker::vector
+    linkers(bool scoped = false) const;
+
+public:
+    PBX::PackageType::shared_ptr
+    packageType(std::string const &identifier, bool scoped = false) const;
+    PBX::PackageType::vector
+    packageTypes(bool scoped = false) const;
+
+public:
+    PBX::ProductType::shared_ptr
+    productType(std::string const &identifier, bool scoped = false) const;
+    PBX::ProductType::vector
+    productTypes(bool scoped = false) const;
+
+public:
+    PBX::PropertyConditionFlavor::shared_ptr
+    propertyConditionFlavor(std::string const &identifier, bool scoped = false) const;
+    PBX::PropertyConditionFlavor::vector
+    propertyConditionFlavors(bool scoped = false) const;
+
+public:
+    PBX::Tool::shared_ptr
+    tool(std::string const &identifier, bool scoped = false) const;
+    PBX::Tool::vector
+    tools(bool scoped = false) const;
 
 protected:
     friend class pbxspec::PBX::Specification;
     void
-    AddSpecification(PBX::Specification::shared_ptr const &spec);
+    addSpecification(PBX::Specification::shared_ptr const &spec);
+
+private:
+    template <typename T>
+    typename T::shared_ptr
+    findSpecification(bool scoped, std::string const &identifier, char const *type = T::Type(), bool onlyDefault = false) const;
+    template <typename T>
+    typename T::vector
+    findSpecifications(bool scoped, char const *type = T::Type()) const;
 
 public:
     static Manager::shared_ptr
-    Create(void);
+    Open(Manager::shared_ptr parent, std::string const &path);
 };
 
 }

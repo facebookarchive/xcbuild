@@ -25,23 +25,36 @@ Manager::~Manager()
 }
 
 template <typename T>
-typename T::shared_ptr
-FindSpecification(
-    std::map<char const *, Specification::vector> const &specifications,
-    std::string const &identifier,
-    char const *type = T::Type(),
-    bool onlyDefault = false)
+typename T::vector Manager::
+findSpecifications(bool scoped, char const *type) const
 {
     if (type == nullptr) {
-        return nullptr;
+        return typename T::vector();
     }
 
-    auto const &it = specifications.find(type);
-    if (it == specifications.end()) {
-        return nullptr;
+    typename T::vector specifications;
+
+    if (!scoped) {
+        if (Manager::shared_ptr parent = _parent.lock()) {
+            typename T::vector parentSpecifications = parent->findSpecifications <T> (scoped, type);
+            specifications.insert(specifications.end(), parentSpecifications.begin(), parentSpecifications.end());
+        }
     }
 
-    auto const &vector = it->second;
+    auto const &it = _specifications.find(type);
+    if (it != _specifications.end()) {
+        typename T::vector typeSpecifications = reinterpret_cast <typename T::vector const &> (it->second);
+        specifications.insert(specifications.end(), typeSpecifications.begin(), typeSpecifications.end());
+    }
+
+    return specifications;
+}
+
+template <typename T>
+typename T::shared_ptr Manager::
+findSpecification(bool scoped, std::string const &identifier, char const *type, bool onlyDefault) const
+{
+    typename T::vector vector = findSpecifications <T> (scoped, type);
 
     //
     // Do an inverse find so that we can find the overrides.
@@ -67,103 +80,143 @@ FindSpecification(
             return nullptr;
     }
 
-    return reinterpret_cast <typename T::shared_ptr const &> (*I);
+    return *I;
 }
 
 Specification::shared_ptr Manager::
-GetSpecification(char const *type, std::string const &identifier, bool onlyDefault) const
+specification(char const *type, std::string const &identifier, bool onlyDefault, bool scoped) const
 {
-    return FindSpecification <Specification> (_specifications, identifier, type, onlyDefault);
+    return findSpecification <Specification> (scoped, identifier, type, onlyDefault);
+}
+
+Specification::vector Manager::
+specifications(char const *type, bool scoped) const
+{
+    return findSpecifications <Specification> (scoped, type);
 }
 
 Architecture::shared_ptr Manager::
-GetArchitecture(std::string const &identifier) const
+architecture(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <Architecture> (_specifications, identifier);
+    return findSpecification <Architecture> (scoped, identifier);
+}
+
+Architecture::vector Manager::
+architectures(bool scoped) const
+{
+    return findSpecifications <Architecture> (scoped);
 }
 
 BuildPhase::shared_ptr Manager::
-GetBuildPhase(std::string const &identifier) const
+buildPhase(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <BuildPhase> (_specifications, identifier);
+    return findSpecification <BuildPhase> (scoped, identifier);
+}
+
+BuildPhase::vector Manager::
+buildPhases(bool scoped) const
+{
+    return findSpecifications <BuildPhase> (scoped);
 }
 
 BuildSystem::shared_ptr Manager::
-GetBuildSystem(std::string const &identifier) const
+buildSystem(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <BuildSystem> (_specifications, identifier);
+    return findSpecification <BuildSystem> (scoped, identifier);
+}
+
+BuildSystem::vector Manager::
+buildSystems(bool scoped) const
+{
+    return findSpecifications <BuildSystem> (scoped);
 }
 
 Compiler::shared_ptr Manager::
-GetCompiler(std::string const &identifier) const
+compiler(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <Compiler> (_specifications, identifier);
+    return findSpecification <Compiler> (scoped, identifier);
+}
+
+Compiler::vector Manager::
+compilers(bool scoped) const
+{
+    return findSpecifications <Compiler> (scoped);
 }
 
 FileType::shared_ptr Manager::
-GetFileType(std::string const &identifier) const
+fileType(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <FileType> (_specifications, identifier);
+    return findSpecification <FileType> (scoped, identifier);
+}
+
+FileType::vector Manager::
+fileTypes(bool scoped) const
+{
+    return findSpecifications <FileType> (scoped);
 }
 
 Linker::shared_ptr Manager::
-GetLinker(std::string const &identifier) const
+linker(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <Linker> (_specifications, identifier);
+    return findSpecification <Linker> (scoped, identifier);
+}
+
+Linker::vector Manager::
+linkers(bool scoped) const
+{
+    return findSpecifications <Linker> (scoped);
 }
 
 PackageType::shared_ptr Manager::
-GetPackageType(std::string const &identifier) const
+packageType(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <PackageType> (_specifications, identifier);
+    return findSpecification <PackageType> (scoped, identifier);
+}
+
+PackageType::vector Manager::
+packageTypes(bool scoped) const
+{
+    return findSpecifications <PackageType> (scoped);
 }
 
 ProductType::shared_ptr Manager::
-GetProductType(std::string const &identifier) const
+productType(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <ProductType> (_specifications, identifier);
+    return findSpecification <ProductType> (scoped, identifier);
+}
+
+ProductType::vector Manager::
+productTypes(bool scoped) const
+{
+    return findSpecifications <ProductType> (scoped);
 }
 
 PropertyConditionFlavor::shared_ptr Manager::
-GetPropertyConditionFlavor(std::string const &identifier) const
+propertyConditionFlavor(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <PropertyConditionFlavor> (_specifications, identifier);
+    return findSpecification <PropertyConditionFlavor> (scoped, identifier);
+}
+
+PropertyConditionFlavor::vector Manager::
+propertyConditionFlavors(bool scoped) const
+{
+    return findSpecifications <PropertyConditionFlavor> (scoped);
 }
 
 Tool::shared_ptr Manager::
-GetTool(std::string const &identifier) const
+tool(std::string const &identifier, bool scoped) const
 {
-    return FindSpecification <Tool> (_specifications, identifier);
+    return findSpecification <Tool> (scoped, identifier);
 }
 
-pbxsetting::Level Manager::
-defaultSettings(void) const
+Tool::vector Manager::
+tools(bool scoped) const
 {
-    std::vector<pbxsetting::Setting> settings;
-
-    auto const &archit = _specifications.find(Architecture::Type());
-    if (archit != _specifications.end()) {
-        for (std::shared_ptr<PBX::Specification> const &spec : archit->second) {
-            std::shared_ptr<PBX::Architecture> architecture = reinterpret_cast <Architecture::shared_ptr const &> (spec);
-            if (!architecture->architectureSetting().empty()) {
-                std::string value;
-                for (std::string const &arch : architecture->realArchitectures()) {
-                    if (&arch != &architecture->realArchitectures()[0]) {
-                        value += " ";
-                    }
-                    value += arch;
-                }
-
-                settings.push_back(pbxsetting::Setting::Parse(architecture->architectureSetting(), value));
-            }
-        }
-    }
-
-    return pbxsetting::Level(settings);
+    return findSpecifications <Tool> (scoped);
 }
 
 void Manager::
-AddSpecification(PBX::Specification::shared_ptr const &spec)
+addSpecification(PBX::Specification::shared_ptr const &spec)
 {
     if (!spec) {
         fprintf(stderr, "error: registering null specification\n");
@@ -175,7 +228,7 @@ AddSpecification(PBX::Specification::shared_ptr const &spec)
         return;
     }
 
-    if (auto ospec = GetSpecification(spec->type(), spec->identifier(), spec->isDefault())) {
+    if (auto ospec = specification(spec->type(), spec->identifier(), spec->isDefault())) {
         if (ospec->isDefault() && spec->isDefault()) {
             fprintf(stderr, "error: registering %s specification '%s' twice\n",
                     spec->type(), spec->identifier().c_str());
@@ -192,7 +245,21 @@ AddSpecification(PBX::Specification::shared_ptr const &spec)
 }
 
 Manager::shared_ptr Manager::
-Create(void)
+Open(Manager::shared_ptr parent, std::string const &path)
 {
-    return std::make_shared <Manager> ();
+    Manager::shared_ptr manager = std::make_shared <Manager> ();
+    manager->_parent = parent;
+
+    FSUtil::EnumerateRecursive(path, "*.xcspec",
+            [&](std::string const &filename) -> bool
+            {
+                if (!Specification::Open(manager, filename)) {
+                    fprintf(stderr, "warning: failed to import "
+                        "specification '%s'\n", filename.c_str());
+                }
+                return true;
+            });
+
+    return manager;
 }
+

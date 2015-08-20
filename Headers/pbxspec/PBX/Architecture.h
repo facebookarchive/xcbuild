@@ -3,6 +3,7 @@
 #ifndef __pbxspec_PBX_Architecture_h
 #define __pbxspec_PBX_Architecture_h
 
+#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
 namespace pbxspec { namespace PBX {
@@ -45,6 +46,9 @@ public:
     { return _listInEnum; }
     inline int sortNumber() const
     { return _sortNumber; }
+
+public:
+    pbxsetting::Setting defaultSetting(void) const;
 
 protected:
     friend class Specification;

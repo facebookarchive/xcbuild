@@ -15,6 +15,20 @@ Architecture::~Architecture()
 {
 }
 
+pbxsetting::Setting Architecture::
+defaultSetting(void) const
+{
+    std::string value;
+    for (std::string const &arch : _realArchitectures) {
+        if (&arch != &_realArchitectures[0]) {
+            value += " ";
+        }
+        value += arch;
+    }
+
+    return pbxsetting::Setting::Parse(_architectureSetting, value);
+}
+
 Architecture::shared_ptr Architecture::
 Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {

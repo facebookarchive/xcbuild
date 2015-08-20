@@ -17,8 +17,7 @@ main(int argc, char **argv)
     }
 
     std::string path = argv[1];
-    Manager::shared_ptr manager = Manager::Create();
-    Specification::OpenRecursive(manager, path);
+    Manager::shared_ptr manager = Manager::Open(nullptr, path);
 
     return 0;
 }

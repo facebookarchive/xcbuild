@@ -61,9 +61,9 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         if (basedOn.compare(0, 8, "default:") == 0) {
             onlyDefault = true;
             basedOn = basedOn.substr(8);
-        }    
+        }
 
-        auto base = manager->GetSpecification(type(), basedOn, onlyDefault);
+        auto base = manager->specification(type(), basedOn, onlyDefault);
         if (base == nullptr) {
             fprintf(stderr, "error: cannot find base %s specification '%s'\n",
                     type(), basedOn.c_str());
@@ -174,7 +174,7 @@ Open(std::shared_ptr<Manager> manager, std::string const &filename)
             //
             // Add specification to manager.
             //
-            manager->AddSpecification(spec);
+            manager->addSpecification(spec);
         }
 
         plist->release();
@@ -188,7 +188,7 @@ Open(std::shared_ptr<Manager> manager, std::string const &filename)
                 if (spec == nullptr) {
                     errors++;
                 } else {
-                    manager->AddSpecification(spec);
+                    manager->addSpecification(spec);
                 }
             }
         }
@@ -201,20 +201,6 @@ Open(std::shared_ptr<Manager> manager, std::string const &filename)
             "a dictionary nor an array", filename.c_str());
     plist->release();
     return false;
-}
-
-void Specification::
-OpenRecursive(std::shared_ptr<Manager> manager, std::string const &path)
-{
-    FSUtil::EnumerateRecursive(path, "*.xcspec",
-            [&](std::string const &filename) -> bool
-            {
-                if (!Open(manager, filename)) {
-                    fprintf(stderr, "warning: failed to import "
-                        "specification '%s'\n", filename.c_str());
-                }
-                return true;
-            });
 }
 
 bool Specification::
