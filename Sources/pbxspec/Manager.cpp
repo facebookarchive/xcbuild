@@ -182,6 +182,8 @@ defaultSettings(void) const
             return pbxsetting::Setting::Parse(option->name(), stringValue->value());
         } else if (plist::Boolean const *booleanValue = plist::CastTo <plist::Boolean> (option->defaultValue())) {
             return pbxsetting::Setting::Parse(option->name(), booleanValue->value() ? "YES" : "NO");
+        } else if (plist::Integer const *integerValue = plist::CastTo <plist::Integer> (option->defaultValue())) {
+            return pbxsetting::Setting::Parse(option->name(), std::to_string(integerValue->value()));
         } else {
             // TODO(grp): Handle additional types?
             fprintf(stderr, "Warning: Unknown value type for setting %s.\n", option->name().c_str());
