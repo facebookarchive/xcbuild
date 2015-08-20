@@ -72,11 +72,25 @@ main(int argc, char **argv)
 
     pbxspec::PBX::Architecture::vector architectures = platformSpecifications->architectures();
     std::vector<pbxsetting::Setting> architectureSettings;
+    std::vector<std::string> platformArchitectures;
     for (pbxspec::PBX::Architecture::shared_ptr architecture : architectures) {
         if (!architecture->architectureSetting().empty()) {
             architectureSettings.push_back(architecture->defaultSetting());
         }
+        if (architecture->realArchitectures().empty()) {
+            if (std::find(platformArchitectures.begin(), platformArchitectures.end(), architecture->identifier()) == platformArchitectures.end()) {
+                platformArchitectures.push_back(architecture->identifier());
+            }
+        }
     }
+    std::string platformArchitecturesValue;
+    for (std::string const &arch : platformArchitectures) {
+        if (&arch != &platformArchitectures[0]) {
+            platformArchitecturesValue += " ";
+        }
+        platformArchitecturesValue += arch;
+    }
+    architectureSettings.push_back(pbxsetting::Setting::Parse("VALID_ARCHS", platformArchitecturesValue));
     pbxsetting::Level architectureLevel = pbxsetting::Level(architectureSettings);
 
     pbxsetting::Level config = pbxsetting::Level({
