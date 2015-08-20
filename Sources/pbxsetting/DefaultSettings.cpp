@@ -129,10 +129,10 @@ System(void)
         Setting::Parse("SYSTEM_LIBRARY_DIR", "/System/Library"),
 
         Setting::Parse("OS", "MACOS"),
-        Setting::Parse("MAC_OS_X_PRODUCT_BUILD_VERSION", "UNKNOWN"),
-        Setting::Parse("MAC_OS_X_VERSION_ACTUAL", "101000"),
+        Setting::Parse("MAC_OS_X_PRODUCT_BUILD_VERSION", "14E46"),
+        Setting::Parse("MAC_OS_X_VERSION_ACTUAL", "101004"),
         Setting::Parse("MAC_OS_X_VERSION_MAJOR", "101000"),
-        Setting::Parse("MAC_OS_X_VERSION_MINOR", "1000"),
+        Setting::Parse("MAC_OS_X_VERSION_MINOR", "1004"),
     };
 
     return Level(settings);
@@ -172,7 +172,7 @@ Level DefaultSettings::
 Build(void)
 {
     std::vector<Setting> settings = {
-        Setting::Parse("XCODE_PRODUCT_BUILD_VERSION", "UNKNOWN"),
+        Setting::Parse("XCODE_PRODUCT_BUILD_VERSION", "6E35b"),
         Setting::Parse("XCODE_VERSION_ACTUAL", "0640"),
         Setting::Parse("XCODE_VERSION_MAJOR", "0600"),
         Setting::Parse("XCODE_VERSION_MINOR", "0640"),

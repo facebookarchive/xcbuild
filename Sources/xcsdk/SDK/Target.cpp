@@ -24,7 +24,7 @@ settings(void) const
     std::vector<Setting> settings = {
         Setting::Parse("SDK_NAME", _canonicalName),
         Setting::Parse("SDK_DIR", _path),
-        // TODO(grp): Setting::Parse("SDK_PRODUCT_BUILD_VERSION", ),
+        Setting::Parse("SDK_PRODUCT_BUILD_VERSION", _product->buildVersion()),
     };
 
     std::string toolchains;
