@@ -69,6 +69,9 @@ Environment(void)
     settings.push_back(Setting::Parse("CACHE_ROOT", cache_root));
     free(cache);
 
+    // Seems identical to TEMP_FILE_DIR but with an 'S'.
+    settings.push_back(Setting::Parse("TEMP_FILES_DIR", "$(TEMP_DIR)"));
+
     return Level(settings);
 }
 

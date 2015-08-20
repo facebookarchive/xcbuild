@@ -73,12 +73,26 @@ main(int argc, char **argv)
     pbxspec::PBX::PackageType::shared_ptr packageType = spec_manager->GetPackageType(productType->packageTypes().at(0));
     pbxsetting::Level packageTypeSettings = packageType->defaultBuildSettings();
 
-    pbxsetting::Level specDefaultSettings = spec_manager->defaultSettings();
+    pbxsetting::Level config = pbxsetting::Level({
+        pbxsetting::Setting::Parse("ACTION", "build"),
+        pbxsetting::Setting::Parse("CONFIGURATION", targetConfigurationName),
+        pbxsetting::Setting::Parse("CURRENT_ARCH", "arm64"), // TODO(grp): Should intersect VALID_ARCHS and ARCHS?
+        pbxsetting::Setting::Parse("CURRENT_VARIANT", "normal"),
+        pbxsetting::Setting::Parse("BUILD_COMPONENTS", "headers build"),
+    });
+
+    pbxsetting::Level targetSpecificationSettings = pbxsetting::Level({
+        pbxsetting::Setting::Parse("PACKAGE_TYPE", packageType->identifier()),
+        pbxsetting::Setting::Parse("PRODUCT_TYPE", productType->identifier()),
+    });
+
+    levels.push_back(config);
 
     // TODO(grp): targetConfiguration->baseConfigurationReference()
     levels.push_back(targetConfiguration->buildSettings());
     levels.push_back(target->settings());
 
+    levels.push_back(targetSpecificationSettings);
     levels.push_back(packageTypeSettings);
     levels.push_back(productTypeSettings);
 
@@ -86,16 +100,25 @@ main(int argc, char **argv)
     levels.push_back(projectConfiguration->buildSettings());
     levels.push_back(project->settings());
 
+    // TODO(grp): Figure out how these should be specified -- workspaces? how to pick a SRCROOT?
+    // TODO(grp): Fix which settings are printed at the end -- appears to be ones with any override? But what about SED?
+    levels.push_back(pbxsetting::Level({
+        pbxsetting::Setting::Parse("CONFIGURATION_BUILD_DIR", "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)"),
+        pbxsetting::Setting::Parse("CONFIGURATION_TEMP_DIR", "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)"),
+
+        // HACK(grp): Hardcode a few paths for testing.
+        pbxsetting::Setting::Parse("SYMROOT", "$(DERIVED_DATA_DIR)/$(PROJECT_NAME)-cpmowfgmqamrjrfvwivglsgfzkff/Build/Products"),
+        pbxsetting::Setting::Parse("OBJROOT", "$(DERIVED_DATA_DIR)/$(PROJECT_NAME)-cpmowfgmqamrjrfvwivglsgfzkff/Build/Intermediates"),
+        pbxsetting::Setting::Parse("SRCROOT", "/Users/grp/code/newsyc/HNKit"),
+    }));
+
     levels.push_back(platform->overrideProperties());
-    levels.push_back(specDefaultSettings);
     levels.push_back(sdk->customProperties());
     levels.push_back(sdk->settings());
     levels.push_back(platform->settings());
     levels.push_back(sdk->defaultProperties());
     levels.push_back(platform->defaultProperties());
     levels.push_back(xcsdk_manager->computedSettings());
-
-    // TODO(grp): system defaults?
 
     levels.push_back(pbxsetting::DefaultSettings::Environment());
     levels.push_back(pbxsetting::DefaultSettings::Internal());
@@ -104,12 +127,14 @@ main(int argc, char **argv)
     levels.push_back(pbxsetting::DefaultSettings::Architecture());
     levels.push_back(pbxsetting::DefaultSettings::Build());
 
+    levels.push_back(spec_manager->defaultSettings());
+
     pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);
 
     pbxsetting::Condition condition = pbxsetting::Condition({
         { "sdk", sdk->canonicalName() },
-        { "arch", "arm64" }, // TODO(grp): Use a real architcture.
-        { "variant", "default" },
+        { "arch", environment.resolve("CURRENT_ARCH") },
+        { "variant", environment.resolve("CURRENT_VARIANT") },
     });
 
     std::unordered_map<std::string, std::string> values = environment.computeValues(condition);
@@ -117,10 +142,7 @@ main(int argc, char **argv)
 
     printf("\n\nBuild Settings:\n\n");
     for (auto const &value : orderedValues) {
-        auto defaultValue = specDefaultSettings.get(value.first, condition);
-        if (!defaultValue.first || value.second != defaultValue.second.raw()) {
-            printf("    %s = %s\n", value.first.c_str(), value.second.c_str());
-        }
+        printf("    %s = %s\n", value.first.c_str(), value.second.c_str());
     }
 
     return 0;
