@@ -101,6 +101,7 @@ main(int argc, char **argv)
     levels.push_back(pbxsetting::DefaultSettings::Internal());
     levels.push_back(pbxsetting::DefaultSettings::Local());
     levels.push_back(pbxsetting::DefaultSettings::System());
+    levels.push_back(pbxsetting::DefaultSettings::Architecture());
     levels.push_back(pbxsetting::DefaultSettings::Build());
 
     pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);

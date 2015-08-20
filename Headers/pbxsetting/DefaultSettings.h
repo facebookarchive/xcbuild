@@ -24,6 +24,8 @@ public:
     static Level
     System(void);
     static Level
+    Architecture(void);
+    static Level
     Build(void);
 };
 

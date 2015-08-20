@@ -125,10 +125,41 @@ System(void)
         Setting::Parse("SYSTEM_KEXT_INSTALL_PATH", "/System/Library/Extensions"),
         Setting::Parse("SYSTEM_LIBRARY_DIR", "/System/Library"),
 
+        Setting::Parse("OS", "MACOS"),
         Setting::Parse("MAC_OS_X_PRODUCT_BUILD_VERSION", "UNKNOWN"),
         Setting::Parse("MAC_OS_X_VERSION_ACTUAL", "101000"),
         Setting::Parse("MAC_OS_X_VERSION_MAJOR", "101000"),
         Setting::Parse("MAC_OS_X_VERSION_MINOR", "1000"),
+    };
+
+    return Level(settings);
+}
+
+Level DefaultSettings::
+Architecture(void)
+{
+    std::vector<Setting> settings = {
+#if defined(__i386__) || defined(__x86_64__)
+        Setting::Parse("NATIVE_ARCH_32_BIT", "i386"),
+        Setting::Parse("NATIVE_ARCH_64_BIT", "x86_64"),
+  #if defined(__x86_64__)
+        Setting::Parse("NATIVE_ARCH_ACTUAL", "x86_64"),
+  #else
+        Setting::Parse("NATIVE_ARCH_ACTUAL", "i386"),
+  #endif
+#elif defined(__arm__) || defined(__arm64__)
+        Setting::Parse("NATIVE_ARCH_32_BIT", "armv7"),
+        Setting::Parse("NATIVE_ARCH_64_BIT", "arm64"),
+  #if defined(__arm64__)
+        Setting::Parse("NATIVE_ARCH_ACTUAL", "arm64"),
+  #else
+        Setting::Parse("NATIVE_ARCH_ACTUAL", "armv7"),
+  #endif
+#else
+        Setting::Parse("NATIVE_ARCH_32_BIT", "UNKNOWN"),
+        Setting::Parse("NATIVE_ARCH_64_BIT", "UNKNOWN"),
+        Setting::Parse("NATIVE_ARCH_ACTUAL", "UNKNOWN"),
+#endif
     };
 
     return Level(settings);
