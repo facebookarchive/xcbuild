@@ -123,6 +123,7 @@ set(libpbxproj_SOURCES
 set(libxcsdk_SOURCES
     Sources/xcsdk/SDK/Manager.cpp
     Sources/xcsdk/SDK/Platform.cpp
+    Sources/xcsdk/SDK/PlatformVersion.cpp
     Sources/xcsdk/SDK/Product.cpp
     Sources/xcsdk/SDK/Target.cpp
     Sources/xcsdk/SDK/Toolchain.cpp

@@ -34,6 +34,7 @@ settings(void) const
         Setting::Parse("PLATFORM_DEVELOPER_LIBRARY_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer/Library"), // TODO(grp): Verify.
         Setting::Parse("PLATFORM_DEVELOPER_SDK_DIR", "$(PLATFORM_DIR)/Developer/SDKs"),
         Setting::Parse("PLATFORM_DEVELOPER_TOOLS_DIR", "$(PLATFORM_DIR)/Developer/Tools"),
+        Setting::Parse("PLATFORM_PRODUCT_BUILD_VERSION", _platformVersion ? _platformVersion->buildVersion() : ""),
     };
 
     settings.push_back(Setting::Parse("EFFECTIVE_PLATFORM_NAME", _identifier == "com.apple.platform.macosx" ? "" : "-$(PLATFORM_NAME)"));
@@ -188,6 +189,11 @@ Open(std::shared_ptr<Manager> manager, std::string const &path)
     plist->release();
 
     if (platform) {
+        //
+        // Parse version information
+        //
+        platform->_platformVersion = PlatformVersion::Open(platform->_path);
+
         //
         // Lookup all the SDKs inside the platform
         //

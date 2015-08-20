@@ -5,6 +5,7 @@
 
 #include <xcsdk/SDK/Manager.h>
 #include <xcsdk/SDK/Platform.h>
+#include <xcsdk/SDK/PlatformVersion.h>
 #include <xcsdk/SDK/Target.h>
 #include <xcsdk/SDK/Product.h>
 
