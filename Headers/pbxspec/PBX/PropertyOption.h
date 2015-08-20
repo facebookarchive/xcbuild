@@ -3,6 +3,7 @@
 #ifndef __pbxspec_PBX_PropertyOption_h
 #define __pbxspec_PBX_PropertyOption_h
 
+#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Object.h>
 
 namespace pbxspec { namespace PBX {
@@ -154,6 +155,9 @@ public:
 public:
     inline std::string const &setValueInEnvironmentVariable() const
     { return _setValueInEnvironmentVariable; }
+
+public:
+    pbxsetting::Setting defaultSetting(void) const;
 
 protected:
     bool parse(plist::Dictionary const *dict);

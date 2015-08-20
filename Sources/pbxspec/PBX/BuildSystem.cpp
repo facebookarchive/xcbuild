@@ -14,6 +14,19 @@ BuildSystem::~BuildSystem()
 {
 }
 
+pbxsetting::Level BuildSystem::
+defaultSettings(void) const
+{
+    std::vector<pbxsetting::Setting> settings;
+    std::transform(_properties.begin(), _properties.end(), std::back_inserter(settings), [](PBX::PropertyOption::shared_ptr const &option) -> pbxsetting::Setting {
+        return option->defaultSetting();
+    });
+    std::transform(_options.begin(), _options.end(), std::back_inserter(settings), [](PBX::PropertyOption::shared_ptr const &option) -> pbxsetting::Setting {
+        return option->defaultSetting();
+    });
+    return pbxsetting::Level(settings);
+}
+
 BuildSystem::shared_ptr BuildSystem::
 Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {

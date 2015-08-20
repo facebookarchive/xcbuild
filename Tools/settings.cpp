@@ -66,12 +66,11 @@ main(int argc, char **argv)
     // TODO(grp): Handle legacy targets.
     assert(target->isa() == pbxproj::PBX::NativeTarget::Isa());
     pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::dynamic_pointer_cast<pbxproj::PBX::NativeTarget>(target);
-    pbxspec::PBX::ProductType::shared_ptr productType = spec_manager->GetProductType(nativeTarget->productType());
-    pbxsetting::Level productTypeSettings = productType->defaultBuildProperties();
 
+    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = spec_manager->GetBuildSystem("com.apple.build-system.native");
+    pbxspec::PBX::ProductType::shared_ptr productType = spec_manager->GetProductType(nativeTarget->productType());
     // TODO(grp): Should this always use the first package type?
     pbxspec::PBX::PackageType::shared_ptr packageType = spec_manager->GetPackageType(productType->packageTypes().at(0));
-    pbxsetting::Level packageTypeSettings = packageType->defaultBuildSettings();
 
     pbxsetting::Level config = pbxsetting::Level({
         pbxsetting::Setting::Parse("ACTION", "build"),
@@ -93,8 +92,8 @@ main(int argc, char **argv)
     levels.push_back(target->settings());
 
     levels.push_back(targetSpecificationSettings);
-    levels.push_back(packageTypeSettings);
-    levels.push_back(productTypeSettings);
+    levels.push_back(packageType->defaultBuildSettings());
+    levels.push_back(productType->defaultBuildProperties());
 
     // TODO(grp): projectConfiguration->baseConfigurationReference()
     levels.push_back(projectConfiguration->buildSettings());
@@ -128,6 +127,7 @@ main(int argc, char **argv)
     levels.push_back(pbxsetting::DefaultSettings::Build());
 
     levels.push_back(spec_manager->defaultSettings());
+    levels.push_back(buildSystem->defaultSettings());
 
     pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);
 

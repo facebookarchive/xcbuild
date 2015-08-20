@@ -46,6 +46,24 @@ PropertyOption::~PropertyOption()
     }
 }
 
+pbxsetting::Setting PropertyOption::
+defaultSetting(void) const
+{
+    if (_defaultValue == nullptr) {
+        return pbxsetting::Setting::Parse(_name, "");
+    } else if (plist::String const *stringValue = plist::CastTo <plist::String> (_defaultValue)) {
+        return pbxsetting::Setting::Parse(_name, stringValue->value());
+    } else if (plist::Boolean const *booleanValue = plist::CastTo <plist::Boolean> (_defaultValue)) {
+        return pbxsetting::Setting::Parse(_name, booleanValue->value() ? "YES" : "NO");
+    } else if (plist::Integer const *integerValue = plist::CastTo <plist::Integer> (_defaultValue)) {
+        return pbxsetting::Setting::Parse(_name, std::to_string(integerValue->value()));
+    } else {
+        // TODO(grp): Handle additional types?
+        fprintf(stderr, "Warning: Unknown value type for setting %s.\n", _name.c_str());
+        return pbxsetting::Setting::Parse(_name, "");
+    }
+}
+
 bool PropertyOption::
 parse(plist::Dictionary const *dict)
 {

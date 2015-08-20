@@ -139,57 +139,7 @@ GetTool(std::string const &identifier) const
 pbxsetting::Level Manager::
 defaultSettings(void) const
 {
-    std::vector<PBX::PropertyOption::shared_ptr> options;
-
-    auto const &bsit = _specifications.find(BuildSystem::Type());
-    if (bsit != _specifications.end()) {
-        for (std::shared_ptr<PBX::Specification> const &spec : bsit->second) {
-            std::shared_ptr<PBX::BuildSystem> buildSystem = reinterpret_cast <BuildSystem::shared_ptr const &> (spec);
-            options.insert(options.end(), buildSystem->properties().begin(), buildSystem->properties().end());
-            options.insert(options.end(), buildSystem->options().begin(), buildSystem->options().end());
-        }
-    }
-
-    auto const &toolit = _specifications.find(Tool::Type());
-    if (toolit != _specifications.end()) {
-        for (std::shared_ptr<PBX::Specification> const &spec : toolit->second) {
-            std::shared_ptr<PBX::Tool> tool = reinterpret_cast <Tool::shared_ptr const &> (spec);
-            options.insert(options.end(), tool->options().begin(), tool->options().end());
-        }
-    }
-
-    auto const &compilerit = _specifications.find(Compiler::Type());
-    if (compilerit != _specifications.end()) {
-        for (std::shared_ptr<PBX::Specification> const &spec : compilerit->second) {
-            std::shared_ptr<PBX::Compiler> compiler = reinterpret_cast <Compiler::shared_ptr const &> (spec);
-            options.insert(options.end(), compiler->options().begin(), compiler->options().end());
-        }
-    }
-
-    auto const &linkerit = _specifications.find(Linker::Type());
-    if (linkerit != _specifications.end()) {
-        for (std::shared_ptr<PBX::Specification> const &spec : linkerit->second) {
-            std::shared_ptr<PBX::Linker> linker = reinterpret_cast <Linker::shared_ptr const &> (spec);
-            options.insert(options.end(), linker->options().begin(), linker->options().end());
-        }
-    }
-
     std::vector<pbxsetting::Setting> settings;
-    std::transform(options.begin(), options.end(), std::back_inserter(settings), [](PBX::PropertyOption::shared_ptr const &option) -> pbxsetting::Setting {
-        if (option->defaultValue() == nullptr) {
-            return pbxsetting::Setting::Parse(option->name(), "");
-        } else if (plist::String const *stringValue = plist::CastTo <plist::String> (option->defaultValue())) {
-            return pbxsetting::Setting::Parse(option->name(), stringValue->value());
-        } else if (plist::Boolean const *booleanValue = plist::CastTo <plist::Boolean> (option->defaultValue())) {
-            return pbxsetting::Setting::Parse(option->name(), booleanValue->value() ? "YES" : "NO");
-        } else if (plist::Integer const *integerValue = plist::CastTo <plist::Integer> (option->defaultValue())) {
-            return pbxsetting::Setting::Parse(option->name(), std::to_string(integerValue->value()));
-        } else {
-            // TODO(grp): Handle additional types?
-            fprintf(stderr, "Warning: Unknown value type for setting %s.\n", option->name().c_str());
-            return pbxsetting::Setting::Parse(option->name(), "");
-        }
-    });
 
     auto const &archit = _specifications.find(Architecture::Type());
     if (archit != _specifications.end()) {

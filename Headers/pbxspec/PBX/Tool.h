@@ -130,6 +130,9 @@ public:
     inline libutil::string_vector const &deletedProperties() const
     { return _deletedProperties; }
 
+public:
+    pbxsetting::Level defaultSettings(void) const;
+
 protected:
     friend class Specification;
     bool parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict) override

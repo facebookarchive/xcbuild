@@ -44,6 +44,9 @@ public:
     inline PropertyOption::vector const &properties() const
     { return _properties; }
 
+public:
+    pbxsetting::Level defaultSettings(void) const;
+
 protected:
     friend class Specification;
     bool parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict) override;
