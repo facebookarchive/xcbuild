@@ -11,6 +11,7 @@ extern char **environ;
 using pbxsetting::DefaultSettings;
 using pbxsetting::Level;
 using pbxsetting::Setting;
+using libutil::FSUtil;
 
 static std::map<std::string, std::string>
 environmentVariables(void)
@@ -65,7 +66,7 @@ Environment(void)
     size_t len = confstr(_CS_DARWIN_USER_CACHE_DIR, NULL, 0);
     char *cache = (char *)malloc(len);
     confstr(_CS_DARWIN_USER_CACHE_DIR, cache, len);
-    std::string cache_root = std::string(cache) + "/com.apple.DeveloperTools/6.4-$(XCODE_PRODUCT_BUILD_VERSION)/Xcode";
+    std::string cache_root = FSUtil::NormalizePath(std::string(cache) + "/com.apple.DeveloperTools/6.4-$(XCODE_PRODUCT_BUILD_VERSION)/Xcode");
     settings.push_back(Setting::Parse("CACHE_ROOT", cache_root));
     free(cache);
 
