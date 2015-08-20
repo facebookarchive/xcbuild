@@ -38,6 +38,23 @@ settings(void) const
 
     settings.push_back(Setting::Parse("EFFECTIVE_PLATFORM_NAME", _identifier == "com.apple.platform.macosx" ? "" : "-$(PLATFORM_NAME)"));
 
+    std::shared_ptr<Manager> manager = _manager.lock();
+    if (manager && !_familyIdentifier.empty()) {
+        std::string platforms;
+        for (Platform::shared_ptr const &platform : manager->platforms()) {
+            if (platform->familyIdentifier() == _familyIdentifier) {
+                if (&platform != &manager->platforms()[0]) {
+                    platforms += " ";
+                }
+                platforms += platform->name();
+            }
+        }
+
+        settings.push_back(Setting::Parse("SUPPORTED_PLATFORMS", platforms));
+    } else {
+        settings.push_back(Setting::Parse("SUPPORTED_PLATFORMS", _name));
+    }
+
     return Level(settings);
 }
 
