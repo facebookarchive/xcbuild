@@ -74,3 +74,10 @@ Open(std::shared_ptr<Manager> manager, std::string const &path)
 
     return toolchain;
 }
+
+std::string Toolchain::
+DefaultIdentifier(void)
+{
+    return "com.apple.dt.toolchain.XcodeDefault";
+}
+

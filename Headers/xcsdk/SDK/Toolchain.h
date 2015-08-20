@@ -39,6 +39,9 @@ public:
 public:
     static Toolchain::shared_ptr Open(std::shared_ptr<Manager> manager, std::string const &path);
 
+public:
+    static std::string DefaultIdentifier(void);
+
 private:
     bool parse(plist::Dictionary const *dict);
 };

@@ -32,6 +32,13 @@ computedSettings(void) const
         Setting::Parse("DERIVED_DATA_DIR", "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData"),
     };
 
+    auto tcit = _toolchains.find(Toolchain::DefaultIdentifier());
+    if (tcit != _toolchains.end()) {
+        settings.push_back(Setting::Parse("DT_TOOLCHAIN_DIR", tcit->second->path()));
+    } else {
+        settings.push_back(Setting::Parse("DT_TOOLCHAIN_DIR", ""));
+    }
+
     std::string platforms;
     for (Platform::shared_ptr const &platform : _platforms) {
         if (&platform != &_platforms[0]) {

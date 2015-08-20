@@ -122,7 +122,7 @@ parse(plist::Dictionary const *dict)
                     auto TCS = manager->toolchains();
                     auto TCII = TCS.find(TCI->value());
                     if (TCII == TCS.end()) {
-                        TCII = TCS.find("com.apple.dt.toolchain.XcodeDefault");
+                        TCII = TCS.find(Toolchain::DefaultIdentifier());
                     }
 
                     if (TCII != TCS.end()) {
