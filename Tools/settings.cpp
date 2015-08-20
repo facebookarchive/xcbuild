@@ -58,7 +58,8 @@ main(int argc, char **argv)
     });
     printf("Platform: %s\n", platform->name().c_str());
 
-    pbxspec::PBX::Specification::OpenRecursive(spec_manager, platform->path() + "/Developer/Library/Xcode/Specifications");
+    // NOTE(grp): Some platforms have specifications in other directories besides the primary Specifications folder.
+    pbxspec::PBX::Specification::OpenRecursive(spec_manager, platform->path() + "/Developer/Library/Xcode");
 
     auto sdk = platform->targets().front();
     printf("SDK: %s\n", sdk->displayName().c_str());
