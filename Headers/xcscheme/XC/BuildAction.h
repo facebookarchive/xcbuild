@@ -5,7 +5,6 @@
 
 #include <xcscheme/XC/Action.h>
 #include <xcscheme/XC/BuildActionEntry.h>
-#include <xcscheme/XC/ExecuteAction.h>
 
 namespace xcscheme { namespace XC {
 
@@ -17,8 +16,6 @@ private:
     bool                     _buildImplicitDependencies;
     bool                     _parallelizeBuildables;
     BuildActionEntry::vector _buildActionEntries;
-    ExecuteAction::vector    _preActions;
-    ExecuteAction::vector    _postActions;
 
 public:
     BuildAction();
@@ -36,18 +33,6 @@ public:
     { return _buildActionEntries; }
     inline BuildActionEntry::vector &buildActionEntries()
     { return _buildActionEntries; }
-
-public:
-    inline ExecuteAction::vector const &preActions() const
-    { return _preActions; }
-    inline ExecuteAction::vector &preActions()
-    { return _preActions; }
-
-public:
-    inline ExecuteAction::vector const &postActions() const
-    { return _postActions; }
-    inline ExecuteAction::vector &postActions()
-    { return _postActions; }
 
 public:
     bool parse(plist::Dictionary const *dict) override;
