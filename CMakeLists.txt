@@ -177,9 +177,7 @@ set(libpbxspec_SOURCES
     )
 
 set(libpbxbuild_SOURCES
-    Sources/pbxbuild/DependencyGenerator.cpp
     Sources/pbxbuild/HeaderMap.cpp
-    Sources/pbxbuild/SystemDefaults.cpp
     )
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
