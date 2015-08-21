@@ -2,7 +2,6 @@
 #define __pbxproj_PBX_Project_h
 
 #include <xcscheme/XC/Scheme.h>
-#include <xcscheme/XC/BuildableReference.h>
 #include <pbxproj/PBX/Object.h>
 #include <pbxproj/PBX/Group.h>
 #include <pbxproj/PBX/Target.h>
@@ -121,12 +120,12 @@ public:
     { return _fileReferences; }
 
 public:
-    inline Object::shared_ptr resolveBuildableReference(xcscheme::XC::BuildableReference::shared_ptr const &BR) const
+    inline Object::shared_ptr resolveBuildableReference(std::string const &blueprintIdentifier) const
     {
-        if (!BR || BR->blueprintIdentifier().empty())
+        if (blueprintIdentifier.empty())
             return Object::shared_ptr();
 
-        auto I = _blueprints.find(BR->blueprintIdentifier());
+        auto I = _blueprints.find(blueprintIdentifier);
         if (I == _blueprints.end())
             return Object::shared_ptr();
         else

@@ -216,7 +216,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
     if (auto &DS = project->defaultScheme()) {
         if (auto &BA = DS->buildAction()) {
             for (auto &BAE : BA->buildActionEntries()) {
-                auto const &BR = project->resolveBuildableReference(BAE->buildableReference());
+                auto const &BR = project->resolveBuildableReference(BAE->buildableReference()->blueprintIdentifier());
                 printf("BAE:%s [%s]\n",
                         BAE->buildableReference()->blueprintIdentifier().c_str(),
                         BAE->buildableReference()->referencedContainer().c_str());
