@@ -1,12 +1,12 @@
 #ifndef __pbxproj_PBX_Project_h
 #define __pbxproj_PBX_Project_h
 
+#include <xcscheme/XC/Scheme.h>
+#include <xcscheme/XC/BuildableReference.h>
 #include <pbxproj/PBX/Object.h>
 #include <pbxproj/PBX/Group.h>
 #include <pbxproj/PBX/Target.h>
-#include <pbxproj/XC/Scheme.h>
 #include <pbxproj/XC/ConfigurationList.h>
-#include <pbxproj/XC/BuildableReference.h>
 
 namespace pbxproj { namespace PBX {
 
@@ -16,13 +16,12 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    XC::Workspace                     *_workspace;
     std::string                        _projectFile;
     std::string                        _basePath;
     std::string                        _name;
     Object::map                        _blueprints;
-    XC::Scheme::vector                 _schemes;
-    XC::Scheme::shared_ptr             _defaultScheme;
+    xcscheme::XC::Scheme::vector       _schemes;
+    xcscheme::XC::Scheme::shared_ptr   _defaultScheme;
 
 private:
     XC::ConfigurationList::shared_ptr  _buildConfigurationList;
@@ -38,10 +37,6 @@ private:
 
 public:
     Project();
-
-protected:
-    friend class XC::Workspace;
-    Project(XC::Workspace *workspace);
 
 public:
     static shared_ptr Open(std::string const &path);
@@ -89,12 +84,6 @@ public:
     { return _targets; }
 
 public:
-    inline XC::Workspace const *workspace() const
-    { return _workspace; }
-    inline XC::Workspace *workspace()
-    { return _workspace; }
-
-public:
     inline std::string const &name() const
     { return _name; }
     inline std::string const &projectFile() const
@@ -114,15 +103,15 @@ public:
     { return _blueprints; }
 
 public:
-    inline XC::Scheme::vector const &schemes() const
+    inline xcscheme::XC::Scheme::vector const &schemes() const
     { return _schemes; }
-    inline XC::Scheme::vector &schemes()
+    inline xcscheme::XC::Scheme::vector &schemes()
     { return _schemes; }
 
 public:
-    inline XC::Scheme::shared_ptr const &defaultScheme() const
+    inline xcscheme::XC::Scheme::shared_ptr const &defaultScheme() const
     { return _defaultScheme; }
-    inline XC::Scheme::shared_ptr &defaultScheme()
+    inline xcscheme::XC::Scheme::shared_ptr &defaultScheme()
     { return _defaultScheme; }
 
 public:
@@ -132,7 +121,7 @@ public:
     { return _fileReferences; }
 
 public:
-    inline Object::shared_ptr resolveBuildableReference(XC::BuildableReference::shared_ptr const &BR) const
+    inline Object::shared_ptr resolveBuildableReference(xcscheme::XC::BuildableReference::shared_ptr const &BR) const
     {
         if (!BR || BR->blueprintIdentifier().empty())
             return Object::shared_ptr();

@@ -69,6 +69,26 @@ set(libpbxsetting_SOURCES
     Sources/pbxsetting/XC/Config.cpp
     )
 
+set(libxcscheme_SOURCES
+    Sources/xcscheme/XC/Action.cpp
+    Sources/xcscheme/XC/ActionContent.cpp
+    Sources/xcscheme/XC/AdditionalOption.cpp
+    Sources/xcscheme/XC/AnalyzeAction.cpp
+    Sources/xcscheme/XC/ArchiveAction.cpp
+    Sources/xcscheme/XC/CommandLineArgument.cpp
+    Sources/xcscheme/XC/BuildAction.cpp
+    Sources/xcscheme/XC/BuildActionEntry.cpp
+    Sources/xcscheme/XC/BuildableReference.cpp
+    Sources/xcscheme/XC/ExecuteAction.cpp
+    Sources/xcscheme/XC/LaunchAction.cpp
+    Sources/xcscheme/XC/LocationScenarioReference.cpp
+    Sources/xcscheme/XC/ProfileAction.cpp
+    Sources/xcscheme/XC/Scheme.cpp
+    Sources/xcscheme/XC/Test.cpp
+    Sources/xcscheme/XC/TestAction.cpp
+    Sources/xcscheme/XC/TestableReference.cpp
+    )
+
 set(libpbxproj_SOURCES
     Sources/pbxproj/Context.cpp
     Sources/pbxproj/ISA.cpp
@@ -94,30 +114,16 @@ set(libpbxproj_SOURCES
     Sources/pbxproj/PBX/VariantGroup.cpp
     Sources/pbxproj/PBX/ContainerItemProxy.cpp
     Sources/pbxproj/PBX/TargetDependency.cpp
-    Sources/pbxproj/XC/Action.cpp
-    Sources/pbxproj/XC/ActionContent.cpp
-    Sources/pbxproj/XC/AdditionalOption.cpp
-    Sources/pbxproj/XC/AnalyzeAction.cpp
-    Sources/pbxproj/XC/ArchiveAction.cpp
-    Sources/pbxproj/XC/BuildAction.cpp
-    Sources/pbxproj/XC/BuildActionEntry.cpp
     Sources/pbxproj/XC/BuildConfiguration.cpp
-    Sources/pbxproj/XC/BuildableReference.cpp
-    Sources/pbxproj/XC/CommandLineArgument.cpp
     Sources/pbxproj/XC/ConfigurationList.cpp
-    Sources/pbxproj/XC/ExecuteAction.cpp
-    Sources/pbxproj/XC/LaunchAction.cpp
-    Sources/pbxproj/XC/LocationScenarioReference.cpp
-    Sources/pbxproj/XC/ProfileAction.cpp
-    Sources/pbxproj/XC/Scheme.cpp
-    Sources/pbxproj/XC/Test.cpp
-    Sources/pbxproj/XC/TestAction.cpp
-    Sources/pbxproj/XC/TestableReference.cpp
     Sources/pbxproj/XC/VersionGroup.cpp
-    Sources/pbxproj/XC/Workspace.cpp
-    Sources/pbxproj/XC/WorkspaceFileRef.cpp
-    Sources/pbxproj/XC/WorkspaceGroup.cpp
-    Sources/pbxproj/XC/WorkspaceGroupItem.cpp
+    )
+
+set(libxcworkspace_SOURCES
+    Sources/xcworkspace/XC/Workspace.cpp
+    Sources/xcworkspace/XC/WorkspaceFileRef.cpp
+    Sources/xcworkspace/XC/WorkspaceGroup.cpp
+    Sources/xcworkspace/XC/WorkspaceGroupItem.cpp
     )
 
 set(libxcsdk_SOURCES
@@ -186,8 +192,14 @@ target_link_libraries(pbxsetting pbxbase)
 add_library(xcsdk SHARED ${libxcsdk_SOURCES})
 target_link_libraries(xcsdk pbxsetting pbxbase)
 
+add_library(xcscheme SHARED ${libxcscheme_SOURCES})
+target_link_libraries(xcscheme pbxbase)
+
 add_library(pbxproj SHARED ${libpbxproj_SOURCES})
-target_link_libraries(pbxproj pbxsetting pbxbase)
+target_link_libraries(pbxproj xcscheme pbxsetting pbxbase)
+
+add_library(xcworkspace SHARED ${libxcworkspace_SOURCES})
+target_link_libraries(xcworkspace xcscheme pbxbase)
 
 add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxsetting pbxbase)
@@ -208,7 +220,7 @@ target_link_libraries(pbxtool pbxbase pbxproj pbxsetting)
 add_executable(xcspec Tools/xcspec.cpp)
 target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)
-target_link_libraries(xctool pbxbase pbxproj)
+target_link_libraries(xctool pbxbase pbxproj xcscheme xcworkspace)
 add_executable(settings Tools/settings.cpp)
 target_link_libraries(settings pbxbase pbxproj xcsdk pbxsetting pbxspec)
 

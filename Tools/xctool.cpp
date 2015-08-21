@@ -1,6 +1,8 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
+#include <xcscheme/xcscheme.h>
 #include <pbxproj/pbxproj.h>
+#include <xcworkspace/xcworkspace.h>
 
 #include <cstring>
 #include <cerrno>
@@ -8,11 +10,11 @@
 using namespace pbxproj;
 using namespace libutil;
 
-void DumpItem(XC::Workspace const &W, XC::WorkspaceGroupItem const *item, size_t indent);
-void DumpItems(XC::Workspace const &W, XC::WorkspaceGroupItem::vector const &items, size_t indent);
+void DumpItem(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroupItem const *item, size_t indent);
+void DumpItems(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroupItem::vector const &items, size_t indent);
 
 std::string
-MakePath(XC::Workspace const &W, XC::WorkspaceGroup const *group,
+MakePath(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroup const *group,
         std::string const &location, bool real = true)
 {
     std::string GL;
@@ -33,8 +35,8 @@ MakePath(XC::Workspace const &W, XC::WorkspaceGroup const *group,
 }
 
 void
-DumpFileRef(XC::Workspace const &W,
-            XC::WorkspaceFileRef const *fref, size_t indent)
+DumpFileRef(xcworkspace::XC::Workspace const &W,
+            xcworkspace::XC::WorkspaceFileRef const *fref, size_t indent)
 {
     printf("%*s%s [%s]\n", (int)(indent * 2), "",
             MakePath(W, nullptr, fref->location()).c_str(),
@@ -42,8 +44,8 @@ DumpFileRef(XC::Workspace const &W,
 }
 
 void
-DumpGroup(XC::Workspace const &W,
-          XC::WorkspaceGroup const *group, size_t indent)
+DumpGroup(xcworkspace::XC::Workspace const &W,
+          xcworkspace::XC::WorkspaceGroup const *group, size_t indent)
 {
     printf("%*s[%s] (%s [%s])\n", (int)(indent * 2), "",
             group->name().c_str(),
@@ -54,14 +56,14 @@ DumpGroup(XC::Workspace const &W,
 }
 
 void
-DumpItem(XC::Workspace const &W, XC::WorkspaceGroupItem const *item, size_t indent)
+DumpItem(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroupItem const *item, size_t indent)
 {
     switch (item->type()) {
-        case XC::WorkspaceGroupItem::kTypeGroup:
-            DumpGroup(W, static_cast <XC::WorkspaceGroup const *> (item), indent);
+        case xcworkspace::XC::WorkspaceGroupItem::kTypeGroup:
+            DumpGroup(W, static_cast <xcworkspace::XC::WorkspaceGroup const *> (item), indent);
             break;
-        case XC::WorkspaceGroupItem::kTypeFileRef:
-            DumpFileRef(W, static_cast <XC::WorkspaceFileRef const *> (item), indent);
+        case xcworkspace::XC::WorkspaceGroupItem::kTypeFileRef:
+            DumpFileRef(W, static_cast <xcworkspace::XC::WorkspaceFileRef const *> (item), indent);
             break;
         default:
             break;
@@ -69,7 +71,7 @@ DumpItem(XC::Workspace const &W, XC::WorkspaceGroupItem const *item, size_t inde
 }
 
 void
-DumpItems(XC::Workspace const &W, XC::WorkspaceGroupItem::vector const &items, size_t indent)
+DumpItems(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroupItem::vector const &items, size_t indent)
 {
     for (auto item : items) {
         DumpItem(W, item.get(), indent);
@@ -77,41 +79,41 @@ DumpItems(XC::Workspace const &W, XC::WorkspaceGroupItem::vector const &items, s
 }
 
 void
-DumpItems(XC::Workspace const &W, size_t indent = 0)
+DumpItems(xcworkspace::XC::Workspace const &W, size_t indent = 0)
 {
     DumpItems(W, W.items(), indent);
 }
 
-void ForEachItems(XC::Workspace const &W, XC::WorkspaceGroup const *group,
-        XC::WorkspaceGroupItem::vector const &items,
-        std::function<void(XC::WorkspaceGroup const *, XC::WorkspaceFileRef const &)> const &cb);
+void ForEachItems(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroup const *group,
+        xcworkspace::XC::WorkspaceGroupItem::vector const &items,
+        std::function<void(xcworkspace::XC::WorkspaceGroup const *, xcworkspace::XC::WorkspaceFileRef const &)> const &cb);
 
 void
-ForEachFileRef(XC::Workspace const &W, XC::WorkspaceGroup const *group,
-        XC::WorkspaceFileRef const *fref,
-        std::function<void(XC::WorkspaceGroup const *, XC::WorkspaceFileRef const &)> const &cb)
+ForEachFileRef(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroup const *group,
+        xcworkspace::XC::WorkspaceFileRef const *fref,
+        std::function<void(xcworkspace::XC::WorkspaceGroup const *, xcworkspace::XC::WorkspaceFileRef const &)> const &cb)
 {
     cb(group, *fref);
 }
 
 void
-ForEachGroup(XC::Workspace const &W, XC::WorkspaceGroup const *group,
-        std::function<void(XC::WorkspaceGroup const *, XC::WorkspaceFileRef const &)> const &cb)
+ForEachGroup(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroup const *group,
+        std::function<void(xcworkspace::XC::WorkspaceGroup const *, xcworkspace::XC::WorkspaceFileRef const &)> const &cb)
 {
     ForEachItems(W, group, group->items(), cb);
 }
 
 void
-ForEachItem(XC::Workspace const &W, XC::WorkspaceGroup const *group,
-        XC::WorkspaceGroupItem const *item,
-        std::function<void(XC::WorkspaceGroup const *, XC::WorkspaceFileRef const &)> const &cb)
+ForEachItem(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroup const *group,
+        xcworkspace::XC::WorkspaceGroupItem const *item,
+        std::function<void(xcworkspace::XC::WorkspaceGroup const *, xcworkspace::XC::WorkspaceFileRef const &)> const &cb)
 {
     switch (item->type()) {
-        case XC::WorkspaceGroupItem::kTypeGroup:
-            ForEachGroup(W, static_cast <XC::WorkspaceGroup const *> (item), cb);
+        case xcworkspace::XC::WorkspaceGroupItem::kTypeGroup:
+            ForEachGroup(W, static_cast <xcworkspace::XC::WorkspaceGroup const *> (item), cb);
             break;
-        case XC::WorkspaceGroupItem::kTypeFileRef:
-            ForEachFileRef(W, group, static_cast <XC::WorkspaceFileRef const *> (item), cb);
+        case xcworkspace::XC::WorkspaceGroupItem::kTypeFileRef:
+            ForEachFileRef(W, group, static_cast <xcworkspace::XC::WorkspaceFileRef const *> (item), cb);
             break;
         default:
             break;
@@ -119,9 +121,9 @@ ForEachItem(XC::Workspace const &W, XC::WorkspaceGroup const *group,
 }
 
 void
-ForEachItems(XC::Workspace const &W, XC::WorkspaceGroup const *group,
-        XC::WorkspaceGroupItem::vector const &items,
-        std::function<void(XC::WorkspaceGroup const *, XC::WorkspaceFileRef const &)> const &cb)
+ForEachItems(xcworkspace::XC::Workspace const &W, xcworkspace::XC::WorkspaceGroup const *group,
+        xcworkspace::XC::WorkspaceGroupItem::vector const &items,
+        std::function<void(xcworkspace::XC::WorkspaceGroup const *, xcworkspace::XC::WorkspaceFileRef const &)> const &cb)
 {
     for (auto item : items) {
         ForEachItem(W, group, item.get(), cb);
@@ -129,8 +131,8 @@ ForEachItems(XC::Workspace const &W, XC::WorkspaceGroup const *group,
 }
 
 void
-ForEachFileRef(XC::Workspace const &W,
-        std::function<void(XC::WorkspaceGroup const *, XC::WorkspaceFileRef const &)> const &cb)
+ForEachFileRef(xcworkspace::XC::Workspace const &W,
+        std::function<void(xcworkspace::XC::WorkspaceGroup const *, xcworkspace::XC::WorkspaceFileRef const &)> const &cb)
 {
     ForEachItems(W, nullptr, W.items(), cb);
 }
@@ -143,7 +145,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    auto workspace = XC::Workspace::Open(argv[1]);
+    auto workspace = xcworkspace::XC::Workspace::Open(argv[1]);
     if (!workspace) {
         fprintf(stderr, "error opening workspace (%s)\n",
                 strerror(errno));
@@ -167,7 +169,7 @@ main(int argc, char **argv)
 
     PBX::Project::vector projects;
     ForEachFileRef(*workspace,
-            [&](XC::WorkspaceGroup const *g, XC::WorkspaceFileRef const &fref)
+            [&](xcworkspace::XC::WorkspaceGroup const *g, xcworkspace::XC::WorkspaceFileRef const &fref)
             {
                 std::string path = MakePath(*workspace, g, fref.location(), false);
                 printf("opening %s\n", path.c_str());
@@ -185,12 +187,12 @@ main(int argc, char **argv)
     //
     // Collect all schemes
     //
-    XC::Scheme::vector schemes;
+    xcscheme::XC::Scheme::vector schemes;
     schemes.insert(schemes.end(),
                    workspace->schemes().begin(), 
                    workspace->schemes().end());
     ForEachFileRef(*workspace,
-            [&](XC::WorkspaceGroup const *g, XC::WorkspaceFileRef const &fref)
+            [&](xcworkspace::XC::WorkspaceGroup const *g, xcworkspace::XC::WorkspaceFileRef const &fref)
             {
                 std::string path = MakePath(*workspace, g, fref.location(), false);
                 auto project = PBX::Project::Open(path);
@@ -207,13 +209,13 @@ main(int argc, char **argv)
         printf("\n%4sThis workspace contains no scheme.\n", "");
     } else {
         std::sort(schemes.begin(), schemes.end(),
-                [](XC::Scheme::shared_ptr const &a, XC::Scheme::shared_ptr const &b) -> bool
+                [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool
                 {
                     return ::strcasecmp(a->name().c_str(), b->name().c_str()) < 0;
                 });
 
         auto I = std::unique(schemes.begin(), schemes.end(),
-                [](XC::Scheme::shared_ptr const &a, XC::Scheme::shared_ptr const &b) -> bool
+                [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool
                 {
                     return (a->path() == b->path());
                 });

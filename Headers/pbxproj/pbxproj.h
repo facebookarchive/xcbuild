@@ -19,8 +19,5 @@
 #include <pbxproj/XC/BuildConfiguration.h>
 #include <pbxproj/XC/ConfigurationList.h>
 #include <pbxproj/XC/VersionGroup.h>
-#include <pbxproj/XC/Workspace.h>
-#include <pbxproj/XC/WorkspaceGroup.h>
-#include <pbxproj/XC/WorkspaceFileRef.h>
 
 #endif  // !__pbxproj_pbxproj_h

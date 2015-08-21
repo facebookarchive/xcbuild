@@ -5,6 +5,7 @@
 #include <pbxproj/PBX/NativeTarget.h>
 
 using pbxproj::PBX::Project;
+using xcscheme::XC::Scheme;
 using pbxsetting::Level;
 using pbxsetting::Setting;
 using libutil::FSUtil;
@@ -12,14 +13,6 @@ using libutil::SysUtil;
 
 Project::Project() :
     Object                 (Isa()),
-    _workspace             (nullptr),
-    _hasScannedForEncodings(false)
-{
-}
-
-Project::Project(XC::Workspace *workspace) :
-    Object                 (Isa()),
-    _workspace             (workspace),
     _hasScannedForEncodings(false)
 {
 }
@@ -221,7 +214,7 @@ Open(std::string const &path)
             [&](std::string const &filename) -> bool
             {
                 std::string name = filename.substr(0, filename.find('.'));
-                auto scheme = XC::Scheme::Open(name, std::string(), schemePath + "/" + filename);
+                auto scheme = Scheme::Open(name, std::string(), schemePath + "/" + filename);
                 if (!scheme) {
                     fprintf(stderr, "warning: failed parsing shared scheme '%s'\n", name.c_str());
                 } else {
@@ -241,7 +234,7 @@ Open(std::string const &path)
                 [&](std::string const &filename) -> bool
                 {
                     std::string name = filename.substr(0, filename.find('.'));
-                    auto scheme = XC::Scheme::Open(name, userName, schemePath + "/" + filename);
+                    auto scheme = Scheme::Open(name, userName, schemePath + "/" + filename);
                     if (!scheme) {
                         fprintf(stderr, "warning: failed parsing user scheme '%s'\n", name.c_str());
                     } else {
