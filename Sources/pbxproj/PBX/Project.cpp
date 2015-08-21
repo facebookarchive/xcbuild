@@ -5,7 +5,6 @@
 #include <pbxproj/PBX/NativeTarget.h>
 
 using pbxproj::PBX::Project;
-using xcscheme::XC::Scheme;
 using pbxsetting::Level;
 using pbxsetting::Setting;
 using libutil::FSUtil;
@@ -203,54 +202,6 @@ Open(std::string const &path)
     // Release the property list.
     //
     plist->release();
-
-    //
-    // Now open schemes, first shared and then current user.
-    //
-    std::string schemePath;
-    
-    schemePath = path + "/xcshareddata/xcschemes";
-    FSUtil::EnumerateDirectory(schemePath, "*.xcscheme",
-            [&](std::string const &filename) -> bool
-            {
-                std::string name = filename.substr(0, filename.find('.'));
-                auto scheme = Scheme::Open(name, std::string(), schemePath + "/" + filename);
-                if (!scheme) {
-                    fprintf(stderr, "warning: failed parsing shared scheme '%s'\n", name.c_str());
-                } else {
-                    project->_schemes.push_back(scheme);
-                }
-
-                if (!project->_defaultScheme && name == project->name()) {
-                    project->_defaultScheme = scheme;
-                }
-                return true;
-            });
-
-    std::string userName = SysUtil::GetUserName();
-    if (!userName.empty()) {
-        schemePath = path + "/xcuserdata/" + userName + ".xcuserdatad/xcschemes";
-        FSUtil::EnumerateDirectory(schemePath, "*.xcscheme",
-                [&](std::string const &filename) -> bool
-                {
-                    std::string name = filename.substr(0, filename.find('.'));
-                    auto scheme = Scheme::Open(name, userName, schemePath + "/" + filename);
-                    if (!scheme) {
-                        fprintf(stderr, "warning: failed parsing user scheme '%s'\n", name.c_str());
-                    } else {
-                        project->_schemes.push_back(scheme);
-                    }
-
-                    if (!project->_defaultScheme && name == project->name()) {
-                        project->_defaultScheme = scheme;
-                    }
-                    return true;
-                });
-    }
-
-    if (!project->_schemes.empty() && !project->_defaultScheme) {
-        project->_defaultScheme = project->_schemes[0];
-    }
 
     //
     // Transfer all file references from cache.

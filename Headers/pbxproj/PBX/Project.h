@@ -1,7 +1,6 @@
 #ifndef __pbxproj_PBX_Project_h
 #define __pbxproj_PBX_Project_h
 
-#include <xcscheme/XC/Scheme.h>
 #include <pbxproj/PBX/Object.h>
 #include <pbxproj/PBX/Group.h>
 #include <pbxproj/PBX/Target.h>
@@ -19,8 +18,6 @@ private:
     std::string                        _basePath;
     std::string                        _name;
     Object::map                        _blueprints;
-    xcscheme::XC::Scheme::vector       _schemes;
-    xcscheme::XC::Scheme::shared_ptr   _defaultScheme;
 
 private:
     XC::ConfigurationList::shared_ptr  _buildConfigurationList;
@@ -100,18 +97,6 @@ public:
     { return _blueprints; }
     inline Object::map &blueprints()
     { return _blueprints; }
-
-public:
-    inline xcscheme::XC::Scheme::vector const &schemes() const
-    { return _schemes; }
-    inline xcscheme::XC::Scheme::vector &schemes()
-    { return _schemes; }
-
-public:
-    inline xcscheme::XC::Scheme::shared_ptr const &defaultScheme() const
-    { return _defaultScheme; }
-    inline xcscheme::XC::Scheme::shared_ptr &defaultScheme()
-    { return _defaultScheme; }
 
 public:
     inline FileReference::vector const &fileReferences() const

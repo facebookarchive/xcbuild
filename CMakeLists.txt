@@ -70,6 +70,7 @@ set(libpbxsetting_SOURCES
     )
 
 set(libxcscheme_SOURCES
+    Sources/xcscheme/SchemeGroup.cpp
     Sources/xcscheme/XC/Action.cpp
     Sources/xcscheme/XC/ActionContent.cpp
     Sources/xcscheme/XC/AdditionalOption.cpp
@@ -196,10 +197,10 @@ add_library(xcscheme SHARED ${libxcscheme_SOURCES})
 target_link_libraries(xcscheme pbxbase)
 
 add_library(pbxproj SHARED ${libpbxproj_SOURCES})
-target_link_libraries(pbxproj xcscheme pbxsetting pbxbase)
+target_link_libraries(pbxproj pbxsetting pbxbase)
 
 add_library(xcworkspace SHARED ${libxcworkspace_SOURCES})
-target_link_libraries(xcworkspace xcscheme pbxbase)
+target_link_libraries(xcworkspace pbxbase)
 
 add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxsetting pbxbase)
@@ -216,7 +217,7 @@ target_link_libraries(xcconfig pbxsetting)
 add_executable(hmap Tools/hmap.cpp)
 target_link_libraries(hmap pbxbase pbxbuild)
 add_executable(pbxtool Tools/pbxtool.cpp)
-target_link_libraries(pbxtool pbxbase pbxproj pbxsetting)
+target_link_libraries(pbxtool pbxbase pbxproj xcscheme pbxsetting)
 add_executable(xcspec Tools/xcspec.cpp)
 target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)

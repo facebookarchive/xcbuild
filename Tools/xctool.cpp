@@ -158,11 +158,15 @@ main(int argc, char **argv)
     printf("Base Path:      %s\n", workspace->basePath().c_str());
     printf("Name:           %s\n", workspace->name().c_str());
 
+    auto workspaceGroup = xcscheme::SchemeGroup::Open(workspace->projectFile(), workspace->name());
+
     printf("Schemes:\n");
-    for (auto &I : workspace->schemes()) {
-        printf("\t%s [%s]%s\n", I->name().c_str(),
-                I->shared() ? "Shared" : I->owner().c_str(),
-                I == workspace->defaultScheme() ? " (DEFAULT)" : "");
+    if (workspaceGroup) {
+        for (auto &I : workspaceGroup->schemes()) {
+            printf("\t%s [%s]%s\n", I->name().c_str(),
+                    I->shared() ? "Shared" : I->owner().c_str(),
+                    I == workspaceGroup->defaultScheme() ? " (DEFAULT)" : "");
+        }
     }
 
     DumpItems(*workspace);
@@ -188,18 +192,23 @@ main(int argc, char **argv)
     // Collect all schemes
     //
     xcscheme::XC::Scheme::vector schemes;
-    schemes.insert(schemes.end(),
-                   workspace->schemes().begin(), 
-                   workspace->schemes().end());
+    if (workspaceGroup) {
+        schemes.insert(schemes.end(),
+                       workspaceGroup->schemes().begin(),
+                       workspaceGroup->schemes().end());
+    }
     ForEachFileRef(*workspace,
             [&](xcworkspace::XC::WorkspaceGroup const *g, xcworkspace::XC::WorkspaceFileRef const &fref)
             {
                 std::string path = MakePath(*workspace, g, fref.location(), false);
                 auto project = PBX::Project::Open(path);
                 if (project) {
-                    schemes.insert(schemes.end(),
-                                   project->schemes().begin(),
-                                   project->schemes().end());
+                    auto projectGroup = xcscheme::SchemeGroup::Open(project->projectFile(), project->name());
+                    if (projectGroup) {
+                        schemes.insert(schemes.end(),
+                                       projectGroup->schemes().begin(),
+                                       projectGroup->schemes().end());
+                    }
                 }
             });
 

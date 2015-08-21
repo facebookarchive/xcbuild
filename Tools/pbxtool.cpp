@@ -2,6 +2,7 @@
 
 #include <pbxproj/pbxproj.h>
 #include <pbxsetting/pbxsetting.h>
+#include <xcscheme/xcscheme.h>
 
 #include <cstring>
 #include <cerrno>
@@ -207,13 +208,14 @@ CompleteDump(PBX::Project::shared_ptr const &project)
     printf("Name:         %s\n", project->name().c_str());
 
     printf("Schemes:\n");
-    for (auto &I : project->schemes()) {
+    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->projectFile(), project->name());
+    for (auto &I : group->schemes()) {
         printf("\t%s [%s]%s\n", I->name().c_str(),
                 I->shared() ? "Shared" : I->owner().c_str(),
-                I == project->defaultScheme() ? " (DEFAULT)" : "");
+                I == group->defaultScheme() ? " (DEFAULT)" : "");
     }
 
-    if (auto &DS = project->defaultScheme()) {
+    if (auto &DS = group->defaultScheme()) {
         if (auto &BA = DS->buildAction()) {
             for (auto &BAE : BA->buildActionEntries()) {
                 auto const &BR = project->resolveBuildableReference(BAE->buildableReference()->blueprintIdentifier());
@@ -417,9 +419,10 @@ main(int argc, char **argv)
     }
     printf("\n");
 
-    if (!project->schemes().empty()) {
+    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->projectFile(), project->name());
+    if (!group->schemes().empty()) {
         printf("%4sSchemes:\n", "");
-        for (auto scheme : project->schemes()) {
+        for (auto scheme : group->schemes()) {
             printf("%8s%s\n", "", scheme->name().c_str());
         }
     } else {

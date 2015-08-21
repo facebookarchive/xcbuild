@@ -3,7 +3,6 @@
 #ifndef __xcworkspace_XC_Workspace_h
 #define __xcworkspace_XC_Workspace_h
 
-#include <xcscheme/XC/Scheme.h>
 #include <xcworkspace/XC/WorkspaceGroupItem.h>
 
 namespace xcworkspace { namespace XC {
@@ -19,8 +18,6 @@ private:
 
 private:
     WorkspaceGroupItem::vector       _items;
-    xcscheme::XC::Scheme::vector     _schemes;
-    xcscheme::XC::Scheme::shared_ptr _defaultScheme;
 
 public:
     Workspace();
@@ -41,18 +38,6 @@ public:
     { return _items; }
     inline WorkspaceGroupItem::vector &items()
     { return _items; }
-
-public:
-    inline xcscheme::XC::Scheme::vector const &schemes() const
-    { return _schemes; }
-    inline xcscheme::XC::Scheme::vector &schemes()
-    { return _schemes; }
-
-public:
-    inline xcscheme::XC::Scheme::shared_ptr const &defaultScheme() const
-    { return _defaultScheme; }
-    inline xcscheme::XC::Scheme::shared_ptr &defaultScheme()
-    { return _defaultScheme; }
 
 private:
     bool parse(plist::Dictionary const *dict);

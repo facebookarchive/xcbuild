@@ -4,7 +4,6 @@
 #include <xcworkspace/XC/WorkspaceGroup.h>
 
 using xcworkspace::XC::Workspace;
-using xcscheme::XC::Scheme;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
@@ -85,57 +84,6 @@ Open(std::string const &path)
     }
 
     plist->release();
-
-    if (!workspace)
-        return nullptr;
-
-    //
-    // Now open schemes, first shared and then current user.
-    //
-    std::string schemePath;
-    
-    schemePath = path + "/xcshareddata/xcschemes";
-    FSUtil::EnumerateDirectory(schemePath, "*.xcscheme",
-            [&](std::string const &filename) -> bool
-            {
-                std::string name = filename.substr(0, filename.find('.'));
-                auto scheme = Scheme::Open(name, std::string(), schemePath + "/" + filename);
-                if (!scheme) {
-                    fprintf(stderr, "warning: failed parsing shared scheme '%s'\n", name.c_str());
-                } else {
-                    workspace->_schemes.push_back(scheme);
-                }
-
-                if (!workspace->_defaultScheme && name == workspace->name()) {
-                    workspace->_defaultScheme = scheme;
-                }
-                return true;
-            });
-
-    std::string userName = SysUtil::GetUserName();
-    if (!userName.empty()) {
-        schemePath = path + "/xcuserdata/" + userName + ".xcuserdatad/xcschemes";
-        FSUtil::EnumerateDirectory(schemePath, "*.xcscheme",
-                [&](std::string const &filename) -> bool
-                {
-                    std::string name = filename.substr(0, filename.find('.'));
-                    auto scheme = Scheme::Open(name, userName, schemePath + "/" + filename);
-                    if (!scheme) {
-                        fprintf(stderr, "warning: failed parsing user scheme '%s'\n", name.c_str());
-                    } else {
-                        workspace->_schemes.push_back(scheme);
-                    }
-
-                    if (!workspace->_defaultScheme && name == workspace->name()) {
-                        workspace->_defaultScheme = scheme;
-                    }
-                    return true;
-                });
-    }
-
-    if (!workspace->_schemes.empty() && !workspace->_defaultScheme) {
-        workspace->_defaultScheme = workspace->_schemes[0];
-    }
 
     return workspace;
 }
