@@ -9,6 +9,7 @@
 #include <pbxproj/PBX/BuildRule.h>
 #include <pbxproj/PBX/ContainerItemProxy.h>
 #include <pbxproj/PBX/FileReference.h>
+#include <pbxproj/PBX/ReferenceProxy.h>
 #include <pbxproj/PBX/Group.h>
 #include <pbxproj/PBX/LegacyTarget.h>
 #include <pbxproj/PBX/NativeTarget.h>

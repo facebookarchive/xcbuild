@@ -24,6 +24,9 @@ DumpGroup(PBX::BaseGroup const *group, size_t indent = 0)
             printf("%*s%s [%s]\n", (int)(indent * 2), "",
                     child->name().c_str(),
                     child->path().c_str());
+        } else if (child->type() == PBX::GroupItem::kTypeReferenceProxy) {
+            printf("%*s%s [proxy]\n", (int)(indent * 2), "",
+                    child->name().c_str());
         } else {
             DumpGroup(static_cast <PBX::BaseGroup const *> (child.get()), indent);
         }

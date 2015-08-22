@@ -17,7 +17,8 @@ public:
         kTypeGroup,
         kTypeVariantGroup,
         kTypeVersionGroup,
-        kTypeFileReference
+        kTypeFileReference,
+        kTypeReferenceProxy
     };
 
 private:

@@ -5,6 +5,7 @@
 #include <pbxproj/PBX/VariantGroup.h>
 #include <pbxproj/XC/VersionGroup.h>
 #include <pbxproj/PBX/FileReference.h>
+#include <pbxproj/PBX/ReferenceProxy.h>
 
 using pbxproj::PBX::BaseGroup;
 
@@ -53,6 +54,14 @@ parse(Context &context, plist::Dictionary const *dict)
                 _children.push_back(O);
             } else if (auto C = context.get <FileReference> (ID)) {
                 auto O = context.parseObject(context.fileReferences, ID->value(), C);
+                if (!O) {
+                    abort();
+                    return false;
+                }
+
+                _children.push_back(O);
+            } else if (auto C = context.get <ReferenceProxy> (ID)) {
+                auto O = context.parseObject(context.referenceProxies, ID->value(), C);
                 if (!O) {
                     abort();
                     return false;

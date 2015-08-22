@@ -108,6 +108,7 @@ set(libpbxproj_SOURCES
     Sources/pbxproj/PBX/NativeTarget.cpp
     Sources/pbxproj/PBX/Object.cpp
     Sources/pbxproj/PBX/Project.cpp
+    Sources/pbxproj/PBX/ReferenceProxy.cpp
     Sources/pbxproj/PBX/ResourcesBuildPhase.cpp
     Sources/pbxproj/PBX/ShellScriptBuildPhase.cpp
     Sources/pbxproj/PBX/SourcesBuildPhase.cpp

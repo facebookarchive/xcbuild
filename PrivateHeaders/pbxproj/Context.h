@@ -18,6 +18,7 @@ class Project;
 class Group;
 class VariantGroup;
 class FileReference;
+class ReferenceProxy;
 class NativeTarget;
 class LegacyTarget;
 class ContainerItemProxy;
@@ -58,6 +59,7 @@ public:
     //
     std::map <std::string, std::shared_ptr <PBX::Project>>               projects;
     std::map <std::string, std::shared_ptr <PBX::FileReference>>         fileReferences;
+    std::map <std::string, std::shared_ptr <PBX::ReferenceProxy>>        referenceProxies;
     std::map <std::string, std::shared_ptr <PBX::Group>>                 groups;
     std::map <std::string, std::shared_ptr <PBX::VariantGroup>>          variantGroups;
     std::map <std::string, std::shared_ptr <PBX::NativeTarget>>          nativeTargets;
@@ -88,6 +90,7 @@ public:
         project = nullptr;
         projects.clear();
         fileReferences.clear();
+        referenceProxies.clear();
         groups.clear();
         variantGroups.clear();
         nativeTargets.clear();

@@ -15,6 +15,7 @@ char const * const PBXHeadersBuildPhase = "PBXHeadersBuildPhase";
 char const * const PBXLegacyTarget = "PBXLegacyTarget";
 char const * const PBXNativeTarget = "PBXNativeTarget";
 char const * const PBXProject = "PBXProject";
+char const * const PBXReferenceProxy = "PBXReferenceProxy";
 char const * const PBXResourcesBuildPhase = "PBXResourcesBuildPhase";
 char const * const PBXShellScriptBuildPhase = "PBXShellScriptBuildPhase";
 char const * const PBXSourcesBuildPhase = "PBXSourcesBuildPhase";
