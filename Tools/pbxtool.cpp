@@ -251,7 +251,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
         for (auto J : I->dependencies()) {
             printf("\t\t\t%s [%s]\n",
                     J->target()->name().c_str(),
-                    J->targetProxy()->remoteTarget()->name().c_str());
+                    J->targetProxy()->containerPortal()->name().c_str());
         }
 
         printf("\t\tBuild Phases:\n");

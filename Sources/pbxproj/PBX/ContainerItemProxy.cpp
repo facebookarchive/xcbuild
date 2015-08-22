@@ -18,19 +18,19 @@ parse(Context &context, plist::Dictionary const *dict)
 {
     std::string CPID;
 
-    auto CP   = context.indirect <Project> (dict, "containerPortal", &CPID);
+    auto CP   = context.indirect <FileReference> (dict, "containerPortal", &CPID);
     auto PT   = dict->value <plist::Integer> ("proxyType");
     auto RGIS = dict->value <plist::String> ("remoteGlobalIDString");
     auto RI   = dict->value <plist::String> ("remoteInfo");
 
     if (CP != nullptr) {
-        auto portal = context.parseObject(context.projects, CPID, CP);
+        auto portal = context.parseObject(context.fileReferences, CPID, CP);
         if (!portal) {
             abort();
             return false;
         }
 
-        _containerPortal = portal.get();
+        _containerPortal = portal;
     }
 
     if (PT != nullptr) {
@@ -43,22 +43,6 @@ parse(Context &context, plist::Dictionary const *dict)
 
     if (RI != nullptr) {
         _remoteInfo = RI->value();
-    }
-
-    if (!_remoteGlobalIDString.empty()) {
-        if (auto RG = context.get <NativeTarget> (_remoteGlobalIDString)) {
-            _remoteTarget = context.parseObject(context.nativeTargets,
-                    _remoteGlobalIDString, RG);
-        } else if (auto RG = context.get <LegacyTarget> (_remoteGlobalIDString)) {
-            _remoteTarget = context.parseObject(context.legacyTargets,
-                    _remoteGlobalIDString, RG);
-        }
-#if 0
-        if (!_remoteTarget) {
-            abort();
-            return false;
-        }
-#endif
     }
 
     return true;

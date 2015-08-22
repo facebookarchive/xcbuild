@@ -13,19 +13,16 @@ public:
     typedef std::shared_ptr <ContainerItemProxy> shared_ptr;
 
 private:
-    Project            *_containerPortal;
-    uint32_t            _proxyType;
-    std::string         _remoteGlobalIDString;
-    std::string         _remoteInfo;
-    Target::shared_ptr  _remoteTarget;
+    FileReference::shared_ptr _containerPortal;
+    uint32_t                  _proxyType;
+    std::string               _remoteGlobalIDString;
+    std::string               _remoteInfo;
 
 public:
     ContainerItemProxy();
 
 public:
-    inline Project const *containerPortal() const
-    { return _containerPortal; }
-    inline Project *containerPortal()
+    inline FileReference::shared_ptr const &containerPortal() const
     { return _containerPortal; }
 
 public:
@@ -38,12 +35,6 @@ public:
 
     inline std::string const &remoteInfo() const
     { return _remoteInfo; }
-
-public:
-    inline Target::shared_ptr const &remoteTarget() const
-    { return _remoteTarget; }
-    inline Target::shared_ptr &remoteTarget()
-    { return _remoteTarget; }
 
 public:
     bool parse(Context &context, plist::Dictionary const *dict);

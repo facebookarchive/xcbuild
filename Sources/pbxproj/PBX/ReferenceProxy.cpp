@@ -17,8 +17,8 @@ parse(Context &context, plist::Dictionary const *dict)
 
     std::string RRID;
 
-    auto RR   = context.indirect <Project> (dict, "remoteRef", &RRID);
-    auto FT   = dict->value <plist::String> ("fileType");
+    auto RR = context.indirect <ContainerItemProxy> (dict, "remoteRef", &RRID);
+    auto FT = dict->value <plist::String> ("fileType");
 
     if (RR != nullptr) {
         _remoteRef = context.parseObject(context.containerItemProxies, RRID, RR);

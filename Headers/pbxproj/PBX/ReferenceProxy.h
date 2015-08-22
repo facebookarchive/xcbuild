@@ -23,6 +23,8 @@ public:
 public:
     inline std::string const &fileType() const
     { return _fileType; }
+    inline ContainerItemProxy::shared_ptr const &remoteRef() const
+    { return _remoteRef; }
 
 public:
     bool parse(Context &context, plist::Dictionary const *dict);
