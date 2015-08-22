@@ -149,21 +149,43 @@ Open(std::string const &path)
     //
     // Fetch basic objects
     //
-    auto archiveVersion = plist->value <plist::Integer> ("archiveVersion");
-    auto objectVersion  = plist->value <plist::Integer> ("objectVersion");
-    auto objects        = plist->value <plist::Dictionary> ("objects");
-
-    if (archiveVersion == nullptr || objectVersion == nullptr || objects == nullptr)
+    auto archiveVersion = plist->value("archiveVersion");
+    if (archiveVersion == nullptr) {
         return nullptr;
+    } else {
+        auto archiveVersionInteger = plist::CastTo <plist::Integer> (archiveVersion);
+        auto archiveVersionString  = plist::CastTo <plist::String> (archiveVersion);
+        if (archiveVersionInteger == nullptr && archiveVersionString == nullptr) {
+            return nullptr;
+        }
 
-    if (archiveVersion->value() > 1) {
-        fprintf(stderr, "warning: archive version %u may be unsupported\n",
-                static_cast <unsigned> (archiveVersion->value()));
+        int archiveVersionValue = (archiveVersionInteger != nullptr ? archiveVersionInteger->value() : stoi(archiveVersionString->value()));
+        if (archiveVersionValue > 1) {
+            fprintf(stderr, "warning: archive version %u may be unsupported\n",
+                    static_cast <unsigned> (archiveVersionValue));
+        }
     }
 
-    if (objectVersion->value() > 46) {
-        fprintf(stderr, "warning: object version %u may be unsupported\n",
-                static_cast <unsigned> (objectVersion->value()));
+    auto objectVersion = plist->value("objectVersion");
+    if (objectVersion == nullptr) {
+        return nullptr;
+    } else {
+        auto objectVersionInteger = plist::CastTo <plist::Integer> (objectVersion);
+        auto objectVersionString  = plist::CastTo <plist::String> (objectVersion);
+        if (objectVersionInteger == nullptr && objectVersionString == nullptr) {
+            return nullptr;
+        }
+
+        int objectVersionValue = (objectVersionInteger != nullptr ? objectVersionInteger->value() : stoi(objectVersionString->value()));
+        if (objectVersionValue > 46) {
+            fprintf(stderr, "warning: object version %u may be unsupported\n",
+                    static_cast <unsigned> (objectVersionValue));
+        }
+    }
+
+    auto objects = plist->value <plist::Dictionary> ("objects");
+    if (objects == nullptr) {
+        return nullptr;
     }
 
     errno = 0;
@@ -179,8 +201,10 @@ Open(std::string const &path)
     //
     std::string PID;
     auto P = context.indirect <Project> (plist, "rootObject", &PID);
-    if (P == nullptr)
+    if (P == nullptr) {
+        fprintf(stderr, "error: unable to parse project\n");
         return nullptr;
+    }
 
     //
     // Parse the project dictionary and create the project object.
