@@ -60,6 +60,24 @@ TEST(pbxsetting, ConditionMatchMultiple)
 
 TEST(pbxsetting, ValueSimple)
 {
+    Value explicit_empty1 = Value::Empty();
+    ASSERT_EQ(explicit_empty1.entries().size(), 0);
+
+    Value explicit_empty2 = Value::String("");
+    ASSERT_EQ(explicit_empty2.entries().size(), 0);
+
+    Value explicit_string = Value::String("test");
+    ASSERT_EQ(explicit_string.entries().size(), 1);
+    ASSERT_EQ(explicit_string.entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(explicit_string.entries().at(0).string, "test");
+
+    Value explicit_variable = Value::Variable("VARIABLE");
+    EXPECT_EQ(explicit_variable.entries().size(), 1);
+    ASSERT_EQ(explicit_variable.entries().at(0).type, Value::Entry::Value);
+    ASSERT_EQ(explicit_variable.entries().at(0).value->entries().size(), 1);
+    ASSERT_EQ(explicit_variable.entries().at(0).value->entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(explicit_variable.entries().at(0).value->entries().at(0).string, "VARIABLE");
+
     Value empty = Value::Parse("");
     ASSERT_EQ(empty.entries().size(), 0);
 
@@ -176,6 +194,49 @@ TEST(pbxsetting, ValueComplex)
     EXPECT_EQ(nested2.entries().at(1).value->entries().at(4).string, "_SIX");
     ASSERT_EQ(nested2.entries().at(2).type, Value::Entry::String);
     EXPECT_EQ(nested2.entries().at(2).string, "_SEVEN");
+}
+
+TEST(pbxsetting, ValueAdd)
+{
+    Value empty = Value::Empty();
+    Value string = Value::String("test");
+    Value string2 = Value::String("string");
+    Value variable = Value::Variable("VARIABLE");
+
+    Value empty_string = empty + string;
+    ASSERT_EQ(empty_string.entries().size(), 1);
+    ASSERT_EQ(empty_string.entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(empty_string.entries().at(0).string, "test");
+
+    Value empty_variable = empty + variable;
+    EXPECT_EQ(empty_variable.entries().size(), 1);
+    ASSERT_EQ(empty_variable.entries().at(0).type, Value::Entry::Value);
+    ASSERT_EQ(empty_variable.entries().at(0).value->entries().size(), 1);
+    ASSERT_EQ(empty_variable.entries().at(0).value->entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(empty_variable.entries().at(0).value->entries().at(0).string, "VARIABLE");
+
+    Value string_variable = string + variable;
+    ASSERT_EQ(string_variable.entries().size(), 2);
+    ASSERT_EQ(string_variable.entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(string_variable.entries().at(0).string, "test");
+    ASSERT_EQ(string_variable.entries().at(1).type, Value::Entry::Value);
+    ASSERT_EQ(string_variable.entries().at(1).value->entries().size(), 1);
+    ASSERT_EQ(string_variable.entries().at(1).value->entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(string_variable.entries().at(1).value->entries().at(0).string, "VARIABLE");
+
+    Value string_empty_variable = string + empty + variable;
+    ASSERT_EQ(string_empty_variable.entries().size(), 2);
+    ASSERT_EQ(string_empty_variable.entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(string_empty_variable.entries().at(0).string, "test");
+    ASSERT_EQ(string_empty_variable.entries().at(1).type, Value::Entry::Value);
+    ASSERT_EQ(string_empty_variable.entries().at(1).value->entries().size(), 1);
+    ASSERT_EQ(string_empty_variable.entries().at(1).value->entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(string_empty_variable.entries().at(1).value->entries().at(0).string, "VARIABLE");
+
+    Value string_string = string + string2;
+    ASSERT_EQ(string_string.entries().size(), 1);
+    ASSERT_EQ(string_string.entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(string_string.entries().at(0).string, "teststring");
 }
 
 TEST(pbxsetting, SettingCreate)
@@ -389,4 +450,17 @@ TEST(pbxsetting, EnvironmentOperations)
     EXPECT_EQ(environment.resolve("SUFFIX"), ".ext");
     EXPECT_EQ(environment.resolve("MULTIPLE"), "___HELLO__");
 }
+
+TEST(pbxsetting, EnvironmentValue)
+{
+    std::vector<Level> value_levels = {
+        Level({
+            Setting::Parse("ONE = one"),
+            Setting::Parse("TWO = two"),
+        }),
+    };
+    Environment env = Environment(value_levels, value_levels);
+    EXPECT_EQ(env.expand(Value::Parse("$(ONE)-$(TWO)")), "one-two");
+}
+
 

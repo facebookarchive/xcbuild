@@ -26,6 +26,12 @@ public:
 
 public:
     std::string
+    expand(Value const &value, Condition const &condition) const;
+    std::string
+    expand(Value const &value) const;
+
+public:
+    std::string
     resolve(std::string const &setting, Condition const &condition) const;
     std::string
     resolve(std::string const &setting) const;

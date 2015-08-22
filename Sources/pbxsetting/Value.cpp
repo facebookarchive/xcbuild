@@ -54,6 +54,24 @@ operator==(Value const &rhs) const
     return _entries == rhs._entries;
 }
 
+Value Value::
+operator+(Value const &rhs) const
+{
+    std::vector<Value::Entry> entries;
+    entries.insert(entries.end(), _entries.begin(), _entries.end());
+
+    auto it = rhs.entries().begin();
+    if (!entries.empty() && !rhs.entries().empty()) {
+        if (entries.back().type == Value::Entry::String && it->type == Value::Entry::String) {
+            entries.back().string += it->string;
+            ++it;
+        }
+    }
+
+    entries.insert(entries.end(), it, rhs.entries().end());
+    return Value(entries);
+}
+
 struct ParseResult {
     bool found;
     size_t end;
@@ -109,6 +127,37 @@ Value Value::
 Parse(std::string const &value)
 {
     return ParseValue(value, 0).value;
+}
+
+Value Value::
+String(std::string const &value)
+{
+    if (value.empty()) {
+        return Empty();
+    }
+
+    return Value({
+        Entry({
+            .type = Value::Entry::String,
+            .string = value,
+        }),
+    });
+}
+
+Value Value::
+Variable(std::string const &value)
+{
+    return Value({
+        Entry({
+            .type = Value::Entry::Value,
+            .value = std::make_shared<Value>(Value({
+                Entry({
+                    .type = Value::Entry::String,
+                    .string = value,
+                }),
+            })),
+        }),
+    });
 }
 
 Value const &Value::

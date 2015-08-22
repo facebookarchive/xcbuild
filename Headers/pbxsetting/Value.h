@@ -30,6 +30,7 @@ public:
 
 public:
     bool operator==(Value const &rhs) const;
+    Value operator+(Value const &rhs) const;
 
 public:
     std::vector<Entry> const &entries() const
@@ -42,6 +43,10 @@ public:
 public:
     static Value
     Parse(std::string const &value);
+    static Value
+    String(std::string const &value);
+    static Value
+    Variable(std::string const &value);
     static Value const &
     Empty(void);
 };

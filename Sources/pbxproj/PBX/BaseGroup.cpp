@@ -35,6 +35,7 @@ parse(Context &context, plist::Dictionary const *dict)
                     return false;
                 }
 
+                O->_parent = this;
                 _children.push_back(O);
             } else if (auto C = context.get <VariantGroup> (ID)) {
                 auto O = context.parseObject(context.variantGroups, ID->value(), C);
@@ -43,6 +44,7 @@ parse(Context &context, plist::Dictionary const *dict)
                     return false;
                 }
 
+                O->_parent = this;
                 _children.push_back(O);
             } else if (auto C = context.get <XC::VersionGroup> (ID)) {
                 auto O = context.parseObject(context.versionGroups, ID->value(), C);
@@ -51,6 +53,7 @@ parse(Context &context, plist::Dictionary const *dict)
                     return false;
                 }
 
+                O->_parent = this;
                 _children.push_back(O);
             } else if (auto C = context.get <FileReference> (ID)) {
                 auto O = context.parseObject(context.fileReferences, ID->value(), C);
@@ -59,6 +62,7 @@ parse(Context &context, plist::Dictionary const *dict)
                     return false;
                 }
 
+                O->_parent = this;
                 _children.push_back(O);
             } else if (auto C = context.get <ReferenceProxy> (ID)) {
                 auto O = context.parseObject(context.referenceProxies, ID->value(), C);
@@ -67,6 +71,7 @@ parse(Context &context, plist::Dictionary const *dict)
                     return false;
                 }
 
+                O->_parent = this;
                 _children.push_back(O);
             } else if (context.objects->value(ID->value()) != nullptr) {
                 fprintf(stderr, "warning: group '%s' contains unsupported child reference to '%s'\n",

@@ -113,6 +113,7 @@ ProcessOperation(std::string const &value, std::string const &operation)
 }
 
 struct InheritanceContext {
+    bool valid;
     std::string setting;
     std::vector<Level>::const_iterator it;
 };
@@ -138,7 +139,7 @@ ResolveValue(Environment const &environment, Condition const &condition, Value c
             }
             case Value::Entry::Value: {
                 std::string resolved = ResolveValue(environment, condition, *entry.value, context);
-                if (resolved == context.setting || resolved == "inherited") {
+                if (context.valid && (resolved == context.setting || resolved == "inherited")) {
                     result += ResolveInheritance(environment, condition, context);
                 } else {
                     std::string setting = resolved;
@@ -188,7 +189,7 @@ ResolveInheritance(Environment const &environment, Condition const &condition, I
 static std::string
 ResolveAssignment(Environment const &environment, Condition const &condition, std::string const &setting)
 {
-    InheritanceContext context = { .setting = setting, .it = environment.inheritance().begin() };
+    InheritanceContext context = { .valid = true, .setting = setting, .it = environment.inheritance().begin() };
 
     for (auto it = environment.assignment().begin(); it != environment.assignment().end(); ++it) {
         auto result = it->get(setting, condition);
@@ -202,6 +203,18 @@ ResolveAssignment(Environment const &environment, Condition const &condition, st
     } else {
         return ResolveAssignment(environment, Condition::Empty(), setting);
     }
+}
+
+std::string Environment::
+expand(Value const &value, Condition const &condition) const
+{
+    return ResolveValue(*this, condition, value, { .valid = false });
+}
+
+std::string Environment::
+expand(Value const &value) const
+{
+    return expand(value, Condition::Empty());
 }
 
 std::string Environment::

@@ -25,6 +25,8 @@ private:
     Type        _type;
 
 protected:
+    friend class BaseGroup;
+    GroupItem  *_parent;
     std::string _name;
     std::string _path;
     std::string _sourceTree;
@@ -47,6 +49,9 @@ public:
 public:
     inline std::string const &sourceTree() const
     { return _sourceTree; }
+
+public:
+    pbxsetting::Value resolve(void) const;
 
 protected:
     virtual bool parse(Context &context, plist::Dictionary const *dict);

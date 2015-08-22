@@ -182,3 +182,16 @@ Build(void)
 
     return Level(settings);
 }
+
+std::vector<Level> DefaultSettings::
+Levels(void)
+{
+    return {
+        Environment(),
+        Internal(),
+        Local(),
+        System(),
+        Architecture(),
+        Build(),
+    };
+}

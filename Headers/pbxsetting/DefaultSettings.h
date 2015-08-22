@@ -27,6 +27,10 @@ public:
     Architecture(void);
     static Level
     Build(void);
+
+public:
+    static std::vector<Level>
+    Levels(void);
 };
 
 }

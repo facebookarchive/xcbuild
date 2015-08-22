@@ -3,11 +3,32 @@
 #include <pbxproj/PBX/GroupItem.h>
 
 using pbxproj::PBX::GroupItem;
+using pbxsetting::Value;
 
 GroupItem::GroupItem(std::string const &isa, Type type) :
-    Object(isa),
-    _type (type)
+    Object (isa),
+    _type  (type),
+    _parent(0)
 {
+}
+
+Value GroupItem::
+resolve(void) const
+{
+    std::string path = _path.empty() ? _name : _path;
+    path = path.empty() ? path : "/" + path;
+
+    if (_sourceTree.empty() || _sourceTree == "<absolute>") {
+        return Value::String(path);
+    } else if (_sourceTree == "<group>") {
+        if (_parent != nullptr) {
+            return _parent->resolve() + Value::String(path);
+        } else {
+            return Value::Variable("PROJECT_DIR") + Value::String(path);
+        }
+    } else {
+        return Value::Variable(_sourceTree) + Value::String(path);
+    }
 }
 
 bool GroupItem::

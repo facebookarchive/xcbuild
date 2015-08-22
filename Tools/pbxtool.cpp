@@ -268,7 +268,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
                             if (auto FR = K->fileRef()) {
-                                printf("\t\t\t\t\t%s\n", FR->path().c_str());
+                                printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }
                     }
@@ -284,7 +284,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
                             if (auto FR = K->fileRef()) {
-                                printf("\t\t\t\t\t%s\n", FR->path().c_str());
+                                printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }
                     }
@@ -300,7 +300,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
                             if (auto FR = K->fileRef()) {
-                                printf("\t\t\t\t\t%s\n", FR->path().c_str());
+                                printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }
                     }
@@ -320,7 +320,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
                             if (auto FR = K->fileRef()) {
-                                printf("\t\t\t\t\t%s\n", FR->path().c_str());
+                                printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }
                     }
@@ -336,7 +336,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
                             if (auto FR = K->fileRef()) {
-                                printf("\t\t\t\t\t%s\n", FR->path().c_str());
+                                printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }
                     }
@@ -366,7 +366,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
                             if (auto FR = K->fileRef()) {
-                                printf("\t\t\t\t\t%s\n", FR->path().c_str());
+                                printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }
                     }
