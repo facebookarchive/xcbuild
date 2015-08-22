@@ -24,7 +24,7 @@ resolve(void) const
         if (_parent != nullptr) {
             return _parent->resolve() + Value::String(path);
         } else {
-            return Value::Variable("PROJECT_DIR") + Value::String(path);
+            return Value::Variable("SOURCE_ROOT") + Value::String(path);
         }
     } else {
         return Value::Variable(_sourceTree) + Value::String(path);

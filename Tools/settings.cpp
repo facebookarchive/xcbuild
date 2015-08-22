@@ -122,7 +122,7 @@ main(int argc, char **argv)
     levels.push_back(projectConfiguration->buildSettings());
     levels.push_back(project->settings());
 
-    // TODO(grp): Figure out how these should be specified -- workspaces? how to pick a SRCROOT?
+    // TODO(grp): Figure out how these should be specified -- workspaces?
     // TODO(grp): Fix which settings are printed at the end -- appears to be ones with any override? But what about SED?
     levels.push_back(pbxsetting::Level({
         pbxsetting::Setting::Parse("CONFIGURATION_BUILD_DIR", "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)"),
@@ -131,7 +131,6 @@ main(int argc, char **argv)
         // HACK(grp): Hardcode a few paths for testing.
         pbxsetting::Setting::Parse("SYMROOT", "$(DERIVED_DATA_DIR)/$(PROJECT_NAME)-cpmowfgmqamrjrfvwivglsgfzkff/Build/Products"),
         pbxsetting::Setting::Parse("OBJROOT", "$(DERIVED_DATA_DIR)/$(PROJECT_NAME)-cpmowfgmqamrjrfvwivglsgfzkff/Build/Intermediates"),
-        pbxsetting::Setting::Parse("SRCROOT", "/Users/grp/code/newsyc/HNKit"),
     }));
 
     levels.push_back(platform->overrideProperties());
