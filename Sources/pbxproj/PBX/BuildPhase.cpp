@@ -8,7 +8,7 @@ BuildPhase::BuildPhase(std::string const &isa, Type type) :
     Object                             (isa),
     _type                              (type),
     _runOnlyForDeploymentPostprocessing(false),
-    _buildActionMask                   (0)
+    _buildActionMask                   (INT32_MAX)
 {
 }
 

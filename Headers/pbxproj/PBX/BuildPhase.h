@@ -22,6 +22,12 @@ public:
         kTypeShellScript
     };
 
+    enum ActionMask {
+        // TODO(grp): This is incomplete.
+        kActionBuild   = 4,
+        kActionInstall = 8,
+    };
+
 private:
     Type              _type;
     BuildFile::vector _files;

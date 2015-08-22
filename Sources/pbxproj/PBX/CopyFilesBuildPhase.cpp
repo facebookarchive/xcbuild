@@ -6,7 +6,7 @@ using pbxproj::PBX::CopyFilesBuildPhase;
 
 CopyFilesBuildPhase::CopyFilesBuildPhase() :
     BuildPhase       (Isa(), kTypeCopyFiles),
-    _dstSubfolderSpec(0)
+    _dstSubfolderSpec(kDestinationAbsolute)
 {
 }
 
@@ -24,7 +24,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (DSS != nullptr) {
-        _dstSubfolderSpec = DSS->value();
+        _dstSubfolderSpec = static_cast <Destination> (DSS->value());
     }
 
     return true;

@@ -11,9 +11,23 @@ class CopyFilesBuildPhase : public BuildPhase {
 public:
     typedef std::shared_ptr <CopyFilesBuildPhase> shared_ptr;
 
+public:
+    enum Destination {
+        kDestinationAbsolute         = 0,
+        kDestinationWrapper          = 1,
+        kDestinationExecutables      = 6,
+        kDestinationResources        = 7,
+        kDestinationFrameworks       = 10,
+        kDestinationSharedFrameworks = 11,
+        kDestinationSharedSupport    = 12,
+        kDestinationPlugIns          = 13,
+        kDestinationJavaResources    = 15,
+        kDestinationProducts         = 16,
+    };
+
 private:
     std::string _dstPath;
-    uint32_t    _dstSubfolderSpec;
+    Destination _dstSubfolderSpec;
 
 public:
     CopyFilesBuildPhase();
@@ -23,7 +37,7 @@ public:
     { return _dstPath; }
 
 public:
-    inline uint32_t dstSubfolderSpec() const
+    inline Destination dstSubfolderSpec() const
     { return _dstSubfolderSpec; }
 
 public:
