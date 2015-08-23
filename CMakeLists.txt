@@ -185,7 +185,9 @@ set(libpbxspec_SOURCES
     )
 
 set(libpbxbuild_SOURCES
+    Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
+    Sources/pbxbuild/SchemeContext.cpp
     )
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
@@ -207,7 +209,7 @@ add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxsetting pbxbase)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-target_link_libraries(pbxbuild pbxproj pbxspec)
+target_link_libraries(pbxbuild xcworkspace xcscheme pbxproj pbxspec)
 
 add_executable(plist Tools/plist.cpp)
 target_link_libraries(plist pbxbase)
@@ -225,7 +227,8 @@ add_executable(xctool Tools/xctool.cpp)
 target_link_libraries(xctool pbxbase pbxproj xcscheme xcworkspace)
 add_executable(settings Tools/settings.cpp)
 target_link_libraries(settings pbxbase pbxproj xcsdk pbxsetting pbxspec)
-
+add_executable(build Tools/build.cpp)
+target_link_libraries(build pbxbase pbxproj xcsdk pbxsetting pbxspec xcworkspace xcscheme pbxbuild)
 
 enable_testing()
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/gtest/include)

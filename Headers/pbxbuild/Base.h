@@ -5,6 +5,8 @@
 
 #include <pbxproj/pbxproj.h>
 #include <pbxspec/pbxspec.h>
+#include <xcscheme/xcscheme.h>
+#include <xcworkspace/xcworkspace.h>
 
 namespace pbxbuild {
 
