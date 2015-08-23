@@ -95,13 +95,13 @@ main(int argc, char **argv)
     base_levels.push_back(sdk->settings());
     base_levels.push_back(platform->settings());
     base_levels.push_back(sdk->defaultProperties());
+    base_levels.push_back(architectureLevel);
     base_levels.push_back(platform->defaultProperties());
     base_levels.push_back(xcsdk_manager->computedSettings());
 
     std::vector<pbxsetting::Level> defaultLevels = pbxsetting::DefaultSettings::Levels();
     base_levels.insert(base_levels.end(), defaultLevels.begin(), defaultLevels.end());
 
-    base_levels.push_back(architectureLevel);
     base_levels.push_back(buildSystem->defaultSettings());
 
     pbxsetting::Environment base_environment = pbxsetting::Environment(base_levels, base_levels);
