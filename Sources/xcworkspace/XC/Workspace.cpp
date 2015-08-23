@@ -1,7 +1,7 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <xcworkspace/XC/Workspace.h>
-#include <xcworkspace/XC/WorkspaceGroup.h>
+#include <xcworkspace/XC/Group.h>
 
 using xcworkspace::XC::Workspace;
 using libutil::FSUtil;
@@ -18,7 +18,7 @@ parse(plist::Dictionary const *dict)
     // The workspace is a group of itself, we add some extra checks
     // like "version" shall be 1.0.
     //
-    WorkspaceGroup G;
+    Group G;
 
     auto W = dict->value <plist::Dictionary> ("Workspace");
     if (W == nullptr)

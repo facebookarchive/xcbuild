@@ -1,15 +1,15 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#ifndef __xcworkspace_XC_WorkspaceGroupItem_h
-#define __xcworkspace_XC_WorkspaceGroupItem_h
+#ifndef __xcworkspace_XC_GroupItem_h
+#define __xcworkspace_XC_GroupItem_h
 
 #include <xcworkspace/Base.h>
 
 namespace xcworkspace { namespace XC {
 
-class WorkspaceGroupItem {
+class GroupItem {
 public:
-    typedef std::shared_ptr <WorkspaceGroupItem> shared_ptr;
+    typedef std::shared_ptr <GroupItem> shared_ptr;
     typedef std::vector <shared_ptr> vector;
 
 public:
@@ -24,7 +24,7 @@ private:
     std::string _location;
 
 protected:
-    WorkspaceGroupItem(Type type);
+    GroupItem(Type type);
 
 public:
     inline Type type() const
@@ -42,4 +42,4 @@ public:
 
 } }
 
-#endif  // !__xcworkspace_XC_WorkspaceGroupItem_h
+#endif  // !__xcworkspace_XC_GroupItem_h

@@ -3,7 +3,7 @@
 #ifndef __xcworkspace_XC_Workspace_h
 #define __xcworkspace_XC_Workspace_h
 
-#include <xcworkspace/XC/WorkspaceGroupItem.h>
+#include <xcworkspace/XC/GroupItem.h>
 
 namespace xcworkspace { namespace XC {
 
@@ -17,7 +17,7 @@ private:
     std::string                _name;
 
 private:
-    WorkspaceGroupItem::vector       _items;
+    GroupItem::vector       _items;
 
 public:
     Workspace();
@@ -34,9 +34,9 @@ public:
     { return _name; }
 
 public:
-    inline WorkspaceGroupItem::vector const &items() const
+    inline GroupItem::vector const &items() const
     { return _items; }
-    inline WorkspaceGroupItem::vector &items()
+    inline GroupItem::vector &items()
     { return _items; }
 
 private:

@@ -1,15 +1,15 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <xcworkspace/XC/WorkspaceGroupItem.h>
+#include <xcworkspace/XC/GroupItem.h>
 
-using xcworkspace::XC::WorkspaceGroupItem;
+using xcworkspace::XC::GroupItem;
 
-WorkspaceGroupItem::WorkspaceGroupItem(Type type) :
+GroupItem::GroupItem(Type type) :
     _type(type)
 {
 }
 
-bool WorkspaceGroupItem::
+bool GroupItem::
 parse(plist::Dictionary const *dict)
 {
     auto L = dict->value <plist::String> ("location");

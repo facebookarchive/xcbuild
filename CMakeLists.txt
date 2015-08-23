@@ -123,9 +123,9 @@ set(libpbxproj_SOURCES
 
 set(libxcworkspace_SOURCES
     Sources/xcworkspace/XC/Workspace.cpp
-    Sources/xcworkspace/XC/WorkspaceFileRef.cpp
-    Sources/xcworkspace/XC/WorkspaceGroup.cpp
-    Sources/xcworkspace/XC/WorkspaceGroupItem.cpp
+    Sources/xcworkspace/XC/FileRef.cpp
+    Sources/xcworkspace/XC/Group.cpp
+    Sources/xcworkspace/XC/GroupItem.cpp
     )
 
 set(libxcsdk_SOURCES

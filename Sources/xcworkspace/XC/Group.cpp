@@ -1,19 +1,19 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <xcworkspace/XC/WorkspaceGroup.h>
-#include <xcworkspace/XC/WorkspaceFileRef.h>
+#include <xcworkspace/XC/Group.h>
+#include <xcworkspace/XC/FileRef.h>
 
-using xcworkspace::XC::WorkspaceGroup;
+using xcworkspace::XC::Group;
 
-WorkspaceGroup::WorkspaceGroup() :
-    WorkspaceGroupItem(kTypeGroup)
+Group::Group() :
+    GroupItem(kTypeGroup)
 {
 }
 
-bool WorkspaceGroup::
+bool Group::
 parse(plist::Dictionary const *dict)
 {
-    if (!WorkspaceGroupItem::parse(dict))
+    if (!GroupItem::parse(dict))
         return false;
 
     auto N = dict->value <plist::String> ("name");
@@ -22,7 +22,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (auto FRd = dict->value <plist::Dictionary> ("FileRef")) {
-        auto FR = std::make_shared <WorkspaceFileRef> ();
+        auto FR = std::make_shared <FileRef> ();
         if (!FR->parse(FRd))
             return false;
 
@@ -33,7 +33,7 @@ parse(plist::Dictionary const *dict)
             if (FRd == nullptr)
                 continue;
 
-            auto FR = std::make_shared <WorkspaceFileRef> ();
+            auto FR = std::make_shared <FileRef> ();
             if (!FR->parse(FRd))
                 return false;
             
@@ -42,7 +42,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (auto Gd = dict->value <plist::Dictionary> ("Group")) {
-        auto G = std::make_shared <WorkspaceGroup> ();
+        auto G = std::make_shared <Group> ();
         if (!G->parse(Gd))
             return false;
 
@@ -53,7 +53,7 @@ parse(plist::Dictionary const *dict)
             if (Gd == nullptr)
                 continue;
 
-            auto G = std::make_shared <WorkspaceGroup> ();
+            auto G = std::make_shared <Group> ();
             if (!G->parse(Gd))
                 return false;
             
