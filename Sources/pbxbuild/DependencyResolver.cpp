@@ -91,6 +91,7 @@ struct DependenciesContext {
     SchemeContext::shared_ptr context;
     BuildGraph *graph;
     BuildAction::shared_ptr buildAction;
+    std::vector<pbxproj::PBX::Target::shared_ptr> *positional;
 };
 
 static void
@@ -125,7 +126,9 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Projec
         }
     }
 
-    context.graph->insert(target, dependencies);
+    if (context.buildAction->parallelizeBuildables()) {
+        context.graph->insert(target, dependencies);
+    }
 }
 
 static void
@@ -148,7 +151,9 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Projec
         }
     }
 
-    context.graph->insert(target, dependencies);
+    if (context.buildAction->parallelizeBuildables()) {
+        context.graph->insert(target, dependencies);
+    }
 }
 
 static void
@@ -159,6 +164,12 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Project::share
     }
 
     AddExplicitDependencies(context, project, target);
+
+    if (!context.buildAction->parallelizeBuildables()) {
+        // FIXME(grp): This is inefficient, we just need this list.
+        context.graph->insert(target, *context.positional);
+        context.positional->push_back(target);
+    }
 }
 
 BuildGraph DependencyResolver::
@@ -178,15 +189,11 @@ resolveDependencies(void) const
         pbxproj::PBX::Target::shared_ptr target = ResolveBuildableReference(_context, entry->buildableReference(), &project);
 
         if (target != nullptr) {
-            if (!buildAction->parallelizeBuildables()) {
-                graph.insert(target, positional);
-            }
-            positional.push_back(target);
-
             DependenciesContext dependenciesContext = {
                 .context = _context,
                 .graph = &graph,
                 .buildAction = buildAction,
+                .positional = &positional,
             };
             AddDependencies(dependenciesContext, project, target);
         }

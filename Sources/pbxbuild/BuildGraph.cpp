@@ -6,7 +6,7 @@ using pbxbuild::BuildGraph;
 using pbxproj::PBX::Target;
 
 void BuildGraph::
-insert(Target::shared_ptr node, std::vector<Target::shared_ptr> const &children)
+insert(Target::shared_ptr const &node, std::vector<Target::shared_ptr> const &children)
 {
     auto it = _contents.find(node);
     if (it == _contents.end()) {
@@ -18,7 +18,7 @@ insert(Target::shared_ptr node, std::vector<Target::shared_ptr> const &children)
 }
 
 std::vector<Target::shared_ptr> BuildGraph::
-children(Target::shared_ptr node) const
+children(Target::shared_ptr const &node) const
 {
     auto it = _contents.find(node);
     if (it != _contents.end()) {

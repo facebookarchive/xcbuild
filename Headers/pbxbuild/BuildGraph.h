@@ -14,11 +14,11 @@ private:
 
 public:
     void
-    insert(pbxproj::PBX::Target::shared_ptr node, std::vector<pbxproj::PBX::Target::shared_ptr> const &children);
+    insert(pbxproj::PBX::Target::shared_ptr const &node, std::vector<pbxproj::PBX::Target::shared_ptr> const &children);
 
 public:
     std::vector<pbxproj::PBX::Target::shared_ptr>
-    children(pbxproj::PBX::Target::shared_ptr node) const;
+    children(pbxproj::PBX::Target::shared_ptr const &node) const;
 
 public:
     std::vector<pbxproj::PBX::Target::shared_ptr>
