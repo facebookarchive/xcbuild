@@ -191,6 +191,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/SchemeContext.cpp
+    Sources/pbxbuild/TargetEnvironment.cpp
     )
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
