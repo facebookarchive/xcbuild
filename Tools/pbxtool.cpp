@@ -249,9 +249,11 @@ CompleteDump(PBX::Project::shared_ptr const &project)
 
         printf("\t\tDependencies:\n");
         for (auto J : I->dependencies()) {
-            printf("\t\t\t%s [%s]\n",
-                    J->target()->name().c_str(),
-                    J->targetProxy()->containerPortal()->name().c_str());
+            if (J->target() != nullptr) {
+                printf("\t\t\t%s\n", J->target()->name().c_str());
+            } else if (J->targetProxy() != nullptr) {
+                printf("\t\t\t%s [proxy; %s]\n", J->targetProxy()->remoteInfo().c_str(), J->targetProxy()->containerPortal()->resolve().raw().c_str());
+            }
         }
 
         printf("\t\tBuild Phases:\n");
