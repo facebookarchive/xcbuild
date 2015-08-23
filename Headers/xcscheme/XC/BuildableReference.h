@@ -22,14 +22,14 @@ private:
 
 public:
     BuildableReference();
-    
+
 public:
     inline std::string const &blueprintIdentifier() const
     { return _blueprintIdentifier; }
 
     inline std::string const &blueprintName() const
     { return _blueprintName; }
-    
+
 public:
     inline std::string const &buildableIdentifier() const
     { return _buildableIdentifier; }
@@ -43,6 +43,9 @@ public:
 
     inline std::string const &referencedContainerType() const
     { return _referencedContainerType; }
+
+public:
+    std::string resolve(std::string const &container) const;
 
 public:
     bool parse(plist::Dictionary const *dict);

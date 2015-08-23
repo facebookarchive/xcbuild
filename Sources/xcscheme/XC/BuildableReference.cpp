@@ -8,6 +8,21 @@ BuildableReference::BuildableReference()
 {
 }
 
+std::string BuildableReference::
+resolve(std::string const &container) const
+{
+    std::string referencedContainer = _referencedContainer.empty() ? "" : "/" + _referencedContainer;
+
+    if (_referencedContainerType == "container") {
+        return container + referencedContainer;
+    } else if (_referencedContainerType == "absolute") {
+        return referencedContainer;
+    } else {
+        fprintf(stderr, "error: unknown container type %s\n", _referencedContainerType.c_str());
+        return referencedContainer;
+    }
+}
+
 bool BuildableReference::
 parse(plist::Dictionary const *dict)
 {
