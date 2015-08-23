@@ -117,6 +117,10 @@ private:
 public:
     static Manager::shared_ptr
     Open(Manager::shared_ptr parent, std::string const &path);
+
+public:
+    static std::string
+    SpecificationRoot(std::string const &developerRoot);
 };
 
 }

@@ -8,26 +8,28 @@
 int
 main(int argc, char **argv)
 {
-    if (argc < 4) {
-        fprintf(stderr, "usage: %s developer project specs\n", argv[0]);
+    if (argc < 2) {
+        fprintf(stderr, "usage: %s project\n", argv[0]);
         return -1;
     }
 
-    std::shared_ptr<xcsdk::SDK::Manager> xcsdk_manager = xcsdk::SDK::Manager::Open(argv[1]);
+    std::string developerRoot = xcsdk::Environment::DeveloperRoot();
+    std::shared_ptr<xcsdk::SDK::Manager> xcsdk_manager = xcsdk::SDK::Manager::Open(developerRoot);
     if (!xcsdk_manager) {
-        fprintf(stderr, "no developer dir found at %s\n", argv[1]);
+        fprintf(stderr, "no sdks found\n");
         return -1;
     }
 
-    auto project = pbxproj::PBX::Project::Open(argv[2]);
+    auto project = pbxproj::PBX::Project::Open(argv[1]);
     if (!project) {
-        fprintf(stderr, "error opening project at %s (%s)\n", argv[2], strerror(errno));
+        fprintf(stderr, "error opening project at %s (%s)\n", argv[1], strerror(errno));
         return -1;
     }
 
-    auto spec_manager = pbxspec::Manager::Open(nullptr, argv[3]);
+    std::string specificationRoot = pbxspec::Manager::SpecificationRoot(developerRoot);
+    auto spec_manager = pbxspec::Manager::Open(nullptr, specificationRoot);
     if (!spec_manager) {
-        fprintf(stderr, "error opening specifications at %s (%s)\n", argv[3], strerror(errno));
+        fprintf(stderr, "error opening specifications at %s (%s)\n", specificationRoot.c_str(), strerror(errno));
         return -1;
     }
 

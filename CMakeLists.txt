@@ -129,6 +129,7 @@ set(libxcworkspace_SOURCES
     )
 
 set(libxcsdk_SOURCES
+    Sources/xcsdk/Environment.cpp
     Sources/xcsdk/SDK/Manager.cpp
     Sources/xcsdk/SDK/Platform.cpp
     Sources/xcsdk/SDK/PlatformVersion.cpp

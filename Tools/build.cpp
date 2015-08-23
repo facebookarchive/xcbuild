@@ -11,8 +11,8 @@
 int
 main(int argc, char **argv)
 {
-    if (argc < 7) {
-        printf("Usage: %s workspace scheme config action developerdir specroot\n", argv[0]);
+    if (argc < 5) {
+        printf("Usage: %s workspace scheme config action\n", argv[0]);
         return 1;
     }
 
@@ -41,13 +41,15 @@ main(int argc, char **argv)
         return 1;
     }
 
-    std::shared_ptr<xcsdk::SDK::Manager> xcsdk_manager = xcsdk::SDK::Manager::Open(argv[5]);
+    std::string developerRoot = xcsdk::Environment::DeveloperRoot();
+    std::shared_ptr<xcsdk::SDK::Manager> xcsdk_manager = xcsdk::SDK::Manager::Open(developerRoot);
     if (!xcsdk_manager) {
         fprintf(stderr, "no developer dir found\n");
         return -1;
     }
 
-    auto spec_manager = pbxspec::Manager::Open(nullptr, argv[6]);
+    std::string specificationRoot = pbxspec::Manager::SpecificationRoot(developerRoot);
+    auto spec_manager = pbxspec::Manager::Open(nullptr, specificationRoot);
     if (!spec_manager) {
         fprintf(stderr, "error opening specifications\n");
         return -1;

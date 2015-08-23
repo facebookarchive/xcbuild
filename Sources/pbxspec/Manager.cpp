@@ -263,3 +263,8 @@ Open(Manager::shared_ptr parent, std::string const &path)
     return manager;
 }
 
+std::string Manager::
+SpecificationRoot(std::string const &developerRoot)
+{
+    return developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents";
+}
