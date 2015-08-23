@@ -41,29 +41,15 @@ main(int argc, char **argv)
         return 1;
     }
 
-    std::string developerRoot = xcsdk::Environment::DeveloperRoot();
-    std::shared_ptr<xcsdk::SDK::Manager> xcsdk_manager = xcsdk::SDK::Manager::Open(developerRoot);
-    if (!xcsdk_manager) {
-        fprintf(stderr, "no developer dir found\n");
-        return -1;
-    }
+    pbxbuild::BuildContext::shared_ptr buildContext = pbxbuild::BuildContext::Default();
 
-    std::string specificationRoot = pbxspec::Manager::SpecificationRoot(developerRoot);
-    auto spec_manager = pbxspec::Manager::Open(nullptr, specificationRoot);
-    if (!spec_manager) {
-        fprintf(stderr, "error opening specifications\n");
-        return -1;
-    }
-
-    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = spec_manager->buildSystem("com.apple.build-system.core");
-
-    auto platform = *std::find_if(xcsdk_manager->platforms().begin(), xcsdk_manager->platforms().end(), [](std::shared_ptr<xcsdk::SDK::Platform> platform) -> bool {
+    auto platform = *std::find_if(buildContext->sdkManager()->platforms().begin(), buildContext->sdkManager()->platforms().end(), [](std::shared_ptr<xcsdk::SDK::Platform> platform) -> bool {
         return platform->name() == "iphoneos";
     });
     auto sdk = platform->targets().front();
 
     // NOTE(grp): Some platforms have specifications in other directories besides the primary Specifications folder.
-    auto platformSpecifications = pbxspec::Manager::Open(spec_manager, platform->path() + "/Developer/Library/Xcode");
+    auto platformSpecifications = pbxspec::Manager::Open(buildContext->specManager(), platform->path() + "/Developer/Library/Xcode");
 
     pbxspec::PBX::Architecture::vector architectures = platformSpecifications->architectures();
     std::vector<pbxsetting::Setting> architectureSettings;
@@ -97,12 +83,9 @@ main(int argc, char **argv)
     base_levels.push_back(sdk->defaultProperties());
     base_levels.push_back(architectureLevel);
     base_levels.push_back(platform->defaultProperties());
-    base_levels.push_back(xcsdk_manager->computedSettings());
 
-    std::vector<pbxsetting::Level> defaultLevels = pbxsetting::DefaultSettings::Levels();
+    std::vector<pbxsetting::Level> defaultLevels = buildContext->baseEnvironment().assignment();
     base_levels.insert(base_levels.end(), defaultLevels.begin(), defaultLevels.end());
-
-    base_levels.push_back(buildSystem->defaultSettings());
 
     pbxsetting::Environment base_environment = pbxsetting::Environment(base_levels, base_levels);
 

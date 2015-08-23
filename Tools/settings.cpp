@@ -4,6 +4,7 @@
 #include <xcsdk/xcsdk.h>
 #include <pbxproj/pbxproj.h>
 #include <pbxspec/pbxspec.h>
+#include <pbxbuild/pbxbuild.h>
 
 int
 main(int argc, char **argv)
@@ -13,23 +14,11 @@ main(int argc, char **argv)
         return -1;
     }
 
-    std::string developerRoot = xcsdk::Environment::DeveloperRoot();
-    std::shared_ptr<xcsdk::SDK::Manager> xcsdk_manager = xcsdk::SDK::Manager::Open(developerRoot);
-    if (!xcsdk_manager) {
-        fprintf(stderr, "no sdks found\n");
-        return -1;
-    }
+    pbxbuild::BuildContext::shared_ptr buildContext = pbxbuild::BuildContext::Default();
 
     auto project = pbxproj::PBX::Project::Open(argv[1]);
     if (!project) {
         fprintf(stderr, "error opening project at %s (%s)\n", argv[1], strerror(errno));
-        return -1;
-    }
-
-    std::string specificationRoot = pbxspec::Manager::SpecificationRoot(developerRoot);
-    auto spec_manager = pbxspec::Manager::Open(nullptr, specificationRoot);
-    if (!spec_manager) {
-        fprintf(stderr, "error opening specifications at %s (%s)\n", specificationRoot.c_str(), strerror(errno));
         return -1;
     }
 
@@ -54,13 +43,13 @@ main(int argc, char **argv)
     });
     printf("Target Configuration: %s\n", targetConfiguration->name().c_str());
 
-    auto platform = *std::find_if(xcsdk_manager->platforms().begin(), xcsdk_manager->platforms().end(), [](std::shared_ptr<xcsdk::SDK::Platform> platform) -> bool {
+    auto platform = *std::find_if(buildContext->sdkManager()->platforms().begin(), buildContext->sdkManager()->platforms().end(), [](std::shared_ptr<xcsdk::SDK::Platform> platform) -> bool {
         return platform->name() == "iphoneos";
     });
     printf("Platform: %s\n", platform->name().c_str());
 
     // NOTE(grp): Some platforms have specifications in other directories besides the primary Specifications folder.
-    auto platformSpecifications = pbxspec::Manager::Open(spec_manager, platform->path() + "/Developer/Library/Xcode");
+    auto platformSpecifications = pbxspec::Manager::Open(buildContext->specManager(), platform->path() + "/Developer/Library/Xcode");
 
     auto sdk = platform->targets().front();
     printf("SDK: %s\n", sdk->displayName().c_str());
@@ -69,7 +58,6 @@ main(int argc, char **argv)
     assert(target->isa() == pbxproj::PBX::NativeTarget::Isa());
     pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::dynamic_pointer_cast<pbxproj::PBX::NativeTarget>(target);
 
-    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = spec_manager->buildSystem("com.apple.build-system.native");
     pbxspec::PBX::ProductType::shared_ptr productType = platformSpecifications->productType(nativeTarget->productType());
     // TODO(grp): Should this always use the first package type?
     pbxspec::PBX::PackageType::shared_ptr packageType = platformSpecifications->packageType(productType->packageTypes().at(0));
@@ -123,12 +111,9 @@ main(int argc, char **argv)
     base_levels.push_back(sdk->defaultProperties());
     base_levels.push_back(architectureLevel);
     base_levels.push_back(platform->defaultProperties());
-    base_levels.push_back(xcsdk_manager->computedSettings());
 
-    std::vector<pbxsetting::Level> defaultLevels = pbxsetting::DefaultSettings::Levels();
+    std::vector<pbxsetting::Level> defaultLevels = buildContext->baseEnvironment().assignment();
     base_levels.insert(base_levels.end(), defaultLevels.begin(), defaultLevels.end());
-
-    base_levels.push_back(buildSystem->defaultSettings());
 
     pbxsetting::Environment base_environment = pbxsetting::Environment(base_levels, base_levels);
 

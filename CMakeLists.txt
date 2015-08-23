@@ -186,6 +186,7 @@ set(libpbxspec_SOURCES
     )
 
 set(libpbxbuild_SOURCES
+    Sources/pbxbuild/BuildContext.cpp
     Sources/pbxbuild/BuildGraph.cpp
     Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
@@ -211,7 +212,7 @@ add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxsetting pbxbase)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-target_link_libraries(pbxbuild xcworkspace xcscheme pbxproj pbxspec)
+target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec)
 
 add_executable(plist Tools/plist.cpp)
 target_link_libraries(plist pbxbase)
@@ -228,7 +229,7 @@ target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)
 target_link_libraries(xctool pbxbase pbxproj xcscheme xcworkspace)
 add_executable(settings Tools/settings.cpp)
-target_link_libraries(settings pbxbase pbxproj xcsdk pbxsetting pbxspec)
+target_link_libraries(settings pbxbuild pbxbase pbxproj xcsdk pbxsetting pbxspec)
 add_executable(build Tools/build.cpp)
 target_link_libraries(build pbxbase pbxproj xcsdk pbxsetting pbxspec xcworkspace xcscheme pbxbuild)
 

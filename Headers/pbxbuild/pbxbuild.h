@@ -5,6 +5,7 @@
 
 #include <pbxbuild/HeaderMap.h>
 
+#include <pbxbuild/BuildContext.h>
 #include <pbxbuild/SchemeContext.h>
 #include <pbxbuild/DependencyResolver.h>
 
