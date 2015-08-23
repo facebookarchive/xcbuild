@@ -26,6 +26,7 @@ parse(plist::Dictionary const *dict)
         if (!FR->parse(FRd))
             return false;
 
+        FR->_parent = this;
         _items.push_back(FR);
     } else if (auto FRs = dict->value <plist::Array> ("FileRef")) {
         for (size_t n = 0; n < FRs->count(); n++) {
@@ -36,7 +37,8 @@ parse(plist::Dictionary const *dict)
             auto FR = std::make_shared <FileRef> ();
             if (!FR->parse(FRd))
                 return false;
-            
+
+            FR->_parent = this;
             _items.push_back(FR);
         }
     }
@@ -46,6 +48,7 @@ parse(plist::Dictionary const *dict)
         if (!G->parse(Gd))
             return false;
 
+        G->_parent = this;
         _items.push_back(G);
     } else if (auto Gs = dict->value <plist::Array> ("Group")) {
         for (size_t n = 0; n < Gs->count(); n++) {
@@ -56,7 +59,8 @@ parse(plist::Dictionary const *dict)
             auto G = std::make_shared <Group> ();
             if (!G->parse(Gd))
                 return false;
-            
+
+            G->_parent = this;
             _items.push_back(G);
         }
     }

@@ -37,6 +37,9 @@ parse(plist::Dictionary const *dict)
     // Now move the contents
     //
     _items = std::move(G.items());
+    for (GroupItem::shared_ptr &item : _items) {
+        item->_parent = nullptr;
+    }
 
     return true;
 }

@@ -7,6 +7,8 @@
 
 namespace xcworkspace { namespace XC {
 
+class Workspace;
+
 class GroupItem {
 public:
     typedef std::shared_ptr <GroupItem> shared_ptr;
@@ -19,6 +21,9 @@ public:
     };
 
 private:
+    friend class Group;
+    friend class Workspace;
+    GroupItem  *_parent;
     Type        _type;
     std::string _locationType;
     std::string _location;
@@ -29,6 +34,9 @@ protected:
 public:
     inline Type type() const
     { return _type; }
+
+public:
+    std::string resolve(std::shared_ptr<Workspace> const &workspace) const;
 
 public:
     inline std::string const &locationType() const
