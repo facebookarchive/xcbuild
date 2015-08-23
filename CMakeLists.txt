@@ -185,6 +185,7 @@ set(libpbxspec_SOURCES
     )
 
 set(libpbxbuild_SOURCES
+    Sources/pbxbuild/BuildGraph.cpp
     Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/SchemeContext.cpp

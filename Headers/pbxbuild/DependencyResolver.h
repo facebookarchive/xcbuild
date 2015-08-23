@@ -5,6 +5,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/SchemeContext.h>
+#include <pbxbuild/BuildGraph.h>
 
 namespace pbxbuild {
 
@@ -17,7 +18,7 @@ public:
     ~DependencyResolver();
 
 public:
-    pbxproj::PBX::Target::vector
+    BuildGraph
     resolveDependencies(void) const;
 };
 

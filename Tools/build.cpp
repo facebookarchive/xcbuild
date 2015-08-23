@@ -113,7 +113,8 @@ main(int argc, char **argv)
     );
 
     pbxbuild::DependencyResolver resolver = pbxbuild::DependencyResolver(context);
-    std::vector<pbxproj::PBX::Target::shared_ptr> targets = resolver.resolveDependencies();
+    pbxbuild::BuildGraph graph = resolver.resolveDependencies();
+    std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
     printf("Targets:\n");
     for (pbxproj::PBX::Target::shared_ptr const &target : targets) {
