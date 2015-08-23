@@ -144,7 +144,7 @@ ResolveBuildableReference(SchemeContext::shared_ptr const &context, xcscheme::XC
 }
 
 static pbxproj::PBX::Target::shared_ptr
-ResolveContainerItemProxy(SchemeContext::shared_ptr const &context, pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy, pbxproj::PBX::Project::shared_ptr const &project)
+ResolveContainerItemProxy(SchemeContext::shared_ptr const &context, pbxproj::PBX::Project::shared_ptr const &project, pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy, pbxproj::PBX::Project::shared_ptr *outProject)
 {
     pbxproj::PBX::FileReference::shared_ptr fileReference = proxy->containerPortal();
     if (fileReference == nullptr) {
@@ -157,11 +157,20 @@ ResolveContainerItemProxy(SchemeContext::shared_ptr const &context, pbxproj::PBX
     pbxsetting::Environment projectEnvironment = pbxsetting::Environment(levels, levels);
 
     std::string path = projectEnvironment.expand(fileReference->resolve());
-    return ResolveTargetIdentifier(context, path, proxy->remoteGlobalIDString());
+    return ResolveTargetIdentifier(context, path, proxy->remoteGlobalIDString(), outProject);
 }
 
+struct DependenciesContext {
+    SchemeContext::shared_ptr context;
+    Graph<pbxproj::PBX::Target::shared_ptr> *graph;
+    BuildAction::shared_ptr buildAction;
+};
+
 static void
-AddImplicitDependencies(SchemeContext::shared_ptr const &context, Graph<pbxproj::PBX::Target::shared_ptr> &graph, pbxproj::PBX::Target::shared_ptr const &target, pbxproj::PBX::Project::shared_ptr const &project)
+AddDependencies(DependenciesContext const &context, pbxproj::PBX::Project::shared_ptr const &project, pbxproj::PBX::Target::shared_ptr const &target);
+
+static void
+AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Project::shared_ptr const &project, pbxproj::PBX::Target::shared_ptr const &target)
 {
     std::vector<pbxproj::PBX::Target::shared_ptr> dependencies;
 
@@ -178,20 +187,22 @@ AddImplicitDependencies(SchemeContext::shared_ptr const &context, Graph<pbxproj:
                 continue;
             }
 
-            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context, proxy->remoteRef(), project);
+            pbxproj::PBX::Project::shared_ptr proxiedProject = nullptr;
+            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.context, project, proxy->remoteRef(), &proxiedProject);
             if (proxiedTarget != nullptr) {
                 dependencies.push_back(proxiedTarget);
+                AddDependencies(context, proxiedProject, proxiedTarget);
             } else {
                 fprintf(stderr, "warning: was not able to load target for implicit dependency %s (from %s)\n", proxy->remoteRef()->remoteInfo().c_str(), proxy->name().c_str());
             }
         }
     }
 
-    graph.insert(target, dependencies);
+    context.graph->insert(target, dependencies);
 }
 
 static void
-AddExplicitDependencies(SchemeContext::shared_ptr const &context, Graph<pbxproj::PBX::Target::shared_ptr> &graph, pbxproj::PBX::Target::shared_ptr const &target, pbxproj::PBX::Project::shared_ptr const &project)
+AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Project::shared_ptr const &project, pbxproj::PBX::Target::shared_ptr const &target)
 {
     std::vector<pbxproj::PBX::Target::shared_ptr> dependencies;
 
@@ -199,16 +210,28 @@ AddExplicitDependencies(SchemeContext::shared_ptr const &context, Graph<pbxproj:
         if (dependency->target() != nullptr) {
             dependencies.push_back(dependency->target());
         } else if (dependency->targetProxy() != nullptr) {
-            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context, dependency->targetProxy(), project);
+            pbxproj::PBX::Project::shared_ptr proxiedProject = nullptr;
+            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.context, project, dependency->targetProxy(), &proxiedProject);
             if (proxiedTarget != nullptr) {
                 dependencies.push_back(proxiedTarget);
+                AddDependencies(context, proxiedProject, proxiedTarget);
             } else {
                 fprintf(stderr, "warning: was not able to load target for explicit dependency %s\n", dependency->targetProxy()->remoteInfo().c_str());
             }
         }
     }
 
-    graph.insert(target, dependencies);
+    context.graph->insert(target, dependencies);
+}
+
+static void
+AddDependencies(DependenciesContext const &context, pbxproj::PBX::Project::shared_ptr const &project, pbxproj::PBX::Target::shared_ptr const &target)
+{
+    if (context.buildAction->buildImplicitDependencies()) {
+        AddImplicitDependencies(context, project, target);
+    }
+
+    AddExplicitDependencies(context, project, target);
 }
 
 std::vector<pbxproj::PBX::Target::shared_ptr> DependencyResolver::
@@ -231,14 +254,14 @@ resolveDependencies(void) const
             if (!buildAction->parallelizeBuildables()) {
                 graph.insert(target, positional);
             }
-
-            if (buildAction->buildImplicitDependencies()) {
-                AddImplicitDependencies(_context, graph, target, project);
-            }
-
-            AddExplicitDependencies(_context, graph, target, project);
-
             positional.push_back(target);
+
+            DependenciesContext dependenciesContext = {
+                .context = _context,
+                .graph = &graph,
+                .buildAction = buildAction,
+            };
+            AddDependencies(dependenciesContext, project, target);
         }
     }
 
