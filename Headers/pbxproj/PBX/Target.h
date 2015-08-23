@@ -26,6 +26,10 @@ private:
     Type                              _type;
 
 private:
+    friend class Project;
+    Project                          *_project;
+
+private:
     std::string                       _name;
     std::string                       _productName;
     XC::ConfigurationList::shared_ptr _buildConfigurationList;
@@ -38,6 +42,10 @@ protected:
 public:
     inline Type type() const
     { return _type; }
+
+public:
+    inline Project const *project() const
+    { return _project; }
 
 public:
     inline std::string const &name() const
