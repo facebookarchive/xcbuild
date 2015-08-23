@@ -21,14 +21,22 @@ bool BuildFile::
 parse(Context &context, plist::Dictionary const *dict)
 {
     std::string FRID;
+    std::string RPID;
 
     auto FR = context.indirect <FileReference> (dict, "fileRef", &FRID);
+    auto RP = context.indirect <ReferenceProxy> (dict, "fileRef", &RPID);
     auto S  = dict->value <plist::Dictionary> ("settings");
 
     if (FR != nullptr) {
-        _fileRef = context.parseObject(context.fileReferences, FRID, FR);
-        if (!_fileRef)
+        _fileReference = context.parseObject(context.fileReferences, FRID, FR);
+        if (!_fileReference) {
             return false;
+        }
+    } else if (RP != nullptr) {
+        _referenceProxy = context.parseObject(context.referenceProxies, RPID, RP);
+        if (!_referenceProxy) {
+            return false;
+        }
     }
 
     if (S != nullptr) {

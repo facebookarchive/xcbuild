@@ -135,7 +135,7 @@ GetSourceFileReferences(PBX::Project::shared_ptr const &project,
                         auto BP = static_cast <PBX::SourcesBuildPhase *> (J.get());
                         if (BP) {
                             for (auto const &K : BP->files()) {
-                                if (auto const &FR = K->fileRef()) {
+                                if (auto const &FR = K->fileReference()) {
                                     refs.push_back(FR);
                                 }
                             }
@@ -177,7 +177,7 @@ GetHeaderFileReferences(PBX::Project::shared_ptr const &project,
                         auto BP = static_cast <PBX::HeadersBuildPhase *> (J.get());
                         if (BP) {
                             for (auto const &K : BP->files()) {
-                                if (auto const &FR = K->fileRef()) {
+                                if (auto const &FR = K->fileReference()) {
                                     refs.push_back(FR);
                                 }
                             }
@@ -269,7 +269,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                                 BP->runOnlyForDeploymentPostprocessing() ? "YES" : "NO");
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
-                            if (auto FR = K->fileRef()) {
+                            if (auto FR = K->fileReference()) {
                                 printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }
@@ -285,7 +285,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                                 BP->runOnlyForDeploymentPostprocessing() ? "YES" : "NO");
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
-                            if (auto FR = K->fileRef()) {
+                            if (auto FR = K->fileReference()) {
                                 printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }
@@ -301,7 +301,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                                 BP->runOnlyForDeploymentPostprocessing() ? "YES" : "NO");
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
-                            if (auto FR = K->fileRef()) {
+                            if (auto FR = K->fileReference()) {
                                 printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }
@@ -321,8 +321,10 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                                 BP->dstSubfolderSpec());
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
-                            if (auto FR = K->fileRef()) {
+                            if (auto FR = K->fileReference()) {
                                 printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
+                            } else if (auto RP = K->referenceProxy()) {
+                                printf("\t\t\t\t\t%s [proxy]\n", RP->name().c_str());
                             }
                         }
                     }
@@ -337,8 +339,10 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                                 BP->runOnlyForDeploymentPostprocessing() ? "YES" : "NO");
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
-                            if (auto FR = K->fileRef()) {
+                            if (auto FR = K->fileReference()) {
                                 printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
+                            } else if (auto RP = K->referenceProxy()) {
+                                printf("\t\t\t\t\t%s [proxy]\n", RP->name().c_str());
                             }
                         }
                     }
@@ -367,7 +371,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                         }
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {
-                            if (auto FR = K->fileRef()) {
+                            if (auto FR = K->fileReference()) {
                                 printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
                             }
                         }

@@ -4,6 +4,7 @@
 #define __pbxproj_PBX_BuildFile_h
 
 #include <pbxproj/PBX/FileReference.h>
+#include <pbxproj/PBX/ReferenceProxy.h>
 
 namespace pbxproj { namespace PBX {
 
@@ -13,18 +14,25 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    FileReference::shared_ptr  _fileRef;
-    plist::Object             *_settings;
+    FileReference::shared_ptr   _fileReference;
+    ReferenceProxy::shared_ptr  _referenceProxy;
+    plist::Object              *_settings;
 
 public:
     BuildFile();
     ~BuildFile();
 
 public:
-    inline FileReference::shared_ptr const &fileRef() const
-    { return _fileRef; }
-    inline FileReference::shared_ptr &fileRef()
-    { return _fileRef; }
+    inline FileReference::shared_ptr const &fileReference() const
+    { return _fileReference; }
+    inline FileReference::shared_ptr &fileReference()
+    { return _fileReference; }
+
+public:
+    inline ReferenceProxy::shared_ptr const &referenceProxy() const
+    { return _referenceProxy; }
+    inline ReferenceProxy::shared_ptr &referenceProxy()
+    { return _referenceProxy; }
 
 public:
     inline plist::Object const *settings() const

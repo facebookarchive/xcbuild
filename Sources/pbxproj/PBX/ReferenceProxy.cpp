@@ -1,6 +1,7 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxproj/PBX/ReferenceProxy.h>
+#include <pbxproj/Context.h>
 
 using pbxproj::PBX::ReferenceProxy;
 

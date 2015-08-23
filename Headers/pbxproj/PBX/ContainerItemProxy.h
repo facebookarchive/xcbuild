@@ -3,8 +3,7 @@
 #ifndef __pbxproj_PBX_ContainerItemProxy_h
 #define __pbxproj_PBX_ContainerItemProxy_h
 
-#include <pbxproj/PBX/Project.h>
-#include <pbxproj/PBX/Target.h>
+#include <pbxproj/PBX/FileReference.h>
 
 namespace pbxproj { namespace PBX {
 
