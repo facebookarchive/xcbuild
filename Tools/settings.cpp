@@ -35,6 +35,7 @@ main(int argc, char **argv)
 
     auto projectConfigurationList = project->buildConfigurationList();
     std::string projectConfigurationName = projectConfigurationList->defaultConfigurationName();
+    projectConfigurationName = projectConfigurationName.empty() ? "Release" : projectConfigurationName;
     auto projectConfiguration = *std::find_if(projectConfigurationList->begin(), projectConfigurationList->end(), [&](pbxproj::XC::BuildConfiguration::shared_ptr configuration) -> bool {
         return configuration->name() == projectConfigurationName;
     });
@@ -45,6 +46,7 @@ main(int argc, char **argv)
 
     auto targetConfigurationList = target->buildConfigurationList();
     std::string targetConfigurationName = targetConfigurationList->defaultConfigurationName();
+    targetConfigurationName = targetConfigurationName.empty() ? "Release" : targetConfigurationName;
     auto targetConfiguration = *std::find_if(targetConfigurationList->begin(), targetConfigurationList->end(), [&](pbxproj::XC::BuildConfiguration::shared_ptr configuration) -> bool {
         return configuration->name() == targetConfigurationName;
     });
@@ -106,11 +108,44 @@ main(int argc, char **argv)
         pbxsetting::Setting::Parse("PRODUCT_TYPE", productType->identifier()),
     });
 
-    std::vector<pbxsetting::Level> levels;
 
+    std::vector<pbxsetting::Level> base_levels;
+
+    base_levels.push_back(projectConfiguration->buildSettings());
+    base_levels.push_back(project->settings());
+
+    base_levels.push_back(platform->overrideProperties());
+    base_levels.push_back(sdk->customProperties());
+    base_levels.push_back(sdk->settings());
+    base_levels.push_back(platform->settings());
+    base_levels.push_back(sdk->defaultProperties());
+    base_levels.push_back(platform->defaultProperties());
+    base_levels.push_back(xcsdk_manager->computedSettings());
+
+    base_levels.push_back(pbxsetting::DefaultSettings::Environment());
+    base_levels.push_back(pbxsetting::DefaultSettings::Internal());
+    base_levels.push_back(pbxsetting::DefaultSettings::Local());
+    base_levels.push_back(pbxsetting::DefaultSettings::System());
+    base_levels.push_back(pbxsetting::DefaultSettings::Architecture());
+    base_levels.push_back(pbxsetting::DefaultSettings::Build());
+
+    base_levels.push_back(architectureLevel);
+    base_levels.push_back(buildSystem->defaultSettings());
+
+    pbxsetting::Environment base_environment = pbxsetting::Environment(base_levels, base_levels);
+
+
+    std::vector<pbxsetting::Level> levels;
     levels.push_back(config);
 
-    // TODO(grp): targetConfiguration->baseConfigurationReference()
+    if (targetConfiguration->baseConfigurationReference() != nullptr) {
+        pbxsetting::Value targetConfigurationValue = targetConfiguration->baseConfigurationReference()->resolve();
+        std::string targetConfigurationPath = base_environment.expand(targetConfigurationValue);
+        pbxsetting::XC::Config::shared_ptr targetConfigurationFile = pbxsetting::XC::Config::Open(targetConfigurationPath, base_environment);
+        if (targetConfigurationFile != nullptr) {
+            levels.push_back(targetConfigurationFile->level());
+        }
+    }
     levels.push_back(targetConfiguration->buildSettings());
     levels.push_back(target->settings());
 
@@ -118,9 +153,14 @@ main(int argc, char **argv)
     levels.push_back(packageType->defaultBuildSettings());
     levels.push_back(productType->defaultBuildProperties());
 
-    // TODO(grp): projectConfiguration->baseConfigurationReference()
-    levels.push_back(projectConfiguration->buildSettings());
-    levels.push_back(project->settings());
+    if (projectConfiguration->baseConfigurationReference() != nullptr) {
+        pbxsetting::Value projectConfigurationValue = projectConfiguration->baseConfigurationReference()->resolve();
+        std::string projectConfigurationPath = base_environment.expand(projectConfigurationValue);
+        pbxsetting::XC::Config::shared_ptr projectConfigurationFile = pbxsetting::XC::Config::Open(projectConfigurationPath, base_environment);
+        if (projectConfigurationFile != nullptr) {
+            levels.push_back(projectConfigurationFile->level());
+        }
+    }
 
     // TODO(grp): Figure out how these should be specified -- workspaces?
     // TODO(grp): Fix which settings are printed at the end -- appears to be ones with any override? But what about SED?
@@ -133,25 +173,9 @@ main(int argc, char **argv)
         pbxsetting::Setting::Parse("OBJROOT", "$(DERIVED_DATA_DIR)/$(PROJECT_NAME)-cpmowfgmqamrjrfvwivglsgfzkff/Build/Intermediates"),
     }));
 
-    levels.push_back(platform->overrideProperties());
-    levels.push_back(sdk->customProperties());
-    levels.push_back(sdk->settings());
-    levels.push_back(platform->settings());
-    levels.push_back(sdk->defaultProperties());
-    levels.push_back(platform->defaultProperties());
-    levels.push_back(xcsdk_manager->computedSettings());
-
-    levels.push_back(pbxsetting::DefaultSettings::Environment());
-    levels.push_back(pbxsetting::DefaultSettings::Internal());
-    levels.push_back(pbxsetting::DefaultSettings::Local());
-    levels.push_back(pbxsetting::DefaultSettings::System());
-    levels.push_back(pbxsetting::DefaultSettings::Architecture());
-    levels.push_back(pbxsetting::DefaultSettings::Build());
-
-    levels.push_back(architectureLevel);
-    levels.push_back(buildSystem->defaultSettings());
-
+    levels.insert(levels.end(), base_environment.assignment().begin(), base_environment.assignment().end());
     pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);
+
 
     pbxsetting::Condition condition = pbxsetting::Condition({
         { "sdk", sdk->canonicalName() },
