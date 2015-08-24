@@ -123,8 +123,8 @@ TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX:
         return specManager->buildSystem("com.apple.build-system.native");
     } else if (target->type() == pbxproj::PBX::Target::kTypeLegacy) {
         return specManager->buildSystem("com.apple.build-system.jam");
-    // } else if (target->type() == pbxproj::PBX::Target::kTypeAggregate) {
-    //    return specManager->buildSystem("com.apple.build-system.external");
+    } else if (target->type() == pbxproj::PBX::Target::kTypeAggregate) {
+       return specManager->buildSystem("com.apple.build-system.external");
     } else {
         fprintf(stderr, "error: unknown target type\n");
         return nullptr;

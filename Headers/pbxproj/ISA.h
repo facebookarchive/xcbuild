@@ -5,6 +5,7 @@
 
 namespace pbxproj { namespace ISA {
 
+extern char const * const PBXAggregateTarget;
 extern char const * const PBXBuildFile;
 extern char const * const PBXBuildRule;
 extern char const * const PBXContainerItemProxy;

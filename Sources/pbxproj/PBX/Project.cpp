@@ -1,6 +1,7 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxproj/PBX/Project.h>
+#include <pbxproj/PBX/AggregateTarget.h>
 #include <pbxproj/PBX/LegacyTarget.h>
 #include <pbxproj/PBX/NativeTarget.h>
 
@@ -108,6 +109,15 @@ Project::parse(Context &context, plist::Dictionary const *dict)
                 _targets.push_back(T);
             } else if (auto Td = context.get <LegacyTarget> (Ts->value(n), &TID)) {
                 auto T = context.parseObject(context.legacyTargets, TID, Td);
+                if (!T) {
+                    abort();
+                    return false;
+                }
+
+                T->_project = this;
+                _targets.push_back(T);
+            } else if (auto Td = context.get <AggregateTarget> (Ts->value(n), &TID)) {
+                auto T = context.parseObject(context.aggregateTargets, TID, Td);
                 if (!T) {
                     abort();
                     return false;

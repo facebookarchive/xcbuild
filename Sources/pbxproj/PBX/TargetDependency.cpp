@@ -3,6 +3,7 @@
 #include <pbxproj/PBX/TargetDependency.h>
 #include <pbxproj/PBX/ContainerItemProxy.h>
 #include <pbxproj/PBX/NativeTarget.h>
+#include <pbxproj/PBX/AggregateTarget.h>
 #include <pbxproj/PBX/LegacyTarget.h>
 
 using pbxproj::PBX::TargetDependency;
@@ -20,6 +21,12 @@ parse(Context &context, plist::Dictionary const *dict)
 
     if (auto T = context.indirect <NativeTarget> (dict, "target", &TID)) {
         _target = context.parseObject(context.nativeTargets, TID, T);
+        if (!_target) {
+            abort();
+            return false;
+        }
+    } else if (auto T = context.indirect <AggregateTarget> (dict, "target", &TID)) {
+        _target = context.parseObject(context.aggregateTargets, TID, T);
         if (!_target) {
             abort();
             return false;

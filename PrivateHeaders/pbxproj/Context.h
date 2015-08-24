@@ -20,6 +20,7 @@ class VariantGroup;
 class FileReference;
 class ReferenceProxy;
 class NativeTarget;
+class AggregateTarget;
 class LegacyTarget;
 class ContainerItemProxy;
 class TargetDependency;
@@ -63,6 +64,7 @@ public:
     std::map <std::string, std::shared_ptr <PBX::Group>>                 groups;
     std::map <std::string, std::shared_ptr <PBX::VariantGroup>>          variantGroups;
     std::map <std::string, std::shared_ptr <PBX::NativeTarget>>          nativeTargets;
+    std::map <std::string, std::shared_ptr <PBX::AggregateTarget>>       aggregateTargets;
     std::map <std::string, std::shared_ptr <PBX::LegacyTarget>>          legacyTargets;
     std::map <std::string, std::shared_ptr <PBX::TargetDependency>>      targetDependencies;
     std::map <std::string, std::shared_ptr <PBX::ContainerItemProxy>>    containerItemProxies;

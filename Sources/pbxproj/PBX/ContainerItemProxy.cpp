@@ -2,9 +2,6 @@
 
 #include <pbxproj/PBX/ContainerItemProxy.h>
 
-#include <pbxproj/PBX/NativeTarget.h>
-#include <pbxproj/PBX/LegacyTarget.h>
-
 using pbxproj::PBX::ContainerItemProxy;
 
 ContainerItemProxy::ContainerItemProxy() :

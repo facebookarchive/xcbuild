@@ -3,6 +3,7 @@
 #ifndef __pbxproj_pbxproj_h
 #define __pbxproj_pbxproj_h
 
+#include <pbxproj/PBX/AggregateTarget.h>
 #include <pbxproj/PBX/BuildFile.h>
 #include <pbxproj/PBX/BuildPhase.h>
 #include <pbxproj/PBX/BuildPhases.h>

@@ -19,7 +19,8 @@ public:
 public:
     enum Type {
         kTypeNative,
-        kTypeLegacy
+        kTypeLegacy,
+        kTypeAggregate
     };
 
 private:
