@@ -93,7 +93,11 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("HasInfoPlistStrings"),
         plist::MakeKey <plist::Boolean> ("IsWrapper"),
         plist::MakeKey <plist::Boolean> ("SupportsZeroLink"),
-        plist::MakeKey <plist::Boolean> ("AlwaysPerformSeparateStrip"));
+        plist::MakeKey <plist::Boolean> ("AlwaysPerformSeparateStrip"),
+        plist::MakeKey <plist::Boolean> ("WantsSimpleTargetEditing"),
+        plist::MakeKey <plist::Boolean> ("AddWatchCompanionRequirement"),
+        plist::MakeKey <plist::Boolean> ("DisableSchemeAutocreation"),
+        plist::MakeKey <plist::String> ("RunpathSearchPathForEmbeddedFrameworks"));
 
     if (!Specification::parse(manager, dict))
         return false;
@@ -108,6 +112,10 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
     auto IW   = dict->value <plist::Boolean> ("IsWrapper");
     auto SZL  = dict->value <plist::Boolean> ("SupportsZeroLink");
     auto APSS = dict->value <plist::Boolean> ("AlwaysPerformSeparateStrip");
+    auto WSTE = dict->value <plist::Boolean> ("WantsSimpleTargetEditing");
+    auto AWCR = dict->value <plist::Boolean> ("AddWatchCompanionRequirement");
+    auto DSA  = dict->value <plist::Boolean> ("DisableSchemeAutocreation");
+    auto RSEF = dict->value <plist::String> ("RunpathSearchPathForEmbeddedFrameworks");
 
     if (DTN != nullptr) {
         _defaultTargetName = DTN->value();
@@ -165,6 +173,22 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 
     if (APSS != nullptr) {
         _alwaysPerformSeparateStrip = APSS->value();
+    }
+
+    if (WSTE != nullptr) {
+        _wantsSimpleTargetEditing = WSTE->value();
+    }
+
+    if (AWCR != nullptr) {
+        _addWatchCompanionRequirement = AWCR->value();
+    }
+
+    if (DSA != nullptr) {
+        _disableSchemeAutocreation = DSA->value();
+    }
+
+    if (RSEF != nullptr) {
+        _runpathSearchPathForEmbeddedFrameworks = RSEF->value();
     }
 
     return true;

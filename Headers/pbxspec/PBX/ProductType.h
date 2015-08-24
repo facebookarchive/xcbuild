@@ -24,6 +24,10 @@ protected:
     bool                    _isWrapper;
     bool                    _supportsZeroLink;
     bool                    _alwaysPerformSeparateStrip;
+    bool                    _wantsSimpleTargetEditing;
+    bool                    _addWatchCompanionRequirement;
+    bool                    _disableSchemeAutocreation;
+    std::string             _runpathSearchPathForEmbeddedFrameworks;
 
 protected:
     ProductType(bool isDefault);
@@ -77,6 +81,22 @@ public:
 public:
     inline bool alwaysPerformSeparateStrip() const
     { return _alwaysPerformSeparateStrip; }
+
+public:
+    inline bool wantsSimpleTargetEditing() const
+    { return _wantsSimpleTargetEditing; }
+
+public:
+    inline bool addWatchCompanionRequirement() const
+    { return _addWatchCompanionRequirement; }
+
+public:
+    inline bool disableSchemeAutocreation() const
+    { return _disableSchemeAutocreation; }
+
+public:
+    inline std::string const &runpathSearchPathForEmbeddedFrameworks() const
+    { return _runpathSearchPathForEmbeddedFrameworks; }
 
 protected:
     friend class Specification;
