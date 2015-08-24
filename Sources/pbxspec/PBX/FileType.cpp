@@ -198,6 +198,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
             plist::MakeKey <plist::Boolean> ("IsPreprocessed"),
             plist::MakeKey <plist::Boolean> ("IsTransparent"),
             plist::MakeKey <plist::Boolean> ("IsDocumentation"),
+            plist::MakeKey <plist::Boolean> ("IsEmbeddable"),
             plist::MakeKey <plist::Boolean> ("IsExecutable"),
             plist::MakeKey <plist::Boolean> ("IsExecutableWithGUI"),
             plist::MakeKey <plist::Boolean> ("IsApplication"),
@@ -220,7 +221,10 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
             plist::MakeKey <plist::Boolean> ("ContainsNativeCode"),
             plist::MakeKey <plist::String> ("PlistStructureDefinition"),
             plist::MakeKey <plist::Boolean> ("ChangesCauseDependencyGraphInvalidation"),
-            plist::MakeKey <plist::String> ("FallbackAutoroutingBuildPhase"));
+            plist::MakeKey <plist::String> ("FallbackAutoroutingBuildPhase"),
+            plist::MakeKey <plist::Boolean> ("CodeSignOnCopy"),
+            plist::MakeKey <plist::Boolean> ("RemoveHeadersOnCopy"),
+            plist::MakeKey <plist::Boolean> ("ValidateOnCopy"));
 
     if (!Specification::parse(manager, dict))
         return false;
@@ -243,6 +247,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
     auto IP    = dict->value <plist::Boolean> ("IsPreprocessed");
     auto IT    = dict->value <plist::Boolean> ("IsTransparent");
     auto ID    = dict->value <plist::Boolean> ("IsDocumentation");
+    auto IEM   = dict->value <plist::Boolean> ("IsEmbeddable");
     auto IE    = dict->value <plist::Boolean> ("IsExecutable");
     auto IEWG  = dict->value <plist::Boolean> ("IsExecutableWithGUI");
     auto IA    = dict->value <plist::Boolean> ("IsApplication");
@@ -266,6 +271,9 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
     auto PDS   = dict->value <plist::String> ("PlistStructureDefinition");
     auto CCDGI = dict->value <plist::Boolean> ("ChangesCauseDependencyGraphInvalidation");
     auto FABP  = dict->value <plist::String> ("FallbackAutoroutingBuildPhase");
+    auto CSOC  = dict->value <plist::Boolean> ("CodeSignOnCopy");
+    auto RHOC  = dict->value <plist::Boolean> ("RemoveHeadersOnCopy");
+    auto VOC   = dict->value <plist::Boolean> ("ValidateOnCopy");
 
     if (U != nullptr) {
         _uti = U->value();
@@ -367,6 +375,10 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 
     if (IT != nullptr) {
         _isTransparent = IT->value();
+    }
+
+    if (IEM != nullptr) {
+        _isEmbeddable = IEM->value();
     }
 
     if (IE != nullptr) {
@@ -474,6 +486,18 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 
     if (FABP != nullptr) {
         _fallbackAutoroutingBuildPhase = FABP->value();
+    }
+
+    if (CSOC != nullptr) {
+        _codeSignOnCopy = CSOC->value();
+    }
+
+    if (RHOC != nullptr) {
+        _removeHeadersOnCopy = RHOC->value();
+    }
+
+    if (VOC != nullptr) {
+        _validateOnCopy = VOC->value();
     }
 
     return true;

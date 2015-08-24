@@ -71,6 +71,7 @@ protected:
     bool                   _isPreprocessed;
     bool                   _isTransparent;
     bool                   _isDocumentation;
+    bool                   _isEmbeddable;
     bool                   _isExecutable;
     bool                   _isExecutableWithGUI;
     bool                   _isApplication;
@@ -92,6 +93,9 @@ protected:
     bool                   _appliesToBuildRules;
     bool                   _changesCauseDependencyGraphInvalidation;
     std::string            _fallbackAutoroutingBuildPhase;
+    bool                   _codeSignOnCopy;
+    bool                   _removeHeadersOnCopy;
+    bool                   _validateOnCopy;
 
 protected:
     FileType(bool isDefault);
@@ -147,6 +151,10 @@ public:
 public:
     inline bool isBuildPropertiesFile() const
     { return _isBuildPropertiesFile; }
+
+public:
+    inline bool isEmbeddable() const
+    { return _isEmbeddable; }
 
 public:
     inline bool isExecutable() const
@@ -233,6 +241,14 @@ public:
     { return _changesCauseDependencyGraphInvalidation; }
     inline std::string const &fallbackAutoroutingBuildPhase() const
     { return _fallbackAutoroutingBuildPhase; }
+
+public:
+    inline bool codeSignOnCopy() const
+    { return _codeSignOnCopy; }
+    inline bool removeHeadersOnCopy() const
+    { return _removeHeadersOnCopy; }
+    inline bool validateOnCopy() const
+    { return _validateOnCopy; }
 
 protected:
     friend class Specification;
