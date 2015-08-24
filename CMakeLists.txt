@@ -34,6 +34,8 @@ set(libutil_SOURCES
     Sources/libutil/bsd_fnmatch.c
     Sources/libutil/bsd_glob.c
     Sources/libutil/rfc4648.c
+    #
+    Sources/libutil/md5.c
     )
 
 set(libplist_SOURCES
