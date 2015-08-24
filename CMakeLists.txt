@@ -182,6 +182,7 @@ set(libpbxspec_SOURCES
     Sources/pbxspec/PBX/Tool.cpp
     Sources/pbxspec/PBX/XPCServiceWrapperFileType.cpp
     Sources/pbxspec/XC/CompilerSpecificationClang.cpp
+    Sources/pbxspec/XC/CompilerSpecificationSwift.cpp
     Sources/pbxspec/XC/StaticFrameworkWrapperFileType.cpp
     Sources/pbxspec/XC/ToolSpecificationHeadermapGenerator.cpp
     Sources/pbxspec/XC/ToolSpecificationCompilationDatabaseGenerator.cpp

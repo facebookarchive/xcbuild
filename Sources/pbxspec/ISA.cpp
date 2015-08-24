@@ -39,6 +39,7 @@ char const * const PBXStaticLibraryProductType = "PBXStaticLibraryProductType";
 char const * const PBXTool = "PBXTool";
 char const * const PBXXPCServiceWrapperFileType = "PBXXPCServiceWrapperFileType";
 char const * const XCCompilerSpecificationClang = "XCCompilerSpecificationClang";
+char const * const XCCompilerSpecificationSwift = "XCCompilerSpecificationSwift";
 char const * const XCStaticFrameworkWrapperFileType = "XCStaticFrameworkWrapperFileType";
 char const * const XCToolSpecificationHeadermapGenerator = "XCToolSpecificationHeadermapGenerator";
 char const * const XCToolSpecificationCompilationDatabaseGenerator = "XCToolSpecificationCompilationDatabaseGenerator";

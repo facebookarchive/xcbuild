@@ -38,6 +38,7 @@
 #include <pbxspec/PBX/Tool.h>
 
 #include <pbxspec/XC/CompilerSpecificationClang.h>
+#include <pbxspec/XC/CompilerSpecificationSwift.h>
 #include <pbxspec/XC/ToolSpecificationHeadermapGenerator.h>
 #include <pbxspec/XC/StaticFrameworkWrapperFileType.h>
 

@@ -169,7 +169,7 @@ Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 bool FileType::
 parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 {
-    plist::WarnUnhandledKeys(dict, "BuildPhase",
+    plist::WarnUnhandledKeys(dict, "FileType",
             // Specification
             plist::MakeKey <plist::String> ("Class"),
             plist::MakeKey <plist::String> ("Type"),

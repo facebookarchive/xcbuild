@@ -41,6 +41,7 @@ extern char const * const PBXTool;
 extern char const * const PBXXPCServiceWrapperFileType;
 extern char const * const XCStaticFrameworkWrapperFileType;
 extern char const * const XCCompilerSpecificationClang;
+extern char const * const XCCompilerSpecificationSwift;
 extern char const * const XCToolSpecificationHeadermapGenerator;
 extern char const * const XCToolSpecificationCompilationDatabaseGenerator;
 extern char const * const XCProductPackagingUtilityToolSpecification;

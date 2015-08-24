@@ -4,6 +4,7 @@
 #include <pbxspec/PBX/CompilerSpecificationGcc.h>
 #include <pbxspec/PBX/CompilerSpecificationMig.h>
 #include <pbxspec/XC/CompilerSpecificationClang.h>
+#include <pbxspec/XC/CompilerSpecificationSwift.h>
 #include <pbxspec/Manager.h>
 
 using pbxspec::PBX::Compiler;
@@ -130,6 +131,8 @@ Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         result.reset(new CompilerSpecificationMig(true));
     } else if (C->value() == XC::CompilerSpecificationClang::Isa()) {
         result.reset(new XC::CompilerSpecificationClang(true));
+    } else if (C->value() == XC::CompilerSpecificationSwift::Isa()) {
+        result.reset(new XC::CompilerSpecificationSwift(true));
     } else {
         fprintf(stderr, "warning: compiler class '%s' not recognized\n",
                 C->value().c_str());
