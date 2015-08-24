@@ -8,19 +8,30 @@
 namespace pbxbuild {
 
 class SchemeContext {
+private:
+    xcscheme::XC::Scheme::shared_ptr        _scheme;
+    xcworkspace::XC::Workspace::shared_ptr  _workspace;
+    std::shared_ptr<std::map<std::string, pbxproj::PBX::Project::shared_ptr>> _projects;
+
+private:
+    std::string _action;
+    std::string _configuration;
+
 public:
-    typedef std::shared_ptr <SchemeContext> shared_ptr;
+    SchemeContext(
+        xcscheme::XC::Scheme::shared_ptr const &scheme,
+        xcworkspace::XC::Workspace::shared_ptr const &workspace,
+        std::string const &action,
+        std::string const &configuration
+    );
 
-private:
-    std::string                                              _action;
-    std::string                                              _configuration;
-    xcscheme::XC::Scheme::shared_ptr                         _scheme;
-    xcworkspace::XC::Workspace::shared_ptr                   _workspace;
-    std::map<std::string, pbxproj::PBX::Project::shared_ptr> _projects;
-    pbxsetting::Environment                                  _environment;
-
-private:
-    SchemeContext(std::string action, std::string configuration, xcscheme::XC::Scheme::shared_ptr scheme, xcworkspace::XC::Workspace::shared_ptr workspace, pbxsetting::Environment environment);
+public:
+    xcscheme::XC::Scheme::shared_ptr const &scheme() const
+    { return _scheme; }
+    xcworkspace::XC::Workspace::shared_ptr const &workspace() const
+    { return _workspace; }
+    std::map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects() const
+    { return *_projects; }
 
 public:
     std::string const &action() const
@@ -29,24 +40,11 @@ public:
     { return _configuration; }
 
 public:
-    xcscheme::XC::Scheme::shared_ptr const &scheme() const
-    { return _scheme; }
-    xcworkspace::XC::Workspace::shared_ptr const &workspace() const
-    { return _workspace; }
+    pbxsetting::Level actionSettings(void) const;
+    pbxsetting::Level baseSettings(void) const;
 
 public:
-    std::map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects() const
-    { return _projects; }
-    std::map<std::string, pbxproj::PBX::Project::shared_ptr> &projects()
-    { return _projects; }
-
-public:
-    pbxsetting::Environment const &environment() const
-    { return _environment; }
-
-public:
-    static SchemeContext::shared_ptr
-    Create(std::string action, std::string configuration, xcscheme::XC::Scheme::shared_ptr scheme, xcworkspace::XC::Workspace::shared_ptr workspace, pbxsetting::Environment environment);
+    void registerProject(std::string const &path, pbxproj::PBX::Project::shared_ptr const &project) const;
 };
 
 }

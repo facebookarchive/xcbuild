@@ -4,22 +4,23 @@
 #define __pbxbuild_DependencyResolver_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/SchemeContext.h>
+#include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildGraph.h>
+#include <pbxbuild/SchemeContext.h>
 
 namespace pbxbuild {
 
 class DependencyResolver {
 private:
-    SchemeContext::shared_ptr _context;
+    BuildEnvironment _buildEnvironment;
 
 public:
-    DependencyResolver(SchemeContext::shared_ptr context);
+    DependencyResolver(BuildEnvironment const &buildEnviroment);
     ~DependencyResolver();
 
 public:
     BuildGraph
-    resolveDependencies(void) const;
+    resolveDependencies(SchemeContext const &context) const;
 };
 
 }

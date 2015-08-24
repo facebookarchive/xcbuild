@@ -4,21 +4,22 @@
 #define __pbxbuild_TargetEnvironment_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/BuildContext.h>
+#include <pbxbuild/BuildEnvironment.h>
+#include <pbxbuild/SchemeContext.h>
 
 namespace pbxbuild {
 
 class TargetEnvironment {
 private:
-    BuildContext::shared_ptr _buildContext;
+    BuildEnvironment _buildEnvironment;
 
 public:
-    TargetEnvironment(BuildContext::shared_ptr const &context);
+    TargetEnvironment(BuildEnvironment const &buildEnvironment);
     ~TargetEnvironment();
 
 public:
     std::unique_ptr<pbxsetting::Environment>
-    targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, std::string const &configuration) const;
+    targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, SchemeContext const &context) const;
 };
 
 }

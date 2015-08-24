@@ -1,19 +1,21 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxbuild/DependencyResolver.h>
-#include <pbxbuild/BuildGraph.h>
+#include <pbxbuild/TargetEnvironment.h>
 
 using pbxbuild::DependencyResolver;
 using pbxbuild::SchemeContext;
 using pbxbuild::BuildGraph;
+using pbxbuild::BuildEnvironment;
+using pbxbuild::TargetEnvironment;
 using xcscheme::XC::Scheme;
 using xcscheme::XC::BuildAction;
 using xcscheme::XC::BuildActionEntry;
 using libutil::FSUtil;
 
 DependencyResolver::
-DependencyResolver(SchemeContext::shared_ptr context) :
-    _context(context)
+DependencyResolver(BuildEnvironment const &buildEnvironment) :
+    _buildEnvironment(buildEnvironment)
 {
 }
 
@@ -23,11 +25,11 @@ DependencyResolver::
 }
 
 static pbxproj::PBX::Target::shared_ptr
-ResolveTargetIdentifier(SchemeContext::shared_ptr const &context, std::string const &projectPath, std::string const &identifier)
+ResolveTargetIdentifier(SchemeContext const &context, std::string const &projectPath, std::string const &identifier)
 {
     pbxproj::PBX::Project::shared_ptr project;
-    auto PI = context->projects().find(projectPath);
-    if (PI != context->projects().end()) {
+    auto PI = context.projects().find(projectPath);
+    if (PI != context.projects().end()) {
         project = PI->second;
     } else {
         project = pbxproj::PBX::Project::Open(projectPath);
@@ -53,37 +55,40 @@ ResolveTargetIdentifier(SchemeContext::shared_ptr const &context, std::string co
     }
 
     if (foundTarget != nullptr) {
-        context->projects()[projectPath] = project;
+        context.registerProject(projectPath, project);
     }
 
     return foundTarget;
 }
 
 static pbxproj::PBX::Target::shared_ptr
-ResolveBuildableReference(SchemeContext::shared_ptr const &context, xcscheme::XC::BuildableReference::shared_ptr const &reference)
+ResolveBuildableReference(SchemeContext const &context, xcscheme::XC::BuildableReference::shared_ptr const &reference)
 {
-    std::string path = reference->resolve(context->workspace()->basePath());
+    std::string path = reference->resolve(context.workspace()->basePath());
     return ResolveTargetIdentifier(context, path, reference->blueprintIdentifier());
 }
 
 static pbxproj::PBX::Target::shared_ptr
-ResolveContainerItemProxy(SchemeContext::shared_ptr const &context, pbxproj::PBX::Target::shared_ptr const &target, pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy)
+ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, SchemeContext const &context, pbxproj::PBX::Target::shared_ptr const &target, pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy)
 {
     pbxproj::PBX::FileReference::shared_ptr fileReference = proxy->containerPortal();
     if (fileReference == nullptr) {
         return nullptr;
     }
 
-    std::vector<pbxsetting::Level> levels = context->environment().assignment();
-    levels.insert(levels.begin(), target->project()->settings());
-    pbxsetting::Environment projectEnvironment = pbxsetting::Environment(levels, levels);
+    TargetEnvironment targetEnvironment = TargetEnvironment(buildEnvironment);
+    std::unique_ptr<pbxsetting::Environment> settingsEnvironment = targetEnvironment.targetEnvironment(target, context);
+    if (settingsEnvironment == nullptr) {
+        return nullptr;
+    }
 
-    std::string path = projectEnvironment.expand(fileReference->resolve());
+    std::string path = settingsEnvironment->expand(fileReference->resolve());
     return ResolveTargetIdentifier(context, path, proxy->remoteGlobalIDString());
 }
 
 struct DependenciesContext {
-    SchemeContext::shared_ptr context;
+    BuildEnvironment buildEnvironment;
+    SchemeContext context;
     BuildGraph *graph;
     BuildAction::shared_ptr buildAction;
     std::vector<pbxproj::PBX::Target::shared_ptr> *positional;
@@ -110,7 +115,7 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
                 continue;
             }
 
-            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.context, target, proxy->remoteRef());
+            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, proxy->remoteRef());
             if (proxiedTarget != nullptr) {
                 dependencies.push_back(proxiedTarget);
                 AddDependencies(context, proxiedTarget);
@@ -134,7 +139,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
         if (dependency->target() != nullptr) {
             dependencies.push_back(dependency->target());
         } else if (dependency->targetProxy() != nullptr) {
-            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.context, target, dependency->targetProxy());
+            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, dependency->targetProxy());
             if (proxiedTarget != nullptr) {
                 dependencies.push_back(proxiedTarget);
                 AddDependencies(context, proxiedTarget);
@@ -166,11 +171,11 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
 }
 
 BuildGraph DependencyResolver::
-resolveDependencies(void) const
+resolveDependencies(SchemeContext const &context) const
 {
     BuildGraph graph;
 
-    BuildAction::shared_ptr buildAction = _context->scheme()->buildAction();
+    BuildAction::shared_ptr buildAction = context.scheme()->buildAction();
     if (buildAction == nullptr) {
         fprintf(stderr, "Couldn't get build action.");
         return graph;
@@ -178,11 +183,12 @@ resolveDependencies(void) const
 
     std::vector<pbxproj::PBX::Target::shared_ptr> positional;
     for (BuildActionEntry::shared_ptr const &entry : buildAction->buildActionEntries()) {
-        pbxproj::PBX::Target::shared_ptr target = ResolveBuildableReference(_context, entry->buildableReference());
+        pbxproj::PBX::Target::shared_ptr target = ResolveBuildableReference(context, entry->buildableReference());
 
         if (target != nullptr) {
             DependenciesContext dependenciesContext = {
-                .context = _context,
+                .buildEnvironment = _buildEnvironment,
+                .context = context,
                 .graph = &graph,
                 .buildAction = buildAction,
                 .positional = &positional,

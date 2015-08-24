@@ -11,21 +11,27 @@
 int
 main(int argc, char **argv)
 {
+    std::unique_ptr<pbxbuild::BuildEnvironment> buildEnvironment = pbxbuild::BuildEnvironment::Default();
+    if (buildEnvironment == nullptr) {
+        fprintf(stderr, "error: couldn't create build environment\n");
+        return -1;
+    }
+
     if (argc < 5) {
         printf("Usage: %s workspace scheme config action\n", argv[0]);
-        return 1;
+        return -1;
     }
 
     xcworkspace::XC::Workspace::shared_ptr workspace = xcworkspace::XC::Workspace::Open(argv[1]);
     if (workspace == nullptr) {
         fprintf(stderr, "failed opening workspace\n");
-        return 1;
+        return -1;
     }
 
     xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(workspace->projectFile(), workspace->name());
     if (group == nullptr) {
         fprintf(stderr, "failed opening scheme\n");
-        return 1;
+        return -1;
     }
 
     xcscheme::XC::Scheme::shared_ptr scheme = nullptr;
@@ -38,67 +44,18 @@ main(int argc, char **argv)
     }
     if (scheme == nullptr) {
         fprintf(stderr, "couldn't find scheme\n");
-        return 1;
+        return -1;
     }
 
-    pbxbuild::BuildContext::shared_ptr buildContext = pbxbuild::BuildContext::Default();
-
-    auto platform = *std::find_if(buildContext->sdkManager()->platforms().begin(), buildContext->sdkManager()->platforms().end(), [](std::shared_ptr<xcsdk::SDK::Platform> platform) -> bool {
-        return platform->name() == "iphoneos";
-    });
-    auto sdk = platform->targets().front();
-
-    // NOTE(grp): Some platforms have specifications in other directories besides the primary Specifications folder.
-    auto platformSpecifications = pbxspec::Manager::Open(buildContext->specManager(), platform->path() + "/Developer/Library/Xcode");
-
-    pbxspec::PBX::Architecture::vector architectures = platformSpecifications->architectures();
-    std::vector<pbxsetting::Setting> architectureSettings;
-    std::vector<std::string> platformArchitectures;
-    for (pbxspec::PBX::Architecture::shared_ptr architecture : architectures) {
-        if (!architecture->architectureSetting().empty()) {
-            architectureSettings.push_back(architecture->defaultSetting());
-        }
-        if (architecture->realArchitectures().empty()) {
-            if (std::find(platformArchitectures.begin(), platformArchitectures.end(), architecture->identifier()) == platformArchitectures.end()) {
-                platformArchitectures.push_back(architecture->identifier());
-            }
-        }
-    }
-    std::string platformArchitecturesValue;
-    for (std::string const &arch : platformArchitectures) {
-        if (&arch != &platformArchitectures[0]) {
-            platformArchitecturesValue += " ";
-        }
-        platformArchitecturesValue += arch;
-    }
-    architectureSettings.push_back(pbxsetting::Setting::Parse("VALID_ARCHS", platformArchitecturesValue));
-    pbxsetting::Level architectureLevel = pbxsetting::Level(architectureSettings);
-
-    std::vector<pbxsetting::Level> base_levels;
-
-    base_levels.push_back(platform->overrideProperties());
-    base_levels.push_back(sdk->customProperties());
-    base_levels.push_back(sdk->settings());
-    base_levels.push_back(platform->settings());
-    base_levels.push_back(sdk->defaultProperties());
-    base_levels.push_back(architectureLevel);
-    base_levels.push_back(platform->defaultProperties());
-
-    std::vector<pbxsetting::Level> defaultLevels = buildContext->baseEnvironment().assignment();
-    base_levels.insert(base_levels.end(), defaultLevels.begin(), defaultLevels.end());
-
-    pbxsetting::Environment base_environment = pbxsetting::Environment(base_levels, base_levels);
-
-    pbxbuild::SchemeContext::shared_ptr context = pbxbuild::SchemeContext::Create(
-        argv[3],
-        argv[4],
+    pbxbuild::SchemeContext context = pbxbuild::SchemeContext(
         scheme,
         workspace,
-        base_environment
+        argv[3],
+        argv[4]
     );
 
-    pbxbuild::DependencyResolver resolver = pbxbuild::DependencyResolver(context);
-    pbxbuild::BuildGraph graph = resolver.resolveDependencies();
+    pbxbuild::DependencyResolver resolver = pbxbuild::DependencyResolver(*buildEnvironment);
+    pbxbuild::BuildGraph graph = resolver.resolveDependencies(context);
     std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
     printf("Targets:\n");

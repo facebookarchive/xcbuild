@@ -1,24 +1,18 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxbuild/BuildContext.h>
+#include <pbxbuild/BuildEnvironment.h>
 
-using pbxbuild::BuildContext;
+using pbxbuild::BuildEnvironment;
 
-BuildContext::
-BuildContext(pbxspec::Manager::shared_ptr specManager, std::shared_ptr<xcsdk::SDK::Manager> sdkManager, pbxsetting::Environment baseEnvironment) :
+BuildEnvironment::
+BuildEnvironment(pbxspec::Manager::shared_ptr specManager, std::shared_ptr<xcsdk::SDK::Manager> sdkManager, pbxsetting::Environment baseEnvironment) :
     _specManager(specManager),
     _sdkManager(sdkManager),
     _baseEnvironment(baseEnvironment)
 {
 }
 
-BuildContext::shared_ptr BuildContext::
-Create(pbxspec::Manager::shared_ptr specManager, std::shared_ptr<xcsdk::SDK::Manager> sdkManager, pbxsetting::Environment baseEnvironment)
-{
-    return std::make_shared<BuildContext>(BuildContext(specManager, sdkManager, baseEnvironment));
-}
-
-BuildContext::shared_ptr BuildContext::
+std::unique_ptr<BuildEnvironment> BuildEnvironment::
 Default(void)
 {
     std::string developerRoot = xcsdk::Environment::DeveloperRoot();
@@ -45,5 +39,5 @@ Default(void)
     levels.push_back(buildSystem->defaultSettings());
     pbxsetting::Environment baseEnvironment = pbxsetting::Environment(levels, levels);
 
-    return Create(specManager, sdkManager, baseEnvironment);
+    return std::make_unique<BuildEnvironment>(BuildEnvironment(specManager, sdkManager, baseEnvironment));
 }
