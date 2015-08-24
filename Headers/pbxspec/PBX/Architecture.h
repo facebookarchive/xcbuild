@@ -16,6 +16,8 @@ public:
 protected:
     libutil::string_vector _realArchitectures;
     std::string            _architectureSetting;
+    std::string            _perArchBuildSettingName;
+    std::string            _byteOrder;
     bool                   _listInEnum;
     int                    _sortNumber;
 
@@ -40,6 +42,12 @@ public:
 public:
     inline std::string const &architectureSetting() const
     { return _architectureSetting; }
+    inline std::string const &perArchBuildSettingName() const
+    { return _perArchBuildSettingName; }
+
+public:
+    inline std::string const &byteOrder() const
+    { return _byteOrder; }
 
 public:
     inline bool listInEnum() const

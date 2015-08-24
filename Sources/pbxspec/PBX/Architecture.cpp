@@ -67,16 +67,21 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         // Architecture
         plist::MakeKey <plist::Array> ("RealArchitectures"),
         plist::MakeKey <plist::String> ("ArchitectureSetting"),
+        plist::MakeKey <plist::String> ("PerArchBuildSettingName"),
+        plist::MakeKey <plist::String> ("ByteOrder"),
         plist::MakeKey <plist::Boolean> ("ListInEnum"),
-        plist::MakeKey <plist::Integer> ("SortNumber"));
+        plist::MakeKey <plist::Object> ("SortNumber"));
 
     if (!Specification::parse(manager, dict))
         return false;
 
     auto RAs = dict->value <plist::Array> ("RealArchitectures");
     auto AS  = dict->value <plist::String> ("ArchitectureSetting");
+    auto PAB = dict->value <plist::String> ("PerArchBuildSettingName");
+    auto BO  = dict->value <plist::String> ("ByteOrder");
     auto LIE = dict->value <plist::Boolean> ("ListInEnum");
-    auto SN  = dict->value <plist::Boolean> ("SortNumber");
+    auto SNi = dict->value <plist::Integer> ("SortNumber");
+    auto SNs = dict->value <plist::String> ("SortNumber");
 
     if (RAs != nullptr) {
         for (size_t n = 0; n < RAs->count(); n++) {
@@ -90,12 +95,22 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         _architectureSetting = AS->value();
     }
 
+    if (PAB != nullptr) {
+        _perArchBuildSettingName = PAB->value();
+    }
+
+    if (BO != nullptr) {
+        _byteOrder = BO->value();
+    }
+
     if (LIE != nullptr) {
         _listInEnum = LIE->value();
     }
 
-    if (SN != nullptr) {
-        _sortNumber = SN->value();
+    if (SNi != nullptr) {
+        _sortNumber = SNi->value();
+    } else if (SNs != nullptr) {
+        _sortNumber = std::stoi(SNs->value());
     }
 
     return true;
