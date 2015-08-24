@@ -47,9 +47,9 @@ main(int argc, char **argv)
         return -1;
     }
 
-    pbxbuild::SchemeContext context = pbxbuild::SchemeContext(
-        scheme,
+    pbxbuild::BuildContext context = pbxbuild::BuildContext::Workspace(
         workspace,
+        scheme,
         argv[3],
         argv[4]
     );

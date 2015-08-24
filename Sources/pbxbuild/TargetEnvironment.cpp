@@ -132,7 +132,7 @@ TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX:
 }
 
 std::unique_ptr<pbxsetting::Environment> TargetEnvironment::
-targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, SchemeContext const &context) const
+targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context) const
 {
     std::vector<pbxsetting::Level> defaultLevels = _buildEnvironment.baseEnvironment().assignment();
 

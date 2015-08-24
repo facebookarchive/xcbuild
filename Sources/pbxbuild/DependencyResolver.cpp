@@ -4,7 +4,7 @@
 #include <pbxbuild/TargetEnvironment.h>
 
 using pbxbuild::DependencyResolver;
-using pbxbuild::SchemeContext;
+using pbxbuild::BuildContext;
 using pbxbuild::BuildGraph;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::TargetEnvironment;
@@ -25,7 +25,7 @@ DependencyResolver::
 }
 
 static pbxproj::PBX::Target::shared_ptr
-ResolveTargetIdentifier(SchemeContext const &context, std::string const &projectPath, std::string const &identifier)
+ResolveTargetIdentifier(BuildContext const &context, std::string const &projectPath, std::string const &identifier)
 {
     pbxproj::PBX::Project::shared_ptr project;
     auto PI = context.projects().find(projectPath);
@@ -62,14 +62,14 @@ ResolveTargetIdentifier(SchemeContext const &context, std::string const &project
 }
 
 static pbxproj::PBX::Target::shared_ptr
-ResolveBuildableReference(SchemeContext const &context, xcscheme::XC::BuildableReference::shared_ptr const &reference)
+ResolveBuildableReference(BuildContext const &context, xcscheme::XC::BuildableReference::shared_ptr const &reference)
 {
     std::string path = reference->resolve(context.workspace()->basePath());
     return ResolveTargetIdentifier(context, path, reference->blueprintIdentifier());
 }
 
 static pbxproj::PBX::Target::shared_ptr
-ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, SchemeContext const &context, pbxproj::PBX::Target::shared_ptr const &target, pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy)
+ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext const &context, pbxproj::PBX::Target::shared_ptr const &target, pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy)
 {
     pbxproj::PBX::FileReference::shared_ptr fileReference = proxy->containerPortal();
     if (fileReference == nullptr) {
@@ -88,7 +88,7 @@ ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, SchemeContex
 
 struct DependenciesContext {
     BuildEnvironment buildEnvironment;
-    SchemeContext context;
+    BuildContext context;
     BuildGraph *graph;
     BuildAction::shared_ptr buildAction;
     std::vector<pbxproj::PBX::Target::shared_ptr> *positional;
@@ -171,7 +171,7 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
 }
 
 BuildGraph DependencyResolver::
-resolveDependencies(SchemeContext const &context) const
+resolveDependencies(BuildContext const &context) const
 {
     BuildGraph graph;
 

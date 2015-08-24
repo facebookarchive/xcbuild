@@ -6,7 +6,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildGraph.h>
-#include <pbxbuild/SchemeContext.h>
+#include <pbxbuild/BuildContext.h>
 
 namespace pbxbuild {
 
@@ -20,7 +20,7 @@ public:
 
 public:
     BuildGraph
-    resolveDependencies(SchemeContext const &context) const;
+    resolveDependencies(BuildContext const &context) const;
 };
 
 }

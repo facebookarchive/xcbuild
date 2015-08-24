@@ -5,7 +5,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/BuildEnvironment.h>
-#include <pbxbuild/SchemeContext.h>
+#include <pbxbuild/BuildContext.h>
 
 namespace pbxbuild {
 
@@ -19,7 +19,7 @@ public:
 
 public:
     std::unique_ptr<pbxsetting::Environment>
-    targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, SchemeContext const &context) const;
+    targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context) const;
 };
 
 }

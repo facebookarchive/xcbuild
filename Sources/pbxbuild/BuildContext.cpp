@@ -1,26 +1,27 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxbuild/SchemeContext.h>
+#include <pbxbuild/BuildContext.h>
 
-using pbxbuild::SchemeContext;
+using pbxbuild::BuildContext;
 
-SchemeContext::
-SchemeContext(xcscheme::XC::Scheme::shared_ptr const &scheme, xcworkspace::XC::Workspace::shared_ptr const &workspace, std::string const &action, std::string const &configuration) :
-    _scheme(scheme),
+BuildContext::
+BuildContext(pbxproj::PBX::Project::shared_ptr const &project, xcworkspace::XC::Workspace::shared_ptr const &workspace, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration) :
+    _project(project),
     _workspace(workspace),
+    _scheme(scheme),
     _projects(std::make_shared<std::map<std::string, pbxproj::PBX::Project::shared_ptr>>()),
     _action(action),
     _configuration(configuration)
 {
 }
 
-void SchemeContext::
+void BuildContext::
 registerProject(std::string const &path, pbxproj::PBX::Project::shared_ptr const &project) const
 {
     (*_projects)[path] = project;
 }
 
-pbxsetting::Level SchemeContext::
+pbxsetting::Level BuildContext::
 actionSettings(void) const
 {
     return pbxsetting::Level({
@@ -34,7 +35,7 @@ actionSettings(void) const
     });
 }
 
-pbxsetting::Level SchemeContext::
+pbxsetting::Level BuildContext::
 baseSettings(void) const
 {
     return pbxsetting::Level({
@@ -47,3 +48,17 @@ baseSettings(void) const
     });
 }
 
+BuildContext BuildContext::
+Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration)
+{
+    assert(workspace != nullptr);
+    return BuildContext(nullptr, workspace, scheme, action, configuration);
+}
+
+BuildContext BuildContext::
+Project(pbxproj::PBX::Project::shared_ptr const &project, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration)
+{
+    BuildContext buildContext = BuildContext(project, nullptr, scheme, action, configuration);
+    buildContext.registerProject(project->projectFile(), project);
+    return buildContext;
+}

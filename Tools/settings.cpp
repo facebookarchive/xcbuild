@@ -30,8 +30,8 @@ main(int argc, char **argv)
     auto target = project->targets().front();
     printf("Target: %s\n", target->name().c_str());
 
-    pbxbuild::SchemeContext context = pbxbuild::SchemeContext(
-        nullptr,
+    pbxbuild::BuildContext context = pbxbuild::BuildContext::Project(
+        project,
         nullptr,
         "build",
         "Release"
