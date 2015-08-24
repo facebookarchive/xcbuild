@@ -45,6 +45,8 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
     auto C  = dict->value <plist::String> ("Class");
     auto I  = dict->value <plist::String> ("Identifier");
     auto BO = dict->value <plist::String> ("BasedOn");
+    auto DO = dict->value <plist::String> ("Domain");
+    auto GD = dict->value <plist::Boolean> ("IsGlobalDomainInUI");
     auto N  = dict->value <plist::String> ("Name");
     auto D  = dict->value <plist::String> ("Description");
     auto V1 = dict->value <plist::String> ("Vendor");
@@ -84,6 +86,14 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 
     if (I != nullptr) {
         _identifier = I->value();
+    }
+
+    if (DO != nullptr) {
+        _domain = DO->value();
+    }
+
+    if (GD != nullptr) {
+        _isGlobalDomainInUI = GD->value();
     }
 
     if (N != nullptr) {

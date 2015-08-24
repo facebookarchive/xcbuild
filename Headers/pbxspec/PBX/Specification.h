@@ -19,6 +19,8 @@ protected:
     bool                      _isDefault;
     std::string               _clazz;
     std::string               _identifier;
+    std::string               _domain;
+    bool                      _isGlobalDomainInUI;
     std::string               _name;
     std::string               _description;
     std::string               _vendor;
@@ -43,6 +45,14 @@ public:
     { return _clazz; }
     inline std::string const &identifier() const
     { return _identifier; }
+
+public:
+    inline std::string const &domain() const
+    { return _domain; }
+    inline bool isGlobalDomainInUI() const
+    { return _isGlobalDomainInUI; }
+
+public:
     inline std::string const &name() const
     { return _name; }
     inline std::string const &description() const

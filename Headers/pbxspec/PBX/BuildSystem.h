@@ -14,7 +14,6 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    bool                   _isGlobalDomainInUI;
     PropertyOption::vector _options;
     PropertyOption::vector _properties;
 
@@ -31,10 +30,6 @@ public:
 public:
     inline BuildSystem::shared_ptr const &base() const
     { return reinterpret_cast <BuildSystem::shared_ptr const &> (Specification::base()); }
-
-public:
-    inline bool isGlobalDomainInUI() const
-    { return _isGlobalDomainInUI; }
 
 public:
     inline PropertyOption::vector const &options() const

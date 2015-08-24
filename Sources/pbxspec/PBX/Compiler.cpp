@@ -154,6 +154,8 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::String> ("Type"),
         plist::MakeKey <plist::String> ("Identifier"),
         plist::MakeKey <plist::String> ("BasedOn"),
+        plist::MakeKey <plist::String> ("Domain"),
+        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
         plist::MakeKey <plist::String> ("Name"),
         plist::MakeKey <plist::String> ("Description"),
         plist::MakeKey <plist::String> ("Vendor"),

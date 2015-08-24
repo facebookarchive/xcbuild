@@ -5,8 +5,7 @@
 using pbxspec::PBX::BuildSystem;
 
 BuildSystem::BuildSystem(bool isDefault) :
-    Specification      (ISA::PBXBuildSystem, isDefault),
-    _isGlobalDomainInUI(false)
+    Specification      (ISA::PBXBuildSystem, isDefault)
 {
 }
 
@@ -58,25 +57,21 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::String> ("Type"),
         plist::MakeKey <plist::String> ("Identifier"),
         plist::MakeKey <plist::String> ("BasedOn"),
+        plist::MakeKey <plist::String> ("Domain"),
+        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
         plist::MakeKey <plist::String> ("Name"),
         plist::MakeKey <plist::String> ("Description"),
         plist::MakeKey <plist::String> ("Vendor"),
         plist::MakeKey <plist::String> ("Version"),
         // BuildSystem
-        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
         plist::MakeKey <plist::Array> ("Options"),
         plist::MakeKey <plist::Array> ("Properties"));
 
     if (!Specification::parse(manager, dict))
         return false;
 
-    auto IGDIUI = dict->value <plist::Boolean> ("IsGlobalDomainInUI");
-    auto Os     = dict->value <plist::Array> ("Options");
-    auto Ps     = dict->value <plist::Array> ("Properties");
-
-    if (IGDIUI != nullptr) {
-        _isGlobalDomainInUI = IGDIUI->value();
-    }
+    auto Os = dict->value <plist::Array> ("Options");
+    auto Ps = dict->value <plist::Array> ("Properties");
 
     if (Os != nullptr) {
         for (size_t n = 0; n < Os->count(); n++) {
@@ -122,7 +117,6 @@ inherit(BuildSystem::shared_ptr const &b)
 
     auto base = this->base();
 
-    _isGlobalDomainInUI = base->isGlobalDomainInUI();
     _options            = base->options();
     _properties         = base->properties();
 
