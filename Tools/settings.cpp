@@ -37,20 +37,19 @@ main(int argc, char **argv)
         "Release"
     );
 
-    pbxbuild::TargetEnvironment targetEnvironment = pbxbuild::TargetEnvironment(*buildEnvironment);
-    std::unique_ptr<pbxsetting::Environment> environment = targetEnvironment.targetEnvironment(target, context);
-    if (environment == nullptr) {
+    std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = pbxbuild::TargetEnvironment::Create(*buildEnvironment, target, context);
+    if (targetEnvironment == nullptr) {
         fprintf(stderr, "error: couldn't compute environment\n");
         return -1;
     }
 
     pbxsetting::Condition condition = pbxsetting::Condition({
         // { "sdk", sdk->canonicalName() },
-        { "arch", environment->resolve("CURRENT_ARCH") },
-        { "variant", environment->resolve("CURRENT_VARIANT") },
+        { "arch", targetEnvironment->environment().resolve("CURRENT_ARCH") },
+        { "variant", targetEnvironment->environment().resolve("CURRENT_VARIANT") },
     });
 
-    std::unordered_map<std::string, std::string> values = environment->computeValues(condition);
+    std::unordered_map<std::string, std::string> values = targetEnvironment->environment().computeValues(condition);
     std::map<std::string, std::string> orderedValues = std::map<std::string, std::string>(values.begin(), values.end());
 
     printf("\n\nBuild Settings:\n\n");

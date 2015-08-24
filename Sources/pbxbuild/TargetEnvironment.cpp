@@ -3,10 +3,14 @@
 #include <pbxbuild/TargetEnvironment.h>
 
 using pbxbuild::TargetEnvironment;
+using pbxbuild::BuildEnvironment;
+using pbxbuild::BuildContext;
 
 TargetEnvironment::
-TargetEnvironment(pbxbuild::BuildEnvironment const &buildEnvironment) :
-    _buildEnvironment(buildEnvironment)
+TargetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context) :
+    _buildEnvironment(buildEnvironment),
+    _target(target),
+    _context(context)
 {
 }
 
@@ -46,12 +50,12 @@ LoadConfigurationFile(pbxproj::XC::BuildConfiguration::shared_ptr const &buildCo
 }
 
 static pbxsetting::Level
-PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &platformSpecifications, xcsdk::SDK::Target::shared_ptr const &sdk)
+PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, xcsdk::SDK::Target::shared_ptr const &sdk)
 {
     std::vector<pbxsetting::Setting> architectureSettings;
     std::vector<std::string> platformArchitectures;
 
-    pbxspec::PBX::Architecture::vector architectures = platformSpecifications->architectures(sdk->platform()->name());
+    pbxspec::PBX::Architecture::vector architectures = specManager->architectures(sdk->platform()->name());
     for (pbxspec::PBX::Architecture::shared_ptr const &architecture : architectures) {
         if (!architecture->architectureSetting().empty()) {
             architectureSettings.push_back(architecture->defaultSetting());
@@ -94,14 +98,8 @@ FindPlatformTarget(std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, std::
 }
 
 static pbxsetting::Level
-PackageProductTypeLevel(pbxspec::Manager::shared_ptr const &platformSpecifications, xcsdk::SDK::Target::shared_ptr const &sdk, pbxproj::PBX::Target::shared_ptr const &target)
+PackageProductTypeLevel(pbxspec::PBX::PackageType::shared_ptr const &packageType, pbxspec::PBX::ProductType::shared_ptr const &productType)
 {
-    pbxproj::PBX::NativeTarget *nativeTarget = reinterpret_cast<pbxproj::PBX::NativeTarget *>(target.get());
-
-    pbxspec::PBX::ProductType::shared_ptr productType = platformSpecifications->productType(nativeTarget->productType(), sdk->platform()->name());
-    // FIXME(grp): Should this always use the first package type?
-    pbxspec::PBX::PackageType::shared_ptr packageType = platformSpecifications->packageType(productType->packageTypes().at(0), sdk->platform()->name());
-
     std::vector<pbxsetting::Setting> settings = {
         pbxsetting::Setting::Parse("PACKAGE_TYPE", packageType->identifier()),
         pbxsetting::Setting::Parse("PRODUCT_TYPE", productType->identifier()),
@@ -131,10 +129,10 @@ TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, xcsdk::SDK::T
     }
 }
 
-std::unique_ptr<pbxsetting::Environment> TargetEnvironment::
-targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context) const
+std::unique_ptr<TargetEnvironment> TargetEnvironment::
+Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context)
 {
-    std::vector<pbxsetting::Level> defaultLevels = _buildEnvironment.baseEnvironment().assignment();
+    std::vector<pbxsetting::Level> defaultLevels = buildEnvironment.baseEnvironment().assignment();
 
     pbxproj::XC::BuildConfiguration::shared_ptr projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), context.configuration());
     if (projectConfiguration == nullptr) {
@@ -180,16 +178,36 @@ targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, BuildContext c
     }
 
     std::string sdkroot = targetEnvironment.resolve("SDKROOT");
-    xcsdk::SDK::Target::shared_ptr sdk = FindPlatformTarget(_buildEnvironment.sdkManager(), sdkroot);
+    xcsdk::SDK::Target::shared_ptr sdk = FindPlatformTarget(buildEnvironment.sdkManager(), sdkroot);
     if (sdk == nullptr) {
         fprintf(stderr, "error: unable to find sdkroot %s\n", sdkroot.c_str());
         return nullptr;
     }
 
     std::string platformSpecificationPath = pbxspec::Manager::DomainSpecificationRoot(sdk->platform()->path());
-    _buildEnvironment.specManager()->registerDomain(sdk->platform()->name(), platformSpecificationPath);
+    buildEnvironment.specManager()->registerDomain(sdk->platform()->name(), platformSpecificationPath);
 
-    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(_buildEnvironment.specManager(), sdk, target);
+    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(buildEnvironment.specManager(), sdk, target);
+    if (buildSystem == nullptr) {
+        return nullptr;
+    }
+
+    pbxspec::PBX::ProductType::shared_ptr productType = nullptr;
+    pbxspec::PBX::PackageType::shared_ptr packageType = nullptr;
+    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+        pbxproj::PBX::NativeTarget *nativeTarget = reinterpret_cast<pbxproj::PBX::NativeTarget *>(target.get());
+
+        productType = buildEnvironment.specManager()->productType(nativeTarget->productType(), sdk->platform()->name());
+        if (productType == nullptr) {
+            return nullptr;
+        }
+
+        // FIXME(grp): Should this always use the first package type?
+        packageType = buildEnvironment.specManager()->packageType(productType->packageTypes().at(0), sdk->platform()->name());
+        if (packageType == nullptr) {
+            return nullptr;
+        }
+    }
 
     // Now we have $(SDKROOT), and can make the real levels.
     std::vector<pbxsetting::Level> levels;
@@ -201,8 +219,8 @@ targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, BuildContext c
     levels.push_back(targetConfiguration->buildSettings());
     levels.push_back(target->settings());
 
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
-        levels.push_back(PackageProductTypeLevel(_buildEnvironment.specManager(), sdk, target));
+    if (packageType != nullptr && productType != nullptr) {
+        levels.push_back(PackageProductTypeLevel(packageType, productType));
     }
 
     if (projectConfigurationFile != nullptr) {
@@ -217,12 +235,20 @@ targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, BuildContext c
     levels.push_back(sdk->settings());
     levels.push_back(sdk->platform()->settings());
     levels.push_back(sdk->defaultProperties());
-    levels.push_back(PlatformArchitecturesLevel(_buildEnvironment.specManager(), sdk));
+    levels.push_back(PlatformArchitecturesLevel(buildEnvironment.specManager(), sdk));
     levels.push_back(sdk->platform()->defaultProperties());
 
     levels.push_back(context.baseSettings());
     levels.push_back(buildSystem->defaultSettings());
 
     levels.insert(levels.end(), defaultLevels.begin(), defaultLevels.end());
-    return std::make_unique<pbxsetting::Environment>(pbxsetting::Environment(levels, levels));
+    pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);
+
+    std::unique_ptr<TargetEnvironment> te = std::make_unique<TargetEnvironment>(TargetEnvironment(buildEnvironment, target, context));
+    te->_environment = std::make_unique<pbxsetting::Environment>(environment);
+    te->_buildSystem = buildSystem;
+    te->_packageType = packageType;
+    te->_productType = productType;
+    te->_sdk = sdk;
+    return te;
 }

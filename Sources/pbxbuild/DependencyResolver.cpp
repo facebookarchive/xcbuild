@@ -76,13 +76,12 @@ ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext
         return nullptr;
     }
 
-    TargetEnvironment targetEnvironment = TargetEnvironment(buildEnvironment);
-    std::unique_ptr<pbxsetting::Environment> settingsEnvironment = targetEnvironment.targetEnvironment(target, context);
-    if (settingsEnvironment == nullptr) {
+    std::unique_ptr<TargetEnvironment> targetEnvironment = TargetEnvironment::Create(buildEnvironment, target, context);
+    if (targetEnvironment == nullptr) {
         return nullptr;
     }
 
-    std::string path = settingsEnvironment->expand(fileReference->resolve());
+    std::string path = targetEnvironment->environment().expand(fileReference->resolve());
     return ResolveTargetIdentifier(context, path, proxy->remoteGlobalIDString());
 }
 
