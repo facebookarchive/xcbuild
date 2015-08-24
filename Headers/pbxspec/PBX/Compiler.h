@@ -29,6 +29,7 @@ protected:
     libutil::string_vector  _synthesizeBuildRuleForBuildPhases;
     libutil::string_vector  _inputFileGroupings;
     libutil::string_vector  _fallbackTools;
+    libutil::string_vector  _additionalDirectoriesToCreate;
     plist::Dictionary      *_overridingProperties;
     bool                    _useCPlusPlusCompilerDriverWhenBundlizing;
     bool                    _dashIFlagAcceptHeadermaps;
@@ -50,6 +51,8 @@ protected:
     bool                    _dontProcessOutputs;
     bool                    _showInCompilerSelectionPopup;
     bool                    _showOnlySelfDefinedProperties;
+    bool                    _mightNotEmitAllOutputs;
+    bool                    _includeInUnionedToolDefaults;
 
 protected:
     Compiler(bool isDefault);
@@ -127,6 +130,10 @@ public:
     { return _fallbackTools; }
 
 public:
+    inline libutil::string_vector const &additionalDirectoriesToCreate() const
+    { return _additionalDirectoriesToCreate; }
+
+public:
     inline plist::Dictionary const *overridingProperties() const
     { return _overridingProperties; }
 
@@ -185,6 +192,14 @@ public:
     { return _showInCompilerSelectionPopup; }
     inline bool showOnlySelfDefinedProperties() const
     { return _showOnlySelfDefinedProperties; }
+
+public:
+    inline bool mightNotEmitAllOutputs() const
+    { return _mightNotEmitAllOutputs; }
+
+public:
+    inline bool includeInUnionedToolDefaults() const
+    { return _includeInUnionedToolDefaults; }
 
 protected:
     friend class Specification;

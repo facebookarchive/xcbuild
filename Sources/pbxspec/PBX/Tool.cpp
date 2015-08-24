@@ -132,6 +132,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool chec
                 plist::MakeKey <plist::Boolean> ("CaresAboutInclusionDependencies"),
                 plist::MakeKey <plist::Boolean> ("SynthesizeBuildRule"),
                 plist::MakeKey <plist::Boolean> ("ShouldRerunOnError"),
+                plist::MakeKey <plist::Boolean> ("DeeplyStatInputDirectories"),
                 plist::MakeKey <plist::Array> ("Options"),
                 plist::MakeKey <plist::Array> ("DeletedProperties"));
     }
@@ -166,6 +167,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool chec
     auto CAID   = dict->value <plist::Boolean> ("CaresAboutInclusionDependencies");
     auto SBR    = dict->value <plist::Boolean> ("SynthesizeBuildRule");
     auto SROE   = dict->value <plist::Boolean> ("ShouldRerunOnError");
+    auto DSID   = dict->value <plist::Boolean> ("DeeplyStatInputDirectories");
     auto OPs    = dict->value <plist::Array> ("Options");
     auto DPs    = dict->value <plist::Array> ("DeletedProperties");
 
@@ -304,6 +306,10 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool chec
 
     if (SROE != nullptr) {
         _shouldRerunOnError = SROE->value();
+    }
+
+    if (DSID != nullptr) {
+        _deeplyStatInputDirectories = DSID->value();
     }
 
     if (OPs != nullptr) {

@@ -186,6 +186,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("CaresAboutInclusionDependencies"),
         plist::MakeKey <plist::Boolean> ("SynthesizeBuildRule"),
         plist::MakeKey <plist::Boolean> ("ShouldRerunOnError"),
+        plist::MakeKey <plist::Boolean> ("DeeplyStatInputDirectories"),
         plist::MakeKey <plist::Array> ("Options"),
         plist::MakeKey <plist::Array> ("DeletedProperties"),
         // Compiler
@@ -205,6 +206,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::Array> ("SynthesizeBuildRuleForBuildPhases"),
         plist::MakeKey <plist::Array> ("InputFileGroupings"),
         plist::MakeKey <plist::Array> ("FallbackTools"),
+        plist::MakeKey <plist::Array> ("AdditionalDirectoriesToCreate"),
         plist::MakeKey <plist::Dictionary> ("OverridingProperties"),
         plist::MakeKey <plist::Boolean> ("UseCPlusPlusCompilerDriverWhenBundlizing"),
         plist::MakeKey <plist::Boolean> ("DashIFlagAcceptsHeadermaps"),
@@ -225,7 +227,9 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("DeeplyStatInputDirectories"),
         plist::MakeKey <plist::Boolean> ("DontProcessOutputs"),
         plist::MakeKey <plist::Boolean> ("ShowInCompilerSelectionPopup"),
-        plist::MakeKey <plist::Boolean> ("ShowOnlySelfDefinedProperties"));
+        plist::MakeKey <plist::Boolean> ("ShowOnlySelfDefinedProperties"),
+        plist::MakeKey <plist::Boolean> ("MightNotEmitAllOutputs"),
+        plist::MakeKey <plist::Boolean> ("IncludeInUnionedToolDefaults"));
 
     if (!Tool::parse(manager, dict, false))
         return false;
@@ -246,6 +250,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
     auto SBRFBPs  = dict->value <plist::Array> ("SynthesizeBuildRuleForBuildPhases");
     auto IFGs     = dict->value <plist::Array> ("InputFileGroupings");
     auto FTs      = dict->value <plist::Array> ("FallbackTools");
+    auto ADTCs    = dict->value <plist::Array> ("AdditionalDirectoriesToCreate");
     auto OP       = dict->value <plist::Dictionary> ("OverridingProperties");
     auto UCPPCDWB = dict->value <plist::Boolean> ("UseCPlusPlusCompilerDriverWhenBundlizing");
     auto DIFAH    = dict->value <plist::Boolean> ("DashIFlagAcceptsHeadermaps");
@@ -267,6 +272,8 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
     auto DPO      = dict->value <plist::Boolean> ("DontProcessOutputs");
     auto SICSP    = dict->value <plist::Boolean> ("ShowInCompilerSelectionPopup");
     auto SOSDP    = dict->value <plist::Boolean> ("ShowOnlySelfDefinedProperties");
+    auto MNEAO    = dict->value <plist::Boolean> ("MightNotEmitAllOutputs");
+    auto IIUTD    = dict->value <plist::Boolean> ("IncludeInUnionedToolDefaults");
 
     if (ECPPLP != nullptr) {
         _execCPlusPlusLinkerPath = ECPPLP->value();
@@ -364,6 +371,14 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         }
     }
 
+    if (ADTCs != nullptr) {
+        for (size_t n = 0; n < ADTCs->count(); n++) {
+            if (auto ADTC = ADTCs->value <plist::String> (n)) {
+                _additionalDirectoriesToCreate.push_back(ADTC->value());
+            }
+        }
+    }
+
     if (OP != nullptr) {
         if (_overridingProperties != nullptr) {
             _overridingProperties->release();
@@ -375,7 +390,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
     if (UCPPCDWB != nullptr) {
         _useCPlusPlusCompilerDriverWhenBundlizing = UCPPCDWB->value();
     }
-    
+
     if (SH != nullptr) {
         _supportsHeadermaps = SH->value();
     }
@@ -446,6 +461,14 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 
     if (SOSDP != nullptr) {
         _showOnlySelfDefinedProperties = SOSDP->value();
+    }
+
+    if (MNEAO != nullptr) {
+        _mightNotEmitAllOutputs = MNEAO->value();
+    }
+
+    if (IIUTD != nullptr) {
+        _includeInUnionedToolDefaults = IIUTD->value();
     }
 
     return true;

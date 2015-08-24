@@ -127,6 +127,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("CaresAboutInclusionDependencies"),
         plist::MakeKey <plist::Boolean> ("SynthesizeBuildRule"),
         plist::MakeKey <plist::Boolean> ("ShouldRerunOnError"),
+        plist::MakeKey <plist::Boolean> ("DeeplyStatInputDirectories"),
         plist::MakeKey <plist::Array> ("Options"),
         plist::MakeKey <plist::Array> ("DeletedProperties"),
         // Linker

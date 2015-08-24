@@ -42,6 +42,7 @@ protected:
     bool                    _caresAboutInclusionDependencies;
     bool                    _synthesizeBuildRule;
     bool                    _shouldRerunOnError;
+    bool                    _deeplyStatInputDirectories;
     PropertyOption::vector  _options;
 
 protected:
@@ -146,6 +147,10 @@ public:
 public:
     inline bool shouldRerunOnError() const
     { return _shouldRerunOnError; }
+
+public:
+    inline bool deeplyStatInputDirectories() const
+    { return _deeplyStatInputDirectories; }
 
 public:
     inline PropertyOption::vector const &options() const
