@@ -162,6 +162,7 @@ set(libpbxspec_SOURCES
     Sources/pbxspec/PBX/CompilerSpecificationYacc.cpp
     Sources/pbxspec/PBX/DynamicLibraryProductType.cpp
     Sources/pbxspec/PBX/FileType.cpp
+    Sources/pbxspec/PBX/FrameworkProductType.cpp
     Sources/pbxspec/PBX/FrameworkWrapperFileType.cpp
     Sources/pbxspec/PBX/HTMLFileType.cpp
     Sources/pbxspec/PBX/Linker.cpp
@@ -183,6 +184,7 @@ set(libpbxspec_SOURCES
     Sources/pbxspec/PBX/XPCServiceWrapperFileType.cpp
     Sources/pbxspec/XC/CompilerSpecificationClang.cpp
     Sources/pbxspec/XC/CompilerSpecificationSwift.cpp
+    Sources/pbxspec/XC/StaticFrameworkProductType.cpp
     Sources/pbxspec/XC/StaticFrameworkWrapperFileType.cpp
     Sources/pbxspec/XC/ToolSpecificationHeadermapGenerator.cpp
     Sources/pbxspec/XC/ToolSpecificationCompilationDatabaseGenerator.cpp

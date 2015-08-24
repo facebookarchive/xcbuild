@@ -23,6 +23,7 @@ extern char const * const PBXCompilerSpecificationYacc;
 extern char const * const PBXDynamicLibraryProductType;
 extern char const * const PBXFileType;
 extern char const * const PBXFrameworkWrapperFileType;
+extern char const * const PBXFrameworkProductType;
 extern char const * const PBXHTMLFileType;
 extern char const * const PBXLinker;
 extern char const * const PBXLinkerSpecificationLd;
@@ -45,6 +46,7 @@ extern char const * const XCCompilerSpecificationSwift;
 extern char const * const XCToolSpecificationHeadermapGenerator;
 extern char const * const XCToolSpecificationCompilationDatabaseGenerator;
 extern char const * const XCProductPackagingUtilityToolSpecification;
+extern char const * const XCStaticFrameworkProductType;
 
 } }
 

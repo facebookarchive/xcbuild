@@ -22,6 +22,7 @@ char const * const PBXCompilerSpecificationYacc = "PBXCompilerSpecificationYacc"
 char const * const PBXDynamicLibraryProductType = "PBXDynamicLibraryProductType";
 char const * const PBXFileType = "PBXFileType";
 char const * const PBXFrameworkWrapperFileType = "PBXFrameworkWrapperFileType";
+char const * const PBXFrameworkProductType = "PBXFrameworkProductType";
 char const * const PBXHTMLFileType = "PBXHTMLFileType";
 char const * const PBXLinker = "PBXLinker";
 char const * const PBXLinkerSpecificationLd = "PBXLinkerSpecificationLd";
@@ -44,6 +45,6 @@ char const * const XCStaticFrameworkWrapperFileType = "XCStaticFrameworkWrapperF
 char const * const XCToolSpecificationHeadermapGenerator = "XCToolSpecificationHeadermapGenerator";
 char const * const XCToolSpecificationCompilationDatabaseGenerator = "XCToolSpecificationCompilationDatabaseGenerator";
 char const * const XCProductPackagingUtilityToolSpecification = "XCProductPackagingUtilityToolSpecification";
-
+char const * const XCStaticFrameworkProductType = "XCStaticFrameworkProductType";
 
 } }

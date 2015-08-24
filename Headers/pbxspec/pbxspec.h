@@ -12,6 +12,7 @@
 #include <pbxspec/PBX/BuildSystem.h>
 #include <pbxspec/PBX/BundleProductType.h>
 #include <pbxspec/PBX/CFBundleWrapperFileType.h>
+#include <pbxspec/PBX/FrameworkProductType.h>
 #include <pbxspec/PBX/FrameworkWrapperFileType.h>
 #include <pbxspec/PBX/Compiler.h>
 #include <pbxspec/PBX/CompilerSpecificationGcc.h>
@@ -40,6 +41,7 @@
 #include <pbxspec/XC/CompilerSpecificationClang.h>
 #include <pbxspec/XC/CompilerSpecificationSwift.h>
 #include <pbxspec/XC/ToolSpecificationHeadermapGenerator.h>
+#include <pbxspec/XC/StaticFrameworkProductType.h>
 #include <pbxspec/XC/StaticFrameworkWrapperFileType.h>
 
 #include <pbxspec/Manager.h>

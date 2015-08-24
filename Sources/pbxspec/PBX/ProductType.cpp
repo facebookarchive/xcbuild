@@ -4,7 +4,9 @@
 #include <pbxspec/PBX/ApplicationProductType.h>
 #include <pbxspec/PBX/BundleProductType.h>
 #include <pbxspec/PBX/DynamicLibraryProductType.h>
+#include <pbxspec/PBX/FrameworkProductType.h>
 #include <pbxspec/PBX/StaticLibraryProductType.h>
+#include <pbxspec/XC/StaticFrameworkProductType.h>
 
 using pbxspec::PBX::ProductType;
 using pbxsetting::Level;
@@ -51,8 +53,12 @@ Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         result.reset(new BundleProductType(true));
     } else if (C->value() == DynamicLibraryProductType::Isa()) {
         result.reset(new DynamicLibraryProductType(true));
+    } else if (C->value() == FrameworkProductType::Isa()) {
+        result.reset(new FrameworkProductType(true));
     } else if (C->value() == StaticLibraryProductType::Isa()) {
         result.reset(new StaticLibraryProductType(true));
+    } else if (C->value() == XC::StaticFrameworkProductType::Isa()) {
+        result.reset(new XC::StaticFrameworkProductType(true));
     } else {
         fprintf(stderr, "warning: product type class '%s' not recognized\n",
                 C->value().c_str());
