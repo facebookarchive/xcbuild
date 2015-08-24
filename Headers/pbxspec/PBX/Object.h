@@ -3,7 +3,7 @@
 #ifndef __pbxspec_PBX_Object_h
 #define __pbxspec_PBX_Object_h
 
-#include <plist/plist.h>
+#include <pbxspec/Base.h>
 #include <pbxspec/ISA.h>
 #include <pbxspec/Types.h>
 

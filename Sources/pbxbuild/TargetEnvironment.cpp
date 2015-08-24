@@ -46,12 +46,12 @@ LoadConfigurationFile(pbxproj::XC::BuildConfiguration::shared_ptr const &buildCo
 }
 
 static pbxsetting::Level
-PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &platformSpecifications)
+PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &platformSpecifications, xcsdk::SDK::Target::shared_ptr const &sdk)
 {
     std::vector<pbxsetting::Setting> architectureSettings;
     std::vector<std::string> platformArchitectures;
 
-    pbxspec::PBX::Architecture::vector architectures = platformSpecifications->architectures();
+    pbxspec::PBX::Architecture::vector architectures = platformSpecifications->architectures(sdk->platform()->name());
     for (pbxspec::PBX::Architecture::shared_ptr const &architecture : architectures) {
         if (!architecture->architectureSetting().empty()) {
             architectureSettings.push_back(architecture->defaultSetting());
@@ -94,13 +94,13 @@ FindPlatformTarget(std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, std::
 }
 
 static pbxsetting::Level
-PackageProductTypeLevel(pbxspec::Manager::shared_ptr const &platformSpecifications, pbxproj::PBX::Target::shared_ptr const &target)
+PackageProductTypeLevel(pbxspec::Manager::shared_ptr const &platformSpecifications, xcsdk::SDK::Target::shared_ptr const &sdk, pbxproj::PBX::Target::shared_ptr const &target)
 {
     pbxproj::PBX::NativeTarget *nativeTarget = reinterpret_cast<pbxproj::PBX::NativeTarget *>(target.get());
 
-    pbxspec::PBX::ProductType::shared_ptr productType = platformSpecifications->productType(nativeTarget->productType());
+    pbxspec::PBX::ProductType::shared_ptr productType = platformSpecifications->productType(nativeTarget->productType(), sdk->platform()->name());
     // FIXME(grp): Should this always use the first package type?
-    pbxspec::PBX::PackageType::shared_ptr packageType = platformSpecifications->packageType(productType->packageTypes().at(0));
+    pbxspec::PBX::PackageType::shared_ptr packageType = platformSpecifications->packageType(productType->packageTypes().at(0), sdk->platform()->name());
 
     std::vector<pbxsetting::Setting> settings = {
         pbxsetting::Setting::Parse("PACKAGE_TYPE", packageType->identifier()),
@@ -117,14 +117,14 @@ PackageProductTypeLevel(pbxspec::Manager::shared_ptr const &platformSpecificatio
 }
 
 static pbxspec::PBX::BuildSystem::shared_ptr
-TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::Target::shared_ptr const &target)
+TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, xcsdk::SDK::Target::shared_ptr const &sdk, pbxproj::PBX::Target::shared_ptr const &target)
 {
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
-        return specManager->buildSystem("com.apple.build-system.native");
+        return specManager->buildSystem("com.apple.build-system.native", sdk->platform()->name());
     } else if (target->type() == pbxproj::PBX::Target::kTypeLegacy) {
-        return specManager->buildSystem("com.apple.build-system.jam");
+        return specManager->buildSystem("com.apple.build-system.jam", sdk->platform()->name());
     } else if (target->type() == pbxproj::PBX::Target::kTypeAggregate) {
-       return specManager->buildSystem("com.apple.build-system.external");
+       return specManager->buildSystem("com.apple.build-system.external", sdk->platform()->name());
     } else {
         fprintf(stderr, "error: unknown target type\n");
         return nullptr;
@@ -186,14 +186,10 @@ targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, BuildContext c
         return nullptr;
     }
 
-    // NOTE(grp): Some platforms have specifications in other directories besides the primary Specifications folder.
-    pbxspec::Manager::shared_ptr platformSpecifications = pbxspec::Manager::Open(_buildEnvironment.specManager(), sdk->platform()->path() + "/Developer/Library/Xcode");
-    if (platformSpecifications == nullptr) {
-        fprintf(stderr, "error: unable to load specifications for platform %s\n", sdk->platform()->name().c_str());
-        return nullptr;
-    }
+    std::string platformSpecificationPath = pbxspec::Manager::DomainSpecificationRoot(sdk->platform()->path());
+    _buildEnvironment.specManager()->registerDomain(sdk->platform()->name(), platformSpecificationPath);
 
-    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(_buildEnvironment.specManager(), target);
+    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(_buildEnvironment.specManager(), sdk, target);
 
     // Now we have $(SDKROOT), and can make the real levels.
     std::vector<pbxsetting::Level> levels;
@@ -206,7 +202,7 @@ targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, BuildContext c
     levels.push_back(target->settings());
 
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
-        levels.push_back(PackageProductTypeLevel(platformSpecifications, target));
+        levels.push_back(PackageProductTypeLevel(_buildEnvironment.specManager(), sdk, target));
     }
 
     if (projectConfigurationFile != nullptr) {
@@ -221,7 +217,7 @@ targetEnvironment(pbxproj::PBX::Target::shared_ptr const &target, BuildContext c
     levels.push_back(sdk->settings());
     levels.push_back(sdk->platform()->settings());
     levels.push_back(sdk->defaultProperties());
-    levels.push_back(PlatformArchitecturesLevel(platformSpecifications));
+    levels.push_back(PlatformArchitecturesLevel(_buildEnvironment.specManager(), sdk));
     levels.push_back(sdk->platform()->defaultProperties());
 
     levels.push_back(context.baseSettings());

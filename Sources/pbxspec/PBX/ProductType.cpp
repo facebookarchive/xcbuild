@@ -37,7 +37,7 @@ ProductType::~ProductType()
 }
 
 ProductType::shared_ptr ProductType::
-Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+Parse(Context *context, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
@@ -64,14 +64,14 @@ Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
                 C->value().c_str());
         result.reset(new ProductType(true));
     }
-    if (!result->parse(manager, dict))
+    if (!result->parse(context, dict))
         return nullptr;
 
     return result;
 }
 
 bool ProductType::
-parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "ProductType",
         // Specification
@@ -101,7 +101,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("DisableSchemeAutocreation"),
         plist::MakeKey <plist::String> ("RunpathSearchPathForEmbeddedFrameworks"));
 
-    if (!Specification::parse(manager, dict))
+    if (!Specification::parse(context, dict))
         return false;
 
     auto DTN  = dict->value <plist::String> ("DefaultTargetName");

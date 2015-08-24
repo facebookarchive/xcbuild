@@ -49,16 +49,16 @@ public:
     { return _supportsInputFileList; }
 
 protected:
-    friend class Specification;
-    bool parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict) override;
-
-protected:
     bool inherit(Specification::shared_ptr const &base) override;
     bool inherit(Tool::shared_ptr const &base) override;
     virtual bool inherit(Linker::shared_ptr const &base);
 
 protected:
-    static Linker::shared_ptr Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict);
+    friend class Specification;
+    bool parse(Context *context, plist::Dictionary const *dict) override;
+
+protected:
+    static Linker::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
     static inline char const *Isa()

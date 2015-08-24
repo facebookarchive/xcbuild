@@ -17,7 +17,7 @@ PackageType::~PackageType()
 }
 
 PackageType::shared_ptr PackageType::
-Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+Parse(Context *context, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
@@ -32,14 +32,14 @@ Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
                 C->value().c_str());
         result.reset(new PackageType(true));
     }
-    if (!result->parse(manager, dict))
+    if (!result->parse(context, dict))
         return nullptr;
 
     return result;
 }
 
 bool PackageType::
-parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "PackageType",
         // Specification
@@ -57,7 +57,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::Dictionary> ("ProductReference"),
         plist::MakeKey <plist::Dictionary> ("DefaultBuildSettings"));
 
-    if (!Specification::parse(manager, dict))
+    if (!Specification::parse(context, dict))
         return false;
 
     auto PR  = dict->value <plist::Dictionary> ("ProductReference");

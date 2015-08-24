@@ -10,6 +10,7 @@
 #include <pbxspec/PBX/ProductType.h>
 #include <pbxspec/PBX/PropertyConditionFlavor.h>
 #include <pbxspec/PBX/Tool.h>
+#include <pbxspec/Context.h>
 #include <pbxspec/Manager.h>
 
 using pbxspec::PBX::Specification;
@@ -28,19 +29,20 @@ inherit(Specification::shared_ptr const &base)
     if (base == nullptr || base.get() == this)
         return false;
 
-    _base        = base;
-    _isDefault   = !base->isDefault(); // TODO not true
-    _clazz       = base->clazz();
-    _name        = base->name();
-    _description = base->description();
-    _vendor      = base->vendor();
-    _version     = base->version();
+    _base               = base;
+    _isDefault          = !base->isDefault(); // TODO not true
+    _clazz              = base->clazz();
+    _isGlobalDomainInUI = base->isGlobalDomainInUI();
+    _name               = base->name();
+    _description        = base->description();
+    _vendor             = base->vendor();
+    _version            = base->version();
 
     return true;
 }
 
 bool Specification::
-parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict)
 {
     auto C  = dict->value <plist::String> ("Class");
     auto I  = dict->value <plist::String> ("Identifier");
@@ -56,6 +58,16 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         _clazz = C->value();
     }
 
+    if (DO != nullptr) {
+        _domain = DO->value();
+    } else {
+        _domain = context->domain;
+    }
+
+    if (I != nullptr) {
+        _identifier = I->value();
+    }
+
     if (BO != nullptr) {
         auto basedOn     = BO->value();
         bool onlyDefault = false;
@@ -65,7 +77,11 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
             basedOn = basedOn.substr(8);
         }
 
-        auto base = manager->specification(type(), basedOn, onlyDefault);
+        auto base = context->manager->specification(type(), basedOn, _domain, onlyDefault);
+        if (base == nullptr && _domain != Manager::GlobalDomain()) {
+            // TODO(grp): Is this rule right? (Inherit from the same specification in the global domain if can't inherit in the current domain.)
+            base = context->manager->specification(type(), _identifier, Manager::GlobalDomain(), true);
+        }
         if (base == nullptr) {
             fprintf(stderr, "error: cannot find base %s specification '%s'\n",
                     type(), basedOn.c_str());
@@ -82,14 +98,6 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         // Override is default.
         //
         _isDefault = !onlyDefault;
-    }
-
-    if (I != nullptr) {
-        _identifier = I->value();
-    }
-
-    if (DO != nullptr) {
-        _domain = DO->value();
     }
 
     if (GD != nullptr) {
@@ -116,32 +124,32 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 }
 
 Specification::shared_ptr Specification::
-Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+Parse(Context *context, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr)
         return nullptr;
 
     if (T->value() == Architecture::Type())
-        return Architecture::Parse(manager, dict);
+        return Architecture::Parse(context, dict);
     if (T->value() == BuildPhase::Type())
-        return BuildPhase::Parse(manager, dict);
+        return BuildPhase::Parse(context, dict);
     if (T->value() == BuildSystem::Type())
-        return BuildSystem::Parse(manager, dict);
+        return BuildSystem::Parse(context, dict);
     if (T->value() == Compiler::Type())
-        return Compiler::Parse(manager, dict);
+        return Compiler::Parse(context, dict);
     if (T->value() == FileType::Type())
-        return FileType::Parse(manager, dict);
+        return FileType::Parse(context, dict);
     if (T->value() == Linker::Type())
-        return Linker::Parse(manager, dict);
+        return Linker::Parse(context, dict);
     if (T->value() == PackageType::Type())
-        return PackageType::Parse(manager, dict);
+        return PackageType::Parse(context, dict);
     if (T->value() == ProductType::Type())
-        return ProductType::Parse(manager, dict);
+        return ProductType::Parse(context, dict);
     if (T->value() == PropertyConditionFlavor::Type())
-        return PropertyConditionFlavor::Parse(manager, dict);
+        return PropertyConditionFlavor::Parse(context, dict);
     if (T->value() == Tool::Type())
-        return Tool::Parse(manager, dict);
+        return Tool::Parse(context, dict);
 
     fprintf(stderr, "error: specification type '%s' not supported\n",
             T->value().c_str());
@@ -150,7 +158,7 @@ Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
 }
 
 bool Specification::
-Open(std::shared_ptr<Manager> manager, std::string const &filename)
+Open(Context *context, std::string const &filename)
 {
     if (filename.empty()) {
         errno = EINVAL;
@@ -179,12 +187,12 @@ Open(std::shared_ptr<Manager> manager, std::string const &filename)
     // if it's an array then multiple specifications are present.
     //
     if (auto dict = plist::CastTo <plist::Dictionary> (plist)) {
-        auto spec = Parse(manager, dict);
+        auto spec = Parse(context, dict);
         if (spec != nullptr) {
             //
             // Add specification to manager.
             //
-            manager->addSpecification(spec);
+            context->manager->addSpecification(spec);
         }
 
         plist->release();
@@ -194,11 +202,11 @@ Open(std::shared_ptr<Manager> manager, std::string const &filename)
         size_t count  = array->count();
         for (size_t n = 0; n < count; n++) {
             if (auto dict = array->value <plist::Dictionary> (n)) {
-                auto spec = Parse(manager, dict);
+                auto spec = Parse(context, dict);
                 if (spec == nullptr) {
                     errors++;
                 } else {
-                    manager->addSpecification(spec);
+                    context->manager->addSpecification(spec);
                 }
             }
         }

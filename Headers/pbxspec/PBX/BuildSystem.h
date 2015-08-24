@@ -44,14 +44,14 @@ public:
 
 protected:
     friend class Specification;
-    bool parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict) override;
+    bool parse(Context *context, plist::Dictionary const *dict) override;
 
 protected:
     bool inherit(Specification::shared_ptr const &base) override;
     virtual bool inherit(BuildSystem::shared_ptr const &base);
 
 protected:
-    static BuildSystem::shared_ptr Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict);
+    static BuildSystem::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
     static inline char const *Isa()

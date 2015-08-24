@@ -123,7 +123,7 @@ inherit(FileType::shared_ptr const &b)
 }
 
 FileType::shared_ptr FileType::
-Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+Parse(Context *context, plist::Dictionary const *dict)
 {
     FileType::shared_ptr result;
 
@@ -160,14 +160,14 @@ Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         result.reset(new FileType(true));
     }
 
-    if (!result->parse(manager, dict))
+    if (!result->parse(context, dict))
         return nullptr;
 
     return result;
 }
 
 bool FileType::
-parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "FileType",
             // Specification
@@ -228,7 +228,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
             plist::MakeKey <plist::Boolean> ("RemoveHeadersOnCopy"),
             plist::MakeKey <plist::Boolean> ("ValidateOnCopy"));
 
-    if (!Specification::parse(manager, dict))
+    if (!Specification::parse(context, dict))
         return false;
 
     auto MTs   = dict->value <plist::Array> ("MIMETypes");

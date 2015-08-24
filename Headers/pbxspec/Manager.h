@@ -21,85 +21,84 @@ namespace pbxspec {
 class Manager {
 public:
     typedef std::shared_ptr <Manager> shared_ptr;
-    typedef std::weak_ptr <Manager> weak_ptr;
 
 private:
-    Manager::weak_ptr _parent;
-    std::map<char const *, PBX::Specification::vector> _specifications;
+    std::map<std::string, std::string>                                       _domains;
+    std::map<std::string, std::map<char const*, PBX::Specification::vector>> _specifications;
 
 public:
     Manager();
     ~Manager();
 
 public:
-    Manager::shared_ptr parent()
-    { return _parent.lock(); }
-
-public:
     PBX::Specification::shared_ptr
-    specification(char const *type, std::string const &identifier, bool onlyDefault = false, bool scoped = false) const;
+    specification(char const *type, std::string const &identifier, std::string const &domain = GlobalDomain(), bool onlyDefault = false) const;
     PBX::Specification::vector
-    specifications(char const *type, bool scoped = false) const;
+    specifications(char const *type, std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::Architecture::shared_ptr
-    architecture(std::string const &identifier, bool scoped = false) const;
+    architecture(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::Architecture::vector
-    architectures(bool scoped = false) const;
+    architectures(std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::BuildSystem::shared_ptr
-    buildSystem(std::string const &identifier, bool scoped = false) const;
+    buildSystem(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::BuildSystem::vector
-    buildSystems(bool scoped = false) const;
+    buildSystems(std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::BuildPhase::shared_ptr
-    buildPhase(std::string const &identifier, bool scoped = false) const;
+    buildPhase(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::BuildPhase::vector
-    buildPhases(bool scoped = false) const;
+    buildPhases(std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::Compiler::shared_ptr
-    compiler(std::string const &identifier, bool scoped = false) const;
+    compiler(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::Compiler::vector
-    compilers(bool scoped = false) const;
+    compilers(std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::FileType::shared_ptr
-    fileType(std::string const &identifier, bool scoped = false) const;
+    fileType(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::FileType::vector
-    fileTypes(bool scoped = false) const;
+    fileTypes(std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::Linker::shared_ptr
-    linker(std::string const &identifier, bool scoped = false) const;
+    linker(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::Linker::vector
-    linkers(bool scoped = false) const;
+    linkers(std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::PackageType::shared_ptr
-    packageType(std::string const &identifier, bool scoped = false) const;
+    packageType(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::PackageType::vector
-    packageTypes(bool scoped = false) const;
+    packageTypes(std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::ProductType::shared_ptr
-    productType(std::string const &identifier, bool scoped = false) const;
+    productType(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::ProductType::vector
-    productTypes(bool scoped = false) const;
+    productTypes(std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::PropertyConditionFlavor::shared_ptr
-    propertyConditionFlavor(std::string const &identifier, bool scoped = false) const;
+    propertyConditionFlavor(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::PropertyConditionFlavor::vector
-    propertyConditionFlavors(bool scoped = false) const;
+    propertyConditionFlavors(std::string const &domain = GlobalDomain()) const;
 
 public:
     PBX::Tool::shared_ptr
-    tool(std::string const &identifier, bool scoped = false) const;
+    tool(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
     PBX::Tool::vector
-    tools(bool scoped = false) const;
+    tools(std::string const &domain = GlobalDomain()) const;
+
+public:
+    void
+    registerDomain(std::string const &domain, std::string const &path);
 
 protected:
     friend class pbxspec::PBX::Specification;
@@ -109,18 +108,24 @@ protected:
 private:
     template <typename T>
     typename T::shared_ptr
-    findSpecification(bool scoped, std::string const &identifier, char const *type = T::Type(), bool onlyDefault = false) const;
+    findSpecification(std::string const &identifier, std::string const &domain, char const *type = T::Type(), bool onlyDefault = false) const;
     template <typename T>
     typename T::vector
-    findSpecifications(bool scoped, char const *type = T::Type()) const;
+    findSpecifications(std::string const &domain, char const *type = T::Type()) const;
 
 public:
     static Manager::shared_ptr
-    Open(Manager::shared_ptr parent, std::string const &path);
+    Create(void);
 
 public:
     static std::string
-    SpecificationRoot(std::string const &developerRoot);
+    GlobalDomain();
+
+public:
+    static std::string
+    DeveloperSpecificationRoot(std::string const &developerRoot);
+    static std::string
+    DomainSpecificationRoot(std::string const &domainPath);
 };
 
 }

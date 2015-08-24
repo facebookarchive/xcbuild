@@ -17,7 +17,8 @@ main(int argc, char **argv)
     }
 
     std::string path = argv[1];
-    Manager::shared_ptr manager = Manager::Open(nullptr, path);
+    Manager::shared_ptr manager = Manager::Create();
+    manager->registerDomain(Manager::GlobalDomain(), path);
 
     return 0;
 }

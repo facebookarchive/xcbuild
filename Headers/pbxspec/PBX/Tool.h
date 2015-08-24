@@ -165,18 +165,18 @@ public:
 
 protected:
     friend class Specification;
-    bool parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict) override
-    { return parse(manager, dict, true); }
+    bool parse(Context *context, plist::Dictionary const *dict) override
+    { return parse(context, dict, true); }
 
 protected:
-    bool parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool check);
+    bool parse(Context *context, plist::Dictionary const *dict, bool check);
 
 protected:
     bool inherit(Specification::shared_ptr const &base) override;
     virtual bool inherit(Tool::shared_ptr const &base);
 
 protected:
-    static Tool::shared_ptr Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict);
+    static Tool::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
     static inline char const *Isa()

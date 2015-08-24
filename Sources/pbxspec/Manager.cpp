@@ -1,8 +1,10 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxspec/Manager.h>
+#include <pbxspec/Context.h>
 
 using pbxspec::Manager;
+using pbxspec::Context;
 using pbxspec::PBX::Specification;
 using pbxspec::PBX::Architecture;
 using pbxspec::PBX::BuildPhase;
@@ -26,35 +28,29 @@ Manager::~Manager()
 
 template <typename T>
 typename T::vector Manager::
-findSpecifications(bool scoped, char const *type) const
+findSpecifications(std::string const &domain, char const *type) const
 {
     if (type == nullptr) {
         return typename T::vector();
     }
 
-    typename T::vector specifications;
-
-    if (!scoped) {
-        if (Manager::shared_ptr parent = _parent.lock()) {
-            typename T::vector parentSpecifications = parent->findSpecifications <T> (scoped, type);
-            specifications.insert(specifications.end(), parentSpecifications.begin(), parentSpecifications.end());
+    auto const &doit = _specifications.find(domain);
+    if (doit != _specifications.end()) {
+        auto const &it = doit->second.find(type);
+        if (it != doit->second.end()) {
+            typename T::vector specifications = reinterpret_cast <typename T::vector const &> (it->second);
+            return specifications;
         }
     }
 
-    auto const &it = _specifications.find(type);
-    if (it != _specifications.end()) {
-        typename T::vector typeSpecifications = reinterpret_cast <typename T::vector const &> (it->second);
-        specifications.insert(specifications.end(), typeSpecifications.begin(), typeSpecifications.end());
-    }
-
-    return specifications;
+    return typename T::vector();
 }
 
 template <typename T>
 typename T::shared_ptr Manager::
-findSpecification(bool scoped, std::string const &identifier, char const *type, bool onlyDefault) const
+findSpecification(std::string const &domain, std::string const &identifier, char const *type, bool onlyDefault) const
 {
-    typename T::vector vector = findSpecifications <T> (scoped, type);
+    typename T::vector vector = findSpecifications <T> (domain, type);
 
     //
     // Do an inverse find so that we can find the overrides.
@@ -84,135 +80,135 @@ findSpecification(bool scoped, std::string const &identifier, char const *type, 
 }
 
 Specification::shared_ptr Manager::
-specification(char const *type, std::string const &identifier, bool onlyDefault, bool scoped) const
+specification(char const *type, std::string const &identifier, std::string const &domain, bool onlyDefault) const
 {
-    return findSpecification <Specification> (scoped, identifier, type, onlyDefault);
+    return findSpecification <Specification> (domain, identifier, type, onlyDefault);
 }
 
 Specification::vector Manager::
-specifications(char const *type, bool scoped) const
+specifications(char const *type, std::string const &domain) const
 {
-    return findSpecifications <Specification> (scoped, type);
+    return findSpecifications <Specification> (domain, type);
 }
 
 Architecture::shared_ptr Manager::
-architecture(std::string const &identifier, bool scoped) const
+architecture(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <Architecture> (scoped, identifier);
+    return findSpecification <Architecture> (domain, identifier);
 }
 
 Architecture::vector Manager::
-architectures(bool scoped) const
+architectures(std::string const &domain) const
 {
-    return findSpecifications <Architecture> (scoped);
+    return findSpecifications <Architecture> (domain);
 }
 
 BuildPhase::shared_ptr Manager::
-buildPhase(std::string const &identifier, bool scoped) const
+buildPhase(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <BuildPhase> (scoped, identifier);
+    return findSpecification <BuildPhase> (domain, identifier);
 }
 
 BuildPhase::vector Manager::
-buildPhases(bool scoped) const
+buildPhases(std::string const &domain) const
 {
-    return findSpecifications <BuildPhase> (scoped);
+    return findSpecifications <BuildPhase> (domain);
 }
 
 BuildSystem::shared_ptr Manager::
-buildSystem(std::string const &identifier, bool scoped) const
+buildSystem(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <BuildSystem> (scoped, identifier);
+    return findSpecification <BuildSystem> (domain, identifier);
 }
 
 BuildSystem::vector Manager::
-buildSystems(bool scoped) const
+buildSystems(std::string const &domain) const
 {
-    return findSpecifications <BuildSystem> (scoped);
+    return findSpecifications <BuildSystem> (domain);
 }
 
 Compiler::shared_ptr Manager::
-compiler(std::string const &identifier, bool scoped) const
+compiler(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <Compiler> (scoped, identifier);
+    return findSpecification <Compiler> (domain, identifier);
 }
 
 Compiler::vector Manager::
-compilers(bool scoped) const
+compilers(std::string const &domain) const
 {
-    return findSpecifications <Compiler> (scoped);
+    return findSpecifications <Compiler> (domain);
 }
 
 FileType::shared_ptr Manager::
-fileType(std::string const &identifier, bool scoped) const
+fileType(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <FileType> (scoped, identifier);
+    return findSpecification <FileType> (domain, identifier);
 }
 
 FileType::vector Manager::
-fileTypes(bool scoped) const
+fileTypes(std::string const &domain) const
 {
-    return findSpecifications <FileType> (scoped);
+    return findSpecifications <FileType> (domain);
 }
 
 Linker::shared_ptr Manager::
-linker(std::string const &identifier, bool scoped) const
+linker(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <Linker> (scoped, identifier);
+    return findSpecification <Linker> (domain, identifier);
 }
 
 Linker::vector Manager::
-linkers(bool scoped) const
+linkers(std::string const &domain) const
 {
-    return findSpecifications <Linker> (scoped);
+    return findSpecifications <Linker> (domain);
 }
 
 PackageType::shared_ptr Manager::
-packageType(std::string const &identifier, bool scoped) const
+packageType(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <PackageType> (scoped, identifier);
+    return findSpecification <PackageType> (domain, identifier);
 }
 
 PackageType::vector Manager::
-packageTypes(bool scoped) const
+packageTypes(std::string const &domain) const
 {
-    return findSpecifications <PackageType> (scoped);
+    return findSpecifications <PackageType> (domain);
 }
 
 ProductType::shared_ptr Manager::
-productType(std::string const &identifier, bool scoped) const
+productType(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <ProductType> (scoped, identifier);
+    return findSpecification <ProductType> (domain, identifier);
 }
 
 ProductType::vector Manager::
-productTypes(bool scoped) const
+productTypes(std::string const &domain) const
 {
-    return findSpecifications <ProductType> (scoped);
+    return findSpecifications <ProductType> (domain);
 }
 
 PropertyConditionFlavor::shared_ptr Manager::
-propertyConditionFlavor(std::string const &identifier, bool scoped) const
+propertyConditionFlavor(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <PropertyConditionFlavor> (scoped, identifier);
+    return findSpecification <PropertyConditionFlavor> (domain, identifier);
 }
 
 PropertyConditionFlavor::vector Manager::
-propertyConditionFlavors(bool scoped) const
+propertyConditionFlavors(std::string const &domain) const
 {
-    return findSpecifications <PropertyConditionFlavor> (scoped);
+    return findSpecifications <PropertyConditionFlavor> (domain);
 }
 
 Tool::shared_ptr Manager::
-tool(std::string const &identifier, bool scoped) const
+tool(std::string const &identifier, std::string const &domain) const
 {
-    return findSpecification <Tool> (scoped, identifier);
+    return findSpecification <Tool> (domain, identifier);
 }
 
 Tool::vector Manager::
-tools(bool scoped) const
+tools(std::string const &domain) const
 {
-    return findSpecifications <Tool> (scoped);
+    return findSpecifications <Tool> (domain);
 }
 
 void Manager::
@@ -228,43 +224,67 @@ addSpecification(PBX::Specification::shared_ptr const &spec)
         return;
     }
 
-    if (auto ospec = specification(spec->type(), spec->identifier(), spec->isDefault())) {
+    if (auto ospec = specification(spec->type(), spec->identifier(), spec->domain(), spec->isDefault())) {
         if (ospec->isDefault() && spec->isDefault()) {
-            fprintf(stderr, "error: registering %s specification '%s' twice\n",
-                    spec->type(), spec->identifier().c_str());
+            fprintf(stderr, "error: registering %s specification '%s' in domain %s twice\n",
+                    spec->type(), spec->identifier().c_str(), spec->domain().c_str());
             return;
         }
     }
 
 #if 0
-    fprintf(stderr, "adding %s spec '%s'%s\n",
-            spec->type(), spec->identifier().c_str(),
+    fprintf(stderr, "adding %s spec to domain %s '%s'%s\n",
+            spec->type(), spec->domain()).c_str(), spec->identifier().c_str(),
             spec->isDefault() ? "" : " [override]");
 #endif
-    _specifications[spec->type()].push_back(spec);
+    _specifications[spec->domain()][spec->type()].push_back(spec);
 }
 
-Manager::shared_ptr Manager::
-Open(Manager::shared_ptr parent, std::string const &path)
+void Manager::
+registerDomain(std::string const &domain, std::string const &path)
 {
-    Manager::shared_ptr manager = std::make_shared <Manager> ();
-    manager->_parent = parent;
+    auto const &it = _domains.find(domain);
+    if (it == _domains.end()) {
+        Context context = {
+            .manager = this,
+            .domain = domain,
+        };
 
-    FSUtil::EnumerateRecursive(path, "*.xcspec",
-            [&](std::string const &filename) -> bool
-            {
-                if (!Specification::Open(manager, filename)) {
-                    fprintf(stderr, "warning: failed to import "
-                        "specification '%s'\n", filename.c_str());
-                }
-                return true;
-            });
+        FSUtil::EnumerateRecursive(path, "*.xcspec",
+                [&](std::string const &filename) -> bool
+                {
+                    if (!Specification::Open(&context, filename)) {
+                        fprintf(stderr, "warning: failed to import "
+                            "specification '%s'\n", filename.c_str());
+                    }
+                    return true;
+                });
 
-    return manager;
+        _domains.insert(std::make_pair(domain, path));
+    }
 }
 
 std::string Manager::
-SpecificationRoot(std::string const &developerRoot)
+GlobalDomain(void)
+{
+    return "[global]";
+}
+
+Manager::shared_ptr Manager::
+Create(void)
+{
+    return std::make_shared <Manager> ();
+}
+
+std::string Manager::
+DeveloperSpecificationRoot(std::string const &developerRoot)
 {
     return developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents";
+}
+
+std::string Manager::
+DomainSpecificationRoot(std::string const &domainPath)
+{
+    // NOTE(grp): Some platforms have specifications in other directories besides the primary Specifications folder.
+    return domainPath + "/Developer/Library/Xcode";
 }

@@ -30,7 +30,7 @@ defaultSetting(void) const
 }
 
 Architecture::shared_ptr Architecture::
-Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+Parse(Context *context, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
@@ -45,14 +45,14 @@ Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
                 C->value().c_str());
         result.reset(new Architecture(true));
     }
-    if (!result->parse(manager, dict))
+    if (!result->parse(context, dict))
         return nullptr;
 
     return result;
 }
 
 bool Architecture::
-parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict)
 {
     plist::WarnUnhandledKeys(dict, "Architecture",
         // Specification
@@ -74,7 +74,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("ListInEnum"),
         plist::MakeKey <plist::Object> ("SortNumber"));
 
-    if (!Specification::parse(manager, dict))
+    if (!Specification::parse(context, dict))
         return false;
 
     auto RAs = dict->value <plist::Array> ("RealArchitectures");

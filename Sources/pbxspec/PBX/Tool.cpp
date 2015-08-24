@@ -51,7 +51,7 @@ defaultSettings(void) const
 }
 
 Tool::shared_ptr Tool::
-Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
+Parse(Context *context, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
@@ -84,14 +84,14 @@ Parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict)
         result.reset(new Tool(true));
     }
 
-    if (!result->parse(manager, dict))
+    if (!result->parse(context, dict))
         return nullptr;
 
     return result;
 }
 
 bool Tool::
-parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool check)
+parse(Context *context, plist::Dictionary const *dict, bool check)
 {
     if (check) {
         plist::WarnUnhandledKeys(dict, "Tool",
@@ -139,7 +139,7 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool chec
                 plist::MakeKey <plist::Array> ("DeletedProperties"));
     }
 
-    if (!Specification::parse(manager, dict))
+    if (!Specification::parse(context, dict))
         return false;
 
     auto EP     = dict->value <plist::String> ("ExecPath");
