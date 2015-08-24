@@ -18,8 +18,9 @@ using pbxspec::Manager;
 using libutil::FSUtil;
 
 Specification::Specification(std::string const &isa, bool isDefault) :
-    Object    (isa),
-    _isDefault(isDefault)
+    Object             (isa),
+    _isDefault         (isDefault),
+    _isGlobalDomainInUI(false)
 {
 }
 

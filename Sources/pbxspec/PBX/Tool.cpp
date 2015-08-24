@@ -354,27 +354,35 @@ inherit(Tool::shared_ptr const &b)
 
     auto base = this->base();
 
-    _execPath                        = base->execPath();
-    _execDescription                 = base->execDescription();
-    _commandLine                     = base->commandLine();
-    _commandInvocationClass          = base->commandInvocationClass();
-    _ruleName                        = plist::Copy(base->ruleName());
-    _ruleFormat                      = base->ruleFormat();
-    _additionalInputFiles            = base->additionalInputFiles();
-    _builtinJambaseRuleName          = base->builtinJambaseRuleName();
-    _fileTypes                       = base->fileTypes();
-    _inputFileTypes                  = base->inputFileTypes();
-    _architectures                   = base->architectures();
-    _outputs                         = base->outputs();
-    _environmentVariables            = base->environmentVariables();
-    _commandOutputParser             = plist::Copy(base->commandOutputParser());
-    _isAbstract                      = base->isAbstract();
-    _isArchitectureNeutral           = base->isArchitectureNeutral();
-    _caresAboutInclusionDependencies = base->caresAboutInclusionDependencies();
-    _synthesizeBuildRule             = base->synthesizeBuildRule();
-    _shouldRerunOnError              = base->shouldRerunOnError();
-    _options                         = base->options();
-    _deletedProperties               = base->deletedProperties();
+    _execPath                            = base->execPath();
+    _execDescription                     = base->execDescription();
+    _execDescriptionForPrecompile        = base->execDescriptionForPrecompile();
+    _execDescriptionForCompile           = base->execDescriptionForCompile();
+    _execDescriptionForCreateBitcode     = base->execDescriptionForCreateBitcode();
+    _progressDescription                 = base->progressDescription();
+    _progressDescriptionForPrecompile    = base->progressDescriptionForPrecompile();
+    _progressDescriptionForCompile       = base->progressDescriptionForCompile();
+    _progressDescriptionForCreateBitcode = base->progressDescriptionForCreateBitcode();
+    _commandLine                         = base->commandLine();
+    _commandInvocationClass              = base->commandInvocationClass();
+    _commandIdentifier                   = base->commandIdentifier();
+    _ruleName                            = plist::Copy(base->ruleName());
+    _ruleFormat                          = base->ruleFormat();
+    _additionalInputFiles                = base->additionalInputFiles();
+    _builtinJambaseRuleName              = base->builtinJambaseRuleName();
+    _fileTypes                           = base->fileTypes();
+    _inputFileTypes                      = base->inputFileTypes();
+    _architectures                       = base->architectures();
+    _outputs                             = base->outputs();
+    _environmentVariables                = base->environmentVariables();
+    _commandOutputParser                 = plist::Copy(base->commandOutputParser());
+    _isAbstract                          = base->isAbstract();
+    _isArchitectureNeutral               = base->isArchitectureNeutral();
+    _caresAboutInclusionDependencies     = base->caresAboutInclusionDependencies();
+    _synthesizeBuildRule                 = base->synthesizeBuildRule();
+    _shouldRerunOnError                  = base->shouldRerunOnError();
+    _options                             = base->options();
+    _deletedProperties                   = base->deletedProperties();
 
     return true;
 }

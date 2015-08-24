@@ -135,10 +135,12 @@ inherit(Architecture::shared_ptr const &b)
 
     auto base = this->base();
 
-    _realArchitectures   = base->realArchitectures();
-    _architectureSetting = base->architectureSetting();
-    _listInEnum          = base->listInEnum();
-    _sortNumber          = base->sortNumber();
+    _realArchitectures       = base->realArchitectures();
+    _architectureSetting     = base->architectureSetting();
+    _perArchBuildSettingName = base->perArchBuildSettingName();
+    _byteOrder               = base->byteOrder();
+    _listInEnum              = base->listInEnum();
+    _sortNumber              = base->sortNumber();
 
     return true;
 }

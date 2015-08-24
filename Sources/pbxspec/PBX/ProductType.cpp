@@ -18,14 +18,17 @@ ProductType::ProductType(bool isDefault) :
 }
 
 ProductType::ProductType(bool isDefault, std::string const &isa) :
-    Specification              (isa, isDefault),
-    _defaultBuildProperties    (Level({ })),
-    _validation                (nullptr),
-    _hasInfoPlist              (false),
-    _hasInfoPlistStrings       (false),
-    _isWrapper                 (false),
-    _supportsZeroLink          (false),
-    _alwaysPerformSeparateStrip(false)
+    Specification                          (isa, isDefault),
+    _defaultBuildProperties                (Level({ })),
+    _validation                            (nullptr),
+    _hasInfoPlist                          (false),
+    _hasInfoPlistStrings                   (false),
+    _isWrapper                             (false),
+    _supportsZeroLink                      (false),
+    _alwaysPerformSeparateStrip            (false),
+    _wantsSimpleTargetEditing              (false),
+    _addWatchCompanionRequirement          (false),
+    _disableSchemeAutocreation             (false)
 {
 }
 
@@ -213,16 +216,20 @@ inherit(ProductType::shared_ptr const &b)
 
     auto base = this->base();
 
-    _defaultTargetName          = base->defaultTargetName();
-    _defaultBuildProperties     = base->defaultBuildProperties();
-    _validation                 = plist::Copy(base->validation());
-    _iconNamePrefix             = base->iconNamePrefix();
-    _packageTypes               = base->packageTypes();
-    _hasInfoPlist               = base->hasInfoPlist();
-    _hasInfoPlistStrings        = base->hasInfoPlistStrings();
-    _isWrapper                  = base->isWrapper();
-    _supportsZeroLink           = base->supportsZeroLink();
-    _alwaysPerformSeparateStrip = base->alwaysPerformSeparateStrip();
+    _defaultTargetName                      = base->defaultTargetName();
+    _defaultBuildProperties                 = base->defaultBuildProperties();
+    _validation                             = plist::Copy(base->validation());
+    _iconNamePrefix                         = base->iconNamePrefix();
+    _packageTypes                           = base->packageTypes();
+    _hasInfoPlist                           = base->hasInfoPlist();
+    _hasInfoPlistStrings                    = base->hasInfoPlistStrings();
+    _isWrapper                              = base->isWrapper();
+    _supportsZeroLink                       = base->supportsZeroLink();
+    _alwaysPerformSeparateStrip             = base->alwaysPerformSeparateStrip();
+    _wantsSimpleTargetEditing               = base->wantsSimpleTargetEditing();
+    _addWatchCompanionRequirement           = base->addWatchCompanionRequirement();
+    _disableSchemeAutocreation              = base->disableSchemeAutocreation();
+    _runpathSearchPathForEmbeddedFrameworks = base->runpathSearchPathForEmbeddedFrameworks();
 
     return true;
 }

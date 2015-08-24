@@ -28,6 +28,7 @@ FileType::FileType(bool isDefault, std::string const &isa) :
     _isPreprocessed                         (false),
     _isTransparent                          (false),
     _isDocumentation                        (false),
+    _isEmbeddable                           (false),
     _isExecutable                           (false),
     _isExecutableWithGUI                    (false),
     _isApplication                          (false),
@@ -47,7 +48,10 @@ FileType::FileType(bool isDefault, std::string const &isa) :
     _requiresHardTabs                       (false),
     _containsNativeCode                     (false),
     _appliesToBuildRules                    (false),
-    _changesCauseDependencyGraphInvalidation(false)
+    _changesCauseDependencyGraphInvalidation(false),
+    _codeSignOnCopy                         (false),
+    _removeHeadersOnCopy                    (false),
+    _validateOnCopy                         (false)
 {
 }
 
@@ -95,6 +99,7 @@ inherit(FileType::shared_ptr const &b)
     _isDocumentation                         = base->isDocumentation();
     _isPreprocessed                          = base->isPreprocessed();
     _isTransparent                           = base->isTransparent();
+    _isEmbeddable                            = base->isEmbeddable();
     _isExecutable                            = base->isExecutable();
     _isExecutableWithGUI                     = base->isExecutableWithGUI();
     _isApplication                           = base->isApplication();
@@ -118,6 +123,9 @@ inherit(FileType::shared_ptr const &b)
     _plistStructureDefinition                = base->plistStructureDefinition();
     _changesCauseDependencyGraphInvalidation = base->changesCauseDependencyGraphInvalidation();
     _fallbackAutoroutingBuildPhase           = base->fallbackAutoroutingBuildPhase();
+    _codeSignOnCopy                          = base->codeSignOnCopy();
+    _removeHeadersOnCopy                     = base->removeHeadersOnCopy();
+    _validateOnCopy                          = base->validateOnCopy();
 
     return true;
 }

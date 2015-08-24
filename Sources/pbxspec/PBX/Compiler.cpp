@@ -36,7 +36,9 @@ Compiler::Compiler(bool isDefault, std::string const &isa) :
     _deeplyStatInputDirectories              (false),
     _dontProcessOutputs                      (false),
     _showInCompilerSelectionPopup            (false),
-    _showOnlySelfDefinedProperties           (false)
+    _showOnlySelfDefinedProperties           (false),
+    _mightNotEmitAllOutputs                  (false),
+    _includeInUnionedToolDefaults            (false)
 {
 }
 
@@ -89,6 +91,7 @@ inherit(Compiler::shared_ptr const &b)
     _synthesizeBuildRuleForBuildPhases        = base->synthesizeBuildRuleForBuildPhases();
     _inputFileGroupings                       = base->inputFileGroupings();
     _fallbackTools                            = base->fallbackTools();
+    _additionalDirectoriesToCreate            = base->additionalDirectoriesToCreate();
     _overridingProperties                     = plist::Copy(base->overridingProperties());
     _useCPlusPlusCompilerDriverWhenBundlizing = base->useCPlusPlusCompilerDriverWhenBundlizing();
     _supportsHeadermaps                       = base->supportsHeadermaps();
@@ -109,6 +112,8 @@ inherit(Compiler::shared_ptr const &b)
     _dontProcessOutputs                       = base->dontProcessOutputs();
     _showInCompilerSelectionPopup             = base->showInCompilerSelectionPopup();
     _showOnlySelfDefinedProperties            = base->showOnlySelfDefinedProperties();
+    _mightNotEmitAllOutputs                   = base->mightNotEmitAllOutputs();
+    _includeInUnionedToolDefaults             = base->includeInUnionedToolDefaults();
 
     return true;
 }
