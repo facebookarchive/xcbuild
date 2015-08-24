@@ -16,9 +16,16 @@ public:
 protected:
     std::string             _execPath;
     std::string             _execDescription;
+    std::string             _execDescriptionForPrecompile;
+    std::string             _execDescriptionForCompile;
+    std::string             _execDescriptionForCreateBitcode;
     std::string             _progressDescription;
+    std::string             _progressDescriptionForPrecompile;
+    std::string             _progressDescriptionForCompile;
+    std::string             _progressDescriptionForCreateBitcode;
     std::string             _commandLine;
     std::string             _commandInvocationClass;
+    std::string             _commandIdentifier;
     plist::Object          *_ruleName;
     std::string             _ruleFormat;
     std::string             _additionalInputFiles;
@@ -55,10 +62,26 @@ public:
 public:
     inline std::string const &execPath() const
     { return _execPath; }
+
+public:
     inline std::string const &execDescription() const
     { return _execDescription; }
+    inline std::string const &execDescriptionForPrecompile() const
+    { return _execDescriptionForPrecompile; }
+    inline std::string const &execDescriptionForCompile() const
+    { return _execDescriptionForCompile; }
+    inline std::string const &execDescriptionForCreateBitcode() const
+    { return _execDescriptionForCreateBitcode; }
+
+public:
     inline std::string const &progressDescription() const
     { return _progressDescription; }
+    inline std::string const &progressDescriptionForPrecompile() const
+    { return _progressDescriptionForPrecompile; }
+    inline std::string const &progressDescriptionForCompile() const
+    { return _progressDescriptionForCompile; }
+    inline std::string const &progressDescriptionForCreateBitcode() const
+    { return _progressDescriptionForCreateBitcode; }
 
 public:
     inline std::string const &commandLine() const
@@ -67,6 +90,8 @@ public:
 public:
     inline std::string const &commandInvocationClass() const
     { return _commandInvocationClass; }
+    inline std::string const &commandIdentifier() const
+    { return _commandIdentifier; }
 
 public:
     inline plist::Object const *ruleName() const

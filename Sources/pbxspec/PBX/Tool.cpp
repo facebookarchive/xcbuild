@@ -107,9 +107,16 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool chec
                 // Tool
                 plist::MakeKey <plist::String> ("ExecPath"),
                 plist::MakeKey <plist::String> ("ExecDescription"),
+                plist::MakeKey <plist::String> ("ExecDescriptionForPrecompile"),
+                plist::MakeKey <plist::String> ("ExecDescriptionForCompile"),
+                plist::MakeKey <plist::String> ("ExecDescriptionForCreateBitcode"),
                 plist::MakeKey <plist::String> ("ProgressDescription"),
+                plist::MakeKey <plist::String> ("ProgressDescriptionForPrecompile"),
+                plist::MakeKey <plist::String> ("ProgressDescriptionForCompile"),
+                plist::MakeKey <plist::String> ("ProgressDescriptionForCreateBitcode"),
                 plist::MakeKey <plist::String> ("CommandLine"),
                 plist::MakeKey <plist::String> ("CommandInvocationClass"),
+                plist::MakeKey <plist::String> ("CommandIdentifier"),
                 plist::MakeKey <plist::Object> ("RuleName"),
                 plist::MakeKey <plist::String> ("RuleFormat"),
                 plist::MakeKey <plist::String> ("AdditionalInputFiles"),
@@ -134,9 +141,16 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool chec
 
     auto EP     = dict->value <plist::String> ("ExecPath");
     auto ED     = dict->value <plist::String> ("ExecDescription");
+    auto EDPC   = dict->value <plist::String> ("ExecDescriptionForPrecompile");
+    auto EDC    = dict->value <plist::String> ("ExecDescriptionForCompile");
+    auto EDCB   = dict->value <plist::String> ("ExecDescriptionForCreateBitcode");
     auto PD     = dict->value <plist::String> ("ProgressDescription");
+    auto PDPC   = dict->value <plist::String> ("ProgressDescriptionForPrecompile");
+    auto PDC    = dict->value <plist::String> ("ProgressDescriptionForCompile");
+    auto PDCB   = dict->value <plist::String> ("ProgressDescriptionForCreateBitcode");
     auto CL     = dict->value <plist::String> ("CommandLine");
     auto CIC    = dict->value <plist::String> ("CommandInvocationClass");
+    auto CI     = dict->value <plist::String> ("CommandIdentifier");
     auto RN     = dict->value("RuleName");
     auto RF     = dict->value <plist::String> ("RuleFormat");
     auto AIF    = dict->value <plist::String> ("AdditionalInputFiles");
@@ -163,8 +177,32 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool chec
         _execDescription = ED->value();
     }
 
+    if (EDPC != nullptr) {
+        _execDescriptionForPrecompile = EDPC->value();
+    }
+
+    if (EDC != nullptr) {
+        _execDescriptionForCompile = EDC->value();
+    }
+
+    if (EDCB != nullptr) {
+        _execDescriptionForCreateBitcode = EDCB->value();
+    }
+
     if (PD != nullptr) {
         _progressDescription = PD->value();
+    }
+
+    if (PDPC != nullptr) {
+        _progressDescriptionForPrecompile = PDPC->value();
+    }
+
+    if (PDC != nullptr) {
+        _progressDescriptionForCompile = PDC->value();
+    }
+
+    if (PDCB != nullptr) {
+        _progressDescriptionForCreateBitcode = PDCB->value();
     }
 
     if (CL != nullptr) {
@@ -173,6 +211,10 @@ parse(std::shared_ptr<Manager> manager, plist::Dictionary const *dict, bool chec
 
     if (CIC != nullptr) {
         _commandInvocationClass = CIC->value();
+    }
+
+    if (CI != nullptr) {
+        _commandIdentifier = CI->value();
     }
 
     if (RN != nullptr) {
