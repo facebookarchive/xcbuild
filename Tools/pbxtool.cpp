@@ -377,6 +377,26 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                         }
                     }
                     break;
+                case PBX::BuildPhase::kTypeAppleScript:
+                    {
+                        auto BP = static_cast <PBX::AppleScriptBuildPhase *> (J.get());
+                        printf("\t\t\tApple Script Build Phase:\n");
+                        printf("\t\t\t\tBuild Action Mask                      = %#x\n",
+                                BP->buildActionMask());
+                        printf("\t\t\t\tRun Only For Deployment Postprocessing = %s\n",
+                                BP->runOnlyForDeploymentPostprocessing() ? "YES" : "NO");
+                        printf("\t\t\t\tContext Name                           = %s\n",
+                                BP->contextName().c_str());
+                        printf("\t\t\t\tIs Shared Context                      = %s\n",
+                                BP->isSharedContext() ? "YES" : "NO");
+                        printf("\t\t\t\tFiles:\n");
+                        for (auto K : BP->files()) {
+                            if (auto FR = K->fileReference()) {
+                                printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
+                            }
+                        }
+                    }
+                    break;
             }
         }
     }

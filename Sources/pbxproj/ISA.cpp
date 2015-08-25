@@ -5,6 +5,7 @@
 namespace pbxproj { namespace ISA {
 
 char const * const PBXAggregateTarget = "PBXAggregateTarget";
+char const * const PBXAppleScriptBuildPhase = "PBXAppleScriptBuildPhase";
 char const * const PBXBuildFile = "PBXBuildFile";
 char const * const PBXBuildRule = "PBXBuildRule";
 char const * const PBXContainerItemProxy = "PBXContainerItemProxy";

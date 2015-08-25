@@ -9,5 +9,6 @@
 #include <pbxproj/PBX/FrameworksBuildPhase.h>
 #include <pbxproj/PBX/CopyFilesBuildPhase.h>
 #include <pbxproj/PBX/ShellScriptBuildPhase.h>
+#include <pbxproj/PBX/AppleScriptBuildPhase.h>
 
 #endif  // !__pbxproj_PBX_BuildPhases_h

@@ -32,6 +32,7 @@ class ResourcesBuildPhase;
 class FrameworksBuildPhase;
 class CopyFilesBuildPhase;
 class ShellScriptBuildPhase;
+class AppleScriptBuildPhase;
 
 }
 
@@ -76,6 +77,7 @@ public:
     std::map <std::string, std::shared_ptr <PBX::FrameworksBuildPhase>>  frameworksBuildPhases;
     std::map <std::string, std::shared_ptr <PBX::CopyFilesBuildPhase>>   copyFilesBuildPhases;
     std::map <std::string, std::shared_ptr <PBX::ShellScriptBuildPhase>> shellScriptBuildPhases;
+    std::map <std::string, std::shared_ptr <PBX::AppleScriptBuildPhase>> appleScriptBuildPhases;
 
     std::map <std::string, std::shared_ptr <XC::BuildConfiguration>>     buildConfigurations;
     std::map <std::string, std::shared_ptr <XC::ConfigurationList>>      configurationLists;
@@ -106,6 +108,7 @@ public:
         frameworksBuildPhases.clear();
         copyFilesBuildPhases.clear();
         shellScriptBuildPhases.clear();
+        appleScriptBuildPhases.clear();
 
         buildConfigurations.clear();
         configurationLists.clear();

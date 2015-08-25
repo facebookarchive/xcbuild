@@ -107,6 +107,14 @@ parse(Context &context, plist::Dictionary const *dict)
                 }
 
                 _buildPhases.push_back(O);
+            } else if (auto BPd = context.get <AppleScriptBuildPhase> (ID)) {
+                auto O = context.parseObject(context.appleScriptBuildPhases, ID->value(), BPd);
+                if (!O) {
+                    abort();
+                    return false;
+                }
+
+                _buildPhases.push_back(O);
             } else {
                 fprintf(stderr, "warning: target '%s' contains unsupported build phase reference to '%s'\n",
                         _name.c_str(), ID->value().c_str());

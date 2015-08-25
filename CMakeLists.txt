@@ -97,6 +97,7 @@ set(libpbxproj_SOURCES
     Sources/pbxproj/ISA.cpp
     Sources/pbxproj/PlistHelpers.cpp
     Sources/pbxproj/PBX/AggregateTarget.cpp
+    Sources/pbxproj/PBX/AppleScriptBuildPhase.cpp
     Sources/pbxproj/PBX/BaseGroup.cpp
     Sources/pbxproj/PBX/BuildFile.cpp
     Sources/pbxproj/PBX/BuildPhase.cpp
