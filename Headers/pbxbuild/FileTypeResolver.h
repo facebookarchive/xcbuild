@@ -10,13 +10,23 @@ namespace pbxbuild {
 
 class FileTypeResolver {
 private:
-    FileTypeResolver();
+    std::string                        _filePath;
+    pbxspec::PBX::FileType::shared_ptr _fileType;
+
+public:
+    FileTypeResolver(std::string const &filePath, pbxspec::PBX::FileType::shared_ptr const &fileType);
     ~FileTypeResolver();
 
 public:
-    static pbxspec::PBX::FileType::shared_ptr
+    std::string const &filePath() const
+    { return _filePath; }
+    pbxspec::PBX::FileType::shared_ptr const &fileType() const
+    { return _fileType; }
+
+public:
+    static std::unique_ptr<FileTypeResolver>
     Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &filePath);
-    static pbxspec::PBX::FileType::shared_ptr
+    static std::unique_ptr<FileTypeResolver>
     Resolve(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment);
 };
 

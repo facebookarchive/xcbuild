@@ -7,7 +7,19 @@ using pbxbuild::FileTypeResolver;
 using libutil::FSUtil;
 using libutil::Wildcard;
 
-pbxspec::PBX::FileType::shared_ptr FileTypeResolver::
+FileTypeResolver::
+FileTypeResolver(std::string const &filePath, pbxspec::PBX::FileType::shared_ptr const &fileType) :
+    _filePath(filePath),
+    _fileType(fileType)
+{
+}
+
+FileTypeResolver::
+~FileTypeResolver()
+{
+}
+
+std::unique_ptr<FileTypeResolver> FileTypeResolver::
 Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &filePath)
 {
     bool isFolder = FSUtil::TestForDirectory(filePath);
@@ -26,7 +38,7 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &file
 
         for (std::string const &pattern : fileType->filenamePatterns()) {
             if (Wildcard::Match(pattern, fileName)) {
-                return fileType;
+                return std::make_unique<FileTypeResolver>(FileTypeResolver(filePath, fileType));
             }
         }
 
@@ -50,14 +62,14 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &file
                 }
 
                 if (std::equal(magicWord.begin(), magicWord.end(), fileContents.begin())) {
-                    return fileType;
+                    return std::make_unique<FileTypeResolver>(FileTypeResolver(filePath, fileType));
                 }
             }
         }
 
         for (std::string const &extension : fileType->extensions()) {
             if (extension == fileExtension) {
-                return fileType;
+                return std::make_unique<FileTypeResolver>(FileTypeResolver(filePath, fileType));
             }
         }
     }
@@ -65,21 +77,23 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &file
     return nullptr;
 }
 
-pbxspec::PBX::FileType::shared_ptr FileTypeResolver::
+std::unique_ptr<FileTypeResolver> FileTypeResolver::
 Resolve(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment)
 {
+    std::string filePath = environment.expand(fileReference->resolve());
+
     if (!fileReference->explicitFileType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(fileReference->explicitFileType())) {
-            return fileType;
+            return std::make_unique<FileTypeResolver>(FileTypeResolver(filePath, fileType));
         }
     }
 
     if (!fileReference->lastKnownFileType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(fileReference->lastKnownFileType())) {
-            return fileType;
+            return std::make_unique<FileTypeResolver>(FileTypeResolver(filePath, fileType));
         }
     }
 
-    return Resolve(specManager, environment.expand(fileReference->resolve()));
+    return Resolve(specManager, filePath);
 }
 

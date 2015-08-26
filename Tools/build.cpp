@@ -8,12 +8,12 @@
 #include <xcworkspace/xcworkspace.h>
 #include <pbxbuild/pbxbuild.h>
 
-static std::unique_ptr<std::string>
+static std::unique_ptr<pbxbuild::FileTypeResolver>
 ResolveBuildFile(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxsetting::Environment const &environment, pbxproj::PBX::BuildFile::shared_ptr const &buildFile)
 {
     if (pbxproj::PBX::FileReference::shared_ptr const &fileReference = buildFile->fileReference()) {
         std::string path = environment.expand(fileReference->resolve());
-        return std::make_unique<std::string>(path);
+        return pbxbuild::FileTypeResolver::Resolve(buildEnvironment.specManager(), fileReference, environment);
     } else if (pbxproj::PBX::ReferenceProxy::shared_ptr referenceProxy = buildFile->referenceProxy()) {
         pbxproj::PBX::ContainerItemProxy::shared_ptr proxy = referenceProxy->remoteRef();
         pbxproj::PBX::FileReference::shared_ptr containerReference = proxy->containerPortal();
@@ -31,8 +31,7 @@ ResolveBuildFile(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::B
             return nullptr;
         }
 
-        std::string path = remoteEnvironment->environment().expand(remote->second->resolve());
-        return std::make_unique<std::string>(path);
+        return pbxbuild::FileTypeResolver::Resolve(buildEnvironment.specManager(), remote->second, remoteEnvironment->environment());
     } else {
         fprintf(stderr, "error: unable to handle build file without file reference or proxy\n");
         return nullptr;
@@ -40,13 +39,15 @@ ResolveBuildFile(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::B
 }
 
 static void
-CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<std::string> const &filePaths)
+CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<pbxbuild::FileTypeResolver> const &files)
 {
-
+    for (pbxbuild::FileTypeResolver const &file : files) {
+        printf("\t\t\t%s (%s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
+    }
 }
 
 static void
-LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<std::string> const &filePaths)
+LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<pbxbuild::FileTypeResolver> const &files)
 {
     pbxspec::PBX::Linker::shared_ptr linker;
     if (environment.resolve("MACH_O_TYPE") == "staticlib") {
@@ -59,6 +60,9 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxsetting::Enviro
         return;
     }
 
+    for (pbxbuild::FileTypeResolver const &file : files) {
+        printf("\t\t\t%s (%s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
+    }
 }
 
 static void
@@ -75,23 +79,23 @@ BuildPhaseFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Bu
             pbxsetting::Environment currentEnvironment = pbxsetting::Environment(levels, levels);
             printf("\t\tArchitecture: %s; Variant: %s\n", arch.c_str(), variant.c_str());
 
-            std::vector<std::string> filePaths;
-            filePaths.reserve(buildPhase->files().size());
+            std::vector<pbxbuild::FileTypeResolver> files;
+            files.reserve(buildPhase->files().size());
             for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
-                std::unique_ptr<std::string> path = ResolveBuildFile(buildEnvironment, buildContext, currentEnvironment, buildFile);
-                if (path == nullptr) {
+                auto file = ResolveBuildFile(buildEnvironment, buildContext, currentEnvironment, buildFile);
+                if (file == nullptr) {
                     continue;
                 }
-                filePaths.push_back(*path);
+                files.push_back(*file);
             }
 
             switch (buildPhase->type()) {
                 case pbxproj::PBX::BuildPhase::kTypeSources: {
-                    CompileFiles(buildEnvironment, currentEnvironment, variant, arch, filePaths);
+                    CompileFiles(buildEnvironment, currentEnvironment, variant, arch, files);
                     break;
                 }
                 case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
-                    LinkFiles(buildEnvironment, currentEnvironment, variant, arch, filePaths);
+                    LinkFiles(buildEnvironment, currentEnvironment, variant, arch, files);
                     break;
                 }
                 default: {
