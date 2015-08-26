@@ -79,6 +79,21 @@ PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, xcsd
     return pbxsetting::Level(architectureSettings);
 }
 
+static std::vector<pbxsetting::Level>
+PlatformTargetLevels(pbxspec::Manager::shared_ptr const &specManager, xcsdk::SDK::Target::shared_ptr const &sdk)
+{
+    std::vector<pbxsetting::Level> platformTargetLevels = {
+        sdk->platform()->overrideProperties(),
+        sdk->customProperties(),
+        sdk->settings(),
+        sdk->platform()->settings(),
+        sdk->defaultProperties(),
+        PlatformArchitecturesLevel(specManager, sdk),
+        sdk->platform()->defaultProperties(),
+    };
+    return platformTargetLevels;
+}
+
 static xcsdk::SDK::Target::shared_ptr
 FindPlatformTarget(std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, std::string const &sdkroot)
 {
@@ -127,6 +142,41 @@ TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, xcsdk::SDK::T
         fprintf(stderr, "error: unknown target type\n");
         return nullptr;
     }
+}
+
+static std::vector<std::string>
+ResolveArchitectures(pbxsetting::Environment const &environment)
+{
+    std::vector<std::string> archsVector = environment.resolveList("ARCHS");
+    std::set<std::string> archs = std::set<std::string>(archsVector.begin(), archsVector.end());
+    std::vector<std::string> validArchsVector = environment.resolveList("VALID_ARCHS");
+    std::set<std::string> validArchs = std::set<std::string>(validArchsVector.begin(), validArchsVector.end());
+
+    std::vector<std::string> architectures;
+    std::set_intersection(archs.begin(), archs.end(), validArchs.begin(), validArchs.end(), std::back_inserter(architectures));
+    return architectures;
+}
+
+static std::vector<std::string>
+ResolveVariants(pbxsetting::Environment const &environment)
+{
+    return environment.resolveList("BUILD_VARIANTS");
+}
+
+static pbxsetting::Level
+ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::vector<std::string> const &variants)
+{
+    std::vector<pbxsetting::Setting> settings = {
+        pbxsetting::Setting::Parse("CURRENT_VARIANT", variants.front()),
+        pbxsetting::Setting::Parse("CURRENT_ARCH", architectures.front()),
+    };
+
+    for (std::string const &variant : variants) {
+        pbxsetting::Setting setting = pbxsetting::Setting::Parse("OBJECT_FILE_DIR_" + variant, "$(OBJECT_FILE_DIR)-" + variant);
+        settings.push_back(setting);
+    }
+
+    return pbxsetting::Level(settings);
 }
 
 std::unique_ptr<TargetEnvironment> TargetEnvironment::
@@ -186,6 +236,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
     std::string platformSpecificationPath = pbxspec::Manager::DomainSpecificationRoot(sdk->platform()->path());
     buildEnvironment.specManager()->registerDomain(sdk->platform()->name(), platformSpecificationPath);
+    std::vector<pbxsetting::Level> platformTargetLevels = PlatformTargetLevels(buildEnvironment.specManager(), sdk);
 
     pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(buildEnvironment.specManager(), sdk, target);
     if (buildSystem == nullptr) {
@@ -209,9 +260,21 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         }
     }
 
+    // TODO(grp): Don't duplicate this environment creation.
+    std::vector<pbxsetting::Level> architectureVariantLevels;
+    architectureVariantLevels.push_back(context.actionSettings());
+    architectureVariantLevels.insert(architectureVariantLevels.end(), platformTargetLevels.begin(), platformTargetLevels.end());
+    architectureVariantLevels.push_back(context.baseSettings());
+    architectureVariantLevels.push_back(buildSystem->defaultSettings());
+    architectureVariantLevels.insert(architectureVariantLevels.end(), defaultLevels.begin(), defaultLevels.end());
+    pbxsetting::Environment architectureVariantEnvironment = pbxsetting::Environment(architectureVariantLevels, architectureVariantLevels);
+    std::vector<std::string> architectures = ResolveArchitectures(architectureVariantEnvironment);
+    std::vector<std::string> variants = ResolveVariants(architectureVariantEnvironment);
+
     // Now we have $(SDKROOT), and can make the real levels.
     std::vector<pbxsetting::Level> levels;
     levels.push_back(context.actionSettings());
+    levels.push_back(ArchitecturesVariantsLevel(architectures, variants));
 
     if (targetConfigurationFile != nullptr) {
         levels.push_back(targetConfigurationFile->level());
@@ -229,14 +292,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     levels.push_back(projectConfiguration->buildSettings());
     levels.push_back(target->project()->settings());
 
-    // TODO(grp): Verify this ordering is correct.
-    levels.push_back(sdk->platform()->overrideProperties());
-    levels.push_back(sdk->customProperties());
-    levels.push_back(sdk->settings());
-    levels.push_back(sdk->platform()->settings());
-    levels.push_back(sdk->defaultProperties());
-    levels.push_back(PlatformArchitecturesLevel(buildEnvironment.specManager(), sdk));
-    levels.push_back(sdk->platform()->defaultProperties());
+    levels.insert(levels.end(), platformTargetLevels.begin(), platformTargetLevels.end());
 
     levels.push_back(context.baseSettings());
     levels.push_back(buildSystem->defaultSettings());
@@ -246,6 +302,8 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
     std::unique_ptr<TargetEnvironment> te = std::make_unique<TargetEnvironment>(TargetEnvironment(buildEnvironment, target, context));
     te->_environment = std::make_unique<pbxsetting::Environment>(environment);
+    te->_variants = variants;
+    te->_architectures = architectures;
     te->_buildSystem = buildSystem;
     te->_packageType = packageType;
     te->_productType = productType;

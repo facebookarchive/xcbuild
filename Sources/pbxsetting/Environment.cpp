@@ -1,6 +1,7 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxsetting/Environment.h>
+#include <sstream>
 
 using pbxsetting::Environment;
 using pbxsetting::Level;
@@ -227,6 +228,23 @@ std::string Environment::
 resolve(std::string const &setting) const
 {
     return resolve(setting, Condition::Empty());
+}
+
+std::vector<std::string> Environment::
+resolveList(std::string const &setting, Condition const &condition) const
+{
+    std::string string = resolve(setting, condition);
+    std::stringstream sstream = std::stringstream(string);
+
+    std::vector<std::string> result;
+    std::copy(std::istream_iterator<std::string>(sstream), std::istream_iterator<std::string>(), std::back_inserter(result));
+    return result;
+}
+
+std::vector<std::string> Environment::
+resolveList(std::string const &setting) const
+{
+    return resolveList(setting, Condition::Empty());
 }
 
 std::unordered_map<std::string, std::string> Environment::

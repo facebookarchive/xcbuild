@@ -30,9 +30,6 @@ actionSettings(void) const
         pbxsetting::Setting::Parse("BUILD_COMPONENTS", "headers build"), // TODO(grp): Should depend on action?
 
         pbxsetting::Setting::Parse("CONFIGURATION", _configuration),
-
-        pbxsetting::Setting::Parse("CURRENT_ARCH", "arm64"), // TODO(grp): Should intersect VALID_ARCHS and ARCHS?
-        pbxsetting::Setting::Parse("CURRENT_VARIANT", "normal"),
     });
 }
 

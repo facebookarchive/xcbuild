@@ -21,6 +21,8 @@ private:
     pbxspec::PBX::ProductType::shared_ptr    _productType;
     pbxspec::PBX::PackageType::shared_ptr    _packageType;
     std::shared_ptr<pbxsetting::Environment> _environment;
+    std::vector<std::string>                 _variants;
+    std::vector<std::string>                 _architectures;
 
 public:
     TargetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context);
@@ -37,6 +39,10 @@ public:
     { return _packageType; }
     pbxsetting::Environment const &environment(void) const
     { return *_environment; }
+    std::vector<std::string> const &variants(void) const
+    { return _variants; }
+    std::vector<std::string> const &architectures(void) const
+    { return _architectures; }
 
 public:
     static std::unique_ptr<TargetEnvironment>
