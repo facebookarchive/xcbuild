@@ -100,6 +100,13 @@ TEST(pbxsetting, ValueSimple)
     ASSERT_EQ(variable2.entries().at(0).value->entries().at(0).type, Value::Entry::String);
     EXPECT_EQ(variable2.entries().at(0).value->entries().at(0).string, "VARIABLE");
 
+    Value variable3 = Value::Parse("$VARIABLE");
+    ASSERT_EQ(variable3.entries().size(), 1);
+    ASSERT_EQ(variable3.entries().at(0).type, Value::Entry::Value);
+    ASSERT_EQ(variable3.entries().at(0).value->entries().size(), 1);
+    ASSERT_EQ(variable3.entries().at(0).value->entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(variable3.entries().at(0).value->entries().at(0).string, "VARIABLE");
+
     Value nested1 = Value::Parse("$($(NAME))");
     ASSERT_EQ(nested1.entries().size(), 1);
     ASSERT_EQ(nested1.entries().at(0).type, Value::Entry::Value);
@@ -120,6 +127,16 @@ TEST(pbxsetting, ValueSimple)
     ASSERT_EQ(partial2.entries().at(0).value->entries().size(), 1);
     ASSERT_EQ(partial2.entries().at(0).value->entries().at(0).type, Value::Entry::String);
     EXPECT_EQ(partial2.entries().at(0).value->entries().at(0).string, "(open");
+
+    Value partial3 = Value::Parse("$");
+    ASSERT_EQ(partial3.entries().size(), 1);
+    ASSERT_EQ(partial3.entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(partial3.entries().at(0).string, "$");
+
+    Value partial4 = Value::Parse("$$");
+    ASSERT_EQ(partial4.entries().size(), 1);
+    ASSERT_EQ(partial4.entries().at(0).type, Value::Entry::String);
+    EXPECT_EQ(partial4.entries().at(0).string, "$$");
 }
 
 TEST(pbxsetting, ValueComplex)

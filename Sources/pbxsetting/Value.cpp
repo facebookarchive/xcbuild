@@ -78,8 +78,15 @@ struct ParseResult {
     Value value;
 };
 
+enum ValueDelimiter {
+    kDelimiterNone,
+    kDelimiterParentheses,
+    kDelimiterBraces,
+    kDelimiterIdentifier,
+};
+
 static ParseResult
-ParseValue(std::string const &value, size_t from, char end = '\0')
+ParseValue(std::string const &value, size_t from, ValueDelimiter end = kDelimiterNone)
 {
     bool found = true;
     std::vector<Value::Entry> entries;
@@ -89,15 +96,62 @@ ParseValue(std::string const &value, size_t from, char end = '\0')
     size_t append_offset = from;
 
     do {
-        size_t to = end != '\0' ? value.find(end, search_offset) : value.size();
+        size_t to;
+        switch (end) {
+            case kDelimiterNone: {
+                to = value.size();
+                break;
+            }
+            case kDelimiterParentheses: {
+                to = value.find(')', search_offset);
+                break;
+            }
+            case kDelimiterBraces: {
+                to = value.find('}', search_offset);
+                break;
+            }
+            case kDelimiterIdentifier: {
+                const std::string identifier = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+                to = value.find_first_not_of(identifier, search_offset);
+                if (to == std::string::npos) {
+                    to = value.size();
+                }
+                if (to - search_offset == 0) {
+                    to = std::string::npos;
+                }
+                break;
+            }
+        }
         if (to == std::string::npos) {
             return { .found = false, .end = from, .value = Value(entries) };
         }
 
-        size_t pno  = value.find("$(", search_offset);
-        size_t cbo  = value.find("${", search_offset);
-        size_t open = (pno < cbo ? pno : cbo);
-        if (open == std::string::npos || open >= to) {
+        size_t pno = value.find("$(", search_offset);
+        size_t cbo = value.find("${", search_offset);
+        size_t ido = value.find("$", search_offset);
+
+        size_t openlen = 0;
+        size_t open = std::string::npos;
+        ValueDelimiter start = kDelimiterNone;
+        size_t closelen = 0;
+        if (pno != std::string::npos && (pno <= ido || ido == std::string::npos) && (pno < cbo || cbo == std::string::npos)) {
+            open = pno;
+            openlen = 2;
+            start = kDelimiterParentheses;
+            closelen = 1;
+        } else if (cbo != std::string::npos && (cbo <= ido || ido == std::string::npos) && (cbo < pno || pno == std::string::npos)) {
+            open = cbo;
+            openlen = 2;
+            start = kDelimiterBraces;
+            closelen = 1;
+        } else if (ido != std::string::npos && (ido < pno || pno == std::string::npos) && (ido < cbo || cbo == std::string::npos)) {
+            open = ido;
+            openlen = 1;
+            start = kDelimiterIdentifier;
+            closelen = 0;
+        }
+
+        if (open == std::string::npos || start == kDelimiterNone || open >= to) {
             length = to - append_offset;
             if (length > 0) {
                 entries.push_back({ .type = Value::Entry::String, .string = value.substr(append_offset, length) });
@@ -106,7 +160,7 @@ ParseValue(std::string const &value, size_t from, char end = '\0')
             return { .found = true, .end = to, .value = Value(entries) };
         }
 
-        ParseResult result = ParseValue(value, open + 2, (open == pno ? ')' : '}'));
+        ParseResult result = ParseValue(value, open + openlen, start);
         if (result.found) {
             length = open - append_offset;
             if (length > 0) {
@@ -115,10 +169,10 @@ ParseValue(std::string const &value, size_t from, char end = '\0')
 
             entries.push_back({ .type = Value::Entry::Value, .value = std::make_shared<Value>(result.value) });
 
-            append_offset = result.end + 1;
-            search_offset = result.end + 1;
+            append_offset = result.end + closelen;
+            search_offset = result.end + closelen;
         } else {
-            search_offset += 2;
+            search_offset += openlen;
         }
     } while (true);
 }

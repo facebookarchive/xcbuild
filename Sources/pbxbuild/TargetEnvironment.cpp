@@ -205,6 +205,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     pbxsetting::XC::Config::shared_ptr projectConfigurationFile = LoadConfigurationFile(projectConfiguration, projectEnvironment);
     if (projectConfigurationFile != nullptr) {
         projectLevels.insert(projectLevels.begin(), projectConfigurationFile->level());
+        projectEnvironment = pbxsetting::Environment(projectLevels, projectLevels);
     }
 
     pbxproj::XC::BuildConfiguration::shared_ptr targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), context->configuration());
@@ -226,6 +227,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     pbxsetting::XC::Config::shared_ptr targetConfigurationFile = LoadConfigurationFile(targetConfiguration, projectEnvironment);
     if (targetConfigurationFile != nullptr) {
         targetLevels.insert(targetLevels.begin(), targetConfigurationFile->level());
+        targetEnvironment = pbxsetting::Environment(targetLevels, targetLevels);
     }
 
     std::string sdkroot = targetEnvironment.resolve("SDKROOT");
