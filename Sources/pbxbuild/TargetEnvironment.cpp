@@ -1,13 +1,14 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxbuild/TargetEnvironment.h>
+#include <pbxbuild/BuildContext.h>
 
 using pbxbuild::TargetEnvironment;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
 
 TargetEnvironment::
-TargetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context) :
+TargetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context) :
     _buildEnvironment(buildEnvironment),
     _target(target),
     _context(context)
@@ -180,13 +181,13 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
 }
 
 std::unique_ptr<TargetEnvironment> TargetEnvironment::
-Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context)
+Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context)
 {
     std::vector<pbxsetting::Level> defaultLevels = buildEnvironment.baseEnvironment().assignment();
 
-    pbxproj::XC::BuildConfiguration::shared_ptr projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), context.configuration());
+    pbxproj::XC::BuildConfiguration::shared_ptr projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), context->configuration());
     if (projectConfiguration == nullptr) {
-        fprintf(stderr, "error: unable to find project configuration %s\n", context.configuration().c_str());
+        fprintf(stderr, "error: unable to find project configuration %s\n", context->configuration().c_str());
         return nullptr;
     }
 
@@ -194,10 +195,10 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     // use the default level order, because $(SRCROOT) comes below $(SDKROOT). Hack around this for now with a synthetic environment.
     // It's also in the wrong order because project settings should be below the xcconfig, but are needed to *load* the xcconfig.
     std::vector<pbxsetting::Level> projectLevels;
-    projectLevels.push_back(context.actionSettings());
+    projectLevels.push_back(context->actionSettings());
     projectLevels.push_back(projectConfiguration->buildSettings());
     projectLevels.push_back(target->project()->settings());
-    projectLevels.push_back(context.baseSettings());
+    projectLevels.push_back(context->baseSettings());
     projectLevels.insert(projectLevels.end(), defaultLevels.begin(), defaultLevels.end());
     pbxsetting::Environment projectEnvironment = pbxsetting::Environment(projectLevels, projectLevels);
 
@@ -206,19 +207,19 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         projectLevels.insert(projectLevels.begin(), projectConfigurationFile->level());
     }
 
-    pbxproj::XC::BuildConfiguration::shared_ptr targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), context.configuration());
+    pbxproj::XC::BuildConfiguration::shared_ptr targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), context->configuration());
     if (targetConfiguration == nullptr) {
-        fprintf(stderr, "error: unable to find target configuration %s\n", context.configuration().c_str());
+        fprintf(stderr, "error: unable to find target configuration %s\n", context->configuration().c_str());
         return nullptr;
     }
 
     // FIXME(grp): Similar issue for the target xcconfig. These levels aren't complete (no platform) but are needed to *get* which SDK to use.
     std::vector<pbxsetting::Level> targetLevels = projectLevels;
-    targetLevels.push_back(context.actionSettings());
+    targetLevels.push_back(context->actionSettings());
     targetLevels.push_back(targetConfiguration->buildSettings());
     targetLevels.push_back(target->settings());
     targetLevels.insert(targetLevels.end(), projectLevels.begin(), projectLevels.end());
-    targetLevels.push_back(context.baseSettings());
+    targetLevels.push_back(context->baseSettings());
     targetLevels.insert(targetLevels.end(), defaultLevels.begin(), defaultLevels.end());
     pbxsetting::Environment targetEnvironment = pbxsetting::Environment(targetLevels, targetLevels);
 
@@ -262,9 +263,9 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
     // TODO(grp): Don't duplicate this environment creation.
     std::vector<pbxsetting::Level> architectureVariantLevels;
-    architectureVariantLevels.push_back(context.actionSettings());
+    architectureVariantLevels.push_back(context->actionSettings());
     architectureVariantLevels.insert(architectureVariantLevels.end(), platformTargetLevels.begin(), platformTargetLevels.end());
-    architectureVariantLevels.push_back(context.baseSettings());
+    architectureVariantLevels.push_back(context->baseSettings());
     architectureVariantLevels.push_back(buildSystem->defaultSettings());
     architectureVariantLevels.insert(architectureVariantLevels.end(), defaultLevels.begin(), defaultLevels.end());
     pbxsetting::Environment architectureVariantEnvironment = pbxsetting::Environment(architectureVariantLevels, architectureVariantLevels);
@@ -273,7 +274,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
     // Now we have $(SDKROOT), and can make the real levels.
     std::vector<pbxsetting::Level> levels;
-    levels.push_back(context.actionSettings());
+    levels.push_back(context->actionSettings());
     levels.push_back(pbxsetting::Level({
         pbxsetting::Setting::Parse("SDKROOT", sdk->path()),
     }));
@@ -297,7 +298,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
     levels.insert(levels.end(), platformTargetLevels.begin(), platformTargetLevels.end());
 
-    levels.push_back(context.baseSettings());
+    levels.push_back(context->baseSettings());
     levels.push_back(buildSystem->defaultSettings());
 
     levels.insert(levels.end(), defaultLevels.begin(), defaultLevels.end());

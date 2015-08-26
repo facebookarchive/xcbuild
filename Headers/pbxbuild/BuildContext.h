@@ -4,6 +4,8 @@
 #define __pbxbuild_BuildContext_h
 
 #include <pbxbuild/Base.h>
+#include <pbxbuild/BuildEnvironment.h>
+#include <pbxbuild/TargetEnvironment.h>
 
 namespace pbxbuild {
 
@@ -13,6 +15,7 @@ private:
     xcworkspace::XC::Workspace::shared_ptr  _workspace;
     xcscheme::XC::Scheme::shared_ptr        _scheme;
     std::shared_ptr<std::map<std::string, pbxproj::PBX::Project::shared_ptr>> _projects;
+    std::shared_ptr<std::map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>> _targetEnvironments;
 
 private:
     std::string _action;
@@ -46,7 +49,16 @@ public:
     pbxsetting::Level baseSettings(void) const;
 
 public:
-    void registerProject(std::string const &path, pbxproj::PBX::Project::shared_ptr const &project) const;
+    pbxproj::PBX::Project::shared_ptr
+    project(std::string const &projectPath) const;
+    std::unique_ptr<pbxbuild::TargetEnvironment>
+    targetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const;
+
+public:
+    pbxproj::PBX::Target::shared_ptr
+    resolveTargetIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const;
+    std::unique_ptr<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>>
+    resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const;
 
 public:
     static BuildContext

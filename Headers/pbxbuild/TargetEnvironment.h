@@ -5,15 +5,16 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/BuildEnvironment.h>
-#include <pbxbuild/BuildContext.h>
 
 namespace pbxbuild {
 
+class BuildContext;
+
 class TargetEnvironment {
 private:
-    BuildEnvironment                 _buildEnvironment;
-    pbxproj::PBX::Target::shared_ptr _target;
-    BuildContext                     _context;
+    BuildEnvironment                  _buildEnvironment;
+    pbxproj::PBX::Target::shared_ptr  _target;
+    BuildContext const               *_context;
 
 private:
     xcsdk::SDK::Target::shared_ptr           _sdk;
@@ -25,7 +26,7 @@ private:
     std::vector<std::string>                 _architectures;
 
 public:
-    TargetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context);
+    TargetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context);
     ~TargetEnvironment();
 
 public:
@@ -46,7 +47,7 @@ public:
 
 public:
     static std::unique_ptr<TargetEnvironment>
-    Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const &context);
+    Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context);
 };
 
 }

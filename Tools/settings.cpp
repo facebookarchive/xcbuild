@@ -37,7 +37,7 @@ main(int argc, char **argv)
         "Release"
     );
 
-    std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = pbxbuild::TargetEnvironment::Create(*buildEnvironment, target, context);
+    std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = context.targetEnvironment(*buildEnvironment, target);
     if (targetEnvironment == nullptr) {
         fprintf(stderr, "error: couldn't compute environment\n");
         return -1;

@@ -11,15 +11,78 @@ BuildContext(pbxproj::PBX::Project::shared_ptr const &project, xcworkspace::XC::
     _workspace(workspace),
     _scheme(scheme),
     _projects(std::make_shared<std::map<std::string, pbxproj::PBX::Project::shared_ptr>>()),
+    _targetEnvironments(std::make_shared<std::map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>>()),
     _action(action),
     _configuration(configuration)
 {
 }
 
-void BuildContext::
-registerProject(std::string const &path, pbxproj::PBX::Project::shared_ptr const &project) const
+pbxproj::PBX::Project::shared_ptr BuildContext::
+project(std::string const &projectPath) const
 {
-    (*_projects)[path] = project;
+    auto PI = _projects->find(projectPath);
+    if (PI != _projects->end()) {
+        return PI->second;
+    } else {
+        pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(projectPath);
+        if (project != nullptr) {
+            _projects->insert(std::make_pair(projectPath, project));
+        }
+        return project;
+    }
+}
+
+std::unique_ptr<pbxbuild::TargetEnvironment> BuildContext::
+targetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const
+{
+    auto TEI = _targetEnvironments->find(target);
+    if (TEI != _targetEnvironments->end()) {
+        return std::make_unique<pbxbuild::TargetEnvironment>(TEI->second);
+    } else {
+        std::unique_ptr<TargetEnvironment> targetEnvironment = TargetEnvironment::Create(buildEnvironment, target, this);
+        if (targetEnvironment != nullptr) {
+            _targetEnvironments->insert(std::make_pair(target, *targetEnvironment));
+        }
+        return targetEnvironment;
+    }
+}
+
+pbxproj::PBX::Target::shared_ptr BuildContext::
+resolveTargetIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const
+{
+    if (project == nullptr) {
+        return nullptr;
+    }
+
+    pbxproj::PBX::Target::shared_ptr foundTarget = nullptr;
+    for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
+        if (target->blueprintIdentifier() == identifier) {
+            return target;
+        }
+    }
+
+    return nullptr;
+}
+
+std::unique_ptr<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>> BuildContext::
+resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const
+{
+    if (project == nullptr) {
+        return nullptr;
+    }
+
+    pbxproj::PBX::Target::shared_ptr foundTarget = nullptr;
+    for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
+        if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+            pbxproj::PBX::NativeTarget const *nativeTarget = reinterpret_cast<pbxproj::PBX::NativeTarget const *>(target.get());
+            if (nativeTarget->productReference() != nullptr && nativeTarget->productReference()->blueprintIdentifier() == identifier) {
+                auto pair = std::make_pair(target, nativeTarget->productReference());
+                return std::make_unique<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>>(pair);
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 pbxsetting::Level BuildContext::
@@ -112,6 +175,6 @@ BuildContext BuildContext::
 Project(pbxproj::PBX::Project::shared_ptr const &project, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration)
 {
     BuildContext buildContext = BuildContext(project, nullptr, scheme, action, configuration);
-    buildContext.registerProject(project->projectFile(), project);
+    buildContext._projects->insert(std::make_pair(project->projectFile(), project));
     return buildContext;
 }
