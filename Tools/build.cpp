@@ -40,36 +40,62 @@ ResolveBuildFile(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::B
 }
 
 static void
+CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<std::string> const &filePaths)
+{
+
+}
+
+static void
+LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<std::string> const &filePaths)
+{
+    pbxspec::PBX::Linker::shared_ptr linker;
+    if (environment.resolve("MACH_O_TYPE") == "staticlib") {
+        linker = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.libtool");
+    } else {
+        linker = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.ld");
+    }
+    if (linker == nullptr) {
+        fprintf(stderr, "error: couldn't get linker\n");
+        return;
+    }
+
+}
+
+static void
 BuildPhaseFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::TargetEnvironment const &targetEnvironment, pbxproj::PBX::SourcesBuildPhase const *buildPhase)
 {
-    for (std::string const &arch : targetEnvironment.architectures()) {
-        for (std::string const &variant : targetEnvironment.variants()) {
+    for (std::string const &variant : targetEnvironment.variants()) {
+        for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Level currentLevel = pbxsetting::Level({
-                pbxsetting::Setting::Parse("CURRENT_ARCH", arch),
                 pbxsetting::Setting::Parse("CURRENT_VARIANT", variant),
+                pbxsetting::Setting::Parse("CURRENT_ARCH", arch),
             });
             std::vector<pbxsetting::Level> levels = targetEnvironment.environment().assignment();
             levels.push_back(currentLevel);
             pbxsetting::Environment currentEnvironment = pbxsetting::Environment(levels, levels);
+            printf("\t\tArchitecture: %s; Variant: %s\n", arch.c_str(), variant.c_str());
 
+            std::vector<std::string> filePaths;
+            filePaths.reserve(buildPhase->files().size());
             for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
                 std::unique_ptr<std::string> path = ResolveBuildFile(buildEnvironment, buildContext, currentEnvironment, buildFile);
                 if (path == nullptr) {
                     continue;
                 }
+                filePaths.push_back(*path);
+            }
 
-                switch (buildPhase->type()) {
-                    case pbxproj::PBX::BuildPhase::kTypeSources: {
-                        printf("\t\tCompile: %s\n", path->c_str());
-                        break;
-                    }
-                    case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
-                        printf("\t\tLink: %s\n", path->c_str());
-                        break;
-                    }
-                    default: {
-                        assert(false);
-                    }
+            switch (buildPhase->type()) {
+                case pbxproj::PBX::BuildPhase::kTypeSources: {
+                    CompileFiles(buildEnvironment, currentEnvironment, variant, architecture, filePaths);
+                    break;
+                }
+                case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
+                    LinkFiles(buildEnvironment, currentEnvironment, variant, architecture, filePaths);
+                    break;
+                }
+                default: {
+                    assert(false);
                 }
             }
         }
