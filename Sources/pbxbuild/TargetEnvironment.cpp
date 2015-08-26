@@ -274,6 +274,9 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     // Now we have $(SDKROOT), and can make the real levels.
     std::vector<pbxsetting::Level> levels;
     levels.push_back(context.actionSettings());
+    levels.push_back(pbxsetting::Level({
+        pbxsetting::Setting::Parse("SDKROOT", sdk->path()),
+    }));
     levels.push_back(ArchitecturesVariantsLevel(architectures, variants));
 
     if (targetConfigurationFile != nullptr) {
