@@ -26,7 +26,7 @@ public:
 public:
     inline std::string const &compilerSpec() const
     { return _compilerSpec; }
-    
+
 public:
     inline std::string const &filePatterns() const
     { return _filePatterns; }

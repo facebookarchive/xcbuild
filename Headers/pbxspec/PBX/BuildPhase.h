@@ -12,35 +12,6 @@ public:
     typedef std::shared_ptr <BuildPhase> shared_ptr;
     typedef std::vector <shared_ptr> vector;
 
-public:
-    class BuildRule {
-        typedef std::shared_ptr <BuildRule> shared_ptr;
-        typedef std::vector <shared_ptr> vector;
-
-    protected:
-        std::string _name;
-        std::string _fileType;
-        std::string _compilerSpec;
-
-    protected:
-        friend class BuildPhase;
-        BuildRule();
-
-    public:
-        inline std::string const &name() const
-        { return _name; }
-        inline std::string const &fileType() const
-        { return _fileType; }
-        inline std::string const &compilerSpec() const
-        { return _compilerSpec; }
-
-    protected:
-        bool parse(plist::Dictionary const *dict);
-    };
-
-protected:
-    BuildRule::vector _buildRules;
-
 protected:
     BuildPhase(bool isDefault);
 
@@ -54,10 +25,6 @@ public:
 public:
     inline BuildPhase::shared_ptr const &base() const
     { return reinterpret_cast <BuildPhase::shared_ptr const &> (Specification::base()); }
-
-public:
-    inline BuildRule::vector const &buildRules() const
-    { return _buildRules; }
 
 protected:
     friend class Specification;

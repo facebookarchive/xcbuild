@@ -151,6 +151,7 @@ set(libpbxspec_SOURCES
     Sources/pbxspec/PBX/ApplicationWrapperFileType.cpp
     Sources/pbxspec/PBX/Architecture.cpp
     Sources/pbxspec/PBX/BuildPhase.cpp
+    Sources/pbxspec/PBX/BuildRule.cpp
     Sources/pbxspec/PBX/BuildSystem.cpp
     Sources/pbxspec/PBX/BundleProductType.cpp
     Sources/pbxspec/PBX/CFBundleWrapperFileType.cpp
@@ -200,6 +201,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/FileTypeResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
+    Sources/pbxbuild/TargetBuildRules.cpp
     Sources/pbxbuild/TargetEnvironment.cpp
     )
 

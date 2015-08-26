@@ -9,6 +9,7 @@
 #include <pbxbuild/DependencyResolver.h>
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/FileTypeResolver.h>
+#include <pbxbuild/TargetBuildRules.h>
 #include <pbxbuild/TargetEnvironment.h>
 
 #endif  // !__pbxbuild_pbxbuild_h

@@ -9,6 +9,7 @@
 #include <pbxspec/PBX/ApplicationProductType.h>
 #include <pbxspec/PBX/Architecture.h>
 #include <pbxspec/PBX/BuildPhase.h>
+#include <pbxspec/PBX/BuildRule.h>
 #include <pbxspec/PBX/BuildSystem.h>
 #include <pbxspec/PBX/BundleProductType.h>
 #include <pbxspec/PBX/CFBundleWrapperFileType.h>

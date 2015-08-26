@@ -39,15 +39,28 @@ ResolveBuildFile(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::B
 }
 
 static void
-CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<pbxbuild::FileTypeResolver> const &files)
+CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::TargetEnvironment const &targetEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<pbxbuild::FileTypeResolver> const &files)
 {
     for (pbxbuild::FileTypeResolver const &file : files) {
-        printf("\t\t\t%s (%s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
+        pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
+
+        std::string buildRuleDescription;
+        if (buildRule != nullptr) {
+            if (buildRule->tool() != nullptr) {
+                buildRuleDescription = buildRule->tool()->identifier();
+            } else if (!buildRule->script().empty()) {
+                buildRuleDescription = "[custom script]";
+            }
+        } else {
+            buildRuleDescription = "[no matching build rule]";
+        }
+
+        printf("\t\t\t%s (%s) -> %s\n", file.filePath().c_str(), file.fileType()->identifier().c_str(), buildRuleDescription.c_str());
     }
 }
 
 static void
-LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<pbxbuild::FileTypeResolver> const &files)
+LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::TargetEnvironment const &targetEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<pbxbuild::FileTypeResolver> const &files)
 {
     pbxspec::PBX::Linker::shared_ptr linker;
     if (environment.resolve("MACH_O_TYPE") == "staticlib") {
@@ -91,11 +104,11 @@ BuildPhaseFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Bu
 
             switch (buildPhase->type()) {
                 case pbxproj::PBX::BuildPhase::kTypeSources: {
-                    CompileFiles(buildEnvironment, currentEnvironment, variant, arch, files);
+                    CompileFiles(buildEnvironment, targetEnvironment, currentEnvironment, variant, arch, files);
                     break;
                 }
                 case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
-                    LinkFiles(buildEnvironment, currentEnvironment, variant, arch, files);
+                    LinkFiles(buildEnvironment, targetEnvironment, currentEnvironment, variant, arch, files);
                     break;
                 }
                 default: {

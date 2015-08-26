@@ -49,26 +49,10 @@ parse(Context *context, plist::Dictionary const *dict)
         plist::MakeKey <plist::String> ("Name"),
         plist::MakeKey <plist::String> ("Description"),
         plist::MakeKey <plist::String> ("Vendor"),
-        plist::MakeKey <plist::String> ("Version"),
-        // BuildPhase
-        plist::MakeKey <plist::Array> ("BuildRules"));
+        plist::MakeKey <plist::String> ("Version"));
 
     if (!Specification::parse(context, dict))
         return false;
-
-    auto BRs = dict->value <plist::Array> ("BuildRules");
-
-    if (BRs != nullptr) {
-        for (size_t n = 0; n < BRs->count(); n++) {
-            if (auto BR = BRs->value <plist::Dictionary> (n)) {
-                BuildRule::shared_ptr buildRule;
-                buildRule.reset(new BuildRule);
-                if (buildRule->parse(BR)) {
-                    _buildRules.push_back(buildRule);
-                }
-            }
-        }
-    }
 
     return true;
 }
@@ -90,39 +74,6 @@ inherit(BuildPhase::shared_ptr const &b)
 
     auto base = this->base();
 
-    _buildRules = base->buildRules();
-
     return true;
 }
 
-BuildPhase::BuildRule::BuildRule()
-{
-}
-
-bool BuildPhase::BuildRule::
-parse(plist::Dictionary const *dict)
-{
-    plist::WarnUnhandledKeys(dict, "BuildRule",
-        plist::MakeKey <plist::Object> ("Name"),
-        plist::MakeKey <plist::String> ("FileType"),
-        plist::MakeKey <plist::String> ("CompilerSpec")
-        );
-
-    auto N  = dict->value <plist::String> ("Name");
-    auto FT = dict->value <plist::String> ("FileType");
-    auto CS = dict->value <plist::String> ("CompilerSpec");
-
-    if (N != nullptr) {
-        _name = N->value();
-    }
-
-    if (FT != nullptr) {
-        _fileType = FT->value();
-    }
-
-    if (CS != nullptr) {
-        _compilerSpec = CS->value();
-    }
-
-    return true;
-}

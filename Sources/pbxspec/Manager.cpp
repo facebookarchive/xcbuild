@@ -8,6 +8,7 @@ using pbxspec::Context;
 using pbxspec::PBX::Specification;
 using pbxspec::PBX::Architecture;
 using pbxspec::PBX::BuildPhase;
+using pbxspec::PBX::BuildRule;
 using pbxspec::PBX::BuildSystem;
 using pbxspec::PBX::Compiler;
 using pbxspec::PBX::FileType;
@@ -211,6 +212,42 @@ tools(std::string const &domain) const
     return findSpecifications <Tool> (domain);
 }
 
+static BuildRule::shared_ptr
+SynthesizeBuildRule(Tool const *tool)
+{
+
+    return nullptr;
+}
+
+BuildRule::vector Manager::
+synthesizedBuildRules(void) const
+{
+    BuildRule::vector buildRules;
+
+    for (Compiler::shared_ptr const &compiler : compilers()) {
+        if (compiler->synthesizeBuildRule()) {
+            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(compiler->inputFileTypes(), compiler->identifier()));
+            buildRules.push_back(buildRule);
+        }
+    }
+
+    for (Linker::shared_ptr const &linker : linkers()) {
+        if (linker->synthesizeBuildRule()) {
+            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(linker->inputFileTypes(), linker->identifier()));
+            buildRules.push_back(buildRule);
+        }
+    }
+
+    for (Tool::shared_ptr const &tool : tools()) {
+        if (tool->synthesizeBuildRule()) {
+            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(tool->inputFileTypes(), tool->identifier()));
+            buildRules.push_back(buildRule);
+        }
+    }
+
+    return buildRules;
+}
+
 void Manager::
 addSpecification(PBX::Specification::shared_ptr const &spec)
 {
@@ -264,6 +301,29 @@ registerDomain(std::string const &domain, std::string const &path)
     }
 }
 
+void Manager::
+registerBuildRules(std::string const &path)
+{
+    plist::Object *plist = plist::Object::Parse(path);
+    if (plist == nullptr) {
+        return;
+    }
+
+    if (auto array = plist::CastTo <plist::Array> (plist)) {
+        size_t count  = array->count();
+        for (size_t n = 0; n < count; n++) {
+            if (auto dict = array->value <plist::Dictionary> (n)) {
+                BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule());
+                if (buildRule->parse(dict)) {
+                    _buildRules.push_back(buildRule);
+                }
+            }
+        }
+    }
+
+    plist->release();
+}
+
 std::string Manager::
 GlobalDomain(void)
 {
@@ -287,4 +347,10 @@ DomainSpecificationRoot(std::string const &domainPath)
 {
     // NOTE(grp): Some platforms have specifications in other directories besides the primary Specifications folder.
     return domainPath + "/Developer/Library/Xcode";
+}
+
+std::string Manager::
+DeveloperBuildRules(std::string const &developerRoot)
+{
+    return developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents/Frameworks/DevToolsCore.framework/Versions/A/Resources/BuiltInBuildRules.plist";
 }

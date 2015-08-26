@@ -6,6 +6,7 @@
 #include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Architecture.h>
 #include <pbxspec/PBX/BuildPhase.h>
+#include <pbxspec/PBX/BuildRule.h>
 #include <pbxspec/PBX/BuildSystem.h>
 #include <pbxspec/PBX/Compiler.h>
 #include <pbxspec/PBX/FileType.h>
@@ -25,6 +26,7 @@ public:
 private:
     std::map<std::string, std::string>                                       _domains;
     std::map<std::string, std::map<char const*, PBX::Specification::vector>> _specifications;
+    PBX::BuildRule::vector                                                   _buildRules;
 
 public:
     Manager();
@@ -97,8 +99,15 @@ public:
     tools(std::string const &domain = GlobalDomain()) const;
 
 public:
+    inline PBX::BuildRule::vector buildRules(void) const
+    { return _buildRules; }
+    PBX::BuildRule::vector synthesizedBuildRules(void) const;
+
+public:
     void
     registerDomain(std::string const &domain, std::string const &path);
+    void
+    registerBuildRules(std::string const &path);
 
 protected:
     friend class pbxspec::PBX::Specification;
@@ -126,6 +135,8 @@ public:
     DeveloperSpecificationRoot(std::string const &developerRoot);
     static std::string
     DomainSpecificationRoot(std::string const &domainPath);
+    static std::string
+    DeveloperBuildRules(std::string const &developerRoot);
 };
 
 }

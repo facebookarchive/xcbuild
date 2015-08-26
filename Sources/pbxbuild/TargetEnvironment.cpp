@@ -306,7 +306,10 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     levels.insert(levels.end(), defaultLevels.begin(), defaultLevels.end());
     pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);
 
+    auto buildRules = std::make_shared <pbxbuild::TargetBuildRules> (pbxbuild::TargetBuildRules::Create(buildEnvironment.specManager(), target));
+
     std::unique_ptr<TargetEnvironment> te = std::make_unique<TargetEnvironment>(TargetEnvironment(buildEnvironment, target, context));
+    te->_buildRules = buildRules;
     te->_environment = std::make_unique<pbxsetting::Environment>(environment);
     te->_variants = variants;
     te->_architectures = architectures;

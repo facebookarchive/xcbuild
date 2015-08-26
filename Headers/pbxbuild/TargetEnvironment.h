@@ -5,6 +5,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/BuildEnvironment.h>
+#include <pbxbuild/TargetBuildRules.h>
 
 namespace pbxbuild {
 
@@ -17,6 +18,7 @@ private:
     BuildContext const               *_context;
 
 private:
+    std::shared_ptr<TargetBuildRules>        _buildRules;
     xcsdk::SDK::Target::shared_ptr           _sdk;
     pbxspec::PBX::BuildSystem::shared_ptr    _buildSystem;
     pbxspec::PBX::ProductType::shared_ptr    _productType;
@@ -30,19 +32,23 @@ public:
     ~TargetEnvironment();
 
 public:
-    xcsdk::SDK::Target::shared_ptr const &sdk(void) const
+    TargetBuildRules const &buildRules() const
+    { return *_buildRules.get(); }
+    xcsdk::SDK::Target::shared_ptr const &sdk() const
     { return _sdk; }
-    pbxspec::PBX::BuildSystem::shared_ptr const &buildSystem(void) const
+    pbxspec::PBX::BuildSystem::shared_ptr const &buildSystem() const
     { return _buildSystem; }
-    pbxspec::PBX::ProductType::shared_ptr const &productType(void) const
+    pbxspec::PBX::ProductType::shared_ptr const &productType() const
     { return _productType; }
-    pbxspec::PBX::PackageType::shared_ptr const &packageType(void) const
+    pbxspec::PBX::PackageType::shared_ptr const &packageType() const
     { return _packageType; }
-    pbxsetting::Environment const &environment(void) const
+
+public:
+    pbxsetting::Environment const &environment() const
     { return *_environment; }
-    std::vector<std::string> const &variants(void) const
+    std::vector<std::string> const &variants() const
     { return _variants; }
-    std::vector<std::string> const &architectures(void) const
+    std::vector<std::string> const &architectures() const
     { return _architectures; }
 
 public:

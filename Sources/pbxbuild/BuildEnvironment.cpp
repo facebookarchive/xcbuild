@@ -21,13 +21,16 @@ Default(void)
         return nullptr;
     }
 
-    std::string specificationRoot = pbxspec::Manager::DeveloperSpecificationRoot(developerRoot);
     auto specManager = pbxspec::Manager::Create();
     if (specManager == nullptr) {
         return nullptr;
     }
 
+    std::string specificationRoot = pbxspec::Manager::DeveloperSpecificationRoot(developerRoot);
     specManager->registerDomain(pbxspec::Manager::GlobalDomain(), specificationRoot);
+
+    std::string buildRules = pbxspec::Manager::DeveloperBuildRules(developerRoot);
+    specManager->registerBuildRules(buildRules);
 
     pbxspec::PBX::BuildSystem::shared_ptr buildSystem = specManager->buildSystem("com.apple.build-system.core");
     if (buildSystem == nullptr) {
