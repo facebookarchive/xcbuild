@@ -87,11 +87,11 @@ BuildPhaseFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Bu
 
             switch (buildPhase->type()) {
                 case pbxproj::PBX::BuildPhase::kTypeSources: {
-                    CompileFiles(buildEnvironment, currentEnvironment, variant, architecture, filePaths);
+                    CompileFiles(buildEnvironment, currentEnvironment, variant, arch, filePaths);
                     break;
                 }
                 case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
-                    LinkFiles(buildEnvironment, currentEnvironment, variant, architecture, filePaths);
+                    LinkFiles(buildEnvironment, currentEnvironment, variant, arch, filePaths);
                     break;
                 }
                 default: {

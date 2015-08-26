@@ -61,7 +61,7 @@ protected:
     libutil::string_vector _mimeTypes;
     libutil::string_vector _typeCodes;
     libutil::string_vector _filenamePatterns;
-    libutil::string_vector _magicWords;
+    std::vector<std::vector<uint8_t>> _magicWords;
     libutil::string_vector _extraPropertyNames;
     libutil::string_vector _prefix;
     ComponentPart::map     _componentParts;
@@ -115,7 +115,7 @@ public:
 public:
     inline std::string const &UTI() const
     { return _uti; }
-    
+
 public:
     inline libutil::string_vector const &extensions() const
     { return _extensions; }
@@ -125,7 +125,7 @@ public:
     { return _typeCodes; }
     inline libutil::string_vector const &filenamePatterns() const
     { return _filenamePatterns; }
-    inline libutil::string_vector const &magicWords() const
+    std::vector<std::vector<uint8_t>> const &magicWords() const
     { return _magicWords; }
 
 public:

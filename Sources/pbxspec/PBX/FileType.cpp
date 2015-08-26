@@ -327,8 +327,10 @@ parse(Context *context, plist::Dictionary const *dict)
 
     if (MWs != nullptr) {
         for (size_t n = 0; n < MWs->count(); n++) {
-            auto MW = MWs->value <plist::String> (n);
-            if (MW != nullptr) {
+            if (auto MW = MWs->value <plist::String> (n)) {
+                std::vector<uint8_t> MWV = std::vector<uint8_t>(MW->value().begin(), MW->value().end());
+                _magicWords.push_back(MWV);
+            } else if (auto MW = MWs->value <plist::Data> (n)) {
                 _magicWords.push_back(MW->value());
             }
         }
