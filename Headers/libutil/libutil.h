@@ -10,6 +10,7 @@
 
 #include <libutil/Base64.h>
 #include <libutil/ISODate.h>
+#include <libutil/Wildcard.h>
 #include <libutil/UnixTime.h>
 
 #endif  // !__libutil_libutil_h

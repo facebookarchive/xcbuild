@@ -29,6 +29,7 @@ set(libutil_SOURCES
     #
     Sources/libutil/Base64.cpp
     Sources/libutil/ISODate.cpp
+    Sources/libutil/Wildcard.cpp
     Sources/libutil/UnixTime.cpp
     #
     Sources/libutil/bsd_fnmatch.c
@@ -250,6 +251,9 @@ function (ADD_UNIT_GTEST NAME SOURCES)
     target_link_libraries("${NAME}" gtest gtest_main)
     add_test("${NAME}" "${NAME}")
 endfunction ()
+
+ADD_UNIT_GTEST(test_Wildcard Tests/libutil/test_Wildcard.cpp)
+target_link_libraries(test_Wildcard pbxbase)
 
 ADD_UNIT_GTEST(test_pbxsetting Tests/pbxsetting/test_pbxsetting.cpp)
 target_link_libraries(test_pbxsetting pbxsetting)

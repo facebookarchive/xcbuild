@@ -3,6 +3,7 @@
 #include <pbxsetting/Condition.h>
 
 using pbxsetting::Condition;
+using libutil::Wildcard;
 
 Condition::
 Condition(std::unordered_map<std::string, std::string> const &values) :
@@ -15,29 +16,6 @@ Condition::
 {
 }
 
-static bool
-WildcardMatch(std::string const &first, std::string const &second)
-{
-    std::string::const_iterator sit = second.begin();
-    for (std::string::const_iterator fit = first.begin(); fit != first.end(); ++fit) {
-        if (*fit == '*') {
-            if (++fit == first.end() || sit == second.end()) {
-                return true;
-            }
-
-            while (*sit != *fit) {
-                if (++sit == second.end()) {
-                    return false;
-                }
-            }
-        } else if (*fit != *sit++) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 bool Condition::
 match(Condition const &condition) const
 {
@@ -48,7 +26,7 @@ match(Condition const &condition) const
             return false;
         }
 
-        if (!WildcardMatch(TE.second, OE->second)) {
+        if (!Wildcard::Match(TE.second, OE->second)) {
             return false;
         }
     }
