@@ -28,6 +28,8 @@ settings(void) const
 bool Target::
 parse(Context &context, plist::Dictionary const *dict)
 {
+    _project = context.project;
+
     std::string BCLID;
 
     auto N   = dict->value <plist::String> ("name");

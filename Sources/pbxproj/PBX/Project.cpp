@@ -105,7 +105,6 @@ Project::parse(Context &context, plist::Dictionary const *dict)
                     return false;
                 }
 
-                T->_project = this;
                 _targets.push_back(T);
             } else if (auto Td = context.get <LegacyTarget> (Ts->value(n), &TID)) {
                 auto T = context.parseObject(context.legacyTargets, TID, Td);
@@ -114,7 +113,6 @@ Project::parse(Context &context, plist::Dictionary const *dict)
                     return false;
                 }
 
-                T->_project = this;
                 _targets.push_back(T);
             } else if (auto Td = context.get <AggregateTarget> (Ts->value(n), &TID)) {
                 auto T = context.parseObject(context.aggregateTargets, TID, Td);
@@ -123,7 +121,6 @@ Project::parse(Context &context, plist::Dictionary const *dict)
                     return false;
                 }
 
-                T->_project = this;
                 _targets.push_back(T);
             }
         }

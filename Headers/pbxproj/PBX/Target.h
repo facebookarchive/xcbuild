@@ -27,8 +27,7 @@ private:
     Type                              _type;
 
 private:
-    friend class Project;
-    Project                          *_project;
+    std::weak_ptr<Project>            _project;
 
 private:
     std::string                       _name;
@@ -45,8 +44,8 @@ public:
     { return _type; }
 
 public:
-    inline Project const *project() const
-    { return _project; }
+    inline std::shared_ptr<Project> project() const
+    { return _project.lock(); }
 
 public:
     inline std::string const &name() const

@@ -54,7 +54,7 @@ public:
     //
     // The main project
     //
-    PBX::Project       *project;
+    std::shared_ptr<PBX::Project> project;
 
     //
     // Cached values
