@@ -74,7 +74,7 @@ resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::
     pbxproj::PBX::Target::shared_ptr foundTarget = nullptr;
     for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
         if (target->type() == pbxproj::PBX::Target::kTypeNative) {
-            pbxproj::PBX::NativeTarget const *nativeTarget = reinterpret_cast<pbxproj::PBX::NativeTarget const *>(target.get());
+            pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast<pbxproj::PBX::NativeTarget>(target);
             if (nativeTarget->productReference() != nullptr && nativeTarget->productReference()->blueprintIdentifier() == identifier) {
                 auto pair = std::make_pair(target, nativeTarget->productReference());
                 return std::make_unique<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>>(pair);

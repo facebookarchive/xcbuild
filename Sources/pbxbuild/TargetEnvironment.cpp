@@ -249,7 +249,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     pbxspec::PBX::ProductType::shared_ptr productType = nullptr;
     pbxspec::PBX::PackageType::shared_ptr packageType = nullptr;
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
-        pbxproj::PBX::NativeTarget *nativeTarget = reinterpret_cast<pbxproj::PBX::NativeTarget *>(target.get());
+        pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast<pbxproj::PBX::NativeTarget>(target);
 
         productType = buildEnvironment.specManager()->productType(nativeTarget->productType(), sdk->platform()->name());
         if (productType == nullptr) {

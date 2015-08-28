@@ -79,7 +79,7 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::TargetEn
 }
 
 static void
-BuildPhaseFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::TargetEnvironment const &targetEnvironment, pbxproj::PBX::SourcesBuildPhase const *buildPhase)
+BuildPhaseFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::TargetEnvironment const &targetEnvironment, pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase)
 {
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
@@ -135,38 +135,38 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
 
         switch (buildPhase->type()) {
             case pbxproj::PBX::BuildPhase::kTypeHeaders: {
-                auto BP = static_cast <pbxproj::PBX::HeadersBuildPhase *> (buildPhase.get());
+                auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
                 printf("\tTODO: Copy Headers\n");
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeSources: {
                 printf("\tCompile Sources\n");
-                BuildPhaseFiles(buildEnvironment, buildContext, target, *targetEnvironment, static_cast <pbxproj::PBX::SourcesBuildPhase *> (buildPhase.get()));
+                BuildPhaseFiles(buildEnvironment, buildContext, target, *targetEnvironment, std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase));
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeResources: {
-                auto BP = static_cast <pbxproj::PBX::ResourcesBuildPhase *> (buildPhase.get());
+                auto BP = std::static_pointer_cast <pbxproj::PBX::ResourcesBuildPhase> (buildPhase);
                 printf("\tTODO: Copy Resources\n");
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeCopyFiles: {
-                auto BP = static_cast <pbxproj::PBX::CopyFilesBuildPhase *> (buildPhase.get());
+                auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
                 printf("\tTODO: Copy Files\n");
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
-                auto BP = static_cast <pbxproj::PBX::FrameworksBuildPhase *> (buildPhase.get());
+                auto BP = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
                 printf("\tLink\n");
-                BuildPhaseFiles(buildEnvironment, buildContext, target, *targetEnvironment, static_cast <pbxproj::PBX::SourcesBuildPhase *> (buildPhase.get()));
+                BuildPhaseFiles(buildEnvironment, buildContext, target, *targetEnvironment, std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase));
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeShellScript: {
-                auto BP = static_cast <pbxproj::PBX::ShellScriptBuildPhase *> (buildPhase.get());
+                auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
                 printf("\tTODO: Run Shell Script\n");
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeAppleScript: {
-                auto BP = static_cast <pbxproj::PBX::AppleScriptBuildPhase *> (buildPhase.get());
+                auto BP = std::static_pointer_cast <pbxproj::PBX::AppleScriptBuildPhase> (buildPhase);
                 printf("\tTODO: Compile AppleScript\n");
                 break;
             }
