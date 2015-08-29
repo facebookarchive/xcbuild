@@ -3,46 +3,48 @@
 #include <pbxbuild/BuildGraph.h>
 
 using pbxbuild::BuildGraph;
-using pbxproj::PBX::Target;
 
-void BuildGraph::
-insert(Target::shared_ptr const &node, std::vector<Target::shared_ptr> const &children)
+template<class T>
+void BuildGraph<T>::
+insert(T const &node, std::vector<T> const &children)
 {
     auto it = _contents.find(node);
     if (it == _contents.end()) {
         _contents.insert(std::make_pair(node, children));
     } else {
-        std::vector<Target::shared_ptr> &existing = it->second;
+        std::vector<T> &existing = it->second;
         existing.insert(existing.end(), children.begin(), children.end());
     }
 }
 
-std::vector<Target::shared_ptr> BuildGraph::
-children(Target::shared_ptr const &node) const
+template<class T>
+std::vector<T> BuildGraph<T>::
+children(T const &node) const
 {
     auto it = _contents.find(node);
     if (it != _contents.end()) {
         return it->second;
     } else {
-        return std::vector<Target::shared_ptr>();
+        return std::vector<T>();
     }
 }
 
-std::vector<Target::shared_ptr> BuildGraph::
+template<class T>
+std::vector<T> BuildGraph<T>::
 ordered(void) const
 {
-    std::vector<Target::shared_ptr> result;
+    std::vector<T> result;
 
-    std::list<Target::shared_ptr> toExplore;
+    std::list<T> toExplore;
     std::transform(_contents.begin(), _contents.end(), std::back_inserter(toExplore), [](auto const &pair) {
         return pair.first;
     });
 
-    std::unordered_set<Target::shared_ptr> inProgress;
-    std::unordered_set<Target::shared_ptr> explored;
+    std::unordered_set<T> inProgress;
+    std::unordered_set<T> explored;
 
     while (!toExplore.empty()) {
-        Target::shared_ptr node = toExplore.front();
+        T node = toExplore.front();
         if (explored.find(node) != explored.end()) {
             toExplore.pop_front();
             continue;
@@ -51,10 +53,10 @@ ordered(void) const
         inProgress.insert(node);
 
         size_t stack = toExplore.size();
-        for (Target::shared_ptr const &child : _contents.find(node)->second) {
+        for (T const &child : _contents.find(node)->second) {
             if (inProgress.find(child) != inProgress.end()) {
                 fprintf(stderr, "Cycle detected!\n");
-                return std::vector<Target::shared_ptr>();
+                return std::vector<T>();
             }
 
             if (explored.find(child) == explored.end()) {
@@ -74,3 +76,5 @@ ordered(void) const
     assert(inProgress.empty());
     return result;
 }
+
+namespace pbxbuild { template class BuildGraph<pbxproj::PBX::Target::shared_ptr>; }

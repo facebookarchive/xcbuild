@@ -19,7 +19,7 @@ public:
     ~DependencyResolver();
 
 public:
-    BuildGraph
+    BuildGraph<pbxproj::PBX::Target::shared_ptr>
     resolveDependencies(BuildContext const &context) const;
 };
 

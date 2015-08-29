@@ -54,7 +54,7 @@ ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext
 struct DependenciesContext {
     BuildEnvironment buildEnvironment;
     BuildContext context;
-    BuildGraph *graph;
+    BuildGraph<pbxproj::PBX::Target::shared_ptr> *graph;
     BuildAction::shared_ptr buildAction;
     std::vector<pbxproj::PBX::Target::shared_ptr> *positional;
 };
@@ -135,10 +135,10 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
     }
 }
 
-BuildGraph DependencyResolver::
+BuildGraph<pbxproj::PBX::Target::shared_ptr> DependencyResolver::
 resolveDependencies(BuildContext const &context) const
 {
-    BuildGraph graph;
+    BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
 
     BuildAction::shared_ptr buildAction = context.scheme()->buildAction();
     if (buildAction == nullptr) {

@@ -8,20 +8,21 @@
 
 namespace pbxbuild {
 
+template<typename T>
 class BuildGraph {
 private:
-    std::map<pbxproj::PBX::Target::shared_ptr, std::vector<pbxproj::PBX::Target::shared_ptr>> _contents;
+    std::map<T, std::vector<T>> _contents;
 
 public:
     void
-    insert(pbxproj::PBX::Target::shared_ptr const &node, std::vector<pbxproj::PBX::Target::shared_ptr> const &children);
+    insert(T const &node, std::vector<T> const &children);
 
 public:
-    std::vector<pbxproj::PBX::Target::shared_ptr>
-    children(pbxproj::PBX::Target::shared_ptr const &node) const;
+    std::vector<T>
+    children(T const &node) const;
 
 public:
-    std::vector<pbxproj::PBX::Target::shared_ptr>
+    std::vector<T>
     ordered(void) const;
 };
 

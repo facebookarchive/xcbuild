@@ -221,7 +221,7 @@ main(int argc, char **argv)
     );
 
     pbxbuild::DependencyResolver resolver = pbxbuild::DependencyResolver(*buildEnvironment);
-    pbxbuild::BuildGraph graph = resolver.resolveDependencies(context);
+    auto graph = resolver.resolveDependencies(context);
     std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
     for (pbxproj::PBX::Target::shared_ptr const &target : targets) {
