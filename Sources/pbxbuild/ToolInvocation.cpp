@@ -14,6 +14,8 @@ ToolInvocation(
     std::vector<std::string> const           &inputs,
     std::vector<std::string> const           &outputs,
     std::string const                        &dependencyInfo,
+    std::string const                        &responsePath,
+    std::string const                        &responseContents,
     std::string const                        &logMessage
 ) :
     _executable      (executable),
@@ -23,6 +25,8 @@ ToolInvocation(
     _inputs          (inputs),
     _outputs         (outputs),
     _dependencyInfo  (dependencyInfo),
+    _responsePath    (responsePath),
+    _responseContents(responseContents),
     _logMessage      (logMessage)
 {
 }

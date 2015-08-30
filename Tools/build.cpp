@@ -106,7 +106,7 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                 // TODO(grp): Use build rule to craete invocation here.
                 std::string input = file.filePath();
                 std::string output = outputDirectory + "/" + libutil::FSUtil::GetBaseNameWithoutExtension(file.filePath()) + ".o";
-                pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("clang", { }, { }, "", { input }, { output }, "", "CompileC " + buildRuleDescription);
+                pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("clang", { }, { }, "", { input }, { output }, "", "", "", "CompileC " + buildRuleDescription);
                 invocations.push_back(invocation);
             }
 

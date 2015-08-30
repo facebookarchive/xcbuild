@@ -87,7 +87,7 @@ ExpandCommandLine(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Enviro
 }
 
 ToolInvocationContext ToolInvocationContext::
-Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs, std::string const &executable, std::vector<std::string> specialArguments)
+Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs, std::string const &executable, std::vector<std::string> specialArguments, std::string const &responsePath, std::string const &responseContents)
 {
     // TODO(grp); Match inputs with allowed tool input file types.
 
@@ -110,6 +110,8 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
         inputs,
         outputs,
         "", // TODO(grp): Dependency info.
+        responsePath,
+        responseContents,
         ruleName
     );
     return ToolInvocationContext(invocation);

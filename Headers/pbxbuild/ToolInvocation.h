@@ -20,6 +20,10 @@ private:
     std::string                        _dependencyInfo;
 
 private:
+    std::string                        _responsePath;
+    std::string                        _responseContents;
+
+private:
     std::string                        _logMessage;
 
 public:
@@ -31,6 +35,8 @@ public:
         std::vector<std::string> const           &inputs,
         std::vector<std::string> const           &outputs,
         std::string const                        &dependencyInfo,
+        std::string const                        &responsePath,
+        std::string const                        &responseContents,
         std::string const                        &logMessage
     );
     ~ToolInvocation();
@@ -52,6 +58,12 @@ public:
     { return _outputs; }
     std::string const &dependencyInfo(void) const
     { return _dependencyInfo; }
+
+public:
+    std::string const &responsePath(void) const
+    { return _responsePath; }
+    std::string const &responseContents(void) const
+    { return _responseContents; }
 
 public:
     std::string const &logMessage(void) const

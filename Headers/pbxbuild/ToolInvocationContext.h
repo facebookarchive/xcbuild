@@ -28,7 +28,9 @@ public:
         std::vector<std::string> const &inputs,
         std::vector<std::string> const &outputs,
         std::string const &executable = "",
-        std::vector<std::string> specialArguments = { }
+        std::vector<std::string> specialArguments = { },
+        std::string const &responsePath = "",
+        std::string const &responseContents = ""
     );
 };
 
