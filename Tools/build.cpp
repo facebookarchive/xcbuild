@@ -287,9 +287,34 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
         }
     }
 
-    // TODO(grp): Sort build phases by inputs and outputs.
-
+    std::unordered_map<std::string, pbxproj::PBX::BuildPhase::shared_ptr> outputToPhase;
     for (auto const &entry : toolInvocations) {
+        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
+            for (std::string const &output : invocation.outputs()) {
+                outputToPhase.insert({ output, entry.first });
+            }
+        }
+    }
+
+    pbxbuild::BuildGraph<pbxproj::PBX::BuildPhase::shared_ptr> phaseGraph;
+    for (auto const &entry : toolInvocations) {
+        phaseGraph.insert(entry.first, { });
+
+        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
+            for (std::string const &input : invocation.inputs()) {
+                auto it = outputToPhase.find(input);
+                if (it != outputToPhase.end()) {
+                    if (it->second != entry.first) {
+                        phaseGraph.insert(entry.first, { it->second });
+                    }
+                }
+            }
+        }
+    }
+
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : phaseGraph.ordered()) {
+        auto const &entry = *toolInvocations.find(buildPhase);
+
         std::unordered_map<std::string, pbxbuild::ToolInvocation const *> outputToInvocation;
         for (pbxbuild::ToolInvocation const &invocation : entry.second) {
             for (std::string const &output : invocation.outputs()) {
