@@ -1,20 +1,20 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxbuild/ToolContext.h>
+#include <pbxbuild/ToolInvocationContext.h>
 #include <sstream>
 
-using pbxbuild::ToolContext;
+using pbxbuild::ToolInvocationContext;
 using pbxbuild::ToolInvocation;
 using libutil::FSUtil;
 
-ToolContext::
-ToolContext(ToolInvocation const &invocation) :
+ToolInvocationContext::
+ToolInvocationContext(ToolInvocation const &invocation) :
     _invocation(invocation)
 {
 }
 
-ToolContext::
-~ToolContext()
+ToolInvocationContext::
+~ToolInvocationContext()
 {
 }
 
@@ -86,7 +86,7 @@ ExpandCommandLine(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Enviro
     return arguments;
 }
 
-ToolContext ToolContext::
+ToolInvocationContext ToolInvocationContext::
 Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs, std::string const &executable, std::vector<std::string> specialArguments)
 {
     // TODO(grp); Match inputs with allowed tool input file types.
@@ -112,5 +112,5 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
         "", // TODO(grp): Dependency info.
         ruleName
     );
-    return ToolContext(invocation);
+    return ToolInvocationContext(invocation);
 }

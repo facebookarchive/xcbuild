@@ -11,7 +11,7 @@
 #include <pbxbuild/FileTypeResolver.h>
 #include <pbxbuild/TargetBuildRules.h>
 #include <pbxbuild/TargetEnvironment.h>
-#include <pbxbuild/ToolContext.h>
+#include <pbxbuild/ToolInvocationContext.h>
 #include <pbxbuild/ToolInvocation.h>
 
 #endif  // !__pbxbuild_pbxbuild_h

@@ -1,27 +1,27 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#ifndef __pbxbuild_ToolContext_h
-#define __pbxbuild_ToolContext_h
+#ifndef __pbxbuild_ToolInvocationContext_h
+#define __pbxbuild_ToolInvocationContext_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
 
 namespace pbxbuild {
 
-class ToolContext {
+class ToolInvocationContext {
 private:
     ToolInvocation _invocation;
 
 public:
-    explicit ToolContext(ToolInvocation const &invocation);
-    ~ToolContext();
+    explicit ToolInvocationContext(ToolInvocation const &invocation);
+    ~ToolInvocationContext();
 
 public:
     ToolInvocation const &invocation(void) const
     { return _invocation; }
 
 public:
-    static ToolContext
+    static ToolInvocationContext
     Create(
         pbxspec::PBX::Tool::shared_ptr const &tool,
         pbxsetting::Environment const &environment,
@@ -34,4 +34,4 @@ public:
 
 }
 
-#endif // !__pbxbuild_ToolContext_h
+#endif // !__pbxbuild_ToolInvocationContext_h

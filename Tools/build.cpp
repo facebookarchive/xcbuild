@@ -191,18 +191,18 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
                 std::string architectureIntermediatesDirectory = variantIntermediatesDirectory + "/" + arch;
                 std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
 
-                pbxbuild::ToolContext context = pbxbuild::ToolContext::Create(linker, archEnvironment, linkInputs, { architectureIntermediatesOutput }, linkerExecutable);
+                pbxbuild::ToolInvocationContext context = pbxbuild::ToolInvocationContext::Create(linker, archEnvironment, linkInputs, { architectureIntermediatesOutput }, linkerExecutable);
                 invocations.push_back(context.invocation());
 
                 universalBinaryInputs.push_back(architectureIntermediatesOutput);
             } else {
-                pbxbuild::ToolContext context = pbxbuild::ToolContext::Create(linker, archEnvironment, linkInputs, { variantProductsOutput }, linkerExecutable);
+                pbxbuild::ToolInvocationContext context = pbxbuild::ToolInvocationContext::Create(linker, archEnvironment, linkInputs, { variantProductsOutput }, linkerExecutable);
                 invocations.push_back(context.invocation());
             }
         }
 
         if (createUniversalBinary) {
-            pbxbuild::ToolContext context = pbxbuild::ToolContext::Create(lipo, variantEnvironment, universalBinaryInputs, { variantProductsOutput });
+            pbxbuild::ToolInvocationContext context = pbxbuild::ToolInvocationContext::Create(lipo, variantEnvironment, universalBinaryInputs, { variantProductsOutput });
             invocations.push_back(context.invocation());
         }
     }
