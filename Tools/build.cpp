@@ -38,138 +38,289 @@ ResolveBuildFile(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::B
     }
 }
 
-static void
-CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::TargetEnvironment const &targetEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<pbxbuild::FileTypeResolver> const &files)
+static std::vector<pbxbuild::FileTypeResolver>
+ResolveBuildFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxsetting::Environment const &environment, std::vector<pbxproj::PBX::BuildFile::shared_ptr> const &buildFiles)
 {
-    for (pbxbuild::FileTypeResolver const &file : files) {
-        pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
+    std::vector<pbxbuild::FileTypeResolver> files;
+    files.reserve(buildFiles.size());
 
-        std::string buildRuleDescription;
-        if (buildRule != nullptr) {
-            if (buildRule->tool() != nullptr) {
-                buildRuleDescription = buildRule->tool()->identifier();
-            } else if (!buildRule->script().empty()) {
-                buildRuleDescription = "[custom script]";
-            }
-        } else {
-            buildRuleDescription = "[no matching build rule]";
+    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildFiles) {
+        auto file = ResolveBuildFile(buildEnvironment, buildContext, environment, buildFile);
+        if (file == nullptr) {
+            continue;
         }
-
-        printf("\t\t\t%s (%s) -> %s\n", file.filePath().c_str(), file.fileType()->identifier().c_str(), buildRuleDescription.c_str());
+        files.push_back(*file);
     }
+
+    return files;
 }
 
-static void
-LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::TargetEnvironment const &targetEnvironment, pbxsetting::Environment const &environment, std::string const &variant, std::string const &arch, std::vector<pbxbuild::FileTypeResolver> const &files)
+static pbxsetting::Level
+VariantLevel(std::string const &variant)
 {
+    return pbxsetting::Level({
+        pbxsetting::Setting::Parse("CURRENT_VARIANT", variant),
+        pbxsetting::Setting::Parse("EXECUTABLE_VARIANT_SUFFIX", variant != "normal" ? "_" + variant : ""),
+    });
+}
+
+static pbxsetting::Level
+ArchitectureLevel(std::string const &arch)
+{
+    return pbxsetting::Level({
+        pbxsetting::Setting::Parse("CURRENT_ARCH", arch),
+    });
+}
+
+static std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>>
+CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxbuild::TargetEnvironment const &targetEnvironment, pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase)
+{
+    std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> result;
+
+    for (std::string const &variant : targetEnvironment.variants()) {
+        for (std::string const &arch : targetEnvironment.architectures()) {
+            std::vector<pbxsetting::Level> levels = targetEnvironment.environment().assignment();
+            levels.push_back(VariantLevel(variant));
+            levels.push_back(ArchitectureLevel(arch));
+            pbxsetting::Environment currentEnvironment = pbxsetting::Environment(levels, levels);
+
+            std::vector<pbxbuild::ToolInvocation> invocations;
+
+            std::string outputDirectory = currentEnvironment.resolve("OBJECT_FILE_DIR_" + variant) + "/" + arch;
+
+            std::vector<pbxbuild::FileTypeResolver> files = ResolveBuildFiles(buildEnvironment, buildContext, currentEnvironment, buildPhase->files());
+            for (pbxbuild::FileTypeResolver const &file : files) {
+                pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
+
+                std::string buildRuleDescription;
+                if (buildRule != nullptr) {
+                    if (buildRule->tool() != nullptr) {
+                        buildRuleDescription = buildRule->tool()->identifier();
+                    } else if (!buildRule->script().empty()) {
+                        buildRuleDescription = "[custom script]";
+                    }
+                } else {
+                    buildRuleDescription = "[no matching build rule]";
+                }
+
+                // TODO(grp): Use build rule to craete invocation here.
+                std::string input = file.filePath();
+                std::string output = outputDirectory + "/" + libutil::FSUtil::GetBaseName(file.filePath()) + ".o";
+                pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("clang", { }, { }, "", { input }, { output }, "", "CompileC " + buildRuleDescription);
+                invocations.push_back(invocation);
+            }
+
+            std::pair<std::string, std::string> resultKey = std::make_pair(variant, arch);
+            result.insert({ resultKey, invocations });
+        }
+    }
+
+    return result;
+}
+
+static std::vector<pbxbuild::ToolInvocation>
+LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxbuild::TargetEnvironment const &targetEnvironment, pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase, std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> const &sourcesInvocations)
+{
+    std::vector<pbxbuild::ToolInvocation> invocations;
+
     pbxspec::PBX::Linker::shared_ptr linker;
-    if (environment.resolve("MACH_O_TYPE") == "staticlib") {
+    if (targetEnvironment.environment().resolve("MACH_O_TYPE") == "staticlib") {
         linker = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.libtool");
     } else {
         linker = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.ld");
     }
     if (linker == nullptr) {
         fprintf(stderr, "error: couldn't get linker\n");
-        return;
+        return invocations;
     }
 
-    for (pbxbuild::FileTypeResolver const &file : files) {
-        printf("\t\t\t%s (%s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
+    pbxspec::PBX::Linker::shared_ptr lipo = buildEnvironment.specManager()->linker("com.apple.xcode.linkers.lipo");
+    if (lipo == nullptr) {
+        fprintf(stderr, "error: couldn't get lipo\n");
+        return invocations;
     }
-}
 
-static void
-BuildPhaseFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::TargetEnvironment const &targetEnvironment, pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase)
-{
+    std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
+
     for (std::string const &variant : targetEnvironment.variants()) {
-        for (std::string const &arch : targetEnvironment.architectures()) {
-            pbxsetting::Level currentLevel = pbxsetting::Level({
-                pbxsetting::Setting::Parse("CURRENT_VARIANT", variant),
-                pbxsetting::Setting::Parse("CURRENT_ARCH", arch),
-            });
-            std::vector<pbxsetting::Level> levels = targetEnvironment.environment().assignment();
-            levels.push_back(currentLevel);
-            pbxsetting::Environment currentEnvironment = pbxsetting::Environment(levels, levels);
-            printf("\t\tArchitecture: %s; Variant: %s\n", arch.c_str(), variant.c_str());
+        std::vector<pbxsetting::Level> variantLevels = targetEnvironment.environment().assignment();
+        variantLevels.push_back(VariantLevel(variant));
+        pbxsetting::Environment variantEnvironment = pbxsetting::Environment(variantLevels, variantLevels);
 
-            std::vector<pbxbuild::FileTypeResolver> files;
-            files.reserve(buildPhase->files().size());
-            for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
-                auto file = ResolveBuildFile(buildEnvironment, buildContext, currentEnvironment, buildFile);
-                if (file == nullptr) {
-                    continue;
+        std::string variantIntermediatesName = variantEnvironment.resolve("EXECUTABLE_NAME") + variantEnvironment.resolve("EXECUTABLE_VARIANT_SUFFIX");
+        std::string variantIntermediatesDirectory = variantEnvironment.resolve("OBJECT_FILE_DIR_" + variant);
+
+        std::string variantProductsPath = variantEnvironment.resolve("EXECUTABLE_PATH") + variantEnvironment.resolve("EXECUTABLE_VARIANT_SUFFIX");
+        std::string variantProductsOutput = productsDirectory + "/" + variantProductsPath;
+
+        bool createUniversalBinary = targetEnvironment.architectures().size() > 1;
+        std::vector<std::string> universalBinaryInputs;
+
+        for (std::string const &arch : targetEnvironment.architectures()) {
+            std::vector<pbxsetting::Level> archLevels = variantLevels;
+            archLevels.push_back(ArchitectureLevel(arch));
+            pbxsetting::Environment archEnvironment = pbxsetting::Environment(archLevels, archLevels);
+
+            std::vector<pbxbuild::FileTypeResolver> files = ResolveBuildFiles(buildEnvironment, buildContext, archEnvironment, buildPhase->files());
+
+            std::vector<std::string> sourceOutputs;
+            auto it = sourcesInvocations.find(std::make_pair(variant, arch));
+            if (it != sourcesInvocations.end()) {
+                std::vector<pbxbuild::ToolInvocation> const &sourceInvocations = it->second;
+                for (pbxbuild::ToolInvocation const &invocation : sourceInvocations) {
+                    for (std::string const &output : invocation.outputs()) {
+                        // TODO(grp): Is this the right set of source outputs to link?
+                        if (libutil::FSUtil::GetFileExtension(output) == "o") {
+                            sourceOutputs.push_back(output);
+                        }
+                    }
                 }
-                files.push_back(*file);
             }
 
-            switch (buildPhase->type()) {
-                case pbxproj::PBX::BuildPhase::kTypeSources: {
-                    CompileFiles(buildEnvironment, targetEnvironment, currentEnvironment, variant, arch, files);
-                    break;
-                }
-                case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
-                    LinkFiles(buildEnvironment, targetEnvironment, currentEnvironment, variant, arch, files);
-                    break;
-                }
-                default: {
-                    assert(false);
-                }
+            std::vector<std::string> linkInputs;
+            linkInputs.insert(linkInputs.end(), sourceOutputs.begin(), sourceOutputs.end());
+            for (pbxbuild::FileTypeResolver const &file : files) {
+                linkInputs.push_back(file.filePath());
+            }
+
+            if (createUniversalBinary) {
+                std::string architectureIntermediatesDirectory = variantIntermediatesDirectory + "/" + arch;
+                std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
+
+                // TODO(grp): Create architecture-specific binary into architectureOutput.
+                pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("ld", { }, { }, "", linkInputs, { architectureIntermediatesOutput }, "", "Ld " + variant + " " + arch);
+                invocations.push_back(invocation);
+
+                universalBinaryInputs.push_back(architectureIntermediatesOutput);
+            } else {
+                // TODO(grp): Create architecture-specific binary into variantOutput.
+                pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("ld", { }, { }, "", linkInputs, { variantProductsOutput }, "", "Ld " + variant + " " + arch);
+                invocations.push_back(invocation);
             }
         }
+
+        if (createUniversalBinary) {
+            // TODO(grp): Create universal binary from all architectures into varaintOutput from univeralBinaryInputs.
+            pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("lipo", { }, { }, "", universalBinaryInputs, { variantProductsOutput }, "", "CreateUniveralBinary " + variant);
+            invocations.push_back(invocation);
+        }
     }
+
+    return invocations;
 }
 
 static void
 BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
     printf("Building Target: %s\n", target->name().c_str());
-    std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
-    if (targetEnvironment == nullptr) {
+    std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironmentPtr = buildContext.targetEnvironment(buildEnvironment, target);
+    if (targetEnvironmentPtr == nullptr) {
         fprintf(stderr, "error: couldn't create target environment\n");
         return;
     }
+    pbxbuild::TargetEnvironment targetEnvironment = *targetEnvironmentPtr;
 
+    // Filter build phases to ones appropriate for this target.
+    std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
         // TODO(grp): Check buildActionMask against buildContext.action.
         // TODO(grp): Check runOnlyForDeploymentPostprocessing.
+        buildPhases.push_back(buildPhase);
+    }
 
+    std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> toolInvocations;
+
+    std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> sourcesInvocations;
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
+        if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
+            auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
+            auto invocations = CompileFiles(buildEnvironment, buildContext, targetEnvironment, BP);
+            sourcesInvocations.insert(invocations.begin(), invocations.end());
+
+            std::vector<pbxbuild::ToolInvocation> allInvocations;
+            for (auto const &pair : invocations) {
+                allInvocations.insert(allInvocations.end(), pair.second.begin(), pair.second.end());
+            }
+            toolInvocations.insert({ buildPhase, allInvocations });
+        }
+    }
+
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
+        if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeFrameworks) {
+            auto BP = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
+            auto invocations = LinkFiles(buildEnvironment, buildContext, targetEnvironment, BP, sourcesInvocations);
+            toolInvocations.insert({ buildPhase, invocations });
+        }
+    }
+
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         switch (buildPhase->type()) {
-            case pbxproj::PBX::BuildPhase::kTypeHeaders: {
-                auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
-                printf("\tTODO: Copy Headers\n");
+            case pbxproj::PBX::BuildPhase::kTypeFrameworks:
+            case pbxproj::PBX::BuildPhase::kTypeSources: {
                 break;
             }
-            case pbxproj::PBX::BuildPhase::kTypeSources: {
-                printf("\tCompile Sources\n");
-                BuildPhaseFiles(buildEnvironment, buildContext, target, *targetEnvironment, std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase));
+            case pbxproj::PBX::BuildPhase::kTypeHeaders: {
+                // TODO: Copy Headers
+                auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeResources: {
+                // TODO: Copy Resources
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ResourcesBuildPhase> (buildPhase);
-                printf("\tTODO: Copy Resources\n");
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeCopyFiles: {
+                // TODO: Copy Files
                 auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
-                printf("\tTODO: Copy Files\n");
-                break;
-            }
-            case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
-                auto BP = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
-                printf("\tLink\n");
-                BuildPhaseFiles(buildEnvironment, buildContext, target, *targetEnvironment, std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase));
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeShellScript: {
+                // TODO: Run Shell Script
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
-                printf("\tTODO: Run Shell Script\n");
                 break;
             }
             case pbxproj::PBX::BuildPhase::kTypeAppleScript: {
+                // TODO: Compile AppleScript
                 auto BP = std::static_pointer_cast <pbxproj::PBX::AppleScriptBuildPhase> (buildPhase);
-                printf("\tTODO: Compile AppleScript\n");
                 break;
             }
+        }
+    }
+
+    // TODO(grp): Sort build phases by inputs and outputs.
+
+    for (auto const &entry : toolInvocations) {
+        std::unordered_map<std::string, pbxbuild::ToolInvocation const *> outputToInvocation;
+        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
+            for (std::string const &output : invocation.outputs()) {
+                outputToInvocation.insert({ output, &invocation });
+            }
+        }
+
+        pbxbuild::BuildGraph<pbxbuild::ToolInvocation const *> graph;
+        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
+            graph.insert(&invocation, { });
+
+            for (std::string const &input : invocation.inputs()) {
+                auto it = outputToInvocation.find(input);
+                if (it != outputToInvocation.end()) {
+                    graph.insert(&invocation, { it->second });
+                }
+            }
+        }
+
+        for (pbxbuild::ToolInvocation const *invocation : graph.ordered()) {
+            printf("Invocation: %s\n", invocation->logMessage().c_str());
+            printf("\tExecutable: %s\n", invocation->executable().c_str());
+            printf("\tInputs:\n");
+            for (std::string const &input : invocation->inputs()) {
+                printf("\t\t%s\n", input.c_str());
+            }
+            printf("\tOutputs:\n");
+            for (std::string const &output : invocation->outputs()) {
+                printf("\t\t%s\n", output.c_str());
+            }
+            printf("\n");
         }
     }
 }

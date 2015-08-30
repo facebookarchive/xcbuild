@@ -1,6 +1,7 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxbuild/BuildGraph.h>
+#include <pbxbuild/ToolInvocation.h>
 
 using pbxbuild::BuildGraph;
 
@@ -78,3 +79,4 @@ ordered(void) const
 }
 
 namespace pbxbuild { template class BuildGraph<pbxproj::PBX::Target::shared_ptr>; }
+namespace pbxbuild { template class BuildGraph<pbxbuild::ToolInvocation const *>; }
