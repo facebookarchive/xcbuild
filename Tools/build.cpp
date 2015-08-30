@@ -209,6 +209,66 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
     return invocations;
 }
 
+static std::vector<pbxproj::PBX::BuildPhase::shared_ptr>
+SortBuildPhases(std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> phaseInvocations)
+{
+    std::unordered_map<std::string, pbxproj::PBX::BuildPhase::shared_ptr> outputToPhase;
+    for (auto const &entry : phaseInvocations) {
+        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
+            for (std::string const &output : invocation.outputs()) {
+                outputToPhase.insert({ output, entry.first });
+            }
+        }
+    }
+
+    pbxbuild::BuildGraph<pbxproj::PBX::BuildPhase::shared_ptr> phaseGraph;
+    for (auto const &entry : phaseInvocations) {
+        phaseGraph.insert(entry.first, { });
+
+        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
+            for (std::string const &input : invocation.inputs()) {
+                auto it = outputToPhase.find(input);
+                if (it != outputToPhase.end()) {
+                    if (it->second != entry.first) {
+                        phaseGraph.insert(entry.first, { it->second });
+                    }
+                }
+            }
+        }
+    }
+
+    return phaseGraph.ordered();
+}
+
+static std::vector<pbxbuild::ToolInvocation>
+SortInvocations(std::vector<pbxbuild::ToolInvocation> invocations)
+{
+    std::unordered_map<std::string, pbxbuild::ToolInvocation const *> outputToInvocation;
+    for (pbxbuild::ToolInvocation const &invocation : invocations) {
+        for (std::string const &output : invocation.outputs()) {
+            outputToInvocation.insert({ output, &invocation });
+        }
+    }
+
+    pbxbuild::BuildGraph<pbxbuild::ToolInvocation const *> graph;
+    for (pbxbuild::ToolInvocation const &invocation : invocations) {
+        graph.insert(&invocation, { });
+
+        for (std::string const &input : invocation.inputs()) {
+            auto it = outputToInvocation.find(input);
+            if (it != outputToInvocation.end()) {
+                graph.insert(&invocation, { it->second });
+            }
+        }
+    }
+
+    std::vector<pbxbuild::ToolInvocation> result;
+    for (pbxbuild::ToolInvocation const *invocation : graph.ordered()) {
+        result.push_back(*invocation);
+    }
+    return result;
+}
+
 static void
 BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
@@ -287,62 +347,21 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
         }
     }
 
-    std::unordered_map<std::string, pbxproj::PBX::BuildPhase::shared_ptr> outputToPhase;
-    for (auto const &entry : toolInvocations) {
-        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
-            for (std::string const &output : invocation.outputs()) {
-                outputToPhase.insert({ output, entry.first });
-            }
-        }
-    }
+    std::vector<pbxproj::PBX::BuildPhase::shared_ptr> orderedPhases = SortBuildPhases(toolInvocations);
 
-    pbxbuild::BuildGraph<pbxproj::PBX::BuildPhase::shared_ptr> phaseGraph;
-    for (auto const &entry : toolInvocations) {
-        phaseGraph.insert(entry.first, { });
-
-        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
-            for (std::string const &input : invocation.inputs()) {
-                auto it = outputToPhase.find(input);
-                if (it != outputToPhase.end()) {
-                    if (it->second != entry.first) {
-                        phaseGraph.insert(entry.first, { it->second });
-                    }
-                }
-            }
-        }
-    }
-
-    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : phaseGraph.ordered()) {
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : orderedPhases) {
         auto const &entry = *toolInvocations.find(buildPhase);
+        std::vector<pbxbuild::ToolInvocation> orderedInvocations = SortInvocations(entry.second);
 
-        std::unordered_map<std::string, pbxbuild::ToolInvocation const *> outputToInvocation;
-        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
-            for (std::string const &output : invocation.outputs()) {
-                outputToInvocation.insert({ output, &invocation });
-            }
-        }
-
-        pbxbuild::BuildGraph<pbxbuild::ToolInvocation const *> graph;
-        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
-            graph.insert(&invocation, { });
-
-            for (std::string const &input : invocation.inputs()) {
-                auto it = outputToInvocation.find(input);
-                if (it != outputToInvocation.end()) {
-                    graph.insert(&invocation, { it->second });
-                }
-            }
-        }
-
-        for (pbxbuild::ToolInvocation const *invocation : graph.ordered()) {
-            printf("Invocation: %s\n", invocation->logMessage().c_str());
-            printf("\tExecutable: %s\n", invocation->executable().c_str());
+        for (pbxbuild::ToolInvocation const &invocation : orderedInvocations) {
+            printf("Invocation: %s\n", invocation.logMessage().c_str());
+            printf("\tExecutable: %s\n", invocation.executable().c_str());
             printf("\tInputs:\n");
-            for (std::string const &input : invocation->inputs()) {
+            for (std::string const &input : invocation.inputs()) {
                 printf("\t\t%s\n", input.c_str());
             }
             printf("\tOutputs:\n");
-            for (std::string const &output : invocation->outputs()) {
+            for (std::string const &output : invocation.outputs()) {
                 printf("\t\t%s\n", output.c_str());
             }
             printf("\n");
