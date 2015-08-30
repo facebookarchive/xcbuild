@@ -77,6 +77,20 @@ GetBaseName(std::string const &path)
 }
 
 std::string FSUtil::
+GetBaseNameWithoutExtension(std::string const &path)
+{
+    std::string base = GetBaseName(path);
+    if (base.empty())
+        return base;
+
+    size_t pos = base.rfind('.');
+    if (pos == std::string::npos)
+        return std::string();
+
+    return base.substr(0, pos);
+}
+
+std::string FSUtil::
 GetFileExtension(std::string const &path)
 {
     std::string base = GetBaseName(path);

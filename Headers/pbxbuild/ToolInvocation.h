@@ -7,8 +7,6 @@
 
 namespace pbxbuild {
 
-class BuildContext;
-
 class ToolInvocation {
 private:
     std::string                        _executable;
@@ -62,4 +60,4 @@ public:
 
 }
 
-#endif // !__pbxbuild_DependencyResolver_h
+#endif // !__pbxbuild_ToolInvocation_h

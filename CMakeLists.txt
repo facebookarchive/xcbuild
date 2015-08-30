@@ -203,6 +203,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/TargetBuildRules.cpp
     Sources/pbxbuild/TargetEnvironment.cpp
+    Sources/pbxbuild/ToolContext.cpp
     Sources/pbxbuild/ToolInvocation.cpp
     )
 

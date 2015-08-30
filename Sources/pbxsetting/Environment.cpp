@@ -167,7 +167,7 @@ ResolveValue(Environment const &environment, Condition const &condition, Value c
             }
         }
     }
-    if (result.empty()) {
+    if (context.valid && result.empty()) {
         result = ResolveInheritance(environment, condition, context);
     }
     return result;

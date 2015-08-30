@@ -19,7 +19,8 @@ Tool::Tool(bool isDefault) :
 
 Tool::Tool(bool isDefault, std::string const &isa) :
     Specification                   (isa, isDefault),
-    _ruleName                       (nullptr),
+    _ruleName                       (pbxsetting::Value::Empty()),
+    _ruleFormat                     (pbxsetting::Value::Empty()),
     _commandOutputParser            (nullptr),
     _isAbstract                     (false),
     _isArchitectureNeutral          (false),
@@ -33,10 +34,6 @@ Tool::~Tool()
 {
     if (_commandOutputParser != nullptr) {
         _commandOutputParser->release();
-    }
-
-    if (_ruleName != nullptr) {
-        _ruleName->release();
     }
 }
 
@@ -154,7 +151,7 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
     auto CL     = dict->value <plist::String> ("CommandLine");
     auto CIC    = dict->value <plist::String> ("CommandInvocationClass");
     auto CI     = dict->value <plist::String> ("CommandIdentifier");
-    auto RN     = dict->value("RuleName");
+    auto RN     = dict->value <plist::String> ("RuleName");
     auto RF     = dict->value <plist::String> ("RuleFormat");
     auto AIF    = dict->value <plist::String> ("AdditionalInputFiles");
     auto BJRN   = dict->value <plist::String> ("BuiltinJambaseRuleName");
@@ -222,15 +219,11 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
     }
 
     if (RN != nullptr) {
-        if (_ruleName != nullptr) {
-            _ruleName->release();
-        }
-
-        _ruleName = RN->copy();
+        _ruleName = pbxsetting::Value::Parse(RN->value());
     }
 
     if (RF != nullptr) {
-        _ruleFormat = RF->value();
+        _ruleFormat = pbxsetting::Value::Parse(RF->value());
     }
 
     if (AIF != nullptr) {
@@ -366,7 +359,7 @@ inherit(Tool::shared_ptr const &b)
     _commandLine                         = base->commandLine();
     _commandInvocationClass              = base->commandInvocationClass();
     _commandIdentifier                   = base->commandIdentifier();
-    _ruleName                            = plist::Copy(base->ruleName());
+    _ruleName                            = base->ruleName();
     _ruleFormat                          = base->ruleFormat();
     _additionalInputFiles                = base->additionalInputFiles();
     _builtinJambaseRuleName              = base->builtinJambaseRuleName();

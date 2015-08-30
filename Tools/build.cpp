@@ -105,7 +105,7 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
                 // TODO(grp): Use build rule to craete invocation here.
                 std::string input = file.filePath();
-                std::string output = outputDirectory + "/" + libutil::FSUtil::GetBaseName(file.filePath()) + ".o";
+                std::string output = outputDirectory + "/" + libutil::FSUtil::GetBaseNameWithoutExtension(file.filePath()) + ".o";
                 pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("clang", { }, { }, "", { input }, { output }, "", "CompileC " + buildRuleDescription);
                 invocations.push_back(invocation);
             }
@@ -133,6 +133,9 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
         fprintf(stderr, "error: couldn't get linker\n");
         return invocations;
     }
+
+    // TODO(grp): Resolve this from the Compiler used to build sources? (See ExecCPlusPlusLinkerPath.)
+    std::string linkerExecutable = "clang";
 
     pbxspec::PBX::Linker::shared_ptr lipo = buildEnvironment.specManager()->linker("com.apple.xcode.linkers.lipo");
     if (lipo == nullptr) {
@@ -177,6 +180,7 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
                 }
             }
 
+            // TODO(grp): Framework and library inputs should be special arguments for "-framework" and "-l".
             std::vector<std::string> linkInputs;
             linkInputs.insert(linkInputs.end(), sourceOutputs.begin(), sourceOutputs.end());
             for (pbxbuild::FileTypeResolver const &file : files) {
@@ -187,22 +191,19 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
                 std::string architectureIntermediatesDirectory = variantIntermediatesDirectory + "/" + arch;
                 std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
 
-                // TODO(grp): Create architecture-specific binary into architectureOutput.
-                pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("ld", { }, { }, "", linkInputs, { architectureIntermediatesOutput }, "", "Ld " + variant + " " + arch);
-                invocations.push_back(invocation);
+                pbxbuild::ToolContext context = pbxbuild::ToolContext::Create(linker, archEnvironment, linkInputs, { architectureIntermediatesOutput }, linkerExecutable);
+                invocations.push_back(context.invocation());
 
                 universalBinaryInputs.push_back(architectureIntermediatesOutput);
             } else {
-                // TODO(grp): Create architecture-specific binary into variantOutput.
-                pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("ld", { }, { }, "", linkInputs, { variantProductsOutput }, "", "Ld " + variant + " " + arch);
-                invocations.push_back(invocation);
+                pbxbuild::ToolContext context = pbxbuild::ToolContext::Create(linker, archEnvironment, linkInputs, { variantProductsOutput }, linkerExecutable);
+                invocations.push_back(context.invocation());
             }
         }
 
         if (createUniversalBinary) {
-            // TODO(grp): Create universal binary from all architectures into varaintOutput from univeralBinaryInputs.
-            pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("lipo", { }, { }, "", universalBinaryInputs, { variantProductsOutput }, "", "CreateUniveralBinary " + variant);
-            invocations.push_back(invocation);
+            pbxbuild::ToolContext context = pbxbuild::ToolContext::Create(lipo, variantEnvironment, universalBinaryInputs, { variantProductsOutput });
+            invocations.push_back(context.invocation());
         }
     }
 

@@ -26,8 +26,8 @@ protected:
     std::string             _commandLine;
     std::string             _commandInvocationClass;
     std::string             _commandIdentifier;
-    plist::Object          *_ruleName;
-    std::string             _ruleFormat;
+    pbxsetting::Value       _ruleName;
+    pbxsetting::Value       _ruleFormat;
     std::string             _additionalInputFiles;
     std::string             _builtinJambaseRuleName;
     libutil::string_vector  _fileTypes;
@@ -95,9 +95,9 @@ public:
     { return _commandIdentifier; }
 
 public:
-    inline plist::Object const *ruleName() const
+    inline pbxsetting::Value const &ruleName() const
     { return _ruleName; }
-    inline std::string const &ruleFormat() const
+    inline pbxsetting::Value const &ruleFormat() const
     { return _ruleFormat; }
     inline std::string const &builtinJambaseRuleName() const
     { return _builtinJambaseRuleName; }
