@@ -125,37 +125,29 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
 {
     std::vector<pbxbuild::ToolInvocation> invocations;
 
+    pbxspec::PBX::Linker::shared_ptr ld = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.ld");
+    pbxspec::PBX::Linker::shared_ptr libtool = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.libtool");
+    pbxspec::PBX::Linker::shared_ptr lipo = buildEnvironment.specManager()->linker("com.apple.xcode.linkers.lipo");
+    pbxspec::PBX::Tool::shared_ptr dsymutil = buildEnvironment.specManager()->tool("com.apple.tools.dsymutil");
+    if (ld == nullptr || libtool == nullptr || lipo == nullptr || dsymutil == nullptr) {
+        fprintf(stderr, "error: couldn't get linker tools\n");
+        return invocations;
+    }
+
     std::string binaryType = targetEnvironment.environment().resolve("MACH_O_TYPE");
 
     pbxspec::PBX::Linker::shared_ptr linker;
+    std::string linkerExecutable;
     if (binaryType == "staticlib") {
-        linker = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.libtool");
+        linker = libtool;
     } else {
-        linker = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.ld");
+        linker = ld;
+        // TODO(grp): Resolve this from the Compiler used to build sources? (See ExecCPlusPlusLinkerPath.)
+        linkerExecutable = "clang";
     }
-    if (linker == nullptr) {
-        fprintf(stderr, "error: couldn't get linker\n");
-        return invocations;
-    }
-
-    // TODO(grp): Resolve this from the Compiler used to build sources? (See ExecCPlusPlusLinkerPath.)
-    std::string linkerExecutable = "clang";
 
     // TODO(grp): Should this just be the project directory?
     std::string workingDirectory = "UNKNOWN";
-
-    pbxspec::PBX::Linker::shared_ptr lipo = buildEnvironment.specManager()->linker("com.apple.xcode.linkers.lipo");
-    if (lipo == nullptr) {
-        fprintf(stderr, "error: couldn't get lipo\n");
-        return invocations;
-    }
-
-    pbxspec::PBX::Tool::shared_ptr dsymutil = buildEnvironment.specManager()->tool("com.apple.tools.dsymutil");
-    if (dsymutil == nullptr) {
-        fprintf(stderr, "error: couldn't get dsymutil\n");
-        return invocations;
-    }
-
     std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
 
     for (std::string const &variant : targetEnvironment.variants()) {
