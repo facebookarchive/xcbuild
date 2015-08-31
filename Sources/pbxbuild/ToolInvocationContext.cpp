@@ -21,33 +21,6 @@ ToolInvocationContext::
 {
 }
 
-ToolInvocationContext ToolInvocationContext::
-Create(
-    ToolEnvironment const &toolEnvironment,
-    OptionsResult const &options,
-    CommandLineResult const &commandLine,
-    std::string const &logMessage,
-    std::string const &workingDirectory,
-    std::string const &dependencyInfo,
-    std::string const &responsePath,
-    std::string const &responseContents
-)
-{
-    pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
-        commandLine.executable(),
-        commandLine.arguments(),
-        options.environment(),
-        workingDirectory,
-        toolEnvironment.inputs(),
-        toolEnvironment.outputs(),
-        dependencyInfo,
-        responsePath,
-        responseContents,
-        logMessage
-    );
-    return ToolInvocationContext(invocation);
-}
-
 ToolEnvironment::
 ToolEnvironment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &toolEnvironment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs) :
     _tool           (tool),
@@ -181,4 +154,48 @@ std::string ToolInvocationContext::
 LogMessage(ToolEnvironment const &toolEnvironment)
 {
     return toolEnvironment.toolEnvironment().expand(toolEnvironment.tool()->ruleName());
+}
+
+ToolInvocationContext ToolInvocationContext::
+Create(
+    ToolEnvironment const &toolEnvironment,
+    OptionsResult const &options,
+    CommandLineResult const &commandLine,
+    std::string const &logMessage,
+    std::string const &workingDirectory,
+    std::string const &dependencyInfo,
+    std::string const &responsePath,
+    std::string const &responseContents
+)
+{
+    pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
+        commandLine.executable(),
+        commandLine.arguments(),
+        options.environment(),
+        workingDirectory,
+        toolEnvironment.inputs(),
+        toolEnvironment.outputs(),
+        dependencyInfo,
+        responsePath,
+        responseContents,
+        logMessage
+    );
+    return ToolInvocationContext(invocation);
+}
+
+ToolInvocationContext ToolInvocationContext::
+Create(
+    pbxspec::PBX::Tool::shared_ptr const &tool,
+    std::vector<std::string> const &inputs,
+    std::vector<std::string> const &outputs,
+    pbxsetting::Environment const &environment,
+    std::string const &workingDirectory,
+    std::string const &logMessage
+)
+{
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputs, outputs);
+    OptionsResult options = OptionsResult::Create(toolEnvironment);
+    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
+    std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolInvocationContext::LogMessage(toolEnvironment));
+    return ToolInvocationContext::Create(toolEnvironment, options, commandLine, resolvedLogMessage, workingDirectory);
 }

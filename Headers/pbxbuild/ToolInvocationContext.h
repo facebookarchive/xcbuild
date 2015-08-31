@@ -105,6 +105,17 @@ public:
         std::string const &responsePath = "",
         std::string const &responseContents = ""
     );
+
+public:
+    static ToolInvocationContext
+    Create(
+        pbxspec::PBX::Tool::shared_ptr const &tool,
+        std::vector<std::string> const &inputs,
+        std::vector<std::string> const &outputs,
+        pbxsetting::Environment const &environment,
+        std::string const &workingDirectory,
+        std::string const &logMessage = ""
+    );
 };
 
 }

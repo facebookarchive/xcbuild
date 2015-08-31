@@ -1,9 +1,12 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxproj/PBX/Target.h>
+#include <pbxproj/PBX/NativeTarget.h>
 #include <pbxproj/PBX/BuildPhases.h>
 
 using pbxproj::PBX::Target;
+using pbxproj::PBX::NativeTarget;
+using pbxproj::PBX::FileReference;
 using pbxsetting::Level;
 using pbxsetting::Setting;
 
@@ -21,6 +24,14 @@ settings(void) const
         Setting::Parse("TARGET_NAME", _name),
         Setting::Parse("PRODUCT_NAME", _productName),
     };
+
+    if (_type == kTypeNative) {
+        NativeTarget const *nativeTarget = static_cast <NativeTarget const *> (this);
+        if (FileReference::shared_ptr const &productReference = nativeTarget->productReference()) {
+            Setting setting = Setting::Parse("FULL_PRODUCT_NAME", productReference->name());
+            settings.push_back(setting);
+        }
+    }
 
     return Level(settings);
 }

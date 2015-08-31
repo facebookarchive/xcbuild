@@ -123,8 +123,10 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
 {
     std::vector<pbxbuild::ToolInvocation> invocations;
 
+    std::string binaryType = targetEnvironment.environment().resolve("MACH_O_TYPE");
+
     pbxspec::PBX::Linker::shared_ptr linker;
-    if (targetEnvironment.environment().resolve("MACH_O_TYPE") == "staticlib") {
+    if (binaryType == "staticlib") {
         linker = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.libtool");
     } else {
         linker = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.ld");
@@ -143,6 +145,12 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
     pbxspec::PBX::Linker::shared_ptr lipo = buildEnvironment.specManager()->linker("com.apple.xcode.linkers.lipo");
     if (lipo == nullptr) {
         fprintf(stderr, "error: couldn't get lipo\n");
+        return invocations;
+    }
+
+    pbxspec::PBX::Tool::shared_ptr dsymutil = buildEnvironment.specManager()->tool("com.apple.tools.dsymutil");
+    if (dsymutil == nullptr) {
+        fprintf(stderr, "error: couldn't get dsymutil\n");
         return invocations;
     }
 
@@ -199,6 +207,12 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
 
         if (createUniversalBinary) {
             auto context = pbxbuild::LinkerInvocationContext::Create(lipo, universalBinaryInputs, { }, variantProductsOutput, variantEnvironment, workingDirectory);
+            invocations.push_back(context.invocation());
+        }
+
+        if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {
+            std::string dsymfile = variantEnvironment.resolve("DWARF_DSYM_FOLDER_PATH") + "/" + variantEnvironment.resolve("DWARF_DSYM_FILE_NAME");
+            auto context = pbxbuild::ToolInvocationContext::Create(dsymutil, { variantProductsOutput }, { dsymfile }, variantEnvironment, workingDirectory);
             invocations.push_back(context.invocation());
         }
     }
@@ -351,8 +365,12 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
         std::vector<pbxbuild::ToolInvocation> orderedInvocations = SortInvocations(entry.second);
 
         for (pbxbuild::ToolInvocation const &invocation : orderedInvocations) {
-            printf("Invocation: %s\n", invocation.logMessage().c_str());
-            printf("\tExecutable: %s\n", invocation.executable().c_str());
+            printf("%s\n", invocation.logMessage().c_str());
+            printf("\t%s", invocation.executable().c_str());
+            for (std::string const &arg : invocation.arguments()) {
+                printf(" %s", arg.c_str());
+            }
+            printf("\n");
             printf("\tInputs:\n");
             for (std::string const &input : invocation.inputs()) {
                 printf("\t\t%s\n", input.c_str());
