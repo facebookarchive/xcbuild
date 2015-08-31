@@ -146,8 +146,7 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
         linkerExecutable = "clang";
     }
 
-    // TODO(grp): Should this just be the project directory?
-    std::string workingDirectory = "UNKNOWN";
+    std::string workingDirectory = targetEnvironment.workingDirectory();
     std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
 
     for (std::string const &variant : targetEnvironment.variants()) {
@@ -360,6 +359,7 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
 
         for (pbxbuild::ToolInvocation const &invocation : orderedInvocations) {
             printf("%s\n", invocation.logMessage().c_str());
+            printf("\tcd %s\n", invocation.workingDirectory().c_str());
             printf("\t%s", invocation.executable().c_str());
             for (std::string const &arg : invocation.arguments()) {
                 printf(" %s", arg.c_str());

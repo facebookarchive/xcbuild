@@ -310,6 +310,8 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
     auto buildRules = std::make_shared <pbxbuild::TargetBuildRules> (pbxbuild::TargetBuildRules::Create(buildEnvironment.specManager(), target));
 
+    std::string workingDirectory = target->project()->basePath();
+
     std::unique_ptr<TargetEnvironment> te = std::make_unique<TargetEnvironment>(TargetEnvironment(buildEnvironment, target, context));
     te->_buildRules = buildRules;
     te->_environment = std::make_unique<pbxsetting::Environment>(environment);
@@ -319,5 +321,6 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     te->_packageType = packageType;
     te->_productType = productType;
     te->_sdk = sdk;
+    te->_workingDirectory = workingDirectory;
     return te;
 }

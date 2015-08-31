@@ -26,6 +26,7 @@ private:
     std::shared_ptr<pbxsetting::Environment> _environment;
     std::vector<std::string>                 _variants;
     std::vector<std::string>                 _architectures;
+    std::string                              _workingDirectory;
 
 public:
     TargetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context);
@@ -50,6 +51,10 @@ public:
     { return _variants; }
     std::vector<std::string> const &architectures() const
     { return _architectures; }
+
+public:
+    std::string const &workingDirectory() const
+    { return _workingDirectory; }
 
 public:
     static std::unique_ptr<TargetEnvironment>
