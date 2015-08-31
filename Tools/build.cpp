@@ -137,6 +137,9 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
     // TODO(grp): Resolve this from the Compiler used to build sources? (See ExecCPlusPlusLinkerPath.)
     std::string linkerExecutable = "clang";
 
+    // TODO(grp): Should this just be the project directory?
+    std::string workingDirectory = "UNKNOWN";
+
     pbxspec::PBX::Linker::shared_ptr lipo = buildEnvironment.specManager()->linker("com.apple.xcode.linkers.lipo");
     if (lipo == nullptr) {
         fprintf(stderr, "error: couldn't get lipo\n");
@@ -180,29 +183,22 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
                 }
             }
 
-            // TODO(grp): Framework and library inputs should be special arguments for "-framework" and "-l".
-            std::vector<std::string> linkInputs;
-            linkInputs.insert(linkInputs.end(), sourceOutputs.begin(), sourceOutputs.end());
-            for (pbxbuild::FileTypeResolver const &file : files) {
-                linkInputs.push_back(file.filePath());
-            }
-
             if (createUniversalBinary) {
                 std::string architectureIntermediatesDirectory = variantIntermediatesDirectory + "/" + arch;
                 std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
 
-                pbxbuild::ToolInvocationContext context = pbxbuild::ToolInvocationContext::Create(linker, archEnvironment, linkInputs, { architectureIntermediatesOutput }, linkerExecutable);
+                auto context = pbxbuild::LinkerInvocationContext::Create(linker, sourceOutputs, files, architectureIntermediatesOutput, archEnvironment, workingDirectory, linkerExecutable);
                 invocations.push_back(context.invocation());
 
                 universalBinaryInputs.push_back(architectureIntermediatesOutput);
             } else {
-                pbxbuild::ToolInvocationContext context = pbxbuild::ToolInvocationContext::Create(linker, archEnvironment, linkInputs, { variantProductsOutput }, linkerExecutable);
+                auto context = pbxbuild::LinkerInvocationContext::Create(linker, sourceOutputs, files, variantProductsOutput, archEnvironment, workingDirectory, linkerExecutable);
                 invocations.push_back(context.invocation());
             }
         }
 
         if (createUniversalBinary) {
-            pbxbuild::ToolInvocationContext context = pbxbuild::ToolInvocationContext::Create(lipo, variantEnvironment, universalBinaryInputs, { variantProductsOutput });
+            auto context = pbxbuild::LinkerInvocationContext::Create(lipo, universalBinaryInputs, { }, variantProductsOutput, variantEnvironment, workingDirectory);
             invocations.push_back(context.invocation());
         }
     }

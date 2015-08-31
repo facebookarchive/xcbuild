@@ -4,6 +4,9 @@
 #include <sstream>
 
 using pbxbuild::ToolInvocationContext;
+using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
+using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
+using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
 using pbxbuild::ToolInvocation;
 using libutil::FSUtil;
 
@@ -18,9 +21,52 @@ ToolInvocationContext::
 {
 }
 
-static pbxsetting::Environment
-CreateToolEnvironment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs)
+ToolInvocationContext ToolInvocationContext::
+Create(
+    ToolEnvironment const &toolEnvironment,
+    OptionsResult const &options,
+    CommandLineResult const &commandLine,
+    std::string const &logMessage,
+    std::string const &workingDirectory,
+    std::string const &dependencyInfo,
+    std::string const &responsePath,
+    std::string const &responseContents
+)
 {
+    pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
+        commandLine.executable(),
+        commandLine.arguments(),
+        options.environment(),
+        workingDirectory,
+        toolEnvironment.inputs(),
+        toolEnvironment.outputs(),
+        dependencyInfo,
+        responsePath,
+        responseContents,
+        logMessage
+    );
+    return ToolInvocationContext(invocation);
+}
+
+ToolEnvironment::
+ToolEnvironment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &toolEnvironment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs) :
+    _tool           (tool),
+    _toolEnvironment(toolEnvironment),
+    _inputs         (inputs),
+    _outputs        (outputs)
+{
+}
+
+ToolEnvironment::
+~ToolEnvironment()
+{
+}
+
+ToolEnvironment ToolEnvironment::
+Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs)
+{
+    // TODO(grp); Match inputs with allowed tool input file types.
+
     std::string input = (!inputs.empty() ? inputs.front() : "");
     std::string output = (!outputs.empty() ? outputs.front() : "");
 
@@ -33,27 +79,69 @@ CreateToolEnvironment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::En
         pbxsetting::Setting::Parse("OutputPath", output),
         pbxsetting::Setting::Parse("OutputFileName", FSUtil::GetBaseName(output)),
         pbxsetting::Setting::Parse("OutputFileBase", FSUtil::GetBaseNameWithoutExtension(output)),
-        // TODO(grp): pbxsetting::Setting::Parse("AdditionalContentFilePaths", ),
-        // TODO(grp): pbxsetting::Setting::Parse("ProductResourcesDir", ),
-        // TODO(grp): pbxsetting::Setting::Parse("BitcodeArch", ),
+        // TODO(grp): OutputDir (including tool->outputDir())
+        // TODO(grp): AdditionalContentFilePaths
+        // TODO(grp): ProductResourcesDir
+        // TODO(grp): BitcodeArch
+        // TODO(grp): StaticAnalyzerModeNameDescription
+        // TODO(grp): DependencyInfoFile (from tool->dependencyInfoFile())
+        // TOOD(grp): CommandProgressByType
         pbxsetting::Setting::Parse("DerivedFilesDir", environment.resolve("DERIVED_FILES_DIR")),
     };
     pbxsetting::Level toolLevel = pbxsetting::Level(toolSettings);
 
     std::vector<pbxsetting::Level> toolLevels = environment.assignment();
     toolLevels.push_back(toolLevel);
-    return pbxsetting::Environment(toolLevels, toolLevels);
+    pbxsetting::Environment toolEnvironment = pbxsetting::Environment(toolLevels, toolLevels);
+
+    return ToolEnvironment(tool, toolEnvironment, inputs, outputs);
 }
 
-static std::vector<std::string>
-ExpandCommandLine(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &toolEnvironment, std::vector<std::string> options, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs, std::string const &executable, std::vector<std::string> const &specialArguments)
+OptionsResult::
+OptionsResult(std::vector<std::string> const &arguments, std::map<std::string, std::string> const &environment) :
+    _arguments  (arguments),
+    _environment(environment)
 {
+}
+
+OptionsResult::
+~OptionsResult()
+{
+}
+
+OptionsResult OptionsResult::
+Create(ToolEnvironment const &toolEnvironment, std::map<std::string, std::string> const &environment)
+{
+    // TODO(grp): Parse each PropertyOption in the tool.
+    std::vector<std::string> arguments = { };
+    return OptionsResult(arguments, environment);
+}
+
+CommandLineResult::
+CommandLineResult(std::string const &executable, std::vector<std::string> const &arguments) :
+    _executable(executable),
+    _arguments (arguments)
+{
+}
+
+CommandLineResult::
+~CommandLineResult()
+{
+}
+
+CommandLineResult CommandLineResult::
+Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::string const &executable, std::vector<std::string> const &specialArguments)
+{
+    pbxspec::PBX::Tool::shared_ptr tool = toolEnvironment.tool();
+
     std::string commandLineString = (!tool->commandLine().empty() ? tool->commandLine() : "[exec-path] [options] [special-args] [inputs] [outputs]");
 
     std::vector<std::string> commandLine;
     std::stringstream sstream = std::stringstream(commandLineString);
     std::copy(std::istream_iterator<std::string>(sstream), std::istream_iterator<std::string>(), std::back_inserter(commandLine));
 
+    std::vector<std::string> inputs = toolEnvironment.inputs();
+    std::vector<std::string> outputs = toolEnvironment.outputs();
     std::string input = (!inputs.empty() ? inputs.front() : "");
     std::string output = (!outputs.empty() ? outputs.front() : "");
 
@@ -62,7 +150,7 @@ ExpandCommandLine(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Enviro
         { "output", { output } },
         { "inputs", inputs },
         { "outputs", outputs },
-        { "options", options },
+        { "options", options.arguments() },
         { "exec-path", { !executable.empty() ? executable : tool->execPath() } },
         { "special-args", specialArguments },
     };
@@ -79,40 +167,18 @@ ExpandCommandLine(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Enviro
         }
 
         pbxsetting::Value value = pbxsetting::Value::Parse(entry);
-        std::string resolved = toolEnvironment.expand(value);
+        std::string resolved = toolEnvironment.toolEnvironment().expand(value);
         arguments.push_back(resolved);
     }
-
-    return arguments;
-}
-
-ToolInvocationContext ToolInvocationContext::
-Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs, std::string const &executable, std::vector<std::string> specialArguments, std::string const &responsePath, std::string const &responseContents)
-{
-    // TODO(grp); Match inputs with allowed tool input file types.
-
-    pbxsetting::Environment toolEnvironment = CreateToolEnvironment(tool, environment, inputs, outputs);
-
-    std::vector<std::string> options; // TODO(grp): Expand options from tool.
-
-    std::vector<std::string> arguments = ExpandCommandLine(tool, toolEnvironment, options, inputs, outputs, executable, specialArguments);
 
     std::string invocationExecutable = (!arguments.empty() ? arguments.front() : "");
     std::vector<std::string> invocationArguments = std::vector<std::string>(arguments.begin() + (!arguments.empty() ? 1 : 0), arguments.end());
 
-    std::string ruleName = toolEnvironment.expand(tool->ruleName());
+    return CommandLineResult(invocationExecutable, invocationArguments);
+}
 
-    pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
-        invocationExecutable,
-        invocationArguments,
-        { }, // TODO(grp): Environment variables.
-        "", // TODO(grp): Working directory.
-        inputs,
-        outputs,
-        "", // TODO(grp): Dependency info.
-        responsePath,
-        responseContents,
-        ruleName
-    );
-    return ToolInvocationContext(invocation);
+std::string ToolInvocationContext::
+LogMessage(ToolEnvironment const &toolEnvironment)
+{
+    return toolEnvironment.toolEnvironment().expand(toolEnvironment.tool()->ruleName());
 }
