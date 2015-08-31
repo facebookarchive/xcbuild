@@ -169,7 +169,9 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
 {
     std::vector<pbxsetting::Setting> settings = {
         pbxsetting::Setting::Parse("CURRENT_VARIANT", variants.front()),
+        pbxsetting::Setting::Parse("variant", variants.front()),
         pbxsetting::Setting::Parse("CURRENT_ARCH", architectures.front()),
+        pbxsetting::Setting::Parse("arch", architectures.front()),
     };
 
     for (std::string const &variant : variants) {

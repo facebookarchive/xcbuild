@@ -60,6 +60,7 @@ VariantLevel(std::string const &variant)
 {
     return pbxsetting::Level({
         pbxsetting::Setting::Parse("CURRENT_VARIANT", variant),
+        pbxsetting::Setting::Parse("variant", variant),
         pbxsetting::Setting::Parse("EXECUTABLE_VARIANT_SUFFIX", variant != "normal" ? "_" + variant : ""),
     });
 }
@@ -69,6 +70,7 @@ ArchitectureLevel(std::string const &arch)
 {
     return pbxsetting::Level({
         pbxsetting::Setting::Parse("CURRENT_ARCH", arch),
+        pbxsetting::Setting::Parse("arch", arch),
     });
 }
 
