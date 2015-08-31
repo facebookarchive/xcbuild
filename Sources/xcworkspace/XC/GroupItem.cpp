@@ -28,6 +28,9 @@ resolve(std::shared_ptr<Workspace> const &workspace) const
         }
     } else if (_locationType == "absolute") {
         return location;
+    } else if (_locationType == "developer") {
+        // TODO(grp): Look in DEVELOPER_DIR.
+        return location;
     } else {
         fprintf(stderr, "error: unknown container type %s\n", _locationType.c_str());
         return location;

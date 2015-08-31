@@ -17,6 +17,9 @@ resolve(std::string const &container) const
         return container + referencedContainer;
     } else if (_referencedContainerType == "absolute") {
         return referencedContainer;
+    } else if (_referencedContainerType == "developer") {
+        // TODO(grp): Look in DEVELOPER_DIR.
+        return referencedContainer;
     } else {
         fprintf(stderr, "error: unknown container type %s\n", _referencedContainerType.c_str());
         return referencedContainer;
