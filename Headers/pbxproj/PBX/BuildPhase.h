@@ -31,6 +31,7 @@ public:
 
 private:
     Type              _type;
+    std::string       _name;
     BuildFile::vector _files;
     bool              _runOnlyForDeploymentPostprocessing;
     uint32_t          _buildActionMask;
@@ -41,6 +42,10 @@ protected:
 public:
     inline Type type() const
     { return _type; }
+
+public:
+    inline std::string const &name() const
+    { return _name; }
 
 public:
     inline BuildFile::vector const &files() const
