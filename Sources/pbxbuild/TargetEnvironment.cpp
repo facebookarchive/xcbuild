@@ -175,8 +175,14 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
     };
 
     for (std::string const &variant : variants) {
-        pbxsetting::Setting setting = pbxsetting::Setting::Parse("OBJECT_FILE_DIR_" + variant, "$(OBJECT_FILE_DIR)-" + variant);
-        settings.push_back(setting);
+        pbxsetting::Setting objectFileDir = pbxsetting::Setting::Parse("OBJECT_FILE_DIR_" + variant, "$(OBJECT_FILE_DIR)-" + variant);
+        settings.push_back(objectFileDir);
+
+        for (std::string const &arch : architectures) {
+            std::string linkFileList = "LINK_FILE_LIST_" + variant + "_" + arch;
+            std::string linkFileListPath = "$(OBJECT_FILE_DIR_" + variant + ")/" + arch + "/$(PRODUCT_NAME).LinkFileList";
+            settings.push_back(pbxsetting::Setting::Parse(linkFileList, linkFileListPath));
+        }
     }
 
     return pbxsetting::Level(settings);

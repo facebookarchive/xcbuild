@@ -38,15 +38,18 @@ Create(
     std::string responsePath;
     std::string responseContents;
 
-    std::vector<std::string> inputs;
+    std::vector<std::string> special;
+
     if (linker->supportsInputFileList()) {
-        // TODO(grp): Use a response file instead, but make sure the inputs are included as dependencies.
-        inputs.insert(inputs.end(), inputFiles.begin(), inputFiles.end());
-    } else {
-        inputs.insert(inputs.end(), inputFiles.begin(), inputFiles.end());
+        responsePath = environment.expand(pbxsetting::Value::Parse("$(LINK_FILE_LIST_$(variant)_$(arch))"));
+        for (std::string const &input : inputFiles) {
+            responseContents += input + "\n";
+        }
+
+        special.push_back("-filelist");
+        special.push_back(responsePath);
     }
 
-    std::vector<std::string> special;
     for (FileTypeResolver const &library : inputLibraries) {
         std::string base = FSUtil::GetBaseNameWithoutExtension(library.filePath());
         if (library.fileType()->isFrameworkWrapper()) {
@@ -64,7 +67,7 @@ Create(
     std::string dependencyInfo = linker->dependencyInfoFile();
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (linker);
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputs, { output });
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, { output });
     OptionsResult options = OptionsResult::Create(toolEnvironment);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special);
     std::string logMessage = ToolInvocationContext::LogMessage(toolEnvironment);
