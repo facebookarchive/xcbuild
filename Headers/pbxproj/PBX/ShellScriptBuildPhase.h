@@ -17,6 +17,7 @@ private:
     std::string   _shellScript;
     string_vector _inputPaths;
     string_vector _outputPaths;
+    bool          _showEnvVarsInLog;
 
 public:
     ShellScriptBuildPhase();
@@ -43,6 +44,10 @@ public:
     { return _outputPaths; }
     inline string_vector &outputPaths()
     { return _outputPaths; }
+
+public:
+    inline bool showEnvVarsInLog() const
+    { return _showEnvVarsInLog; }
 
 public:
     virtual bool parse(Context &context, plist::Dictionary const *dict);

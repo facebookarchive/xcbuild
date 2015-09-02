@@ -5,7 +5,8 @@
 using pbxproj::PBX::ShellScriptBuildPhase;
 
 ShellScriptBuildPhase::ShellScriptBuildPhase() :
-    BuildPhase(Isa(), kTypeShellScript)
+    _showEnvVarsInLog(true),
+    BuildPhase       (Isa(), kTypeShellScript)
 {
 }
 
@@ -20,6 +21,7 @@ parse(Context &context, plist::Dictionary const *dict)
     auto SS = dict->value <plist::String> ("shellScript");
     auto IP = dict->value <plist::Array> ("inputPaths");
     auto OP = dict->value <plist::Array> ("outputPaths");
+    auto SE = dict->value <plist::Boolean> ("showEnvVarsInLog");
 
     if (N != nullptr) {
         _name = N->value();
@@ -49,6 +51,10 @@ parse(Context &context, plist::Dictionary const *dict)
                 _outputPaths.push_back(P->value());
             }
         }
+    }
+
+    if (SE != nullptr) {
+        _showEnvVarsInLog = SE->value();
     }
 
     return true;
