@@ -363,11 +363,11 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                                 BP->shellScript().c_str());
                         printf("\t\t\t\tInput Paths:\n");
                         for (auto K : BP->inputPaths()) {
-                            printf("\t\t\t\t\t%s\n", K.c_str());
+                            printf("\t\t\t\t\t%s\n", K.raw().c_str());
                         }
                         printf("\t\t\t\tOutput Paths:\n");
                         for (auto K : BP->outputPaths()) {
-                            printf("\t\t\t\t\t%s\n", K.c_str());
+                            printf("\t\t\t\t\t%s\n", K.raw().c_str());
                         }
                         printf("\t\t\t\tFiles:\n");
                         for (auto K : BP->files()) {

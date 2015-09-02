@@ -10,6 +10,7 @@
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/FileTypeResolver.h>
 #include <pbxbuild/LinkerInvocationContext.h>
+#include <pbxbuild/ScriptInvocationContext.h>
 #include <pbxbuild/TargetBuildRules.h>
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/ToolInvocationContext.h>

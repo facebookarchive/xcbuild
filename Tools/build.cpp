@@ -213,6 +213,20 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
     return invocations;
 }
 
+static std::vector<pbxbuild::ToolInvocation>
+ShellScript(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxbuild::TargetEnvironment const &targetEnvironment, pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase)
+{
+    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script");
+    if (scriptTool == nullptr) {
+        return std::vector<pbxbuild::ToolInvocation>();
+    }
+
+    std::string workingDirectory = targetEnvironment.workingDirectory();
+
+    auto context = pbxbuild::ScriptInvocationContext::Create(scriptTool, buildPhase, targetEnvironment.environment(), workingDirectory);
+    return { context.invocation() };
+}
+
 static std::vector<pbxproj::PBX::BuildPhase::shared_ptr>
 SortBuildPhases(std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> phaseInvocations)
 {
@@ -310,15 +324,27 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
     }
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
-        if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeFrameworks) {
-            auto BP = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
-            auto invocations = LinkFiles(buildEnvironment, buildContext, targetEnvironment, BP, sourcesInvocations);
-            toolInvocations.insert({ buildPhase, invocations });
+        switch (buildPhase->type()) {
+            case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
+                auto BP = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
+                auto invocations = LinkFiles(buildEnvironment, buildContext, targetEnvironment, BP, sourcesInvocations);
+                toolInvocations.insert({ buildPhase, invocations });
+                break;
+            }
+            case pbxproj::PBX::BuildPhase::kTypeShellScript: {
+                auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
+                auto invocations = ShellScript(buildEnvironment, buildContext, targetEnvironment, BP);
+                toolInvocations.insert({ buildPhase, invocations });
+                break;
+            }
+            default: break;
         }
     }
 
+
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         switch (buildPhase->type()) {
+            case pbxproj::PBX::BuildPhase::kTypeShellScript:
             case pbxproj::PBX::BuildPhase::kTypeFrameworks:
             case pbxproj::PBX::BuildPhase::kTypeSources: {
                 break;
@@ -338,11 +364,6 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
                 auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
                 break;
             }
-            case pbxproj::PBX::BuildPhase::kTypeShellScript: {
-                // TODO: Run Shell Script
-                auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
-                break;
-            }
             case pbxproj::PBX::BuildPhase::kTypeAppleScript: {
                 // TODO: Compile AppleScript
                 auto BP = std::static_pointer_cast <pbxproj::PBX::AppleScriptBuildPhase> (buildPhase);
@@ -360,6 +381,9 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
         for (pbxbuild::ToolInvocation const &invocation : orderedInvocations) {
             printf("%s\n", invocation.logMessage().c_str());
             printf("\tcd %s\n", invocation.workingDirectory().c_str());
+            for (std::pair<std::string, std::string> const &entry : invocation.environment()) {
+                printf("\texport %s=%s\n", entry.first.c_str(), entry.second.c_str());
+            }
             printf("\t%s", invocation.executable().c_str());
             for (std::string const &arg : invocation.arguments()) {
                 printf(" %s", arg.c_str());

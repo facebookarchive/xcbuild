@@ -12,12 +12,12 @@ public:
     typedef std::shared_ptr <ShellScriptBuildPhase> shared_ptr;
 
 private:
-    std::string   _name;
-    std::string   _shellPath;
-    std::string   _shellScript;
-    string_vector _inputPaths;
-    string_vector _outputPaths;
-    bool          _showEnvVarsInLog;
+    std::string                    _name;
+    std::string                    _shellPath;
+    std::string                    _shellScript;
+    std::vector<pbxsetting::Value> _inputPaths;
+    std::vector<pbxsetting::Value> _outputPaths;
+    bool                           _showEnvVarsInLog;
 
 public:
     ShellScriptBuildPhase();
@@ -34,15 +34,15 @@ public:
     { return _shellScript; }
 
 public:
-    inline string_vector const &inputPaths() const
+    inline std::vector<pbxsetting::Value> const &inputPaths() const
     { return _inputPaths; }
-    inline string_vector &inputPaths()
+    inline std::vector<pbxsetting::Value> &inputPaths()
     { return _inputPaths; }
 
 public:
-    inline string_vector const &outputPaths() const
+    inline std::vector<pbxsetting::Value> const &outputPaths() const
     { return _outputPaths; }
-    inline string_vector &outputPaths()
+    inline std::vector<pbxsetting::Value> &outputPaths()
     { return _outputPaths; }
 
 public:

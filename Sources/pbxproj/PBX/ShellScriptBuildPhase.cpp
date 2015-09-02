@@ -39,7 +39,8 @@ parse(Context &context, plist::Dictionary const *dict)
         for (size_t n = 0; n < IP->count(); n++) {
             auto P = IP->value <plist::String> (n);
             if (P != nullptr) {
-                _inputPaths.push_back(P->value());
+                pbxsetting::Value V = pbxsetting::Value::Parse(P->value());
+                _inputPaths.push_back(V);
             }
         }
     }
@@ -48,7 +49,8 @@ parse(Context &context, plist::Dictionary const *dict)
         for (size_t n = 0; n < OP->count(); n++) {
             auto P = OP->value <plist::String> (n);
             if (P != nullptr) {
-                _outputPaths.push_back(P->value());
+                pbxsetting::Value V = pbxsetting::Value::Parse(P->value());
+                _outputPaths.push_back(V);
             }
         }
     }
