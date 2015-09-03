@@ -30,7 +30,7 @@ protected:
     libutil::string_vector  _inputFileGroupings;
     libutil::string_vector  _fallbackTools;
     libutil::string_vector  _additionalDirectoriesToCreate;
-    plist::Dictionary      *_overridingProperties;
+    pbxsetting::Level       _overridingProperties;
     bool                    _useCPlusPlusCompilerDriverWhenBundlizing;
     bool                    _dashIFlagAcceptHeadermaps;
     bool                    _supportsHeadermaps;
@@ -134,7 +134,7 @@ public:
     { return _additionalDirectoriesToCreate; }
 
 public:
-    inline plist::Dictionary const *overridingProperties() const
+    inline pbxsetting::Level const &overridingProperties() const
     { return _overridingProperties; }
 
 public:

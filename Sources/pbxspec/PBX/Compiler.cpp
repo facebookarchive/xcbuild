@@ -16,7 +16,7 @@ Compiler::Compiler(bool isDefault) :
 
 Compiler::Compiler(bool isDefault, std::string const &isa) :
     Tool                                     (isDefault, isa),
-    _overridingProperties                    (nullptr),
+    _overridingProperties                    (pbxsetting::Level({ })),
     _useCPlusPlusCompilerDriverWhenBundlizing(false),
     _dashIFlagAcceptHeadermaps               (false),
     _supportsHeadermaps                      (false),
@@ -44,9 +44,6 @@ Compiler::Compiler(bool isDefault, std::string const &isa) :
 
 Compiler::~Compiler()
 {
-    if (_overridingProperties != nullptr) {
-        _overridingProperties->release();
-    }
 }
 
 bool Compiler::
@@ -92,7 +89,7 @@ inherit(Compiler::shared_ptr const &b)
     _inputFileGroupings                       = base->inputFileGroupings();
     _fallbackTools                            = base->fallbackTools();
     _additionalDirectoriesToCreate            = base->additionalDirectoriesToCreate();
-    _overridingProperties                     = plist::Copy(base->overridingProperties());
+    _overridingProperties                     = base->overridingProperties();
     _useCPlusPlusCompilerDriverWhenBundlizing = base->useCPlusPlusCompilerDriverWhenBundlizing();
     _supportsHeadermaps                       = base->supportsHeadermaps();
     _supportsIsysroot                         = base->supportsIsysroot();
@@ -387,11 +384,17 @@ parse(Context *context, plist::Dictionary const *dict)
     }
 
     if (OP != nullptr) {
-        if (_overridingProperties != nullptr) {
-            _overridingProperties->release();
-        }
+        std::vector<pbxsetting::Setting> settings;
+        for (size_t n = 0; n < OP->count(); n++) {
+            auto OPK = OP->key(n);
+            auto OPV = OP->value <plist::String> (OPK);
 
-        _overridingProperties = plist::CastTo <plist::Dictionary> (OP->copy());
+            if (OPV != nullptr) {
+                pbxsetting::Setting setting = pbxsetting::Setting::Parse(OPK, OPV->value());
+                settings.push_back(setting);
+            }
+        }
+        _overridingProperties = pbxsetting::Level(settings);
     }
 
     if (UCPPCDWB != nullptr) {
