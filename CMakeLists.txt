@@ -259,6 +259,9 @@ function (ADD_UNIT_GTEST NAME SOURCES)
     add_test("${NAME}" "${NAME}")
 endfunction ()
 
+ADD_UNIT_GTEST(test_FSUtil Tests/libutil/test_FSUtil.cpp)
+target_link_libraries(test_FSUtil pbxbase)
+
 ADD_UNIT_GTEST(test_Wildcard Tests/libutil/test_Wildcard.cpp)
 target_link_libraries(test_Wildcard pbxbase)
 

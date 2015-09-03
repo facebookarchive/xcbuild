@@ -91,6 +91,46 @@ GetBaseNameWithoutExtension(std::string const &path)
 }
 
 std::string FSUtil::
+GetRelativePath(std::string const &path, std::string const &to)
+{
+    std::string::size_type po = 0;
+    std::string::size_type oo = 0;
+
+    std::string result;
+
+    bool found = false;
+    while (!found) {
+        std::string::size_type npo = path.find('/', po);
+        std::string::size_type noo = to.find('/', oo);
+
+        std::string spo = path.substr(po, (npo == std::string::npos ? path.size() : npo) - po);
+        std::string soo = to.substr(oo, (noo == std::string::npos ? to.size() : noo) - oo);
+
+        if (spo == soo) {
+            po = (npo == std::string::npos ? std::string::npos : npo + 1);
+            oo = (noo == std::string::npos ? std::string::npos : noo + 1);
+        } else {
+            break;
+        }
+
+        if (npo == std::string::npos || noo == std::string::npos) {
+            break;
+        }
+    }
+
+    while (oo != std::string::npos && oo != to.size()) {
+        result += "../";
+        oo = to.find('/', oo + 1);
+    }
+
+    if (po != std::string::npos && po != path.size()) {
+        result += path.substr(po);
+    }
+
+    return result;
+}
+
+std::string FSUtil::
 GetFileExtension(std::string const &path)
 {
     std::string base = GetBaseName(path);

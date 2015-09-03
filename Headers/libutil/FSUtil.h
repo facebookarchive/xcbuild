@@ -20,6 +20,7 @@ public:
     static std::string GetDirectoryName(std::string const &path);
     static std::string GetBaseName(std::string const &path);
     static std::string GetBaseNameWithoutExtension(std::string const &path);
+    static std::string GetRelativePath(std::string const &path, std::string const &to);
     static std::string GetFileExtension(std::string const &path);
 
 public:

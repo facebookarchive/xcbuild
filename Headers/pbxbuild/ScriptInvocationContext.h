@@ -5,6 +5,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/TargetBuildRules.h>
 
 namespace pbxbuild {
 
@@ -27,16 +28,24 @@ public:
         std::string const &script,
         std::string const &scriptPath,
         std::string const &shell,
-        std::vector<pbxsetting::Value> const &inputFiles,
-        std::vector<pbxsetting::Value> const &outputFiles,
+        std::vector<std::string> const &inputFiles,
+        std::vector<std::string> const &outputFiles,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory,
-        std::string const &logMessageTitle
+        std::string const &logMessage
     );
     static ScriptInvocationContext
     Create(
         pbxspec::PBX::Tool::shared_ptr scriptTool,
         pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase,
+        pbxsetting::Environment const &environment,
+        std::string const &workingDirectory
+    );
+    static ScriptInvocationContext
+    Create(
+        pbxspec::PBX::Tool::shared_ptr scriptTool,
+        std::string const &inputFile,
+        pbxbuild::TargetBuildRules::BuildRule::shared_ptr const &buildRule,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );

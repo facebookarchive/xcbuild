@@ -47,19 +47,21 @@ static TargetBuildRules::BuildRule::shared_ptr
 ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::BuildRule::shared_ptr const &projBuildRule)
 {
     pbxspec::PBX::Tool::shared_ptr tool = nullptr;
-    std::string ts = projBuildRule->compilerSpec();
-    if (!ts.empty()) {
-        tool = specManager->tool(ts) ?: std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(ts)) ?: std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(ts));
+    std::string TS = projBuildRule->compilerSpec();
+    if (TS != "com.apple.compilers.proxy.script") {
+        tool = specManager->tool(TS) ?: std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(TS)) ?: std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(TS));
         if (tool == nullptr) {
+            fprintf(stderr, "warning: couldn't find tool %s specified in build rule\n", TS.c_str());
             return nullptr;
         }
     }
 
     pbxspec::PBX::FileType::vector fileTypes;
-    std::string ft = projBuildRule->fileType();
-    if (!ft.empty()) {
-        pbxspec::PBX::FileType::shared_ptr fileType = specManager->fileType(ft);
+    std::string FT = projBuildRule->fileType();
+    if (FT != "pattern.proxy") {
+        pbxspec::PBX::FileType::shared_ptr fileType = specManager->fileType(FT);
         if (fileType == nullptr) {
+            fprintf(stderr, "warning: couldn't find input file type %s specified in build rule\n", FT.c_str());
             return nullptr;
         }
         fileTypes.push_back(fileType);

@@ -27,19 +27,19 @@ public:
         BuildRule(std::string const &filePatterns, pbxspec::PBX::FileType::vector const &fileTypes, pbxspec::PBX::Tool::shared_ptr const &tool, std::string const &script, std::vector<pbxsetting::Value> const &outputFiles);
 
     public:
-        inline std::string const &filePatterns()
+        inline std::string const &filePatterns() const
         { return _filePatterns; }
-        inline pbxspec::PBX::FileType::vector const &fileTypes()
+        inline pbxspec::PBX::FileType::vector const &fileTypes() const
         { return _fileTypes; }
 
     public:
-        inline pbxspec::PBX::Tool::shared_ptr const &tool()
+        inline pbxspec::PBX::Tool::shared_ptr const &tool() const
         { return _tool; }
-        inline std::string const &script()
+        inline std::string const &script() const
         { return _script; }
 
     public:
-        inline std::vector<pbxsetting::Value> const &outputFiles()
+        inline std::vector<pbxsetting::Value> const &outputFiles() const
         { return _outputFiles; }
     };
 

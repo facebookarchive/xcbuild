@@ -79,6 +79,13 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 {
     std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> result;
 
+    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script");
+    if (scriptTool == nullptr) {
+        return result;
+    }
+
+    std::string workingDirectory = targetEnvironment.workingDirectory();
+
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
             std::vector<pbxsetting::Level> levels = targetEnvironment.environment().assignment();
@@ -94,22 +101,21 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
             for (pbxbuild::FileTypeResolver const &file : files) {
                 pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
 
-                std::string buildRuleDescription;
                 if (buildRule != nullptr) {
                     if (buildRule->tool() != nullptr) {
-                        buildRuleDescription = buildRule->tool()->identifier();
+                        // TODO(grp): Use build rule to craete invocation here.
+                        std::string input = file.filePath();
+                        std::string output = outputDirectory + "/" + libutil::FSUtil::GetBaseNameWithoutExtension(file.filePath()) + ".o";
+                        pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("clang", { }, { }, "", { input }, { output }, "", "", "", "CompileC " + buildRule->tool()->identifier());
+                        invocations.push_back(invocation);
                     } else if (!buildRule->script().empty()) {
-                        buildRuleDescription = "[custom script]";
+                        auto context = pbxbuild::ScriptInvocationContext::Create(scriptTool, file.filePath(), buildRule, currentEnvironment, workingDirectory);
+                        invocations.push_back(context.invocation());
                     }
                 } else {
-                    buildRuleDescription = "[no matching build rule]";
+                    fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
+                    continue;
                 }
-
-                // TODO(grp): Use build rule to craete invocation here.
-                std::string input = file.filePath();
-                std::string output = outputDirectory + "/" + libutil::FSUtil::GetBaseNameWithoutExtension(file.filePath()) + ".o";
-                pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("clang", { }, { }, "", { input }, { output }, "", "", "", "CompileC " + buildRuleDescription);
-                invocations.push_back(invocation);
             }
 
             std::pair<std::string, std::string> resultKey = std::make_pair(variant, arch);
