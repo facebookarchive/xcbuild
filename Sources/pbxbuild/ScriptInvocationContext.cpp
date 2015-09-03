@@ -50,12 +50,14 @@ Create(
         return environment.expand(output);
     });
 
+    std::string scriptContents = "#!" + shell + "\n" + script;
+
     std::string logMessage = logMessageTitle + " " + scriptPath;
 
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(scriptTool, environment, inputs, outputs);
     OptionsResult options = OptionsResult::Create(toolEnvironment, environmentVariables);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, shell, { "-c", scriptPath });
-    ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", scriptPath, script);
+    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", scriptPath });
+    ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", scriptPath, scriptContents);
     return ScriptInvocationContext(context.invocation());
 }
 
