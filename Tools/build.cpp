@@ -89,8 +89,8 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
             std::vector<pbxsetting::Level> levels = targetEnvironment.environment().assignment();
-            levels.push_back(VariantLevel(variant));
-            levels.push_back(ArchitectureLevel(arch));
+            levels.insert(levels.begin(), VariantLevel(variant));
+            levels.insert(levels.begin(), ArchitectureLevel(arch));
             pbxsetting::Environment currentEnvironment = pbxsetting::Environment(levels, levels);
 
             std::vector<pbxbuild::ToolInvocation> invocations;
@@ -157,7 +157,7 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
 
     for (std::string const &variant : targetEnvironment.variants()) {
         std::vector<pbxsetting::Level> variantLevels = targetEnvironment.environment().assignment();
-        variantLevels.push_back(VariantLevel(variant));
+        variantLevels.insert(variantLevels.begin(), VariantLevel(variant));
         pbxsetting::Environment variantEnvironment = pbxsetting::Environment(variantLevels, variantLevels);
 
         std::string variantIntermediatesName = variantEnvironment.resolve("EXECUTABLE_NAME") + variantEnvironment.resolve("EXECUTABLE_VARIANT_SUFFIX");
@@ -171,7 +171,7 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
 
         for (std::string const &arch : targetEnvironment.architectures()) {
             std::vector<pbxsetting::Level> archLevels = variantLevels;
-            archLevels.push_back(ArchitectureLevel(arch));
+            archLevels.insert(archLevels.begin(), ArchitectureLevel(arch));
             pbxsetting::Environment archEnvironment = pbxsetting::Environment(archLevels, archLevels);
 
             std::vector<pbxbuild::FileTypeResolver> files = ResolveBuildFiles(buildEnvironment, buildContext, archEnvironment, buildPhase->files());

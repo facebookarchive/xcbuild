@@ -64,7 +64,7 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
     pbxsetting::Level toolLevel = pbxsetting::Level(toolSettings);
 
     std::vector<pbxsetting::Level> toolLevels = environment.assignment();
-    toolLevels.push_back(toolLevel);
+    toolLevels.insert(toolLevels.begin(), toolLevel);
     pbxsetting::Environment toolEnvironment = pbxsetting::Environment(toolLevels, toolLevels);
 
     return ToolEnvironment(tool, toolEnvironment, inputs, outputs);

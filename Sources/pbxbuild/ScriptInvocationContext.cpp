@@ -71,7 +71,7 @@ Create(
     });
 
     std::vector<pbxsetting::Level> levels = environment.assignment();
-    levels.push_back(level);
+    levels.insert(levels.begin(), level);
     pbxsetting::Environment phaseEnvironment = pbxsetting::Environment(levels, levels);
 
     pbxsetting::Value scriptPath = pbxsetting::Value::Parse("$(TEMP_FILES_DIR)/Script-$(BuildPhaseIdentifier).sh");
@@ -120,7 +120,7 @@ Create(
     });
 
     std::vector<pbxsetting::Level> levels = environment.assignment();
-    levels.push_back(level);
+    levels.insert(levels.begin(), level);
     pbxsetting::Environment ruleEnvironment = pbxsetting::Environment(levels, levels);
 
     pbxsetting::Value logMessage = pbxsetting::Value::Parse("RuleScriptExecution " + FSUtil::GetRelativePath(inputFile, workingDirectory) + " $(variant) $(arch)");
