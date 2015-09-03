@@ -28,6 +28,7 @@ public:
         std::string const &script,
         std::string const &scriptPath,
         std::string const &shell,
+        bool multipleInputs,
         std::vector<std::string> const &inputFiles,
         std::vector<std::string> const &outputFiles,
         pbxsetting::Environment const &environment,

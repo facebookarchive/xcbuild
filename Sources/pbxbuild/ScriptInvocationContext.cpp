@@ -24,12 +24,37 @@ ScriptInvocationContext::
 {
 }
 
+static pbxsetting::Level
+ScriptInputOutputLevel(std::vector<std::string> const &inputFiles, std::vector<std::string> const &outputFiles, bool multipleInputs)
+{
+    std::vector<pbxsetting::Setting> settings;
+
+    settings.push_back(pbxsetting::Setting::Parse("SCRIPT_OUTPUT_FILE_COUNT", std::to_string(outputFiles.size())));
+    for (auto it = outputFiles.begin(); it < outputFiles.end(); ++it) {
+        size_t index = (it - outputFiles.begin());
+        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_OUTPUT_FILE_" + std::to_string(index), *it));
+    }
+
+    if (multipleInputs) {
+        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE_COUNT", std::to_string(inputFiles.size())));
+        for (auto it = inputFiles.begin(); it < inputFiles.end(); ++it) {
+            size_t index = (it - inputFiles.begin());
+            settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE_" + std::to_string(index), *it));
+        }
+    } else if (!inputFiles.empty()) {
+        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE", inputFiles.front()));
+    }
+
+    return pbxsetting::Level(settings);
+}
+
 ScriptInvocationContext ScriptInvocationContext::
 Create(
     pbxspec::PBX::Tool::shared_ptr scriptTool,
     std::string const &script,
     std::string const &scriptPath,
     std::string const &shell,
+    bool multipleInputs,
     std::vector<std::string> const &inputFiles,
     std::vector<std::string> const &outputFiles,
     pbxsetting::Environment const &environment,
@@ -37,7 +62,12 @@ Create(
     std::string const &logMessage
 )
 {
-    std::unordered_map<std::string, std::string> values = environment.computeValues(pbxsetting::Condition::Empty());
+    pbxsetting::Level level = ScriptInputOutputLevel(inputFiles, outputFiles, multipleInputs);
+    std::vector<pbxsetting::Level> levels = environment.assignment();
+    levels.insert(levels.begin(), level);
+    pbxsetting::Environment scriptEnvironment = pbxsetting::Environment(levels, levels);
+
+    std::unordered_map<std::string, std::string> values = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
     std::map<std::string, std::string> environmentVariables = std::map<std::string, std::string>(values.begin(), values.end());
 
     std::string scriptArgument;
@@ -50,7 +80,7 @@ Create(
         scriptContents = "";
     }
 
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(scriptTool, environment, inputFiles, outputFiles);
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(scriptTool, scriptEnvironment, inputFiles, outputFiles);
     OptionsResult options = OptionsResult::Create(toolEnvironment, environmentVariables);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", scriptArgument });
     ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", scriptPath, scriptContents);
@@ -93,6 +123,7 @@ Create(
         buildPhase->shellScript(),
         phaseEnvironment.expand(scriptPath),
         buildPhase->shellPath(),
+        true,
         inputFiles,
         outputFiles,
         environment,
@@ -135,6 +166,7 @@ Create(
         buildRule->script(),
         "",
         "",
+        false,
         { inputFile },
         outputFiles,
         ruleEnvironment,
