@@ -95,8 +95,6 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
             std::vector<pbxbuild::ToolInvocation> invocations;
 
-            std::string outputDirectory = currentEnvironment.resolve("OBJECT_FILE_DIR_" + variant) + "/" + arch;
-
             std::vector<pbxbuild::FileTypeResolver> files = ResolveBuildFiles(buildEnvironment, buildContext, currentEnvironment, buildPhase->files());
             for (pbxbuild::FileTypeResolver const &file : files) {
                 pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
@@ -110,11 +108,11 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                             tool = buildEnvironment.specManager()->compiler(gccVersion + ".compiler");
                         }
 
-                        std::string input = file.filePath();
-                        std::string output = outputDirectory + "/" + libutil::FSUtil::GetBaseNameWithoutExtension(file.filePath()) + ".o";
+                        // TODO(grp): This is unsafe.
+                        pbxspec::PBX::Compiler::shared_ptr compiler = std::static_pointer_cast <pbxspec::PBX::Compiler> (tool);
 
                         // TODO(grp): Use an appropriate compiler context to create this invocation.
-                        auto context = pbxbuild::ToolInvocationContext::Create(tool, { input }, { output }, currentEnvironment, workingDirectory, "CompileC " + file.filePath() + " " + tool->identifier());
+                        auto context = pbxbuild::CompilerInvocationContext::Create(compiler, file, currentEnvironment, workingDirectory);
                         invocations.push_back(context.invocation());
                     } else if (!buildRule->script().empty()) {
                         auto context = pbxbuild::ScriptInvocationContext::Create(scriptTool, file.filePath(), buildRule, currentEnvironment, workingDirectory);

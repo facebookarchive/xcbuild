@@ -13,46 +13,46 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    std::string             _execCPlusPlusLinkerPath;
-    std::string             _executionDescription;
-    std::string             _sourceFileOption;
-    std::string             _outputDir;
-    std::string             _outputFileExtension;
-    std::string             _commandResultsPostprocessor;
-    std::string             _generatedInfoPlistContentFilePath;
-    std::string             _dependencyInfoFile;
-    libutil::string_vector  _dependencyInfoArgs;
-    libutil::string_vector  _languages;
-    libutil::string_vector  _optionConditionFlavors;
-    libutil::string_vector  _patternsOfFlagsNotAffectingPrecomps;
-    libutil::string_vector  _messageCategoryInfoOptions;
-    libutil::string_vector  _synthesizeBuildRuleForBuildPhases;
-    libutil::string_vector  _inputFileGroupings;
-    libutil::string_vector  _fallbackTools;
-    libutil::string_vector  _additionalDirectoriesToCreate;
-    pbxsetting::Level       _overridingProperties;
-    bool                    _useCPlusPlusCompilerDriverWhenBundlizing;
-    bool                    _dashIFlagAcceptHeadermaps;
-    bool                    _supportsHeadermaps;
-    bool                    _supportsIsysroot;
-    bool                    _supportsSeparateUserHeaderPaths;
-    bool                    _supportsGeneratePreprocessedFile;
-    bool                    _supportsGenerateAssemblyFile;
-    bool                    _supportsAnalyzeFile;
-    bool                    _supportsSerializedDiagnostics;
-    bool                    _supportsPredictiveCompilation;
-    bool                    _supportsMacOSXDeploymentTarget;
-    bool                    _supportsMacOSXMinVersionFlag;
-    bool                    _prunePrecompiledHeaderCache;
-    bool                    _outputAreProducts;
-    bool                    _outputAreSourceFiles;
-    bool                    _softError;
-    bool                    _deeplyStatInputDirectories;
-    bool                    _dontProcessOutputs;
-    bool                    _showInCompilerSelectionPopup;
-    bool                    _showOnlySelfDefinedProperties;
-    bool                    _mightNotEmitAllOutputs;
-    bool                    _includeInUnionedToolDefaults;
+    std::string                    _execCPlusPlusLinkerPath;
+    std::string                    _executionDescription;
+    std::string                    _sourceFileOption;
+    pbxsetting::Value              _outputDir;
+    std::string                    _outputFileExtension;
+    std::string                    _commandResultsPostprocessor;
+    pbxsetting::Value              _generatedInfoPlistContentFilePath;
+    pbxsetting::Value              _dependencyInfoFile;
+    std::vector<pbxsetting::Value> _dependencyInfoArgs;
+    libutil::string_vector         _languages;
+    libutil::string_vector         _optionConditionFlavors;
+    libutil::string_vector         _patternsOfFlagsNotAffectingPrecomps;
+    libutil::string_vector         _messageCategoryInfoOptions;
+    libutil::string_vector         _synthesizeBuildRuleForBuildPhases;
+    libutil::string_vector         _inputFileGroupings;
+    libutil::string_vector         _fallbackTools;
+    std::vector<pbxsetting::Value> _additionalDirectoriesToCreate;
+    pbxsetting::Level              _overridingProperties;
+    bool                           _useCPlusPlusCompilerDriverWhenBundlizing;
+    bool                           _dashIFlagAcceptHeadermaps;
+    bool                           _supportsHeadermaps;
+    bool                           _supportsIsysroot;
+    bool                           _supportsSeparateUserHeaderPaths;
+    bool                           _supportsGeneratePreprocessedFile;
+    bool                           _supportsGenerateAssemblyFile;
+    bool                           _supportsAnalyzeFile;
+    bool                           _supportsSerializedDiagnostics;
+    bool                           _supportsPredictiveCompilation;
+    bool                           _supportsMacOSXDeploymentTarget;
+    bool                           _supportsMacOSXMinVersionFlag;
+    bool                           _prunePrecompiledHeaderCache;
+    bool                           _outputAreProducts;
+    bool                           _outputAreSourceFiles;
+    bool                           _softError;
+    bool                           _deeplyStatInputDirectories;
+    bool                           _dontProcessOutputs;
+    bool                           _showInCompilerSelectionPopup;
+    bool                           _showOnlySelfDefinedProperties;
+    bool                           _mightNotEmitAllOutputs;
+    bool                           _includeInUnionedToolDefaults;
 
 protected:
     Compiler(bool isDefault);
@@ -82,7 +82,7 @@ public:
     { return _sourceFileOption; }
 
 public:
-    inline std::string const &outputDir() const
+    inline pbxsetting::Value const &outputDir() const
     { return _outputDir; }
     inline std::string const &outputFileExtension() const
     { return _outputFileExtension; }
@@ -92,13 +92,13 @@ public:
     { return _commandResultsPostprocessor; }
 
 public:
-    inline std::string const &generatedInfoPlistContentFilePath() const
+    inline pbxsetting::Value const &generatedInfoPlistContentFilePath() const
     { return _generatedInfoPlistContentFilePath; }
 
 public:
-    inline std::string const &dependencyInfoFile() const
+    inline pbxsetting::Value const &dependencyInfoFile() const
     { return _dependencyInfoFile; }
-    inline libutil::string_vector const &dependencyInfoArgs() const
+    inline std::vector<pbxsetting::Value> const &dependencyInfoArgs() const
     { return _dependencyInfoArgs; }
 
 public:
@@ -130,7 +130,7 @@ public:
     { return _fallbackTools; }
 
 public:
-    inline libutil::string_vector const &additionalDirectoriesToCreate() const
+    inline std::vector<pbxsetting::Value> const &additionalDirectoriesToCreate() const
     { return _additionalDirectoriesToCreate; }
 
 public:

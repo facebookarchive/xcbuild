@@ -17,6 +17,9 @@ Compiler::Compiler(bool isDefault) :
 Compiler::Compiler(bool isDefault, std::string const &isa) :
     Tool                                     (isDefault, isa),
     _overridingProperties                    (pbxsetting::Level({ })),
+    _generatedInfoPlistContentFilePath       (pbxsetting::Value::Empty()),
+    _outputDir                               (pbxsetting::Value::Empty()),
+    _dependencyInfoFile                      (pbxsetting::Value::Empty()),
     _useCPlusPlusCompilerDriverWhenBundlizing(false),
     _dashIFlagAcceptHeadermaps               (false),
     _supportsHeadermaps                      (false),
@@ -292,7 +295,7 @@ parse(Context *context, plist::Dictionary const *dict)
     }
 
     if (OD != nullptr) {
-        _outputDir = OD->value();
+        _outputDir = pbxsetting::Value::Parse(OD->value());
     }
 
     if (OFE != nullptr) {
@@ -304,17 +307,17 @@ parse(Context *context, plist::Dictionary const *dict)
     }
 
     if (GIPCFP != nullptr) {
-        _generatedInfoPlistContentFilePath = GIPCFP->value();
+        _generatedInfoPlistContentFilePath = pbxsetting::Value::Parse(GIPCFP->value());
     }
 
     if (DIF != nullptr) {
-        _dependencyInfoFile = DIF->value();
+        _dependencyInfoFile = pbxsetting::Value::Parse(DIF->value());
     }
 
     if (DIAs != nullptr) {
         for (size_t n = 0; n < DIAs->count(); n++) {
             if (auto DIA = DIAs->value <plist::String> (n)) {
-                _dependencyInfoArgs.push_back(DIA->value());
+                _dependencyInfoArgs.push_back(pbxsetting::Value::Parse(DIA->value()));
             }
         }
     }
@@ -378,7 +381,7 @@ parse(Context *context, plist::Dictionary const *dict)
     if (ADTCs != nullptr) {
         for (size_t n = 0; n < ADTCs->count(); n++) {
             if (auto ADTC = ADTCs->value <plist::String> (n)) {
-                _additionalDirectoriesToCreate.push_back(ADTC->value());
+                _additionalDirectoriesToCreate.push_back(pbxsetting::Value::Parse(ADTC->value()));
             }
         }
     }
