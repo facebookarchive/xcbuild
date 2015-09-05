@@ -103,11 +103,19 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
                 if (buildRule != nullptr) {
                     if (buildRule->tool() != nullptr) {
-                        // TODO(grp): Use build rule to craete invocation here.
+                        pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
+                        if (tool->identifier() == "com.apple.compilers.gcc") {
+                            std::string gccVersion = currentEnvironment.resolve("GCC_VERSION");
+                            // TODO(grp): This should probably try a number of other compilers if it's not clang.
+                            tool = buildEnvironment.specManager()->compiler(gccVersion + ".compiler");
+                        }
+
                         std::string input = file.filePath();
                         std::string output = outputDirectory + "/" + libutil::FSUtil::GetBaseNameWithoutExtension(file.filePath()) + ".o";
-                        pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation("clang", { }, { }, "", { input }, { output }, "", "", "", "CompileC " + buildRule->tool()->identifier());
-                        invocations.push_back(invocation);
+
+                        // TODO(grp): Use an appropriate compiler context to create this invocation.
+                        auto context = pbxbuild::ToolInvocationContext::Create(tool, { input }, { output }, currentEnvironment, workingDirectory, "CompileC " + file.filePath() + " " + tool->identifier());
+                        invocations.push_back(context.invocation());
                     } else if (!buildRule->script().empty()) {
                         auto context = pbxbuild::ScriptInvocationContext::Create(scriptTool, file.filePath(), buildRule, currentEnvironment, workingDirectory);
                         invocations.push_back(context.invocation());

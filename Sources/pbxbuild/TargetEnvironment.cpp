@@ -296,6 +296,10 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     levels.push_back(targetConfiguration->buildSettings());
     levels.push_back(target->settings());
 
+    levels.push_back(pbxsetting::Level({
+        pbxsetting::Setting::Parse("GCC_VERSION", "$(DEFAULT_COMPILER)"),
+    }));
+
     if (packageType != nullptr && productType != nullptr) {
         levels.push_back(PackageProductTypeLevel(packageType, productType));
     }
