@@ -8,7 +8,7 @@ PropertyOption::PropertyOption() :
     _basic                             (false),
     _commonOption                      (false),
     _avoidEmptyValues                  (false),
-    _commandLineCondition              (false),
+    _commandLineCondition              (true),
     _commandLineArgs                   (nullptr),
     _additionalLinkerArgs              (nullptr),
     _defaultValue                      (nullptr),
@@ -49,18 +49,24 @@ PropertyOption::~PropertyOption()
 pbxsetting::Setting PropertyOption::
 defaultSetting(void) const
 {
+    return pbxsetting::Setting::Parse(_name, defaultPropertyValue().raw());
+}
+
+pbxsetting::Value PropertyOption::
+defaultPropertyValue(void) const
+{
     if (_defaultValue == nullptr) {
-        return pbxsetting::Setting::Parse(_name, "");
+        return pbxsetting::Value::Empty();
     } else if (plist::String const *stringValue = plist::CastTo <plist::String> (_defaultValue)) {
-        return pbxsetting::Setting::Parse(_name, stringValue->value());
+        return pbxsetting::Value::Parse(stringValue->value());
     } else if (plist::Boolean const *booleanValue = plist::CastTo <plist::Boolean> (_defaultValue)) {
-        return pbxsetting::Setting::Parse(_name, booleanValue->value() ? "YES" : "NO");
+        return pbxsetting::Value::Parse(booleanValue->value() ? "YES" : "NO");
     } else if (plist::Integer const *integerValue = plist::CastTo <plist::Integer> (_defaultValue)) {
-        return pbxsetting::Setting::Parse(_name, std::to_string(integerValue->value()));
+        return pbxsetting::Value::Parse(std::to_string(integerValue->value()));
     } else {
         // TODO(grp): Handle additional types?
         fprintf(stderr, "Warning: Unknown value type for setting %s.\n", _name.c_str());
-        return pbxsetting::Setting::Parse(_name, "");
+        return pbxsetting::Value::Empty();
     }
 }
 

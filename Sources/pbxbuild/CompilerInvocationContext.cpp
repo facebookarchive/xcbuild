@@ -29,8 +29,7 @@ Create(
     pbxspec::PBX::Compiler::shared_ptr const &compiler,
     FileTypeResolver const &input,
     pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
-    std::string const &logMessage
+    std::string const &workingDirectory
 )
 {
     std::vector<std::string> inputFiles;
@@ -69,12 +68,7 @@ Create(
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (compiler);
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, outputFiles);
 
-    std::string logMessageValue;
-    if (!logMessage.empty()) {
-        logMessageValue = logMessage;
-    } else {
-        logMessageValue = ToolInvocationContext::LogMessage(toolEnvironment);
-    }
+    std::string logMessage = "CompileC " + output + " " + FSUtil::GetRelativePath(input.filePath(), workingDirectory) + " " + environment.resolve("variant") + " " + environment.resolve("arch") + " " + input.fileType()->GCCDialectName() + " " + compiler->identifier();
 
     OptionsResult options = OptionsResult::Create(toolEnvironment);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "", special);

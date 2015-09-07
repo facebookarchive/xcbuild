@@ -28,8 +28,7 @@ public:
         pbxspec::PBX::Compiler::shared_ptr const &compiler,
         FileTypeResolver const &input,
         pbxsetting::Environment const &environment,
-        std::string const &workingDirectory,
-        std::string const &logMessage = ""
+        std::string const &workingDirectory
     );
 };
 

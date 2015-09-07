@@ -105,15 +105,15 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                         if (tool->identifier() == "com.apple.compilers.gcc") {
                             std::string gccVersion = currentEnvironment.resolve("GCC_VERSION");
                             // TODO(grp): This should probably try a number of other compilers if it's not clang.
-                            tool = buildEnvironment.specManager()->compiler(gccVersion + ".compiler");
+                            pbxspec::PBX::Compiler::shared_ptr compiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler");
+
+                            auto context = pbxbuild::CompilerInvocationContext::Create(compiler, file, currentEnvironment, workingDirectory);
+                            invocations.push_back(context.invocation());
+                        } else {
+                            // TODO(grp): Use an appropriate compiler context to create this invocation.
+                            auto context = pbxbuild::ToolInvocationContext::Create(tool, { }, { file.filePath() }, currentEnvironment, workingDirectory);
+                            invocations.push_back(context.invocation());
                         }
-
-                        // TODO(grp): This is unsafe.
-                        pbxspec::PBX::Compiler::shared_ptr compiler = std::static_pointer_cast <pbxspec::PBX::Compiler> (tool);
-
-                        // TODO(grp): Use an appropriate compiler context to create this invocation.
-                        auto context = pbxbuild::CompilerInvocationContext::Create(compiler, file, currentEnvironment, workingDirectory);
-                        invocations.push_back(context.invocation());
                     } else if (!buildRule->script().empty()) {
                         auto context = pbxbuild::ScriptInvocationContext::Create(scriptTool, file.filePath(), buildRule, currentEnvironment, workingDirectory);
                         invocations.push_back(context.invocation());

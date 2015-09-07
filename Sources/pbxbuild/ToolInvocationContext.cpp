@@ -82,12 +82,100 @@ OptionsResult::
 {
 }
 
+static bool
+EvaluateCondition(std::string const &condition, pbxsetting::Environment const &environment)
+{
+    std::string expression = environment.expand(pbxsetting::Value::Parse(condition));
+
+    // TODO(grp): Evaluate condition expression language correctly.
+    if (expression.find("==") != std::string::npos) {
+        return expression.substr(0, expression.find("==")) == expression.substr(expression.find("=="));
+    }
+
+    return true;
+}
+
 OptionsResult OptionsResult::
-Create(ToolEnvironment const &toolEnvironment, std::map<std::string, std::string> const &environment)
+Create(ToolEnvironment const &toolEnvironment, std::map<std::string, std::string> const &environmentVariables)
 {
     // TODO(grp): Parse each PropertyOption in the tool.
     std::vector<std::string> arguments = { };
-    return OptionsResult(arguments, environment);
+
+    pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
+
+    std::map<std::string, std::string> toolEnvironmentVariables = environmentVariables;
+
+    for (pbxspec::PBX::PropertyOption::shared_ptr const &option : toolEnvironment.tool()->options()) {
+        std::string value = environment.resolve(option->name());
+
+        pbxsetting::Level valueLevel = pbxsetting::Level({
+            pbxsetting::Setting::Parse("value", value),
+        });
+        pbxsetting::Level defaultLevel = pbxsetting::Level({
+            option->defaultSetting(),
+        });
+        std::vector<pbxsetting::Level> levels = environment.assignment();
+        levels.insert(levels.begin(), valueLevel);
+        levels.insert(levels.end(), defaultLevel);
+        pbxsetting::Environment optionEnvironment = pbxsetting::Environment(levels, levels);
+        //pbxsetting::Environment const &optionEnvironment = environment;
+
+        value = optionEnvironment.resolve(option->name());
+
+        // TODO(grp): Check architectures, fileTypes, commandLineCondition here?
+        if (EvaluateCondition(option->condition(), environment)) {
+            std::string const &variable = option->setValueInEnvironmentVariable();
+            if (!variable.empty()) {
+                toolEnvironmentVariables.insert({ variable, value });
+            }
+
+            std::string flag;
+            if (!value.empty() && value != "NO") {
+                flag = option->commandLineFlag();
+            } else {
+                flag = option->commandLineFlagIfFalse();
+            }
+            if (!flag.empty()) {
+                arguments.push_back(optionEnvironment.expand(pbxsetting::Value::Parse(flag)));
+
+                if (option->type() != "Boolean" && option->type() != "bool") {
+                    arguments.push_back(value);
+                }
+            }
+
+            // TODO(grp): Empty prefix should indicate each argument should be passed with no prefix.
+            std::string const &prefix = option->commandLinePrefixFlag();
+            if (!prefix.empty()) {
+                std::vector<std::string> values = environment.resolveList(option->name());
+                for (std::string const &value : values) {
+                    arguments.push_back(prefix + value);
+                }
+            }
+
+            if (auto args = plist::CastTo <plist::Array> (option->commandLineArgs())) {
+                for (size_t n = 0; n < args->count(); n++) {
+                    if (auto arg = args->value <plist::String> (n)) {
+                        arguments.push_back(optionEnvironment.expand(pbxsetting::Value::Parse(arg->value())));
+                    }
+                }
+            } else if (auto args = plist::CastTo <plist::Dictionary> (option->commandLineArgs())) {
+                if (auto flags = (args->value <plist::Array> (value) ?: args->value <plist::Array> ("<<otherwise>>"))) {
+                    for (size_t n = 0; n < flags->count(); n++) {
+                        if (auto arg = flags->value <plist::String> (n)) {
+                            arguments.push_back(optionEnvironment.expand(pbxsetting::Value::Parse(arg->value())));
+                        }
+                    }
+                }
+            }
+        }
+
+        // TODO(grp): Use PropertyOption::conditionFlavors().
+        // TODO(grp): Use PropertyOption::flattenRecursiveSearchPathsInValue().
+        // TODO(grp): Use PropertyOption::isCommand{Input,Output}().
+        // TODO(grp): Use PropertyOption::isInputDependency(), PropertyOption::outputDependencies(), etc..
+    }
+
+    return OptionsResult(arguments, toolEnvironmentVariables);
 }
 
 CommandLineResult::
