@@ -339,7 +339,7 @@ TEST(pbxsetting, Level)
 
 TEST(pbxsetting, EnvironmentLayering)
 {
-    std::vector<Level> layered_levels = {
+    std::list<Level> layered_levels = {
         Level({
             Setting::Parse("LAYERED = command line, $(LAYERED)"),
         }),
@@ -353,13 +353,13 @@ TEST(pbxsetting, EnvironmentLayering)
             Setting::Parse("LAYERED = environment"),
         }),
     };
-    Environment layered = Environment(layered_levels, layered_levels);
+    Environment layered = Environment(layered_levels);
     EXPECT_EQ(layered.resolve("LAYERED"), "command line, target, project, environment");
 }
 
 TEST(pbxsetting, EnvironmentStaggered)
 {
-    std::vector<Level> staggered_levels = {
+    std::list<Level> staggered_levels = {
         Level({
             Setting::Parse("LAYERED = command line, $(LAYERED)"),
         }),
@@ -375,13 +375,13 @@ TEST(pbxsetting, EnvironmentStaggered)
             Setting::Parse("LAYERED = environment"),
         }),
     };
-    Environment staggered = Environment(staggered_levels, staggered_levels);
+    Environment staggered = Environment(staggered_levels);
     EXPECT_EQ(staggered.resolve("STAGGERED"), "evaluation order: command line, target, project, environment");
 }
 
 TEST(pbxsetting, EnvironmentStaggeredOverride)
 {
-    std::vector<Level> staggered_levels = {
+    std::list<Level> staggered_levels = {
         Level({
             Setting::Parse("LAYERED = command line, $(LAYERED)"),
         }),
@@ -398,13 +398,13 @@ TEST(pbxsetting, EnvironmentStaggeredOverride)
             Setting::Parse("LAYERED = environment"),
         }),
     };
-    Environment staggered = Environment(staggered_levels, staggered_levels);
+    Environment staggered = Environment(staggered_levels);
     EXPECT_EQ(staggered.resolve("STAGGERED"), "order of evaluation: command line, target, project, environment");
 }
 
 TEST(pbxsetting, EnvironmentConcatenation)
 {
-    std::vector<Level> concat_levels = {
+    std::list<Level> concat_levels = {
         Level({
             Setting::Parse("CURRENT_PROJECT_VERSION_app = 15.3.9"),
             Setting::Parse("CURRENT_PROJECT_VERSION_xctest = 1.0.0"),
@@ -414,13 +414,13 @@ TEST(pbxsetting, EnvironmentConcatenation)
             Setting::Parse("WRAPPER_EXTENSION = app"),
         }),
     };
-    Environment concat = Environment(concat_levels, concat_levels);
+    Environment concat = Environment(concat_levels);
     EXPECT_EQ(concat.resolve("CURRENT_PROJECT_VERSION"), "15.3.9");
 }
 
 TEST(pbxsetting, EnvironmentInherited)
 {
-    std::vector<Level> inherited_levels = {
+    std::list<Level> inherited_levels = {
         Level({
             Setting::Parse("OTHER_LDFLAGS = $(inherited) -framework Security"),
         }),
@@ -428,13 +428,13 @@ TEST(pbxsetting, EnvironmentInherited)
             Setting::Parse("OTHER_LDFLAGS = -ObjC"),
         }),
     };
-    Environment inherited = Environment(inherited_levels, inherited_levels);
+    Environment inherited = Environment(inherited_levels);
     EXPECT_EQ(inherited.resolve("OTHER_LDFLAGS"), "-ObjC -framework Security");
 }
 
 TEST(pbxsetting, EnvironmentOperations)
 {
-    std::vector<Level> levels = {
+    std::list<Level> levels = {
         Level({
             Setting::Parse("IDENTIFIER", "$(COMPLEX:identifier)"),
             Setting::Parse("C99IDENTIFIER", "$(COMPLEX:c99extidentifier)"),
@@ -454,7 +454,7 @@ TEST(pbxsetting, EnvironmentOperations)
             Setting::Parse("PATH", "/path/to/../file.ext"),
         }),
     };
-    Environment environment = Environment(levels, levels);
+    Environment environment = Environment(levels);
     EXPECT_EQ(environment.resolve("IDENTIFIER"), "___hello__");
     EXPECT_EQ(environment.resolve("C99IDENTIFIER"), "___hello__");
     EXPECT_EQ(environment.resolve("RFC1034IDENTIFIER"), "---hello--");
@@ -470,13 +470,13 @@ TEST(pbxsetting, EnvironmentOperations)
 
 TEST(pbxsetting, EnvironmentValue)
 {
-    std::vector<Level> value_levels = {
+    std::list<Level> value_levels = {
         Level({
             Setting::Parse("ONE = one"),
             Setting::Parse("TWO = two"),
         }),
     };
-    Environment env = Environment(value_levels, value_levels);
+    Environment env = Environment(value_levels);
     EXPECT_EQ(env.expand(Value::Parse("$(ONE)-$(TWO)")), "one-two");
 }
 

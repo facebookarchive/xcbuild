@@ -11,11 +11,9 @@ using pbxsetting::Value;
 using libutil::FSUtil;
 
 Environment::
-Environment(std::vector<Level> const &assignment, std::vector<Level> const &inheritance) :
-    _assignment(assignment),
-    _inheritance(inheritance)
+Environment(std::list<Level> const &levels) :
+    _levels(levels)
 {
-    assert(_assignment.size() == _inheritance.size());
 }
 
 Environment::
@@ -116,7 +114,7 @@ ProcessOperation(std::string const &value, std::string const &operation)
 struct InheritanceContext {
     bool valid;
     std::string setting;
-    std::vector<Level>::const_iterator it;
+    std::list<Level>::const_iterator it;
 };
 
 static std::string
@@ -177,7 +175,7 @@ static std::string
 ResolveInheritance(Environment const &environment, Condition const &condition, InheritanceContext const &context)
 {
     InheritanceContext ctx = context;
-    for (++ctx.it; ctx.it != environment.inheritance().end(); ++ctx.it) {
+    for (++ctx.it; ctx.it != environment.levels().end(); ++ctx.it) {
         auto result = ctx.it->get(ctx.setting, condition);
         if (result.first) {
             return ResolveValue(environment, condition, result.second, ctx);
@@ -190,9 +188,9 @@ ResolveInheritance(Environment const &environment, Condition const &condition, I
 static std::string
 ResolveAssignment(Environment const &environment, Condition const &condition, std::string const &setting)
 {
-    InheritanceContext context = { .valid = true, .setting = setting, .it = environment.inheritance().begin() };
+    InheritanceContext context = { .valid = true, .setting = setting, .it = environment.levels().begin() };
 
-    for (auto it = environment.assignment().begin(); it != environment.assignment().end(); ++it) {
+    for (auto it = environment.levels().begin(); it != environment.levels().end(); ++it) {
         auto result = it->get(setting, condition);
         if (result.first) {
             return ResolveValue(environment, condition, result.second, context);
@@ -252,7 +250,7 @@ computeValues(Condition const &condition) const
 {
     std::unordered_map<std::string, std::string> values;
 
-    for (Level const &level : _assignment) {
+    for (Level const &level : _levels) {
         for (Setting const &setting : level.settings()) {
             if (values.find(setting.name()) == values.end()) {
                 values[setting.name()] = resolve(setting.name(), condition);
@@ -263,3 +261,21 @@ computeValues(Condition const &condition) const
     return values;
 }
 
+void Environment::
+insertFront(Level const &level)
+{
+    _levels.push_front(level);
+}
+
+void Environment::
+insertBack(Level const &level)
+{
+    _levels.push_back(level);
+}
+
+Environment const &Environment::
+Empty()
+{
+    static Environment *environment = new Environment({ });
+    return *environment;
+}

@@ -80,21 +80,6 @@ PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, xcsd
     return pbxsetting::Level(architectureSettings);
 }
 
-static std::vector<pbxsetting::Level>
-PlatformTargetLevels(pbxspec::Manager::shared_ptr const &specManager, xcsdk::SDK::Target::shared_ptr const &sdk)
-{
-    std::vector<pbxsetting::Level> platformTargetLevels = {
-        sdk->platform()->overrideProperties(),
-        sdk->customProperties(),
-        sdk->settings(),
-        sdk->platform()->settings(),
-        sdk->defaultProperties(),
-        PlatformArchitecturesLevel(specManager, sdk),
-        sdk->platform()->defaultProperties(),
-    };
-    return platformTargetLevels;
-}
-
 static xcsdk::SDK::Target::shared_ptr
 FindPlatformTarget(std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, std::string const &sdkroot)
 {
@@ -191,63 +176,64 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
 std::unique_ptr<TargetEnvironment> TargetEnvironment::
 Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context)
 {
-    std::vector<pbxsetting::Level> defaultLevels = buildEnvironment.baseEnvironment().assignment();
+    xcsdk::SDK::Target::shared_ptr sdk;
+    pbxproj::XC::BuildConfiguration::shared_ptr projectConfiguration;
+    pbxproj::XC::BuildConfiguration::shared_ptr targetConfiguration;
+    pbxsetting::XC::Config::shared_ptr projectConfigurationFile;
+    pbxsetting::XC::Config::shared_ptr targetConfigurationFile;
+    {
+        // FIXME(grp): $(SRCROOT) must be set in order to find the xcconfig, but we need the xcconfig to know $(SDKROOT). So this can't
+        // use the default level order, because $(SRCROOT) comes below $(SDKROOT). Hack around this for now with a synthetic environment.
+        // It's also in the wrong order because project settings should be below the SDK, but are needed to *load* the xcconfig.
+        pbxsetting::Environment determinationEnvironment = buildEnvironment.baseEnvironment();
+        determinationEnvironment.insertFront(context->baseSettings());
 
-    pbxproj::XC::BuildConfiguration::shared_ptr projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), context->configuration());
-    if (projectConfiguration == nullptr) {
-        fprintf(stderr, "error: unable to find project configuration %s\n", context->configuration().c_str());
-        return nullptr;
+        projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), context->configuration());
+        if (projectConfiguration == nullptr) {
+            fprintf(stderr, "error: unable to find project configuration %s\n", context->configuration().c_str());
+            return nullptr;
+        }
+
+        determinationEnvironment.insertFront(target->project()->settings());
+        determinationEnvironment.insertFront(projectConfiguration->buildSettings());
+
+        pbxsetting::Environment projectActionEnvironment = determinationEnvironment;
+        projectActionEnvironment.insertFront(context->actionSettings());
+
+        projectConfigurationFile = LoadConfigurationFile(projectConfiguration, projectActionEnvironment);
+        if (projectConfigurationFile != nullptr) {
+            determinationEnvironment.insertFront(projectConfigurationFile->level());
+        }
+
+        targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), context->configuration());
+        if (targetConfiguration == nullptr) {
+            fprintf(stderr, "error: unable to find target configuration %s\n", context->configuration().c_str());
+            return nullptr;
+        }
+
+        determinationEnvironment.insertFront(target->settings());
+        determinationEnvironment.insertFront(targetConfiguration->buildSettings());
+
+        // FIXME(grp): Similar issue for the target xcconfig. These levels aren't complete (no platform) but are needed to *get* which SDK to use.
+        pbxsetting::Environment targetActionEnvironment = determinationEnvironment;
+        targetActionEnvironment.insertFront(context->actionSettings());
+
+        targetConfigurationFile = LoadConfigurationFile(targetConfiguration, targetActionEnvironment);
+        if (targetConfigurationFile != nullptr) {
+            determinationEnvironment.insertFront(targetConfigurationFile->level());
+        }
+
+        determinationEnvironment.insertFront(context->actionSettings());
+        std::string sdkroot = determinationEnvironment.resolve("SDKROOT");
+        sdk = FindPlatformTarget(buildEnvironment.sdkManager(), sdkroot);
+        if (sdk == nullptr) {
+            fprintf(stderr, "error: unable to find sdkroot %s\n", sdkroot.c_str());
+            return nullptr;
+        }
+
+        std::string platformSpecificationPath = pbxspec::Manager::DomainSpecificationRoot(sdk->platform()->path());
+        buildEnvironment.specManager()->registerDomain(sdk->platform()->name(), platformSpecificationPath);
     }
-
-    // FIXME(grp): $(SRCROOT) must be set in order to find the xcconfig, but we need the xcconfig to know $(SDKROOT). So this can't
-    // use the default level order, because $(SRCROOT) comes below $(SDKROOT). Hack around this for now with a synthetic environment.
-    // It's also in the wrong order because project settings should be below the xcconfig, but are needed to *load* the xcconfig.
-    std::vector<pbxsetting::Level> projectLevels;
-    projectLevels.push_back(context->actionSettings());
-    projectLevels.push_back(projectConfiguration->buildSettings());
-    projectLevels.push_back(target->project()->settings());
-    projectLevels.push_back(context->baseSettings());
-    projectLevels.insert(projectLevels.end(), defaultLevels.begin(), defaultLevels.end());
-    pbxsetting::Environment projectEnvironment = pbxsetting::Environment(projectLevels, projectLevels);
-
-    pbxsetting::XC::Config::shared_ptr projectConfigurationFile = LoadConfigurationFile(projectConfiguration, projectEnvironment);
-    if (projectConfigurationFile != nullptr) {
-        projectLevels.insert(projectLevels.begin(), projectConfigurationFile->level());
-        projectEnvironment = pbxsetting::Environment(projectLevels, projectLevels);
-    }
-
-    pbxproj::XC::BuildConfiguration::shared_ptr targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), context->configuration());
-    if (targetConfiguration == nullptr) {
-        fprintf(stderr, "error: unable to find target configuration %s\n", context->configuration().c_str());
-        return nullptr;
-    }
-
-    // FIXME(grp): Similar issue for the target xcconfig. These levels aren't complete (no platform) but are needed to *get* which SDK to use.
-    std::vector<pbxsetting::Level> targetLevels = projectLevels;
-    targetLevels.push_back(context->actionSettings());
-    targetLevels.push_back(targetConfiguration->buildSettings());
-    targetLevels.push_back(target->settings());
-    targetLevels.insert(targetLevels.end(), projectLevels.begin(), projectLevels.end());
-    targetLevels.push_back(context->baseSettings());
-    targetLevels.insert(targetLevels.end(), defaultLevels.begin(), defaultLevels.end());
-    pbxsetting::Environment targetEnvironment = pbxsetting::Environment(targetLevels, targetLevels);
-
-    pbxsetting::XC::Config::shared_ptr targetConfigurationFile = LoadConfigurationFile(targetConfiguration, projectEnvironment);
-    if (targetConfigurationFile != nullptr) {
-        targetLevels.insert(targetLevels.begin(), targetConfigurationFile->level());
-        targetEnvironment = pbxsetting::Environment(targetLevels, targetLevels);
-    }
-
-    std::string sdkroot = targetEnvironment.resolve("SDKROOT");
-    xcsdk::SDK::Target::shared_ptr sdk = FindPlatformTarget(buildEnvironment.sdkManager(), sdkroot);
-    if (sdk == nullptr) {
-        fprintf(stderr, "error: unable to find sdkroot %s\n", sdkroot.c_str());
-        return nullptr;
-    }
-
-    std::string platformSpecificationPath = pbxspec::Manager::DomainSpecificationRoot(sdk->platform()->path());
-    buildEnvironment.specManager()->registerDomain(sdk->platform()->name(), platformSpecificationPath);
-    std::vector<pbxsetting::Level> platformTargetLevels = PlatformTargetLevels(buildEnvironment.specManager(), sdk);
 
     pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(buildEnvironment.specManager(), sdk, target);
     if (buildSystem == nullptr) {
@@ -271,52 +257,46 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         }
     }
 
-    // TODO(grp): Don't duplicate this environment creation.
-    std::vector<pbxsetting::Level> architectureVariantLevels;
-    architectureVariantLevels.push_back(context->actionSettings());
-    architectureVariantLevels.insert(architectureVariantLevels.end(), platformTargetLevels.begin(), platformTargetLevels.end());
-    architectureVariantLevels.push_back(context->baseSettings());
-    architectureVariantLevels.push_back(buildSystem->defaultSettings());
-    architectureVariantLevels.insert(architectureVariantLevels.end(), defaultLevels.begin(), defaultLevels.end());
-    pbxsetting::Environment architectureVariantEnvironment = pbxsetting::Environment(architectureVariantLevels, architectureVariantLevels);
-    std::vector<std::string> architectures = ResolveArchitectures(architectureVariantEnvironment);
-    std::vector<std::string> variants = ResolveVariants(architectureVariantEnvironment);
-
     // Now we have $(SDKROOT), and can make the real levels.
-    std::vector<pbxsetting::Level> levels;
-    levels.push_back(context->actionSettings());
-    levels.push_back(pbxsetting::Level({
-        pbxsetting::Setting::Parse("SDKROOT", sdk->path()),
-    }));
-    levels.push_back(ArchitecturesVariantsLevel(architectures, variants));
-
-    if (targetConfigurationFile != nullptr) {
-        levels.push_back(targetConfigurationFile->level());
-    }
-    levels.push_back(targetConfiguration->buildSettings());
-    levels.push_back(target->settings());
-
-    levels.push_back(pbxsetting::Level({
+    pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
+    environment.insertFront(buildSystem->defaultSettings());
+    environment.insertFront(context->baseSettings());
+    environment.insertFront(pbxsetting::Level({
         pbxsetting::Setting::Parse("GCC_VERSION", "$(DEFAULT_COMPILER)"),
     }));
 
-    if (packageType != nullptr && productType != nullptr) {
-        levels.push_back(PackageProductTypeLevel(packageType, productType));
-    }
+    environment.insertFront(sdk->platform()->defaultProperties());
+    environment.insertFront(PlatformArchitecturesLevel(buildEnvironment.specManager(), sdk));
+    environment.insertFront(sdk->defaultProperties());
+    environment.insertFront(sdk->platform()->settings());
+    environment.insertFront(sdk->settings());
+    environment.insertFront(sdk->customProperties());
+    environment.insertFront(sdk->platform()->overrideProperties());
 
+    environment.insertFront(target->project()->settings());
+    environment.insertFront(projectConfiguration->buildSettings());
     if (projectConfigurationFile != nullptr) {
-        levels.push_back(projectConfigurationFile->level());
+        environment.insertFront(projectConfigurationFile->level());
     }
-    levels.push_back(projectConfiguration->buildSettings());
-    levels.push_back(target->project()->settings());
 
-    levels.insert(levels.end(), platformTargetLevels.begin(), platformTargetLevels.end());
+    if (packageType != nullptr && productType != nullptr) {
+        environment.insertFront(PackageProductTypeLevel(packageType, productType));
+    }
 
-    levels.push_back(context->baseSettings());
-    levels.push_back(buildSystem->defaultSettings());
+    environment.insertFront(target->settings());
+    environment.insertFront(targetConfiguration->buildSettings());
+    if (targetConfigurationFile != nullptr) {
+        environment.insertFront(targetConfigurationFile->level());
+    }
 
-    levels.insert(levels.end(), defaultLevels.begin(), defaultLevels.end());
-    pbxsetting::Environment environment = pbxsetting::Environment(levels, levels);
+    std::vector<std::string> architectures = ResolveArchitectures(environment);
+    std::vector<std::string> variants = ResolveVariants(environment);
+    environment.insertFront(ArchitecturesVariantsLevel(architectures, variants));
+
+    environment.insertFront(context->actionSettings());
+    environment.insertFront(pbxsetting::Level({
+        pbxsetting::Setting::Parse("SDKROOT", sdk->path()),
+    }));
 
     auto buildRules = std::make_shared <pbxbuild::TargetBuildRules> (pbxbuild::TargetBuildRules::Create(buildEnvironment.specManager(), target));
 

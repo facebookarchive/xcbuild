@@ -62,10 +62,8 @@ Create(
     std::string const &logMessage
 )
 {
-    pbxsetting::Level level = ScriptInputOutputLevel(inputFiles, outputFiles, multipleInputs);
-    std::vector<pbxsetting::Level> levels = environment.assignment();
-    levels.insert(levels.begin(), level);
-    pbxsetting::Environment scriptEnvironment = pbxsetting::Environment(levels, levels);
+    pbxsetting::Environment scriptEnvironment = environment;
+    scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, multipleInputs));
 
     std::unordered_map<std::string, std::string> values = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
     std::map<std::string, std::string> environmentVariables = std::map<std::string, std::string>(values.begin(), values.end());
@@ -100,9 +98,8 @@ Create(
         pbxsetting::Setting::Parse("BuildPhaseIdentifier", buildPhase->blueprintIdentifier()),
     });
 
-    std::vector<pbxsetting::Level> levels = environment.assignment();
-    levels.insert(levels.begin(), level);
-    pbxsetting::Environment phaseEnvironment = pbxsetting::Environment(levels, levels);
+    pbxsetting::Environment phaseEnvironment = environment;
+    phaseEnvironment.insertFront(level);
 
     pbxsetting::Value scriptPath = pbxsetting::Value::Parse("$(TEMP_FILES_DIR)/Script-$(BuildPhaseIdentifier).sh");
     pbxsetting::Value logMessage = pbxsetting::Value::Parse("PhaseScriptExecution $(BuildPhaseName:quote) ") + scriptPath;
@@ -150,9 +147,8 @@ Create(
         // TODO(grp): INPUT_FILE_REGION_PATH_COMPONENT
     });
 
-    std::vector<pbxsetting::Level> levels = environment.assignment();
-    levels.insert(levels.begin(), level);
-    pbxsetting::Environment ruleEnvironment = pbxsetting::Environment(levels, levels);
+    pbxsetting::Environment ruleEnvironment = environment;
+    ruleEnvironment.insertFront(level);
 
     pbxsetting::Value logMessage = pbxsetting::Value::Parse("RuleScriptExecution " + FSUtil::GetRelativePath(inputFile, workingDirectory) + " $(variant) $(arch)");
 

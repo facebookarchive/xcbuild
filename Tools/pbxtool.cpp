@@ -93,7 +93,7 @@ GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
         }
 
         if (!path.empty()) {
-            auto environment = pbxsetting::Environment({ }, { });
+            auto environment = pbxsetting::Environment::Empty();
             auto config = pbxsetting::XC::Config::Open(path, environment,
                     [](std::string const &filename, unsigned line,
                         std::string const &message) -> bool

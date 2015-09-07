@@ -88,10 +88,9 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
-            std::vector<pbxsetting::Level> levels = targetEnvironment.environment().assignment();
-            levels.insert(levels.begin(), VariantLevel(variant));
-            levels.insert(levels.begin(), ArchitectureLevel(arch));
-            pbxsetting::Environment currentEnvironment = pbxsetting::Environment(levels, levels);
+            pbxsetting::Environment currentEnvironment = targetEnvironment.environment();
+            currentEnvironment.insertFront(VariantLevel(variant));
+            currentEnvironment.insertFront(ArchitectureLevel(arch));
 
             std::vector<pbxbuild::ToolInvocation> invocations;
 
@@ -162,9 +161,8 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
     std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
 
     for (std::string const &variant : targetEnvironment.variants()) {
-        std::vector<pbxsetting::Level> variantLevels = targetEnvironment.environment().assignment();
-        variantLevels.insert(variantLevels.begin(), VariantLevel(variant));
-        pbxsetting::Environment variantEnvironment = pbxsetting::Environment(variantLevels, variantLevels);
+        pbxsetting::Environment variantEnvironment = targetEnvironment.environment();
+        variantEnvironment.insertFront(VariantLevel(variant));
 
         std::string variantIntermediatesName = variantEnvironment.resolve("EXECUTABLE_NAME") + variantEnvironment.resolve("EXECUTABLE_VARIANT_SUFFIX");
         std::string variantIntermediatesDirectory = variantEnvironment.resolve("OBJECT_FILE_DIR_" + variant);
@@ -176,9 +174,8 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
         std::vector<std::string> universalBinaryInputs;
 
         for (std::string const &arch : targetEnvironment.architectures()) {
-            std::vector<pbxsetting::Level> archLevels = variantLevels;
-            archLevels.insert(archLevels.begin(), ArchitectureLevel(arch));
-            pbxsetting::Environment archEnvironment = pbxsetting::Environment(archLevels, archLevels);
+            pbxsetting::Environment archEnvironment = variantEnvironment;
+            archEnvironment.insertFront(ArchitectureLevel(arch));
 
             std::vector<pbxbuild::FileTypeResolver> files = ResolveBuildFiles(buildEnvironment, buildContext, archEnvironment, buildPhase->files());
 

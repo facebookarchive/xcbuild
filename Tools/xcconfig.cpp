@@ -17,7 +17,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    auto environment = Environment({ }, { });
+    auto environment = Environment::Empty();
     auto config = Config::Open(argv[1], environment,
             [](std::string const &filename, unsigned line,
                 std::string const &message) -> bool

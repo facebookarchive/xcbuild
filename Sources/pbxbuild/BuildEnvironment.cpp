@@ -37,12 +37,12 @@ Default(void)
         return nullptr;
     }
 
-    std::vector<pbxsetting::Level> levels;
+    std::list<pbxsetting::Level> levels;
     levels.push_back(sdkManager->computedSettings());
     std::vector<pbxsetting::Level> defaultLevels = pbxsetting::DefaultSettings::Levels();
     levels.insert(levels.end(), defaultLevels.begin(), defaultLevels.end());
     levels.push_back(buildSystem->defaultSettings());
-    pbxsetting::Environment baseEnvironment = pbxsetting::Environment(levels, levels);
+    pbxsetting::Environment baseEnvironment = pbxsetting::Environment(levels);
 
     return std::make_unique<BuildEnvironment>(BuildEnvironment(specManager, sdkManager, baseEnvironment));
 }

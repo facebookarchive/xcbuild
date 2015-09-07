@@ -61,11 +61,8 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
         // TOOD(grp): CommandProgressByType
         pbxsetting::Setting::Parse("DerivedFilesDir", environment.resolve("DERIVED_FILES_DIR")),
     };
-    pbxsetting::Level toolLevel = pbxsetting::Level(toolSettings);
-
-    std::vector<pbxsetting::Level> toolLevels = environment.assignment();
-    toolLevels.insert(toolLevels.begin(), toolLevel);
-    pbxsetting::Environment toolEnvironment = pbxsetting::Environment(toolLevels, toolLevels);
+    pbxsetting::Environment toolEnvironment = environment;
+    toolEnvironment.insertFront(pbxsetting::Level(toolSettings));
 
     return ToolEnvironment(tool, toolEnvironment, inputs, outputs);
 }
@@ -130,11 +127,10 @@ Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_pt
         pbxsetting::Level defaultLevel = pbxsetting::Level({
             option->defaultSetting(),
         });
-        std::vector<pbxsetting::Level> levels = environment.assignment();
-        levels.insert(levels.begin(), valueLevel);
-        levels.insert(levels.end(), defaultLevel);
-        pbxsetting::Environment optionEnvironment = pbxsetting::Environment(levels, levels);
-        //pbxsetting::Environment const &optionEnvironment = environment;
+
+        pbxsetting::Environment optionEnvironment = environment;
+        optionEnvironment.insertFront(valueLevel);
+        optionEnvironment.insertFront(defaultLevel);
 
         value = optionEnvironment.resolve(option->name());
 

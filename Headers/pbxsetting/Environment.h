@@ -6,23 +6,21 @@
 #include <pbxsetting/Base.h>
 #include <pbxsetting/Condition.h>
 #include <pbxsetting/Level.h>
+#include <list>
 
 namespace pbxsetting {
 
 class Environment {
 private:
-    std::vector<Level> _assignment;
-    std::vector<Level> _inheritance;
+    std::list<Level> _levels;
 
 public:
-    Environment(std::vector<Level> const &assignment, std::vector<Level> const &inheritance);
+    Environment(std::list<Level> const &levels);
     ~Environment();
 
 public:
-    std::vector<Level> const &assignment() const
-    { return _assignment; }
-    std::vector<Level> const &inheritance() const
-    { return _inheritance; }
+    std::list<Level> const &levels() const
+    { return _levels; }
 
 public:
     std::string
@@ -45,6 +43,13 @@ public:
 public:
     std::unordered_map<std::string, std::string>
     computeValues(Condition const &condition) const;
+
+public:
+    void insertFront(Level const &level);
+    void insertBack(Level const &level);
+
+public:
+    static Environment const &Empty();
 };
 
 }
