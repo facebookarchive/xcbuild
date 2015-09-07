@@ -68,7 +68,7 @@ Create(
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (linker);
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, { output });
-    OptionsResult options = OptionsResult::Create(toolEnvironment);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special);
     std::string logMessage = ToolInvocationContext::LogMessage(toolEnvironment);
     ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, dependencyInfo, responsePath, responseContents);

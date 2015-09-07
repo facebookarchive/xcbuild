@@ -81,7 +81,7 @@ Create(
     }
 
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(scriptTool, scriptEnvironment, inputFiles, outputFiles);
-    OptionsResult options = OptionsResult::Create(toolEnvironment, environmentVariables);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, nullptr, environmentVariables);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", scriptArgument });
     ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", scriptPath, scriptContents);
     return ScriptInvocationContext(context.invocation());

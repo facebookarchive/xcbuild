@@ -70,7 +70,7 @@ Create(
 
     std::string logMessage = "CompileC " + output + " " + FSUtil::GetRelativePath(input.filePath(), workingDirectory) + " " + environment.resolve("variant") + " " + environment.resolve("arch") + " " + input.fileType()->GCCDialectName() + " " + compiler->identifier();
 
-    OptionsResult options = OptionsResult::Create(toolEnvironment);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, input.fileType());
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "", special);
     ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory);
     return CompilerInvocationContext(context.invocation());

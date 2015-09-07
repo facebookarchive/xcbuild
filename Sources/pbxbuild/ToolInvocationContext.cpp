@@ -96,7 +96,7 @@ EvaluateCondition(std::string const &condition, pbxsetting::Environment const &e
 }
 
 OptionsResult OptionsResult::
-Create(ToolEnvironment const &toolEnvironment, std::map<std::string, std::string> const &environmentVariables)
+Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_ptr fileType, std::map<std::string, std::string> const &environmentVariables)
 {
     // TODO(grp): Parse each PropertyOption in the tool.
     std::vector<std::string> arguments = { };
@@ -105,7 +105,23 @@ Create(ToolEnvironment const &toolEnvironment, std::map<std::string, std::string
 
     std::map<std::string, std::string> toolEnvironmentVariables = environmentVariables;
 
+    std::string architecture = environment.resolve("arch");
+
     for (pbxspec::PBX::PropertyOption::shared_ptr const &option : toolEnvironment.tool()->options()) {
+        if (!EvaluateCondition(option->condition(), environment)) {
+            continue;
+        }
+
+        std::vector<std::string> const &architectures = option->architectures();
+        if (!architectures.empty() && std::find(architectures.begin(), architectures.end(), architecture) == architectures.end()) {
+            continue;
+        }
+
+        std::vector<std::string> const &fileTypes = option->fileTypes();
+        if (!fileTypes.empty() && (fileType == nullptr || std::find(fileTypes.begin(), fileTypes.end(), fileType->identifier()) == fileTypes.end())) {
+            continue;
+        }
+
         std::string value = environment.resolve(option->name());
 
         pbxsetting::Level valueLevel = pbxsetting::Level({
@@ -122,48 +138,46 @@ Create(ToolEnvironment const &toolEnvironment, std::map<std::string, std::string
 
         value = optionEnvironment.resolve(option->name());
 
-        // TODO(grp): Check architectures, fileTypes, commandLineCondition here?
-        if (EvaluateCondition(option->condition(), environment)) {
-            std::string const &variable = option->setValueInEnvironmentVariable();
-            if (!variable.empty()) {
-                toolEnvironmentVariables.insert({ variable, value });
-            }
+        // TODO(grp): Check architectures, fileTypes here?
+        std::string const &variable = option->setValueInEnvironmentVariable();
+        if (!variable.empty()) {
+            toolEnvironmentVariables.insert({ variable, value });
+        }
 
-            std::string flag;
-            if (!value.empty() && value != "NO") {
-                flag = option->commandLineFlag();
-            } else {
-                flag = option->commandLineFlagIfFalse();
-            }
-            if (!flag.empty()) {
-                arguments.push_back(optionEnvironment.expand(pbxsetting::Value::Parse(flag)));
+        std::string flag;
+        if (!value.empty() && value != "NO") {
+            flag = option->commandLineFlag();
+        } else {
+            flag = option->commandLineFlagIfFalse();
+        }
+        if (!flag.empty()) {
+            arguments.push_back(optionEnvironment.expand(pbxsetting::Value::Parse(flag)));
 
-                if (option->type() != "Boolean" && option->type() != "bool") {
-                    arguments.push_back(value);
+            if (option->type() != "Boolean" && option->type() != "bool") {
+                arguments.push_back(value);
+            }
+        }
+
+        // TODO(grp): Empty prefix should indicate each argument should be passed with no prefix.
+        std::string const &prefix = option->commandLinePrefixFlag();
+        if (!prefix.empty()) {
+            std::vector<std::string> values = environment.resolveList(option->name());
+            for (std::string const &value : values) {
+                arguments.push_back(prefix + value);
+            }
+        }
+
+        if (auto args = plist::CastTo <plist::Array> (option->commandLineArgs())) {
+            for (size_t n = 0; n < args->count(); n++) {
+                if (auto arg = args->value <plist::String> (n)) {
+                    arguments.push_back(optionEnvironment.expand(pbxsetting::Value::Parse(arg->value())));
                 }
             }
-
-            // TODO(grp): Empty prefix should indicate each argument should be passed with no prefix.
-            std::string const &prefix = option->commandLinePrefixFlag();
-            if (!prefix.empty()) {
-                std::vector<std::string> values = environment.resolveList(option->name());
-                for (std::string const &value : values) {
-                    arguments.push_back(prefix + value);
-                }
-            }
-
-            if (auto args = plist::CastTo <plist::Array> (option->commandLineArgs())) {
-                for (size_t n = 0; n < args->count(); n++) {
-                    if (auto arg = args->value <plist::String> (n)) {
+        } else if (auto args = plist::CastTo <plist::Dictionary> (option->commandLineArgs())) {
+            if (auto flags = (args->value <plist::Array> (value) ?: args->value <plist::Array> ("<<otherwise>>"))) {
+                for (size_t n = 0; n < flags->count(); n++) {
+                    if (auto arg = flags->value <plist::String> (n)) {
                         arguments.push_back(optionEnvironment.expand(pbxsetting::Value::Parse(arg->value())));
-                    }
-                }
-            } else if (auto args = plist::CastTo <plist::Dictionary> (option->commandLineArgs())) {
-                if (auto flags = (args->value <plist::Array> (value) ?: args->value <plist::Array> ("<<otherwise>>"))) {
-                    for (size_t n = 0; n < flags->count(); n++) {
-                        if (auto arg = flags->value <plist::String> (n)) {
-                            arguments.push_back(optionEnvironment.expand(pbxsetting::Value::Parse(arg->value())));
-                        }
                     }
                 }
             }
@@ -282,7 +296,7 @@ Create(
 )
 {
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputs, outputs);
-    OptionsResult options = OptionsResult::Create(toolEnvironment);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
     std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolInvocationContext::LogMessage(toolEnvironment));
     return ToolInvocationContext::Create(toolEnvironment, options, commandLine, resolvedLogMessage, workingDirectory);
