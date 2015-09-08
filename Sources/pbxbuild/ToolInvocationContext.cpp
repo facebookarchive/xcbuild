@@ -61,8 +61,10 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
         // TOOD(grp): CommandProgressByType
         pbxsetting::Setting::Parse("DerivedFilesDir", environment.resolve("DERIVED_FILES_DIR")),
     };
+
     pbxsetting::Environment toolEnvironment = environment;
     toolEnvironment.insertFront(pbxsetting::Level(toolSettings));
+    toolEnvironment.insertBack(tool->defaultSettings());
 
     return ToolEnvironment(tool, toolEnvironment, inputs, outputs);
 }
