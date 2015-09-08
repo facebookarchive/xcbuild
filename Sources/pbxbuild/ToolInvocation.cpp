@@ -4,6 +4,20 @@
 #include <pbxbuild/BuildContext.h>
 
 using pbxbuild::ToolInvocation;
+using AuxiliaryFile = pbxbuild::ToolInvocation::AuxiliaryFile;
+
+AuxiliaryFile::
+AuxiliaryFile(std::string const &path, std::string const &contents, bool executable) :
+    _path      (path),
+    _contents  (contents),
+    _executable(executable)
+{
+}
+
+AuxiliaryFile::
+~AuxiliaryFile()
+{
+}
 
 ToolInvocation::
 ToolInvocation(
@@ -14,8 +28,7 @@ ToolInvocation(
     std::vector<std::string> const           &inputs,
     std::vector<std::string> const           &outputs,
     std::string const                        &dependencyInfo,
-    std::string const                        &responsePath,
-    std::string const                        &responseContents,
+    std::vector<AuxiliaryFile> const         &auxiliaryFiles,
     std::string const                        &logMessage
 ) :
     _executable      (executable),
@@ -25,8 +38,7 @@ ToolInvocation(
     _inputs          (inputs),
     _outputs         (outputs),
     _dependencyInfo  (dependencyInfo),
-    _responsePath    (responsePath),
-    _responseContents(responseContents),
+    _auxiliaryFiles  (auxiliaryFiles),
     _logMessage      (logMessage)
 {
 }

@@ -65,6 +65,7 @@ Create(
     pbxsetting::Environment scriptEnvironment = environment;
     scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, multipleInputs));
 
+    std::vector<ToolInvocation::AuxiliaryFile> auxiliaries;
     std::unordered_map<std::string, std::string> values = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
     std::map<std::string, std::string> environmentVariables = std::map<std::string, std::string>(values.begin(), values.end());
 
@@ -72,16 +73,18 @@ Create(
     std::string scriptContents;
     if (!scriptPath.empty()) {
         scriptArgument = scriptPath;
-        scriptContents = (!shell.empty() ? "#!" + shell + "\n" + script : script);
+
+        std::string contents = (!shell.empty() ? "#!" + shell + "\n" + script : script);
+        ToolInvocation::AuxiliaryFile scriptFile = ToolInvocation::AuxiliaryFile(scriptPath, contents, true);
+        auxiliaries.push_back(scriptFile);
     } else {
         scriptArgument = script;
-        scriptContents = "";
     }
 
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(scriptTool, scriptEnvironment, inputFiles, outputFiles);
     OptionsResult options = OptionsResult::Create(toolEnvironment, nullptr, environmentVariables);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", scriptArgument });
-    ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", scriptPath, scriptContents);
+    ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", auxiliaries);
     return ScriptInvocationContext(context.invocation());
 }
 

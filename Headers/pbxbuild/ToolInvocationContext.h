@@ -102,8 +102,7 @@ public:
         std::string const &logMessage,
         std::string const &workingDirectory,
         std::string const &dependencyInfo = "",
-        std::string const &responsePath = "",
-        std::string const &responseContents = ""
+        std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaryFiles = { }
     );
 
 public:

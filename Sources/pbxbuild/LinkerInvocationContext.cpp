@@ -35,19 +35,22 @@ Create(
     std::string const &executable
 )
 {
-    std::string responsePath;
-    std::string responseContents;
-
     std::vector<std::string> special;
+    std::vector<ToolInvocation::AuxiliaryFile> auxiliaries;
 
     if (linker->supportsInputFileList()) {
-        responsePath = environment.expand(pbxsetting::Value::Parse("$(LINK_FILE_LIST_$(variant)_$(arch))"));
+        std::string path = environment.expand(pbxsetting::Value::Parse("$(LINK_FILE_LIST_$(variant)_$(arch))"));
+
+        std::string contents;
         for (std::string const &input : inputFiles) {
-            responseContents += input + "\n";
+            contents += input + "\n";
         }
 
+        ToolInvocation::AuxiliaryFile fileList = ToolInvocation::AuxiliaryFile(path, contents, false);
+        auxiliaries.push_back(fileList);
+
         special.push_back("-filelist");
-        special.push_back(responsePath);
+        special.push_back(path);
     }
 
     for (FileTypeResolver const &library : inputLibraries) {
@@ -71,6 +74,6 @@ Create(
     OptionsResult options = OptionsResult::Create(toolEnvironment, nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special);
     std::string logMessage = ToolInvocationContext::LogMessage(toolEnvironment);
-    ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, dependencyInfo, responsePath, responseContents);
+    ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, dependencyInfo, auxiliaries);
     return LinkerInvocationContext(context.invocation());
 }

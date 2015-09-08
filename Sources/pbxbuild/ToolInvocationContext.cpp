@@ -264,8 +264,7 @@ Create(
     std::string const &logMessage,
     std::string const &workingDirectory,
     std::string const &dependencyInfo,
-    std::string const &responsePath,
-    std::string const &responseContents
+    std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaryFiles
 )
 {
     pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
@@ -276,8 +275,7 @@ Create(
         toolEnvironment.inputs(),
         toolEnvironment.outputs(),
         dependencyInfo,
-        responsePath,
-        responseContents,
+        auxiliaryFiles,
         logMessage
     );
     return ToolInvocationContext(invocation);

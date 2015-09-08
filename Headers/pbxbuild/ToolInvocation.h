@@ -8,6 +8,26 @@
 namespace pbxbuild {
 
 class ToolInvocation {
+public:
+    class AuxiliaryFile {
+    private:
+        std::string _path;
+        std::string _contents;
+        bool        _executable;
+
+    public:
+        AuxiliaryFile(std::string const &path, std::string const &contents, bool executable);
+        ~AuxiliaryFile();
+
+    public:
+        std::string const &path() const
+        { return _path; }
+        std::string const &contents() const
+        { return _contents; }
+        bool executable() const
+        { return _executable; }
+    };
+
 private:
     std::string                        _executable;
     std::vector<std::string>           _arguments;
@@ -18,10 +38,7 @@ private:
     std::vector<std::string>           _inputs;
     std::vector<std::string>           _outputs;
     std::string                        _dependencyInfo;
-
-private:
-    std::string                        _responsePath;
-    std::string                        _responseContents;
+    std::vector<AuxiliaryFile>         _auxiliaryFiles;
 
 private:
     std::string                        _logMessage;
@@ -35,8 +52,7 @@ public:
         std::vector<std::string> const           &inputs,
         std::vector<std::string> const           &outputs,
         std::string const                        &dependencyInfo,
-        std::string const                        &responsePath,
-        std::string const                        &responseContents,
+        std::vector<AuxiliaryFile> const         &auxiliaryFiles,
         std::string const                        &logMessage
     );
     ~ToolInvocation();
@@ -58,12 +74,8 @@ public:
     { return _outputs; }
     std::string const &dependencyInfo(void) const
     { return _dependencyInfo; }
-
-public:
-    std::string const &responsePath(void) const
-    { return _responsePath; }
-    std::string const &responseContents(void) const
-    { return _responseContents; }
+    std::vector<AuxiliaryFile> const &auxiliaryFiles(void) const
+    { return _auxiliaryFiles; }
 
 public:
     std::string const &logMessage(void) const
