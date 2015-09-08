@@ -406,6 +406,9 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
             for (std::string const &output : invocation.outputs()) {
                 printf("\t\t%s\n", output.c_str());
             }
+            if (!invocation.responsePath().empty()) {
+                printf("\tResponse Path: %s\n", invocation.responsePath().c_str());
+            }
             printf("\n");
         }
     }
