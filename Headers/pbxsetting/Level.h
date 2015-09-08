@@ -12,15 +12,15 @@ namespace pbxsetting {
 
 class Level {
 private:
-    std::vector<Setting> _settings;
+    std::shared_ptr<std::vector<Setting>> _settings;
 
 public:
     Level(std::vector<Setting> const &settings);
     ~Level();
 
 public:
-    std::vector<Setting> const &
-    settings() const { return _settings; }
+    std::vector<Setting> const &settings() const
+    { return *_settings; }
 
 public:
     std::pair<bool, Value>
