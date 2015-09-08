@@ -99,18 +99,28 @@ FindPlatformTarget(std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, std::
 }
 
 static pbxsetting::Level
-PackageProductTypeLevel(pbxspec::PBX::PackageType::shared_ptr const &packageType, pbxspec::PBX::ProductType::shared_ptr const &productType)
+PackageTypeLevel(pbxspec::PBX::PackageType::shared_ptr const &packageType)
 {
     std::vector<pbxsetting::Setting> settings = {
         pbxsetting::Setting::Parse("PACKAGE_TYPE", packageType->identifier()),
+    };
+
+    pbxsetting::Level packageTypeLevel = packageType->defaultBuildSettings();
+    settings.insert(settings.end(), packageTypeLevel.settings().begin(), packageTypeLevel.settings().end());
+
+    return pbxsetting::Level(settings);
+}
+
+
+static pbxsetting::Level
+ProductTypeLevel(pbxspec::PBX::ProductType::shared_ptr const &productType)
+{
+    std::vector<pbxsetting::Setting> settings = {
         pbxsetting::Setting::Parse("PRODUCT_TYPE", productType->identifier()),
     };
 
     pbxsetting::Level productTypeLevel = productType->defaultBuildProperties();
     settings.insert(settings.end(), productTypeLevel.settings().begin(), productTypeLevel.settings().end());
-
-    pbxsetting::Level packageTypeLevel = packageType->defaultBuildSettings();
-    settings.insert(settings.end(), packageTypeLevel.settings().begin(), packageTypeLevel.settings().end());
 
     return pbxsetting::Level(settings);
 }
@@ -280,7 +290,8 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     }
 
     if (packageType != nullptr && productType != nullptr) {
-        environment.insertFront(PackageProductTypeLevel(packageType, productType));
+        environment.insertFront(PackageTypeLevel(packageType));
+        environment.insertFront(ProductTypeLevel(productType));
     }
 
     environment.insertFront(target->settings());
