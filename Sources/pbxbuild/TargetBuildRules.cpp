@@ -44,12 +44,14 @@ resolve(pbxbuild::FileTypeResolver const &file) const
 }
 
 static TargetBuildRules::BuildRule::shared_ptr
-ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::BuildRule::shared_ptr const &projBuildRule)
+ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::string const &domain, pbxproj::PBX::BuildRule::shared_ptr const &projBuildRule)
 {
     pbxspec::PBX::Tool::shared_ptr tool = nullptr;
     std::string TS = projBuildRule->compilerSpec();
     if (TS != "com.apple.compilers.proxy.script") {
-        tool = specManager->tool(TS) ?: std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(TS)) ?: std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(TS));
+        tool = specManager->tool(TS, domain) ?:
+            std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(TS, domain)) ?:
+            std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(TS, domain));
         if (tool == nullptr) {
             fprintf(stderr, "warning: couldn't find tool %s specified in build rule\n", TS.c_str());
             return nullptr;
@@ -82,10 +84,12 @@ ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::
 }
 
 static TargetBuildRules::BuildRule::shared_ptr
-SpecificationBuildRule(pbxspec::Manager::shared_ptr const &specManager, pbxspec::PBX::BuildRule::shared_ptr const &specBuildRule)
+SpecificationBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::string const &domain, pbxspec::PBX::BuildRule::shared_ptr const &specBuildRule)
 {
-    std::string ts = specBuildRule->compilerSpec();
-    pbxspec::PBX::Tool::shared_ptr tool = specManager->tool(ts) ?: std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(ts)) ?: std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(ts));
+    std::string TS = specBuildRule->compilerSpec();
+    pbxspec::PBX::Tool::shared_ptr tool = specManager->tool(TS, domain) ?:
+        std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(TS, domain)) ?:
+        std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(TS, domain));
     if (tool == nullptr) {
         return nullptr;
     }
@@ -109,27 +113,27 @@ SpecificationBuildRule(pbxspec::Manager::shared_ptr const &specManager, pbxspec:
 }
 
 TargetBuildRules TargetBuildRules::
-Create(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::Target::shared_ptr const &target)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::string const &domain, pbxproj::PBX::Target::shared_ptr const &target)
 {
     TargetBuildRules::BuildRule::vector buildRules;
 
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
         pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast <pbxproj::PBX::NativeTarget> (target);
         for (pbxproj::PBX::BuildRule::shared_ptr const &projBuildRule : nativeTarget->buildRules()) {
-            if (TargetBuildRules::BuildRule::shared_ptr buildRule = ProjectBuildRule(specManager, projBuildRule)) {
+            if (TargetBuildRules::BuildRule::shared_ptr buildRule = ProjectBuildRule(specManager, domain, projBuildRule)) {
                 buildRules.push_back(buildRule);
             }
         }
     }
 
     for (pbxspec::PBX::BuildRule::shared_ptr const &specBuildRule : specManager->buildRules()) {
-        if (TargetBuildRules::BuildRule::shared_ptr buildRule = SpecificationBuildRule(specManager, specBuildRule)) {
+        if (TargetBuildRules::BuildRule::shared_ptr buildRule = SpecificationBuildRule(specManager, domain, specBuildRule)) {
             buildRules.push_back(buildRule);
         }
     }
 
     for (pbxspec::PBX::BuildRule::shared_ptr const &specBuildRule : specManager->synthesizedBuildRules()) {
-        if (BuildRule::shared_ptr buildRule = SpecificationBuildRule(specManager, specBuildRule)) {
+        if (BuildRule::shared_ptr buildRule = SpecificationBuildRule(specManager, domain, specBuildRule)) {
             buildRules.push_back(buildRule);
         }
     }

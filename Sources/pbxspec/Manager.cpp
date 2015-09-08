@@ -58,7 +58,7 @@ findSpecification(std::string const &domain, std::string const &identifier, char
     //
     auto I = std::find_if(
             vector.rbegin(), vector.rend(),
-            [&identifier,onlyDefault](Specification::shared_ptr const &spec) -> bool
+            [&identifier, onlyDefault](Specification::shared_ptr const &spec) -> bool
             {
                 return ((!onlyDefault || spec->isDefault()) &&
                         identifier == spec->identifier());
@@ -73,8 +73,14 @@ findSpecification(std::string const &domain, std::string const &identifier, char
                 {
                     return identifier == spec->identifier();
                 });
-        if (I == vector.rend())
-            return nullptr;
+
+        if (I == vector.rend()) {
+            if (domain != GlobalDomain()) {
+                return findSpecification<T>(GlobalDomain(), identifier, type, onlyDefault);
+            } else {
+                return nullptr;
+            }
+        }
     }
 
     return *I;

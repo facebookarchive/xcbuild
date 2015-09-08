@@ -79,7 +79,7 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 {
     std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> result;
 
-    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script");
+    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script", targetEnvironment.specDomain());
     if (scriptTool == nullptr) {
         return result;
     }
@@ -104,7 +104,7 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                         if (tool->identifier() == "com.apple.compilers.gcc") {
                             std::string gccVersion = currentEnvironment.resolve("GCC_VERSION");
                             // TODO(grp): This should probably try a number of other compilers if it's not clang.
-                            pbxspec::PBX::Compiler::shared_ptr compiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler");
+                            pbxspec::PBX::Compiler::shared_ptr compiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomain());
 
                             auto context = pbxbuild::CompilerInvocationContext::Create(compiler, file, currentEnvironment, workingDirectory);
                             invocations.push_back(context.invocation());
@@ -136,10 +136,10 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
 {
     std::vector<pbxbuild::ToolInvocation> invocations;
 
-    pbxspec::PBX::Linker::shared_ptr ld = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.ld");
-    pbxspec::PBX::Linker::shared_ptr libtool = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.libtool");
-    pbxspec::PBX::Linker::shared_ptr lipo = buildEnvironment.specManager()->linker("com.apple.xcode.linkers.lipo");
-    pbxspec::PBX::Tool::shared_ptr dsymutil = buildEnvironment.specManager()->tool("com.apple.tools.dsymutil");
+    pbxspec::PBX::Linker::shared_ptr ld = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.ld", targetEnvironment.specDomain());
+    pbxspec::PBX::Linker::shared_ptr libtool = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.libtool", targetEnvironment.specDomain());
+    pbxspec::PBX::Linker::shared_ptr lipo = buildEnvironment.specManager()->linker("com.apple.xcode.linkers.lipo", targetEnvironment.specDomain());
+    pbxspec::PBX::Tool::shared_ptr dsymutil = buildEnvironment.specManager()->tool("com.apple.tools.dsymutil", targetEnvironment.specDomain());
     if (ld == nullptr || libtool == nullptr || lipo == nullptr || dsymutil == nullptr) {
         fprintf(stderr, "error: couldn't get linker tools\n");
         return invocations;
@@ -225,7 +225,7 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
 static std::vector<pbxbuild::ToolInvocation>
 ShellScript(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxbuild::TargetEnvironment const &targetEnvironment, pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase)
 {
-    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script");
+    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script", targetEnvironment.specDomain());
     if (scriptTool == nullptr) {
         return std::vector<pbxbuild::ToolInvocation>();
     }

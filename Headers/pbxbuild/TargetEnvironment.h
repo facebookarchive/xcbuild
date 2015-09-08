@@ -20,6 +20,7 @@ private:
 private:
     std::shared_ptr<TargetBuildRules>        _buildRules;
     xcsdk::SDK::Target::shared_ptr           _sdk;
+    std::string                              _specDomain;
     pbxspec::PBX::BuildSystem::shared_ptr    _buildSystem;
     pbxspec::PBX::ProductType::shared_ptr    _productType;
     pbxspec::PBX::PackageType::shared_ptr    _packageType;
@@ -37,6 +38,8 @@ public:
     { return *_buildRules.get(); }
     xcsdk::SDK::Target::shared_ptr const &sdk() const
     { return _sdk; }
+    std::string const &specDomain() const
+    { return _specDomain; }
     pbxspec::PBX::BuildSystem::shared_ptr const &buildSystem() const
     { return _buildSystem; }
     pbxspec::PBX::ProductType::shared_ptr const &productType() const
