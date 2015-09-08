@@ -132,7 +132,7 @@ Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_pt
 
         pbxsetting::Environment optionEnvironment = environment;
         optionEnvironment.insertFront(valueLevel);
-        optionEnvironment.insertFront(defaultLevel);
+        optionEnvironment.insertBack(defaultLevel);
 
         value = optionEnvironment.resolve(option->name());
 
