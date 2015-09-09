@@ -39,8 +39,13 @@ Create(
     std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> variantArchitectureInvocations;
 
     pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script", targetEnvironment.specDomain());
-    if (scriptTool == nullptr) {
-        fprintf(stderr, "error: couldn't get script tool\n");
+
+    // TODO(grp): This should probably try a number of other compilers if it's not clang.
+    std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
+    pbxspec::PBX::Compiler::shared_ptr defaultCompiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomain());
+
+    if (scriptTool == nullptr || defaultCompiler == nullptr) {
+        fprintf(stderr, "error: couldn't get compiler tools\n");
         return nullptr;
     }
 
@@ -62,11 +67,7 @@ Create(
                     if (buildRule->tool() != nullptr) {
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
-                            std::string gccVersion = currentEnvironment.resolve("GCC_VERSION");
-                            // TODO(grp): This should probably try a number of other compilers if it's not clang.
-                            pbxspec::PBX::Compiler::shared_ptr compiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomain());
-
-                            auto context = pbxbuild::CompilerInvocationContext::Create(compiler, file, currentEnvironment, workingDirectory);
+                            auto context = pbxbuild::CompilerInvocationContext::Create(defaultCompiler, file, currentEnvironment, workingDirectory);
                             invocations.push_back(context.invocation());
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
