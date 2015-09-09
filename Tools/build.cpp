@@ -299,6 +299,89 @@ SortInvocations(std::vector<pbxbuild::ToolInvocation> invocations)
 }
 
 static void
+PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::TargetEnvironment const &targetEnvironment, std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> const &toolInvocations, std::vector<pbxproj::PBX::BuildPhase::shared_ptr> const &orderedPhases)
+{
+    printf("=== BUILD TARGET %s OF PROJECT %s WITH CONFIGURATION %s ===\n\n", target->name().c_str(), target->project()->name().c_str(), buildContext.configuration().c_str());
+    printf("Check dependencies\n\n");
+
+    printf("Write auxiliary files\n");
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : orderedPhases) {
+        auto const entry = toolInvocations.find(buildPhase);
+        for (pbxbuild::ToolInvocation const &invocation : entry->second) {
+            for (std::string const &output : invocation.outputs()) {
+                std::string directory = FSUtil::GetDirectoryName(output);
+                if (!FSUtil::TestForDirectory(directory)) {
+                    printf("/bin/mkdir -p %s\n", directory.c_str());
+                    // TODO(grp): Create the directory.
+                }
+            }
+
+            for (pbxbuild::ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
+                if (!FSUtil::TestForRead(auxiliaryFile.path())) {
+                    printf("write-file %s\n", auxiliaryFile.path().c_str());
+                    // TODO(grp): Write the response file out.
+
+                    if (auxiliaryFile.executable() && !FSUtil::TestForExecute(auxiliaryFile.path())) {
+                        printf("chmod 0755 %s\n", auxiliaryFile.path().c_str());
+                        // TODO(grp): Make the script executable.
+                    }
+                }
+            }
+        }
+    }
+    printf("\n");
+
+    printf("Create product structure\n");
+    // TODO(grp): Create the product structure.
+    printf("\n");
+
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : orderedPhases) {
+        auto const entry = toolInvocations.find(buildPhase);
+        std::vector<pbxbuild::ToolInvocation> orderedInvocations = SortInvocations(entry->second);
+
+        for (pbxbuild::ToolInvocation const &invocation : orderedInvocations) {
+            printf("%s\n", invocation.logMessage().c_str());
+
+            printf("\tcd %s\n", invocation.workingDirectory().c_str());
+            // TODO(grp): Change into this directory.
+
+            for (std::pair<std::string, std::string> const &entry : invocation.environment()) {
+                printf("\texport %s=%s\n", entry.first.c_str(), entry.second.c_str());
+            }
+
+            std::string executable = invocation.executable();
+            if (!FSUtil::IsAbsolutePath(executable)) {
+                executable = FSUtil::FindExecutable(executable, targetEnvironment.sdk()->executablePaths());
+            }
+            printf("\t%s", executable.c_str());
+
+            for (std::string const &arg : invocation.arguments()) {
+                printf(" %s", arg.c_str());
+            }
+            printf("\n");
+            // TODO(grp): Invoke command.
+
+            printf("\tInputs:\n");
+            for (std::string const &input : invocation.inputs()) {
+                printf("\t\t%s\n", input.c_str());
+            }
+            printf("\tOutputs:\n");
+            for (std::string const &output : invocation.outputs()) {
+                printf("\t\t%s\n", output.c_str());
+            }
+            if (!invocation.auxiliaryFiles().empty()) {
+                printf("\tAuxiliaries:\n");
+                for (pbxbuild::ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
+                    printf("\t\t%s\n", auxiliaryFile.path().c_str());
+                }
+            }
+
+            printf("\n");
+        }
+    }
+}
+
+static void
 BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
     std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironmentPtr = buildContext.targetEnvironment(buildEnvironment, target);
@@ -384,84 +467,7 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
 
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> orderedPhases = SortBuildPhases(toolInvocations);
 
-    printf("=== BUILD TARGET %s OF PROJECT %s WITH CONFIGURATION %s ===\n\n", target->name().c_str(), target->project()->name().c_str(), buildContext.configuration().c_str());
-    printf("Check dependencies\n\n");
-
-    printf("Write auxiliary files\n");
-    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : orderedPhases) {
-        auto const entry = toolInvocations.find(buildPhase);
-        for (pbxbuild::ToolInvocation const &invocation : entry->second) {
-            for (std::string const &output : invocation.outputs()) {
-                std::string directory = FSUtil::GetDirectoryName(output);
-                if (!FSUtil::TestForDirectory(directory)) {
-                    printf("/bin/mkdir -p %s\n", directory.c_str());
-                    // TODO(grp): Create the directory.
-                }
-            }
-
-            for (pbxbuild::ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-                if (!FSUtil::TestForRead(auxiliaryFile.path())) {
-                    printf("write-file %s\n", auxiliaryFile.path().c_str());
-                    // TODO(grp): Write the response file out.
-
-                    if (auxiliaryFile.executable() && !FSUtil::TestForExecute(auxiliaryFile.path())) {
-                        printf("chmod 0755 %s\n", auxiliaryFile.path().c_str());
-                        // TODO(grp): Make the script executable.
-                    }
-                }
-            }
-        }
-    }
-    printf("\n");
-
-    printf("Create product structure\n");
-    // TODO(grp): Create the product structure.
-    printf("\n");
-
-    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : orderedPhases) {
-        auto const entry = toolInvocations.find(buildPhase);
-        std::vector<pbxbuild::ToolInvocation> orderedInvocations = SortInvocations(entry->second);
-
-        for (pbxbuild::ToolInvocation const &invocation : orderedInvocations) {
-            printf("%s\n", invocation.logMessage().c_str());
-
-            printf("\tcd %s\n", invocation.workingDirectory().c_str());
-            // TODO(grp): Change into this directory.
-
-            for (std::pair<std::string, std::string> const &entry : invocation.environment()) {
-                printf("\texport %s=%s\n", entry.first.c_str(), entry.second.c_str());
-            }
-
-            std::string executable = invocation.executable();
-            if (!FSUtil::IsAbsolutePath(executable)) {
-                executable = FSUtil::FindExecutable(executable, targetEnvironment.sdk()->executablePaths());
-            }
-            printf("\t%s", executable.c_str());
-
-            for (std::string const &arg : invocation.arguments()) {
-                printf(" %s", arg.c_str());
-            }
-            printf("\n");
-            // TODO(grp): Invoke command.
-
-            printf("\tInputs:\n");
-            for (std::string const &input : invocation.inputs()) {
-                printf("\t\t%s\n", input.c_str());
-            }
-            printf("\tOutputs:\n");
-            for (std::string const &output : invocation.outputs()) {
-                printf("\t\t%s\n", output.c_str());
-            }
-            if (!invocation.auxiliaryFiles().empty()) {
-                printf("\tAuxiliaries:\n");
-                for (pbxbuild::ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-                    printf("\t\t%s\n", auxiliaryFile.path().c_str());
-                }
-            }
-
-            printf("\n");
-        }
-    }
+    PerformBuild(buildEnvironment, buildContext, target, targetEnvironment, toolInvocations, orderedPhases);
 }
 
 int
