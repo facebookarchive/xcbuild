@@ -152,17 +152,17 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
             printf("%s\n", invocation.logMessage().c_str());
 
-            printf("\tcd %s\n", invocation.workingDirectory().c_str());
+            printf("    cd %s\n", invocation.workingDirectory().c_str());
 
             for (std::pair<std::string, std::string> const &entry : invocation.environment()) {
-                printf("\texport %s=%s\n", entry.first.c_str(), entry.second.c_str());
+                printf("    export %s=%s\n", entry.first.c_str(), entry.second.c_str());
             }
 
             std::string executable = invocation.executable();
             if (!FSUtil::IsAbsolutePath(executable)) {
                 executable = FSUtil::FindExecutable(executable, targetEnvironment.sdk()->executablePaths());
             }
-            printf("\t%s", executable.c_str());
+            printf("    %s", executable.c_str());
 
             for (std::string const &arg : invocation.arguments()) {
                 printf(" %s", arg.c_str());
@@ -180,18 +180,18 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                 }
             }
 
-            printf("\tInputs:\n");
+            printf("    Inputs:\n");
             for (std::string const &input : invocation.inputs()) {
-                printf("\t\t%s\n", input.c_str());
+                printf("        %s\n", input.c_str());
             }
-            printf("\tOutputs:\n");
+            printf("    Outputs:\n");
             for (std::string const &output : invocation.outputs()) {
-                printf("\t\t%s\n", output.c_str());
+                printf("        %s\n", output.c_str());
             }
             if (!invocation.auxiliaryFiles().empty()) {
-                printf("\tAuxiliaries:\n");
+                printf("    Auxiliaries:\n");
                 for (pbxbuild::ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-                    printf("\t\t%s\n", auxiliaryFile.path().c_str());
+                    printf("        %s\n", auxiliaryFile.path().c_str());
                 }
             }
 
@@ -351,7 +351,7 @@ main(int argc, char **argv)
             printf("\n** BUILD FAILED **\n");
             printf("\n\nThe following build commands failed:\n");
             for (pbxbuild::ToolInvocation const &failure : result.second) {
-                printf("\t%s\n", failure.logMessage().c_str());
+                printf("    %s\n", failure.logMessage().c_str());
             }
             printf("(%zd failure%s)\n", result.second.size(), result.second.size() != 1 ? "s" : "");
             break;
