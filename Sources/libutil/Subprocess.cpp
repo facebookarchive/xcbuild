@@ -22,7 +22,7 @@ execute(std::string const &path, string_vector const &arguments,
 
     std::vector <char const *> exec_args;
     exec_args.push_back(path.c_str());
-    for (auto I : arguments) {
+    for (std::string const &I : arguments) {
         exec_args.push_back(I.c_str());
     }
     exec_args.push_back(nullptr);
@@ -45,14 +45,14 @@ execute(std::string const &path, string_vector const &arguments,
             ::close(fds[0]);
         }
 
-        ::close(0);
-        ::close(1);
         ::close(2);
 
         if (input != nullptr) {
+            ::close(0);
             ::dup2(fds[0], 0);
         }
         if (output != nullptr) {
+            ::close(1);
             ::dup2(fds[1], 1);
         }
 

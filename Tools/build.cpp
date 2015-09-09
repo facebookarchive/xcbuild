@@ -7,8 +7,11 @@
 #include <xcscheme/xcscheme.h>
 #include <xcworkspace/xcworkspace.h>
 #include <pbxbuild/pbxbuild.h>
+#include <ios>
+#include <fstream>
 
 using libutil::FSUtil;
+using libutil::Subprocess;
 
 static std::vector<pbxproj::PBX::BuildPhase::shared_ptr>
 SortBuildPhases(std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> phaseInvocations)
@@ -70,11 +73,10 @@ SortInvocations(std::vector<pbxbuild::ToolInvocation> invocations)
     return result;
 }
 
-static void
-PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::TargetEnvironment const &targetEnvironment, std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> const &toolInvocations, std::vector<pbxproj::PBX::BuildPhase::shared_ptr> const &orderedPhases)
+static std::pair<bool, std::vector<pbxbuild::ToolInvocation>>
+PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::TargetEnvironment const &targetEnvironment, std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> const &toolInvocations, std::vector<pbxproj::PBX::BuildPhase::shared_ptr> const &orderedPhases, bool execute = false)
 {
-    printf("=== BUILD TARGET %s OF PROJECT %s WITH CONFIGURATION %s ===\n\n", target->name().c_str(), target->project()->name().c_str(), buildContext.configuration().c_str());
-    printf("Check dependencies\n\n");
+    std::vector<pbxbuild::ToolInvocation> failures;
 
     printf("Write auxiliary files\n");
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : orderedPhases) {
@@ -84,18 +86,41 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                 std::string directory = FSUtil::GetDirectoryName(output);
                 if (!FSUtil::TestForDirectory(directory)) {
                     printf("/bin/mkdir -p %s\n", directory.c_str());
-                    // TODO(grp): Create the directory.
+
+                    if (execute) {
+                        Subprocess process;
+                        if (!process.run("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
+                            return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
+                        }
+                    }
                 }
             }
 
             for (pbxbuild::ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
                 if (!FSUtil::TestForRead(auxiliaryFile.path())) {
+                    Subprocess process;
+                    if (!process.run("/bin/mkdir", { "-p", FSUtil::GetDirectoryName(auxiliaryFile.path()) }) || process.exitcode() != 0) {
+                        return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
+                    }
+
                     printf("write-file %s\n", auxiliaryFile.path().c_str());
-                    // TODO(grp): Write the response file out.
+
+                    if (execute) {
+                        std::ofstream out;
+                        out.open(auxiliaryFile.path(), std::ios::out | std::ios::app | std::ios::binary);
+                        out << auxiliaryFile.contents();
+                        out.close();
+                    }
 
                     if (auxiliaryFile.executable() && !FSUtil::TestForExecute(auxiliaryFile.path())) {
                         printf("chmod 0755 %s\n", auxiliaryFile.path().c_str());
-                        // TODO(grp): Make the script executable.
+
+                        if (execute) {
+                            Subprocess process;
+                            if (!process.run("/bin/chmod", { "0755", auxiliaryFile.path() }) || process.exitcode() != 0) {
+                                return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
+                            }
+                        }
                     }
                 }
             }
@@ -112,10 +137,22 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
         std::vector<pbxbuild::ToolInvocation> orderedInvocations = SortInvocations(entry->second);
 
         for (pbxbuild::ToolInvocation const &invocation : orderedInvocations) {
+            if (execute) {
+                for (std::string const &output : invocation.outputs()) {
+                    std::string directory = FSUtil::GetDirectoryName(output);
+
+                    if (!FSUtil::TestForDirectory(directory)) {
+                        Subprocess process;
+                        if (!process.run("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
+                            return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
+                        }
+                    }
+                }
+            }
+
             printf("%s\n", invocation.logMessage().c_str());
 
             printf("\tcd %s\n", invocation.workingDirectory().c_str());
-            // TODO(grp): Change into this directory.
 
             for (std::pair<std::string, std::string> const &entry : invocation.environment()) {
                 printf("\texport %s=%s\n", entry.first.c_str(), entry.second.c_str());
@@ -131,7 +168,17 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                 printf(" %s", arg.c_str());
             }
             printf("\n");
-            // TODO(grp): Invoke command.
+
+            if (execute) {
+                // TODO(grp): Change into the working directory.
+                // TODO(grp): Apply environment variables.
+                Subprocess process;
+                if (!process.run(executable, invocation.arguments()) || process.exitcode() != 0) {
+                    printf("Command %s failed with exit code %d\n", executable.c_str(), process.exitcode());
+                    failures.push_back(invocation);
+                    return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
+                }
+            }
 
             printf("\tInputs:\n");
             for (std::string const &input : invocation.inputs()) {
@@ -151,6 +198,8 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
             printf("\n");
         }
     }
+
+    return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(true, failures);
 }
 
 static std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>>
@@ -285,16 +334,27 @@ main(int argc, char **argv)
     std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
     for (pbxproj::PBX::Target::shared_ptr const &target : targets) {
+        printf("=== BUILD TARGET %s OF PROJECT %s WITH CONFIGURATION %s ===\n\n", target->name().c_str(), target->project()->name().c_str(), buildContext.configuration().c_str());
         std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = buildContext.targetEnvironment(*buildEnvironment, target);
         if (targetEnvironment == nullptr) {
             fprintf(stderr, "error: couldn't create target environment\n");
             continue;
         }
 
+        printf("Check dependencies\n\n");
         pbxbuild::Phase::PhaseContext phaseContext = pbxbuild::Phase::PhaseContext(*buildEnvironment, buildContext, *targetEnvironment);
         std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> phaseInvocations = PhaseInvocations(phaseContext, target);
         std::vector<pbxproj::PBX::BuildPhase::shared_ptr> orderedPhases = SortBuildPhases(phaseInvocations);
 
-        PerformBuild(*buildEnvironment, buildContext, target, *targetEnvironment, phaseInvocations, orderedPhases);
+        auto result = PerformBuild(*buildEnvironment, buildContext, target, *targetEnvironment, phaseInvocations, orderedPhases, true);
+        if (!result.first) {
+            printf("\n** BUILD FAILED **\n");
+            printf("\n\nThe following build commands failed:\n");
+            for (pbxbuild::ToolInvocation const &failure : result.second) {
+                printf("\t%s\n", failure.logMessage().c_str());
+            }
+            printf("(%zd failure%s)\n", result.second.size(), result.second.size() != 1 ? "s" : "");
+            break;
+        }
     }
 }
