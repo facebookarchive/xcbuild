@@ -153,16 +153,9 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
     }
 }
 
-static void
-BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
+static std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>>
+PhaseInvocations(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
-    std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironmentPtr = buildContext.targetEnvironment(buildEnvironment, target);
-    if (targetEnvironmentPtr == nullptr) {
-        fprintf(stderr, "error: couldn't create target environment\n");
-        return;
-    }
-    pbxbuild::TargetEnvironment targetEnvironment = *targetEnvironmentPtr;
-
     // Filter build phases to ones appropriate for this target.
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
@@ -170,8 +163,6 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
         // TODO(grp): Check runOnlyForDeploymentPostprocessing.
         buildPhases.push_back(buildPhase);
     }
-
-    pbxbuild::Phase::PhaseContext phaseContext = pbxbuild::Phase::PhaseContext(buildEnvironment, buildContext, targetEnvironment);
 
     std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> toolInvocations;
 
@@ -240,9 +231,7 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
         }
     }
 
-    std::vector<pbxproj::PBX::BuildPhase::shared_ptr> orderedPhases = SortBuildPhases(toolInvocations);
-
-    PerformBuild(buildEnvironment, buildContext, target, targetEnvironment, toolInvocations, orderedPhases);
+    return toolInvocations;
 }
 
 int
@@ -284,7 +273,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    pbxbuild::BuildContext context = pbxbuild::BuildContext::Workspace(
+    pbxbuild::BuildContext buildContext = pbxbuild::BuildContext::Workspace(
         workspace,
         scheme,
         argv[3],
@@ -292,10 +281,20 @@ main(int argc, char **argv)
     );
 
     pbxbuild::DependencyResolver resolver = pbxbuild::DependencyResolver(*buildEnvironment);
-    auto graph = resolver.resolveDependencies(context);
+    auto graph = resolver.resolveDependencies(buildContext);
     std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
     for (pbxproj::PBX::Target::shared_ptr const &target : targets) {
-        BuildTarget(*buildEnvironment, context, target);
+        std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = buildContext.targetEnvironment(*buildEnvironment, target);
+        if (targetEnvironment == nullptr) {
+            fprintf(stderr, "error: couldn't create target environment\n");
+            continue;
+        }
+
+        pbxbuild::Phase::PhaseContext phaseContext = pbxbuild::Phase::PhaseContext(*buildEnvironment, buildContext, *targetEnvironment);
+        std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> phaseInvocations = PhaseInvocations(phaseContext, target);
+        std::vector<pbxproj::PBX::BuildPhase::shared_ptr> orderedPhases = SortBuildPhases(phaseInvocations);
+
+        PerformBuild(*buildEnvironment, buildContext, target, *targetEnvironment, phaseInvocations, orderedPhases);
     }
 }
