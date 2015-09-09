@@ -31,6 +31,9 @@ public:
             bool insensitive = false);
 
 public:
+    static bool IsAbsolutePath(std::string const &path);
+
+public:
     static std::string ResolvePath(std::string const &path);
     static std::string NormalizePath(std::string const &path);
 

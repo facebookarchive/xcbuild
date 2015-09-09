@@ -23,7 +23,7 @@ Platform::~Platform()
 }
 
 Level Platform::
-settings(void) const
+settings() const
 {
     std::vector<Setting> settings = {
         Setting::Parse("PLATFORM_NAME", _name),
@@ -57,6 +57,12 @@ settings(void) const
     }
 
     return Level(settings);
+}
+
+std::vector<std::string> Platform::
+executablePaths() const
+{
+    return { _path + "/Developer/usr/bin" };
 }
 
 bool Platform::

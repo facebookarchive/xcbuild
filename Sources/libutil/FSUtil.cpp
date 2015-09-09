@@ -182,6 +182,12 @@ IsFileExtension(std::string const &path,
     return false;
 }
 
+bool FSUtil::
+IsAbsolutePath(std::string const &path)
+{
+    return !path.empty() && path[0] == '/';
+}
+
 std::string FSUtil::
 ResolvePath(std::string const &path)
 {

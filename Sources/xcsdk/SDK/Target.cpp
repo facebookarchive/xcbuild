@@ -39,6 +39,24 @@ settings(void) const
     return Level(settings);
 }
 
+std::vector<std::string> Target::
+executablePaths() const
+{
+    std::vector<std::string> paths;
+
+    if (Platform::shared_ptr platform = _platform.lock()) {
+        std::vector<std::string> platformPaths = platform->executablePaths();
+        paths.insert(paths.end(), platformPaths.begin(), platformPaths.end());
+    }
+
+    for (Toolchain::shared_ptr const &toolchain : _toolchains) {
+        std::vector<std::string> toolchainPaths = toolchain->executablePaths();
+        paths.insert(paths.end(), toolchainPaths.begin(), toolchainPaths.end());
+    }
+
+    return paths;
+}
+
 bool Target::
 parse(plist::Dictionary const *dict)
 {

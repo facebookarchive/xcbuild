@@ -37,6 +37,9 @@ public:
     { return _identifier; }
 
 public:
+    std::vector<std::string> executablePaths() const;
+
+public:
     static Toolchain::shared_ptr Open(std::shared_ptr<Manager> manager, std::string const &path);
 
 public:

@@ -431,7 +431,13 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
             for (std::pair<std::string, std::string> const &entry : invocation.environment()) {
                 printf("\texport %s=%s\n", entry.first.c_str(), entry.second.c_str());
             }
-            printf("\t%s", invocation.executable().c_str());
+
+            std::string executable = invocation.executable();
+            if (!FSUtil::IsAbsolutePath(executable)) {
+                executable = FSUtil::FindExecutable(executable, targetEnvironment.sdk()->executablePaths());
+            }
+            printf("\t%s", executable.c_str());
+
             for (std::string const &arg : invocation.arguments()) {
                 printf(" %s", arg.c_str());
             }

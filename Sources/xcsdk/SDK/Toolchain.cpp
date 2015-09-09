@@ -13,6 +13,12 @@ Toolchain::~Toolchain()
 {
 }
 
+std::vector<std::string> Toolchain::
+executablePaths() const
+{
+    return { _path + "/usr/bin" };
+}
+
 bool Toolchain::
 parse(plist::Dictionary const *dict)
 {
