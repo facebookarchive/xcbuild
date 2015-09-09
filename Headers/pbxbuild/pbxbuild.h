@@ -20,5 +20,6 @@
 #include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
+#include <pbxbuild/Phase/ShellScriptResolver.h>
 
 #endif  // !__pbxbuild_pbxbuild_h

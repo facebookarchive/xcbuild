@@ -10,20 +10,6 @@
 
 using libutil::FSUtil;
 
-static std::vector<pbxbuild::ToolInvocation>
-ShellScript(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxbuild::TargetEnvironment const &targetEnvironment, pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase)
-{
-    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script", targetEnvironment.specDomain());
-    if (scriptTool == nullptr) {
-        return std::vector<pbxbuild::ToolInvocation>();
-    }
-
-    std::string workingDirectory = targetEnvironment.workingDirectory();
-
-    auto context = pbxbuild::ScriptInvocationContext::Create(scriptTool, buildPhase, targetEnvironment.environment(), workingDirectory);
-    return { context.invocation() };
-}
-
 static std::vector<pbxproj::PBX::BuildPhase::shared_ptr>
 SortBuildPhases(std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> phaseInvocations)
 {
@@ -213,8 +199,10 @@ BuildTarget(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildC
             }
             case pbxproj::PBX::BuildPhase::kTypeShellScript: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
-                auto invocations = ShellScript(buildEnvironment, buildContext, targetEnvironment, BP);
-                toolInvocations.insert({ buildPhase, invocations });
+                auto shellScript = pbxbuild::Phase::ShellScriptResolver::Create(phaseContext, BP);
+                if (shellScript != nullptr) {
+                    toolInvocations.insert({ buildPhase, shellScript->invocations() });
+                }
                 break;
             }
             default: break;
