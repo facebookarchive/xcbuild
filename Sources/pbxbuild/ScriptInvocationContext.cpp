@@ -2,7 +2,7 @@
 
 #include <pbxbuild/ScriptInvocationContext.h>
 #include <pbxbuild/ToolInvocationContext.h>
-#include <pbxbuild/FileTypeResolver.h>
+#include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::ScriptInvocationContext;
 using pbxbuild::ToolInvocationContext;
@@ -10,7 +10,7 @@ using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
 using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
 using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
 using pbxbuild::ToolInvocation;
-using pbxbuild::FileTypeResolver;
+using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 ScriptInvocationContext::

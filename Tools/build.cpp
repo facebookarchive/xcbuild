@@ -10,12 +10,12 @@
 
 using libutil::FSUtil;
 
-static std::unique_ptr<pbxbuild::FileTypeResolver>
+static std::unique_ptr<pbxbuild::TypeResolvedFile>
 ResolveBuildFile(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxsetting::Environment const &environment, pbxproj::PBX::BuildFile::shared_ptr const &buildFile)
 {
     if (pbxproj::PBX::FileReference::shared_ptr const &fileReference = buildFile->fileReference()) {
         std::string path = environment.expand(fileReference->resolve());
-        return pbxbuild::FileTypeResolver::Resolve(buildEnvironment.specManager(), fileReference, environment);
+        return pbxbuild::TypeResolvedFile::Resolve(buildEnvironment.specManager(), fileReference, environment);
     } else if (pbxproj::PBX::ReferenceProxy::shared_ptr referenceProxy = buildFile->referenceProxy()) {
         pbxproj::PBX::ContainerItemProxy::shared_ptr proxy = referenceProxy->remoteRef();
         pbxproj::PBX::FileReference::shared_ptr containerReference = proxy->containerPortal();
@@ -33,17 +33,17 @@ ResolveBuildFile(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::B
             return nullptr;
         }
 
-        return pbxbuild::FileTypeResolver::Resolve(buildEnvironment.specManager(), remote->second, remoteEnvironment->environment());
+        return pbxbuild::TypeResolvedFile::Resolve(buildEnvironment.specManager(), remote->second, remoteEnvironment->environment());
     } else {
         fprintf(stderr, "error: unable to handle build file without file reference or proxy\n");
         return nullptr;
     }
 }
 
-static std::vector<pbxbuild::FileTypeResolver>
+static std::vector<pbxbuild::TypeResolvedFile>
 ResolveBuildFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxsetting::Environment const &environment, std::vector<pbxproj::PBX::BuildFile::shared_ptr> const &buildFiles)
 {
-    std::vector<pbxbuild::FileTypeResolver> files;
+    std::vector<pbxbuild::TypeResolvedFile> files;
     files.reserve(buildFiles.size());
 
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildFiles) {
@@ -96,8 +96,8 @@ CompileFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
             std::vector<pbxbuild::ToolInvocation> invocations;
 
-            std::vector<pbxbuild::FileTypeResolver> files = ResolveBuildFiles(buildEnvironment, buildContext, currentEnvironment, buildPhase->files());
-            for (pbxbuild::FileTypeResolver const &file : files) {
+            std::vector<pbxbuild::TypeResolvedFile> files = ResolveBuildFiles(buildEnvironment, buildContext, currentEnvironment, buildPhase->files());
+            for (pbxbuild::TypeResolvedFile const &file : files) {
                 pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
 
                 if (buildRule != nullptr) {
@@ -179,7 +179,7 @@ LinkFiles(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildCon
             pbxsetting::Environment archEnvironment = variantEnvironment;
             archEnvironment.insertFront(ArchitectureLevel(arch));
 
-            std::vector<pbxbuild::FileTypeResolver> files = ResolveBuildFiles(buildEnvironment, buildContext, archEnvironment, buildPhase->files());
+            std::vector<pbxbuild::TypeResolvedFile> files = ResolveBuildFiles(buildEnvironment, buildContext, archEnvironment, buildPhase->files());
 
             std::vector<std::string> sourceOutputs;
             auto it = sourcesInvocations.find(std::make_pair(variant, arch));

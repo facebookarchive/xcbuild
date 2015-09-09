@@ -2,7 +2,7 @@
 
 #include <pbxbuild/LinkerInvocationContext.h>
 #include <pbxbuild/ToolInvocationContext.h>
-#include <pbxbuild/FileTypeResolver.h>
+#include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::LinkerInvocationContext;
 using pbxbuild::ToolInvocationContext;
@@ -10,7 +10,7 @@ using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
 using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
 using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
 using pbxbuild::ToolInvocation;
-using pbxbuild::FileTypeResolver;
+using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 LinkerInvocationContext::
@@ -28,7 +28,7 @@ LinkerInvocationContext LinkerInvocationContext::
 Create(
     pbxspec::PBX::Linker::shared_ptr const &linker,
     std::vector<std::string> const &inputFiles,
-    std::vector<FileTypeResolver> const &inputLibraries,
+    std::vector<TypeResolvedFile> const &inputLibraries,
     std::string const &output,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory,
@@ -53,7 +53,7 @@ Create(
         special.push_back(path);
     }
 
-    for (FileTypeResolver const &library : inputLibraries) {
+    for (TypeResolvedFile const &library : inputLibraries) {
         std::string base = FSUtil::GetBaseNameWithoutExtension(library.filePath());
         if (library.fileType()->isFrameworkWrapper()) {
             special.push_back("-framework");

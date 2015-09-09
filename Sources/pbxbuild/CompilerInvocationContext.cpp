@@ -2,7 +2,7 @@
 
 #include <pbxbuild/CompilerInvocationContext.h>
 #include <pbxbuild/ToolInvocationContext.h>
-#include <pbxbuild/FileTypeResolver.h>
+#include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::CompilerInvocationContext;
 using pbxbuild::ToolInvocationContext;
@@ -10,7 +10,7 @@ using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
 using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
 using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
 using pbxbuild::ToolInvocation;
-using pbxbuild::FileTypeResolver;
+using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 CompilerInvocationContext::
@@ -27,7 +27,7 @@ CompilerInvocationContext::
 CompilerInvocationContext CompilerInvocationContext::
 Create(
     pbxspec::PBX::Compiler::shared_ptr const &compiler,
-    FileTypeResolver const &input,
+    TypeResolvedFile const &input,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
 )

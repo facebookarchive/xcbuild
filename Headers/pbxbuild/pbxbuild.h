@@ -8,7 +8,7 @@
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/DependencyResolver.h>
 #include <pbxbuild/BuildContext.h>
-#include <pbxbuild/FileTypeResolver.h>
+#include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/CompilerInvocationContext.h>
 #include <pbxbuild/LinkerInvocationContext.h>
 #include <pbxbuild/ScriptInvocationContext.h>

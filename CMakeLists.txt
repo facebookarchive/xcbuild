@@ -200,7 +200,6 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/BuildGraph.cpp
     Sources/pbxbuild/CompilerInvocationContext.cpp
     Sources/pbxbuild/DependencyResolver.cpp
-    Sources/pbxbuild/FileTypeResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/LinkerInvocationContext.cpp
     Sources/pbxbuild/ScriptInvocationContext.cpp
@@ -208,6 +207,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/TargetEnvironment.cpp
     Sources/pbxbuild/ToolInvocation.cpp
     Sources/pbxbuild/ToolInvocationContext.cpp
+    Sources/pbxbuild/TypeResolvedFile.cpp
     )
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})

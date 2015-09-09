@@ -4,7 +4,7 @@
 #define __pbxbuild_TargetBuildRules_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/FileTypeResolver.h>
+#include <pbxbuild/TypeResolvedFile.h>
 
 namespace pbxbuild {
 
@@ -51,7 +51,7 @@ private:
 
 public:
     BuildRule::shared_ptr
-    resolve(FileTypeResolver const &file) const;
+    resolve(TypeResolvedFile const &file) const;
 
 public:
     static TargetBuildRules

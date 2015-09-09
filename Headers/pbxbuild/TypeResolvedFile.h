@@ -1,21 +1,21 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#ifndef __pbxbuild_FileTypeResolver_h
-#define __pbxbuild_FileTypeResolver_h
+#ifndef __pbxbuild_TypeResolvedFile_h
+#define __pbxbuild_TypeResolvedFile_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/BuildEnvironment.h>
 
 namespace pbxbuild {
 
-class FileTypeResolver {
+class TypeResolvedFile {
 private:
     std::string                        _filePath;
     pbxspec::PBX::FileType::shared_ptr _fileType;
 
 public:
-    FileTypeResolver(std::string const &filePath, pbxspec::PBX::FileType::shared_ptr const &fileType);
-    ~FileTypeResolver();
+    TypeResolvedFile(std::string const &filePath, pbxspec::PBX::FileType::shared_ptr const &fileType);
+    ~TypeResolvedFile();
 
 public:
     std::string const &filePath() const
@@ -24,9 +24,9 @@ public:
     { return _fileType; }
 
 public:
-    static std::unique_ptr<FileTypeResolver>
+    static std::unique_ptr<TypeResolvedFile>
     Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &filePath);
-    static std::unique_ptr<FileTypeResolver>
+    static std::unique_ptr<TypeResolvedFile>
     Resolve(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment);
 };
 

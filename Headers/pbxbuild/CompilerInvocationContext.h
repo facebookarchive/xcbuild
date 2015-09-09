@@ -8,7 +8,7 @@
 
 namespace pbxbuild {
 
-class FileTypeResolver;
+class TypeResolvedFile;
 
 class CompilerInvocationContext {
 private:
@@ -26,7 +26,7 @@ public:
     static CompilerInvocationContext
     Create(
         pbxspec::PBX::Compiler::shared_ptr const &compiler,
-        FileTypeResolver const &input,
+        TypeResolvedFile const &input,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );

@@ -23,7 +23,7 @@ TargetBuildRules(TargetBuildRules::BuildRule::vector const &buildRules) :
 }
 
 TargetBuildRules::BuildRule::shared_ptr TargetBuildRules::
-resolve(pbxbuild::FileTypeResolver const &file) const
+resolve(pbxbuild::TypeResolvedFile const &file) const
 {
     for (BuildRule::shared_ptr const &buildRule : _buildRules) {
         if (!buildRule->filePatterns().empty()) {

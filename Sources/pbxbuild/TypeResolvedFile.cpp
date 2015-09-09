@@ -1,25 +1,25 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxbuild/FileTypeResolver.h>
+#include <pbxbuild/TypeResolvedFile.h>
 #include <fstream>
 
-using pbxbuild::FileTypeResolver;
+using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 using libutil::Wildcard;
 
-FileTypeResolver::
-FileTypeResolver(std::string const &filePath, pbxspec::PBX::FileType::shared_ptr const &fileType) :
+TypeResolvedFile::
+TypeResolvedFile(std::string const &filePath, pbxspec::PBX::FileType::shared_ptr const &fileType) :
     _filePath(filePath),
     _fileType(fileType)
 {
 }
 
-FileTypeResolver::
-~FileTypeResolver()
+TypeResolvedFile::
+~TypeResolvedFile()
 {
 }
 
-std::unique_ptr<FileTypeResolver> FileTypeResolver::
+std::unique_ptr<TypeResolvedFile> TypeResolvedFile::
 Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &filePath)
 {
     bool isReadable = FSUtil::TestForRead(filePath);
@@ -134,26 +134,26 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &file
         //
         // Matched all checks.
         //
-        return std::make_unique<FileTypeResolver>(FileTypeResolver(filePath, fileType));
+        return std::make_unique<TypeResolvedFile>(TypeResolvedFile(filePath, fileType));
     }
 
     return nullptr;
 }
 
-std::unique_ptr<FileTypeResolver> FileTypeResolver::
+std::unique_ptr<TypeResolvedFile> TypeResolvedFile::
 Resolve(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment)
 {
     std::string filePath = environment.expand(fileReference->resolve());
 
     if (!fileReference->explicitFileType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(fileReference->explicitFileType())) {
-            return std::make_unique<FileTypeResolver>(FileTypeResolver(filePath, fileType));
+            return std::make_unique<TypeResolvedFile>(TypeResolvedFile(filePath, fileType));
         }
     }
 
     if (!fileReference->lastKnownFileType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(fileReference->lastKnownFileType())) {
-            return std::make_unique<FileTypeResolver>(FileTypeResolver(filePath, fileType));
+            return std::make_unique<TypeResolvedFile>(TypeResolvedFile(filePath, fileType));
         }
     }
 

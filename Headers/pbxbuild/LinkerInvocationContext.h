@@ -8,7 +8,7 @@
 
 namespace pbxbuild {
 
-class FileTypeResolver;
+class TypeResolvedFile;
 
 class LinkerInvocationContext {
 private:
@@ -27,7 +27,7 @@ public:
     Create(
         pbxspec::PBX::Linker::shared_ptr const &linker,
         std::vector<std::string> const &inputFiles,
-        std::vector<FileTypeResolver> const &inputLibraries,
+        std::vector<TypeResolvedFile> const &inputLibraries,
         std::string const &output,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory,
