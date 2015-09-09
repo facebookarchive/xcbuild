@@ -17,4 +17,8 @@
 #include <pbxbuild/ToolInvocationContext.h>
 #include <pbxbuild/ToolInvocation.h>
 
+#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/FrameworksResolver.h>
+#include <pbxbuild/Phase/SourcesResolver.h>
+
 #endif  // !__pbxbuild_pbxbuild_h
