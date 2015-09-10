@@ -14,36 +14,36 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    std::string             _execPath;
-    std::string             _execDescription;
-    std::string             _execDescriptionForPrecompile;
-    std::string             _execDescriptionForCompile;
-    std::string             _execDescriptionForCreateBitcode;
-    std::string             _progressDescription;
-    std::string             _progressDescriptionForPrecompile;
-    std::string             _progressDescriptionForCompile;
-    std::string             _progressDescriptionForCreateBitcode;
-    std::string             _commandLine;
-    std::string             _commandInvocationClass;
-    std::string             _commandIdentifier;
-    pbxsetting::Value       _ruleName;
-    pbxsetting::Value       _ruleFormat;
-    std::string             _additionalInputFiles;
-    std::string             _builtinJambaseRuleName;
-    libutil::string_vector  _fileTypes;
-    libutil::string_vector  _inputFileTypes;
-    libutil::string_vector  _architectures;
-    libutil::string_vector  _outputs;
-    libutil::string_vector  _deletedProperties;
-    libutil::string_map     _environmentVariables;
-    plist::Object          *_commandOutputParser;
-    bool                    _isAbstract;
-    bool                    _isArchitectureNeutral;
-    bool                    _caresAboutInclusionDependencies;
-    bool                    _synthesizeBuildRule;
-    bool                    _shouldRerunOnError;
-    bool                    _deeplyStatInputDirectories;
-    PropertyOption::vector  _options;
+    std::string                     _execPath;
+    std::string                     _execDescription;
+    std::string                     _execDescriptionForPrecompile;
+    std::string                     _execDescriptionForCompile;
+    std::string                     _execDescriptionForCreateBitcode;
+    std::string                     _progressDescription;
+    std::string                     _progressDescriptionForPrecompile;
+    std::string                     _progressDescriptionForCompile;
+    std::string                     _progressDescriptionForCreateBitcode;
+    std::string                     _commandLine;
+    std::string                     _commandInvocationClass;
+    std::string                     _commandIdentifier;
+    pbxsetting::Value               _ruleName;
+    pbxsetting::Value               _ruleFormat;
+    std::string                     _additionalInputFiles;
+    std::string                     _builtinJambaseRuleName;
+    libutil::string_vector          _fileTypes;
+    libutil::string_vector          _inputFileTypes;
+    libutil::string_vector          _architectures;
+    libutil::string_vector          _outputs;
+    std::unordered_set<std::string> _deletedProperties;
+    libutil::string_map             _environmentVariables;
+    plist::Object                  *_commandOutputParser;
+    bool                            _isAbstract;
+    bool                            _isArchitectureNeutral;
+    bool                            _caresAboutInclusionDependencies;
+    bool                            _synthesizeBuildRule;
+    bool                            _shouldRerunOnError;
+    bool                            _deeplyStatInputDirectories;
+    PropertyOption::vector          _options;
 
 protected:
     Tool(bool isDefault);
@@ -157,7 +157,7 @@ public:
     { return _options; }
 
 public:
-    inline libutil::string_vector const &deletedProperties() const
+    inline std::unordered_set<std::string> const &deletedProperties() const
     { return _deletedProperties; }
 
 public:

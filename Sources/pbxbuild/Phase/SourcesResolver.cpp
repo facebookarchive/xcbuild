@@ -59,6 +59,8 @@ Create(
 
             std::vector<pbxbuild::ToolInvocation> invocations;
 
+            // TODO(grp): Precompile prefix header if needed.
+
             auto files = phaseContext.resolveBuildFiles(currentEnvironment, buildPhase->files());
             for (auto const &fileEntry : files) {
                 pbxproj::PBX::BuildFile::shared_ptr const &buildFile = fileEntry.first;

@@ -270,7 +270,7 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
         for (size_t n = 0; n < EVs->count(); n++) {
             auto EVk = EVs->key(n);
             if (auto EVv = EVs->value <plist::String> (EVk)) {
-                _environmentVariables.insert(std::make_pair(EVk, EVv->value()));
+                _environmentVariables[EVk] = EVv->value();
             }
         }
     }
@@ -322,7 +322,7 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
     if (DPs != nullptr) {
         for (size_t n = 0; n < DPs->count(); n++) {
             if (auto DP = DPs->value <plist::String> (n)) {
-                _deletedProperties.push_back(DP->value());
+                _deletedProperties.insert(DP->value());
             }
         }
     }

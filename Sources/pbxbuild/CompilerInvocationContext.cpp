@@ -113,16 +113,23 @@ Create(
 		AppendPathFlags(&special, { env.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
     }
 
-    AppendPathFlags(&special, pbxsetting::Type::ParseList(environment.resolve("USER_HEADER_SEARCH_PATHS")), "-iquote", false);
-    AppendPathFlags(&special, pbxsetting::Type::ParseList(environment.resolve("HEADER_SEARCH_PATHS")), "-I", true);
-    AppendPathFlags(&special, pbxsetting::Type::ParseList(environment.resolve("FRAMEWORK_SEARCH_PATHS")), "-F", true);
+    AppendPathFlags(&special, pbxsetting::Type::ParseList(env.resolve("USER_HEADER_SEARCH_PATHS")), "-iquote", false);
+    AppendPathFlags(&special, pbxsetting::Type::ParseList(env.resolve("HEADER_SEARCH_PATHS")), "-I", true);
+    AppendPathFlags(&special, pbxsetting::Type::ParseList(env.resolve("FRAMEWORK_SEARCH_PATHS")), "-F", true);
 
     std::vector<std::string> specialIncludePaths = {
-        environment.resolve("DERIVED_FILE_DIR"),
-        environment.resolve("DERIVED_FILE_DIR") + "/" + environment.resolve("arch"),
-        environment.resolve("BUILT_PRODUCTS_DIR") + "/include",
+        env.resolve("DERIVED_FILE_DIR"),
+        env.resolve("DERIVED_FILE_DIR") + "/" + env.resolve("arch"),
+        env.resolve("BUILT_PRODUCTS_DIR") + "/include",
     };
     AppendPathFlags(&special, specialIncludePaths, "-I", true);
+
+    // TODO(grp): Use the precompiled prefix header, if/when precompilation is supported.
+    std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");
+    if (!prefixHeader.empty()) {
+        special.push_back("-include");
+        special.push_back(prefixHeader);
+    }
 
     // After all of the configurable settings, so they can override.
     special.insert(special.end(), inputArguments.begin(), inputArguments.end());

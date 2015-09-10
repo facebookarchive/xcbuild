@@ -138,15 +138,19 @@ ArgumentValuesFromArray(plist::Array const *args)
 OptionsResult OptionsResult::
 Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_ptr fileType, std::map<std::string, std::string> const &environmentVariables)
 {
-    std::vector<std::string> arguments = { };
-
     pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
+    std::unordered_set<std::string> const &deletedProperties = toolEnvironment.tool()->deletedProperties();
 
+    std::vector<std::string> arguments = { };
     std::map<std::string, std::string> toolEnvironmentVariables = environmentVariables;
 
     std::string architecture = environment.resolve("arch");
 
     for (pbxspec::PBX::PropertyOption::shared_ptr const &option : toolEnvironment.tool()->options()) {
+        if (deletedProperties.find(option->name()) != deletedProperties.end()) {
+            continue;
+        }
+
         if (!EvaluateCondition(option->condition(), environment)) {
             continue;
         }
