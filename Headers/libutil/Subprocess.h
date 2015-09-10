@@ -19,66 +19,41 @@ public:
     { return _exitcode; }
 
 public:
-    inline bool run(std::string const &path,
-                    string_vector const &arguments, 
-                    std::istream &input,
-                    std::ostream &output)
-    {
-        return execute(path, arguments, &input, &output);
-    }
-
-    inline bool run(std::string const &path,
-                    std::istream &input,
-                    std::ostream &output)
-    {
-        return execute(path, string_vector(), &input, &output);
-    }
-
-public:
-    inline bool run(std::string const &path,
-                    string_vector const &arguments,
-                    std::ostream &output)
-    {
-        return execute(path, arguments, nullptr, &output);
-    }
-
-    inline bool run(std::string const &path,
-                    std::ostream &output)
-    {
-        return execute(path, string_vector(), nullptr, &output);
-    }
-
-public:
-    inline bool run(std::string const &path,
-                    string_vector const &arguments,
-                    std::istream &input)
-    {
-        return execute(path, arguments, &input, nullptr);
-    }
-
-    inline bool run(std::string const &path,
-                    std::istream &input)
-    {
-        return execute(path, string_vector(), &input, nullptr);
-    }
-
-public:
-    inline bool run(std::string const &path,
-                    string_vector const &arguments)
-    {
-        return execute(path, arguments, nullptr, nullptr);
-    }
-
-    inline bool run(std::string const &path)
-    {
-        return execute(path, string_vector(), nullptr, nullptr);
-    }
-
-private:
     bool execute(std::string const &path,
-                 string_vector const &arguments, 
-                 std::istream *input,
-                 std::ostream *output);
+                 std::istream *input = nullptr,
+                 std::ostream *output = nullptr,
+                 std::ostream *error = nullptr)
+    {
+        return execute(path, { }, { }, "", input, output, error);
+    }
+
+    bool execute(std::string const &path,
+                 string_vector const &arguments,
+                 std::istream *input = nullptr,
+                 std::ostream *output = nullptr,
+                 std::ostream *error = nullptr)
+    {
+        return execute(path, arguments, { }, "", input, output, error);
+    }
+
+    bool execute(std::string const &path,
+                 string_vector const &arguments,
+                 std::map<std::string, std::string> const &environment,
+                 std::istream *input = nullptr,
+                 std::ostream *output = nullptr,
+                 std::ostream *error = nullptr)
+    {
+        return execute(path, arguments, environment, "", input, output, error);
+    }
+
+public:
+    bool execute(std::string const &path,
+                 string_vector const &arguments,
+                 std::map<std::string, std::string> const &environment,
+                 std::string const &directory,
+                 std::istream *input = nullptr,
+                 std::ostream *output = nullptr,
+                 std::ostream *error = nullptr);
 };
 
 }

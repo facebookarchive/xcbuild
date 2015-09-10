@@ -89,7 +89,7 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
                     if (execute) {
                         Subprocess process;
-                        if (!process.run("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
+                        if (!process.execute("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
                             return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
                         }
                     }
@@ -99,7 +99,7 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
             for (pbxbuild::ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
                 if (!FSUtil::TestForRead(auxiliaryFile.path())) {
                     Subprocess process;
-                    if (!process.run("/bin/mkdir", { "-p", FSUtil::GetDirectoryName(auxiliaryFile.path()) }) || process.exitcode() != 0) {
+                    if (!process.execute("/bin/mkdir", { "-p", FSUtil::GetDirectoryName(auxiliaryFile.path()) }) || process.exitcode() != 0) {
                         return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
                     }
 
@@ -117,7 +117,7 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
                         if (execute) {
                             Subprocess process;
-                            if (!process.run("/bin/chmod", { "0755", auxiliaryFile.path() }) || process.exitcode() != 0) {
+                            if (!process.execute("/bin/chmod", { "0755", auxiliaryFile.path() }) || process.exitcode() != 0) {
                                 return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
                             }
                         }
@@ -143,7 +143,7 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
                     if (!FSUtil::TestForDirectory(directory)) {
                         Subprocess process;
-                        if (!process.run("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
+                        if (!process.execute("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
                             return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
                         }
                     }
@@ -173,7 +173,7 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                 // TODO(grp): Change into the working directory.
                 // TODO(grp): Apply environment variables.
                 Subprocess process;
-                if (!process.run(executable, invocation.arguments()) || process.exitcode() != 0) {
+                if (!process.execute(executable, invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
                     printf("Command %s failed with exit code %d\n", executable.c_str(), process.exitcode());
                     failures.push_back(invocation);
                     return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);

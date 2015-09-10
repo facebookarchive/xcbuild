@@ -14,11 +14,18 @@ Subprocess::Subprocess() :
 }
 
 bool Subprocess::
-execute(std::string const &path, string_vector const &arguments, 
-        std::istream *input, std::ostream *output)
+execute(
+    std::string const &path,
+    string_vector const &arguments,
+    std::map<std::string, std::string> const &environment,
+    std::string const &directory,
+    std::istream *input,
+    std::ostream *output,
+    std::ostream *error)
 {
-    if (!FSUtil::TestForExecute(path))
+    if (!FSUtil::TestForExecute(path)) {
         return false;
+    }
 
     std::vector <char const *> exec_args;
     exec_args.push_back(path.c_str());
@@ -27,36 +34,60 @@ execute(std::string const &path, string_vector const &arguments,
     }
     exec_args.push_back(nullptr);
 
-    pid_t pid;
-    int   fds[2];
+    std::vector <char const *> exec_env;
+    exec_env.push_back(path.c_str());
+    for (auto const &I : environment) {
+        exec_env.push_back((I.first + "=" + I.second).c_str());
+    }
+    exec_env.push_back(nullptr);
 
-    if (::pipe(fds) != 0)
+    char const *work_dir = (!directory.empty() ? directory.c_str() : nullptr);
+
+    pid_t pid;
+    int  ofds[2];
+    int  efds[2];
+
+    if (::pipe(ofds) != 0) {
         return false;
+    }
+
+    if (::pipe(efds) != 0) {
+        ::close(ofds[1]);
+        ::close(ofds[0]);
+        return false;
+    }
 
     pid = fork();
     if (pid < 0) {
-        ::close(fds[1]);
-        ::close(fds[0]);
+        ::close(ofds[1]);
+        ::close(ofds[0]);
+        ::close(efds[1]);
+        ::close(efds[0]);
         return false;
     }
 
     if (pid == 0) {
-        if (input == nullptr) {
-            ::close(fds[0]);
-        }
+        ::close(ofds[0]);
+        ::close(efds[0]);
 
-        ::close(2);
-
-        if (input != nullptr) {
-            ::close(0);
-            ::dup2(fds[0], 0);
-        }
         if (output != nullptr) {
             ::close(1);
-            ::dup2(fds[1], 1);
+            ::dup2(ofds[1], 1);
+        }
+        if (error != nullptr) {
+            ::close(2);
+            ::dup2(efds[1], 2);
         }
 
-        ::execv(path.c_str(), (char * const *)&exec_args[0]);
+        if (input != nullptr) {
+            // TODO!
+        }
+
+        if (work_dir != nullptr) {
+            ::chdir(work_dir);
+        }
+
+        ::execve(path.c_str(), (char *const *)exec_args.data(), (char *const *)exec_env.data());
         ::_exit(-1);
         return false;
     }
@@ -65,14 +96,15 @@ execute(std::string const &path, string_vector const &arguments,
         // TODO!
     }
 
-    ::close(fds[1]);
+    ::close(ofds[1]);
+    ::close(efds[1]);
 
     if (output != nullptr) {
         for (;;) {
             char    buf[16384];
             ssize_t nread;
 
-            nread = ::read(fds[0], buf, sizeof(buf));
+            nread = ::read(ofds[0], buf, sizeof(buf));
             if (nread <= 0)
                 break;
 
@@ -81,7 +113,22 @@ execute(std::string const &path, string_vector const &arguments,
         }
     }
 
-    ::close(fds[0]);
+    if (error != nullptr) {
+        for (;;) {
+            char    buf[16384];
+            ssize_t nread;
+
+            nread = ::read(efds[0], buf, sizeof(buf));
+            if (nread <= 0)
+                break;
+
+            buf[nread] = '\0';
+            *error << buf;
+        }
+    }
+
+    ::close(ofds[0]);
+    ::close(efds[0]);
 
     int status;
     ::waitpid(pid, &status, 0);

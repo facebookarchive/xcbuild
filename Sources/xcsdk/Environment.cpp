@@ -17,7 +17,7 @@ DeveloperRoot(void)
 #if defined(__APPLE__)
     std::ostringstream oss;
     Subprocess subprocess;
-    if (subprocess.run("/usr/bin/xcode-select", { "--print-path" }, oss)) {
+    if (subprocess.execute("/usr/bin/xcode-select", { "--print-path" }, nullptr, &oss, nullptr)) {
         std::string output = oss.str();
         libutil::trim(output);
         if (!output.empty()) {
