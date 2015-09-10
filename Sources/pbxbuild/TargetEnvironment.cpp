@@ -143,9 +143,9 @@ TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, std::string c
 static std::vector<std::string>
 ResolveArchitectures(pbxsetting::Environment const &environment)
 {
-    std::vector<std::string> archsVector = environment.resolveList("ARCHS");
+    std::vector<std::string> archsVector = pbxsetting::Type::ParseList(environment.resolve("ARCHS"));
     std::set<std::string> archs = std::set<std::string>(archsVector.begin(), archsVector.end());
-    std::vector<std::string> validArchsVector = environment.resolveList("VALID_ARCHS");
+    std::vector<std::string> validArchsVector = pbxsetting::Type::ParseList(environment.resolve("VALID_ARCHS"));
     std::set<std::string> validArchs = std::set<std::string>(validArchsVector.begin(), validArchsVector.end());
 
     std::vector<std::string> architectures;
@@ -156,7 +156,7 @@ ResolveArchitectures(pbxsetting::Environment const &environment)
 static std::vector<std::string>
 ResolveVariants(pbxsetting::Environment const &environment)
 {
-    return environment.resolveList("BUILD_VARIANTS");
+    return pbxsetting::Type::ParseList(environment.resolve("BUILD_VARIANTS"));
 }
 
 static pbxsetting::Level

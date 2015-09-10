@@ -4,6 +4,7 @@
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/Value.h>
 #include <pbxsetting/Level.h>
+#include <pbxsetting/Type.h>
 #include <pbxsetting/Environment.h>
 
 using namespace pbxsetting;
@@ -489,3 +490,24 @@ TEST(pbxsetting, EnvironmentDefault)
     EXPECT_EQ(env.resolve("THREE"), "3");
 }
 
+TEST(pbxsetting, TypeBoolean)
+{
+    EXPECT_EQ(Type::ParseBoolean("NO"), false);
+    EXPECT_EQ(Type::ParseBoolean(""), false);
+    EXPECT_EQ(Type::ParseBoolean("YES"), true);
+    EXPECT_EQ(Type::ParseBoolean("yes"), true);
+    EXPECT_EQ(Type::ParseBoolean("Y"), true);
+}
+
+TEST(pbxsetting, TypeList)
+{
+    EXPECT_EQ(Type::ParseList("hello"), std::vector<std::string>({ "hello" }));
+    EXPECT_EQ(Type::ParseList("hello world"), std::vector<std::string>({ "hello", "world" }));
+    EXPECT_EQ(Type::ParseList("  hello  world  "), std::vector<std::string>({ "hello", "world" }));
+    EXPECT_EQ(Type::ParseList("hello 'world'"), std::vector<std::string>({ "hello", "world" }));
+    EXPECT_EQ(Type::ParseList("'hello world'"), std::vector<std::string>({ "hello world" }));
+    EXPECT_EQ(Type::ParseList("\"hello world\""), std::vector<std::string>({ "hello world" }));
+    EXPECT_EQ(Type::ParseList("\"hello\" \"world\""), std::vector<std::string>({ "hello", "world" }));
+    EXPECT_EQ(Type::ParseList("'hello wo'rld"), std::vector<std::string>({ "hello world" }));
+    EXPECT_EQ(Type::ParseList("hell'o wo'rld"), std::vector<std::string>({ "hello world" }));
+}

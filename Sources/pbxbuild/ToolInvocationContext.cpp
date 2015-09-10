@@ -113,7 +113,7 @@ AddOptionArgumentValues(std::vector<std::string> *arguments, pbxsetting::Environ
 {
     if ((option->type() == "StringList" || option->type() == "stringlist") ||
         (option->type() == "PathList" || option->type() == "pathlist")) {
-        std::vector<std::string> values = environment.resolveList(option->name());
+        std::vector<std::string> values = pbxsetting::Type::ParseList(environment.resolve(option->name()));
         for (std::string const &value : values) {
             AddOptionArgumentValue(arguments, environment, args, value);
         }
@@ -163,7 +163,7 @@ Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_pt
 
         std::string flag;
         std::string value = environment.resolve(option->name());
-        if (!value.empty() && value != "NO") {
+        if (pbxsetting::Type::ParseBoolean(value)) {
             flag = option->commandLineFlag();
         } else {
             flag = option->commandLineFlagIfFalse();

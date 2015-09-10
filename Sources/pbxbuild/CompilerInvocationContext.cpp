@@ -47,6 +47,8 @@ Create(
     std::string const &workingDirectory
 )
 {
+    std::string const &dialect = input.fileType()->GCCDialectName();
+
     std::vector<std::string> inputFiles;
     inputFiles.push_back(input.filePath());
 
@@ -71,17 +73,26 @@ Create(
 
     std::vector<std::string> special;
     special.push_back("-x");
-    special.push_back(input.fileType()->GCCDialectName());
+    special.push_back(dialect);
 
-    if (env.resolve("USE_HEADERMAP") == "YES") {
-        if (env.resolve("HEADERMAP_USES_VFS") == "YES") {
+    std::vector<std::string> cflags = pbxsetting::Type::ParseList(env.resolve("OTHER_CFLAGS"));
+    special.insert(special.end(), cflags.begin(), cflags.end());
+    std::vector<std::string> variantcflags = pbxsetting::Type::ParseList(env.resolve("OTHER_CFLAGS_" + env.resolve("CURRENT_VARIANT")));
+    special.insert(special.end(), variantcflags.begin(), variantcflags.end());
+    if (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++") {
+        std::vector<std::string> cppflags = pbxsetting::Type::ParseList(env.resolve("OTHER_CPLUSPLUSFLAGS"));
+        special.insert(special.end(), cppflags.begin(), cppflags.end());
+    }
+
+    if (pbxsetting::Type::ParseBoolean(env.resolve("USE_HEADERMAP"))) {
+        if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_USES_VFS"))) {
             // TODO(grp): Support VFS-based header maps.
             fprintf(stderr, "warning: VFS-based header maps not supported\n");
         }
 
         // TODO(grp): Create this header maps if needed.
         std::vector<std::string> headermapSystemPaths;
-        if (env.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS") == "YES") {
+        if (pbxsetting::Type::ParseBoolean(env.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS"))) {
             headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE"));
         }
         headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS"));
@@ -101,9 +112,9 @@ Create(
 		AppendPathFlags(&special, { env.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
     }
 
-    AppendPathFlags(&special, environment.resolveList("USER_HEADER_SEARCH_PATHS"), "-iquote", false);
-    AppendPathFlags(&special, environment.resolveList("HEADER_SEARCH_PATHS"), "-I", true);
-    AppendPathFlags(&special, environment.resolveList("FRAMEWORK_SEARCH_PATHS"), "-F", true);
+    AppendPathFlags(&special, pbxsetting::Type::ParseList(environment.resolve("USER_HEADER_SEARCH_PATHS")), "-iquote", false);
+    AppendPathFlags(&special, pbxsetting::Type::ParseList(environment.resolve("HEADER_SEARCH_PATHS")), "-I", true);
+    AppendPathFlags(&special, pbxsetting::Type::ParseList(environment.resolve("FRAMEWORK_SEARCH_PATHS")), "-F", true);
 
     std::vector<std::string> specialIncludePaths = {
         environment.resolve("DERIVED_FILE_DIR"),
