@@ -38,19 +38,14 @@ Create(
     std::vector<std::string> special;
     std::vector<ToolInvocation::AuxiliaryFile> auxiliaries;
 
-    if (linker->supportsInputFileList()) {
+    if (linker->supportsInputFileList() || linker->identifier() == "com.apple.pbx.linkers.libtool") {
         std::string path = environment.expand(pbxsetting::Value::Parse("$(LINK_FILE_LIST_$(variant)_$(arch))"));
-
         std::string contents;
         for (std::string const &input : inputFiles) {
             contents += input + "\n";
         }
-
         ToolInvocation::AuxiliaryFile fileList = ToolInvocation::AuxiliaryFile(path, contents, false);
         auxiliaries.push_back(fileList);
-
-        special.push_back("-filelist");
-        special.push_back(path);
     }
 
     for (TypeResolvedFile const &library : inputLibraries) {
@@ -66,13 +61,19 @@ Create(
         }
     }
 
+    std::unordered_set<std::string> removed;
+    if (linker->identifier() == "com.apple.xcode.linkers.lipo") {
+        // This is weird, but this flag is invalid yet is in the specification.
+        removed.insert("-arch_only");
+    }
+
     // TODO(grp): Do something more with this. Set $(DependencyInfoFile) in the environment?
     std::string dependencyInfo = linker->dependencyInfoFile();
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (linker);
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, { output });
     OptionsResult options = OptionsResult::Create(toolEnvironment, nullptr);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special);
+    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
     std::string logMessage = ToolInvocationContext::LogMessage(toolEnvironment);
     ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, dependencyInfo, auxiliaries);
     return LinkerInvocationContext(context.invocation());

@@ -212,6 +212,21 @@ PhaseInvocations(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX
         }
     }
 
+    bool foundSources = false;
+    bool foundFrameworks = false;
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
+        foundSources = (foundSources || buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources);
+        foundFrameworks = (foundFrameworks || buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeFrameworks);
+    }
+    if (foundSources && !foundFrameworks) {
+        auto BP = std::make_shared <pbxproj::PBX::FrameworksBuildPhase> ();
+        auto buildPhase = std::static_pointer_cast <pbxproj::PBX::BuildPhase> (BP);
+        auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseContext, BP, sourcesInvocations);
+        if (link != nullptr) {
+            toolInvocations.insert({ buildPhase, link->invocations() });
+        }
+    }
+
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         switch (buildPhase->type()) {
             case pbxproj::PBX::BuildPhase::kTypeFrameworks: {

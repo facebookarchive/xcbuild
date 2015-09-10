@@ -86,7 +86,7 @@ public:
 
     public:
         static CommandLineResult
-        Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::string const &executable = "", std::vector<std::string> const &specialArguments = { });
+        Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::string const &executable = "", std::vector<std::string> const &specialArguments = { }, std::unordered_set<std::string> const &removedArguments = { });
     };
 
 public:

@@ -223,7 +223,7 @@ CommandLineResult::
 }
 
 CommandLineResult CommandLineResult::
-Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::string const &executable, std::vector<std::string> const &specialArguments)
+Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::string const &executable, std::vector<std::string> const &specialArguments, std::unordered_set<std::string> const &removed)
 {
     pbxspec::PBX::Tool::shared_ptr tool = toolEnvironment.tool();
 
@@ -261,7 +261,9 @@ Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::strin
 
         pbxsetting::Value value = pbxsetting::Value::Parse(entry);
         std::string resolved = toolEnvironment.toolEnvironment().expand(value);
-        arguments.push_back(resolved);
+        if (removed.find(resolved) == removed.end()) {
+            arguments.push_back(resolved);
+        }
     }
 
     std::string invocationExecutable = (!arguments.empty() ? arguments.front() : "");
