@@ -25,13 +25,9 @@ CompilerInvocationContext::
 }
 
 static void
-AppendPathFlags(std::vector<std::string> *args, std::string const &sdkroot, std::vector<std::string> const &paths, std::string const &prefix, bool concatenate)
+AppendPathFlags(std::vector<std::string> *args, std::vector<std::string> const &paths, std::string const &prefix, bool concatenate)
 {
     for (std::string path : paths) {
-        if (FSUtil::IsAbsolutePath(path) && path.find(sdkroot) != 0) {
-            path = sdkroot + path;
-        }
-
         // TODO(grp): Apply trailing ** as a recursive search path.
 
         if (concatenate) {
@@ -77,8 +73,6 @@ Create(
     special.push_back("-x");
     special.push_back(input.fileType()->GCCDialectName());
 
-    std::string sdkroot = env.resolve("SDKROOT");
-
     if (env.resolve("USE_HEADERMAP") == "YES") {
         if (env.resolve("HEADERMAP_USES_VFS") == "YES") {
             // TODO(grp): Support VFS-based header maps.
@@ -96,27 +90,27 @@ Create(
             // TODO(grp): When should this be used?
             headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS"));
         }
-        AppendPathFlags(&special, sdkroot, headermapSystemPaths, "-I", true);
+        AppendPathFlags(&special, headermapSystemPaths, "-I", true);
 
         std::vector<std::string> headermapUserPaths;
         headermapUserPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES"));
         headermapUserPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES"));
-        AppendPathFlags(&special, sdkroot, headermapUserPaths, "-iquote", false);
+        AppendPathFlags(&special, headermapUserPaths, "-iquote", false);
     } else if (env.resolve("USE_HEADER_SYMLINKS") == "YES") {
         // TODO(grp): Create this symlink tree as needed.
-		AppendPathFlags(&special, sdkroot, { env.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
+		AppendPathFlags(&special, { env.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
     }
 
-    AppendPathFlags(&special, sdkroot, environment.resolveList("USER_HEADER_SEARCH_PATHS"), "-iquote", false);
-    AppendPathFlags(&special, sdkroot, environment.resolveList("HEADER_SEARCH_PATHS"), "-I", true);
-    AppendPathFlags(&special, sdkroot, environment.resolveList("FRAMEWORK_SEARCH_PATHS"), "-F", true);
+    AppendPathFlags(&special, environment.resolveList("USER_HEADER_SEARCH_PATHS"), "-iquote", false);
+    AppendPathFlags(&special, environment.resolveList("HEADER_SEARCH_PATHS"), "-I", true);
+    AppendPathFlags(&special, environment.resolveList("FRAMEWORK_SEARCH_PATHS"), "-F", true);
 
     std::vector<std::string> specialIncludePaths = {
         environment.resolve("DERIVED_FILE_DIR"),
         environment.resolve("DERIVED_FILE_DIR") + "/" + environment.resolve("arch"),
         environment.resolve("BUILT_PRODUCTS_DIR") + "/include",
     };
-    AppendPathFlags(&special, sdkroot, specialIncludePaths, "-I", true);
+    AppendPathFlags(&special, specialIncludePaths, "-I", true);
 
     std::string sourceFileOption = compiler->sourceFileOption();
     if (sourceFileOption.empty()) {
