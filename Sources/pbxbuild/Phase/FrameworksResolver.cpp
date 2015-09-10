@@ -77,7 +77,13 @@ Create(
             pbxsetting::Environment archEnvironment = variantEnvironment;
             archEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch), false);
 
-            std::vector<pbxbuild::TypeResolvedFile> files = phaseContext.resolveBuildFiles(archEnvironment, buildPhase->files());
+            auto buildFiles = phaseContext.resolveBuildFiles(archEnvironment, buildPhase->files());
+
+            std::vector<pbxbuild::TypeResolvedFile> files;
+            files.reserve(buildFiles.size());
+            for (auto const &entry : buildFiles) {
+                files.push_back(entry.second);
+            }
 
             std::vector<std::string> sourceOutputs;
             auto it = sourcesInvocations.find(std::make_pair(variant, arch));

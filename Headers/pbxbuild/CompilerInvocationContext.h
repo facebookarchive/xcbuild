@@ -27,6 +27,7 @@ public:
     Create(
         pbxspec::PBX::Compiler::shared_ptr const &compiler,
         TypeResolvedFile const &input,
+        std::vector<std::string> const &inputArguments,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );

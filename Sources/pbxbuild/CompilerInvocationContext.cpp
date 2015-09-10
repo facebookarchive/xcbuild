@@ -43,6 +43,7 @@ CompilerInvocationContext CompilerInvocationContext::
 Create(
     pbxspec::PBX::Compiler::shared_ptr const &compiler,
     TypeResolvedFile const &input,
+    std::vector<std::string> const &inputArguments,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
 )
@@ -122,6 +123,9 @@ Create(
         environment.resolve("BUILT_PRODUCTS_DIR") + "/include",
     };
     AppendPathFlags(&special, specialIncludePaths, "-I", true);
+
+    // After all of the configurable settings, so they can override.
+    special.insert(special.end(), inputArguments.begin(), inputArguments.end());
 
     std::string sourceFileOption = compiler->sourceFileOption();
     if (sourceFileOption.empty()) {

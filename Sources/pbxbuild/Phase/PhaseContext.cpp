@@ -47,10 +47,10 @@ resolveBuildFile(pbxsetting::Environment const &environment, pbxproj::PBX::Build
     }
 }
 
-std::vector<pbxbuild::TypeResolvedFile> PhaseContext::
+std::vector<std::pair<pbxproj::PBX::BuildFile::shared_ptr, pbxbuild::TypeResolvedFile>> PhaseContext::
 resolveBuildFiles(pbxsetting::Environment const &environment, std::vector<pbxproj::PBX::BuildFile::shared_ptr> const &buildFiles) const
 {
-    std::vector<pbxbuild::TypeResolvedFile> files;
+    std::vector<std::pair<pbxproj::PBX::BuildFile::shared_ptr, pbxbuild::TypeResolvedFile>> files;
     files.reserve(buildFiles.size());
 
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildFiles) {
@@ -58,7 +58,7 @@ resolveBuildFiles(pbxsetting::Environment const &environment, std::vector<pbxpro
         if (file == nullptr) {
             continue;
         }
-        files.push_back(*file);
+        files.push_back({ buildFile, *file });
     }
 
     return files;

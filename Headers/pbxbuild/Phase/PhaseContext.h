@@ -32,7 +32,7 @@ public:
 public:
     std::unique_ptr<pbxbuild::TypeResolvedFile>
     resolveBuildFile(pbxsetting::Environment const &environment, pbxproj::PBX::BuildFile::shared_ptr const &buildFile) const;
-    std::vector<pbxbuild::TypeResolvedFile>
+    std::vector<std::pair<pbxproj::PBX::BuildFile::shared_ptr, pbxbuild::TypeResolvedFile>>
     resolveBuildFiles(pbxsetting::Environment const &environment, std::vector<pbxproj::PBX::BuildFile::shared_ptr> const &buildFiles) const;
 
 public:

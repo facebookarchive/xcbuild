@@ -16,7 +16,8 @@ public:
 private:
     FileReference::shared_ptr   _fileReference;
     ReferenceProxy::shared_ptr  _referenceProxy;
-    plist::Object              *_settings;
+    std::vector<std::string>    _compilerFlags;
+    std::vector<std::string>    _attributes;
 
 public:
     BuildFile();
@@ -35,10 +36,10 @@ public:
     { return _referenceProxy; }
 
 public:
-    inline plist::Object const *settings() const
-    { return _settings; }
-    inline plist::Object *settings()
-    { return _settings; }
+    inline std::vector<std::string> const &compilerFlags() const
+    { return _compilerFlags; }
+    inline std::vector<std::string> const &attributes() const
+    { return _attributes; }
 
 public:
     bool parse(Context &context, plist::Dictionary const *dict);

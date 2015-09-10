@@ -59,15 +59,18 @@ Create(
 
             std::vector<pbxbuild::ToolInvocation> invocations;
 
-            std::vector<pbxbuild::TypeResolvedFile> files = phaseContext.resolveBuildFiles(currentEnvironment, buildPhase->files());
-            for (pbxbuild::TypeResolvedFile const &file : files) {
+            auto files = phaseContext.resolveBuildFiles(currentEnvironment, buildPhase->files());
+            for (auto const &fileEntry : files) {
+                pbxproj::PBX::BuildFile::shared_ptr const &buildFile = fileEntry.first;
+
+                pbxbuild::TypeResolvedFile const &file = fileEntry.second;
                 pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
 
                 if (buildRule != nullptr) {
                     if (buildRule->tool() != nullptr) {
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
-                            auto context = pbxbuild::CompilerInvocationContext::Create(defaultCompiler, file, currentEnvironment, workingDirectory);
+                            auto context = pbxbuild::CompilerInvocationContext::Create(defaultCompiler, file, buildFile->compilerFlags(), currentEnvironment, workingDirectory);
                             invocations.push_back(context.invocation());
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.

@@ -5,16 +5,12 @@
 using pbxproj::PBX::BuildFile;
 
 BuildFile::BuildFile() :
-    Object   (Isa()),
-    _settings(nullptr)
+    Object   (Isa())
 {
 }
 
 BuildFile::~BuildFile()
 {
-    if (_settings != nullptr) {
-        _settings->release();
-    }
 }
 
 bool BuildFile::
@@ -40,7 +36,17 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (S != nullptr) {
-        _settings = S->copy();
+        if (auto CF = S->value <plist::String> ("COMPILER_FLAGS")) {
+            _compilerFlags = pbxsetting::Type::ParseList(CF->value());
+        }
+
+        if (auto A = S->value <plist::Array> ("ATTRIBUTES")) {
+            for (size_t n = 0; n < A->count(); n++) {
+                if (auto AA = A->value <plist::String> (n)) {
+                    _attributes.push_back(AA->value());
+                }
+            }
+        }
     }
 
     return true;
