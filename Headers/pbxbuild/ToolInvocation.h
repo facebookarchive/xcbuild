@@ -29,31 +29,31 @@ public:
     };
 
 private:
-    std::string                        _executable;
-    std::vector<std::string>           _arguments;
-    std::map<std::string, std::string> _environment;
-    std::string                        _workingDirectory;
+    std::string                                  _executable;
+    std::vector<std::string>                     _arguments;
+    std::unordered_map<std::string, std::string> _environment;
+    std::string                                  _workingDirectory;
 
 private:
-    std::vector<std::string>           _inputs;
-    std::vector<std::string>           _outputs;
-    std::string                        _dependencyInfo;
-    std::vector<AuxiliaryFile>         _auxiliaryFiles;
+    std::vector<std::string>                     _inputs;
+    std::vector<std::string>                     _outputs;
+    std::string                                  _dependencyInfo;
+    std::vector<AuxiliaryFile>                   _auxiliaryFiles;
 
 private:
-    std::string                        _logMessage;
+    std::string                                  _logMessage;
 
 public:
     ToolInvocation(
-        std::string const                        &executable,
-        std::vector<std::string> const           &arguments,
-        std::map<std::string, std::string> const &environment,
-        std::string const                        &workingDirectory,
-        std::vector<std::string> const           &inputs,
-        std::vector<std::string> const           &outputs,
-        std::string const                        &dependencyInfo,
-        std::vector<AuxiliaryFile> const         &auxiliaryFiles,
-        std::string const                        &logMessage
+        std::string const                                  &executable,
+        std::vector<std::string> const                     &arguments,
+        std::unordered_map<std::string, std::string> const &environment,
+        std::string const                                  &workingDirectory,
+        std::vector<std::string> const                     &inputs,
+        std::vector<std::string> const                     &outputs,
+        std::string const                                  &dependencyInfo,
+        std::vector<AuxiliaryFile> const                   &auxiliaryFiles,
+        std::string const                                  &logMessage
     );
     ~ToolInvocation();
 
@@ -62,7 +62,7 @@ public:
     { return _executable; }
     std::vector<std::string> const &arguments(void) const
     { return _arguments; }
-    std::map<std::string, std::string> const &environment(void) const
+    std::unordered_map<std::string, std::string> const &environment(void) const
     { return _environment; }
     std::string const &workingDirectory(void) const
     { return _workingDirectory; }

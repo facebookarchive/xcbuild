@@ -59,29 +59,29 @@ public:
     //
     // Cached values
     //
-    std::map <std::string, std::shared_ptr <PBX::Project>>               projects;
-    std::map <std::string, std::shared_ptr <PBX::FileReference>>         fileReferences;
-    std::map <std::string, std::shared_ptr <PBX::ReferenceProxy>>        referenceProxies;
-    std::map <std::string, std::shared_ptr <PBX::Group>>                 groups;
-    std::map <std::string, std::shared_ptr <PBX::VariantGroup>>          variantGroups;
-    std::map <std::string, std::shared_ptr <PBX::NativeTarget>>          nativeTargets;
-    std::map <std::string, std::shared_ptr <PBX::AggregateTarget>>       aggregateTargets;
-    std::map <std::string, std::shared_ptr <PBX::LegacyTarget>>          legacyTargets;
-    std::map <std::string, std::shared_ptr <PBX::TargetDependency>>      targetDependencies;
-    std::map <std::string, std::shared_ptr <PBX::ContainerItemProxy>>    containerItemProxies;
-    std::map <std::string, std::shared_ptr <PBX::BuildFile>>             buildFiles;
-    std::map <std::string, std::shared_ptr <PBX::BuildRule>>             buildRules;
-    std::map <std::string, std::shared_ptr <PBX::HeadersBuildPhase>>     headersBuildPhases;
-    std::map <std::string, std::shared_ptr <PBX::SourcesBuildPhase>>     sourcesBuildPhases;
-    std::map <std::string, std::shared_ptr <PBX::ResourcesBuildPhase>>   resourcesBuildPhases;
-    std::map <std::string, std::shared_ptr <PBX::FrameworksBuildPhase>>  frameworksBuildPhases;
-    std::map <std::string, std::shared_ptr <PBX::CopyFilesBuildPhase>>   copyFilesBuildPhases;
-    std::map <std::string, std::shared_ptr <PBX::ShellScriptBuildPhase>> shellScriptBuildPhases;
-    std::map <std::string, std::shared_ptr <PBX::AppleScriptBuildPhase>> appleScriptBuildPhases;
+    std::unordered_map <std::string, std::shared_ptr <PBX::Project>>               projects;
+    std::unordered_map <std::string, std::shared_ptr <PBX::FileReference>>         fileReferences;
+    std::unordered_map <std::string, std::shared_ptr <PBX::ReferenceProxy>>        referenceProxies;
+    std::unordered_map <std::string, std::shared_ptr <PBX::Group>>                 groups;
+    std::unordered_map <std::string, std::shared_ptr <PBX::VariantGroup>>          variantGroups;
+    std::unordered_map <std::string, std::shared_ptr <PBX::NativeTarget>>          nativeTargets;
+    std::unordered_map <std::string, std::shared_ptr <PBX::AggregateTarget>>       aggregateTargets;
+    std::unordered_map <std::string, std::shared_ptr <PBX::LegacyTarget>>          legacyTargets;
+    std::unordered_map <std::string, std::shared_ptr <PBX::TargetDependency>>      targetDependencies;
+    std::unordered_map <std::string, std::shared_ptr <PBX::ContainerItemProxy>>    containerItemProxies;
+    std::unordered_map <std::string, std::shared_ptr <PBX::BuildFile>>             buildFiles;
+    std::unordered_map <std::string, std::shared_ptr <PBX::BuildRule>>             buildRules;
+    std::unordered_map <std::string, std::shared_ptr <PBX::HeadersBuildPhase>>     headersBuildPhases;
+    std::unordered_map <std::string, std::shared_ptr <PBX::SourcesBuildPhase>>     sourcesBuildPhases;
+    std::unordered_map <std::string, std::shared_ptr <PBX::ResourcesBuildPhase>>   resourcesBuildPhases;
+    std::unordered_map <std::string, std::shared_ptr <PBX::FrameworksBuildPhase>>  frameworksBuildPhases;
+    std::unordered_map <std::string, std::shared_ptr <PBX::CopyFilesBuildPhase>>   copyFilesBuildPhases;
+    std::unordered_map <std::string, std::shared_ptr <PBX::ShellScriptBuildPhase>> shellScriptBuildPhases;
+    std::unordered_map <std::string, std::shared_ptr <PBX::AppleScriptBuildPhase>> appleScriptBuildPhases;
 
-    std::map <std::string, std::shared_ptr <XC::BuildConfiguration>>     buildConfigurations;
-    std::map <std::string, std::shared_ptr <XC::ConfigurationList>>      configurationLists;
-    std::map <std::string, std::shared_ptr <XC::VersionGroup>>           versionGroups;
+    std::unordered_map <std::string, std::shared_ptr <XC::BuildConfiguration>>     buildConfigurations;
+    std::unordered_map <std::string, std::shared_ptr <XC::ConfigurationList>>      configurationLists;
+    std::unordered_map <std::string, std::shared_ptr <XC::VersionGroup>>           versionGroups;
 
 public:
     Context()
@@ -199,7 +199,7 @@ public:
 
 public:
     template <typename T>
-    inline std::shared_ptr <T> parseObject(std::map <std::string, std::shared_ptr <T>> &cache,
+    inline std::shared_ptr <T> parseObject(std::unordered_map <std::string, std::shared_ptr <T>> &cache,
                                            std::string const &id,
                                            plist::Dictionary const *dict)
     {
@@ -219,7 +219,7 @@ public:
     }
 
     template <typename T>
-    inline std::shared_ptr <T> parseObject(std::map <std::string, std::shared_ptr <T>> &cache,
+    inline std::shared_ptr <T> parseObject(std::unordered_map <std::string, std::shared_ptr <T>> &cache,
                                            plist::Object const *objectId,
                                            plist::Dictionary const *dict)
     {

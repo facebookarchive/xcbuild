@@ -70,7 +70,7 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
 }
 
 OptionsResult::
-OptionsResult(std::vector<std::string> const &arguments, std::map<std::string, std::string> const &environment) :
+OptionsResult(std::vector<std::string> const &arguments, std::unordered_map<std::string, std::string> const &environment) :
     _arguments  (arguments),
     _environment(environment)
 {
@@ -136,13 +136,13 @@ ArgumentValuesFromArray(plist::Array const *args)
 }
 
 OptionsResult OptionsResult::
-Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_ptr fileType, std::map<std::string, std::string> const &environmentVariables)
+Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environmentVariables)
 {
     pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
     std::unordered_set<std::string> const &deletedProperties = toolEnvironment.tool()->deletedProperties();
 
     std::vector<std::string> arguments = { };
-    std::map<std::string, std::string> toolEnvironmentVariables = environmentVariables;
+    std::unordered_map<std::string, std::string> toolEnvironmentVariables = environmentVariables;
 
     std::string architecture = environment.resolve("arch");
 
@@ -242,7 +242,7 @@ Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::strin
     std::string input = (!inputs.empty() ? inputs.front() : "");
     std::string output = (!outputs.empty() ? outputs.front() : "");
 
-    std::map<std::string, std::vector<std::string>> commandLineTokenValues = {
+    std::unordered_map<std::string, std::vector<std::string>> commandLineTokenValues = {
         { "input", { input } },
         { "output", { output } },
         { "inputs", inputs },

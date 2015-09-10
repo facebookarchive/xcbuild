@@ -14,8 +14,8 @@ private:
     pbxproj::PBX::Project::shared_ptr       _project;
     xcworkspace::XC::Workspace::shared_ptr  _workspace;
     xcscheme::XC::Scheme::shared_ptr        _scheme;
-    std::shared_ptr<std::map<std::string, pbxproj::PBX::Project::shared_ptr>> _projects;
-    std::shared_ptr<std::map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>> _targetEnvironments;
+    std::shared_ptr<std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr>> _projects;
+    std::shared_ptr<std::unordered_map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>> _targetEnvironments;
 
 private:
     std::string _action;
@@ -35,7 +35,7 @@ public:
     { return _scheme; }
     xcworkspace::XC::Workspace::shared_ptr const &workspace() const
     { return _workspace; }
-    std::map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects() const
+    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects() const
     { return *_projects; }
 
 public:

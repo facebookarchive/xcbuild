@@ -10,8 +10,8 @@ BuildContext(pbxproj::PBX::Project::shared_ptr const &project, xcworkspace::XC::
     _project(project),
     _workspace(workspace),
     _scheme(scheme),
-    _projects(std::make_shared<std::map<std::string, pbxproj::PBX::Project::shared_ptr>>()),
-    _targetEnvironments(std::make_shared<std::map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>>()),
+    _projects(std::make_shared<std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr>>()),
+    _targetEnvironments(std::make_shared<std::unordered_map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>>()),
     _action(action),
     _configuration(configuration)
 {

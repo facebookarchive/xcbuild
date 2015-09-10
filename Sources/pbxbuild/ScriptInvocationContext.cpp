@@ -67,7 +67,7 @@ Create(
 
     std::vector<ToolInvocation::AuxiliaryFile> auxiliaries;
     std::unordered_map<std::string, std::string> values = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
-    std::map<std::string, std::string> environmentVariables = std::map<std::string, std::string>(values.begin(), values.end());
+    std::unordered_map<std::string, std::string> environmentVariables = std::unordered_map<std::string, std::string>(values.begin(), values.end());
 
     std::string scriptArgument;
     std::string scriptContents;

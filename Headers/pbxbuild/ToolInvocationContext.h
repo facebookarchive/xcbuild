@@ -50,22 +50,22 @@ public:
 public:
     struct OptionsResult {
     private:
-        std::vector<std::string> _arguments;
-        std::map<std::string, std::string> _environment;
+        std::vector<std::string>                     _arguments;
+        std::unordered_map<std::string, std::string> _environment;
 
     public:
-        OptionsResult(std::vector<std::string> const &arguments, std::map<std::string, std::string> const &environment);
+        OptionsResult(std::vector<std::string> const &arguments, std::unordered_map<std::string, std::string> const &environment);
         ~OptionsResult();
 
     public:
         std::vector<std::string> const &arguments() const
         { return _arguments; }
-        std::map<std::string, std::string> const &environment() const
+        std::unordered_map<std::string, std::string> const &environment() const
         { return _environment; }
 
     public:
         static OptionsResult
-        Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_ptr fileType, std::map<std::string, std::string> const &environment = { });
+        Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environment = { });
     };
 
 public:

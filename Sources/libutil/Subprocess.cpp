@@ -17,7 +17,7 @@ bool Subprocess::
 execute(
     std::string const &path,
     string_vector const &arguments,
-    std::map<std::string, std::string> const &environment,
+    std::unordered_map<std::string, std::string> const &environment,
     std::string const &directory,
     std::istream *input,
     std::ostream *output,

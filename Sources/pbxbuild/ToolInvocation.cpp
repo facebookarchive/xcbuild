@@ -21,15 +21,15 @@ AuxiliaryFile::
 
 ToolInvocation::
 ToolInvocation(
-    std::string const                        &executable,
-    std::vector<std::string> const           &arguments,
-    std::map<std::string, std::string> const &environment,
-    std::string const                        &workingDirectory,
-    std::vector<std::string> const           &inputs,
-    std::vector<std::string> const           &outputs,
-    std::string const                        &dependencyInfo,
-    std::vector<AuxiliaryFile> const         &auxiliaryFiles,
-    std::string const                        &logMessage
+    std::string const                                  &executable,
+    std::vector<std::string> const                     &arguments,
+    std::unordered_map<std::string, std::string> const &environment,
+    std::string const                                  &workingDirectory,
+    std::vector<std::string> const                     &inputs,
+    std::vector<std::string> const                     &outputs,
+    std::string const                                  &dependencyInfo,
+    std::vector<AuxiliaryFile> const                   &auxiliaryFiles,
+    std::string const                                  &logMessage
 ) :
     _executable      (executable),
     _arguments       (arguments),

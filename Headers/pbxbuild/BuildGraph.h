@@ -11,7 +11,7 @@ namespace pbxbuild {
 template<typename T>
 class BuildGraph {
 private:
-    std::map<T, std::vector<T>> _contents;
+    std::unordered_map<T, std::vector<T>> _contents;
 
 public:
     void

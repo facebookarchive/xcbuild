@@ -17,7 +17,6 @@ class Scheme {
 public:
     typedef std::shared_ptr <Scheme> shared_ptr;
     typedef std::vector <shared_ptr> vector;
-    typedef std::set <shared_ptr> set;
 
 private:
     std::string               _name;

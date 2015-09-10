@@ -38,7 +38,7 @@ public:
 
     bool execute(std::string const &path,
                  string_vector const &arguments,
-                 std::map<std::string, std::string> const &environment,
+                 std::unordered_map<std::string, std::string> const &environment,
                  std::istream *input = nullptr,
                  std::ostream *output = nullptr,
                  std::ostream *error = nullptr)
@@ -49,7 +49,7 @@ public:
 public:
     bool execute(std::string const &path,
                  string_vector const &arguments,
-                 std::map<std::string, std::string> const &environment,
+                 std::unordered_map<std::string, std::string> const &environment,
                  std::string const &directory,
                  std::istream *input = nullptr,
                  std::ostream *output = nullptr,

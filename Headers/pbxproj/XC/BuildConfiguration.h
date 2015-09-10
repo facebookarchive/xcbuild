@@ -11,7 +11,6 @@ class BuildConfiguration : public PBX::Object {
 public:
     typedef std::shared_ptr <BuildConfiguration> shared_ptr;
     typedef std::vector <shared_ptr> vector;
-    typedef std::map <std::string, shared_ptr> map;
 
 private:
     std::string                     _name;

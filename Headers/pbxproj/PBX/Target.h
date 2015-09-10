@@ -14,7 +14,6 @@ class Target : public Object {
 public:
     typedef std::shared_ptr <Target> shared_ptr;
     typedef std::vector <shared_ptr> vector;
-    typedef std::map <std::string, shared_ptr> map;
 
 public:
     enum Type {

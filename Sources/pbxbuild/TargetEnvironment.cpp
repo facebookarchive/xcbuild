@@ -144,9 +144,9 @@ static std::vector<std::string>
 ResolveArchitectures(pbxsetting::Environment const &environment)
 {
     std::vector<std::string> archsVector = pbxsetting::Type::ParseList(environment.resolve("ARCHS"));
-    std::set<std::string> archs = std::set<std::string>(archsVector.begin(), archsVector.end());
+    std::unordered_set<std::string> archs = std::unordered_set<std::string>(archsVector.begin(), archsVector.end());
     std::vector<std::string> validArchsVector = pbxsetting::Type::ParseList(environment.resolve("VALID_ARCHS"));
-    std::set<std::string> validArchs = std::set<std::string>(validArchsVector.begin(), validArchsVector.end());
+    std::unordered_set<std::string> validArchs = std::unordered_set<std::string>(validArchsVector.begin(), validArchsVector.end());
 
     std::vector<std::string> architectures;
     std::set_intersection(archs.begin(), archs.end(), validArchs.begin(), validArchs.end(), std::back_inserter(architectures));
