@@ -44,6 +44,7 @@ protected:
     bool                            _shouldRerunOnError;
     bool                            _deeplyStatInputDirectories;
     PropertyOption::vector          _options;
+    PropertyOption::used_map        _optionsUsed;
 
 protected:
     Tool(bool isDefault);

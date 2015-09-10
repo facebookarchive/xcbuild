@@ -14,8 +14,10 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    PropertyOption::vector _options;
-    PropertyOption::vector _properties;
+    PropertyOption::vector   _options;
+    PropertyOption::used_map _optionsUsed;
+    PropertyOption::vector   _properties;
+    PropertyOption::used_map _propertiesUsed;
 
 protected:
     BuildSystem(bool isDefault);

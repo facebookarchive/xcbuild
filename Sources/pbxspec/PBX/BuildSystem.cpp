@@ -79,7 +79,7 @@ parse(Context *context, plist::Dictionary const *dict)
                 PropertyOption::shared_ptr option;
                 option.reset(new PropertyOption);
                 if (option->parse(O)) {
-                    _options.push_back(option);
+                    PropertyOption::Insert(&_options, &_optionsUsed, option);
                 }
             }
         }
@@ -91,7 +91,7 @@ parse(Context *context, plist::Dictionary const *dict)
                 PropertyOption::shared_ptr property;
                 property.reset(new PropertyOption);
                 if (property->parse(P)) {
-                    _properties.push_back(property);
+                    PropertyOption::Insert(&_properties, &_propertiesUsed, property);
                 }
             }
         }
@@ -118,7 +118,9 @@ inherit(BuildSystem::shared_ptr const &b)
     auto base = this->base();
 
     _options            = base->options();
+    _optionsUsed        = base->_optionsUsed;
     _properties         = base->properties();
+    _propertiesUsed     = base->_propertiesUsed;
 
     return true;
 }

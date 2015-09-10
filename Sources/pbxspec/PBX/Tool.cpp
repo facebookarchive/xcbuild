@@ -313,7 +313,7 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
                 PropertyOption::shared_ptr option;
                 option.reset(new PropertyOption);
                 if (option->parse(OP)) {
-                    _options.push_back(option);
+                    PropertyOption::Insert(&_options, &_optionsUsed, option);
                 }
             }
         }
@@ -375,6 +375,7 @@ inherit(Tool::shared_ptr const &b)
     _synthesizeBuildRule                 = base->synthesizeBuildRule();
     _shouldRerunOnError                  = base->shouldRerunOnError();
     _options                             = base->options();
+    _optionsUsed                         = base->_optionsUsed;
     _deletedProperties                   = base->deletedProperties();
 
     return true;

@@ -15,6 +15,18 @@ class PropertyOption {
 public:
     typedef std::shared_ptr <PropertyOption> shared_ptr;
     typedef std::vector <shared_ptr> vector;
+    typedef std::unordered_map <std::string, size_t> used_map;
+
+    static void Insert(vector *options, used_map *used, shared_ptr const &option)
+    {
+        auto it = used->find(option->name());
+        if (it != used->end()) {
+            (*options)[it->second] = option;
+        } else {
+            used->insert({ option->name(), options->size() });
+            options->push_back(option);
+        }
+    }
 
 protected:
     std::string             _name;
