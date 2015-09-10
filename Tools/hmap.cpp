@@ -2,6 +2,9 @@
 
 #include <pbxbuild/pbxbuild.h>
 
+#include <iterator>
+#include <fstream>
+
 using pbxbuild::HeaderMap;
 
 int
@@ -12,8 +15,11 @@ main(int argc, char **argv)
         return -1;
     }
 
+    std::ifstream file = std::ifstream(argv[1], std::ios::binary);
+    std::vector<char> contents = std::vector<char>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+
     HeaderMap hmap;
-    if (!hmap.read(argv[1])) {
+    if (!hmap.read(contents)) {
         fprintf(stderr, "error: cannot open '%s', either non-existant or "
                 "not an hmap file\n", argv[1]);
         return -1;

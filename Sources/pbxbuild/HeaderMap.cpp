@@ -3,7 +3,6 @@
 #include <pbxbuild/HeaderMap.h>
 
 using pbxbuild::HeaderMap;
-using libutil::FSUtil;
 
 HeaderMap::HeaderMap() :
     _modified(false)
@@ -18,33 +17,25 @@ HeaderMap::HeaderMap() :
 }
 
 bool HeaderMap::
-read(std::string const &path)
+read(std::vector<char> const &buffer)
 {
-    std::FILE *fp = std::fopen(path.c_str(), "rb");
-    if (fp == nullptr)
-        return false;
-
-    std::fseek(fp, 0, SEEK_END);
-    long size = std::ftell(fp);
-    std::rewind(fp);
-
-    if (std::fread(&_header, 1, sizeof(HMapHeader), fp) != sizeof(HMapHeader)) {
-        std::fclose(fp);
+    if (buffer.size() < sizeof(HMapHeader)) {
         return false;
     }
 
-    // 
+    memcpy((void *)&_header, (void *)buffer.data(), sizeof(HMapHeader));
+
+    //
     // TODO Reverse endian
     //
     if (_header.Magic != HMAP_HeaderMagicNumber ||
         _header.Version != HMAP_HeaderVersion ||
         _header.Reserved != 0 ||
-        _header.StringsOffset > static_cast <uint32_t> (size)) {
+        _header.StringsOffset > static_cast <uint32_t> (buffer.size())) {
         invalidate();
-        std::fclose(fp);
         return false;
     }
-    
+
     //
     // Reset
     //
@@ -55,21 +46,17 @@ read(std::string const &path)
     // Read buckets and strings
     //
     _buckets.resize(_header.NumBuckets);
-    if (std::fread(&_buckets[0], sizeof(HMapBucket),
-                _header.NumBuckets, fp) != _header.NumBuckets) {
-        invalidate();
-        std::fclose(fp);
-        return false;
-    }
 
-    size_t stringSize = size - _header.StringsOffset;
-    std::fseek(fp, _header.StringsOffset, SEEK_SET);
-    _strings.resize(stringSize);
-    if (std::fread(&_strings[0], 1, _strings.size(), fp) != _strings.size()) {
+    if (buffer.size() - sizeof(HMapHeader) < sizeof(HMapBucket) * _header.NumBuckets) {
         invalidate();
-        std::fclose(fp);
         return false;
     }
+    memcpy((void *)_buckets.data(), (void *)(buffer.data() + sizeof(HMapHeader)), sizeof(HMapBucket) * _header.NumBuckets);
+
+    size_t stringSize = buffer.size() - _header.StringsOffset;
+    _strings.resize(stringSize);
+
+    memcpy((void *)_strings.data(), (void *)(buffer.data() + _header.StringsOffset), stringSize);
 
     //
     // Now fill _keys and _offsets so that we can manipulate this hmap.
@@ -95,19 +82,17 @@ read(std::string const &path)
                     _buckets[n].Suffix));
     }
 
-    std::fclose(fp);
-
     _modified = false;
 
     return true;
 }
 
 bool HeaderMap::
-write(std::string const &path)
+write(std::vector<char> *buffer)
 {
-    std::FILE *fp = std::fopen(path.c_str(), "wb");
-    if (fp == nullptr)
+    if (buffer == nullptr) {
         return false;
+    }
 
     if (_modified) {
         rehash(_header.NumBuckets);
@@ -118,29 +103,16 @@ write(std::string const &path)
     _header.Reserved      = 0;
     _header.StringsOffset = sizeof(_header) + _header.NumBuckets * sizeof(HMapBucket);
 
-    if (std::fwrite(&_header, 1, sizeof(HMapHeader), fp) != sizeof(HMapHeader)) {
-        std::fclose(fp);
-        FSUtil::Remove(path);
-        return false;
-    }
+    *buffer = std::vector<char>();
+    buffer->resize(sizeof(HMapHeader) + _header.NumBuckets * sizeof(HMapBucket) + _strings.size());
 
     //
     // Write buckets and strings
     //
-    if (std::fwrite(&_buckets[0], sizeof(HMapBucket),
-                _header.NumBuckets, fp) != _header.NumBuckets) {
-        std::fclose(fp);
-        FSUtil::Remove(path);
-        return false;
-    }
+    memcpy((void *)buffer->data(), (void *)&_header, sizeof(HMapHeader));
+    memcpy((void *)(buffer->data() + sizeof(HMapHeader)), (void *)_buckets.data(), _header.NumBuckets * sizeof(HMapBucket));
+    memcpy((void *)(buffer->data() + _header.StringsOffset), (void *)_strings.data(), _strings.size());
 
-    if (std::fwrite(&_strings[0], 1, _strings.size(), fp) != _strings.size()) {
-        std::fclose(fp);
-        FSUtil::Remove(path);
-        return false;
-    }
-
-    std::fclose(fp);
     return true;
 }
 

@@ -23,8 +23,8 @@ public:
     HeaderMap();
 
 public:
-    bool read(std::string const &path);
-    bool write(std::string const &path);
+    bool read(std::vector<char> const &buffer);
+    bool write(std::vector<char> *buffer);
 
 public:
     void invalidate();
