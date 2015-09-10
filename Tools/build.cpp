@@ -73,6 +73,13 @@ SortInvocations(std::vector<pbxbuild::ToolInvocation> invocations)
     return result;
 }
 
+#define ANSI_STYLE_BOLD    "\033[1m"
+#define ANSI_STYLE_NO_BOLD "\033[22m"
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 static std::pair<bool, std::vector<pbxbuild::ToolInvocation>>
 PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::TargetEnvironment const &targetEnvironment, std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> const &toolInvocations, std::vector<pbxproj::PBX::BuildPhase::shared_ptr> const &orderedPhases, bool execute = false)
 {
@@ -150,7 +157,13 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                 }
             }
 
-            printf("%s\n", invocation.logMessage().c_str());
+            std::string message = invocation.logMessage();
+            std::string::size_type space = message.find(' ');
+            if (space != std::string::npos) {
+                printf("%s%s%s", ANSI_STYLE_BOLD, message.substr(0, space).c_str(), ANSI_STYLE_NO_BOLD);
+                message = message.substr(space);
+            }
+            printf("%s\n", message.c_str());
 
             printf("    cd %s\n", invocation.workingDirectory().c_str());
 
@@ -333,8 +346,9 @@ main(int argc, char **argv)
     auto graph = resolver.resolveDependencies(buildContext);
     std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
+    bool succeeded = true;
     for (pbxproj::PBX::Target::shared_ptr const &target : targets) {
-        printf("=== BUILD TARGET %s OF PROJECT %s WITH CONFIGURATION %s ===\n\n", target->name().c_str(), target->project()->name().c_str(), buildContext.configuration().c_str());
+        printf("%s%s=== BUILD TARGET %s OF PROJECT %s WITH CONFIGURATION %s ===%s%s\n\n", ANSI_STYLE_BOLD, ANSI_COLOR_CYAN, target->name().c_str(), target->project()->name().c_str(), buildContext.configuration().c_str(), ANSI_STYLE_NO_BOLD, ANSI_COLOR_RESET);
         std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = buildContext.targetEnvironment(*buildEnvironment, target);
         if (targetEnvironment == nullptr) {
             fprintf(stderr, "error: couldn't create target environment\n");
@@ -348,7 +362,8 @@ main(int argc, char **argv)
 
         auto result = PerformBuild(*buildEnvironment, buildContext, target, *targetEnvironment, phaseInvocations, orderedPhases, true);
         if (!result.first) {
-            printf("\n** BUILD FAILED **\n");
+            succeeded = false;
+            printf("\n%s%s** BUILD FAILED **%s%s\n", ANSI_STYLE_BOLD, ANSI_COLOR_RED, ANSI_STYLE_NO_BOLD, ANSI_COLOR_RESET);
             printf("\n\nThe following build commands failed:\n");
             for (pbxbuild::ToolInvocation const &failure : result.second) {
                 printf("    %s\n", failure.logMessage().c_str());
@@ -356,5 +371,9 @@ main(int argc, char **argv)
             printf("(%zd failure%s)\n", result.second.size(), result.second.size() != 1 ? "s" : "");
             break;
         }
+    }
+
+    if (succeeded) {
+        printf("\n%s%s** BUILD SUCCEEDED **%s%s\n", ANSI_STYLE_BOLD, ANSI_COLOR_GREEN, ANSI_STYLE_NO_BOLD, ANSI_COLOR_RESET);
     }
 }
