@@ -63,8 +63,8 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
     };
 
     pbxsetting::Environment toolEnvironment = environment;
-    toolEnvironment.insertFront(pbxsetting::Level(toolSettings));
-    toolEnvironment.insertBack(tool->defaultSettings());
+    toolEnvironment.insertFront(tool->defaultSettings(), true);
+    toolEnvironment.insertFront(pbxsetting::Level(toolSettings), false);
 
     return ToolEnvironment(tool, toolEnvironment, inputs, outputs);
 }
@@ -100,7 +100,7 @@ AddOptionArgumentValue(std::vector<std::string> *arguments, pbxsetting::Environm
     pbxsetting::Environment argEnvironment = environment;
     argEnvironment.insertFront(pbxsetting::Level({
         pbxsetting::Setting::Parse("value", value),
-    }));
+    }), false);
 
     for (pbxsetting::Value const &arg : args) {
         std::string result = argEnvironment.expand(arg);
@@ -161,21 +161,15 @@ Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_pt
             continue;
         }
 
-        pbxsetting::Environment optionEnvironment = environment;
-        // TODO(grp): This should be inserted in front of the build system defaults.
-        optionEnvironment.insertBack(pbxsetting::Level({
-            option->defaultSetting(),
-        }));
-
         std::string flag;
-        std::string value = optionEnvironment.resolve(option->name());
+        std::string value = environment.resolve(option->name());
         if (!value.empty() && value != "NO") {
             flag = option->commandLineFlag();
         } else {
             flag = option->commandLineFlagIfFalse();
         }
         if (!flag.empty()) {
-            arguments.push_back(optionEnvironment.expand(pbxsetting::Value::Parse(flag)));
+            arguments.push_back(environment.expand(pbxsetting::Value::Parse(flag)));
 
             if (option->type() != "Boolean" && option->type() != "bool") {
                 arguments.push_back(value);
@@ -186,19 +180,19 @@ Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_pt
         std::string const &prefix = option->commandLinePrefixFlag();
         if (!prefix.empty()) {
             pbxsetting::Value prefixValue = pbxsetting::Value::Parse(prefix) + pbxsetting::Value::Parse("$(value)");
-            AddOptionArgumentValues(&arguments, optionEnvironment, { prefixValue }, option);
+            AddOptionArgumentValues(&arguments, environment, { prefixValue }, option);
         }
 
         if (auto args = plist::CastTo <plist::Array> (option->commandLineArgs())) {
             std::vector<pbxsetting::Value> argsValues = ArgumentValuesFromArray(args);
-            AddOptionArgumentValues(&arguments, optionEnvironment, argsValues, option);
+            AddOptionArgumentValues(&arguments, environment, argsValues, option);
         } else if (auto argsValues = plist::CastTo <plist::Dictionary> (option->commandLineArgs())) {
             if (auto args = argsValues->value <plist::Array> (value)) {
                 std::vector<pbxsetting::Value> argsValues = ArgumentValuesFromArray(args);
-                AddOptionArgumentValues(&arguments, optionEnvironment, argsValues, option);
+                AddOptionArgumentValues(&arguments, environment, argsValues, option);
             } else if (auto args = argsValues->value <plist::Array> ("<<otherwise>>")) {
                 std::vector<pbxsetting::Value> argsValues = ArgumentValuesFromArray(args);
-                AddOptionArgumentValues(&arguments, optionEnvironment, argsValues, option);
+                AddOptionArgumentValues(&arguments, environment, argsValues, option);
             }
         }
 

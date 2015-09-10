@@ -29,11 +29,13 @@ ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext
 {
     pbxproj::PBX::FileReference::shared_ptr fileReference = proxy->containerPortal();
     if (fileReference == nullptr) {
+        fprintf(stderr, "warning: not able to find file reference for proxy\n");
         return nullptr;
     }
 
     std::unique_ptr<TargetEnvironment> targetEnvironment = context.targetEnvironment(buildEnvironment, target);
     if (targetEnvironment == nullptr) {
+        fprintf(stderr, "warning: not able to get target environment for target %s\n", target->name().c_str());
         return nullptr;
     }
 
@@ -42,6 +44,7 @@ ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext
     if (productReference) {
         auto result = context.resolveProductIdentifier(context.project(path), proxy->remoteGlobalIDString());
         if (result == nullptr) {
+            fprintf(stderr, "warning: not able to resolve product identifier %s in project %s\n", proxy->remoteGlobalIDString().c_str(), context.project(path) ? context.project(path)->name().c_str() : path.c_str());
             return nullptr;
         }
 

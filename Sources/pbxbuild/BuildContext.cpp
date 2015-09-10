@@ -27,6 +27,8 @@ project(std::string const &projectPath) const
         pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(projectPath);
         if (project != nullptr) {
             _projects->insert(std::make_pair(projectPath, project));
+        } else {
+            fprintf(stderr, "warning: unable to load project at %s\n", projectPath.c_str());
         }
         return project;
     }

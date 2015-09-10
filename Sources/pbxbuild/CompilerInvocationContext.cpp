@@ -79,7 +79,7 @@ Create(
 
     std::string sdkroot = env.resolve("SDKROOT");
 
-    if (env.resolve("USE_HEADERMAPS") == "YES") {
+    if (env.resolve("USE_HEADERMAP") == "YES") {
         if (env.resolve("HEADERMAP_USES_VFS") == "YES") {
             // TODO(grp): Support VFS-based header maps.
             fprintf(stderr, "warning: VFS-based header maps not supported\n");

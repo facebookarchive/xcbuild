@@ -197,7 +197,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         // use the default level order, because $(SRCROOT) comes below $(SDKROOT). Hack around this for now with a synthetic environment.
         // It's also in the wrong order because project settings should be below the SDK, but are needed to *load* the xcconfig.
         pbxsetting::Environment determinationEnvironment = buildEnvironment.baseEnvironment();
-        determinationEnvironment.insertFront(context->baseSettings());
+        determinationEnvironment.insertFront(context->baseSettings(), false);
 
         projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), context->configuration());
         if (projectConfiguration == nullptr) {
@@ -205,15 +205,15 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
             return nullptr;
         }
 
-        determinationEnvironment.insertFront(target->project()->settings());
-        determinationEnvironment.insertFront(projectConfiguration->buildSettings());
+        determinationEnvironment.insertFront(target->project()->settings(), false);
+        determinationEnvironment.insertFront(projectConfiguration->buildSettings(), false);
 
         pbxsetting::Environment projectActionEnvironment = determinationEnvironment;
-        projectActionEnvironment.insertFront(context->actionSettings());
+        projectActionEnvironment.insertFront(context->actionSettings(), false);
 
         projectConfigurationFile = LoadConfigurationFile(projectConfiguration, projectActionEnvironment);
         if (projectConfigurationFile != nullptr) {
-            determinationEnvironment.insertFront(projectConfigurationFile->level());
+            determinationEnvironment.insertFront(projectConfigurationFile->level(), false);
         }
 
         targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), context->configuration());
@@ -222,19 +222,19 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
             return nullptr;
         }
 
-        determinationEnvironment.insertFront(target->settings());
-        determinationEnvironment.insertFront(targetConfiguration->buildSettings());
+        determinationEnvironment.insertFront(target->settings(), false);
+        determinationEnvironment.insertFront(targetConfiguration->buildSettings(), false);
 
         // FIXME(grp): Similar issue for the target xcconfig. These levels aren't complete (no platform) but are needed to *get* which SDK to use.
         pbxsetting::Environment targetActionEnvironment = determinationEnvironment;
-        targetActionEnvironment.insertFront(context->actionSettings());
+        targetActionEnvironment.insertFront(context->actionSettings(), false);
 
         targetConfigurationFile = LoadConfigurationFile(targetConfiguration, targetActionEnvironment);
         if (targetConfigurationFile != nullptr) {
-            determinationEnvironment.insertFront(targetConfigurationFile->level());
+            determinationEnvironment.insertFront(targetConfigurationFile->level(), false);
         }
 
-        determinationEnvironment.insertFront(context->actionSettings());
+        determinationEnvironment.insertFront(context->actionSettings(), false);
         std::string sdkroot = determinationEnvironment.resolve("SDKROOT");
         sdk = FindPlatformTarget(buildEnvironment.sdkManager(), sdkroot);
         if (sdk == nullptr) {
@@ -271,45 +271,45 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
     // Now we have $(SDKROOT), and can make the real levels.
     pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
-    environment.insertFront(buildSystem->defaultSettings());
-    environment.insertFront(context->baseSettings());
+    environment.insertFront(buildSystem->defaultSettings(), true);
+    environment.insertFront(context->baseSettings(), false);
     environment.insertFront(pbxsetting::Level({
         pbxsetting::Setting::Parse("GCC_VERSION", "$(DEFAULT_COMPILER)"),
-    }));
+    }), false);
 
-    environment.insertFront(sdk->platform()->defaultProperties());
-    environment.insertFront(PlatformArchitecturesLevel(buildEnvironment.specManager(), specDomain));
-    environment.insertFront(sdk->defaultProperties());
-    environment.insertFront(sdk->platform()->settings());
-    environment.insertFront(sdk->settings());
-    environment.insertFront(sdk->customProperties());
-    environment.insertFront(sdk->platform()->overrideProperties());
+    environment.insertFront(sdk->platform()->defaultProperties(), false);
+    environment.insertFront(PlatformArchitecturesLevel(buildEnvironment.specManager(), specDomain), false);
+    environment.insertFront(sdk->defaultProperties(), false);
+    environment.insertFront(sdk->platform()->settings(), false);
+    environment.insertFront(sdk->settings(), false);
+    environment.insertFront(sdk->customProperties(), false);
+    environment.insertFront(sdk->platform()->overrideProperties(), false);
 
-    environment.insertFront(target->project()->settings());
-    environment.insertFront(projectConfiguration->buildSettings());
+    environment.insertFront(target->project()->settings(), false);
+    environment.insertFront(projectConfiguration->buildSettings(), false);
     if (projectConfigurationFile != nullptr) {
-        environment.insertFront(projectConfigurationFile->level());
+        environment.insertFront(projectConfigurationFile->level(), false);
     }
 
     if (packageType != nullptr && productType != nullptr) {
-        environment.insertFront(PackageTypeLevel(packageType));
-        environment.insertFront(ProductTypeLevel(productType));
+        environment.insertFront(PackageTypeLevel(packageType), false);
+        environment.insertFront(ProductTypeLevel(productType), false);
     }
 
-    environment.insertFront(target->settings());
-    environment.insertFront(targetConfiguration->buildSettings());
+    environment.insertFront(target->settings(), false);
+    environment.insertFront(targetConfiguration->buildSettings(), false);
     if (targetConfigurationFile != nullptr) {
-        environment.insertFront(targetConfigurationFile->level());
+        environment.insertFront(targetConfigurationFile->level(), false);
     }
 
     std::vector<std::string> architectures = ResolveArchitectures(environment);
     std::vector<std::string> variants = ResolveVariants(environment);
-    environment.insertFront(ArchitecturesVariantsLevel(architectures, variants));
+    environment.insertFront(ArchitecturesVariantsLevel(architectures, variants), false);
 
-    environment.insertFront(context->actionSettings());
+    environment.insertFront(context->actionSettings(), false);
     environment.insertFront(pbxsetting::Level({
         pbxsetting::Setting::Parse("SDKROOT", sdk->path()),
-    }));
+    }), false);
 
     auto buildRules = std::make_shared <pbxbuild::TargetBuildRules> (pbxbuild::TargetBuildRules::Create(buildEnvironment.specManager(), specDomain, target));
 

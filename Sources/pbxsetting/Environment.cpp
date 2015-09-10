@@ -11,8 +11,8 @@ using pbxsetting::Value;
 using libutil::FSUtil;
 
 Environment::
-Environment(std::list<Level> const &levels) :
-    _levels(levels)
+Environment() :
+    _offset(0)
 {
 }
 
@@ -111,23 +111,8 @@ ProcessOperation(std::string const &value, std::string const &operation)
     }
 }
 
-struct InheritanceContext {
-    bool valid;
-    std::string setting;
-    std::list<Level>::const_iterator it;
-};
-
-static std::string
-ResolveAssignment(Environment const &environment, Condition const &condition, std::string const &setting);
-
-static std::string
-ResolveInheritance(Environment const &environment, Condition const &condition, InheritanceContext const &context);
-
-static std::string
-ResolveValue(Environment const &environment, Condition const &condition, Value const &value, InheritanceContext const &context);
-
-static std::string
-ResolveValue(Environment const &environment, Condition const &condition, Value const &value, InheritanceContext const &context)
+std::string Environment::
+resolveValue(Condition const &condition, Value const &value, InheritanceContext const &context) const
 {
     std::string result;
     for (auto entry : value.entries()) {
@@ -137,9 +122,9 @@ ResolveValue(Environment const &environment, Condition const &condition, Value c
                 break;
             }
             case Value::Entry::Value: {
-                std::string resolved = ResolveValue(environment, condition, *entry.value, context);
+                std::string resolved = resolveValue(condition, *entry.value, context);
                 if (context.valid && (resolved == context.setting || resolved == "inherited")) {
-                    result += ResolveInheritance(environment, condition, context);
+                    result += resolveInheritance(condition, context);
                 } else {
                     std::string setting = resolved;
 
@@ -148,7 +133,7 @@ ResolveValue(Environment const &environment, Condition const &condition, Value c
                         setting = resolved.substr(0, colon);
                     }
 
-                    std::string value = ResolveAssignment(environment, condition, setting);
+                    std::string value = resolveAssignment(condition, setting);
 
                     while (colon != std::string::npos) {
                         std::string::size_type next = resolved.find(':', colon + 1);
@@ -166,48 +151,48 @@ ResolveValue(Environment const &environment, Condition const &condition, Value c
         }
     }
     if (context.valid && result.empty()) {
-        result = ResolveInheritance(environment, condition, context);
+        result = resolveInheritance(condition, context);
     }
     return result;
 }
 
-static std::string
-ResolveInheritance(Environment const &environment, Condition const &condition, InheritanceContext const &context)
+std::string Environment::
+resolveInheritance(Condition const &condition, InheritanceContext const &context) const
 {
     InheritanceContext ctx = context;
-    for (++ctx.it; ctx.it != environment.levels().end(); ++ctx.it) {
+    for (++ctx.it; ctx.it != _levels.end(); ++ctx.it) {
         auto result = ctx.it->get(ctx.setting, condition);
         if (result.first) {
-            return ResolveValue(environment, condition, result.second, ctx);
+            return resolveValue(condition, result.second, ctx);
         }
     }
 
     return "";
 }
 
-static std::string
-ResolveAssignment(Environment const &environment, Condition const &condition, std::string const &setting)
+std::string Environment::
+resolveAssignment(Condition const &condition, std::string const &setting) const
 {
-    InheritanceContext context = { .valid = true, .setting = setting, .it = environment.levels().begin() };
+    InheritanceContext context = { .valid = true, .setting = setting, .it = _levels.begin() };
 
-    for (auto it = environment.levels().begin(); it != environment.levels().end(); ++it) {
-        auto result = it->get(setting, condition);
+    for (Level const &level : _levels) {
+        auto result = level.get(setting, condition);
         if (result.first) {
-            return ResolveValue(environment, condition, result.second, context);
+            return resolveValue(condition, result.second, context);
         }
     }
 
     if (condition.values().empty()) {
         return "";
     } else {
-        return ResolveAssignment(environment, Condition::Empty(), setting);
+        return resolveAssignment(Condition::Empty(), setting);
     }
 }
 
 std::string Environment::
 expand(Value const &value, Condition const &condition) const
 {
-    return ResolveValue(*this, condition, value, { .valid = false });
+    return resolveValue(condition, value, { .valid = false });
 }
 
 std::string Environment::
@@ -219,7 +204,7 @@ expand(Value const &value) const
 std::string Environment::
 resolve(std::string const &setting, Condition const &condition) const
 {
-    return ResolveAssignment(*this, condition, setting);
+    return resolveAssignment(condition, setting);
 }
 
 std::string Environment::
@@ -262,15 +247,25 @@ computeValues(Condition const &condition) const
 }
 
 void Environment::
-insertFront(Level const &level)
+insertFront(Level const &level, bool isDefault)
 {
-    _levels.push_front(level);
+    if (!isDefault) {
+        _levels.push_front(level);
+        ++_offset;
+    } else {
+        _levels.insert(std::next(_levels.begin(), _offset), level);
+    }
 }
 
 void Environment::
-insertBack(Level const &level)
+insertBack(Level const &level, bool isDefault)
 {
-    _levels.push_back(level);
+    if (!isDefault) {
+        _levels.insert(std::next(_levels.begin(), _offset), level);
+        ++_offset;
+    } else {
+        _levels.push_back(level);
+    }
 }
 
 Environment const &Environment::

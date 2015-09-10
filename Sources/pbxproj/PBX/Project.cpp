@@ -134,23 +134,30 @@ Open(std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
+        fprintf(stderr, "error: project path is empty\n");
         return nullptr;
     }
 
     std::string projectFileName = path + "/project.pbxproj";
-    if (!FSUtil::TestForRead(projectFileName.c_str()))
+    if (!FSUtil::TestForRead(projectFileName.c_str())) {
+        fprintf(stderr, "error: project file %s is not readable\n", projectFileName.c_str());
         return nullptr;
+    }
 
     std::string realPath = FSUtil::ResolvePath(projectFileName);
-    if (realPath.empty())
+    if (realPath.empty()) {
+        fprintf(stderr, "error: project file %s is not resolvable\n", projectFileName.c_str());
         return nullptr;
+    }
 
     //
     // Parse property list
     //
     plist::Dictionary *plist = plist::Dictionary::Parse(projectFileName);
-    if (plist == nullptr)
+    if (plist == nullptr) {
+        fprintf(stderr, "error: project file %s is not parseable\n", projectFileName.c_str());
         return nullptr;
+    }
 
 #if 0
     plist->dump(stdout);
@@ -161,11 +168,13 @@ Open(std::string const &path)
     //
     auto archiveVersion = plist->value("archiveVersion");
     if (archiveVersion == nullptr) {
+        fprintf(stderr, "error: project file %s is not parseable (no archive version)\n", projectFileName.c_str());
         return nullptr;
     } else {
         auto archiveVersionInteger = plist::CastTo <plist::Integer> (archiveVersion);
         auto archiveVersionString  = plist::CastTo <plist::String> (archiveVersion);
         if (archiveVersionInteger == nullptr && archiveVersionString == nullptr) {
+            fprintf(stderr, "error: project file %s is not parseable (unknown archive version)\n", projectFileName.c_str());
             return nullptr;
         }
 
@@ -178,11 +187,13 @@ Open(std::string const &path)
 
     auto objectVersion = plist->value("objectVersion");
     if (objectVersion == nullptr) {
+        fprintf(stderr, "error: project file %s is not parseable (no object version)\n", projectFileName.c_str());
         return nullptr;
     } else {
         auto objectVersionInteger = plist::CastTo <plist::Integer> (objectVersion);
         auto objectVersionString  = plist::CastTo <plist::String> (objectVersion);
         if (objectVersionInteger == nullptr && objectVersionString == nullptr) {
+            fprintf(stderr, "error: project file %s is not parseable (unknown object version)\n", projectFileName.c_str());
             return nullptr;
         }
 

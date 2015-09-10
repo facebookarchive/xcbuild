@@ -54,8 +54,8 @@ Create(
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment currentEnvironment = targetEnvironment.environment();
-            currentEnvironment.insertFront(PhaseContext::VariantLevel(variant));
-            currentEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch));
+            currentEnvironment.insertFront(PhaseContext::VariantLevel(variant), false);
+            currentEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch), false);
 
             std::vector<pbxbuild::ToolInvocation> invocations;
 

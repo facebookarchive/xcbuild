@@ -63,7 +63,7 @@ Create(
 )
 {
     pbxsetting::Environment scriptEnvironment = environment;
-    scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, multipleInputs));
+    scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, multipleInputs), false);
 
     std::vector<ToolInvocation::AuxiliaryFile> auxiliaries;
     std::unordered_map<std::string, std::string> values = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
@@ -102,7 +102,7 @@ Create(
     });
 
     pbxsetting::Environment phaseEnvironment = environment;
-    phaseEnvironment.insertFront(level);
+    phaseEnvironment.insertFront(level, false);
 
     pbxsetting::Value scriptPath = pbxsetting::Value::Parse("$(TEMP_FILES_DIR)/Script-$(BuildPhaseIdentifier).sh");
     pbxsetting::Value logMessage = pbxsetting::Value::Parse("PhaseScriptExecution $(BuildPhaseName:quote) ") + scriptPath;
@@ -151,7 +151,7 @@ Create(
     });
 
     pbxsetting::Environment ruleEnvironment = environment;
-    ruleEnvironment.insertFront(level);
+    ruleEnvironment.insertFront(level, false);
 
     pbxsetting::Value logMessage = pbxsetting::Value::Parse("RuleScriptExecution " + FSUtil::GetRelativePath(inputFile, workingDirectory) + " $(variant) $(arch)");
 

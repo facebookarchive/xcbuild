@@ -13,14 +13,11 @@ namespace pbxsetting {
 class Environment {
 private:
     std::list<Level> _levels;
+    size_t           _offset;
 
 public:
-    Environment(std::list<Level> const &levels);
+    Environment();
     ~Environment();
-
-public:
-    std::list<Level> const &levels() const
-    { return _levels; }
 
 public:
     std::string
@@ -45,11 +42,21 @@ public:
     computeValues(Condition const &condition) const;
 
 public:
-    void insertFront(Level const &level);
-    void insertBack(Level const &level);
+    void insertFront(Level const &level, bool isDefault);
+    void insertBack(Level const &level, bool isDefault);
 
 public:
     static Environment const &Empty();
+
+private:
+    struct InheritanceContext {
+        bool valid;
+        std::string setting;
+        std::list<Level>::const_iterator it;
+    };
+    std::string resolveValue(Condition const &condition, Value const &value, InheritanceContext const &context) const;
+    std::string resolveInheritance(Condition const &condition, InheritanceContext const &context) const;
+    std::string resolveAssignment(Condition const &condition, std::string const &setting) const;
 };
 
 }

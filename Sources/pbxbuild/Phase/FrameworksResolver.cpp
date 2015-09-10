@@ -62,7 +62,7 @@ Create(
 
     for (std::string const &variant : targetEnvironment.variants()) {
         pbxsetting::Environment variantEnvironment = targetEnvironment.environment();
-        variantEnvironment.insertFront(PhaseContext::VariantLevel(variant));
+        variantEnvironment.insertFront(PhaseContext::VariantLevel(variant), false);
 
         std::string variantIntermediatesName = variantEnvironment.resolve("EXECUTABLE_NAME") + variantEnvironment.resolve("EXECUTABLE_VARIANT_SUFFIX");
         std::string variantIntermediatesDirectory = variantEnvironment.resolve("OBJECT_FILE_DIR_" + variant);
@@ -75,7 +75,7 @@ Create(
 
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment archEnvironment = variantEnvironment;
-            archEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch));
+            archEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch), false);
 
             std::vector<pbxbuild::TypeResolvedFile> files = phaseContext.resolveBuildFiles(archEnvironment, buildPhase->files());
 
