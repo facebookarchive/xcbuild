@@ -180,21 +180,6 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
                 }
             }
 
-            printf("    Inputs:\n");
-            for (std::string const &input : invocation.inputs()) {
-                printf("        %s\n", input.c_str());
-            }
-            printf("    Outputs:\n");
-            for (std::string const &output : invocation.outputs()) {
-                printf("        %s\n", output.c_str());
-            }
-            if (!invocation.auxiliaryFiles().empty()) {
-                printf("    Auxiliaries:\n");
-                for (pbxbuild::ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-                    printf("        %s\n", auxiliaryFile.path().c_str());
-                }
-            }
-
             printf("\n");
         }
     }
