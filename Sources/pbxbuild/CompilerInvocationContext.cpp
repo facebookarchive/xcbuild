@@ -76,13 +76,20 @@ Create(
     special.push_back("-x");
     special.push_back(dialect);
 
-    std::vector<std::string> cflags = pbxsetting::Type::ParseList(env.resolve("OTHER_CFLAGS"));
-    special.insert(special.end(), cflags.begin(), cflags.end());
-    std::vector<std::string> variantcflags = pbxsetting::Type::ParseList(env.resolve("OTHER_CFLAGS_" + env.resolve("CURRENT_VARIANT")));
-    special.insert(special.end(), variantcflags.begin(), variantcflags.end());
+    std::vector<std::string> flagSettings;
     if (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++") {
-        std::vector<std::string> cppflags = pbxsetting::Type::ParseList(env.resolve("OTHER_CPLUSPLUSFLAGS"));
-        special.insert(special.end(), cppflags.begin(), cppflags.end());
+        flagSettings.push_back("OTHER_CPLUSPLUSFLAGS");
+    } else {
+        flagSettings.push_back("OTHER_CFLAGS");
+    }
+    flagSettings.push_back("OTHER_CFLAGS_" + env.resolve("CURRENT_VARIANT"));
+    flagSettings.push_back("PER_ARCH_CFLAGS_" + env.resolve("CURRENT_ARCH"));
+    flagSettings.push_back("WARNING_CFLAGS");
+    flagSettings.push_back("OPTIMIZATION_CFLAGS");
+
+    for (std::string const &flagSetting : flagSettings) {
+        std::vector<std::string> flags = pbxsetting::Type::ParseList(env.resolve(flagSetting));
+        special.insert(special.end(), flags.begin(), flags.end());
     }
 
     if (pbxsetting::Type::ParseBoolean(env.resolve("USE_HEADERMAP"))) {
