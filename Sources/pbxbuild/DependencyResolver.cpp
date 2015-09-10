@@ -151,6 +151,11 @@ resolveDependencies(BuildContext const &context) const
 
     std::vector<pbxproj::PBX::Target::shared_ptr> positional;
     for (BuildActionEntry::shared_ptr const &entry : buildAction->buildActionEntries()) {
+        // TODO(grp): Check the buildFor* flags against the BuildContext.
+        if (!entry->buildForRunning()) {
+            continue;
+        }
+
         xcscheme::XC::BuildableReference::shared_ptr const &reference = entry->buildableReference();
         std::string projectPath = reference->resolve(context.workspace()->basePath());
         pbxproj::PBX::Target::shared_ptr target = context.resolveTargetIdentifier(context.project(projectPath), reference->blueprintIdentifier());
