@@ -138,7 +138,6 @@ ArgumentValuesFromArray(plist::Array const *args)
 OptionsResult OptionsResult::
 Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_ptr fileType, std::map<std::string, std::string> const &environmentVariables)
 {
-    // TODO(grp): Parse each PropertyOption in the tool.
     std::vector<std::string> arguments = { };
 
     pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
