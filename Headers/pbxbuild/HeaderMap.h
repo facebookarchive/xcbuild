@@ -24,7 +24,7 @@ public:
 
 public:
     bool read(std::vector<char> const &buffer);
-    bool write(std::vector<char> *buffer);
+    std::vector<char> write();
 
 public:
     void invalidate();

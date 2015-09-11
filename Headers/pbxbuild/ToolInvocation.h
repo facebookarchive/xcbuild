@@ -11,18 +11,19 @@ class ToolInvocation {
 public:
     class AuxiliaryFile {
     private:
-        std::string _path;
-        std::string _contents;
-        bool        _executable;
+        std::string        _path;
+        std::vector<char> _contents;
+        bool              _executable;
 
     public:
+        AuxiliaryFile(std::string const &path, std::vector<char> const &contents, bool executable);
         AuxiliaryFile(std::string const &path, std::string const &contents, bool executable);
         ~AuxiliaryFile();
 
     public:
         std::string const &path() const
         { return _path; }
-        std::string const &contents() const
+        std::vector<char> const &contents() const
         { return _contents; }
         bool executable() const
         { return _executable; }

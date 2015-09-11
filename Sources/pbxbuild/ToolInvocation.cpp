@@ -7,9 +7,17 @@ using pbxbuild::ToolInvocation;
 using AuxiliaryFile = pbxbuild::ToolInvocation::AuxiliaryFile;
 
 AuxiliaryFile::
-AuxiliaryFile(std::string const &path, std::string const &contents, bool executable) :
+AuxiliaryFile(std::string const &path, std::vector<char> const &contents, bool executable) :
     _path      (path),
     _contents  (contents),
+    _executable(executable)
+{
+}
+
+AuxiliaryFile::
+AuxiliaryFile(std::string const &path, std::string const &contents, bool executable) :
+    _path      (path),
+    _contents  (std::vector<char>(contents.begin(), contents.end())),
     _executable(executable)
 {
 }

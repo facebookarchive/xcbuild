@@ -87,12 +87,10 @@ read(std::vector<char> const &buffer)
     return true;
 }
 
-bool HeaderMap::
-write(std::vector<char> *buffer)
+std::vector<char> HeaderMap::
+write()
 {
-    if (buffer == nullptr) {
-        return false;
-    }
+    std::vector<char> buffer;
 
     if (_modified) {
         rehash(_header.NumBuckets);
@@ -103,17 +101,16 @@ write(std::vector<char> *buffer)
     _header.Reserved      = 0;
     _header.StringsOffset = sizeof(_header) + _header.NumBuckets * sizeof(HMapBucket);
 
-    *buffer = std::vector<char>();
-    buffer->resize(sizeof(HMapHeader) + _header.NumBuckets * sizeof(HMapBucket) + _strings.size());
+    buffer.resize(sizeof(HMapHeader) + _header.NumBuckets * sizeof(HMapBucket) + _strings.size());
 
     //
     // Write buckets and strings
     //
-    memcpy((void *)buffer->data(), (void *)&_header, sizeof(HMapHeader));
-    memcpy((void *)(buffer->data() + sizeof(HMapHeader)), (void *)_buckets.data(), _header.NumBuckets * sizeof(HMapBucket));
-    memcpy((void *)(buffer->data() + _header.StringsOffset), (void *)_strings.data(), _strings.size());
+    memcpy((void *)(buffer.data()), (void *)&_header, sizeof(HMapHeader));
+    memcpy((void *)(buffer.data() + sizeof(HMapHeader)), (void *)_buckets.data(), _header.NumBuckets * sizeof(HMapBucket));
+    memcpy((void *)(buffer.data() + _header.StringsOffset), (void *)_strings.data(), _strings.size());
 
-    return true;
+    return buffer;
 }
 
 void HeaderMap::
@@ -128,8 +125,7 @@ invalidate()
 }
 
 bool HeaderMap::
-add(std::string const &key, std::string const &prefix,
-        std::string const &suffix)
+add(std::string const &key, std::string const &prefix, std::string const &suffix)
 {
     if (key.empty() || prefix.empty() || suffix.empty())
         return false; // invalid argument

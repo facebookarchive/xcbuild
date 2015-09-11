@@ -13,11 +13,6 @@ class BuildContext;
 
 class TargetEnvironment {
 private:
-    BuildEnvironment                  _buildEnvironment;
-    pbxproj::PBX::Target::shared_ptr  _target;
-    BuildContext const               *_context;
-
-private:
     std::shared_ptr<TargetBuildRules>        _buildRules;
     xcsdk::SDK::Target::shared_ptr           _sdk;
     std::string                              _specDomain;
@@ -30,7 +25,7 @@ private:
     std::string                              _workingDirectory;
 
 public:
-    TargetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context);
+    TargetEnvironment();
     ~TargetEnvironment();
 
 public:

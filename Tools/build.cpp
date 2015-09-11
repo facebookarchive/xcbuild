@@ -114,8 +114,8 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
                     if (execute) {
                         std::ofstream out;
-                        out.open(auxiliaryFile.path(), std::ios::out | std::ios::app | std::ios::binary);
-                        out << auxiliaryFile.contents();
+                        out.open(auxiliaryFile.path(), std::ios::out | std::ios::trunc | std::ios::binary);
+                        out.write(auxiliaryFile.contents().data(), auxiliaryFile.contents().size() * sizeof(char));
                         out.close();
                     }
 
@@ -144,6 +144,11 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
         std::vector<pbxbuild::ToolInvocation> orderedInvocations = SortInvocations(entry->second);
 
         for (pbxbuild::ToolInvocation const &invocation : orderedInvocations) {
+            // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
+            if (invocation.executable().empty()) {
+                continue;
+            }
+
             if (execute) {
                 for (std::string const &output : invocation.outputs()) {
                     std::string directory = FSUtil::GetDirectoryName(output);
@@ -356,7 +361,7 @@ main(int argc, char **argv)
         }
 
         printf("Check dependencies\n\n");
-        pbxbuild::Phase::PhaseContext phaseContext = pbxbuild::Phase::PhaseContext(*buildEnvironment, buildContext, *targetEnvironment);
+        pbxbuild::Phase::PhaseContext phaseContext = pbxbuild::Phase::PhaseContext(*buildEnvironment, buildContext, target, *targetEnvironment);
         std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> phaseInvocations = PhaseInvocations(phaseContext, target);
         std::vector<pbxproj::PBX::BuildPhase::shared_ptr> orderedPhases = SortBuildPhases(phaseInvocations);
 

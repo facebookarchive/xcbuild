@@ -8,10 +8,7 @@ using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
 
 TargetEnvironment::
-TargetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context) :
-    _buildEnvironment(buildEnvironment),
-    _target(target),
-    _context(context)
+TargetEnvironment()
 {
 }
 
@@ -316,7 +313,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
     std::string workingDirectory = target->project()->basePath();
 
-    std::unique_ptr<TargetEnvironment> te = std::make_unique<TargetEnvironment>(TargetEnvironment(buildEnvironment, target, context));
+    std::unique_ptr<TargetEnvironment> te = std::make_unique<TargetEnvironment>();
     te->_buildRules = buildRules;
     te->_environment = std::make_unique<pbxsetting::Environment>(environment);
     te->_variants = variants;

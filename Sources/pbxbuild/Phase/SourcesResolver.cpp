@@ -9,13 +9,18 @@
 #include <pbxbuild/ToolInvocationContext.h>
 #include <pbxbuild/ScriptInvocationContext.h>
 #include <pbxbuild/CompilerInvocationContext.h>
+#include <pbxbuild/Tool/HeadermapInvocationContext.h>
 
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Phase::PhaseContext;
+using pbxbuild::ToolInvocation;
+using pbxbuild::CompilerInvocationContext;
+using pbxbuild::ToolInvocationContext;
+using pbxbuild::Tool::HeadermapInvocationContext;
 using libutil::FSUtil;
 
 SourcesResolver::
-SourcesResolver(std::vector<pbxbuild::ToolInvocation> const &invocations, std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> const &variantArchitectureInvocations) :
+SourcesResolver(std::vector<ToolInvocation> const &invocations, std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations) :
     _invocations                   (invocations),
     _variantArchitectureInvocations(variantArchitectureInvocations)
 {
@@ -35,19 +40,24 @@ Create(
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseContext.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseContext.targetEnvironment();
 
-    std::vector<pbxbuild::ToolInvocation> allInvocations;
-    std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> variantArchitectureInvocations;
+    std::vector<ToolInvocation> allInvocations;
+    std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> variantArchitectureInvocations;
 
     pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script", targetEnvironment.specDomain());
+    pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool("com.apple.commands.built-in.headermap-generator", targetEnvironment.specDomain());
 
     // TODO(grp): This should probably try a number of other compilers if it's not clang.
     std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
     pbxspec::PBX::Compiler::shared_ptr defaultCompiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomain());
 
-    if (scriptTool == nullptr || defaultCompiler == nullptr) {
+    if (scriptTool == nullptr || headermapTool == nullptr || defaultCompiler == nullptr) {
         fprintf(stderr, "error: couldn't get compiler tools\n");
         return nullptr;
     }
+
+    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, defaultCompiler, buildEnvironment.specManager(), phaseContext.target(), targetEnvironment.environment());
+    ToolInvocation headermapInvocation = ToolInvocation("", { }, { }, "", { }, { }, { }, headermap.auxiliaryFiles(), "");
+    allInvocations.push_back(headermapInvocation);
 
     std::string workingDirectory = targetEnvironment.workingDirectory();
 
@@ -57,7 +67,7 @@ Create(
             currentEnvironment.insertFront(PhaseContext::VariantLevel(variant), false);
             currentEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch), false);
 
-            std::vector<pbxbuild::ToolInvocation> invocations;
+            std::vector<ToolInvocation> invocations;
 
             // TODO(grp): Precompile prefix header if needed.
 
@@ -72,11 +82,11 @@ Create(
                     if (buildRule->tool() != nullptr) {
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
-                            auto context = pbxbuild::CompilerInvocationContext::Create(defaultCompiler, file, buildFile->compilerFlags(), currentEnvironment, workingDirectory);
+                            auto context = CompilerInvocationContext::Create(defaultCompiler, file, buildFile->compilerFlags(), currentEnvironment, workingDirectory);
                             invocations.push_back(context.invocation());
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
-                            auto context = pbxbuild::ToolInvocationContext::Create(tool, { }, { file.filePath() }, currentEnvironment, workingDirectory);
+                            auto context = ToolInvocationContext::Create(tool, { }, { file.filePath() }, currentEnvironment, workingDirectory);
                             invocations.push_back(context.invocation());
                         }
                     } else if (!buildRule->script().empty()) {

@@ -5,9 +5,10 @@
 using pbxbuild::Phase::PhaseContext;
 
 PhaseContext::
-PhaseContext(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, TargetEnvironment const &targetEnvironment) :
+PhaseContext(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, TargetEnvironment const &targetEnvironment) :
     _buildEnvironment (buildEnvironment),
     _buildContext     (buildContext),
+    _target           (target),
     _targetEnvironment(targetEnvironment)
 {
 }

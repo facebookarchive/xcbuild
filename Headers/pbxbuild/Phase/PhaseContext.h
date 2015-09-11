@@ -13,12 +13,13 @@ namespace Phase {
 
 class PhaseContext {
 private:
-    BuildEnvironment  _buildEnvironment;
-    BuildContext      _buildContext;
-    TargetEnvironment _targetEnvironment;
+    BuildEnvironment                 _buildEnvironment;
+    BuildContext                     _buildContext;
+    pbxproj::PBX::Target::shared_ptr _target;
+    TargetEnvironment                _targetEnvironment;
 
 public:
-    PhaseContext(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, TargetEnvironment const &targetEnvironment);
+    PhaseContext(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, TargetEnvironment const &targetEnvironment);
     ~PhaseContext();
 
 public:
@@ -26,6 +27,8 @@ public:
     { return _buildEnvironment; }
     BuildContext const &buildContext() const
     { return _buildContext; }
+    pbxproj::PBX::Target::shared_ptr const &target() const
+    { return _target; }
     TargetEnvironment const &targetEnvironment() const
     { return _targetEnvironment; }
 

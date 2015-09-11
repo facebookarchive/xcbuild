@@ -98,23 +98,27 @@ Create(
             fprintf(stderr, "warning: VFS-based header maps not supported\n");
         }
 
-        // TODO(grp): Create this header maps if needed.
-        std::vector<std::string> headermapSystemPaths;
-        if (pbxsetting::Type::ParseBoolean(env.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS"))) {
-            headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE"));
-        }
-        headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS"));
-        headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS"));
-        if (false) {
-            // TODO(grp): When should this be used?
-            headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS"));
-        }
-        AppendPathFlags(&special, headermapSystemPaths, "-I", true);
+        if (!pbxsetting::Type::ParseBoolean(env.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS"))) {
+            AppendPathFlags(&special, { env.resolve("CPP_HEADERMAP_FILE") }, "-I", true);
+        } else {
+            std::vector<std::string> headermapSystemPaths;
+            if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT"))) {
+                headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS"));
+            }
+            if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES"))) {
+                headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS"));
+            } else {
+                headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS"));
+            }
+            AppendPathFlags(&special, headermapSystemPaths, "-I", true);
 
-        std::vector<std::string> headermapUserPaths;
-        headermapUserPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES"));
-        headermapUserPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES"));
-        AppendPathFlags(&special, headermapUserPaths, "-iquote", false);
+            std::vector<std::string> headermapUserPaths;
+            headermapUserPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES"));
+            if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_PROJECT_HEADERS"))) {
+                headermapUserPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES"));
+            }
+            AppendPathFlags(&special, headermapUserPaths, "-iquote", false);
+        }
     } else if (env.resolve("USE_HEADER_SYMLINKS") == "YES") {
         // TODO(grp): Create this symlink tree as needed.
 		AppendPathFlags(&special, { env.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
