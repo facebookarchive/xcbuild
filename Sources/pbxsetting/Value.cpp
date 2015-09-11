@@ -227,7 +227,7 @@ FromObject(plist::Object const *object)
         return pbxsetting::Value::Parse(std::to_string(integerValue->value()));
     } else {
         // TODO(grp): Handle additional types?
-        fprintf(stderr, "Warning: Unknown value type for list object.\n");
+        fprintf(stderr, "Warning: Unknown value type for object.\n");
         return pbxsetting::Value::Empty();
     }
 }

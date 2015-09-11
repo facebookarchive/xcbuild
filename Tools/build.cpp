@@ -172,7 +172,8 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
 
             printf("    cd %s\n", invocation.workingDirectory().c_str());
 
-            for (std::pair<std::string, std::string> const &entry : invocation.environment()) {
+            std::map<std::string, std::string> sortedEnvironment = std::map<std::string, std::string>(invocation.environment().begin(), invocation.environment().end());
+            for (std::pair<std::string, std::string> const &entry : sortedEnvironment) {
                 printf("    export %s=%s\n", entry.first.c_str(), entry.second.c_str());
             }
 

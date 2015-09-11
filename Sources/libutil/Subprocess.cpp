@@ -34,10 +34,14 @@ execute(
     }
     exec_args.push_back(nullptr);
 
-    std::vector <char const *> exec_env;
-    exec_env.push_back(path.c_str());
+    std::vector<std::string> env_values;
     for (auto const &I : environment) {
-        exec_env.push_back((I.first + "=" + I.second).c_str());
+        env_values.push_back(I.first + "=" + I.second);
+    }
+
+    std::vector <char const *> exec_env;
+    for (auto const &I : env_values) {
+        exec_env.push_back(I.c_str());
     }
     exec_env.push_back(nullptr);
 
