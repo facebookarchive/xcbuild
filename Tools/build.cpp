@@ -329,7 +329,6 @@ main(int argc, char **argv)
 
     xcscheme::XC::Scheme::shared_ptr scheme = nullptr;
     for (xcscheme::XC::Scheme::shared_ptr const &available : group->schemes()) {
-        printf("scheme: %s\n", available->name().c_str());
         if (available->name() == argv[2]) {
             scheme = available;
             break;

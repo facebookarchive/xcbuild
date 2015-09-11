@@ -106,6 +106,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
     for (pbxproj::PBX::TargetDependency::shared_ptr const &dependency : target->dependencies()) {
         if (dependency->target() != nullptr) {
             dependencies.push_back(dependency->target());
+            AddDependencies(context, dependency->target());
         } else if (dependency->targetProxy() != nullptr) {
             pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, dependency->targetProxy(), false);
             if (proxiedTarget != nullptr) {
