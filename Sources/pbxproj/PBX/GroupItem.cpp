@@ -15,7 +15,10 @@ GroupItem::GroupItem(std::string const &isa, Type type) :
 Value GroupItem::
 resolve(void) const
 {
-    std::string path = _path.empty() ? _name : _path;
+    std::string path = _path;
+    if (_type != kTypeGroup) {
+        path = path.empty() ? _name : path;
+    }
     path = path.empty() ? path : "/" + path;
 
     if (_sourceTree.empty() || _sourceTree == "<absolute>") {
