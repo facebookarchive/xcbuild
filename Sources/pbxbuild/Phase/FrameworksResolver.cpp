@@ -2,6 +2,7 @@
 
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
@@ -11,6 +12,7 @@
 
 using pbxbuild::Phase::FrameworksResolver;
 using pbxbuild::Phase::PhaseContext;
+using pbxbuild::Phase::SourcesResolver;
 using libutil::FSUtil;
 
 FrameworksResolver::
@@ -28,7 +30,7 @@ std::unique_ptr<FrameworksResolver> FrameworksResolver::
 Create(
     pbxbuild::Phase::PhaseContext const &phaseContext,
     pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase,
-    std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> const &sourcesInvocations
+    SourcesResolver const &sourcesResolver
 )
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseContext.buildEnvironment();
@@ -49,12 +51,14 @@ Create(
 
     pbxspec::PBX::Linker::shared_ptr linker;
     std::string linkerExecutable;
+    std::vector<std::string> linkerArguments;
     if (binaryType == "staticlib") {
         linker = libtool;
     } else {
         linker = ld;
         // TODO(grp): Resolve this from the Compiler used to build sources? (See ExecCPlusPlusLinkerPath.)
         linkerExecutable = "clang";
+        linkerArguments.insert(linkerArguments.end(), sourcesResolver.linkerArgs().begin(), sourcesResolver.linkerArgs().end());
     }
 
     std::string workingDirectory = targetEnvironment.workingDirectory();
@@ -86,8 +90,8 @@ Create(
             }
 
             std::vector<std::string> sourceOutputs;
-            auto it = sourcesInvocations.find(std::make_pair(variant, arch));
-            if (it != sourcesInvocations.end()) {
+            auto it = sourcesResolver.variantArchitectureInvocations().find(std::make_pair(variant, arch));
+            if (it != sourcesResolver.variantArchitectureInvocations().end()) {
                 std::vector<pbxbuild::ToolInvocation> const &sourceInvocations = it->second;
                 for (pbxbuild::ToolInvocation const &invocation : sourceInvocations) {
                     for (std::string const &output : invocation.outputs()) {
@@ -103,18 +107,18 @@ Create(
                 std::string architectureIntermediatesDirectory = variantIntermediatesDirectory + "/" + arch;
                 std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
 
-                auto context = pbxbuild::LinkerInvocationContext::Create(linker, sourceOutputs, files, architectureIntermediatesOutput, archEnvironment, workingDirectory, linkerExecutable);
+                auto context = pbxbuild::LinkerInvocationContext::Create(linker, sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
                 invocations.push_back(context.invocation());
 
                 universalBinaryInputs.push_back(architectureIntermediatesOutput);
             } else {
-                auto context = pbxbuild::LinkerInvocationContext::Create(linker, sourceOutputs, files, variantProductsOutput, archEnvironment, workingDirectory, linkerExecutable);
+                auto context = pbxbuild::LinkerInvocationContext::Create(linker, sourceOutputs, files, variantProductsOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
                 invocations.push_back(context.invocation());
             }
         }
 
         if (createUniversalBinary) {
-            auto context = pbxbuild::LinkerInvocationContext::Create(lipo, universalBinaryInputs, { }, variantProductsOutput, variantEnvironment, workingDirectory);
+            auto context = pbxbuild::LinkerInvocationContext::Create(lipo, universalBinaryInputs, { }, variantProductsOutput, { }, variantEnvironment, workingDirectory);
             invocations.push_back(context.invocation());
         }
 

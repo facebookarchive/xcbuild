@@ -13,11 +13,12 @@ class PhaseContext;
 
 class SourcesResolver {
 private:
-    std::vector<ToolInvocation> _invocations;
+    std::vector<ToolInvocation>                                                _invocations;
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> _variantArchitectureInvocations;
+    std::unordered_set<std::string>                                            _linkerArgs;
 
 public:
-    SourcesResolver(std::vector<ToolInvocation> const &invocations, std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations);
+    SourcesResolver(std::vector<ToolInvocation> const &invocations, std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations, std::unordered_set<std::string> const &linkerArgs);
     ~SourcesResolver();
 
 public:
@@ -25,6 +26,8 @@ public:
     { return _invocations; }
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations() const
     { return _variantArchitectureInvocations; }
+    std::unordered_set<std::string> const &linkerArgs() const
+    { return _linkerArgs; }
 
 public:
     static std::unique_ptr<SourcesResolver>

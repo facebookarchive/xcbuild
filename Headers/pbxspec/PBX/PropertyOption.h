@@ -46,6 +46,7 @@ protected:
     std::string             _commandLineFlag;
     std::string             _commandLineFlagIfFalse;
     std::string             _commandLinePrefixFlag;
+    bool                    _hasCommandLinePrefixFlag;
     plist::Object          *_commandLineArgs;
     plist::Object          *_additionalLinkerArgs;
     plist::Object          *_defaultValue;
@@ -123,6 +124,8 @@ public:
     { return _commandLineFlagIfFalse; }
     inline std::string const commandLinePrefixFlag() const
     { return _commandLinePrefixFlag; }
+    inline bool const hasCommandLinePrefixFlag() const
+    { return _hasCommandLinePrefixFlag; }
 
 public:
     inline plist::Object const *additionalLinkerArgs() const

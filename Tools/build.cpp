@@ -219,28 +219,37 @@ PhaseInvocations(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX
 
     std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> toolInvocations;
 
-    std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> sourcesInvocations;
+    std::unique_ptr<pbxbuild::Phase::SourcesResolver> sourcesResolver;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
             auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
-            auto sources = pbxbuild::Phase::SourcesResolver::Create(phaseContext, BP);
-            if (sources != nullptr) {
-                sourcesInvocations.insert(sources->variantArchitectureInvocations().begin(), sources->variantArchitectureInvocations().end());
-                toolInvocations.insert({ buildPhase, sources->invocations() });
+            sourcesResolver = pbxbuild::Phase::SourcesResolver::Create(phaseContext, BP);
+
+            if (sourcesResolver != nullptr) {
+                toolInvocations.insert({ buildPhase, sourcesResolver->invocations() });
             }
+
+            break;
         }
     }
 
-    bool foundSources = false;
-    bool foundFrameworks = false;
-    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
-        foundSources = (foundSources || buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources);
-        foundFrameworks = (foundFrameworks || buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeFrameworks);
-    }
-    if (foundSources && !foundFrameworks) {
-        auto BP = std::make_shared <pbxproj::PBX::FrameworksBuildPhase> ();
-        auto buildPhase = std::static_pointer_cast <pbxproj::PBX::BuildPhase> (BP);
-        auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseContext, BP, sourcesInvocations);
+    if (sourcesResolver != nullptr) {
+        pbxproj::PBX::BuildPhase::shared_ptr buildPhase;
+        pbxproj::PBX::FrameworksBuildPhase::shared_ptr frameworksPhase;
+
+        auto it = std::find_if(buildPhases.begin(), buildPhases.end(), [](pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase) -> bool {
+            return (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeFrameworks);
+        });
+
+        if (it == buildPhases.end()) {
+            frameworksPhase = std::make_shared <pbxproj::PBX::FrameworksBuildPhase> ();
+            buildPhase = std::static_pointer_cast <pbxproj::PBX::BuildPhase> (frameworksPhase);
+        } else {
+            buildPhase = *it;
+            frameworksPhase = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
+        }
+
+        auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseContext, frameworksPhase, *sourcesResolver);
         if (link != nullptr) {
             toolInvocations.insert({ buildPhase, link->invocations() });
         }
@@ -248,14 +257,6 @@ PhaseInvocations(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         switch (buildPhase->type()) {
-            case pbxproj::PBX::BuildPhase::kTypeFrameworks: {
-                auto BP = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
-                auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseContext, BP, sourcesInvocations);
-                if (link != nullptr) {
-                    toolInvocations.insert({ buildPhase, link->invocations() });
-                }
-                break;
-            }
             case pbxproj::PBX::BuildPhase::kTypeShellScript: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
                 auto shellScript = pbxbuild::Phase::ShellScriptResolver::Create(phaseContext, BP);

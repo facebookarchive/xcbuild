@@ -71,7 +71,7 @@ parse(Context *context, plist::Dictionary const *dict)
     }
 
     if (DBS != nullptr) {
-        std::vector<Setting> settings;
+        std::vector<Setting> settings = _defaultBuildSettings.settings();
         for (size_t n = 0; n < DBS->count(); n++) {
             auto DBSK = DBS->key(n);
             auto DBSV = DBS->value <plist::String> (DBSK);

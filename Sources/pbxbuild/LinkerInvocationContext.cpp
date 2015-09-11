@@ -30,6 +30,7 @@ Create(
     std::vector<std::string> const &inputFiles,
     std::vector<TypeResolvedFile> const &inputLibraries,
     std::string const &output,
+    std::vector<std::string> const &additionalArguments,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory,
     std::string const &executable
@@ -37,6 +38,8 @@ Create(
 {
     std::vector<std::string> special;
     std::vector<ToolInvocation::AuxiliaryFile> auxiliaries;
+
+    special.insert(special.end(), additionalArguments.begin(), additionalArguments.end());
 
     if (linker->supportsInputFileList() || linker->identifier() == "com.apple.pbx.linkers.libtool") {
         std::string path = environment.expand(pbxsetting::Value::Parse("$(LINK_FILE_LIST_$(variant)_$(arch))"));

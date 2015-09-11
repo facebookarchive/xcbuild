@@ -20,9 +20,10 @@ using pbxbuild::Tool::HeadermapInvocationContext;
 using libutil::FSUtil;
 
 SourcesResolver::
-SourcesResolver(std::vector<ToolInvocation> const &invocations, std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations) :
+SourcesResolver(std::vector<ToolInvocation> const &invocations, std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations, std::unordered_set<std::string> const &linkerArgs) :
     _invocations                   (invocations),
-    _variantArchitectureInvocations(variantArchitectureInvocations)
+    _variantArchitectureInvocations(variantArchitectureInvocations),
+    _linkerArgs                    (linkerArgs)
 {
 }
 
@@ -42,6 +43,7 @@ Create(
 
     std::vector<ToolInvocation> allInvocations;
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> variantArchitectureInvocations;
+    std::unordered_set<std::string> linkerArguments;
 
     pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script", targetEnvironment.specDomain());
     pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool("com.apple.commands.built-in.headermap-generator", targetEnvironment.specDomain());
@@ -83,6 +85,7 @@ Create(
                         if (tool->identifier() == "com.apple.compilers.gcc") {
                             auto context = CompilerInvocationContext::Create(defaultCompiler, file, buildFile->compilerFlags(), headermap, currentEnvironment, workingDirectory);
                             invocations.push_back(context.invocation());
+                            linkerArguments.insert(context.linkerArgs().begin(), context.linkerArgs().end());
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
                             auto context = ToolInvocationContext::Create(tool, { }, { file.filePath() }, currentEnvironment, workingDirectory);
@@ -105,5 +108,5 @@ Create(
         }
     }
 
-    return std::make_unique<SourcesResolver>(allInvocations, variantArchitectureInvocations);
+    return std::make_unique<SourcesResolver>(allInvocations, variantArchitectureInvocations, linkerArguments);
 }

@@ -29,6 +29,7 @@ public:
         std::vector<std::string> const &inputFiles,
         std::vector<TypeResolvedFile> const &inputLibraries,
         std::string const &output,
+        std::vector<std::string> const &additionalArguments,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory,
         std::string const &executable = ""

@@ -52,9 +52,10 @@ public:
     private:
         std::vector<std::string>                     _arguments;
         std::unordered_map<std::string, std::string> _environment;
+        std::vector<std::string>                     _linkerArgs;
 
     public:
-        OptionsResult(std::vector<std::string> const &arguments, std::unordered_map<std::string, std::string> const &environment);
+        OptionsResult(std::vector<std::string> const &arguments, std::unordered_map<std::string, std::string> const &environment, std::vector<std::string> const &linkerArgs);
         ~OptionsResult();
 
     public:
@@ -62,6 +63,8 @@ public:
         { return _arguments; }
         std::unordered_map<std::string, std::string> const &environment() const
         { return _environment; }
+        std::vector<std::string> const &linkerArgs() const
+        { return _linkerArgs; }
 
     public:
         static OptionsResult

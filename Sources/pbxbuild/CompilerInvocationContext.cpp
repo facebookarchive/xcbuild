@@ -16,8 +16,9 @@ using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 CompilerInvocationContext::
-CompilerInvocationContext(ToolInvocation const &invocation) :
-    _invocation(invocation)
+CompilerInvocationContext(ToolInvocation const &invocation, std::vector<std::string> const &linkerArgs) :
+    _invocation(invocation),
+    _linkerArgs(linkerArgs)
 {
 }
 
@@ -141,5 +142,5 @@ Create(
     OptionsResult options = OptionsResult::Create(toolEnvironment, input.fileType());
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "", special);
     ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory);
-    return CompilerInvocationContext(context.invocation());
+    return CompilerInvocationContext(context.invocation(), options.linkerArgs());
 }

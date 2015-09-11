@@ -10,6 +10,7 @@ namespace pbxbuild {
 namespace Phase {
 
 class PhaseContext;
+class SourcesResolver;
 
 class FrameworksResolver {
 private:
@@ -28,7 +29,7 @@ public:
     Create(
         PhaseContext const &phaseContext,
         pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase,
-        std::map<std::pair<std::string, std::string>, std::vector<pbxbuild::ToolInvocation>> const &sourcesInvocations
+        SourcesResolver const &sourcesResolver
     );
 };
 

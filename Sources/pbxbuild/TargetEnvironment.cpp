@@ -288,8 +288,10 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         environment.insertFront(projectConfigurationFile->level(), false);
     }
 
-    if (packageType != nullptr && productType != nullptr) {
+    if (packageType != nullptr) {
         environment.insertFront(PackageTypeLevel(packageType), false);
+    }
+    if (productType != nullptr) {
         environment.insertFront(ProductTypeLevel(productType), false);
     }
 

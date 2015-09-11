@@ -127,7 +127,7 @@ parse(Context *context, plist::Dictionary const *dict)
     }
 
     if (DBP != nullptr) {
-        std::vector<Setting> settings;
+        std::vector<Setting> settings = _defaultBuildProperties.settings();
         for (size_t n = 0; n < DBP->count(); n++) {
             auto DBPK = DBP->key(n);
             auto DBPV = DBP->value <plist::String> (DBPK);

@@ -13,15 +13,18 @@ namespace Tool { class HeadermapInvocationContext; }
 
 class CompilerInvocationContext {
 private:
-    ToolInvocation _invocation;
+    ToolInvocation           _invocation;
+    std::vector<std::string> _linkerArgs;
 
 public:
-    explicit CompilerInvocationContext(ToolInvocation const &invocation);
+    explicit CompilerInvocationContext(ToolInvocation const &invocation, std::vector<std::string> const &linkerArgs);
     ~CompilerInvocationContext();
 
 public:
-    ToolInvocation const &invocation(void) const
+    ToolInvocation const &invocation() const
     { return _invocation; }
+    std::vector<std::string> const &linkerArgs() const
+    { return _linkerArgs; }
 
 public:
     static CompilerInvocationContext

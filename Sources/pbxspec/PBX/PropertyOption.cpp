@@ -10,6 +10,7 @@ PropertyOption::PropertyOption() :
     _avoidEmptyValues                  (false),
     _commandLineCondition              (true),
     _commandLineArgs                   (nullptr),
+    _hasCommandLinePrefixFlag          (false),
     _additionalLinkerArgs              (nullptr),
     _defaultValue                      (nullptr),
     _allowedValues                     (nullptr),
@@ -191,6 +192,7 @@ parse(plist::Dictionary const *dict)
     if (CLPF != nullptr) {
         _commandLinePrefixFlag = CLPF->value();
     }
+    _hasCommandLinePrefixFlag = (CLPF != nullptr);
 
     if (DV != nullptr) {
         _defaultValue = DV->copy();
