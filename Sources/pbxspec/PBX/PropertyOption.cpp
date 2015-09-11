@@ -55,19 +55,7 @@ defaultSetting(void) const
 pbxsetting::Value PropertyOption::
 defaultPropertyValue(void) const
 {
-    if (_defaultValue == nullptr) {
-        return pbxsetting::Value::Empty();
-    } else if (plist::String const *stringValue = plist::CastTo <plist::String> (_defaultValue)) {
-        return pbxsetting::Value::Parse(stringValue->value());
-    } else if (plist::Boolean const *booleanValue = plist::CastTo <plist::Boolean> (_defaultValue)) {
-        return pbxsetting::Value::Parse(booleanValue->value() ? "YES" : "NO");
-    } else if (plist::Integer const *integerValue = plist::CastTo <plist::Integer> (_defaultValue)) {
-        return pbxsetting::Value::Parse(std::to_string(integerValue->value()));
-    } else {
-        // TODO(grp): Handle additional types?
-        fprintf(stderr, "Warning: Unknown value type for setting %s.\n", _name.c_str());
-        return pbxsetting::Value::Empty();
-    }
+    return pbxsetting::Value::FromObject(_defaultValue);
 }
 
 bool PropertyOption::

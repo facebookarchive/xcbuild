@@ -214,6 +214,24 @@ Variable(std::string const &value)
     });
 }
 
+Value Value::
+FromObject(plist::Object const *object)
+{
+    if (object == nullptr) {
+        return pbxsetting::Value::Empty();
+    } else if (plist::String const *stringValue = plist::CastTo <plist::String> (object)) {
+        return pbxsetting::Value::Parse(stringValue->value());
+    } else if (plist::Boolean const *booleanValue = plist::CastTo <plist::Boolean> (object)) {
+        return pbxsetting::Value::Parse(booleanValue->value() ? "YES" : "NO");
+    } else if (plist::Integer const *integerValue = plist::CastTo <plist::Integer> (object)) {
+        return pbxsetting::Value::Parse(std::to_string(integerValue->value()));
+    } else {
+        // TODO(grp): Handle additional types?
+        fprintf(stderr, "Warning: Unknown value type for list object.\n");
+        return pbxsetting::Value::Empty();
+    }
+}
+
 Value const &Value::
 Empty(void)
 {

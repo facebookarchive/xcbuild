@@ -4,6 +4,7 @@
 #define __pbxsetting_Value_h
 
 #include <pbxsetting/Base.h>
+#include <plist/plist.h>
 
 namespace pbxsetting {
 
@@ -47,6 +48,8 @@ public:
     String(std::string const &value);
     static Value
     Variable(std::string const &value);
+    static Value
+    FromObject(plist::Object const *object);
     static Value const &
     Empty(void);
 };

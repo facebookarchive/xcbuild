@@ -35,13 +35,10 @@ parse(Context &context, plist::Dictionary const *dict)
     if (BS != nullptr) {
         std::vector<Setting> settings;
         for (size_t n = 0; n < BS->count(); n++) {
-            auto BSK = BS->key(n);
-            auto BSV = BS->value <plist::String> (BSK);
-
-            if (BSV != nullptr) {
-                Setting setting = Setting::Parse(BSK, BSV->value());
-                settings.push_back(setting);
-            }
+            auto BSk = BS->key(n);
+            auto BSv = BS->value (BSk);
+            Setting setting = Setting::Parse(BSk, pbxsetting::Value::FromObject(BSv).raw());
+            settings.push_back(setting);
         }
         _buildSettings = Level(settings);
     }
