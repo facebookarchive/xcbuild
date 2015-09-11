@@ -9,6 +9,7 @@
 namespace pbxbuild {
 
 class TypeResolvedFile;
+namespace Tool { class HeadermapInvocationContext; }
 
 class CompilerInvocationContext {
 private:
@@ -28,6 +29,7 @@ public:
         pbxspec::PBX::Compiler::shared_ptr const &compiler,
         TypeResolvedFile const &input,
         std::vector<std::string> const &inputArguments,
+        Tool::HeadermapInvocationContext const &headermaps,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );

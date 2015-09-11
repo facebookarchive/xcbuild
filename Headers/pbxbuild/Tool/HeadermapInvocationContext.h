@@ -11,15 +11,21 @@ namespace Tool {
 
 class HeadermapInvocationContext {
 private:
-    std::vector<ToolInvocation::AuxiliaryFile> _auxiliaryFiles;
+    ToolInvocation           _invocation;
+    std::vector<std::string> _systemHeadermapFiles;
+    std::vector<std::string> _userHeadermapFiles;
 
 public:
-    explicit HeadermapInvocationContext(std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaryFiles);
+    HeadermapInvocationContext(ToolInvocation const &invocation, std::vector<std::string> const &systemHeadermapFiles, std::vector<std::string> const &userHeadermapFiles);
     ~HeadermapInvocationContext();
 
 public:
-    std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaryFiles(void) const
-    { return _auxiliaryFiles; }
+    ToolInvocation const &invocation(void) const
+    { return _invocation; }
+    std::vector<std::string> const &systemHeadermapFiles(void) const
+    { return _systemHeadermapFiles; }
+    std::vector<std::string> const &userHeadermapFiles(void) const
+    { return _userHeadermapFiles; }
 
 public:
     static HeadermapInvocationContext

@@ -2,6 +2,7 @@
 
 #include <pbxbuild/CompilerInvocationContext.h>
 #include <pbxbuild/ToolInvocationContext.h>
+#include <pbxbuild/Tool/HeadermapInvocationContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::CompilerInvocationContext;
@@ -9,6 +10,7 @@ using pbxbuild::ToolInvocationContext;
 using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
 using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
 using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
+using pbxbuild::Tool::HeadermapInvocationContext;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -44,6 +46,7 @@ Create(
     pbxspec::PBX::Compiler::shared_ptr const &compiler,
     TypeResolvedFile const &input,
     std::vector<std::string> const &inputArguments,
+    HeadermapInvocationContext const &headermaps,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
 )
@@ -52,6 +55,8 @@ Create(
 
     std::vector<std::string> inputFiles;
     inputFiles.push_back(input.filePath());
+    inputFiles.insert(inputFiles.end(), headermaps.systemHeadermapFiles().begin(), headermaps.systemHeadermapFiles().end());
+    inputFiles.insert(inputFiles.end(), headermaps.userHeadermapFiles().begin(), headermaps.userHeadermapFiles().end());
 
     std::vector<std::string> outputFiles;
 
@@ -92,34 +97,10 @@ Create(
         special.insert(special.end(), flags.begin(), flags.end());
     }
 
-    if (pbxsetting::Type::ParseBoolean(env.resolve("USE_HEADERMAP"))) {
-        if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_USES_VFS"))) {
-            // TODO(grp): Support VFS-based header maps.
-            fprintf(stderr, "warning: VFS-based header maps not supported\n");
-        }
+    AppendPathFlags(&special, headermaps.systemHeadermapFiles(), "-I", true);
+    AppendPathFlags(&special, headermaps.userHeadermapFiles(), "-iquote", false);
 
-        if (!pbxsetting::Type::ParseBoolean(env.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS"))) {
-            AppendPathFlags(&special, { env.resolve("CPP_HEADERMAP_FILE") }, "-I", true);
-        } else {
-            std::vector<std::string> headermapSystemPaths;
-            if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT"))) {
-                headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS"));
-            }
-            if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES"))) {
-                headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS"));
-            } else {
-                headermapSystemPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS"));
-            }
-            AppendPathFlags(&special, headermapSystemPaths, "-I", true);
-
-            std::vector<std::string> headermapUserPaths;
-            headermapUserPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES"));
-            if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_PROJECT_HEADERS"))) {
-                headermapUserPaths.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES"));
-            }
-            AppendPathFlags(&special, headermapUserPaths, "-iquote", false);
-        }
-    } else if (env.resolve("USE_HEADER_SYMLINKS") == "YES") {
+    if (env.resolve("USE_HEADER_SYMLINKS") == "YES") {
         // TODO(grp): Create this symlink tree as needed.
 		AppendPathFlags(&special, { env.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
     }

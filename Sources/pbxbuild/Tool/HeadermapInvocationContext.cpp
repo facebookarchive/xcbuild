@@ -13,8 +13,10 @@ using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 HeadermapInvocationContext::
-HeadermapInvocationContext(std::vector<AuxiliaryFile> const &auxiliaryFiles) :
-    _auxiliaryFiles(auxiliaryFiles)
+HeadermapInvocationContext(ToolInvocation const &invocation, std::vector<std::string> const &systemHeadermapFiles, std::vector<std::string> const &userHeadermapFiles) :
+    _invocation          (invocation),
+    _systemHeadermapFiles(systemHeadermapFiles),
+    _userHeadermapFiles  (userHeadermapFiles)
 {
 }
 
@@ -36,7 +38,7 @@ Create(
     env.insertFront(defaultCompiler->defaultSettings(), true);
 
     if (!pbxsetting::Type::ParseBoolean(env.resolve("USE_HEADERMAP"))) {
-        return HeadermapInvocationContext({ });
+        return HeadermapInvocationContext(ToolInvocation({ }, { }, { }), { }, { });
     }
 
     if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_USES_VFS"))) {
@@ -109,7 +111,7 @@ Create(
         }
     }
 
-    return HeadermapInvocationContext({
+    ToolInvocation invocation = ToolInvocation({ }, { }, {
         AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE"), targetName.write(), false),
         AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS"), ownTargetHeaders.write(), false),
         AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS"), allTargetHeaders.write(), false),
@@ -117,4 +119,27 @@ Create(
         AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES"), generatedFiles.write(), false),
         AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES"), projectHeaders.write(), false),
     });
+
+    std::vector<std::string> systemHeadermapFiles;
+    std::vector<std::string> userHeadermapFiles;
+
+    if (!pbxsetting::Type::ParseBoolean(env.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS"))) {
+        systemHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE"));
+    } else {
+        if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT"))) {
+            systemHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS"));
+        }
+        if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES"))) {
+            systemHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS"));
+        } else {
+            systemHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS"));
+        }
+
+        userHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES"));
+        if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_PROJECT_HEADERS"))) {
+            userHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES"));
+        }
+    }
+
+    return HeadermapInvocationContext(invocation, systemHeadermapFiles, userHeadermapFiles);
 }

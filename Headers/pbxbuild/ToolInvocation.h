@@ -56,6 +56,11 @@ public:
         std::vector<AuxiliaryFile> const                   &auxiliaryFiles,
         std::string const                                  &logMessage
     );
+    ToolInvocation(
+        std::vector<std::string> const                     &inputs,
+        std::vector<std::string> const                     &outputs,
+        std::vector<AuxiliaryFile> const                   &auxiliaryFiles
+    );
     ~ToolInvocation();
 
 public:

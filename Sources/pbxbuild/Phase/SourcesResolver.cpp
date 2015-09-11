@@ -56,8 +56,7 @@ Create(
     }
 
     HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, defaultCompiler, buildEnvironment.specManager(), phaseContext.target(), targetEnvironment.environment());
-    ToolInvocation headermapInvocation = ToolInvocation("", { }, { }, "", { }, { }, { }, headermap.auxiliaryFiles(), "");
-    allInvocations.push_back(headermapInvocation);
+    allInvocations.push_back(headermap.invocation());
 
     std::string workingDirectory = targetEnvironment.workingDirectory();
 
@@ -82,7 +81,7 @@ Create(
                     if (buildRule->tool() != nullptr) {
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
-                            auto context = CompilerInvocationContext::Create(defaultCompiler, file, buildFile->compilerFlags(), currentEnvironment, workingDirectory);
+                            auto context = CompilerInvocationContext::Create(defaultCompiler, file, buildFile->compilerFlags(), headermap, currentEnvironment, workingDirectory);
                             invocations.push_back(context.invocation());
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
