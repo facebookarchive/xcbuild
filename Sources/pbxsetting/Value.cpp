@@ -2,6 +2,9 @@
 
 #include <pbxsetting/Value.h>
 
+#include <iomanip>
+#include <sstream>
+
 using pbxsetting::Value;
 
 bool Value::Entry::
@@ -225,6 +228,10 @@ FromObject(plist::Object const *object)
         return pbxsetting::Value::Parse(booleanValue->value() ? "YES" : "NO");
     } else if (plist::Integer const *integerValue = plist::CastTo <plist::Integer> (object)) {
         return pbxsetting::Value::Parse(std::to_string(integerValue->value()));
+    } else if (plist::Real const *realValue = plist::CastTo <plist::Real> (object)) {
+        std::ostringstream out;
+        out << std::setprecision(1) << std::fixed << realValue->value();
+        return pbxsetting::Value::Parse(out.str());
     } else if (plist::Array const *arrayValue = plist::CastTo <plist::Array> (object)) {
         std::string value;
         for (size_t n = 0; n < arrayValue->count(); n++) {
