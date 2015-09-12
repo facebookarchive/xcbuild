@@ -143,7 +143,7 @@ Create(
 
                 std::string fileName = FSUtil::GetBaseName(file->filePath());
                 std::string filePath = FSUtil::GetDirectoryName(file->filePath()) + "/";
-                std::string frameworkName = projectTarget->name() + "/" + fileName;
+                std::string frameworkName = projectTarget->productName() + "/" + fileName;
 
                 std::vector<std::string> const &attributes = buildFile->attributes();
                 bool isPublic  = std::find(attributes.begin(), attributes.end(), "Public") != attributes.end();
