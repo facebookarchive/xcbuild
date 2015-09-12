@@ -33,7 +33,8 @@ Create(
     pbxspec::Manager::shared_ptr const &specManager,
     pbxproj::PBX::Target::shared_ptr const &target,
     SearchPaths const &searchPaths,
-    pbxsetting::Environment const &environment
+    pbxsetting::Environment const &environment,
+    std::string const &workingDirectory
 )
 {
     pbxsetting::Environment env = environment;
@@ -53,10 +54,29 @@ Create(
     HeaderMap allTargetHeaders;
     HeaderMap allNonFrameworkTargetHeaders;
 
+    bool includeFlatEntriesForTargetBeingBuilt     = pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT"));
+    bool includeFrameworkEntriesForAllProductTypes = pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES"));
+    bool includeProjectHeaders                     = pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_PROJECT_HEADERS"));
+
     // TODO(grp): Populate generated headers.
     HeaderMap generatedFiles;
 
     pbxproj::PBX::Project::shared_ptr project = target->project();
+
+    // The basic header map includes all paths referenced in include paths.
+    for (std::string const &path : searchPaths.userHeaderSearchPaths()) {
+        std::string fullPath = workingDirectory + "/" + path;
+        FSUtil::EnumerateDirectory(fullPath, [&](std::string const &fileName) -> bool {
+            // TODO(grp): Use TypeResolvedFile when reliable.
+            std::string extension = FSUtil::GetFileExtension(fileName);
+            if (extension != "h" && extension != "hpp") {
+                return true;
+            }
+
+            targetName.add(fileName, fullPath, fileName);
+            return true;
+        });
+    }
 
     for (pbxproj::PBX::FileReference::shared_ptr const &fileReference : project->fileReferences()) {
         auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, fileReference, env);
@@ -67,8 +87,10 @@ Create(
         std::string fileName = FSUtil::GetBaseName(file->filePath());
         std::string filePath = FSUtil::GetDirectoryName(file->filePath()) + "/";
 
-        targetName.add(fileName, filePath, fileName);
         projectHeaders.add(fileName, filePath, fileName);
+        if (includeProjectHeaders) {
+            targetName.add(fileName, filePath, fileName);
+        }
     }
 
     for (pbxproj::PBX::Target::shared_ptr const &projectTarget : project->targets()) {
@@ -96,50 +118,64 @@ Create(
 
                     if (!isPublic && !isPrivate) {
                         ownTargetHeaders.add(frameworkName, filePath, fileName);
-                        targetName.add(frameworkName, filePath, fileName);
+                        if (includeFlatEntriesForTargetBeingBuilt) {
+                            targetName.add(frameworkName, filePath, fileName);
+                        }
                     }
                 }
 
                 if (isPublic || isPrivate) {
-                    targetName.add(frameworkName, filePath, fileName);
                     allTargetHeaders.add(frameworkName, filePath, fileName);
+                    if (includeFrameworkEntriesForAllProductTypes) {
+                        targetName.add(frameworkName, filePath, fileName);
+                    }
 
                     // TODO(grp): This is a little messy. Maybe check the product type specification, or the product reference's file type?
                     if (projectTarget->type() == pbxproj::PBX::Target::kTypeNative && std::static_pointer_cast<pbxproj::PBX::NativeTarget>(projectTarget)->productType().find("framework") == std::string::npos) {
                         allNonFrameworkTargetHeaders.add(frameworkName, filePath, fileName);
+                        if (!includeFrameworkEntriesForAllProductTypes) {
+                            targetName.add(frameworkName, filePath, fileName);
+                        }
                     }
                 }
             }
         }
     }
 
+    std::string headermapFile                                = env.resolve("CPP_HEADERMAP_FILE");
+    std::string headermapFileForOwnTargetHeaders             = env.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS");
+    std::string headermapFileForAllTargetHeaders             = env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS");
+    std::string headermapFileForAllNonFrameworkTargetHeaders = env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS");
+    std::string headermapFileForGeneratedFiles               = env.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES");
+    std::string headermapFileForProjectFiles                 = env.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES");
+
     ToolInvocation invocation = ToolInvocation({ }, { }, {
-        AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE"), targetName.write(), false),
-        AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS"), ownTargetHeaders.write(), false),
-        AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS"), allTargetHeaders.write(), false),
-        AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS"), allNonFrameworkTargetHeaders.write(), false),
-        AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES"), generatedFiles.write(), false),
-        AuxiliaryFile(env.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES"), projectHeaders.write(), false),
+        AuxiliaryFile(headermapFile, targetName.write(), false),
+        AuxiliaryFile(headermapFileForOwnTargetHeaders, ownTargetHeaders.write(), false),
+        AuxiliaryFile(headermapFileForAllTargetHeaders, allTargetHeaders.write(), false),
+        AuxiliaryFile(headermapFileForAllNonFrameworkTargetHeaders, allNonFrameworkTargetHeaders.write(), false),
+        AuxiliaryFile(headermapFileForGeneratedFiles, generatedFiles.write(), false),
+        AuxiliaryFile(headermapFileForProjectFiles, projectHeaders.write(), false),
     });
 
     std::vector<std::string> systemHeadermapFiles;
     std::vector<std::string> userHeadermapFiles;
 
-    if (!pbxsetting::Type::ParseBoolean(env.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS"))) {
-        systemHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE"));
+    if (!pbxsetting::Type::ParseBoolean(env.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS")) || pbxsetting::Type::ParseBoolean(env.resolve("ALWAYS_SEARCH_USER_PATHS"))) {
+        systemHeadermapFiles.push_back(headermapFile);
     } else {
-        if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT"))) {
-            systemHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS"));
+        if (includeFlatEntriesForTargetBeingBuilt) {
+            systemHeadermapFiles.push_back(headermapFileForOwnTargetHeaders);
         }
-        if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES"))) {
-            systemHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS"));
+        if (includeFrameworkEntriesForAllProductTypes) {
+            systemHeadermapFiles.push_back(headermapFileForAllTargetHeaders);
         } else {
-            systemHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS"));
+            systemHeadermapFiles.push_back(headermapFileForAllNonFrameworkTargetHeaders);
         }
 
-        userHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES"));
-        if (pbxsetting::Type::ParseBoolean(env.resolve("HEADERMAP_INCLUDES_PROJECT_HEADERS"))) {
-            userHeadermapFiles.push_back(env.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES"));
+        userHeadermapFiles.push_back(headermapFileForGeneratedFiles);
+        if (includeProjectHeaders) {
+            userHeadermapFiles.push_back(headermapFileForProjectFiles);
         }
     }
 

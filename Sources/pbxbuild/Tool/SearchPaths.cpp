@@ -29,7 +29,7 @@ AppendPaths(std::vector<std::string> *args, std::string const &working, std::vec
         std::string recursive = "**";
         if (path.size() >= recursive.size() && path.substr(path.size() - recursive.size()) == recursive) {
             std::string root = path.substr(0, path.size() - recursive.size());
-            args->push_back(path);
+            args->push_back(root);
 
             FSUtil::EnumerateRecursive(working + "/" + root, [&](std::string const &path) -> bool {
                 // TODO(grp): Use build settings for included and excluded recursive paths.

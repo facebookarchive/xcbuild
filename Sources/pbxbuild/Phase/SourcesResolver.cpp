@@ -62,7 +62,7 @@ Create(
     std::string workingDirectory = targetEnvironment.workingDirectory();
     SearchPaths searchPaths = SearchPaths::Create(workingDirectory, targetEnvironment.environment());
 
-    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, defaultCompiler, buildEnvironment.specManager(), phaseContext.target(), searchPaths, targetEnvironment.environment());
+    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, defaultCompiler, buildEnvironment.specManager(), phaseContext.target(), searchPaths, targetEnvironment.environment(), workingDirectory);
     allInvocations.push_back(headermap.invocation());
 
     for (std::string const &variant : targetEnvironment.variants()) {

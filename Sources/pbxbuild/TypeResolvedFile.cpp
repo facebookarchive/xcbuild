@@ -137,7 +137,8 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &file
         return std::make_unique<TypeResolvedFile>(TypeResolvedFile(filePath, fileType));
     }
 
-    return nullptr;
+    pbxspec::PBX::FileType::shared_ptr fileType = (isFolder ? specManager->fileType("folder") : specManager->fileType("file"));
+    return std::make_unique<TypeResolvedFile>(TypeResolvedFile(filePath, fileType));
 }
 
 std::unique_ptr<TypeResolvedFile> TypeResolvedFile::

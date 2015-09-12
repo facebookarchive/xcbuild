@@ -37,7 +37,8 @@ public:
         pbxspec::Manager::shared_ptr const &specManager,
         pbxproj::PBX::Target::shared_ptr const &target,
         SearchPaths const &searchPaths,
-        pbxsetting::Environment const &environment
+        pbxsetting::Environment const &environment,
+        std::string const &workingDirectory
     );
 };
 
