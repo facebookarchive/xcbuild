@@ -109,7 +109,7 @@ Create(
                 return true;
             }
 
-            targetName.add(fileName, path, fileName);
+            targetName.add(fileName, path + "/", fileName);
             return true;
         });
     }
