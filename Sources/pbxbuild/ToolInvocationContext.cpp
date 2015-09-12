@@ -188,6 +188,20 @@ Create(ToolEnvironment const &toolEnvironment, std::string const &workingDirecto
             }
         }
 
+        if (auto values = plist::CastTo <plist::Array> (option->values())) {
+            for (size_t n = 0; n < values->count(); n++) {
+                if (auto entry = values->value <plist::Dictionary> (n)) {
+                    if (auto entryValue = entry->value <plist::String> ("Value")) {
+                        if (entryValue->value() == value) {
+                            if (auto entryFlag = entry->value <plist::String> ("CommandLineFlag")) {
+                                arguments.push_back(environment.expand(pbxsetting::Value::Parse(entryFlag->value())));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         if (option->hasCommandLinePrefixFlag()) {
             std::string const &prefix = option->commandLinePrefixFlag();
             pbxsetting::Value prefixValue = pbxsetting::Value::Parse(prefix) + pbxsetting::Value::Parse("$(value)");
