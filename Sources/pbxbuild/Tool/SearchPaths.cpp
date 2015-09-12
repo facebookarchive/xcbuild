@@ -35,7 +35,7 @@ AppendPaths(std::vector<std::string> *args, std::string const &working, std::vec
                 // TODO(grp): Use build settings for included and excluded recursive paths.
 
                 if (FSUtil::TestForDirectory(path)) {
-                    args->push_back(path);
+                    args->push_back(path.substr(root.size()));
                 }
                 return true;
             });
