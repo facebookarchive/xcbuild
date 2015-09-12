@@ -7,6 +7,7 @@
 #include <pbxbuild/HeaderMap.h>
 
 using pbxbuild::Tool::HeadermapInvocationContext;
+using pbxbuild::Tool::SearchPaths;
 using pbxbuild::ToolInvocation;
 using AuxiliaryFile = pbxbuild::ToolInvocation::AuxiliaryFile;
 using pbxbuild::HeaderMap;
@@ -24,6 +25,46 @@ HeadermapInvocationContext(ToolInvocation const &invocation, std::vector<std::st
 HeadermapInvocationContext::
 ~HeadermapInvocationContext()
 {
+}
+
+static std::vector<std::string>
+HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting::Environment const &environment, pbxproj::PBX::Target::shared_ptr const &target, SearchPaths const &searchPaths, std::string const &workingDirectory)
+{
+    std::unordered_set<std::string> allHeaderSearchPaths;
+    std::vector<std::string> orderedHeaderSearchPaths;
+
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
+        if (buildPhase->type() != pbxproj::PBX::BuildPhase::kTypeSources) {
+            continue;
+        }
+
+        for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+            auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, buildFile->fileReference(), environment);
+            if (file == nullptr) {
+                continue;
+            }
+
+            std::string fullPath = FSUtil::GetDirectoryName(file->filePath());
+            if (allHeaderSearchPaths.insert(fullPath).second) {
+                orderedHeaderSearchPaths.push_back(fullPath);
+            }
+        }
+    }
+
+    for (std::string const &path : searchPaths.userHeaderSearchPaths()) {
+        std::string fullPath = workingDirectory + "/" + path;
+        if (allHeaderSearchPaths.insert(fullPath).second) {
+            orderedHeaderSearchPaths.push_back(fullPath);
+        }
+    }
+    for (std::string const &path : searchPaths.headerSearchPaths()) {
+        std::string fullPath = workingDirectory + "/" + path;
+        if (allHeaderSearchPaths.insert(fullPath).second) {
+            orderedHeaderSearchPaths.push_back(fullPath);
+        }
+    }
+
+    return orderedHeaderSearchPaths;
 }
 
 HeadermapInvocationContext HeadermapInvocationContext::
@@ -63,17 +104,16 @@ Create(
 
     pbxproj::PBX::Project::shared_ptr project = target->project();
 
-    // The basic header map includes all paths referenced in include paths.
-    for (std::string const &path : searchPaths.userHeaderSearchPaths()) {
-        std::string fullPath = workingDirectory + "/" + path;
-        FSUtil::EnumerateDirectory(fullPath, [&](std::string const &fileName) -> bool {
+    std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(specManager, env, target, searchPaths, workingDirectory);
+    for (std::string const &path : headermapSearchPaths) {
+        FSUtil::EnumerateDirectory(path, [&](std::string const &fileName) -> bool {
             // TODO(grp): Use TypeResolvedFile when reliable.
             std::string extension = FSUtil::GetFileExtension(fileName);
             if (extension != "h" && extension != "hpp") {
                 return true;
             }
 
-            targetName.add(fileName, fullPath, fileName);
+            targetName.add(fileName, path, fileName);
             return true;
         });
     }
