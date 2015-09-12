@@ -22,9 +22,15 @@ using pbxbuild::Tool::SearchPaths;
 using libutil::FSUtil;
 
 SourcesResolver::
-SourcesResolver(std::vector<ToolInvocation> const &invocations, std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations, std::unordered_set<std::string> const &linkerArgs) :
+SourcesResolver(
+    std::vector<ToolInvocation> const &invocations,
+    std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations,
+    std::string const &linkerDriver,
+    std::unordered_set<std::string> const &linkerArgs
+) :
     _invocations                   (invocations),
     _variantArchitectureInvocations(variantArchitectureInvocations),
+    _linkerDriver                  (linkerDriver),
     _linkerArgs                    (linkerArgs)
 {
 }
@@ -59,6 +65,8 @@ Create(
         return nullptr;
     }
 
+    std::string linkerDriver = defaultCompiler->execPath();
+
     pbxsetting::Environment compilerEnvironment = targetEnvironment.environment();
     compilerEnvironment.insertFront(defaultCompiler->defaultSettings(), true);
 
@@ -90,10 +98,11 @@ Create(
                     if (buildRule->tool() != nullptr) {
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
+                            std::string const &dialect = file.fileType()->GCCDialectName();
+
                             std::string prefixHeader;
                             if (!prefixHeaderFile.empty()) {
                                 if (precompilePrefixHeader) {
-                                    std::string const &dialect = file.fileType()->GCCDialectName();
                                     auto it = prefixHeaders.find(dialect);
                                     if (it != prefixHeaders.end()) {
                                         prefixHeader = it->second;
@@ -115,6 +124,10 @@ Create(
                                 } else {
                                     prefixHeader = workingDirectory + "/" + prefixHeaderFile;
                                 }
+                            }
+
+                            if (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++") {
+                                linkerDriver = defaultCompiler->execCPlusPlusLinkerPath();
                             }
 
                             std::string outputBaseName;
@@ -160,5 +173,5 @@ Create(
         }
     }
 
-    return std::make_unique<SourcesResolver>(allInvocations, variantArchitectureInvocations, linkerArguments);
+    return std::make_unique<SourcesResolver>(allInvocations, variantArchitectureInvocations, linkerDriver, linkerArguments);
 }

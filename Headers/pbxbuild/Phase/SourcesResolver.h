@@ -15,10 +15,17 @@ class SourcesResolver {
 private:
     std::vector<ToolInvocation>                                                _invocations;
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> _variantArchitectureInvocations;
+    std::string                                                                _linkerDriver;
     std::unordered_set<std::string>                                            _linkerArgs;
 
 public:
-    SourcesResolver(std::vector<ToolInvocation> const &invocations, std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations, std::unordered_set<std::string> const &linkerArgs);
+    SourcesResolver(
+        std::vector<ToolInvocation> const &invocations,
+        std::map<std::pair<std::string, std::string>,
+        std::vector<ToolInvocation>> const &variantArchitectureInvocations,
+        std::string const &linkerDriver,
+        std::unordered_set<std::string> const &linkerArgs
+    );
     ~SourcesResolver();
 
 public:
@@ -26,6 +33,8 @@ public:
     { return _invocations; }
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations() const
     { return _variantArchitectureInvocations; }
+    std::string const &linkerDriver() const
+    { return _linkerDriver; }
     std::unordered_set<std::string> const &linkerArgs() const
     { return _linkerArgs; }
 

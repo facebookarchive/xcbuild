@@ -371,8 +371,9 @@ FindExecutable(std::string const &name, string_vector const &paths)
     if (exePath.empty())
         return std::string();
 
-    if (TestForExecute(exePath))
-        return ResolvePath(exePath);
+    if (TestForExecute(exePath)) {
+        return NormalizePath(exePath);
+    }
 
     return std::string();
 }
@@ -407,8 +408,9 @@ FindFile(std::string const &name, string_vector const &paths)
 
     for (auto const &path : paths) {
         std::string filePath = path + "/" + name;
-        if (TestForPresence(filePath))
-            return ResolvePath(filePath);
+        if (TestForPresence(filePath)) {
+            return NormalizePath(filePath);
+        }
     }
 
     return std::string();

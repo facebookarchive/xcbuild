@@ -56,8 +56,7 @@ Create(
         linker = libtool;
     } else {
         linker = ld;
-        // TODO(grp): Resolve this from the Compiler used to build sources? (See ExecCPlusPlusLinkerPath.)
-        linkerExecutable = "clang";
+        linkerExecutable = sourcesResolver.linkerDriver();
         linkerArguments.insert(linkerArguments.end(), sourcesResolver.linkerArgs().begin(), sourcesResolver.linkerArgs().end());
     }
 
