@@ -314,10 +314,10 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     environment.insertFront(sdk->platform()->overrideProperties(), false);
 
     environment.insertFront(target->project()->settings(), false);
-    environment.insertFront(projectConfiguration->buildSettings(), false);
     if (projectConfigurationFile != nullptr) {
         environment.insertFront(projectConfigurationFile->level(), false);
     }
+    environment.insertFront(projectConfiguration->buildSettings(), false);
 
     if (packageType != nullptr) {
         environment.insertFront(PackageTypeLevel(packageType), false);
