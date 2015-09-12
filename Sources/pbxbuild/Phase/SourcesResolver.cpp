@@ -85,38 +85,38 @@ Create(
                 pbxproj::PBX::BuildFile::shared_ptr const &buildFile = fileEntry.first;
                 pbxbuild::TypeResolvedFile const &file = fileEntry.second;
 
-                std::string prefixHeader;
-                if (!prefixHeaderFile.empty()) {
-                    if (precompilePrefixHeader) {
-                        std::string const &dialect = file.fileType()->GCCDialectName();
-                        auto it = prefixHeaders.find(dialect);
-                        if (it != prefixHeaders.end()) {
-                            prefixHeader = it->second;
-                        } else {
-                            auto context = CompilerInvocationContext::CreatePrecompiledHeader(
-                                defaultCompiler,
-                                prefixHeaderFile,
-                                file.fileType(),
-                                headermap,
-                                searchPaths,
-                                currentEnvironment,
-                                workingDirectory
-                            );
-                            allInvocations.push_back(context.invocation());
-
-                            prefixHeader = context.output();
-                            prefixHeaders.insert({ dialect, prefixHeader });
-                        }
-                    } else {
-                        prefixHeader = workingDirectory + "/" + prefixHeaderFile;
-                    }
-                }
-
                 pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
                 if (buildRule != nullptr) {
                     if (buildRule->tool() != nullptr) {
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
+                            std::string prefixHeader;
+                            if (!prefixHeaderFile.empty()) {
+                                if (precompilePrefixHeader) {
+                                    std::string const &dialect = file.fileType()->GCCDialectName();
+                                    auto it = prefixHeaders.find(dialect);
+                                    if (it != prefixHeaders.end()) {
+                                        prefixHeader = it->second;
+                                    } else {
+                                        auto context = CompilerInvocationContext::CreatePrecompiledHeader(
+                                            defaultCompiler,
+                                            prefixHeaderFile,
+                                            file.fileType(),
+                                            headermap,
+                                            searchPaths,
+                                            currentEnvironment,
+                                            workingDirectory
+                                        );
+                                        allInvocations.push_back(context.invocation());
+
+                                        prefixHeader = context.output();
+                                        prefixHeaders.insert({ dialect, prefixHeader });
+                                    }
+                                } else {
+                                    prefixHeader = workingDirectory + "/" + prefixHeaderFile;
+                                }
+                            }
+
                             auto context = CompilerInvocationContext::CreateSource(
                                 defaultCompiler,
                                 file,
