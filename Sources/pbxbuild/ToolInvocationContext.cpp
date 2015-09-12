@@ -1,6 +1,7 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxbuild/ToolInvocationContext.h>
+#include <pbxbuild/Tool/SearchPaths.h>
 #include <sstream>
 
 using pbxbuild::ToolInvocationContext;
@@ -8,6 +9,7 @@ using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
 using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
 using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
 using pbxbuild::ToolInvocation;
+using pbxbuild::Tool::SearchPaths;
 using libutil::FSUtil;
 
 ToolInvocationContext::
@@ -110,11 +112,15 @@ AddOptionArgumentValue(std::vector<std::string> *arguments, pbxsetting::Environm
 }
 
 static void
-AddOptionArgumentValues(std::vector<std::string> *arguments, pbxsetting::Environment const &environment, std::vector<pbxsetting::Value> const &args, pbxspec::PBX::PropertyOption::shared_ptr const &option)
+AddOptionArgumentValues(std::vector<std::string> *arguments, pbxsetting::Environment const &environment, std::string const &workingDirectory, std::vector<pbxsetting::Value> const &args, pbxspec::PBX::PropertyOption::shared_ptr const &option)
 {
     if ((option->type() == "StringList" || option->type() == "stringlist") ||
         (option->type() == "PathList" || option->type() == "pathlist")) {
         std::vector<std::string> values = pbxsetting::Type::ParseList(environment.resolve(option->name()));
+        if (option->flattenRecursiveSearchPathsInValue()) {
+            values = SearchPaths::ExpandRecursive(environment, values, workingDirectory);
+        }
+
         for (std::string const &value : values) {
             AddOptionArgumentValue(arguments, environment, args, value);
         }
@@ -137,7 +143,7 @@ ArgumentValuesFromArray(plist::Array const *args)
 }
 
 OptionsResult OptionsResult::
-Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environmentVariables)
+Create(ToolEnvironment const &toolEnvironment, std::string const &workingDirectory, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environmentVariables)
 {
     pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
     std::unordered_set<std::string> const &deletedProperties = toolEnvironment.tool()->deletedProperties();
@@ -185,32 +191,32 @@ Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_pt
         if (option->hasCommandLinePrefixFlag()) {
             std::string const &prefix = option->commandLinePrefixFlag();
             pbxsetting::Value prefixValue = pbxsetting::Value::Parse(prefix) + pbxsetting::Value::Parse("$(value)");
-            AddOptionArgumentValues(&arguments, environment, { prefixValue }, option);
+            AddOptionArgumentValues(&arguments, environment, workingDirectory, { prefixValue }, option);
         }
 
         if (auto args = plist::CastTo <plist::Array> (option->commandLineArgs())) {
             std::vector<pbxsetting::Value> argsValues = ArgumentValuesFromArray(args);
-            AddOptionArgumentValues(&arguments, environment, argsValues, option);
+            AddOptionArgumentValues(&arguments, environment, workingDirectory, argsValues, option);
         } else if (auto argsValues = plist::CastTo <plist::Dictionary> (option->commandLineArgs())) {
             if (auto args = argsValues->value <plist::Array> (value)) {
                 std::vector<pbxsetting::Value> argsValues = ArgumentValuesFromArray(args);
-                AddOptionArgumentValues(&arguments, environment, argsValues, option);
+                AddOptionArgumentValues(&arguments, environment, workingDirectory, argsValues, option);
             } else if (auto args = argsValues->value <plist::Array> ("<<otherwise>>")) {
                 std::vector<pbxsetting::Value> argsValues = ArgumentValuesFromArray(args);
-                AddOptionArgumentValues(&arguments, environment, argsValues, option);
+                AddOptionArgumentValues(&arguments, environment, workingDirectory, argsValues, option);
             }
         }
 
         if (auto args = plist::CastTo <plist::Array> (option->additionalLinkerArgs())) {
             std::vector<pbxsetting::Value> argsValues = ArgumentValuesFromArray(args);
-            AddOptionArgumentValues(&linkerArgs, environment, argsValues, option);
+            AddOptionArgumentValues(&linkerArgs, environment, workingDirectory, argsValues, option);
         } else if (auto argsValues = plist::CastTo <plist::Dictionary> (option->additionalLinkerArgs())) {
             if (auto args = argsValues->value <plist::Array> (value)) {
                 std::vector<pbxsetting::Value> argsValues = ArgumentValuesFromArray(args);
-                AddOptionArgumentValues(&linkerArgs, environment, argsValues, option);
+                AddOptionArgumentValues(&linkerArgs, environment, workingDirectory, argsValues, option);
             } else if (auto args = argsValues->value <plist::Array> ("<<otherwise>>")) {
                 std::vector<pbxsetting::Value> argsValues = ArgumentValuesFromArray(args);
-                AddOptionArgumentValues(&linkerArgs, environment, argsValues, option);
+                AddOptionArgumentValues(&linkerArgs, environment, workingDirectory, argsValues, option);
             }
         }
 
@@ -220,7 +226,6 @@ Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_pt
         }
 
         // TODO(grp): Use PropertyOption::conditionFlavors().
-        // TODO(grp): Use PropertyOption::flattenRecursiveSearchPathsInValue().
         // TODO(grp): Use PropertyOption::isCommand{Input,Output}().
         // TODO(grp): Use PropertyOption::isInputDependency(), PropertyOption::outputDependencies(), etc..
     }
@@ -332,7 +337,7 @@ Create(
 )
 {
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputs, outputs);
-    OptionsResult options = OptionsResult::Create(toolEnvironment, nullptr);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
     std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolInvocationContext::LogMessage(toolEnvironment));
     return ToolInvocationContext::Create(toolEnvironment, options, commandLine, resolvedLogMessage, workingDirectory);

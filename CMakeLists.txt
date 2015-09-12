@@ -202,6 +202,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/CompilerInvocationContext.cpp
+    Sources/pbxbuild/Tool/SearchPaths.cpp
     Sources/pbxbuild/Tool/HeadermapInvocationContext.cpp
     Sources/pbxbuild/LinkerInvocationContext.cpp
     Sources/pbxbuild/ScriptInvocationContext.cpp

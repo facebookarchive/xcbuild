@@ -127,11 +127,14 @@ invalidate()
 bool HeaderMap::
 add(std::string const &key, std::string const &prefix, std::string const &suffix)
 {
-    if (key.empty() || prefix.empty() || suffix.empty())
+    if (key.empty() || prefix.empty() || suffix.empty()) {
         return false; // invalid argument
+    }
 
-    if (_keys.find(key) != _keys.end())
-        return false; // already exists
+    if (_keys.find(key) != _keys.end()) {
+        // already exists
+        return false;
+    }
 
     //
     // Lookup key offset, if none, add one.

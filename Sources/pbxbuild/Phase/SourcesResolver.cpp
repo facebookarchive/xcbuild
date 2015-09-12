@@ -10,6 +10,7 @@
 #include <pbxbuild/ScriptInvocationContext.h>
 #include <pbxbuild/CompilerInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
+#include <pbxbuild/Tool/SearchPaths.h>
 
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Phase::PhaseContext;
@@ -17,6 +18,7 @@ using pbxbuild::ToolInvocation;
 using pbxbuild::CompilerInvocationContext;
 using pbxbuild::ToolInvocationContext;
 using pbxbuild::Tool::HeadermapInvocationContext;
+using pbxbuild::Tool::SearchPaths;
 using libutil::FSUtil;
 
 SourcesResolver::
@@ -57,10 +59,11 @@ Create(
         return nullptr;
     }
 
-    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, defaultCompiler, buildEnvironment.specManager(), phaseContext.target(), targetEnvironment.environment());
-    allInvocations.push_back(headermap.invocation());
-
     std::string workingDirectory = targetEnvironment.workingDirectory();
+    SearchPaths searchPaths = SearchPaths::Create(workingDirectory, targetEnvironment.environment());
+
+    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, defaultCompiler, buildEnvironment.specManager(), phaseContext.target(), searchPaths, targetEnvironment.environment());
+    allInvocations.push_back(headermap.invocation());
 
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
@@ -83,7 +86,7 @@ Create(
                     if (buildRule->tool() != nullptr) {
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
-                            auto context = CompilerInvocationContext::Create(defaultCompiler, file, buildFile->compilerFlags(), headermap, currentEnvironment, workingDirectory);
+                            auto context = CompilerInvocationContext::Create(defaultCompiler, file, buildFile->compilerFlags(), headermap, searchPaths, currentEnvironment, workingDirectory);
                             invocations.push_back(context.invocation());
                             linkerArguments.insert(context.linkerArgs().begin(), context.linkerArgs().end());
                         } else {

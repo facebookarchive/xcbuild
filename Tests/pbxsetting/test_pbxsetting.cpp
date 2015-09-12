@@ -510,4 +510,5 @@ TEST(pbxsetting, TypeList)
     EXPECT_EQ(Type::ParseList("\"hello\" \"world\""), std::vector<std::string>({ "hello", "world" }));
     EXPECT_EQ(Type::ParseList("'hello wo'rld"), std::vector<std::string>({ "hello world" }));
     EXPECT_EQ(Type::ParseList("hell'o wo'rld"), std::vector<std::string>({ "hello world" }));
+    EXPECT_EQ(Type::ParseList("'' '' 'test'"), std::vector<std::string>({ "test" }));
 }

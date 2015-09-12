@@ -68,7 +68,7 @@ public:
 
     public:
         static OptionsResult
-        Create(ToolEnvironment const &toolEnvironment, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environment = { });
+        Create(ToolEnvironment const &toolEnvironment, std::string const &workingDirectory, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environment = { });
     };
 
 public:

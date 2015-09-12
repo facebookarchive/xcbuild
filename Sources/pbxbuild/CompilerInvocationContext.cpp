@@ -3,6 +3,7 @@
 #include <pbxbuild/CompilerInvocationContext.h>
 #include <pbxbuild/ToolInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
+#include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::CompilerInvocationContext;
@@ -11,6 +12,7 @@ using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
 using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
 using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
 using pbxbuild::Tool::HeadermapInvocationContext;
+using pbxbuild::Tool::SearchPaths;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -28,17 +30,21 @@ CompilerInvocationContext::
 }
 
 static void
+AppendPathFlag(std::vector<std::string> *args, std::string const &path, std::string const &prefix, bool concatenate)
+{
+    if (concatenate) {
+        args->push_back(prefix + path);
+    } else {
+        args->push_back(prefix);
+        args->push_back(path);
+    }
+}
+
+static void
 AppendPathFlags(std::vector<std::string> *args, std::vector<std::string> const &paths, std::string const &prefix, bool concatenate)
 {
-    for (std::string path : paths) {
-        // TODO(grp): Apply trailing ** as a recursive search path.
-
-        if (concatenate) {
-            args->push_back(prefix + path);
-        } else {
-            args->push_back(prefix);
-            args->push_back(path);
-        }
+    for (std::string const &path : paths) {
+        AppendPathFlag(args, path, prefix, concatenate);
     }
 }
 
@@ -48,6 +54,7 @@ Create(
     TypeResolvedFile const &input,
     std::vector<std::string> const &inputArguments,
     HeadermapInvocationContext const &headermaps,
+    SearchPaths const &searchPaths,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
 )
@@ -106,16 +113,20 @@ Create(
 		AppendPathFlags(&special, { env.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
     }
 
-    AppendPathFlags(&special, pbxsetting::Type::ParseList(env.resolve("USER_HEADER_SEARCH_PATHS")), "-iquote", false);
-    AppendPathFlags(&special, pbxsetting::Type::ParseList(env.resolve("HEADER_SEARCH_PATHS")), "-I", true);
-    AppendPathFlags(&special, pbxsetting::Type::ParseList(env.resolve("FRAMEWORK_SEARCH_PATHS")), "-F", true);
-
     std::vector<std::string> specialIncludePaths = {
         env.resolve("DERIVED_FILE_DIR"),
         env.resolve("DERIVED_FILE_DIR") + "/" + env.resolve("arch"),
         env.resolve("BUILT_PRODUCTS_DIR") + "/include",
     };
     AppendPathFlags(&special, specialIncludePaths, "-I", true);
+    AppendPathFlags(&special, searchPaths.userHeaderSearchPaths(), "-I", true);
+    AppendPathFlags(&special, searchPaths.headerSearchPaths(), "-I", true);
+
+    std::vector<std::string> specialFrameworkPaths = {
+        env.resolve("BUILT_PRODUCTS_DIR"),
+    };
+    AppendPathFlags(&special, specialFrameworkPaths, "-F", true);
+    AppendPathFlags(&special, searchPaths.frameworkSearchPaths(), "-F", true);
 
     // TODO(grp): Use the precompiled prefix header, if/when precompilation is supported.
     std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");
@@ -139,7 +150,7 @@ Create(
 
     std::string logMessage = "CompileC " + output + " " + FSUtil::GetRelativePath(input.filePath(), workingDirectory) + " " + environment.resolve("variant") + " " + environment.resolve("arch") + " " + input.fileType()->GCCDialectName() + " " + compiler->identifier();
 
-    OptionsResult options = OptionsResult::Create(toolEnvironment, input.fileType());
+    OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, input.fileType());
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "", special);
     ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory);
     return CompilerInvocationContext(context.invocation(), options.linkerArgs());

@@ -296,9 +296,11 @@ registerDomain(std::string const &domain, std::string const &path)
         FSUtil::EnumerateRecursive(path, "*.xcspec",
                 [&](std::string const &filename) -> bool
                 {
-                    if (!Specification::Open(&context, filename)) {
-                        fprintf(stderr, "warning: failed to import "
-                            "specification '%s'\n", filename.c_str());
+                    if (!FSUtil::TestForDirectory(filename)) {
+                        if (!Specification::Open(&context, filename)) {
+                            fprintf(stderr, "warning: failed to import "
+                                "specification '%s'\n", filename.c_str());
+                        }
                     }
                     return true;
                 });

@@ -30,8 +30,7 @@ public:
     void invalidate();
 
 public:
-    bool add(std::string const &key, std::string const &prefix,
-            std::string const &suffix);
+    bool add(std::string const &key, std::string const &prefix, std::string const &suffix);
 
 public:
     void dump();

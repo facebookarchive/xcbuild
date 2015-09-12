@@ -10,6 +10,7 @@ namespace pbxbuild {
 
 class TypeResolvedFile;
 namespace Tool { class HeadermapInvocationContext; }
+namespace Tool { class SearchPaths; }
 
 class CompilerInvocationContext {
 private:
@@ -33,6 +34,7 @@ public:
         TypeResolvedFile const &input,
         std::vector<std::string> const &inputArguments,
         Tool::HeadermapInvocationContext const &headermaps,
+        Tool::SearchPaths const &searchPaths,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );
