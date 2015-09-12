@@ -144,6 +144,10 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &file
 std::unique_ptr<TypeResolvedFile> TypeResolvedFile::
 Resolve(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment)
 {
+    if (fileReference == nullptr) {
+        return nullptr;
+    }
+
     std::string filePath = environment.expand(fileReference->resolve());
 
     if (!fileReference->explicitFileType().empty()) {

@@ -8,7 +8,7 @@ using pbxsetting::Value;
 GroupItem::GroupItem(std::string const &isa, Type type) :
     Object (isa),
     _type  (type),
-    _parent(0)
+    _parent(nullptr)
 {
 }
 
