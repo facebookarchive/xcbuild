@@ -51,6 +51,22 @@ Create(
         auxiliaries.push_back(fileList);
     }
 
+    std::unordered_set<std::string> libraryPaths;
+    std::unordered_set<std::string> frameworkPaths;
+    for (TypeResolvedFile const &library : inputLibraries) {
+        if (library.fileType()->isFrameworkWrapper()) {
+            frameworkPaths.insert(FSUtil::GetDirectoryName(library.filePath()));
+        } else {
+            libraryPaths.insert(FSUtil::GetDirectoryName(library.filePath()));
+        }
+    }
+    for (std::string const &libraryPath : libraryPaths) {
+        special.push_back("-L" + libraryPath);
+    }
+    for (std::string const &libraryPath : frameworkPaths) {
+        special.push_back("-F" + libraryPath);
+    }
+
     for (TypeResolvedFile const &library : inputLibraries) {
         std::string base = FSUtil::GetBaseNameWithoutExtension(library.filePath());
         if (library.fileType()->isFrameworkWrapper()) {
