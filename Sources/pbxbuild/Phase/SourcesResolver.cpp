@@ -117,10 +117,19 @@ Create(
                                 }
                             }
 
+                            std::string outputBaseName;
+                            auto it = targetEnvironment.buildFileDisambiguation().find(buildFile);
+                            if (it != targetEnvironment.buildFileDisambiguation().end()) {
+                                outputBaseName = it->second;
+                            } else {
+                                outputBaseName = FSUtil::GetBaseNameWithoutExtension(file.filePath());
+                            }
+
                             auto context = CompilerInvocationContext::CreateSource(
                                 defaultCompiler,
                                 file,
                                 buildFile->compilerFlags(),
+                                outputBaseName,
                                 prefixHeader,
                                 headermap,
                                 searchPaths,

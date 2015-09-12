@@ -6,6 +6,7 @@
 using pbxbuild::TargetEnvironment;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
+using libutil::FSUtil;
 
 TargetEnvironment::
 TargetEnvironment()
@@ -15,6 +16,36 @@ TargetEnvironment()
 TargetEnvironment::
 ~TargetEnvironment()
 {
+}
+
+static std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string>
+BuildFileDisambiguation(pbxproj::PBX::Target::shared_ptr const &target)
+{
+    std::unordered_map<std::string, pbxproj::PBX::BuildFile::shared_ptr> buildFileUnambiguous;
+    std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> buildFileDisambiguation;
+
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
+        for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+            std::string name;
+            if (buildFile->fileReference() != nullptr) {
+                name = buildFile->fileReference()->name();
+            } else if (buildFile->referenceProxy() != nullptr) {
+                name = buildFile->referenceProxy()->name();
+            } else {
+                continue;
+            }
+            name = FSUtil::GetBaseNameWithoutExtension(name);
+
+            auto it = buildFileUnambiguous.find(name);
+            if (it != buildFileUnambiguous.end()) {
+                buildFileDisambiguation.insert({ it->second, it->first + "-" + it->second->blueprintIdentifier() });
+                buildFileDisambiguation.insert({ buildFile, name + "-" + buildFile->blueprintIdentifier() });
+            }
+            buildFileUnambiguous.insert({ name, buildFile });
+        }
+    }
+
+    return buildFileDisambiguation;
 }
 
 static pbxproj::XC::BuildConfiguration::shared_ptr
@@ -312,7 +343,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     }), false);
 
     auto buildRules = std::make_shared <pbxbuild::TargetBuildRules> (pbxbuild::TargetBuildRules::Create(buildEnvironment.specManager(), specDomain, target));
-
+    auto buildFileDisambiguation = BuildFileDisambiguation(target);
     std::string workingDirectory = target->project()->basePath();
 
     std::unique_ptr<TargetEnvironment> te = std::make_unique<TargetEnvironment>();
@@ -326,5 +357,6 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     te->_sdk = sdk;
     te->_specDomain = specDomain;
     te->_workingDirectory = workingDirectory;
+    te->_buildFileDisambiguation = buildFileDisambiguation;
     return te;
 }

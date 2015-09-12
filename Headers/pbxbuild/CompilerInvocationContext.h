@@ -36,6 +36,7 @@ public:
         pbxspec::PBX::Compiler::shared_ptr const &compiler,
         TypeResolvedFile const &input,
         std::vector<std::string> const &inputArguments,
+        std::string const &outputBaseName,
         std::string const &prefixHeader,
         Tool::HeadermapInvocationContext const &headermaps,
         Tool::SearchPaths const &searchPaths,

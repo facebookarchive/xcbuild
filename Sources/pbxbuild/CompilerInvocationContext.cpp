@@ -54,6 +54,7 @@ CreateSource(
     pbxspec::PBX::Compiler::shared_ptr const &compiler,
     TypeResolvedFile const &input,
     std::vector<std::string> const &inputArguments,
+    std::string const &outputBaseName,
     std::string const &prefixHeader,
     HeadermapInvocationContext const &headermaps,
     SearchPaths const &searchPaths,
@@ -71,7 +72,7 @@ CreateSource(
         outputExtension = "o";
     }
 
-    std::string output = outputDirectory + "/" + FSUtil::GetBaseNameWithoutExtension(input.filePath()) + "." + outputExtension;
+    std::string output = outputDirectory + "/" + outputBaseName + "." + outputExtension;
 
     return Create(
         compiler,

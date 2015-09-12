@@ -23,6 +23,7 @@ private:
     std::vector<std::string>                 _variants;
     std::vector<std::string>                 _architectures;
     std::string                              _workingDirectory;
+    std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> _buildFileDisambiguation;
 
 public:
     TargetEnvironment();
@@ -53,6 +54,8 @@ public:
 public:
     std::string const &workingDirectory() const
     { return _workingDirectory; }
+    std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> const &buildFileDisambiguation() const
+    { return _buildFileDisambiguation; }
 
 public:
     static std::unique_ptr<TargetEnvironment>
