@@ -33,7 +33,6 @@ public:
     static HeadermapInvocationContext
     Create(
         pbxspec::PBX::Tool::shared_ptr const &headermapTool,
-        pbxspec::PBX::Compiler::shared_ptr const &defaultCompiler,
         pbxspec::Manager::shared_ptr const &specManager,
         pbxproj::PBX::Target::shared_ptr const &target,
         SearchPaths const &searchPaths,

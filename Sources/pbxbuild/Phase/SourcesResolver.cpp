@@ -59,11 +59,17 @@ Create(
         return nullptr;
     }
 
-    std::string workingDirectory = targetEnvironment.workingDirectory();
-    SearchPaths searchPaths = SearchPaths::Create(workingDirectory, targetEnvironment.environment());
+    pbxsetting::Environment compilerEnvironment = targetEnvironment.environment();
+    compilerEnvironment.insertFront(defaultCompiler->defaultSettings(), true);
 
-    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, defaultCompiler, buildEnvironment.specManager(), phaseContext.target(), searchPaths, targetEnvironment.environment(), workingDirectory);
+    std::string workingDirectory = targetEnvironment.workingDirectory();
+    SearchPaths searchPaths = SearchPaths::Create(workingDirectory, compilerEnvironment);
+
+    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, buildEnvironment.specManager(), phaseContext.target(), searchPaths, compilerEnvironment, workingDirectory);
     allInvocations.push_back(headermap.invocation());
+
+    bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
+    std::string prefixHeaderFile = compilerEnvironment.resolve("GCC_PREFIX_HEADER");
 
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
@@ -72,21 +78,55 @@ Create(
             currentEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch), false);
 
             std::vector<ToolInvocation> invocations;
+            std::unordered_map<std::string, std::string> prefixHeaders;
 
-            // TODO(grp): Precompile prefix header if needed.
-
-            auto files = phaseContext.resolveBuildFiles(currentEnvironment, buildPhase->files());
+            auto files = phaseContext.resolveBuildFiles(targetEnvironment.environment(), buildPhase->files());
             for (auto const &fileEntry : files) {
                 pbxproj::PBX::BuildFile::shared_ptr const &buildFile = fileEntry.first;
-
                 pbxbuild::TypeResolvedFile const &file = fileEntry.second;
-                pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
 
+                std::string prefixHeader;
+                if (!prefixHeaderFile.empty()) {
+                    if (precompilePrefixHeader) {
+                        std::string const &dialect = file.fileType()->GCCDialectName();
+                        auto it = prefixHeaders.find(dialect);
+                        if (it != prefixHeaders.end()) {
+                            prefixHeader = it->second;
+                        } else {
+                            auto context = CompilerInvocationContext::CreatePrecompiledHeader(
+                                defaultCompiler,
+                                prefixHeaderFile,
+                                file.fileType(),
+                                headermap,
+                                searchPaths,
+                                currentEnvironment,
+                                workingDirectory
+                            );
+                            allInvocations.push_back(context.invocation());
+
+                            prefixHeader = context.output();
+                            prefixHeaders.insert({ dialect, prefixHeader });
+                        }
+                    } else {
+                        prefixHeader = workingDirectory + "/" + prefixHeaderFile;
+                    }
+                }
+
+                pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
                 if (buildRule != nullptr) {
                     if (buildRule->tool() != nullptr) {
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
-                            auto context = CompilerInvocationContext::Create(defaultCompiler, file, buildFile->compilerFlags(), headermap, searchPaths, currentEnvironment, workingDirectory);
+                            auto context = CompilerInvocationContext::CreateSource(
+                                defaultCompiler,
+                                file,
+                                buildFile->compilerFlags(),
+                                prefixHeader,
+                                headermap,
+                                searchPaths,
+                                currentEnvironment,
+                                workingDirectory
+                            );
                             invocations.push_back(context.invocation());
                             linkerArguments.insert(context.linkerArgs().begin(), context.linkerArgs().end());
                         } else {
