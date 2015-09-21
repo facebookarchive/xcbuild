@@ -277,6 +277,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
     pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(buildEnvironment.specManager(), specDomain, target);
     if (buildSystem == nullptr) {
+        fprintf(stderr, "error: unable to create build system\n");
         return nullptr;
     }
 
@@ -287,12 +288,14 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
         productType = buildEnvironment.specManager()->productType(nativeTarget->productType(), specDomain);
         if (productType == nullptr) {
+            fprintf(stderr, "error: unable to find product type %s\n", nativeTarget->productType().c_str());
             return nullptr;
         }
 
         // FIXME(grp): Should this always use the first package type?
         packageType = buildEnvironment.specManager()->packageType(productType->packageTypes().at(0), specDomain);
         if (packageType == nullptr) {
+            fprintf(stderr, "error: unable to find package type %s\n", productType->packageTypes().at(0).c_str());
             return nullptr;
         }
     }
