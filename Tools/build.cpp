@@ -265,6 +265,30 @@ PhaseInvocations(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX
                 }
                 break;
             }
+            case pbxproj::PBX::BuildPhase::kTypeCopyFiles: {
+                auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
+                auto copyFiles = pbxbuild::Phase::CopyFilesResolver::Create(phaseContext, BP);
+                if (copyFiles != nullptr) {
+                    toolInvocations.insert({ buildPhase, copyFiles->invocations() });
+                }
+                break;
+            }
+            case pbxproj::PBX::BuildPhase::kTypeHeaders: {
+                auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
+                auto headers = pbxbuild::Phase::HeadersResolver::Create(phaseContext, BP);
+                if (headers != nullptr) {
+                    toolInvocations.insert({ buildPhase, headers->invocations() });
+                }
+                break;
+            }
+            case pbxproj::PBX::BuildPhase::kTypeResources: {
+                auto BP = std::static_pointer_cast <pbxproj::PBX::ResourcesBuildPhase> (buildPhase);
+                auto resources = pbxbuild::Phase::ResourcesResolver::Create(phaseContext, BP);
+                if (resources != nullptr) {
+                    toolInvocations.insert({ buildPhase, resources->invocations() });
+                }
+                break;
+            }
             default: break;
         }
     }

@@ -19,6 +19,9 @@
 #include <pbxbuild/ToolInvocation.h>
 
 #include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/CopyFilesResolver.h>
+#include <pbxbuild/Phase/HeadersResolver.h>
+#include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/ShellScriptResolver.h>
