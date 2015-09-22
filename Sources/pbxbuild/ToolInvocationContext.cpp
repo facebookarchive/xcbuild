@@ -56,6 +56,7 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
         pbxsetting::Setting::Parse("OutputFileBase", FSUtil::GetBaseNameWithoutExtension(output)),
         // TODO(grp): OutputDir (including tool->outputDir())
         // TODO(grp): AdditionalContentFilePaths
+        // TODO(grp): AdditionalFlags
         // TODO(grp): ProductResourcesDir
         // TODO(grp): BitcodeArch
         // TODO(grp): StaticAnalyzerModeNameDescription

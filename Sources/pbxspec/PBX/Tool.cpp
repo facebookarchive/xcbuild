@@ -5,12 +5,7 @@
 using pbxspec::PBX::Tool;
 
 Tool::Tool() :
-    Tool(ISA::PBXTool)
-{
-}
-
-Tool::Tool(std::string const &isa) :
-    Specification                   (isa),
+    Specification                   (),
     _ruleName                       (pbxsetting::Value::Empty()),
     _ruleFormat                     (pbxsetting::Value::Empty()),
     _commandOutputParser            (nullptr),
@@ -18,7 +13,9 @@ Tool::Tool(std::string const &isa) :
     _isArchitectureNeutral          (false),
     _caresAboutInclusionDependencies(false),
     _synthesizeBuildRule            (false),
-    _shouldRerunOnError             (false)
+    _shouldRerunOnError             (false),
+    _deeplyStatInputDirectories     (false),
+    _isUnsafeToInterrupt            (false)
 {
 }
 
@@ -91,8 +88,9 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
                 plist::MakeKey <plist::Array> ("FileTypes"),
                 plist::MakeKey <plist::Array> ("InputFileTypes"),
                 plist::MakeKey <plist::Array> ("Outputs"),
-                plist::MakeKey <plist::Array> ("Architectures"),
+                plist::MakeKey <plist::Object> ("Architectures"),
                 plist::MakeKey <plist::Dictionary> ("EnvironmentVariables"),
+                plist::MakeKey <plist::Array> ("SuccessExitCodes"),
                 plist::MakeKey <plist::Object> ("CommandOutputParser"),
                 plist::MakeKey <plist::Boolean> ("IsAbstract"),
                 plist::MakeKey <plist::Boolean> ("IsArchitectureNeutral"),
@@ -100,6 +98,7 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
                 plist::MakeKey <plist::Boolean> ("SynthesizeBuildRule"),
                 plist::MakeKey <plist::Boolean> ("ShouldRerunOnError"),
                 plist::MakeKey <plist::Boolean> ("DeeplyStatInputDirectories"),
+                plist::MakeKey <plist::Boolean> ("IsUnsafeToInterrupt"),
                 plist::MakeKey <plist::Array> ("Options"),
                 plist::MakeKey <plist::Array> ("DeletedProperties"));
     }
@@ -127,7 +126,9 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
     auto IFTs   = dict->value <plist::Array> ("InputFileTypes");
     auto Os     = dict->value <plist::Array> ("Outputs");
     auto As     = dict->value <plist::Array> ("Architectures");
+    auto AS     = dict->value <plist::String> ("Architectures");
     auto EVs    = dict->value <plist::Dictionary> ("EnvironmentVariables");
+    auto SECs   = dict->value <plist::Array> ("SuccessExitCodes");
     auto COP    = dict->value("CommandOutputParser");
     auto IA     = dict->value <plist::Boolean> ("IsAbstract");
     auto IAN    = dict->value <plist::Boolean> ("IsArchitectureNeutral");
@@ -135,6 +136,7 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
     auto SBR    = dict->value <plist::Boolean> ("SynthesizeBuildRule");
     auto SROE   = dict->value <plist::Boolean> ("ShouldRerunOnError");
     auto DSID   = dict->value <plist::Boolean> ("DeeplyStatInputDirectories");
+    auto IUTI   = dict->value <plist::Boolean> ("IsUnsafeToInterrupt");
     auto OPs    = dict->value <plist::Array> ("Options");
     auto DPs    = dict->value <plist::Array> ("DeletedProperties");
 
@@ -224,6 +226,9 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
                 _architectures.push_back(A->value());
             }
         }
+    } else if (AS != nullptr) {
+        std::vector<std::string> values = pbxsetting::Type::ParseList(AS->value());
+        _architectures.insert(_architectures.end(), values.begin(), values.end());
     }
 
     if (Os != nullptr) {
@@ -239,6 +244,14 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
             auto EVk = EVs->key(n);
             if (auto EVv = EVs->value <plist::String> (EVk)) {
                 _environmentVariables[EVk] = EVv->value();
+            }
+        }
+    }
+
+    if (SECs != nullptr) {
+        for (size_t n = 0; n < SECs->count(); n++) {
+            if (auto SEC = SECs->value <plist::Integer> (n)) {
+                _successExitCodes.push_back(SEC->value());
             }
         }
     }
@@ -275,6 +288,10 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
         _deeplyStatInputDirectories = DSID->value();
     }
 
+    if (IUTI != nullptr) {
+        _isUnsafeToInterrupt = IUTI->value();
+    }
+
     if (OPs != nullptr) {
         for (size_t n = 0; n < OPs->count(); n++) {
             if (auto OP = OPs->value <plist::Dictionary> (n)) {
@@ -301,7 +318,7 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
 bool Tool::
 inherit(Specification::shared_ptr const &base)
 {
-    if (!base->isa(Tool::Isa()))
+    if (base->type() != Tool::Type())
         return false;
 
     return inherit(reinterpret_cast <Tool::shared_ptr const &> (base));
@@ -342,6 +359,8 @@ inherit(Tool::shared_ptr const &b)
     _caresAboutInclusionDependencies     = base->caresAboutInclusionDependencies();
     _synthesizeBuildRule                 = base->synthesizeBuildRule();
     _shouldRerunOnError                  = base->shouldRerunOnError();
+    _deeplyStatInputDirectories          = base->deeplyStatInputDirectories();
+    _isUnsafeToInterrupt                 = base->isUnsafeToInterrupt();
     _options                             = base->options();
     _optionsUsed                         = base->_optionsUsed;
     _deletedProperties                   = base->deletedProperties();

@@ -70,8 +70,6 @@ protected:
     static Architecture::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Isa()
-    { return ISA::PBXArchitecture; }
     static inline char const *Type()
     { return Types::Architecture; }
 };

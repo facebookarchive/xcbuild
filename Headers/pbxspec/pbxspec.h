@@ -3,11 +3,11 @@
 #ifndef __pbxspec_pbxspec_h
 #define __pbxspec_pbxspec_h
 
-#include <pbxspec/PBX/Object.h>
-
 #include <pbxspec/PBX/Architecture.h>
 #include <pbxspec/PBX/BuildPhase.h>
 #include <pbxspec/PBX/BuildRule.h>
+#include <pbxspec/PBX/BuildSettings.h>
+#include <pbxspec/PBX/BuildStep.h>
 #include <pbxspec/PBX/BuildSystem.h>
 #include <pbxspec/PBX/Compiler.h>
 #include <pbxspec/PBX/Linker.h>

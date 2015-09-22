@@ -7,6 +7,8 @@ namespace pbxspec { namespace Types {
 
 extern char const * const Architecture;
 extern char const * const BuildPhase;
+extern char const * const BuildSettings;
+extern char const * const BuildStep;
 extern char const * const BuildSystem;
 extern char const * const Compiler;
 extern char const * const FileType;

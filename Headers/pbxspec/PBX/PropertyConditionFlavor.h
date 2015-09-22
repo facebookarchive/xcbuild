@@ -45,8 +45,6 @@ protected:
     static PropertyConditionFlavor::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Isa()
-    { return ISA::PBXPropertyConditionFlavor; }
     static inline char const *Type()
     { return Types::PropertyConditionFlavor; }
 };

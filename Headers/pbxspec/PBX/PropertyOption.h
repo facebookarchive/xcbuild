@@ -4,7 +4,6 @@
 #define __pbxspec_PBX_PropertyOption_h
 
 #include <pbxsetting/pbxsetting.h>
-#include <pbxspec/PBX/Object.h>
 
 namespace pbxspec { namespace PBX {
 
@@ -65,6 +64,7 @@ protected:
 
 protected:
     friend class BuildSystem;
+    friend class BuildSettings;
     friend class Tool;
     PropertyOption();
 

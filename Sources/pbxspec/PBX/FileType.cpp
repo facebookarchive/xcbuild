@@ -6,12 +6,6 @@
 using pbxspec::PBX::FileType;
 
 FileType::FileType() :
-    FileType(ISA::PBXFileType)
-{
-}
-
-FileType::FileType(std::string const &isa) :
-    Specification                           (isa),
     _isTextFile                             (false),
     _isBuildPropertiesFile                  (false),
     _isSourceCode                           (false),
@@ -58,7 +52,7 @@ FileType::~FileType()
 bool FileType::
 inherit(Specification::shared_ptr const &base)
 {
-    if (!base->isa(FileType::Isa()))
+    if (base->type() != FileType::Type())
         return false;
 
     return inherit(reinterpret_cast <FileType::shared_ptr const &> (base));

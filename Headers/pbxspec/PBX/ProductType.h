@@ -31,7 +31,6 @@ protected:
 
 protected:
     ProductType();
-    ProductType(std::string const &isa);
 
 public:
     virtual ~ProductType();
@@ -110,8 +109,6 @@ protected:
     static ProductType::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Isa()
-    { return ISA::PBXProductType; }
     static inline char const *Type()
     { return Types::ProductType; }
 };

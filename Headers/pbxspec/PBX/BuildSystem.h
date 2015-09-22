@@ -56,8 +56,6 @@ protected:
     static BuildSystem::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Isa()
-    { return ISA::PBXBuildSystem; }
     static inline char const *Type()
     { return Types::BuildSystem; }
 };

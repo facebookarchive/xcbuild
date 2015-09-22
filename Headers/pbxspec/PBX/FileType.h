@@ -99,7 +99,6 @@ protected:
 
 protected:
     FileType();
-    FileType(std::string const &isa);
 
 public:
     virtual ~FileType();
@@ -262,8 +261,6 @@ protected:
     static FileType::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Isa()
-    { return ISA::PBXFileType; }
     static inline char const *Type()
     { return Types::FileType; }
 };

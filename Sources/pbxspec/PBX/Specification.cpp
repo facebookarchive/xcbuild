@@ -17,8 +17,7 @@ using pbxspec::PBX::Specification;
 using pbxspec::Manager;
 using libutil::FSUtil;
 
-Specification::Specification(std::string const &isa) :
-    Object             (isa),
+Specification::Specification() :
     _isGlobalDomainInUI(false)
 {
 }
@@ -127,6 +126,10 @@ Parse(Context *context, plist::Dictionary const *dict)
         return Architecture::Parse(context, dict);
     if (T->value() == BuildPhase::Type())
         return BuildPhase::Parse(context, dict);
+    if (T->value() == BuildSettings::Type())
+        return BuildSettings::Parse(context, dict);
+    if (T->value() == BuildStep::Type())
+        return BuildStep::Parse(context, dict);
     if (T->value() == BuildSystem::Type())
         return BuildSystem::Parse(context, dict);
     if (T->value() == Compiler::Type())
@@ -211,18 +214,6 @@ Open(Context *context, std::string const &filename)
     fprintf(stderr, "error: specification file '%s' does not contain "
             "a dictionary nor an array", filename.c_str());
     plist->release();
-    return false;
-}
-
-bool Specification::
-isa(std::string const &isa) const
-{
-    if (Object::isa(isa))
-        return true;
-
-    if (auto base = this->base())
-        return base->isa(isa);
-
     return false;
 }
 

@@ -1,28 +1,27 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxspec/PBX/PropertyConditionFlavor.h>
+#include <pbxspec/PBX/BuildSettings.h>
 
-using pbxspec::PBX::PropertyConditionFlavor;
+using pbxspec::PBX::BuildSettings;
 
-PropertyConditionFlavor::PropertyConditionFlavor() :
-    Specification(),
-    _precedence  (0)
+BuildSettings::BuildSettings() :
+    Specification()
 {
 }
 
-PropertyConditionFlavor::~PropertyConditionFlavor()
+BuildSettings::~BuildSettings()
 {
 }
 
-PropertyConditionFlavor::shared_ptr PropertyConditionFlavor::
+BuildSettings::shared_ptr BuildSettings::
 Parse(Context *context, plist::Dictionary const *dict)
 {
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
         return nullptr;
 
-    PropertyConditionFlavor::shared_ptr result;
-    result.reset(new PropertyConditionFlavor());
+    BuildSettings::shared_ptr result;
+    result.reset(new BuildSettings());
 
     if (!result->parse(context, dict))
         return nullptr;
@@ -30,10 +29,10 @@ Parse(Context *context, plist::Dictionary const *dict)
     return result;
 }
 
-bool PropertyConditionFlavor::
+bool BuildSettings::
 parse(Context *context, plist::Dictionary const *dict)
 {
-    plist::WarnUnhandledKeys(dict, "PropertyConditionFlavor",
+    plist::WarnUnhandledKeys(dict, "BuildSettings",
         // Specification
         plist::MakeKey <plist::String> ("Class"),
         plist::MakeKey <plist::String> ("Type"),
@@ -45,39 +44,49 @@ parse(Context *context, plist::Dictionary const *dict)
         plist::MakeKey <plist::String> ("Description"),
         plist::MakeKey <plist::String> ("Vendor"),
         plist::MakeKey <plist::String> ("Version"),
-        // PropertyConditionFlavor
-        plist::MakeKey <plist::Integer> ("Precedence"));
+        // BuildSettings
+        plist::MakeKey <plist::Array> ("Options"));
 
     if (!Specification::parse(context, dict))
         return false;
 
-    auto P = dict->value <plist::Integer> ("Precedence");
+    auto Os = dict->value <plist::Array> ("Options");
 
-    if (P != nullptr) {
-        _precedence = P->value();
+    if (Os != nullptr) {
+        for (size_t n = 0; n < Os->count(); n++) {
+            if (auto O = Os->value <plist::Dictionary> (n)) {
+                PropertyOption::shared_ptr option;
+                option.reset(new PropertyOption);
+                if (option->parse(O)) {
+                    PropertyOption::Insert(&_options, &_optionsUsed, option);
+                }
+            }
+        }
     }
 
     return true;
 }
 
-bool PropertyConditionFlavor::
+bool BuildSettings::
 inherit(Specification::shared_ptr const &base)
 {
-    if (base->type() != PropertyConditionFlavor::Type())
+    if (base->type() != BuildSettings::Type())
         return false;
 
-    return inherit(reinterpret_cast <PropertyConditionFlavor::shared_ptr const &> (base));
+    return inherit(reinterpret_cast <BuildSettings::shared_ptr const &> (base));
 }
 
-bool PropertyConditionFlavor::
-inherit(PropertyConditionFlavor::shared_ptr const &b)
+bool BuildSettings::
+inherit(BuildSettings::shared_ptr const &b)
 {
     if (!Specification::inherit(b))
         return false;
 
     auto base = this->base();
 
-    _precedence = base->precedence();
+    _options            = base->options();
+    _optionsUsed        = base->_optionsUsed;
 
     return true;
 }
+

@@ -5,7 +5,7 @@
 using pbxspec::PBX::Architecture;
 
 Architecture::Architecture() :
-    Specification(ISA::PBXArchitecture),
+    Specification(),
     _listInEnum  (false),
     _sortNumber  (0)
 {
@@ -115,7 +115,7 @@ parse(Context *context, plist::Dictionary const *dict)
 bool Architecture::
 inherit(Specification::shared_ptr const &base)
 {
-    if (!base->isa(Architecture::Isa()))
+    if (base->type() != Architecture::Type())
         return false;
 
     return inherit(reinterpret_cast <Architecture::shared_ptr const &> (base));

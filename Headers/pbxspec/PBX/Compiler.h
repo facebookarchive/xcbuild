@@ -56,7 +56,6 @@ protected:
 
 protected:
     Compiler();
-    Compiler(std::string const &isa);
 
 public:
     virtual ~Compiler();
@@ -214,8 +213,6 @@ protected:
     static Compiler::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Isa()
-    { return ISA::PBXCompiler; }
     static inline char const *Type()
     { return Types::Compiler; }
 };

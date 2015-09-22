@@ -3,13 +3,14 @@
 #ifndef __pbxspec_PBX_Specification_h
 #define __pbxspec_PBX_Specification_h
 
-#include <pbxspec/PBX/Object.h>
+#include <pbxspec/Base.h>
+#include <pbxspec/Types.h>
 
 namespace pbxspec { class Manager; }
 
 namespace pbxspec { namespace PBX {
 
-class Specification : public Object {
+class Specification {
 public:
     typedef std::shared_ptr <Specification> shared_ptr;
     typedef std::vector <shared_ptr> vector;
@@ -26,7 +27,7 @@ protected:
     std::string               _version;
 
 protected:
-    Specification(std::string const &isa);
+    Specification();
 
 public:
     virtual char const *type() const = 0;
@@ -62,11 +63,6 @@ protected:
 
 protected:
     virtual bool inherit(Specification::shared_ptr const &base);
-
-public:
-    inline std::string const &isa() const
-    { return Object::isa(); }
-    bool isa(std::string const &isa) const override;
 
 public:
     friend class pbxspec::Manager;

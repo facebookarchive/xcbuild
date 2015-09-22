@@ -7,12 +7,7 @@ using pbxsetting::Level;
 using pbxsetting::Setting;
 
 ProductType::ProductType() :
-    ProductType(ISA::PBXProductType)
-{
-}
-
-ProductType::ProductType(std::string const &isa) :
-    Specification                          (isa),
+    Specification                          (),
     _defaultBuildProperties                (Level({ })),
     _validation                            (nullptr),
     _hasInfoPlist                          (false),
@@ -178,7 +173,7 @@ parse(Context *context, plist::Dictionary const *dict)
 bool ProductType::
 inherit(Specification::shared_ptr const &base)
 {
-    if (!base->isa(ProductType::Isa()))
+    if (base->type() != ProductType::Type())
         return false;
 
     return inherit(reinterpret_cast <ProductType::shared_ptr const &> (base));

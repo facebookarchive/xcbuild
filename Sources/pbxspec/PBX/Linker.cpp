@@ -6,12 +6,6 @@
 using pbxspec::PBX::Linker;
 
 Linker::Linker() :
-    Linker(ISA::PBXLinker)
-{
-}
-
-Linker::Linker(std::string const &isa) :
-    Tool                  (isa),
     _supportsInputFileList(false)
 {
 }
@@ -23,7 +17,7 @@ Linker::~Linker()
 bool Linker::
 inherit(Specification::shared_ptr const &base)
 {
-    if (!base->isa(Linker::Isa()))
+    if (base->type() != Linker::Type())
         return false;
 
     return inherit(reinterpret_cast <Linker::shared_ptr const &> (base));
@@ -32,7 +26,7 @@ inherit(Specification::shared_ptr const &base)
 bool Linker::
 inherit(Tool::shared_ptr const &base)
 {
-    if (!base->isa(Linker::Isa()))
+    if (base->type() != Linker::Type())
         return false;
 
     return inherit(reinterpret_cast <Linker::shared_ptr const &> (base));
@@ -104,8 +98,9 @@ parse(Context *context, plist::Dictionary const *dict)
         plist::MakeKey <plist::Array> ("FileTypes"),
         plist::MakeKey <plist::Array> ("InputFileTypes"),
         plist::MakeKey <plist::Array> ("Outputs"),
-        plist::MakeKey <plist::Array> ("Architectures"),
+        plist::MakeKey <plist::Object> ("Architectures"),
         plist::MakeKey <plist::Dictionary> ("EnvironmentVariables"),
+        plist::MakeKey <plist::Array> ("SuccessExitCodes"),
         plist::MakeKey <plist::Object> ("CommandOutputParser"),
         plist::MakeKey <plist::Boolean> ("IsAbstract"),
         plist::MakeKey <plist::Boolean> ("IsArchitectureNeutral"),

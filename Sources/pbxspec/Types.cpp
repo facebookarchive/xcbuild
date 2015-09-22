@@ -6,6 +6,8 @@ namespace pbxspec { namespace Types {
 
 char const * const Architecture = "Architecture";
 char const * const BuildPhase = "BuildPhase";
+char const * const BuildSettings = "BuildSettings";
+char const * const BuildStep = "BuildStep";
 char const * const BuildSystem = "BuildSystem";
 char const * const Compiler = "Compiler";
 char const * const FileType = "FileType";

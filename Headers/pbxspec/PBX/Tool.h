@@ -36,6 +36,7 @@ protected:
     libutil::string_vector          _outputs;
     std::unordered_set<std::string> _deletedProperties;
     libutil::string_map             _environmentVariables;
+    std::vector<int>                _successExitCodes;
     plist::Object                  *_commandOutputParser;
     bool                            _isAbstract;
     bool                            _isArchitectureNeutral;
@@ -43,12 +44,12 @@ protected:
     bool                            _synthesizeBuildRule;
     bool                            _shouldRerunOnError;
     bool                            _deeplyStatInputDirectories;
+    bool                            _isUnsafeToInterrupt;
     PropertyOption::vector          _options;
     PropertyOption::used_map        _optionsUsed;
 
 protected:
     Tool();
-    Tool(std::string const &isa);
 
 public:
     virtual ~Tool();
@@ -126,6 +127,10 @@ public:
     { return _environmentVariables; }
 
 public:
+    inline std::vector<int> const &successExitCodes() const
+    { return _successExitCodes; }
+
+public:
     inline plist::Object const *commandOutputParser() const
     { return _commandOutputParser; }
 
@@ -154,6 +159,10 @@ public:
     { return _deeplyStatInputDirectories; }
 
 public:
+    inline bool isUnsafeToInterrupt() const
+    { return _isUnsafeToInterrupt; }
+
+public:
     inline PropertyOption::vector const &options() const
     { return _options; }
 
@@ -180,8 +189,6 @@ protected:
     static Tool::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Isa()
-    { return ISA::PBXTool; }
     static inline char const *Type()
     { return Types::Tool; }
 };

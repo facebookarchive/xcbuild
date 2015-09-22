@@ -7,6 +7,8 @@
 #include <pbxspec/PBX/Architecture.h>
 #include <pbxspec/PBX/BuildPhase.h>
 #include <pbxspec/PBX/BuildRule.h>
+#include <pbxspec/PBX/BuildSettings.h>
+#include <pbxspec/PBX/BuildStep.h>
 #include <pbxspec/PBX/BuildSystem.h>
 #include <pbxspec/PBX/Compiler.h>
 #include <pbxspec/PBX/FileType.h>
@@ -45,16 +47,28 @@ public:
     architectures(std::vector<std::string> const &domains) const;
 
 public:
-    PBX::BuildSystem::shared_ptr
-    buildSystem(std::string const &identifier, std::vector<std::string> const &domains) const;
-    PBX::BuildSystem::vector
-    buildSystems(std::vector<std::string> const &domains) const;
-
-public:
     PBX::BuildPhase::shared_ptr
     buildPhase(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::BuildPhase::vector
     buildPhases(std::vector<std::string> const &domains) const;
+
+public:
+    PBX::BuildSettings::shared_ptr
+    buildSettings(std::string const &identifier, std::vector<std::string> const &domains) const;
+    PBX::BuildSettings::vector
+    buildSettingses(std::vector<std::string> const &domains) const;
+
+public:
+    PBX::BuildStep::shared_ptr
+    buildStep(std::string const &identifier, std::vector<std::string> const &domains) const;
+    PBX::BuildStep::vector
+    buildSteps(std::vector<std::string> const &domains) const;
+
+public:
+    PBX::BuildSystem::shared_ptr
+    buildSystem(std::string const &identifier, std::vector<std::string> const &domains) const;
+    PBX::BuildSystem::vector
+    buildSystems(std::vector<std::string> const &domains) const;
 
 public:
     PBX::Compiler::shared_ptr

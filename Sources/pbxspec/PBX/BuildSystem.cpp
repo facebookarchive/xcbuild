@@ -5,7 +5,7 @@
 using pbxspec::PBX::BuildSystem;
 
 BuildSystem::BuildSystem() :
-    Specification      (ISA::PBXBuildSystem)
+    Specification()
 {
 }
 
@@ -97,7 +97,7 @@ parse(Context *context, plist::Dictionary const *dict)
 bool BuildSystem::
 inherit(Specification::shared_ptr const &base)
 {
-    if (!base->isa(BuildSystem::Isa()))
+    if (base->type() != BuildSystem::Type())
         return false;
 
     return inherit(reinterpret_cast <BuildSystem::shared_ptr const &> (base));

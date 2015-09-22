@@ -7,7 +7,7 @@ using pbxsetting::Level;
 using pbxsetting::Setting;
 
 PackageType::PackageType() :
-    Specification        (ISA::PBXPackageType),
+    Specification        (),
     _defaultBuildSettings(Level({ }))
 {
 }
@@ -84,7 +84,7 @@ parse(Context *context, plist::Dictionary const *dict)
 bool PackageType::
 inherit(Specification::shared_ptr const &base)
 {
-    if (!base->isa(PackageType::Isa()))
+    if (base->type() != PackageType::Type())
         return false;
 
     return inherit(reinterpret_cast <PackageType::shared_ptr const &> (base));

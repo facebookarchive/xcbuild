@@ -6,12 +6,7 @@
 using pbxspec::PBX::Compiler;
 
 Compiler::Compiler() :
-    Compiler(ISA::PBXCompiler)
-{
-}
-
-Compiler::Compiler(std::string const &isa) :
-    Tool                                     (isa),
+    Tool                                     (),
     _overridingProperties                    (pbxsetting::Level({ })),
     _generatedInfoPlistContentFilePath       (pbxsetting::Value::Empty()),
     _outputDir                               (pbxsetting::Value::Empty()),
@@ -48,7 +43,7 @@ Compiler::~Compiler()
 bool Compiler::
 inherit(Specification::shared_ptr const &base)
 {
-    if (!base->isa(Compiler::Isa()))
+    if (base->type() != Compiler::Type())
         return false;
 
     return inherit(reinterpret_cast <Compiler::shared_ptr const &> (base));
@@ -57,7 +52,7 @@ inherit(Specification::shared_ptr const &base)
 bool Compiler::
 inherit(Tool::shared_ptr const &base)
 {
-    if (!base->isa(Compiler::Isa()))
+    if (base->type() != Compiler::Type())
         return false;
 
     return inherit(reinterpret_cast <Compiler::shared_ptr const &> (base));
@@ -165,8 +160,9 @@ parse(Context *context, plist::Dictionary const *dict)
         plist::MakeKey <plist::Array> ("FileTypes"),
         plist::MakeKey <plist::Array> ("InputFileTypes"),
         plist::MakeKey <plist::Array> ("Outputs"),
-        plist::MakeKey <plist::Array> ("Architectures"),
+        plist::MakeKey <plist::Object> ("Architectures"),
         plist::MakeKey <plist::Dictionary> ("EnvironmentVariables"),
+        plist::MakeKey <plist::Array> ("SuccessExitCodes"),
         plist::MakeKey <plist::Object> ("CommandOutputParser"),
         plist::MakeKey <plist::Boolean> ("IsAbstract"),
         plist::MakeKey <plist::Boolean> ("IsArchitectureNeutral"),

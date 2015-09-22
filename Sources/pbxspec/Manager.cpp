@@ -9,6 +9,8 @@ using pbxspec::PBX::Specification;
 using pbxspec::PBX::Architecture;
 using pbxspec::PBX::BuildPhase;
 using pbxspec::PBX::BuildRule;
+using pbxspec::PBX::BuildSettings;
+using pbxspec::PBX::BuildStep;
 using pbxspec::PBX::BuildSystem;
 using pbxspec::PBX::Compiler;
 using pbxspec::PBX::FileType;
@@ -115,6 +117,30 @@ BuildPhase::vector Manager::
 buildPhases(std::vector<std::string> const &domains) const
 {
     return findSpecifications <BuildPhase> (domains);
+}
+
+BuildSettings::shared_ptr Manager::
+buildSettings(std::string const &identifier, std::vector<std::string> const &domains) const
+{
+    return findSpecification <BuildSettings> (domains, identifier);
+}
+
+BuildSettings::vector Manager::
+buildSettingses(std::vector<std::string> const &domains) const
+{
+    return findSpecifications <BuildSettings> (domains);
+}
+
+BuildStep::shared_ptr Manager::
+buildStep(std::string const &identifier, std::vector<std::string> const &domains) const
+{
+    return findSpecification <BuildStep> (domains, identifier);
+}
+
+BuildStep::vector Manager::
+buildSteps(std::vector<std::string> const &domains) const
+{
+    return findSpecifications <BuildStep> (domains);
 }
 
 BuildSystem::shared_ptr Manager::

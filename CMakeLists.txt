@@ -145,17 +145,17 @@ set(libxcsdk_SOURCES
     )
 
 set(libpbxspec_SOURCES
-    Sources/pbxspec/ISA.cpp
     Sources/pbxspec/Manager.cpp
     Sources/pbxspec/Types.cpp
     Sources/pbxspec/PBX/Architecture.cpp
     Sources/pbxspec/PBX/BuildPhase.cpp
     Sources/pbxspec/PBX/BuildRule.cpp
+    Sources/pbxspec/PBX/BuildSettings.cpp
+    Sources/pbxspec/PBX/BuildStep.cpp
     Sources/pbxspec/PBX/BuildSystem.cpp
     Sources/pbxspec/PBX/Compiler.cpp
     Sources/pbxspec/PBX/FileType.cpp
     Sources/pbxspec/PBX/Linker.cpp
-    Sources/pbxspec/PBX/Object.cpp
     Sources/pbxspec/PBX/PackageType.cpp
     Sources/pbxspec/PBX/ProductType.cpp
     Sources/pbxspec/PBX/PropertyConditionFlavor.cpp

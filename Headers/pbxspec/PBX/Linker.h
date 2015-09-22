@@ -19,7 +19,6 @@ protected:
 
 protected:
     Linker();
-    Linker(std::string const &isa);
 
 public:
     virtual ~Linker();
@@ -61,8 +60,6 @@ protected:
     static Linker::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Isa()
-    { return ISA::PBXLinker; }
     static inline char const *Type()
     { return Types::Linker; }
 };
