@@ -37,14 +37,8 @@ Parse(Context *context, plist::Dictionary const *dict)
         return nullptr;
 
     Architecture::shared_ptr result;
-    auto C = dict->value <plist::String> ("Class");
-    if (C == nullptr) {
-        result.reset(new Architecture());
-    } else {
-        fprintf(stderr, "warning: build phase class '%s' not recognized\n",
-                C->value().c_str());
-        result.reset(new Architecture());
-    }
+    result.reset(new Architecture());
+
     if (!result->parse(context, dict))
         return nullptr;
 

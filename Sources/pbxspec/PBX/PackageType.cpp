@@ -24,14 +24,8 @@ Parse(Context *context, plist::Dictionary const *dict)
         return nullptr;
 
     PackageType::shared_ptr result;
-    auto C = dict->value <plist::String> ("Class");
-    if (C == nullptr) {
-        result.reset(new PackageType());
-    } else {
-        fprintf(stderr, "warning: package type class '%s' not recognized\n",
-                C->value().c_str());
-        result.reset(new PackageType());
-    }
+    result.reset(new PackageType());
+
     if (!result->parse(context, dict))
         return nullptr;
 

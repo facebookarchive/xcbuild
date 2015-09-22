@@ -1,12 +1,6 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxspec/PBX/ProductType.h>
-#include <pbxspec/PBX/ApplicationProductType.h>
-#include <pbxspec/PBX/BundleProductType.h>
-#include <pbxspec/PBX/DynamicLibraryProductType.h>
-#include <pbxspec/PBX/FrameworkProductType.h>
-#include <pbxspec/PBX/StaticLibraryProductType.h>
-#include <pbxspec/XC/StaticFrameworkProductType.h>
 
 using pbxspec::PBX::ProductType;
 using pbxsetting::Level;
@@ -47,26 +41,8 @@ Parse(Context *context, plist::Dictionary const *dict)
         return nullptr;
 
     ProductType::shared_ptr result;
-    auto C = dict->value <plist::String> ("Class");
-    if (C == nullptr) {
-        result.reset(new ProductType());
-    } else if (C->value() == ApplicationProductType::Isa()) {
-        result.reset(new ApplicationProductType());
-    } else if (C->value() == BundleProductType::Isa()) {
-        result.reset(new BundleProductType());
-    } else if (C->value() == DynamicLibraryProductType::Isa()) {
-        result.reset(new DynamicLibraryProductType());
-    } else if (C->value() == FrameworkProductType::Isa()) {
-        result.reset(new FrameworkProductType());
-    } else if (C->value() == StaticLibraryProductType::Isa()) {
-        result.reset(new StaticLibraryProductType());
-    } else if (C->value() == XC::StaticFrameworkProductType::Isa()) {
-        result.reset(new XC::StaticFrameworkProductType());
-    } else {
-        fprintf(stderr, "warning: product type class '%s' not recognized\n",
-                C->value().c_str());
-        result.reset(new ProductType());
-    }
+    result.reset(new ProductType());
+
     if (!result->parse(context, dict))
         return nullptr;
 

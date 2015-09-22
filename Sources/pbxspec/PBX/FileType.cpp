@@ -1,16 +1,6 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxspec/PBX/FileType.h>
-#include <pbxspec/PBX/PlistFileType.h>
-#include <pbxspec/PBX/HTMLFileType.h>
-#include <pbxspec/PBX/MachOFileType.h>
-#include <pbxspec/PBX/ApplicationWrapperFileType.h>
-#include <pbxspec/PBX/CFBundleWrapperFileType.h>
-#include <pbxspec/PBX/FrameworkWrapperFileType.h>
-#include <pbxspec/PBX/PlugInKitPluginWrapperFileType.h>
-#include <pbxspec/PBX/SpotlightImporternWrapperFileType.h>
-#include <pbxspec/PBX/XPCServiceWrapperFileType.h>
-#include <pbxspec/XC/StaticFrameworkWrapperFileType.h>
 #include <pbxspec/Manager.h>
 
 using pbxspec::PBX::FileType;
@@ -133,40 +123,12 @@ inherit(FileType::shared_ptr const &b)
 FileType::shared_ptr FileType::
 Parse(Context *context, plist::Dictionary const *dict)
 {
-    FileType::shared_ptr result;
-
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
         return nullptr;
 
-    auto C = dict->value <plist::String> ("Class");
-    if (C == nullptr) {
-        result.reset(new FileType());
-    } else if (C->value() == PlistFileType::Isa()) {
-        result.reset(new PlistFileType());
-    } else if (C->value() == HTMLFileType::Isa()) {
-        result.reset(new HTMLFileType());
-    } else if (C->value() == MachOFileType::Isa()) {
-        result.reset(new MachOFileType());
-    } else if (C->value() == ApplicationWrapperFileType::Isa()) {
-        result.reset(new ApplicationWrapperFileType());
-    } else if (C->value() == CFBundleWrapperFileType::Isa()) {
-        result.reset(new CFBundleWrapperFileType());
-    } else if (C->value() == FrameworkWrapperFileType::Isa()) {
-        result.reset(new FrameworkWrapperFileType());
-    } else if (C->value() == PlugInKitPluginWrapperFileType::Isa()) {
-        result.reset(new PlugInKitPluginWrapperFileType());
-    } else if (C->value() == SpotlightImporternWrapperFileType::Isa()) {
-        result.reset(new SpotlightImporternWrapperFileType());
-    } else if (C->value() == XPCServiceWrapperFileType::Isa()) {
-        result.reset(new XPCServiceWrapperFileType());
-    } else if (C->value() == XC::StaticFrameworkWrapperFileType::Isa()) {
-        result.reset(new XC::StaticFrameworkWrapperFileType());
-    } else {
-        fprintf(stderr, "warning: file type class '%s' not recognized\n",
-                C->value().c_str());
-        result.reset(new FileType());
-    }
+    FileType::shared_ptr result;
+    result.reset(new FileType());
 
     if (!result->parse(context, dict))
         return nullptr;

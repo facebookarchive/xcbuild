@@ -1,10 +1,6 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxspec/PBX/Compiler.h>
-#include <pbxspec/PBX/CompilerSpecificationGcc.h>
-#include <pbxspec/PBX/CompilerSpecificationMig.h>
-#include <pbxspec/XC/CompilerSpecificationClang.h>
-#include <pbxspec/XC/CompilerSpecificationSwift.h>
 #include <pbxspec/Manager.h>
 
 using pbxspec::PBX::Compiler;
@@ -121,28 +117,12 @@ inherit(Compiler::shared_ptr const &b)
 Compiler::shared_ptr Compiler::
 Parse(Context *context, plist::Dictionary const *dict)
 {
-    Compiler::shared_ptr result;
-
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
         return nullptr;
 
-    auto C = dict->value <plist::String> ("Class");
-    if (C == nullptr) {
-        result.reset(new Compiler());
-    } else if (C->value() == CompilerSpecificationGcc::Isa()) {
-        result.reset(new CompilerSpecificationGcc());
-    } else if (C->value() == CompilerSpecificationMig::Isa()) {
-        result.reset(new CompilerSpecificationMig());
-    } else if (C->value() == XC::CompilerSpecificationClang::Isa()) {
-        result.reset(new XC::CompilerSpecificationClang());
-    } else if (C->value() == XC::CompilerSpecificationSwift::Isa()) {
-        result.reset(new XC::CompilerSpecificationSwift());
-    } else {
-        fprintf(stderr, "warning: compiler class '%s' not recognized\n",
-                C->value().c_str());
-        result.reset(new Compiler());
-    }
+    Compiler::shared_ptr result;
+    result.reset(new Compiler());
 
     if (!result->parse(context, dict))
         return nullptr;

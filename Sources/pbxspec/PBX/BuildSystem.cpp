@@ -34,14 +34,8 @@ Parse(Context *context, plist::Dictionary const *dict)
         return nullptr;
 
     BuildSystem::shared_ptr result;
-    auto C = dict->value <plist::String> ("Class");
-    if (C == nullptr) {
-        result.reset(new BuildSystem());
-    } else {
-        fprintf(stderr, "warning: build system class '%s' not recognized\n",
-                C->value().c_str());
-        result.reset(new BuildSystem());
-    }
+    result.reset(new BuildSystem());
+
     if (!result->parse(context, dict))
         return nullptr;
 

@@ -1,9 +1,6 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxspec/PBX/Linker.h>
-#include <pbxspec/PBX/LinkerSpecificationLd.h>
-#include <pbxspec/PBX/LinkerSpecificationLibtool.h>
-#include <pbxspec/PBX/LinkerSpecificationResMerger.h>
 #include <pbxspec/Manager.h>
 
 using pbxspec::PBX::Linker;
@@ -59,26 +56,12 @@ inherit(Linker::shared_ptr const &b)
 Linker::shared_ptr Linker::
 Parse(Context *context, plist::Dictionary const *dict)
 {
-    Linker::shared_ptr result;
-
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr || T->value() != Type())
         return nullptr;
 
-    auto C = dict->value <plist::String> ("Class");
-    if (C == nullptr) {
-        result.reset(new Linker());
-    } else if (C->value() == LinkerSpecificationLd::Isa()) {
-        result.reset(new LinkerSpecificationLd());
-    } else if (C->value() == LinkerSpecificationLibtool::Isa()) {
-        result.reset(new LinkerSpecificationLibtool());
-    } else if (C->value() == LinkerSpecificationResMerger::Isa()) {
-        result.reset(new LinkerSpecificationResMerger());
-    } else {
-        fprintf(stderr, "warning: linker class '%s' not recognized\n",
-                C->value().c_str());
-        result.reset(new Linker());
-    }
+    Linker::shared_ptr result;
+    result.reset(new Linker());
 
     if (!result->parse(context, dict))
         return nullptr;
