@@ -8,13 +8,13 @@
 
 using pbxspec::PBX::Linker;
 
-Linker::Linker(bool isDefault) :
-    Linker(isDefault, ISA::PBXLinker)
+Linker::Linker() :
+    Linker(ISA::PBXLinker)
 {
 }
 
-Linker::Linker(bool isDefault, std::string const &isa) :
-    Tool                  (isDefault, isa),
+Linker::Linker(std::string const &isa) :
+    Tool                  (isa),
     _supportsInputFileList(false)
 {
 }
@@ -67,17 +67,17 @@ Parse(Context *context, plist::Dictionary const *dict)
 
     auto C = dict->value <plist::String> ("Class");
     if (C == nullptr) {
-        result.reset(new Linker(true));
+        result.reset(new Linker());
     } else if (C->value() == LinkerSpecificationLd::Isa()) {
-        result.reset(new LinkerSpecificationLd(true));
+        result.reset(new LinkerSpecificationLd());
     } else if (C->value() == LinkerSpecificationLibtool::Isa()) {
-        result.reset(new LinkerSpecificationLibtool(true));
+        result.reset(new LinkerSpecificationLibtool());
     } else if (C->value() == LinkerSpecificationResMerger::Isa()) {
-        result.reset(new LinkerSpecificationResMerger(true));
+        result.reset(new LinkerSpecificationResMerger());
     } else {
         fprintf(stderr, "warning: linker class '%s' not recognized\n",
                 C->value().c_str());
-        result.reset(new Linker(true));
+        result.reset(new Linker());
     }
 
     if (!result->parse(context, dict))

@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::CFBundleWrapperFileType;
 
-CFBundleWrapperFileType::CFBundleWrapperFileType(bool isDefault) :
-    FileType(isDefault, ISA::PBXCFBundleWrapperFileType)
+CFBundleWrapperFileType::CFBundleWrapperFileType() :
+    FileType(ISA::PBXCFBundleWrapperFileType)
 {
 }

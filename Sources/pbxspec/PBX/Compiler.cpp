@@ -9,13 +9,13 @@
 
 using pbxspec::PBX::Compiler;
 
-Compiler::Compiler(bool isDefault) :
-    Compiler(isDefault, ISA::PBXCompiler)
+Compiler::Compiler() :
+    Compiler(ISA::PBXCompiler)
 {
 }
 
-Compiler::Compiler(bool isDefault, std::string const &isa) :
-    Tool                                     (isDefault, isa),
+Compiler::Compiler(std::string const &isa) :
+    Tool                                     (isa),
     _overridingProperties                    (pbxsetting::Level({ })),
     _generatedInfoPlistContentFilePath       (pbxsetting::Value::Empty()),
     _outputDir                               (pbxsetting::Value::Empty()),
@@ -129,19 +129,19 @@ Parse(Context *context, plist::Dictionary const *dict)
 
     auto C = dict->value <plist::String> ("Class");
     if (C == nullptr) {
-        result.reset(new Compiler(true));
+        result.reset(new Compiler());
     } else if (C->value() == CompilerSpecificationGcc::Isa()) {
-        result.reset(new CompilerSpecificationGcc(true));
+        result.reset(new CompilerSpecificationGcc());
     } else if (C->value() == CompilerSpecificationMig::Isa()) {
-        result.reset(new CompilerSpecificationMig(true));
+        result.reset(new CompilerSpecificationMig());
     } else if (C->value() == XC::CompilerSpecificationClang::Isa()) {
-        result.reset(new XC::CompilerSpecificationClang(true));
+        result.reset(new XC::CompilerSpecificationClang());
     } else if (C->value() == XC::CompilerSpecificationSwift::Isa()) {
-        result.reset(new XC::CompilerSpecificationSwift(true));
+        result.reset(new XC::CompilerSpecificationSwift());
     } else {
         fprintf(stderr, "warning: compiler class '%s' not recognized\n",
                 C->value().c_str());
-        result.reset(new Compiler(true));
+        result.reset(new Compiler());
     }
 
     if (!result->parse(context, dict))

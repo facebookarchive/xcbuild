@@ -23,7 +23,7 @@ resolveBuildFile(pbxsetting::Environment const &environment, pbxproj::PBX::Build
 {
     if (pbxproj::PBX::FileReference::shared_ptr const &fileReference = buildFile->fileReference()) {
         std::string path = environment.expand(fileReference->resolve());
-        return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), fileReference, environment);
+        return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, environment);
     } else if (pbxproj::PBX::ReferenceProxy::shared_ptr referenceProxy = buildFile->referenceProxy()) {
         pbxproj::PBX::ContainerItemProxy::shared_ptr proxy = referenceProxy->remoteRef();
         pbxproj::PBX::FileReference::shared_ptr containerReference = proxy->containerPortal();
@@ -41,7 +41,7 @@ resolveBuildFile(pbxsetting::Environment const &environment, pbxproj::PBX::Build
             return nullptr;
         }
 
-        return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), remote->second, remoteEnvironment->environment());
+        return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, remote->second, remoteEnvironment->environment());
     } else {
         fprintf(stderr, "error: unable to handle build file without file reference or proxy\n");
         return nullptr;

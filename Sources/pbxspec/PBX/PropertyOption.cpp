@@ -20,7 +20,8 @@ PropertyOption::PropertyOption() :
     _isCommandOutput                   (false),
     _outputsAreSourceFiles             (false),
     _avoidMacroDefinition              (false),
-    _flattenRecursiveSearchPathsInValue(false)
+    _flattenRecursiveSearchPathsInValue(false),
+    _setValueInEnvironmentVariable     (pbxsetting::Value::Empty())
 {
 }
 
@@ -243,7 +244,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (SVIEV != nullptr) {
-        _setValueInEnvironmentVariable = SVIEV->value();
+        _setValueInEnvironmentVariable = pbxsetting::Value::Parse(SVIEV->value());
     }
 
     if (II != nullptr) {

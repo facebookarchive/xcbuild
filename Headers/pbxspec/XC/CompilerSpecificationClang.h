@@ -10,7 +10,7 @@ namespace pbxspec { namespace XC {
 class CompilerSpecificationClang : public PBX::Compiler {
 protected:
     friend class Compiler;
-    CompilerSpecificationClang(bool isDefault);
+    CompilerSpecificationClang();
 
 public:
     inline std::string const &isa() const

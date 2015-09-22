@@ -30,8 +30,8 @@ protected:
     std::string             _runpathSearchPathForEmbeddedFrameworks;
 
 protected:
-    ProductType(bool isDefault);
-    ProductType(bool isDefault, std::string const &isa);
+    ProductType();
+    ProductType(std::string const &isa);
 
 public:
     virtual ~ProductType();

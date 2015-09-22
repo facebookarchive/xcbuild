@@ -18,8 +18,8 @@ protected:
     bool                   _supportsInputFileList;
 
 protected:
-    Linker(bool isDefault);
-    Linker(bool isDefault, std::string const &isa);
+    Linker();
+    Linker(std::string const &isa);
 
 public:
     virtual ~Linker();

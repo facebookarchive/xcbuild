@@ -4,8 +4,8 @@
 
 using pbxspec::PBX::PropertyConditionFlavor;
 
-PropertyConditionFlavor::PropertyConditionFlavor(bool isDefault) :
-    Specification(ISA::PBXPropertyConditionFlavor, isDefault),
+PropertyConditionFlavor::PropertyConditionFlavor() :
+    Specification(ISA::PBXPropertyConditionFlavor),
     _precedence  (0)
 {
 }
@@ -24,11 +24,11 @@ Parse(Context *context, plist::Dictionary const *dict)
     PropertyConditionFlavor::shared_ptr result;
     auto C = dict->value <plist::String> ("Class");
     if (C == nullptr) {
-        result.reset(new PropertyConditionFlavor(true));
+        result.reset(new PropertyConditionFlavor());
     } else {
         fprintf(stderr, "warning: property condition flavor class '%s' not recognized\n",
                 C->value().c_str());
-        result.reset(new PropertyConditionFlavor(true));
+        result.reset(new PropertyConditionFlavor());
     }
     if (!result->parse(context, dict))
         return nullptr;

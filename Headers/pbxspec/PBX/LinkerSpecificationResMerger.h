@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class LinkerSpecificationResMerger : public Linker {
 protected:
     friend class Linker;
-    LinkerSpecificationResMerger(bool isDefault);
+    LinkerSpecificationResMerger();
 
 public:
     inline std::string const &isa() const

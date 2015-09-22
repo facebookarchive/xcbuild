@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class SpotlightImporternWrapperFileType : public FileType {
 protected:
     friend class FileType;
-    SpotlightImporternWrapperFileType(bool isDefault);
+    SpotlightImporternWrapperFileType();
 
 public:
     inline std::string const &isa() const

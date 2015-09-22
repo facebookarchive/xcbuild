@@ -13,7 +13,7 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    BuildPhase(bool isDefault);
+    BuildPhase();
 
 public:
     virtual ~BuildPhase();

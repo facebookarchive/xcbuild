@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::ApplicationWrapperFileType;
 
-ApplicationWrapperFileType::ApplicationWrapperFileType(bool isDefault) :
-    FileType(isDefault, ISA::PBXApplicationWrapperFileType)
+ApplicationWrapperFileType::ApplicationWrapperFileType() :
+    FileType(ISA::PBXApplicationWrapperFileType)
 {
 }

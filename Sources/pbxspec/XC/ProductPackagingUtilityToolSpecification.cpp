@@ -4,7 +4,7 @@
 
 using pbxspec::XC::ProductPackagingUtilityToolSpecification;
 
-ProductPackagingUtilityToolSpecification::ProductPackagingUtilityToolSpecification(bool isDefault) :
-    Tool(isDefault, ISA::XCProductPackagingUtilityToolSpecification)
+ProductPackagingUtilityToolSpecification::ProductPackagingUtilityToolSpecification() :
+    Tool(ISA::XCProductPackagingUtilityToolSpecification)
 {
 }

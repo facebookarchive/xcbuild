@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::LinkerSpecificationResMerger;
 
-LinkerSpecificationResMerger::LinkerSpecificationResMerger(bool isDefault) :
-    Linker(isDefault, ISA::PBXLinkerSpecificationResMerger)
+LinkerSpecificationResMerger::LinkerSpecificationResMerger() :
+    Linker(ISA::PBXLinkerSpecificationResMerger)
 {
 }

@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::CompilerSpecificationOpenCL;
 
-CompilerSpecificationOpenCL::CompilerSpecificationOpenCL(bool isDefault) :
-    Tool(isDefault, ISA::PBXCompilerSpecificationOpenCL)
+CompilerSpecificationOpenCL::CompilerSpecificationOpenCL() :
+    Tool(ISA::PBXCompilerSpecificationOpenCL)
 {
 }

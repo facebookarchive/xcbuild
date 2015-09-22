@@ -55,8 +55,8 @@ protected:
     bool                           _includeInUnionedToolDefaults;
 
 protected:
-    Compiler(bool isDefault);
-    Compiler(bool isDefault, std::string const &isa);
+    Compiler();
+    Compiler(std::string const &isa);
 
 public:
     virtual ~Compiler();

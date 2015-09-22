@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::HTMLFileType;
 
-HTMLFileType::HTMLFileType(bool isDefault) :
-    FileType(isDefault, ISA::PBXHTMLFileType)
+HTMLFileType::HTMLFileType() :
+    FileType(ISA::PBXHTMLFileType)
 {
 }

@@ -4,8 +4,8 @@
 
 using pbxspec::PBX::BuildSystem;
 
-BuildSystem::BuildSystem(bool isDefault) :
-    Specification      (ISA::PBXBuildSystem, isDefault)
+BuildSystem::BuildSystem() :
+    Specification      (ISA::PBXBuildSystem)
 {
 }
 
@@ -36,11 +36,11 @@ Parse(Context *context, plist::Dictionary const *dict)
     BuildSystem::shared_ptr result;
     auto C = dict->value <plist::String> ("Class");
     if (C == nullptr) {
-        result.reset(new BuildSystem(true));
+        result.reset(new BuildSystem());
     } else {
         fprintf(stderr, "warning: build system class '%s' not recognized\n",
                 C->value().c_str());
-        result.reset(new BuildSystem(true));
+        result.reset(new BuildSystem());
     }
     if (!result->parse(context, dict))
         return nullptr;

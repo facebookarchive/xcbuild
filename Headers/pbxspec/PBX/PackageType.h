@@ -49,7 +49,7 @@ protected:
     ProductReference::shared_ptr  _productReference;
 
 protected:
-    PackageType(bool isDefault);
+    PackageType();
 
 public:
     virtual ~PackageType();

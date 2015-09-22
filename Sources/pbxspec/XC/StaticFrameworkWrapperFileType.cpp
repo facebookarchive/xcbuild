@@ -4,7 +4,7 @@
 
 using pbxspec::XC::StaticFrameworkWrapperFileType;
 
-StaticFrameworkWrapperFileType::StaticFrameworkWrapperFileType(bool isDefault) :
-    PBX::FileType(isDefault, ISA::XCStaticFrameworkWrapperFileType)
+StaticFrameworkWrapperFileType::StaticFrameworkWrapperFileType() :
+    PBX::FileType(ISA::XCStaticFrameworkWrapperFileType)
 {
 }

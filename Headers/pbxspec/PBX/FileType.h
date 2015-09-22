@@ -98,8 +98,8 @@ protected:
     bool                   _validateOnCopy;
 
 protected:
-    FileType(bool isDefault);
-    FileType(bool isDefault, std::string const &isa);
+    FileType();
+    FileType(std::string const &isa);
 
 public:
     virtual ~FileType();

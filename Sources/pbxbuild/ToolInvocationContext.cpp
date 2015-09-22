@@ -234,7 +234,7 @@ Create(ToolEnvironment const &toolEnvironment, std::string const &workingDirecto
             }
         }
 
-        std::string const &variable = option->setValueInEnvironmentVariable();
+        std::string const &variable = environment.expand(option->setValueInEnvironmentVariable());
         if (!variable.empty()) {
             toolEnvironmentVariables.insert({ variable, value });
         }

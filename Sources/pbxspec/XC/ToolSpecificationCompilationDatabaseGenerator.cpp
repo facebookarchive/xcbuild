@@ -4,7 +4,7 @@
 
 using pbxspec::XC::ToolSpecificationCompilationDatabaseGenerator;
 
-ToolSpecificationCompilationDatabaseGenerator::ToolSpecificationCompilationDatabaseGenerator(bool isDefault) :
-    Tool(isDefault, ISA::XCToolSpecificationCompilationDatabaseGenerator)
+ToolSpecificationCompilationDatabaseGenerator::ToolSpecificationCompilationDatabaseGenerator() :
+    Tool(ISA::XCToolSpecificationCompilationDatabaseGenerator)
 {
 }

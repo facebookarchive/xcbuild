@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class PlistFileType : public FileType {
 protected:
     friend class FileType;
-    PlistFileType(bool isDefault);
+    PlistFileType();
 
 public:
     inline std::string const &isa() const

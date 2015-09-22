@@ -39,7 +39,7 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
         }
 
         for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
-            auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, buildFile->fileReference(), environment);
+            auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, { pbxspec::Manager::AnyDomain() }, buildFile->fileReference(), environment);
             if (file == nullptr) {
                 continue;
             }
@@ -115,7 +115,7 @@ Create(
     }
 
     for (pbxproj::PBX::FileReference::shared_ptr const &fileReference : project->fileReferences()) {
-        auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, fileReference, environment);
+        auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, { pbxspec::Manager::AnyDomain() }, fileReference, environment);
         if (file == nullptr || (file->fileType()->identifier() != "sourcecode.c.h" && file->fileType()->identifier() != "sourcecode.cpp.h")) {
             continue;
         }
@@ -136,7 +136,7 @@ Create(
             }
 
             for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
-                auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, buildFile->fileReference(), environment);
+                auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, { pbxspec::Manager::AnyDomain() }, buildFile->fileReference(), environment);
                 if (file == nullptr || (file->fileType()->identifier() != "sourcecode.c.h" && file->fileType()->identifier() != "sourcecode.cpp.h")) {
                     continue;
                 }

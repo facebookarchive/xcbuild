@@ -47,8 +47,8 @@ protected:
     PropertyOption::used_map        _optionsUsed;
 
 protected:
-    Tool(bool isDefault);
-    Tool(bool isDefault, std::string const &isa);
+    Tool();
+    Tool(std::string const &isa);
 
 public:
     virtual ~Tool();

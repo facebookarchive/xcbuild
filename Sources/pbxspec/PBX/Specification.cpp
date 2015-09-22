@@ -17,9 +17,8 @@ using pbxspec::PBX::Specification;
 using pbxspec::Manager;
 using libutil::FSUtil;
 
-Specification::Specification(std::string const &isa, bool isDefault) :
+Specification::Specification(std::string const &isa) :
     Object             (isa),
-    _isDefault         (isDefault),
     _isGlobalDomainInUI(false)
 {
 }
@@ -31,7 +30,6 @@ inherit(Specification::shared_ptr const &base)
         return false;
 
     _base               = base;
-    _isDefault          = !base->isDefault(); // TODO not true
     _clazz              = base->clazz();
     _isGlobalDomainInUI = base->isGlobalDomainInUI();
     _name               = base->name();
@@ -70,22 +68,21 @@ parse(Context *context, plist::Dictionary const *dict)
     }
 
     if (BO != nullptr) {
-        auto basedOn     = BO->value();
-        bool onlyDefault = false;
+        auto basedOn           = BO->value();
 
-        if (basedOn.compare(0, 8, "default:") == 0) {
-            onlyDefault = true;
-            basedOn = basedOn.substr(8);
+        auto basedOnDomain     = Manager::AnyDomain();
+        auto basedOnIdentifier = basedOn;
+
+        auto colon = basedOn.find(':');
+        if (colon != std::string::npos) {
+            basedOnDomain     = basedOn.substr(0, colon);
+            basedOnIdentifier = basedOn.substr(colon + 1);
         }
 
-        auto base = context->manager->specification(type(), basedOn, _domain, onlyDefault);
-        if (base == nullptr && _domain != Manager::GlobalDomain()) {
-            // TODO(grp): Is this rule right? (Inherit from the same specification in the global domain if can't inherit in the current domain.)
-            base = context->manager->specification(type(), _identifier, Manager::GlobalDomain(), true);
-        }
+        auto base = context->manager->specification(type(), basedOnIdentifier, { basedOnDomain });
         if (base == nullptr) {
-            fprintf(stderr, "error: cannot find base %s specification '%s'\n",
-                    type(), basedOn.c_str());
+            fprintf(stderr, "error: cannot find base %s specification '%s:%s'\n",
+                    type(), basedOnDomain.c_str(), basedOnIdentifier.c_str());
             return false;
         }
 
@@ -94,11 +91,6 @@ parse(Context *context, plist::Dictionary const *dict)
         //
         if (!inherit(base))
             return false;
-
-        //
-        // Override is default.
-        //
-        _isDefault = !onlyDefault;
     }
 
     if (GD != nullptr) {

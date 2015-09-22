@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class ApplicationProductType : public ProductType {
 protected:
     friend class ProductType;
-    ApplicationProductType(bool isDefault);
+    ApplicationProductType();
 
 public:
     inline std::string const &isa() const

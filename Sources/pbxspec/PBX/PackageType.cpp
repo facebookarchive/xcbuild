@@ -6,8 +6,8 @@ using pbxspec::PBX::PackageType;
 using pbxsetting::Level;
 using pbxsetting::Setting;
 
-PackageType::PackageType(bool isDefault) :
-    Specification        (ISA::PBXPackageType, isDefault),
+PackageType::PackageType() :
+    Specification        (ISA::PBXPackageType),
     _defaultBuildSettings(Level({ }))
 {
 }
@@ -26,11 +26,11 @@ Parse(Context *context, plist::Dictionary const *dict)
     PackageType::shared_ptr result;
     auto C = dict->value <plist::String> ("Class");
     if (C == nullptr) {
-        result.reset(new PackageType(true));
+        result.reset(new PackageType());
     } else {
         fprintf(stderr, "warning: package type class '%s' not recognized\n",
                 C->value().c_str());
-        result.reset(new PackageType(true));
+        result.reset(new PackageType());
     }
     if (!result->parse(context, dict))
         return nullptr;

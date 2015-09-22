@@ -15,13 +15,13 @@
 
 using pbxspec::PBX::FileType;
 
-FileType::FileType(bool isDefault) :
-    FileType(isDefault, ISA::PBXFileType)
+FileType::FileType() :
+    FileType(ISA::PBXFileType)
 {
 }
 
-FileType::FileType(bool isDefault, std::string const &isa) :
-    Specification                           (isa, isDefault),
+FileType::FileType(std::string const &isa) :
+    Specification                           (isa),
     _isTextFile                             (false),
     _isBuildPropertiesFile                  (false),
     _isSourceCode                           (false),
@@ -141,31 +141,31 @@ Parse(Context *context, plist::Dictionary const *dict)
 
     auto C = dict->value <plist::String> ("Class");
     if (C == nullptr) {
-        result.reset(new FileType(true));
+        result.reset(new FileType());
     } else if (C->value() == PlistFileType::Isa()) {
-        result.reset(new PlistFileType(true));
+        result.reset(new PlistFileType());
     } else if (C->value() == HTMLFileType::Isa()) {
-        result.reset(new HTMLFileType(true));
+        result.reset(new HTMLFileType());
     } else if (C->value() == MachOFileType::Isa()) {
-        result.reset(new MachOFileType(true));
+        result.reset(new MachOFileType());
     } else if (C->value() == ApplicationWrapperFileType::Isa()) {
-        result.reset(new ApplicationWrapperFileType(true));
+        result.reset(new ApplicationWrapperFileType());
     } else if (C->value() == CFBundleWrapperFileType::Isa()) {
-        result.reset(new CFBundleWrapperFileType(true));
+        result.reset(new CFBundleWrapperFileType());
     } else if (C->value() == FrameworkWrapperFileType::Isa()) {
-        result.reset(new FrameworkWrapperFileType(true));
+        result.reset(new FrameworkWrapperFileType());
     } else if (C->value() == PlugInKitPluginWrapperFileType::Isa()) {
-        result.reset(new PlugInKitPluginWrapperFileType(true));
+        result.reset(new PlugInKitPluginWrapperFileType());
     } else if (C->value() == SpotlightImporternWrapperFileType::Isa()) {
-        result.reset(new SpotlightImporternWrapperFileType(true));
+        result.reset(new SpotlightImporternWrapperFileType());
     } else if (C->value() == XPCServiceWrapperFileType::Isa()) {
-        result.reset(new XPCServiceWrapperFileType(true));
+        result.reset(new XPCServiceWrapperFileType());
     } else if (C->value() == XC::StaticFrameworkWrapperFileType::Isa()) {
-        result.reset(new XC::StaticFrameworkWrapperFileType(true));
+        result.reset(new XC::StaticFrameworkWrapperFileType());
     } else {
         fprintf(stderr, "warning: file type class '%s' not recognized\n",
                 C->value().c_str());
-        result.reset(new FileType(true));
+        result.reset(new FileType());
     }
 
     if (!result->parse(context, dict))

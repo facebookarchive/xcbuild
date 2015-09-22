@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::XPCServiceWrapperFileType;
 
-XPCServiceWrapperFileType::XPCServiceWrapperFileType(bool isDefault) :
-    FileType(isDefault, ISA::PBXXPCServiceWrapperFileType)
+XPCServiceWrapperFileType::XPCServiceWrapperFileType() :
+    FileType(ISA::PBXXPCServiceWrapperFileType)
 {
 }

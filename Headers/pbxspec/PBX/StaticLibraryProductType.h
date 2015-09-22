@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class StaticLibraryProductType : public ProductType {
 protected:
     friend class ProductType;
-    StaticLibraryProductType(bool isDefault);
+    StaticLibraryProductType();
 
 public:
     inline std::string const &isa() const

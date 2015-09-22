@@ -10,7 +10,7 @@ namespace pbxspec { namespace XC {
 class StaticFrameworkProductType : public PBX::ProductType {
 protected:
     friend class ProductType;
-    StaticFrameworkProductType(bool isDefault);
+    StaticFrameworkProductType();
 
 public:
     inline std::string const &isa() const

@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::LinkerSpecificationLibtool;
 
-LinkerSpecificationLibtool::LinkerSpecificationLibtool(bool isDefault) :
-    Linker(isDefault, ISA::PBXLinkerSpecificationLibtool)
+LinkerSpecificationLibtool::LinkerSpecificationLibtool() :
+    Linker(ISA::PBXLinkerSpecificationLibtool)
 {
 }

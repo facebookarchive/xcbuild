@@ -61,7 +61,7 @@ protected:
     bool                    _outputsAreSourceFiles;
     bool                    _avoidMacroDefinition;
     bool                    _flattenRecursiveSearchPathsInValue;
-    std::string             _setValueInEnvironmentVariable;
+    pbxsetting::Value       _setValueInEnvironmentVariable;
 
 protected:
     friend class BuildSystem;
@@ -168,7 +168,7 @@ public:
     { return _flattenRecursiveSearchPathsInValue; }
 
 public:
-    inline std::string const &setValueInEnvironmentVariable() const
+    inline pbxsetting::Value const &setValueInEnvironmentVariable() const
     { return _setValueInEnvironmentVariable; }
 
 public:

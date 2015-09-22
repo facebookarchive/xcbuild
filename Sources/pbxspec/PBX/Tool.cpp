@@ -12,13 +12,13 @@
 
 using pbxspec::PBX::Tool;
 
-Tool::Tool(bool isDefault) :
-    Tool(isDefault, ISA::PBXTool)
+Tool::Tool() :
+    Tool(ISA::PBXTool)
 {
 }
 
-Tool::Tool(bool isDefault, std::string const &isa) :
-    Specification                   (isa, isDefault),
+Tool::Tool(std::string const &isa) :
+    Specification                   (isa),
     _ruleName                       (pbxsetting::Value::Empty()),
     _ruleFormat                     (pbxsetting::Value::Empty()),
     _commandOutputParser            (nullptr),
@@ -58,27 +58,27 @@ Parse(Context *context, plist::Dictionary const *dict)
 
     auto C = dict->value <plist::String> ("Class");
     if (C == nullptr) {
-        result.reset(new Tool(true));
+        result.reset(new Tool());
     } else if (C->value() == CompilerSpecificationLex::Isa()) {
-        result.reset(new CompilerSpecificationLex(true));
+        result.reset(new CompilerSpecificationLex());
     } else if (C->value() == CompilerSpecificationOpenCL::Isa()) {
-        result.reset(new CompilerSpecificationOpenCL(true));
+        result.reset(new CompilerSpecificationOpenCL());
     } else if (C->value() == CompilerSpecificationPbxCp::Isa()) {
-        result.reset(new CompilerSpecificationPbxCp(true));
+        result.reset(new CompilerSpecificationPbxCp());
     } else if (C->value() == CompilerSpecificationRez::Isa()) {
-        result.reset(new CompilerSpecificationRez(true));
+        result.reset(new CompilerSpecificationRez());
     } else if (C->value() == CompilerSpecificationYacc::Isa()) {
-        result.reset(new CompilerSpecificationYacc(true));
+        result.reset(new CompilerSpecificationYacc());
     } else if (C->value() == XC::ToolSpecificationHeadermapGenerator::Isa()) {
-        result.reset(new XC::ToolSpecificationHeadermapGenerator(true));
+        result.reset(new XC::ToolSpecificationHeadermapGenerator());
     } else if (C->value() == XC::ToolSpecificationCompilationDatabaseGenerator::Isa()) {
-        result.reset(new XC::ToolSpecificationCompilationDatabaseGenerator(true));
+        result.reset(new XC::ToolSpecificationCompilationDatabaseGenerator());
     } else if (C->value() == XC::ProductPackagingUtilityToolSpecification::Isa()) {
-        result.reset(new XC::ProductPackagingUtilityToolSpecification(true));
+        result.reset(new XC::ProductPackagingUtilityToolSpecification());
     } else {
         fprintf(stderr, "warning: tool class '%s' not recognized\n",
                 C->value().c_str());
-        result.reset(new Tool(true));
+        result.reset(new Tool());
     }
 
     if (!result->parse(context, dict))

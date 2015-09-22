@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::MachOFileType;
 
-MachOFileType::MachOFileType(bool isDefault) :
-    FileType(isDefault, ISA::PBXMachOFileType)
+MachOFileType::MachOFileType() :
+    FileType(ISA::PBXMachOFileType)
 {
 }

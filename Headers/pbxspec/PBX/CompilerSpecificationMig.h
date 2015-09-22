@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class CompilerSpecificationMig : public Compiler {
 protected:
     friend class Compiler;
-    CompilerSpecificationMig(bool isDefault);
+    CompilerSpecificationMig();
 
 public:
     inline std::string const &isa() const

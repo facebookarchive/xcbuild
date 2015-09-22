@@ -12,13 +12,13 @@ using pbxspec::PBX::ProductType;
 using pbxsetting::Level;
 using pbxsetting::Setting;
 
-ProductType::ProductType(bool isDefault) :
-    ProductType(isDefault, ISA::PBXProductType)
+ProductType::ProductType() :
+    ProductType(ISA::PBXProductType)
 {
 }
 
-ProductType::ProductType(bool isDefault, std::string const &isa) :
-    Specification                          (isa, isDefault),
+ProductType::ProductType(std::string const &isa) :
+    Specification                          (isa),
     _defaultBuildProperties                (Level({ })),
     _validation                            (nullptr),
     _hasInfoPlist                          (false),
@@ -49,23 +49,23 @@ Parse(Context *context, plist::Dictionary const *dict)
     ProductType::shared_ptr result;
     auto C = dict->value <plist::String> ("Class");
     if (C == nullptr) {
-        result.reset(new ProductType(true));
+        result.reset(new ProductType());
     } else if (C->value() == ApplicationProductType::Isa()) {
-        result.reset(new ApplicationProductType(true));
+        result.reset(new ApplicationProductType());
     } else if (C->value() == BundleProductType::Isa()) {
-        result.reset(new BundleProductType(true));
+        result.reset(new BundleProductType());
     } else if (C->value() == DynamicLibraryProductType::Isa()) {
-        result.reset(new DynamicLibraryProductType(true));
+        result.reset(new DynamicLibraryProductType());
     } else if (C->value() == FrameworkProductType::Isa()) {
-        result.reset(new FrameworkProductType(true));
+        result.reset(new FrameworkProductType());
     } else if (C->value() == StaticLibraryProductType::Isa()) {
-        result.reset(new StaticLibraryProductType(true));
+        result.reset(new StaticLibraryProductType());
     } else if (C->value() == XC::StaticFrameworkProductType::Isa()) {
-        result.reset(new XC::StaticFrameworkProductType(true));
+        result.reset(new XC::StaticFrameworkProductType());
     } else {
         fprintf(stderr, "warning: product type class '%s' not recognized\n",
                 C->value().c_str());
-        result.reset(new ProductType(true));
+        result.reset(new ProductType());
     }
     if (!result->parse(context, dict))
         return nullptr;

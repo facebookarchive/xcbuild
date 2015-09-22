@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::SpotlightImporternWrapperFileType;
 
-SpotlightImporternWrapperFileType::SpotlightImporternWrapperFileType(bool isDefault) :
-    FileType(isDefault, ISA::PBXSpotlightImporternWrapperFileType)
+SpotlightImporternWrapperFileType::SpotlightImporternWrapperFileType() :
+    FileType(ISA::PBXSpotlightImporternWrapperFileType)
 {
 }

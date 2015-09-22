@@ -10,7 +10,7 @@ namespace pbxspec { namespace XC {
 class ToolSpecificationCompilationDatabaseGenerator : public PBX::Tool {
 protected:
     friend class Tool;
-    ToolSpecificationCompilationDatabaseGenerator(bool isDefault);
+    ToolSpecificationCompilationDatabaseGenerator();
 
 public:
     inline std::string const &isa() const

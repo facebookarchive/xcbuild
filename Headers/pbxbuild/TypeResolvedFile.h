@@ -25,9 +25,9 @@ public:
 
 public:
     static std::unique_ptr<TypeResolvedFile>
-    Resolve(pbxspec::Manager::shared_ptr const &specManager, std::string const &filePath);
+    Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, std::string const &filePath);
     static std::unique_ptr<TypeResolvedFile>
-    Resolve(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment);
+    Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment);
 };
 
 }

@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class MachOFileType : public FileType {
 protected:
     friend class FileType;
-    MachOFileType(bool isDefault);
+    MachOFileType();
 
 public:
     inline std::string const &isa() const

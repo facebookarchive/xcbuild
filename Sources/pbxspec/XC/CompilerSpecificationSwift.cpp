@@ -4,7 +4,7 @@
 
 using pbxspec::XC::CompilerSpecificationSwift;
 
-CompilerSpecificationSwift::CompilerSpecificationSwift(bool isDefault) :
-    PBX::Compiler(isDefault, ISA::XCCompilerSpecificationSwift)
+CompilerSpecificationSwift::CompilerSpecificationSwift() :
+    PBX::Compiler(ISA::XCCompilerSpecificationSwift)
 {
 }

@@ -16,7 +16,6 @@ public:
 
 protected:
     Specification::shared_ptr _base;
-    bool                      _isDefault;
     std::string               _clazz;
     std::string               _identifier;
     std::string               _domain;
@@ -27,7 +26,7 @@ protected:
     std::string               _version;
 
 protected:
-    Specification(std::string const &isa, bool isDefault);
+    Specification(std::string const &isa);
 
 public:
     virtual char const *type() const = 0;
@@ -35,10 +34,6 @@ public:
 public:
     inline Specification::shared_ptr const &base() const
     { return _base; }
-
-public:
-    inline bool isDefault() const
-    { return _isDefault; }
 
 public:
     inline std::string const &clazz() const

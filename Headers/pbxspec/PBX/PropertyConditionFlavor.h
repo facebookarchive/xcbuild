@@ -16,7 +16,7 @@ protected:
     int _precedence;
 
 protected:
-    PropertyConditionFlavor(bool isDefault);
+    PropertyConditionFlavor();
 
 public:
     virtual ~PropertyConditionFlavor();

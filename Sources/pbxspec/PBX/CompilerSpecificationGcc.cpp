@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::CompilerSpecificationGcc;
 
-CompilerSpecificationGcc::CompilerSpecificationGcc(bool isDefault) :
-    Compiler(isDefault, ISA::PBXCompilerSpecificationGcc)
+CompilerSpecificationGcc::CompilerSpecificationGcc() :
+    Compiler(ISA::PBXCompilerSpecificationGcc)
 {
 }

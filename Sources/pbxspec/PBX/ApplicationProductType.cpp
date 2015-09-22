@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::ApplicationProductType;
 
-ApplicationProductType::ApplicationProductType(bool isDefault) :
-    ProductType(isDefault, ISA::PBXApplicationProductType)
+ApplicationProductType::ApplicationProductType() :
+    ProductType(ISA::PBXApplicationProductType)
 {
 }

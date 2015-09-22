@@ -24,9 +24,9 @@ public:
     typedef std::shared_ptr <Manager> shared_ptr;
 
 private:
-    std::map<std::string, std::string>                                       _domains;
-    std::map<std::string, std::map<char const*, PBX::Specification::vector>> _specifications;
-    PBX::BuildRule::vector                                                   _buildRules;
+    std::map<std::string, std::string>                                        _domains;
+    std::map<std::string, std::map<char const *, PBX::Specification::vector>> _specifications;
+    PBX::BuildRule::vector                                                    _buildRules;
 
 public:
     Manager();
@@ -34,78 +34,78 @@ public:
 
 public:
     PBX::Specification::shared_ptr
-    specification(char const *type, std::string const &identifier, std::string const &domain = GlobalDomain(), bool onlyDefault = false) const;
+    specification(char const *type, std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::Specification::vector
-    specifications(char const *type, std::string const &domain = GlobalDomain()) const;
+    specifications(char const *type, std::vector<std::string> const &domains) const;
 
 public:
     PBX::Architecture::shared_ptr
-    architecture(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    architecture(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::Architecture::vector
-    architectures(std::string const &domain = GlobalDomain()) const;
+    architectures(std::vector<std::string> const &domains) const;
 
 public:
     PBX::BuildSystem::shared_ptr
-    buildSystem(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    buildSystem(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::BuildSystem::vector
-    buildSystems(std::string const &domain = GlobalDomain()) const;
+    buildSystems(std::vector<std::string> const &domains) const;
 
 public:
     PBX::BuildPhase::shared_ptr
-    buildPhase(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    buildPhase(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::BuildPhase::vector
-    buildPhases(std::string const &domain = GlobalDomain()) const;
+    buildPhases(std::vector<std::string> const &domains) const;
 
 public:
     PBX::Compiler::shared_ptr
-    compiler(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    compiler(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::Compiler::vector
-    compilers(std::string const &domain = GlobalDomain()) const;
+    compilers(std::vector<std::string> const &domains) const;
 
 public:
     PBX::FileType::shared_ptr
-    fileType(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    fileType(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::FileType::vector
-    fileTypes(std::string const &domain = GlobalDomain()) const;
+    fileTypes(std::vector<std::string> const &domains) const;
 
 public:
     PBX::Linker::shared_ptr
-    linker(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    linker(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::Linker::vector
-    linkers(std::string const &domain = GlobalDomain()) const;
+    linkers(std::vector<std::string> const &domains) const;
 
 public:
     PBX::PackageType::shared_ptr
-    packageType(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    packageType(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::PackageType::vector
-    packageTypes(std::string const &domain = GlobalDomain()) const;
+    packageTypes(std::vector<std::string> const &domains) const;
 
 public:
     PBX::ProductType::shared_ptr
-    productType(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    productType(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::ProductType::vector
-    productTypes(std::string const &domain = GlobalDomain()) const;
+    productTypes(std::vector<std::string> const &domains) const;
 
 public:
     PBX::PropertyConditionFlavor::shared_ptr
-    propertyConditionFlavor(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    propertyConditionFlavor(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::PropertyConditionFlavor::vector
-    propertyConditionFlavors(std::string const &domain = GlobalDomain()) const;
+    propertyConditionFlavors(std::vector<std::string> const &domains) const;
 
 public:
     PBX::Tool::shared_ptr
-    tool(std::string const &identifier, std::string const &domain = GlobalDomain()) const;
+    tool(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::Tool::vector
-    tools(std::string const &domain = GlobalDomain()) const;
+    tools(std::vector<std::string> const &domains) const;
 
 public:
     inline PBX::BuildRule::vector buildRules(void) const
     { return _buildRules; }
-    PBX::BuildRule::vector synthesizedBuildRules(void) const;
+    PBX::BuildRule::vector synthesizedBuildRules(std::vector<std::string> const &domains) const;
 
 public:
     void
-    registerDomain(std::string const &domain, std::string const &path);
+    registerDomain(std::pair<std::string, std::string> const &domain);
     void
     registerBuildRules(std::string const &path);
 
@@ -117,10 +117,10 @@ protected:
 private:
     template <typename T>
     typename T::shared_ptr
-    findSpecification(std::string const &identifier, std::string const &domain, char const *type = T::Type(), bool onlyDefault = false) const;
+    findSpecification(std::vector<std::string> const &domains, std::string const &identifier, char const *type = T::Type()) const;
     template <typename T>
     typename T::vector
-    findSpecifications(std::string const &domain, char const *type = T::Type()) const;
+    findSpecifications(std::vector<std::string> const &domains, char const *type = T::Type()) const;
 
 public:
     static Manager::shared_ptr
@@ -128,13 +128,19 @@ public:
 
 public:
     static std::string
-    GlobalDomain();
+    AnyDomain();
+    static std::vector<std::string>
+    AnyDomain(std::string const &preferred);
 
 public:
-    static std::string
-    DeveloperSpecificationRoot(std::string const &developerRoot);
-    static std::string
-    DomainSpecificationRoot(std::string const &domainPath);
+    static std::pair<std::string, std::string>
+    DefaultDomain(std::string const &developerRoot);
+    static std::vector<std::pair<std::string, std::string>>
+    EmbeddedDomains(std::string const &developerRoot);
+    static std::vector<std::pair<std::string, std::string>>
+    PlatformDomains(std::string const &developerRoot);
+
+public:
     static std::string
     DeveloperBuildRules(std::string const &developerRoot);
 };

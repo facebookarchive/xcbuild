@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class LinkerSpecificationLibtool : public Linker {
 protected:
     friend class Linker;
-    LinkerSpecificationLibtool(bool isDefault);
+    LinkerSpecificationLibtool();
 
 public:
     inline std::string const &isa() const

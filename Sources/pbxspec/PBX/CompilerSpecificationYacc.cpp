@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::CompilerSpecificationYacc;
 
-CompilerSpecificationYacc::CompilerSpecificationYacc(bool isDefault) :
-    Tool(isDefault, ISA::PBXCompilerSpecificationYacc)
+CompilerSpecificationYacc::CompilerSpecificationYacc() :
+    Tool(ISA::PBXCompilerSpecificationYacc)
 {
 }

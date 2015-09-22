@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class CompilerSpecificationYacc : public Tool {
 protected:
     friend class Tool;
-    CompilerSpecificationYacc(bool isDefault);
+    CompilerSpecificationYacc();
 
 public:
     inline std::string const &isa() const

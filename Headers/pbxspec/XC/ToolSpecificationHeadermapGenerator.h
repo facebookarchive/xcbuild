@@ -10,7 +10,7 @@ namespace pbxspec { namespace XC {
 class ToolSpecificationHeadermapGenerator : public PBX::Tool {
 protected:
     friend class Tool;
-    ToolSpecificationHeadermapGenerator(bool isDefault);
+    ToolSpecificationHeadermapGenerator();
 
 public:
     inline std::string const &isa() const

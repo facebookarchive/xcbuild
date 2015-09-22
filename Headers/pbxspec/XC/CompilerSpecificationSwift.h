@@ -10,7 +10,7 @@ namespace pbxspec { namespace XC {
 class CompilerSpecificationSwift : public PBX::Compiler {
 protected:
     friend class Compiler;
-    CompilerSpecificationSwift(bool isDefault);
+    CompilerSpecificationSwift();
 
 public:
     inline std::string const &isa() const

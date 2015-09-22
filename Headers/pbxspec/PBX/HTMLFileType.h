@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class HTMLFileType : public FileType {
 protected:
     friend class FileType;
-    HTMLFileType(bool isDefault);
+    HTMLFileType();
 
 public:
     inline std::string const &isa() const

@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::PlugInKitPluginWrapperFileType;
 
-PlugInKitPluginWrapperFileType::PlugInKitPluginWrapperFileType(bool isDefault) :
-    FileType(isDefault, ISA::PBXPlugInKitPluginWrapperFileType)
+PlugInKitPluginWrapperFileType::PlugInKitPluginWrapperFileType() :
+    FileType(ISA::PBXPlugInKitPluginWrapperFileType)
 {
 }

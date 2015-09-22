@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::PlistFileType;
 
-PlistFileType::PlistFileType(bool isDefault) :
-    FileType(isDefault, ISA::PBXPlistFileType)
+PlistFileType::PlistFileType() :
+    FileType(ISA::PBXPlistFileType)
 {
 }

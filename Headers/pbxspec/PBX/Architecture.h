@@ -22,7 +22,7 @@ protected:
     int                    _sortNumber;
 
 protected:
-    Architecture(bool isDefault);
+    Architecture();
 
 public:
     virtual ~Architecture();

@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class CompilerSpecificationPbxCp : public Tool {
 protected:
     friend class Tool;
-    CompilerSpecificationPbxCp(bool isDefault);
+    CompilerSpecificationPbxCp();
 
 public:
     inline std::string const &isa() const

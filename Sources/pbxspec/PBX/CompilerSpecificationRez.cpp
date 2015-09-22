@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::CompilerSpecificationRez;
 
-CompilerSpecificationRez::CompilerSpecificationRez(bool isDefault) :
-    Tool(isDefault, ISA::PBXCompilerSpecificationRez)
+CompilerSpecificationRez::CompilerSpecificationRez() :
+    Tool(ISA::PBXCompilerSpecificationRez)
 {
 }

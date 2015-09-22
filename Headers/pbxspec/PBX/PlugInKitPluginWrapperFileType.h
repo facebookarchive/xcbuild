@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class PlugInKitPluginWrapperFileType : public FileType {
 protected:
     friend class FileType;
-    PlugInKitPluginWrapperFileType(bool isDefault);
+    PlugInKitPluginWrapperFileType();
 
 public:
     inline std::string const &isa() const

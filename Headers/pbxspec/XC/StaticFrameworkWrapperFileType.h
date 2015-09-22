@@ -10,7 +10,7 @@ namespace pbxspec { namespace XC {
 class StaticFrameworkWrapperFileType : public PBX::FileType {
 protected:
     friend class PBX::FileType;
-    StaticFrameworkWrapperFileType(bool isDefault);
+    StaticFrameworkWrapperFileType();
 
 public:
     inline std::string const &isa() const

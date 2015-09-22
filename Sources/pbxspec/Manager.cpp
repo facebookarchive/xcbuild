@@ -29,193 +29,188 @@ Manager::~Manager()
 
 template <typename T>
 typename T::vector Manager::
-findSpecifications(std::string const &domain, char const *type) const
+findSpecifications(std::vector<std::string> const &domains, char const *type) const
 {
     if (type == nullptr) {
         return typename T::vector();
     }
 
-    auto const &doit = _specifications.find(domain);
-    if (doit != _specifications.end()) {
-        auto const &it = doit->second.find(type);
-        if (it != doit->second.end()) {
-            typename T::vector specifications = reinterpret_cast <typename T::vector const &> (it->second);
-            return specifications;
-        }
-    }
+    typename T::vector specifications;
 
-    return typename T::vector();
-}
-
-template <typename T>
-typename T::shared_ptr Manager::
-findSpecification(std::string const &domain, std::string const &identifier, char const *type, bool onlyDefault) const
-{
-    typename T::vector vector = findSpecifications <T> (domain, type);
-
-    //
-    // Do an inverse find so that we can find the overrides.
-    //
-    auto I = std::find_if(
-            vector.rbegin(), vector.rend(),
-            [&identifier, onlyDefault](Specification::shared_ptr const &spec) -> bool
-            {
-                return ((!onlyDefault || spec->isDefault()) &&
-                        identifier == spec->identifier());
-            });
-
-    if (I == vector.rend()) {
-        //
-        // We couldn't find what the user wants, use any identifier found.
-        //
-        I = std::find_if(vector.rbegin(), vector.rend(),
-                [&identifier](Specification::shared_ptr const &spec) -> bool
-                {
-                    return identifier == spec->identifier();
-                });
-
-        if (I == vector.rend()) {
-            if (domain != GlobalDomain()) {
-                return findSpecification<T>(GlobalDomain(), identifier, type, onlyDefault);
-            } else {
-                return nullptr;
+    for (std::string const &domain : domains) {
+        if (domain == AnyDomain()) {
+            for (auto const &entry : _specifications) {
+                auto const &it = entry.second.find(type);
+                if (it != entry.second.end()) {
+                    typename T::vector domainSpecifications = reinterpret_cast <typename T::vector const &> (it->second);
+                    specifications.insert(specifications.end(), domainSpecifications.begin(), domainSpecifications.end());
+                }
+            }
+        } else {
+            auto const &doit = _specifications.find(domain);
+            if (doit != _specifications.end()) {
+                auto const &it = doit->second.find(type);
+                if (it != doit->second.end()) {
+                    typename T::vector domainSpecifications = reinterpret_cast <typename T::vector const &> (it->second);
+                    specifications.insert(specifications.end(), domainSpecifications.begin(), domainSpecifications.end());
+                }
             }
         }
     }
 
-    return *I;
+    return specifications;
+}
+
+template <typename T>
+typename T::shared_ptr Manager::
+findSpecification(std::vector<std::string> const &domains, std::string const &identifier, char const *type) const
+{
+    typename T::vector vector = findSpecifications <T> (domains, type);
+
+    //
+    // Do an inverse find so that we can find the overrides.
+    //
+    auto I = std::find_if(vector.rbegin(), vector.rend(), [&identifier](Specification::shared_ptr const &spec) -> bool {
+        return identifier == spec->identifier();
+    });
+
+    if (I != vector.rend()) {
+        return *I;
+    }
+
+    return nullptr;
 }
 
 Specification::shared_ptr Manager::
-specification(char const *type, std::string const &identifier, std::string const &domain, bool onlyDefault) const
+specification(char const *type, std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Specification> (domain, identifier, type, onlyDefault);
+    return findSpecification <Specification> (domains, identifier, type);
 }
 
 Specification::vector Manager::
-specifications(char const *type, std::string const &domain) const
+specifications(char const *type, std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Specification> (domain, type);
+    return findSpecifications <Specification> (domains, type);
 }
 
 Architecture::shared_ptr Manager::
-architecture(std::string const &identifier, std::string const &domain) const
+architecture(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Architecture> (domain, identifier);
+    return findSpecification <Architecture> (domains, identifier);
 }
 
 Architecture::vector Manager::
-architectures(std::string const &domain) const
+architectures(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Architecture> (domain);
+    return findSpecifications <Architecture> (domains);
 }
 
 BuildPhase::shared_ptr Manager::
-buildPhase(std::string const &identifier, std::string const &domain) const
+buildPhase(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <BuildPhase> (domain, identifier);
+    return findSpecification <BuildPhase> (domains, identifier);
 }
 
 BuildPhase::vector Manager::
-buildPhases(std::string const &domain) const
+buildPhases(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <BuildPhase> (domain);
+    return findSpecifications <BuildPhase> (domains);
 }
 
 BuildSystem::shared_ptr Manager::
-buildSystem(std::string const &identifier, std::string const &domain) const
+buildSystem(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <BuildSystem> (domain, identifier);
+    return findSpecification <BuildSystem> (domains, identifier);
 }
 
 BuildSystem::vector Manager::
-buildSystems(std::string const &domain) const
+buildSystems(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <BuildSystem> (domain);
+    return findSpecifications <BuildSystem> (domains);
 }
 
 Compiler::shared_ptr Manager::
-compiler(std::string const &identifier, std::string const &domain) const
+compiler(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Compiler> (domain, identifier);
+    return findSpecification <Compiler> (domains, identifier);
 }
 
 Compiler::vector Manager::
-compilers(std::string const &domain) const
+compilers(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Compiler> (domain);
+    return findSpecifications <Compiler> (domains);
 }
 
 FileType::shared_ptr Manager::
-fileType(std::string const &identifier, std::string const &domain) const
+fileType(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <FileType> (domain, identifier);
+    return findSpecification <FileType> (domains, identifier);
 }
 
 FileType::vector Manager::
-fileTypes(std::string const &domain) const
+fileTypes(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <FileType> (domain);
+    return findSpecifications <FileType> (domains);
 }
 
 Linker::shared_ptr Manager::
-linker(std::string const &identifier, std::string const &domain) const
+linker(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Linker> (domain, identifier);
+    return findSpecification <Linker> (domains, identifier);
 }
 
 Linker::vector Manager::
-linkers(std::string const &domain) const
+linkers(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Linker> (domain);
+    return findSpecifications <Linker> (domains);
 }
 
 PackageType::shared_ptr Manager::
-packageType(std::string const &identifier, std::string const &domain) const
+packageType(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <PackageType> (domain, identifier);
+    return findSpecification <PackageType> (domains, identifier);
 }
 
 PackageType::vector Manager::
-packageTypes(std::string const &domain) const
+packageTypes(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <PackageType> (domain);
+    return findSpecifications <PackageType> (domains);
 }
 
 ProductType::shared_ptr Manager::
-productType(std::string const &identifier, std::string const &domain) const
+productType(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <ProductType> (domain, identifier);
+    return findSpecification <ProductType> (domains, identifier);
 }
 
 ProductType::vector Manager::
-productTypes(std::string const &domain) const
+productTypes(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <ProductType> (domain);
+    return findSpecifications <ProductType> (domains);
 }
 
 PropertyConditionFlavor::shared_ptr Manager::
-propertyConditionFlavor(std::string const &identifier, std::string const &domain) const
+propertyConditionFlavor(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <PropertyConditionFlavor> (domain, identifier);
+    return findSpecification <PropertyConditionFlavor> (domains, identifier);
 }
 
 PropertyConditionFlavor::vector Manager::
-propertyConditionFlavors(std::string const &domain) const
+propertyConditionFlavors(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <PropertyConditionFlavor> (domain);
+    return findSpecifications <PropertyConditionFlavor> (domains);
 }
 
 Tool::shared_ptr Manager::
-tool(std::string const &identifier, std::string const &domain) const
+tool(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Tool> (domain, identifier);
+    return findSpecification <Tool> (domains, identifier);
 }
 
 Tool::vector Manager::
-tools(std::string const &domain) const
+tools(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Tool> (domain);
+    return findSpecifications <Tool> (domains);
 }
 
 static BuildRule::shared_ptr
@@ -226,25 +221,25 @@ SynthesizeBuildRule(Tool const *tool)
 }
 
 BuildRule::vector Manager::
-synthesizedBuildRules(void) const
+synthesizedBuildRules(std::vector<std::string> const &domains) const
 {
     BuildRule::vector buildRules;
 
-    for (Compiler::shared_ptr const &compiler : compilers()) {
+    for (Compiler::shared_ptr const &compiler : compilers(domains)) {
         if (compiler->synthesizeBuildRule()) {
             BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(compiler->inputFileTypes(), compiler->identifier()));
             buildRules.push_back(buildRule);
         }
     }
 
-    for (Linker::shared_ptr const &linker : linkers()) {
+    for (Linker::shared_ptr const &linker : linkers(domains)) {
         if (linker->synthesizeBuildRule()) {
             BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(linker->inputFileTypes(), linker->identifier()));
             buildRules.push_back(buildRule);
         }
     }
 
-    for (Tool::shared_ptr const &tool : tools()) {
+    for (Tool::shared_ptr const &tool : tools(domains)) {
         if (tool->synthesizeBuildRule()) {
             BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(tool->inputFileTypes(), tool->identifier()));
             buildRules.push_back(buildRule);
@@ -267,45 +262,51 @@ addSpecification(PBX::Specification::shared_ptr const &spec)
         return;
     }
 
-    if (auto ospec = specification(spec->type(), spec->identifier(), spec->domain(), spec->isDefault())) {
-        if (ospec->isDefault() && spec->isDefault()) {
-            fprintf(stderr, "error: registering %s specification '%s' in domain %s twice\n",
-                    spec->type(), spec->identifier().c_str(), spec->domain().c_str());
-            return;
-        }
+    if (auto ospec = specification(spec->type(), spec->identifier(), { spec->domain() })) {
+        fprintf(stderr, "error: registering %s specification '%s' in domain %s twice\n",
+                spec->type(), spec->identifier().c_str(), spec->domain().c_str());
+        return;
     }
 
 #if 0
-    fprintf(stderr, "adding %s spec to domain %s '%s'%s\n",
-            spec->type(), spec->domain()).c_str(), spec->identifier().c_str(),
-            spec->isDefault() ? "" : " [override]");
+    fprintf(stderr, "adding %s spec to domain %s '%s'\n",
+            spec->type(), spec->domain().c_str(), spec->identifier().c_str());
 #endif
     _specifications[spec->domain()][spec->type()].push_back(spec);
 }
 
 void Manager::
-registerDomain(std::string const &domain, std::string const &path)
+registerDomain(std::pair<std::string, std::string> const &domain)
 {
-    auto const &it = _domains.find(domain);
+    auto const &it = _domains.find(domain.first);
     if (it == _domains.end()) {
         Context context = {
             .manager = this,
-            .domain = domain,
+            .domain = domain.first,
         };
 
-        FSUtil::EnumerateRecursive(path, "*.xcspec",
-                [&](std::string const &filename) -> bool
-                {
-                    if (!FSUtil::TestForDirectory(filename)) {
-                        if (!Specification::Open(&context, filename)) {
-                            fprintf(stderr, "warning: failed to import "
-                                "specification '%s'\n", filename.c_str());
-                        }
+        if (FSUtil::TestForDirectory(domain.second)) {
+            FSUtil::EnumerateRecursive(domain.second, "*.xcspec", [&](std::string const &filename) -> bool {
+                if (!FSUtil::TestForDirectory(filename)) {
+#if 0
+                    fprintf(stderr, "importing specification '%s'\n", filename.c_str());
+#endif
+                    if (!Specification::Open(&context, filename)) {
+                        fprintf(stderr, "warning: failed to import specification '%s'\n", filename.c_str());
                     }
-                    return true;
-                });
+                }
+                return true;
+            });
+        } else {
+#if 0
+            fprintf(stderr, "importing specification '%s'\n", domain.second.c_str());
+#endif
+            if (!Specification::Open(&context, domain.second)) {
+                fprintf(stderr, "warning: failed to import specification '%s'\n", domain.second.c_str());
+            }
+        }
 
-        _domains.insert(std::make_pair(domain, path));
+        _domains.insert(domain);
     }
 }
 
@@ -332,12 +333,6 @@ registerBuildRules(std::string const &path)
     plist->release();
 }
 
-std::string Manager::
-GlobalDomain(void)
-{
-    return "[global]";
-}
-
 Manager::shared_ptr Manager::
 Create(void)
 {
@@ -345,16 +340,46 @@ Create(void)
 }
 
 std::string Manager::
-DeveloperSpecificationRoot(std::string const &developerRoot)
+AnyDomain()
 {
-    return developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents";
+    return "<<domain>>";
 }
 
-std::string Manager::
-DomainSpecificationRoot(std::string const &domainPath)
+std::vector<std::string> Manager::
+AnyDomain(std::string const &preferred)
 {
-    // NOTE(grp): Some platforms have specifications in other directories besides the primary Specifications folder.
-    return domainPath + "/Developer/Library/Xcode";
+    return { preferred, AnyDomain() };
+}
+
+std::pair<std::string, std::string> Manager::
+DefaultDomain(std::string const &developerRoot)
+{
+    return { "default", developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents" };
+}
+
+std::vector<std::pair<std::string, std::string>> Manager::
+EmbeddedDomains(std::string const &developerRoot)
+{
+    std::string root = developerRoot + "/../PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources";
+    return {
+        { "embedded-shared", root + "/Embedded-Shared.xcspec" },
+        { "embedded", root + "/Embedded-Device.xcspec" },
+        { "embedded-simulator", root + "/Embedded-Simulator.xcspec" },
+    };
+}
+
+std::vector<std::pair<std::string, std::string>> Manager::
+PlatformDomains(std::string const &developerRoot)
+{
+    std::string root = developerRoot + "/..";
+    return {
+        { "iphoneos", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Device.xcspec" },
+        { "iphonesimulator", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Simulator.xcspec" },
+        { "watchos", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Device.xcspec" },
+        { "watchsimulator", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Simulator.xcspec" },
+        { "watchos", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Shared.xcspec" },
+        { "watchsimulator", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Shared.xcspec" },
+    };
 }
 
 std::string Manager::

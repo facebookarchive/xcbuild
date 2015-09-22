@@ -4,7 +4,7 @@
 
 using pbxspec::XC::ToolSpecificationHeadermapGenerator;
 
-ToolSpecificationHeadermapGenerator::ToolSpecificationHeadermapGenerator(bool isDefault) :
-    Tool(isDefault, ISA::XCToolSpecificationHeadermapGenerator)
+ToolSpecificationHeadermapGenerator::ToolSpecificationHeadermapGenerator() :
+    Tool(ISA::XCToolSpecificationHeadermapGenerator)
 {
 }

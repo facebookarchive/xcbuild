@@ -4,7 +4,7 @@
 
 using pbxspec::XC::CompilerSpecificationClang;
 
-CompilerSpecificationClang::CompilerSpecificationClang(bool isDefault) :
-    PBX::Compiler(isDefault, ISA::XCCompilerSpecificationClang)
+CompilerSpecificationClang::CompilerSpecificationClang() :
+    PBX::Compiler(ISA::XCCompilerSpecificationClang)
 {
 }

@@ -79,12 +79,12 @@ LoadConfigurationFile(pbxproj::XC::BuildConfiguration::shared_ptr const &buildCo
 }
 
 static pbxsetting::Level
-PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, std::string const &specDomain)
+PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
     std::vector<pbxsetting::Setting> architectureSettings;
     std::vector<std::string> platformArchitectures;
 
-    pbxspec::PBX::Architecture::vector architectures = specManager->architectures(specDomain);
+    pbxspec::PBX::Architecture::vector architectures = specManager->architectures(specDomains);
     for (pbxspec::PBX::Architecture::shared_ptr const &architecture : architectures) {
         if (!architecture->architectureSetting().empty()) {
             architectureSettings.push_back(architecture->defaultSetting());
@@ -154,14 +154,14 @@ ProductTypeLevel(pbxspec::PBX::ProductType::shared_ptr const &productType)
 }
 
 static pbxspec::PBX::BuildSystem::shared_ptr
-TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, std::string const &specDomain, pbxproj::PBX::Target::shared_ptr const &target)
+TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, pbxproj::PBX::Target::shared_ptr const &target)
 {
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
-        return specManager->buildSystem("com.apple.build-system.native", specDomain);
+        return specManager->buildSystem("com.apple.build-system.native", specDomains);
     } else if (target->type() == pbxproj::PBX::Target::kTypeLegacy) {
-        return specManager->buildSystem("com.apple.build-system.jam", specDomain);
+        return specManager->buildSystem("com.apple.build-system.jam", specDomains);
     } else if (target->type() == pbxproj::PBX::Target::kTypeAggregate) {
-       return specManager->buildSystem("com.apple.build-system.external", specDomain);
+       return specManager->buildSystem("com.apple.build-system.external", specDomains);
     } else {
         fprintf(stderr, "error: unknown target type\n");
         return nullptr;
@@ -190,12 +190,17 @@ ResolveVariants(pbxsetting::Environment const &environment)
 static pbxsetting::Level
 ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::vector<std::string> const &variants)
 {
-    std::vector<pbxsetting::Setting> settings = {
-        pbxsetting::Setting::Parse("CURRENT_VARIANT", variants.front()),
-        pbxsetting::Setting::Parse("variant", variants.front()),
-        pbxsetting::Setting::Parse("CURRENT_ARCH", architectures.front()),
-        pbxsetting::Setting::Parse("arch", architectures.front()),
-    };
+    std::vector<pbxsetting::Setting> settings;
+
+    if (!variants.empty()) {
+        settings.push_back(pbxsetting::Setting::Parse("CURRENT_VARIANT", variants.front()));
+        settings.push_back(pbxsetting::Setting::Parse("variant", variants.front()));
+    }
+
+    if (!architectures.empty()) {
+        settings.push_back(pbxsetting::Setting::Parse("CURRENT_ARCH", architectures.front()));
+        settings.push_back(pbxsetting::Setting::Parse("arch", architectures.front()));
+    }
 
     for (std::string const &variant : variants) {
         pbxsetting::Setting objectFileDir = pbxsetting::Setting::Parse("OBJECT_FILE_DIR_" + variant, "$(OBJECT_FILE_DIR)-" + variant);
@@ -215,7 +220,7 @@ std::unique_ptr<TargetEnvironment> TargetEnvironment::
 Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context)
 {
     xcsdk::SDK::Target::shared_ptr sdk;
-    std::string specDomain;
+    std::vector<std::string> specDomains;
     pbxproj::XC::BuildConfiguration::shared_ptr projectConfiguration;
     pbxproj::XC::BuildConfiguration::shared_ptr targetConfiguration;
     pbxsetting::XC::Config::shared_ptr projectConfigurationFile;
@@ -270,12 +275,11 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
             return nullptr;
         }
 
-        specDomain = sdk->platform()->name();
-        std::string platformSpecificationPath = pbxspec::Manager::DomainSpecificationRoot(sdk->platform()->path());
-        buildEnvironment.specManager()->registerDomain(specDomain, platformSpecificationPath);
+        buildEnvironment.specManager()->registerDomain({ sdk->platform()->name(), sdk->platform()->path() + "/Developer/Library/Xcode/Specifications" });
+        specDomains = { sdk->platform()->name(), pbxspec::Manager::AnyDomain() };
     }
 
-    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(buildEnvironment.specManager(), specDomain, target);
+    pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(buildEnvironment.specManager(), specDomains, target);
     if (buildSystem == nullptr) {
         fprintf(stderr, "error: unable to create build system\n");
         return nullptr;
@@ -286,14 +290,14 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
         pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast<pbxproj::PBX::NativeTarget>(target);
 
-        productType = buildEnvironment.specManager()->productType(nativeTarget->productType(), specDomain);
+        productType = buildEnvironment.specManager()->productType(nativeTarget->productType(), specDomains);
         if (productType == nullptr) {
             fprintf(stderr, "error: unable to find product type %s\n", nativeTarget->productType().c_str());
             return nullptr;
         }
 
         // FIXME(grp): Should this always use the first package type?
-        packageType = buildEnvironment.specManager()->packageType(productType->packageTypes().at(0), specDomain);
+        packageType = buildEnvironment.specManager()->packageType(productType->packageTypes().at(0), specDomains);
         if (packageType == nullptr) {
             fprintf(stderr, "error: unable to find package type %s\n", productType->packageTypes().at(0).c_str());
             return nullptr;
@@ -309,7 +313,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     }), false);
 
     environment.insertFront(sdk->platform()->defaultProperties(), false);
-    environment.insertFront(PlatformArchitecturesLevel(buildEnvironment.specManager(), specDomain), false);
+    environment.insertFront(PlatformArchitecturesLevel(buildEnvironment.specManager(), specDomains), false);
     environment.insertFront(sdk->defaultProperties(), false);
     environment.insertFront(sdk->platform()->settings(), false);
     environment.insertFront(sdk->settings(), false);
@@ -345,7 +349,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         pbxsetting::Setting::Parse("SDKROOT", sdk->path()),
     }), false);
 
-    auto buildRules = std::make_shared <pbxbuild::TargetBuildRules> (pbxbuild::TargetBuildRules::Create(buildEnvironment.specManager(), specDomain, target));
+    auto buildRules = std::make_shared <pbxbuild::TargetBuildRules> (pbxbuild::TargetBuildRules::Create(buildEnvironment.specManager(), specDomains, target));
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
     std::string workingDirectory = target->project()->basePath();
 
@@ -358,7 +362,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     te->_packageType = packageType;
     te->_productType = productType;
     te->_sdk = sdk;
-    te->_specDomain = specDomain;
+    te->_specDomains = specDomains;
     te->_workingDirectory = workingDirectory;
     te->_buildFileDisambiguation = buildFileDisambiguation;
     return te;

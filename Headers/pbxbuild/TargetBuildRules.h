@@ -55,7 +55,7 @@ public:
 
 public:
     static TargetBuildRules
-    Create(pbxspec::Manager::shared_ptr const &specManager, std::string const &domain, pbxproj::PBX::Target::shared_ptr const &target);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::Target::shared_ptr const &target);
 };
 
 }

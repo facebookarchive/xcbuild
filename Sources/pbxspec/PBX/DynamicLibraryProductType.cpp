@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::DynamicLibraryProductType;
 
-DynamicLibraryProductType::DynamicLibraryProductType(bool isDefault) :
-    ProductType(isDefault, ISA::PBXDynamicLibraryProductType)
+DynamicLibraryProductType::DynamicLibraryProductType() :
+    ProductType(ISA::PBXDynamicLibraryProductType)
 {
 }

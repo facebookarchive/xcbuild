@@ -4,7 +4,7 @@
 
 using pbxspec::PBX::CompilerSpecificationMig;
 
-CompilerSpecificationMig::CompilerSpecificationMig(bool isDefault) :
-    Compiler(isDefault, ISA::PBXCompilerSpecificationMig)
+CompilerSpecificationMig::CompilerSpecificationMig() :
+    Compiler(ISA::PBXCompilerSpecificationMig)
 {
 }

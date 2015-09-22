@@ -10,7 +10,7 @@ namespace pbxspec { namespace PBX {
 class ApplicationWrapperFileType : public FileType {
 protected:
     friend class FileType;
-    ApplicationWrapperFileType(bool isDefault);
+    ApplicationWrapperFileType();
 
 public:
     inline std::string const &isa() const

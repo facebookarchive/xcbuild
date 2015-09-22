@@ -22,12 +22,34 @@ Platform::~Platform()
     }
 }
 
+static bool
+StartsWith(std::string const &str, std::string const &prefix)
+{
+    if (prefix.size() > str.size()) {
+        return false;
+    }
+
+    return std::equal(prefix.begin(), prefix.end(), str.begin());
+}
+
+static bool
+EndsWith(std::string const &str, std::string const &suffix)
+{
+    if (suffix.size() > str.size()) {
+        return false;
+    }
+
+    return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+}
+
 Level Platform::
 settings() const
 {
     std::vector<Setting> settings = {
         Setting::Parse("PLATFORM_NAME", _name),
+        Setting::Parse("PLATFORM_DISPLAY_NAME", _description),
         Setting::Parse("PLATFORM_DIR", _path),
+
         Setting::Parse("PLATFORM_DEVELOPER_USR_DIR", "$(PLATFORM_DIR)/Developer/usr"),
         Setting::Parse("PLATFORM_DEVELOPER_BIN_DIR", "$(PLATFORM_DIR)/Developer/usr/bin"),
         Setting::Parse("PLATFORM_DEVELOPER_APPLICATIONS_DIR", "$(PLATFORM_DIR)/Developer/Applications"),
@@ -35,7 +57,55 @@ settings() const
         Setting::Parse("PLATFORM_DEVELOPER_SDK_DIR", "$(PLATFORM_DIR)/Developer/SDKs"),
         Setting::Parse("PLATFORM_DEVELOPER_TOOLS_DIR", "$(PLATFORM_DIR)/Developer/Tools"),
         Setting::Parse("PLATFORM_PRODUCT_BUILD_VERSION", _platformVersion ? _platformVersion->buildVersion() : ""),
+
+        // TODO(grp): PLATFORM_PREFERRED_ARCH
+
+        // TODO(grp): CORRESPONDING_DEVICE_PLATFORM_NAME
+        // TODO(grp): CORRESPONDING_DEVICE_PLATFORM_DIR
+        // TODO(grp): CORRESPONDING_SIMULATOR_PLATFORM_NAME
+        // TODO(grp): CORRESPONDING_SIMULATOR_PLATFORM_DIR
     };
+
+    std::string flagName;
+    std::string settingName;
+    std::string envName;
+
+    if (StartsWith(_name, "macosx")) {
+        flagName = "macosx";
+        settingName = "MACOSX";
+        envName = "MACOSX";
+    } else if (StartsWith(_name, "iphone")) {
+        flagName = "ios";
+        settingName = "IPHONEOS";
+        envName = "IPHONEOS";
+    } else if (StartsWith(_name, "appletv")) {
+        flagName = "tvos";
+        settingName = "TVOS";
+        envName = "TVOS";
+    } else if (StartsWith(_name, "watch")) {
+        flagName = "watchos";
+        settingName = "WATCHOS";
+        envName = "WATCHOS";
+    } else {
+        flagName = _name;
+
+        settingName = _name;
+        std::transform(settingName.begin(), settingName.end(), settingName.begin(), ::toupper);
+
+        envName = _name;
+        std::transform(envName.begin(), envName.end(), envName.begin(), ::toupper);
+    }
+
+    bool simulator = EndsWith(_name, "simulator");
+    if (simulator) {
+        flagName += "-simulator";
+    }
+
+    settings.push_back(Setting::Parse("DEPLOYMENT_TARGET_SETTING_NAME", settingName + "_DEPLOYMENT_TARGET"));
+    settings.push_back(Setting::Parse("DEPLOYMENT_TARGET_CLANG_FLAG_NAME", "m" + flagName + "-version-min"));
+    settings.push_back(Setting::Parse("DEPLOYMENT_TARGET_CLANG_FLAG_PREFIX", "-m" + flagName + "-version-min="));
+    settings.push_back(Setting::Parse("DEPLOYMENT_TARGET_CLANG_FLAG_ENV", envName + "_DEPLOYMENT_TARGET"));
+    settings.push_back(Setting::Parse("SWIFT_PLATFORM_TARGET_PREFIX", flagName));
 
     settings.push_back(Setting::Parse("EFFECTIVE_PLATFORM_NAME", _identifier == "com.apple.platform.macosx" ? "" : "-$(PLATFORM_NAME)"));
 

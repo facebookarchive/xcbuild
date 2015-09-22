@@ -20,7 +20,7 @@ protected:
     PropertyOption::used_map _propertiesUsed;
 
 protected:
-    BuildSystem(bool isDefault);
+    BuildSystem();
 
 public:
     virtual ~BuildSystem();

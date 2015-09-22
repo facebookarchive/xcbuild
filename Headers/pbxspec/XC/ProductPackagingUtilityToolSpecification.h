@@ -10,7 +10,7 @@ namespace pbxspec { namespace XC {
 class ProductPackagingUtilityToolSpecification : public PBX::Tool {
 protected:
     friend class Tool;
-    ProductPackagingUtilityToolSpecification(bool isDefault);
+    ProductPackagingUtilityToolSpecification();
 
 public:
     inline std::string const &isa() const
