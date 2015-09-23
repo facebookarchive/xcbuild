@@ -178,7 +178,10 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
             }
 
             std::string executable = invocation.executable();
-            if (!FSUtil::IsAbsolutePath(executable)) {
+            std::string builtinPrefix = "builtin-";
+            bool builtin = executable.compare(0, builtinPrefix.size(), builtinPrefix) == 0;
+
+            if (!builtin && !FSUtil::IsAbsolutePath(executable)) {
                 executable = FSUtil::FindExecutable(executable, targetEnvironment.sdk()->executablePaths());
             }
             printf("    %s", executable.c_str());
@@ -189,13 +192,17 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
             printf("\n");
 
             if (execute) {
-                // TODO(grp): Change into the working directory.
-                // TODO(grp): Apply environment variables.
-                Subprocess process;
-                if (!process.execute(executable, invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
-                    printf("Command %s failed with exit code %d\n", executable.c_str(), process.exitcode());
-                    failures.push_back(invocation);
-                    return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
+                if (builtin) {
+                    // TODO(grp): Implement builtin tools.
+                } else {
+                    // TODO(grp): Change into the working directory.
+                    // TODO(grp): Apply environment variables.
+                    Subprocess process;
+                    if (!process.execute(executable, invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
+                        printf("Command %s failed with exit code %d\n", executable.c_str(), process.exitcode());
+                        failures.push_back(invocation);
+                        return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(false, failures);
+                    }
                 }
             }
 

@@ -172,6 +172,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/ToolInvocation.cpp
     Sources/pbxbuild/Tool/SearchPaths.cpp
+    Sources/pbxbuild/Tool/CopyInvocationContext.cpp
     Sources/pbxbuild/Tool/HeadermapInvocationContext.cpp
     Sources/pbxbuild/Tool/CompilerInvocationContext.cpp
     Sources/pbxbuild/Tool/LinkerInvocationContext.cpp

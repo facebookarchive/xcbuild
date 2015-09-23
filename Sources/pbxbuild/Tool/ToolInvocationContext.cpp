@@ -313,7 +313,17 @@ Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::strin
 std::string ToolInvocationContext::
 LogMessage(ToolEnvironment const &toolEnvironment)
 {
-    return toolEnvironment.toolEnvironment().expand(toolEnvironment.tool()->ruleName());
+    pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
+    std::string ruleName = environment.expand(toolEnvironment.tool()->ruleName());
+    std::string ruleFormat = environment.expand(toolEnvironment.tool()->ruleFormat());
+
+    if (!ruleName.empty()) {
+        return ruleName;
+    } else if (!ruleFormat.empty()) {
+        return ruleFormat;
+    } else {
+        return std::string();
+    }
 }
 
 ToolInvocationContext ToolInvocationContext::
