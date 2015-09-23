@@ -44,7 +44,7 @@ class VersionGroup;
 
 }
 
-struct Context {
+class Context {
 public:
     //
     // Parsing context

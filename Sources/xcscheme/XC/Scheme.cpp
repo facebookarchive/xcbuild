@@ -22,6 +22,7 @@ parse(plist::Dictionary const *dict)
 
     auto LUV = S->value <plist::Integer> ("LastUpgradeVersion");
     auto V   = S->value <plist::String> ("version");
+    auto BA  = S->value <plist::Dictionary> ("BuildAction");
     auto TA  = S->value <plist::Dictionary> ("TestAction");
     auto LA  = S->value <plist::Dictionary> ("LaunchAction");
     auto PA  = S->value <plist::Dictionary> ("ProfileAction");
@@ -36,39 +37,39 @@ parse(plist::Dictionary const *dict)
         _version = V->value();
     }
 
-    if (auto BA = S->value <plist::Dictionary> ("BuildAction")) {
+    if (BA != nullptr) {
         _buildAction = std::make_shared <BuildAction> ();
         if (!_buildAction->parse(BA))
             return false;
     }
 
-    if (auto TA = S->value <plist::Dictionary> ("TestAction")) {
+    if (TA != nullptr) {
         _testAction = std::make_shared <TestAction> ();
         if (!_testAction->parse(TA))
             return false;
     }
 
-    if (auto LA = S->value <plist::Dictionary> ("LaunchAction")) {
+    if (LA != nullptr) {
         _launchAction = std::make_shared <LaunchAction> ();
         if (!_launchAction->parse(LA))
             return false;
     }
 
-    if (auto PA = S->value <plist::Dictionary> ("ProfileAction")) {
+    if (PA != nullptr) {
         _profileAction = std::make_shared <ProfileAction> ();
         if (!_profileAction->parse(PA))
             return false;
     }
 
-    if (auto AA = S->value <plist::Dictionary> ("AnalyzeAction")) {
+    if (AnA != nullptr) {
         _analyzeAction = std::make_shared <AnalyzeAction> ();
-        if (!_analyzeAction->parse(AA))
+        if (!_analyzeAction->parse(AnA))
             return false;
     }
 
-    if (auto AA = S->value <plist::Dictionary> ("ArchiveAction")) {
+    if (ArA != nullptr) {
         _archiveAction = std::make_shared <ArchiveAction> ();
-        if (!_archiveAction->parse(AA))
+        if (!_archiveAction->parse(ArA))
             return false;
     }
 

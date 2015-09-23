@@ -7,7 +7,7 @@
 
 namespace pbxspec {
 
-struct Context {
+class Context {
 public:
     Manager *manager;
     std::string domain;

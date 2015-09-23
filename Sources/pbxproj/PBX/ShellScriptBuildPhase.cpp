@@ -5,8 +5,8 @@
 using pbxproj::PBX::ShellScriptBuildPhase;
 
 ShellScriptBuildPhase::ShellScriptBuildPhase() :
-    _showEnvVarsInLog(true),
-    BuildPhase       (Isa(), kTypeShellScript)
+    BuildPhase       (Isa(), kTypeShellScript),
+    _showEnvVarsInLog(true)
 {
 }
 

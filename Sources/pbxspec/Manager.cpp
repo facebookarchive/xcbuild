@@ -239,13 +239,6 @@ tools(std::vector<std::string> const &domains) const
     return findSpecifications <Tool> (domains);
 }
 
-static BuildRule::shared_ptr
-SynthesizeBuildRule(Tool const *tool)
-{
-
-    return nullptr;
-}
-
 BuildRule::vector Manager::
 synthesizedBuildRules(std::vector<std::string> const &domains) const
 {

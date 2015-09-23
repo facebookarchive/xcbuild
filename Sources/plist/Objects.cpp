@@ -287,6 +287,8 @@ dump1(FILE *fp, size_t, size_t cindent) const
             case Object::kTypeDictionary:
                 Object::Indent(fp, cindent + 1);
                 break;
+            default:
+                break;
         }
         (*i)->dump1(fp, cindent + 1, cindent + 1);
     }

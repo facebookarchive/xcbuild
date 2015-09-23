@@ -7,10 +7,10 @@ using pbxspec::PBX::Compiler;
 
 Compiler::Compiler() :
     Tool                                     (),
-    _overridingProperties                    (pbxsetting::Level({ })),
-    _generatedInfoPlistContentFilePath       (pbxsetting::Value::Empty()),
     _outputDir                               (pbxsetting::Value::Empty()),
+    _generatedInfoPlistContentFilePath       (pbxsetting::Value::Empty()),
     _dependencyInfoFile                      (pbxsetting::Value::Empty()),
+    _overridingProperties                    (pbxsetting::Level({ })),
     _useCPlusPlusCompilerDriverWhenBundlizing(false),
     _dashIFlagAcceptHeadermaps               (false),
     _supportsHeadermaps                      (false),

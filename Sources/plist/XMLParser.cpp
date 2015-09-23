@@ -71,8 +71,6 @@ onEndParse(bool success)
 void XMLParser::
 onStartElement(std::string const &name, string_map const &attrs, size_t depth)
 {
-    Dictionary *dict = new Dictionary;
-
     if (depth == 0) {
         if (name != "plist") {
             error("expecting 'plist', found '%s'", name.c_str());

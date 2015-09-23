@@ -91,7 +91,6 @@ enum ValueDelimiter {
 static ParseResult
 ParseValue(std::string const &value, size_t from, ValueDelimiter end = kDelimiterNone)
 {
-    bool found = true;
     std::vector<Value::Entry> entries;
 
     size_t length;
