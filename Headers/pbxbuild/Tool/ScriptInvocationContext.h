@@ -8,6 +8,7 @@
 #include <pbxbuild/TargetBuildRules.h>
 
 namespace pbxbuild {
+namespace Tool {
 
 class ScriptInvocationContext {
 private:
@@ -52,6 +53,7 @@ public:
     );
 };
 
+}
 }
 
 #endif // !__pbxbuild_ScriptInvocationContext_h

@@ -2,7 +2,7 @@
 
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/PhaseContext.h>
-#include <pbxbuild/ScriptInvocationContext.h>
+#include <pbxbuild/Tool/ScriptInvocationContext.h>
 
 using pbxbuild::Phase::ResourcesResolver;
 using pbxbuild::Phase::PhaseContext;

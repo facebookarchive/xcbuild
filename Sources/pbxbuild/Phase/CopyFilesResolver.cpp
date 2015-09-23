@@ -2,7 +2,7 @@
 
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/PhaseContext.h>
-#include <pbxbuild/ScriptInvocationContext.h>
+#include <pbxbuild/Tool/ScriptInvocationContext.h>
 
 using pbxbuild::Phase::CopyFilesResolver;
 using pbxbuild::Phase::PhaseContext;

@@ -1,14 +1,14 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxbuild/LinkerInvocationContext.h>
-#include <pbxbuild/ToolInvocationContext.h>
+#include <pbxbuild/Tool/LinkerInvocationContext.h>
+#include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::LinkerInvocationContext;
-using pbxbuild::ToolInvocationContext;
-using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
-using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
-using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
+using pbxbuild::Tool::LinkerInvocationContext;
+using pbxbuild::Tool::ToolInvocationContext;
+using ToolEnvironment = pbxbuild::Tool::ToolInvocationContext::ToolEnvironment;
+using OptionsResult = pbxbuild::Tool::ToolInvocationContext::OptionsResult;
+using CommandLineResult = pbxbuild::Tool::ToolInvocationContext::CommandLineResult;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;

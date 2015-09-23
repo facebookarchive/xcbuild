@@ -6,17 +6,18 @@
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
-#include <pbxbuild/ToolInvocationContext.h>
-#include <pbxbuild/ScriptInvocationContext.h>
-#include <pbxbuild/CompilerInvocationContext.h>
+#include <pbxbuild/Tool/ToolInvocationContext.h>
+#include <pbxbuild/Tool/ScriptInvocationContext.h>
+#include <pbxbuild/Tool/CompilerInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Phase::PhaseContext;
 using pbxbuild::ToolInvocation;
-using pbxbuild::CompilerInvocationContext;
-using pbxbuild::ToolInvocationContext;
+using pbxbuild::Tool::ToolInvocationContext;
+using pbxbuild::Tool::CompilerInvocationContext;
+using pbxbuild::Tool::ScriptInvocationContext;
 using pbxbuild::Tool::HeadermapInvocationContext;
 using pbxbuild::Tool::SearchPaths;
 using libutil::FSUtil;
@@ -157,7 +158,7 @@ Create(
                             invocations.push_back(context.invocation());
                         }
                     } else if (!buildRule->script().empty()) {
-                        auto context = pbxbuild::ScriptInvocationContext::Create(scriptTool, file.filePath(), buildRule, currentEnvironment, workingDirectory);
+                        auto context = ScriptInvocationContext::Create(scriptTool, file.filePath(), buildRule, currentEnvironment, workingDirectory);
                         invocations.push_back(context.invocation());
                     }
                 } else {

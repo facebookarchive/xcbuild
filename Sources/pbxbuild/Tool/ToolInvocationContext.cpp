@@ -1,13 +1,13 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxbuild/ToolInvocationContext.h>
+#include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <sstream>
 
-using pbxbuild::ToolInvocationContext;
-using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
-using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
-using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
+using pbxbuild::Tool::ToolInvocationContext;
+using ToolEnvironment = pbxbuild::Tool::ToolInvocationContext::ToolEnvironment;
+using OptionsResult = pbxbuild::Tool::ToolInvocationContext::OptionsResult;
+using CommandLineResult = pbxbuild::Tool::ToolInvocationContext::CommandLineResult;
 using pbxbuild::ToolInvocation;
 using pbxbuild::Tool::SearchPaths;
 using libutil::FSUtil;

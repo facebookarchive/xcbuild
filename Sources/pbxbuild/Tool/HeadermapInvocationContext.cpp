@@ -2,7 +2,7 @@
 
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
 #include <pbxbuild/Tool/SearchPaths.h>
-#include <pbxbuild/ToolInvocationContext.h>
+#include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/HeaderMap.h>
 

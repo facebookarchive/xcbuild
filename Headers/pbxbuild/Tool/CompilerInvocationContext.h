@@ -9,8 +9,11 @@
 namespace pbxbuild {
 
 class TypeResolvedFile;
-namespace Tool { class HeadermapInvocationContext; }
-namespace Tool { class SearchPaths; }
+
+namespace Tool {
+
+class SearchPaths;
+class HeadermapInvocationContext;
 
 class CompilerInvocationContext {
 private:
@@ -38,8 +41,8 @@ public:
         std::vector<std::string> const &inputArguments,
         std::string const &outputBaseName,
         std::string const &prefixHeader,
-        Tool::HeadermapInvocationContext const &headermaps,
-        Tool::SearchPaths const &searchPaths,
+        HeadermapInvocationContext const &headermaps,
+        SearchPaths const &searchPaths,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );
@@ -49,8 +52,8 @@ public:
         pbxspec::PBX::Compiler::shared_ptr const &compiler,
         std::string const &input,
         pbxspec::PBX::FileType::shared_ptr const &fileType,
-        Tool::HeadermapInvocationContext const &headermaps,
-        Tool::SearchPaths const &searchPaths,
+        HeadermapInvocationContext const &headermaps,
+        SearchPaths const &searchPaths,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );
@@ -64,14 +67,15 @@ public:
         std::vector<std::string> const &inputArguments,
         std::string const &output,
         std::string const &prefixHeader,
-        Tool::HeadermapInvocationContext const &headermaps,
-        Tool::SearchPaths const &searchPaths,
+        HeadermapInvocationContext const &headermaps,
+        SearchPaths const &searchPaths,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory,
         std::string const &logTitle
     );
 };
 
+}
 }
 
 #endif // !__pbxbuild_CompilerInvocationContext_h

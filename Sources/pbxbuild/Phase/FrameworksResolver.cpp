@@ -7,8 +7,8 @@
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
-#include <pbxbuild/ToolInvocationContext.h>
-#include <pbxbuild/LinkerInvocationContext.h>
+#include <pbxbuild/Tool/ToolInvocationContext.h>
+#include <pbxbuild/Tool/LinkerInvocationContext.h>
 
 using pbxbuild::Phase::FrameworksResolver;
 using pbxbuild::Phase::PhaseContext;
@@ -106,24 +106,24 @@ Create(
                 std::string architectureIntermediatesDirectory = variantIntermediatesDirectory + "/" + arch;
                 std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
 
-                auto context = pbxbuild::LinkerInvocationContext::Create(linker, sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
+                auto context = pbxbuild::Tool::LinkerInvocationContext::Create(linker, sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
                 invocations.push_back(context.invocation());
 
                 universalBinaryInputs.push_back(architectureIntermediatesOutput);
             } else {
-                auto context = pbxbuild::LinkerInvocationContext::Create(linker, sourceOutputs, files, variantProductsOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
+                auto context = pbxbuild::Tool::LinkerInvocationContext::Create(linker, sourceOutputs, files, variantProductsOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
                 invocations.push_back(context.invocation());
             }
         }
 
         if (createUniversalBinary) {
-            auto context = pbxbuild::LinkerInvocationContext::Create(lipo, universalBinaryInputs, { }, variantProductsOutput, { }, variantEnvironment, workingDirectory);
+            auto context = pbxbuild::Tool::LinkerInvocationContext::Create(lipo, universalBinaryInputs, { }, variantProductsOutput, { }, variantEnvironment, workingDirectory);
             invocations.push_back(context.invocation());
         }
 
         if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {
             std::string dsymfile = variantEnvironment.resolve("DWARF_DSYM_FOLDER_PATH") + "/" + variantEnvironment.resolve("DWARF_DSYM_FILE_NAME");
-            auto context = pbxbuild::ToolInvocationContext::Create(dsymutil, { variantProductsOutput }, { dsymfile }, variantEnvironment, workingDirectory);
+            auto context = pbxbuild::Tool::ToolInvocationContext::Create(dsymutil, { variantProductsOutput }, { dsymfile }, variantEnvironment, workingDirectory);
             invocations.push_back(context.invocation());
         }
     }

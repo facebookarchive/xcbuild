@@ -7,6 +7,7 @@
 #include <pbxbuild/ToolInvocation.h>
 
 namespace pbxbuild {
+namespace Tool {
 
 class ToolInvocationContext {
 private:
@@ -120,6 +121,7 @@ public:
     );
 };
 
+}
 }
 
 #endif // !__pbxbuild_ToolInvocationContext_h

@@ -9,14 +9,15 @@
 #include <pbxbuild/DependencyResolver.h>
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
-#include <pbxbuild/CompilerInvocationContext.h>
-#include <pbxbuild/Tool/HeadermapInvocationContext.h>
-#include <pbxbuild/LinkerInvocationContext.h>
-#include <pbxbuild/ScriptInvocationContext.h>
 #include <pbxbuild/TargetBuildRules.h>
 #include <pbxbuild/TargetEnvironment.h>
-#include <pbxbuild/ToolInvocationContext.h>
 #include <pbxbuild/ToolInvocation.h>
+
+#include <pbxbuild/Tool/ToolInvocationContext.h>
+#include <pbxbuild/Tool/CompilerInvocationContext.h>
+#include <pbxbuild/Tool/HeadermapInvocationContext.h>
+#include <pbxbuild/Tool/LinkerInvocationContext.h>
+#include <pbxbuild/Tool/ScriptInvocationContext.h>
 
 #include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Phase/CopyFilesResolver.h>

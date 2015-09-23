@@ -1,16 +1,16 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxbuild/CompilerInvocationContext.h>
-#include <pbxbuild/ToolInvocationContext.h>
+#include <pbxbuild/Tool/CompilerInvocationContext.h>
+#include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::CompilerInvocationContext;
-using pbxbuild::ToolInvocationContext;
-using ToolEnvironment = pbxbuild::ToolInvocationContext::ToolEnvironment;
-using OptionsResult = pbxbuild::ToolInvocationContext::OptionsResult;
-using CommandLineResult = pbxbuild::ToolInvocationContext::CommandLineResult;
+using pbxbuild::Tool::CompilerInvocationContext;
+using pbxbuild::Tool::ToolInvocationContext;
+using ToolEnvironment = pbxbuild::Tool::ToolInvocationContext::ToolEnvironment;
+using OptionsResult = pbxbuild::Tool::ToolInvocationContext::OptionsResult;
+using CommandLineResult = pbxbuild::Tool::ToolInvocationContext::CommandLineResult;
 using pbxbuild::Tool::HeadermapInvocationContext;
 using pbxbuild::Tool::SearchPaths;
 using pbxbuild::ToolInvocation;

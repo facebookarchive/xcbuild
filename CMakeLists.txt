@@ -170,15 +170,15 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/BuildGraph.cpp
     Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
-    Sources/pbxbuild/CompilerInvocationContext.cpp
+    Sources/pbxbuild/ToolInvocation.cpp
     Sources/pbxbuild/Tool/SearchPaths.cpp
     Sources/pbxbuild/Tool/HeadermapInvocationContext.cpp
-    Sources/pbxbuild/LinkerInvocationContext.cpp
-    Sources/pbxbuild/ScriptInvocationContext.cpp
+    Sources/pbxbuild/Tool/CompilerInvocationContext.cpp
+    Sources/pbxbuild/Tool/LinkerInvocationContext.cpp
+    Sources/pbxbuild/Tool/ScriptInvocationContext.cpp
+    Sources/pbxbuild/Tool/ToolInvocationContext.cpp
     Sources/pbxbuild/TargetBuildRules.cpp
     Sources/pbxbuild/TargetEnvironment.cpp
-    Sources/pbxbuild/ToolInvocation.cpp
-    Sources/pbxbuild/ToolInvocationContext.cpp
     Sources/pbxbuild/TypeResolvedFile.cpp
     Sources/pbxbuild/Phase/PhaseContext.cpp
     Sources/pbxbuild/Phase/CopyFilesResolver.cpp

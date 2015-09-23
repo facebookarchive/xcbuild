@@ -2,7 +2,7 @@
 
 #include <pbxbuild/Phase/ShellScriptResolver.h>
 #include <pbxbuild/Phase/PhaseContext.h>
-#include <pbxbuild/ScriptInvocationContext.h>
+#include <pbxbuild/Tool/ScriptInvocationContext.h>
 
 using pbxbuild::Phase::ShellScriptResolver;
 using pbxbuild::Phase::PhaseContext;
@@ -32,7 +32,7 @@ Create(
     }
 
     std::string workingDirectory = phaseContext.targetEnvironment().workingDirectory();
-    auto context = pbxbuild::ScriptInvocationContext::Create(scriptTool, buildPhase, phaseContext.targetEnvironment().environment(), workingDirectory);
+    auto context = pbxbuild::Tool::ScriptInvocationContext::Create(scriptTool, buildPhase, phaseContext.targetEnvironment().environment(), workingDirectory);
     std::vector<pbxbuild::ToolInvocation> invocations = { context.invocation() };
 
     return std::make_unique<ShellScriptResolver>(invocations);

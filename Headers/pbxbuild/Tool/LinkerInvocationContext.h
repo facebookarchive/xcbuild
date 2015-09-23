@@ -10,6 +10,8 @@ namespace pbxbuild {
 
 class TypeResolvedFile;
 
+namespace Tool {
+
 class LinkerInvocationContext {
 private:
     ToolInvocation _invocation;
@@ -36,6 +38,7 @@ public:
     );
 };
 
+}
 }
 
 #endif // !__pbxbuild_LinkerInvocationContext_h
