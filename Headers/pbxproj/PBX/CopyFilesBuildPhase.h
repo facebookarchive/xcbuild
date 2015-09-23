@@ -17,10 +17,13 @@ public:
         kDestinationWrapper          = 1,
         kDestinationExecutables      = 6,
         kDestinationResources        = 7,
+        kDestinationPublicHeaders    = 8,
+        kDestinationPrivateHeaders   = 9,
         kDestinationFrameworks       = 10,
         kDestinationSharedFrameworks = 11,
         kDestinationSharedSupport    = 12,
         kDestinationPlugIns          = 13,
+        kDestinationScripts          = 14,
         kDestinationJavaResources    = 15,
         kDestinationProducts         = 16,
     };
