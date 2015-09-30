@@ -71,8 +71,6 @@ Create(
         return nullptr;
     }
 
-    auto buildFiles = phaseContext.resolveBuildFiles(environment, buildPhase->files());
-
     std::string root = environment.expand(DestinationOutputPath(buildPhase->dstSubfolderSpec()));
     std::string path = environment.expand(pbxsetting::Value::Parse(buildPhase->dstPath()));
     std::string outputDirectory = root + "/" + path;
@@ -80,10 +78,35 @@ Create(
     // TODO(grp): There are subtleties here involving encodings, stripping, deleting headers, etc.
     std::vector<pbxbuild::ToolInvocation> invocations;
 
-    for (auto const &entry : buildFiles) {
-        std::string const &filePath = entry.second.filePath();
+    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+        if (buildFile->fileRef() == nullptr) {
+            continue;
+        }
 
-        auto context = CopyInvocationContext::Create(copyTool, filePath, outputDirectory, "PBXCp", environment, targetEnvironment.workingDirectory());
+        std::unique_ptr<TypeResolvedFile> file = nullptr;
+
+        switch (buildFile->fileRef()->type()) {
+            case pbxproj::PBX::GroupItem::kTypeFileReference: {
+                pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
+                file = phaseContext.resolveFileReference(fileReference, environment);
+                break;
+            }
+            case pbxproj::PBX::GroupItem::kTypeReferenceProxy: {
+                pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (buildFile->fileRef());
+                file = phaseContext.resolveReferenceProxy(referenceProxy, environment);
+                break;
+            }
+            default: {
+                fprintf(stderr, "warning: unsupported build file for copy files build phase\n");
+                break;
+            }
+        }
+
+        if (file == nullptr) {
+            continue;
+        }
+
+        auto context = CopyInvocationContext::Create(copyTool, file->filePath(), outputDirectory, "PBXCp", environment, targetEnvironment.workingDirectory());
         invocations.push_back(context.invocation());
     }
 

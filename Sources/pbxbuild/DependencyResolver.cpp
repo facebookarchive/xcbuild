@@ -78,10 +78,11 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
         }
 
         for (pbxproj::PBX::BuildFile::shared_ptr const &file : buildPhase->files()) {
-            pbxproj::PBX::ReferenceProxy::shared_ptr proxy = file->referenceProxy();
-            if (proxy == nullptr) {
+            if (file->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeReferenceProxy) {
                 continue;
             }
+
+            pbxproj::PBX::ReferenceProxy::shared_ptr proxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (file->fileRef());
 
             pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, proxy->remoteRef(), true);
             if (proxiedTarget != nullptr) {

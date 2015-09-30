@@ -37,19 +37,28 @@ Create(
         return nullptr;
     }
 
-    auto buildFiles = phaseContext.resolveBuildFiles(environment, buildPhase->files());
     std::string targetBuildDirectory = environment.resolve("TARGET_BUILD_DIR");
     std::string publicOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH");
     std::string privateOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PRIVATE_HEADERS_FOLDER_PATH");
 
     std::vector<pbxbuild::ToolInvocation> invocations;
 
-    for (auto const &entry : buildFiles) {
-        std::vector<std::string> const &attributes = entry.first->attributes();
+    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+        if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeFileReference) {
+            continue;
+        }
+
+        pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
+        std::unique_ptr<TypeResolvedFile> file = phaseContext.resolveFileReference(fileReference, environment);
+        if (file == nullptr) {
+            continue;
+        }
+
+        std::vector<std::string> const &attributes = buildFile->attributes();
         bool isPublic  = std::find(attributes.begin(), attributes.end(), "Public") != attributes.end();
         bool isPrivate = std::find(attributes.begin(), attributes.end(), "Private") != attributes.end();
 
-        std::string const &filePath = entry.second.filePath();
+        std::string const &filePath = file->filePath();
         std::string const &outputDirectory = (isPublic ? publicOutputDirectory : privateOutputDirectory);
 
         if (isPublic || isPrivate) {

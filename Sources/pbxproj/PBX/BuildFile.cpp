@@ -1,6 +1,11 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxproj/PBX/BuildFile.h>
+#include <pbxproj/PBX/FileReference.h>
+#include <pbxproj/PBX/ReferenceProxy.h>
+#include <pbxproj/PBX/Group.h>
+#include <pbxproj/PBX/VariantGroup.h>
+#include <pbxproj/XC/VersionGroup.h>
 
 using pbxproj::PBX::BuildFile;
 
@@ -18,21 +23,32 @@ parse(Context &context, plist::Dictionary const *dict)
 {
     std::string FRID;
     std::string RPID;
+    std::string GID;
+    std::string VaGID;
+    std::string VrGID;
 
-    auto FR = context.indirect <FileReference> (dict, "fileRef", &FRID);
-    auto RP = context.indirect <ReferenceProxy> (dict, "fileRef", &RPID);
-    auto S  = dict->value <plist::Dictionary> ("settings");
+    auto FR  = context.indirect <FileReference> (dict, "fileRef", &FRID);
+    auto RP  = context.indirect <ReferenceProxy> (dict, "fileRef", &RPID);
+    auto G   = context.indirect <Group> (dict, "fileRef", &GID);
+    auto VaG = context.indirect <VariantGroup> (dict, "fileRef", &VaGID);
+    auto VrG = context.indirect <XC::VersionGroup> (dict, "fileRef", &VrGID);
+    auto S   = dict->value <plist::Dictionary> ("settings");
 
     if (FR != nullptr) {
-        _fileReference = context.parseObject(context.fileReferences, FRID, FR);
-        if (!_fileReference) {
-            return false;
-        }
+        FileReference::shared_ptr fileReference = context.parseObject(context.fileReferences, FRID, FR);
+        _fileRef = std::static_pointer_cast <GroupItem> (fileReference);
     } else if (RP != nullptr) {
-        _referenceProxy = context.parseObject(context.referenceProxies, RPID, RP);
-        if (!_referenceProxy) {
-            return false;
-        }
+        ReferenceProxy::shared_ptr referenceProxy = context.parseObject(context.referenceProxies, RPID, RP);
+        _fileRef = std::static_pointer_cast <GroupItem> (referenceProxy);
+    } else if (G != nullptr) {
+        Group::shared_ptr group = context.parseObject(context.groups, GID, G);
+        _fileRef = std::static_pointer_cast <GroupItem> (group);
+    } else if (VaG != nullptr) {
+        VariantGroup::shared_ptr variantGroup = context.parseObject(context.variantGroups, VaGID, VaG);
+        _fileRef = std::static_pointer_cast <GroupItem> (variantGroup);
+    } else if (VrG != nullptr) {
+        XC::VersionGroup::shared_ptr versionGroup = context.parseObject(context.versionGroups, VrGID, VrG);
+        _fileRef = std::static_pointer_cast <GroupItem> (versionGroup);
     }
 
     if (S != nullptr) {

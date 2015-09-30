@@ -26,15 +26,7 @@ BuildFileDisambiguation(pbxproj::PBX::Target::shared_ptr const &target)
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
         for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
-            std::string name;
-            if (buildFile->fileReference() != nullptr) {
-                name = buildFile->fileReference()->name();
-            } else if (buildFile->referenceProxy() != nullptr) {
-                name = buildFile->referenceProxy()->name();
-            } else {
-                continue;
-            }
-            name = FSUtil::GetBaseNameWithoutExtension(name);
+            std::string name = FSUtil::GetBaseNameWithoutExtension(buildFile->fileRef()->name());
 
             auto it = buildFileUnambiguous.find(name);
             if (it != buildFileUnambiguous.end()) {

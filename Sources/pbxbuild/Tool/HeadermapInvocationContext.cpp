@@ -39,12 +39,8 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
         }
 
         for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
-            auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, { pbxspec::Manager::AnyDomain() }, buildFile->fileReference(), environment);
-            if (file == nullptr) {
-                continue;
-            }
-
-            std::string fullPath = FSUtil::GetDirectoryName(file->filePath());
+            std::string filePath = environment.expand(buildFile->fileRef()->resolve());
+            std::string fullPath = FSUtil::GetDirectoryName(filePath);
             if (allHeaderSearchPaths.insert(fullPath).second) {
                 orderedHeaderSearchPaths.push_back(fullPath);
             }
@@ -136,7 +132,12 @@ Create(
             }
 
             for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
-                auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, { pbxspec::Manager::AnyDomain() }, buildFile->fileReference(), environment);
+                if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeFileReference) {
+                    continue;
+                }
+
+                pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
+                std::unique_ptr<TypeResolvedFile> file = pbxbuild::TypeResolvedFile::Resolve(specManager, { pbxspec::Manager::AnyDomain() }, fileReference, environment);
                 if (file == nullptr || (file->fileType()->identifier() != "sourcecode.c.h" && file->fileType()->identifier() != "sourcecode.cpp.h")) {
                     continue;
                 }

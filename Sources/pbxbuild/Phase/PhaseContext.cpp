@@ -19,50 +19,31 @@ PhaseContext::
 }
 
 std::unique_ptr<pbxbuild::TypeResolvedFile> PhaseContext::
-resolveBuildFile(pbxsetting::Environment const &environment, pbxproj::PBX::BuildFile::shared_ptr const &buildFile) const
+resolveReferenceProxy(pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy, pbxsetting::Environment const &environment) const
 {
-    if (pbxproj::PBX::FileReference::shared_ptr const &fileReference = buildFile->fileReference()) {
-        std::string path = environment.expand(fileReference->resolve());
-        return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, environment);
-    } else if (pbxproj::PBX::ReferenceProxy::shared_ptr referenceProxy = buildFile->referenceProxy()) {
-        pbxproj::PBX::ContainerItemProxy::shared_ptr proxy = referenceProxy->remoteRef();
-        pbxproj::PBX::FileReference::shared_ptr containerReference = proxy->containerPortal();
-        std::string containerPath = environment.expand(containerReference->resolve());
+    pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy = referenceProxy->remoteRef();
+    pbxproj::PBX::FileReference::shared_ptr const &containerReference = proxy->containerPortal();
+    std::string containerPath = environment.expand(containerReference->resolve());
 
-        auto remote = _buildContext.resolveProductIdentifier(_buildContext.project(containerPath), proxy->remoteGlobalIDString());
-        if (remote == nullptr) {
-            fprintf(stderr, "error: unable to find remote target product from proxied reference\n");
-            return nullptr;
-        }
-
-        std::unique_ptr<pbxbuild::TargetEnvironment> remoteEnvironment = _buildContext.targetEnvironment(_buildEnvironment, remote->first);
-        if (remoteEnvironment == nullptr) {
-            fprintf(stderr, "error: unable to create target environment for remote target\n");
-            return nullptr;
-        }
-
-        return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, remote->second, remoteEnvironment->environment());
-    } else {
-        fprintf(stderr, "error: unable to handle build file without file reference or proxy\n");
+    auto remote = _buildContext.resolveProductIdentifier(_buildContext.project(containerPath), proxy->remoteGlobalIDString());
+    if (remote == nullptr) {
+        fprintf(stderr, "error: unable to find remote target product from proxied reference\n");
         return nullptr;
     }
-}
 
-std::vector<std::pair<pbxproj::PBX::BuildFile::shared_ptr, pbxbuild::TypeResolvedFile>> PhaseContext::
-resolveBuildFiles(pbxsetting::Environment const &environment, std::vector<pbxproj::PBX::BuildFile::shared_ptr> const &buildFiles) const
-{
-    std::vector<std::pair<pbxproj::PBX::BuildFile::shared_ptr, pbxbuild::TypeResolvedFile>> files;
-    files.reserve(buildFiles.size());
-
-    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildFiles) {
-        auto file = resolveBuildFile(environment, buildFile);
-        if (file == nullptr) {
-            continue;
-        }
-        files.push_back({ buildFile, *file });
+    std::unique_ptr<pbxbuild::TargetEnvironment> remoteEnvironment = _buildContext.targetEnvironment(_buildEnvironment, remote->first);
+    if (remoteEnvironment == nullptr) {
+        fprintf(stderr, "error: unable to create target environment for remote target\n");
+        return nullptr;
     }
 
-    return files;
+    return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, remote->second, remoteEnvironment->environment());
+}
+
+std::unique_ptr<pbxbuild::TypeResolvedFile> PhaseContext::
+resolveFileReference(pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment) const
+{
+    return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, environment);
 }
 
 pbxsetting::Level PhaseContext::

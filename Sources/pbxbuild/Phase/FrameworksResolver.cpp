@@ -13,6 +13,7 @@
 using pbxbuild::Phase::FrameworksResolver;
 using pbxbuild::Phase::PhaseContext;
 using pbxbuild::Phase::SourcesResolver;
+using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 FrameworksResolver::
@@ -24,6 +25,43 @@ FrameworksResolver(std::vector<pbxbuild::ToolInvocation> const &invocations) :
 FrameworksResolver::
 ~FrameworksResolver()
 {
+}
+
+static std::vector<pbxbuild::TypeResolvedFile>
+InputFiles(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase, pbxsetting::Environment const &environment)
+{
+    std::vector<pbxbuild::TypeResolvedFile> files;
+
+    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+        if (buildFile->fileRef() == nullptr) {
+            continue;
+        }
+
+        std::unique_ptr<TypeResolvedFile> file = nullptr;
+
+        switch (buildFile->fileRef()->type()) {
+            case pbxproj::PBX::GroupItem::kTypeFileReference: {
+                pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
+                file = phaseContext.resolveFileReference(fileReference, environment);
+                break;
+            }
+            case pbxproj::PBX::GroupItem::kTypeReferenceProxy: {
+                pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (buildFile->fileRef());
+                file = phaseContext.resolveReferenceProxy(referenceProxy, environment);
+                break;
+            }
+            default: {
+                fprintf(stderr, "warning: unsupported build file for frameworks build phase\n");
+                break;
+            }
+        }
+
+        if (file != nullptr) {
+            files.push_back(*file);
+        }
+    }
+
+    return files;
 }
 
 std::unique_ptr<FrameworksResolver> FrameworksResolver::
@@ -63,6 +101,8 @@ Create(
     std::string workingDirectory = targetEnvironment.workingDirectory();
     std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
 
+    std::vector<pbxbuild::TypeResolvedFile> files = InputFiles(phaseContext, buildPhase, targetEnvironment.environment());
+
     for (std::string const &variant : targetEnvironment.variants()) {
         pbxsetting::Environment variantEnvironment = targetEnvironment.environment();
         variantEnvironment.insertFront(PhaseContext::VariantLevel(variant), false);
@@ -79,14 +119,6 @@ Create(
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment archEnvironment = variantEnvironment;
             archEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch), false);
-
-            auto buildFiles = phaseContext.resolveBuildFiles(archEnvironment, buildPhase->files());
-
-            std::vector<pbxbuild::TypeResolvedFile> files;
-            files.reserve(buildFiles.size());
-            for (auto const &entry : buildFiles) {
-                files.push_back(entry.second);
-            }
 
             std::vector<std::string> sourceOutputs;
             auto it = sourcesResolver.variantArchitectureInvocations().find(std::make_pair(variant, arch));

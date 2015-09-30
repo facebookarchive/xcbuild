@@ -80,6 +80,21 @@ Create(
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
     std::string prefixHeaderFile = compilerEnvironment.resolve("GCC_PREFIX_HEADER");
 
+    std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, TypeResolvedFile> files;
+    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+        if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeFileReference) {
+            continue;
+        }
+
+        pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
+        std::unique_ptr<TypeResolvedFile> file = phaseContext.resolveFileReference(fileReference, targetEnvironment.environment());
+        if (file == nullptr) {
+            continue;
+        }
+
+        files.insert({ buildFile, *file });
+    }
+
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment currentEnvironment = targetEnvironment.environment();
@@ -89,10 +104,12 @@ Create(
             std::vector<ToolInvocation> invocations;
             std::unordered_map<std::string, std::string> prefixHeaders;
 
-            auto files = phaseContext.resolveBuildFiles(targetEnvironment.environment(), buildPhase->files());
-            for (auto const &fileEntry : files) {
-                pbxproj::PBX::BuildFile::shared_ptr const &buildFile = fileEntry.first;
-                pbxbuild::TypeResolvedFile const &file = fileEntry.second;
+            for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+                auto it = files.find(buildFile);
+                if (it == files.end()) {
+                    continue;
+                }
+                TypeResolvedFile const &file = it->second;
 
                 pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
                 if (buildRule != nullptr) {
