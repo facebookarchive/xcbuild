@@ -2,11 +2,13 @@
 
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/CopyInvocationContext.h>
 
 using pbxbuild::Phase::ResourcesResolver;
 using pbxbuild::Phase::PhaseContext;
 using pbxbuild::Tool::CopyInvocationContext;
+using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -26,10 +28,19 @@ static ToolInvocation
 CopyInvocation(pbxbuild::Phase::PhaseContext const &phaseContext, pbxspec::PBX::Tool::shared_ptr const &copyTool, TypeResolvedFile const &file, std::string const &outputDirectory, pbxsetting::Environment const &environment)
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseContext.targetEnvironment();
+    std::string const &workingDirectory = targetEnvironment.workingDirectory();
 
-    // TODO(grp): Apply build rules for some types of resources.
-    auto context = CopyInvocationContext::Create(copyTool, file.filePath(), outputDirectory, "CpResource", environment, targetEnvironment.workingDirectory());
-    return context.invocation();
+    pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
+    if (buildRule != nullptr && buildRule->tool() != nullptr) {
+        pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
+
+        std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(file.filePath());
+        auto context = ToolInvocationContext::Create(tool, { file.filePath() }, { outputPath }, environment, workingDirectory);
+        return context.invocation();
+    } else {
+        auto context = CopyInvocationContext::Create(copyTool, file.filePath(), outputDirectory, "CpResource", environment, workingDirectory);
+        return context.invocation();
+    }
 }
 
 std::unique_ptr<ResourcesResolver> ResourcesResolver::

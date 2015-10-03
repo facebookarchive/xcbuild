@@ -23,7 +23,7 @@ CopyFilesResolver::
 static pbxsetting::Value
 DestinationOutputPath(pbxproj::PBX::CopyFilesBuildPhase::Destination destination)
 {
-    pbxsetting::Value products = pbxsetting::Value::Variable("BUILT_PRODUCTS_DIR");
+    pbxsetting::Value products = pbxsetting::Value::Variable("BUILT_PRODUCTS_DIR") + pbxsetting::Value::String("/");
 
     switch (destination) {
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationAbsolute:
