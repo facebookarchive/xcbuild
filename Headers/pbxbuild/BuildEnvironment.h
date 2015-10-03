@@ -14,7 +14,7 @@ private:
     pbxsetting::Environment              _baseEnvironment;
 
 public:
-    BuildEnvironment(pbxspec::Manager::shared_ptr specManager, std::shared_ptr<xcsdk::SDK::Manager> sdkManager, pbxsetting::Environment baseEnvironment);
+    BuildEnvironment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment);
 
 public:
     pbxspec::Manager::shared_ptr const &specManager() const

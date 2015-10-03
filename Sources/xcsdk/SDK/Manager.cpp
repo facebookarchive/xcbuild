@@ -51,6 +51,15 @@ computedSettings(void) const
     return Level(settings);
 }
 
+std::vector<std::string> Manager::
+executablePaths() const
+{
+    return {
+        _path + "/usr/bin",
+        _path + "/Tools",
+    };
+}
+
 std::shared_ptr<Manager> Manager::
 Open(std::string const &path)
 {

@@ -31,6 +31,9 @@ public:
     pbxsetting::Level computedSettings(void) const;
 
 public:
+    std::vector<std::string> executablePaths() const;
+
+public:
     static std::shared_ptr<Manager> Open(std::string const &path);
 };
 
