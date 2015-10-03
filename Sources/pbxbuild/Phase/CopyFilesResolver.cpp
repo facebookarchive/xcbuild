@@ -23,33 +23,35 @@ CopyFilesResolver::
 static pbxsetting::Value
 DestinationOutputPath(pbxproj::PBX::CopyFilesBuildPhase::Destination destination)
 {
+    pbxsetting::Value products = pbxsetting::Value::Variable("BUILT_PRODUCTS_DIR");
+
     switch (destination) {
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationAbsolute:
-            return pbxsetting::Value::Variable("BUILT_PRODUCTS_DIR");
+            return pbxsetting::Value::Empty();
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationWrapper:
-            return pbxsetting::Value::Variable("CONTENTS_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("CONTENTS_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationExecutables:
-            return pbxsetting::Value::Variable("EXECUTABLE_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("EXECUTABLE_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationResources:
-            return pbxsetting::Value::Variable("UNLOCALIZED_RESOURCES_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("UNLOCALIZED_RESOURCES_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationPublicHeaders:
-            return pbxsetting::Value::Variable("PUBLIC_HEADERS_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("PUBLIC_HEADERS_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationPrivateHeaders:
-            return pbxsetting::Value::Variable("PRIVATE_HEADERS_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("PRIVATE_HEADERS_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationFrameworks:
-            return pbxsetting::Value::Variable("FRAMEWORKS_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("FRAMEWORKS_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationSharedFrameworks:
-            return pbxsetting::Value::Variable("SHARED_FRAMEWORKS_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("SHARED_FRAMEWORKS_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationSharedSupport:
-            return pbxsetting::Value::Variable("SHARED_SUPPORT_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("SHARED_SUPPORT_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationPlugIns:
-            return pbxsetting::Value::Variable("PLUGINS_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("PLUGINS_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationScripts:
-            return pbxsetting::Value::Variable("SCRIPTS_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("SCRIPTS_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationJavaResources:
-            return pbxsetting::Value::Variable("JAVA_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("JAVA_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationProducts:
-            return pbxsetting::Value::Variable("BUILT_PRODUCTS_DIR");
+            return products;
         default:
             fprintf(stderr, "error: unknown destination %d\n", (int)destination);
             return pbxsetting::Value::Empty();
