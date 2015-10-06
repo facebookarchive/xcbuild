@@ -1,9 +1,11 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
 #include <pbxbuild/TypeResolvedFile.h>
+#include <pbxbuild/BuildGraph.h>
 #include <fstream>
 
 using pbxbuild::TypeResolvedFile;
+using pbxbuild::BuildGraph;
 using libutil::FSUtil;
 using libutil::Wildcard;
 
@@ -19,6 +21,21 @@ TypeResolvedFile::
 {
 }
 
+static std::vector<pbxspec::PBX::FileType::shared_ptr>
+SortedFileTypes(std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes)
+{
+    BuildGraph<pbxspec::PBX::FileType::shared_ptr> graph;
+
+    for (pbxspec::PBX::FileType::shared_ptr const &fileType : fileTypes) {
+        if (fileType->base() != nullptr) {
+            graph.insert(fileType->base(), { fileType });
+        }
+        graph.insert(fileType, { });
+    }
+
+    return graph.ordered();
+}
+
 std::unique_ptr<TypeResolvedFile> TypeResolvedFile::
 Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, std::string const &filePath)
 {
@@ -31,12 +48,19 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
     std::ifstream fileHandle;
     std::vector<uint8_t> fileContents;
 
-    for (pbxspec::PBX::FileType::shared_ptr const &fileType : specManager->fileTypes(domains)) {
+    // Reverse first so more specific file types are processed first.
+    std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes = specManager->fileTypes(domains);
+    std::vector<pbxspec::PBX::FileType::shared_ptr> sortedFileTypes = SortedFileTypes(fileTypes);
+
+    for (pbxspec::PBX::FileType::shared_ptr const &fileType : sortedFileTypes) {
         if (isReadable && fileType->isFolder() != isFolder) {
             continue;
         }
 
+        bool empty = true;
+
         if (!fileType->extensions().empty()) {
+            empty = false;
             bool matched = false;
 
             for (std::string const &extension : fileType->extensions()) {
@@ -52,6 +76,7 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
 
 
         if (!fileType->prefix().empty()) {
+            empty = false;
             bool matched = false;
 
             for (std::string const &prefix : fileType->prefix()) {
@@ -66,6 +91,7 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
         }
 
         if (!fileType->filenamePatterns().empty()) {
+            empty = false;
             bool matched = false;
 
             for (std::string const &pattern : fileType->filenamePatterns()) {
@@ -80,6 +106,7 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
         }
 
         if (isReadable && !fileType->permissions().empty()) {
+            empty = false;
             bool matched = false;
 
             std::string const &permissions = fileType->permissions();
@@ -87,7 +114,7 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
                 matched = isReadable;
             } else if (permissions == "write") {
                 matched = FSUtil::TestForWrite(filePath);
-            } else if (permissions == "execute") {
+            } else if (permissions == "executable") {
                 matched = FSUtil::TestForExecute(filePath);
             } else {
                 fprintf(stderr, "warning: unhandled permission %s\n", permissions.c_str());
@@ -101,6 +128,7 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
         // TODO(grp): Support TypeCodes. Not very important.
 
         if (isReadable && !fileType->magicWords().empty()) {
+            empty = false;
             bool matched = false;
 
             for (std::vector<uint8_t> const &magicWord : fileType->magicWords()) {
@@ -129,6 +157,13 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
             if (!matched) {
                 continue;
             }
+        }
+
+        //
+        // Matched no checks.
+        //
+        if (empty) {
+            continue;
         }
 
         //

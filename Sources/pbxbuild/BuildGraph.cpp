@@ -80,4 +80,5 @@ ordered(void) const
 
 namespace pbxbuild { template class BuildGraph<pbxproj::PBX::Target::shared_ptr>; }
 namespace pbxbuild { template class BuildGraph<pbxproj::PBX::BuildPhase::shared_ptr>; }
+namespace pbxbuild { template class BuildGraph<pbxspec::PBX::FileType::shared_ptr>; }
 namespace pbxbuild { template class BuildGraph<pbxbuild::ToolInvocation const *>; }

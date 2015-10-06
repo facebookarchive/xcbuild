@@ -245,6 +245,11 @@ parse(Context *context, plist::Dictionary const *dict)
         _uti = U->value();
     }
 
+    //
+    // Extensions are not inherited.
+    //
+    _extensions.clear();
+
     if (Es != nullptr) {
         for (size_t n = 0; n < Es->count(); n++) {
             auto E = Es->value <plist::String> (n);
