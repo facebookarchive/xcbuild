@@ -13,37 +13,6 @@
 using libutil::FSUtil;
 using libutil::Subprocess;
 
-static std::vector<pbxproj::PBX::BuildPhase::shared_ptr>
-SortBuildPhases(std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> phaseInvocations)
-{
-    std::unordered_map<std::string, pbxproj::PBX::BuildPhase::shared_ptr> outputToPhase;
-    for (auto const &entry : phaseInvocations) {
-        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
-            for (std::string const &output : invocation.outputs()) {
-                outputToPhase.insert({ output, entry.first });
-            }
-        }
-    }
-
-    pbxbuild::BuildGraph<pbxproj::PBX::BuildPhase::shared_ptr> phaseGraph;
-    for (auto const &entry : phaseInvocations) {
-        phaseGraph.insert(entry.first, { });
-
-        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
-            for (std::string const &input : invocation.inputs()) {
-                auto it = outputToPhase.find(input);
-                if (it != outputToPhase.end()) {
-                    if (it->second != entry.first) {
-                        phaseGraph.insert(entry.first, { it->second });
-                    }
-                }
-            }
-        }
-    }
-
-    return phaseGraph.ordered();
-}
-
 static std::vector<pbxbuild::ToolInvocation>
 SortInvocations(std::vector<pbxbuild::ToolInvocation> invocations)
 {
@@ -213,127 +182,6 @@ PerformBuild(pbxbuild::BuildEnvironment const &buildEnvironment, pbxbuild::Build
     return std::pair<bool, std::vector<pbxbuild::ToolInvocation>>(true, failures);
 }
 
-static std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>>
-PhaseInvocations(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const &target)
-{
-    // Filter build phases to ones appropriate for this target.
-    std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
-    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
-        // TODO(grp): Check buildActionMask against buildContext.action.
-        // TODO(grp): Check runOnlyForDeploymentPostprocessing.
-        buildPhases.push_back(buildPhase);
-    }
-
-    std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> toolInvocations;
-
-    std::unique_ptr<pbxbuild::Phase::SourcesResolver> sourcesResolver;
-    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
-        if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
-            auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
-            sourcesResolver = pbxbuild::Phase::SourcesResolver::Create(phaseContext, BP);
-
-            if (sourcesResolver != nullptr) {
-                toolInvocations.insert({ buildPhase, sourcesResolver->invocations() });
-            }
-
-            break;
-        }
-    }
-
-    if (sourcesResolver != nullptr) {
-        pbxproj::PBX::BuildPhase::shared_ptr buildPhase;
-        pbxproj::PBX::FrameworksBuildPhase::shared_ptr frameworksPhase;
-
-        auto it = std::find_if(buildPhases.begin(), buildPhases.end(), [](pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase) -> bool {
-            return (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeFrameworks);
-        });
-
-        if (it == buildPhases.end()) {
-            frameworksPhase = std::make_shared <pbxproj::PBX::FrameworksBuildPhase> ();
-            buildPhase = std::static_pointer_cast <pbxproj::PBX::BuildPhase> (frameworksPhase);
-        } else {
-            buildPhase = *it;
-            frameworksPhase = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
-        }
-
-        auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseContext, frameworksPhase, *sourcesResolver);
-        if (link != nullptr) {
-            toolInvocations.insert({ buildPhase, link->invocations() });
-        }
-    }
-
-    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
-        switch (buildPhase->type()) {
-            case pbxproj::PBX::BuildPhase::kTypeShellScript: {
-                auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
-                auto shellScript = pbxbuild::Phase::ShellScriptResolver::Create(phaseContext, BP);
-                if (shellScript != nullptr) {
-                    toolInvocations.insert({ buildPhase, shellScript->invocations() });
-                }
-                break;
-            }
-            case pbxproj::PBX::BuildPhase::kTypeCopyFiles: {
-                auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
-                auto copyFiles = pbxbuild::Phase::CopyFilesResolver::Create(phaseContext, BP);
-                if (copyFiles != nullptr) {
-                    toolInvocations.insert({ buildPhase, copyFiles->invocations() });
-                }
-                break;
-            }
-            case pbxproj::PBX::BuildPhase::kTypeHeaders: {
-                auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
-                auto headers = pbxbuild::Phase::HeadersResolver::Create(phaseContext, BP);
-                if (headers != nullptr) {
-                    toolInvocations.insert({ buildPhase, headers->invocations() });
-                }
-                break;
-            }
-            case pbxproj::PBX::BuildPhase::kTypeResources: {
-                auto BP = std::static_pointer_cast <pbxproj::PBX::ResourcesBuildPhase> (buildPhase);
-                auto resources = pbxbuild::Phase::ResourcesResolver::Create(phaseContext, BP);
-                if (resources != nullptr) {
-                    toolInvocations.insert({ buildPhase, resources->invocations() });
-                }
-                break;
-            }
-            default: break;
-        }
-    }
-
-
-    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
-        switch (buildPhase->type()) {
-            case pbxproj::PBX::BuildPhase::kTypeShellScript:
-            case pbxproj::PBX::BuildPhase::kTypeFrameworks:
-            case pbxproj::PBX::BuildPhase::kTypeSources: {
-                break;
-            }
-            case pbxproj::PBX::BuildPhase::kTypeHeaders: {
-                // TODO: Copy Headers
-                auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
-                break;
-            }
-            case pbxproj::PBX::BuildPhase::kTypeResources: {
-                // TODO: Copy Resources
-                auto BP = std::static_pointer_cast <pbxproj::PBX::ResourcesBuildPhase> (buildPhase);
-                break;
-            }
-            case pbxproj::PBX::BuildPhase::kTypeCopyFiles: {
-                // TODO: Copy Files
-                auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
-                break;
-            }
-            case pbxproj::PBX::BuildPhase::kTypeAppleScript: {
-                // TODO: Compile AppleScript
-                auto BP = std::static_pointer_cast <pbxproj::PBX::AppleScriptBuildPhase> (buildPhase);
-                break;
-            }
-        }
-    }
-
-    return toolInvocations;
-}
-
 int
 main(int argc, char **argv)
 {
@@ -394,10 +242,10 @@ main(int argc, char **argv)
 
         printf("Check dependencies\n\n");
         pbxbuild::Phase::PhaseContext phaseContext = pbxbuild::Phase::PhaseContext(*buildEnvironment, buildContext, target, *targetEnvironment);
-        std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> phaseInvocations = PhaseInvocations(phaseContext, target);
-        std::vector<pbxproj::PBX::BuildPhase::shared_ptr> orderedPhases = SortBuildPhases(phaseInvocations);
+        pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseContext, target);
+        std::vector<pbxproj::PBX::BuildPhase::shared_ptr> orderedPhases = phaseInvocations.orderedPhases();
 
-        auto result = PerformBuild(*buildEnvironment, buildContext, target, *targetEnvironment, phaseInvocations, orderedPhases, true);
+        auto result = PerformBuild(*buildEnvironment, buildContext, target, *targetEnvironment, phaseInvocations.invocations(), orderedPhases, true);
         if (!result.first) {
             succeeded = false;
             printf("\n%s%s** BUILD FAILED **%s%s\n", ANSI_STYLE_BOLD, ANSI_COLOR_RED, ANSI_STYLE_NO_BOLD, ANSI_COLOR_RESET);
