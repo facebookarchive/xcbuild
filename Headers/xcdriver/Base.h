@@ -5,13 +5,6 @@
 
 #include <plist/plist.h>
 #include <pbxsetting/pbxsetting.h>
-
-namespace xcsdk {
-
-using string_vector = libutil::string_vector;
-using string_set = libutil::string_set;
-using string_map = libutil::string_map;
-
-}
+#include <pbxbuild/pbxbuild.h>
 
 #endif  // !__xcsdk_Base_h

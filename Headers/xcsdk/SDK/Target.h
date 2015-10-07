@@ -22,19 +22,19 @@ protected:
     std::weak_ptr<Platform> _platform;
 
 public:
-    Product::shared_ptr  _product;
-    std::string          _path;
-    std::string          _bundleName;
-    std::string          _version;
-    std::string          _canonicalName;
-    std::string          _displayName;
-    std::string          _minimalDisplayName;
-    std::string          _maximumDeploymentTarget;
-    string_vector        _supportedBuildToolsVersion;
-    pbxsetting::Level    _customProperties;
-    pbxsetting::Level    _defaultProperties;
-    bool                 _isBaseSDK;
-    Toolchain::vector    _toolchains;
+    Product::shared_ptr      _product;
+    std::string              _path;
+    std::string              _bundleName;
+    std::string              _version;
+    std::string               _canonicalName;
+    std::string              _displayName;
+    std::string              _minimalDisplayName;
+    std::string              _maximumDeploymentTarget;
+    std::vector<std::string> _supportedBuildToolsVersion;
+    pbxsetting::Level        _customProperties;
+    pbxsetting::Level        _defaultProperties;
+    bool                     _isBaseSDK;
+    Toolchain::vector        _toolchains;
 
 public:
     Target();
@@ -75,9 +75,9 @@ public:
     { return _maximumDeploymentTarget; }
 
 public:
-    inline string_vector const &supportedBuildToolsVersion() const
+    inline std::vector<std::string> const &supportedBuildToolsVersion() const
     { return _supportedBuildToolsVersion; }
-    inline string_vector &supportedBuildToolsVersion()
+    inline std::vector<std::string> &supportedBuildToolsVersion()
     { return _supportedBuildToolsVersion; }
 
 public:
