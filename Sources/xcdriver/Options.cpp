@@ -124,9 +124,11 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return MarkBool(&_showBuildSettings, arg);
     } else if (arg == "-list") {
         return MarkBool(&_list, arg);
-    } else if (arg == "-findexecutable") {
+    } else if (arg == "-find") {
+        return NextString(&_find, args, it);
+    } else if (arg == "-find-executable") {
         return NextString(&_findExecutable, args, it);
-    } else if (arg == "-findlibrary") {
+    } else if (arg == "-find-library") {
         return NextString(&_findLibrary, args, it);
     } else if (arg == "-version") {
         return MarkBool(&_version, arg);
@@ -161,9 +163,11 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     } else if (arg.find('=') != std::string::npos) {
         _settings.push_back(pbxsetting::Setting::Parse(arg));
         return std::make_pair(true, std::string());
-    } else {
+    } else if (!arg.empty() && arg[0] != '-') {
         _actions.push_back(arg);
         return std::make_pair(true, std::string());
+    } else {
+        return std::make_pair(false, "unknown argument " + arg);
     }
 }
 

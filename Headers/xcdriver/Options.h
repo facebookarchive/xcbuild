@@ -45,6 +45,7 @@ private:
     std::vector<pbxsetting::Setting> _settings;
 
 private:
+    std::string _find;
     std::string _findExecutable;
     std::string _findLibrary;
 
@@ -76,6 +77,116 @@ private:
 public:
     Options();
     ~Options();
+
+public:
+    bool usage() const
+    { return _usage; }
+    bool help() const
+    { return _help; }
+    bool verbose() const
+    { return _verbose; }
+    bool license() const
+    { return _license; }
+    bool checkFirstLaunchStatus() const
+    { return _checkFirstLaunchStatus; }
+    bool version() const
+    { return _version; }
+
+public:
+    std::string const &project() const
+    { return _project; }
+    std::string const &target() const
+    { return _target; }
+    bool allTargets() const
+    { return _allTargets; }
+    std::string const &workspace() const
+    { return _workspace; }
+    std::string const &scheme() const
+    { return _scheme; }
+    std::string const &configuration() const
+    { return _configuration; }
+    std::string const &arch() const
+    { return _arch; }
+    std::string const &sdk() const
+    { return _sdk; }
+    std::string const &toolchain() const
+    { return _toolchain; }
+    std::string const &destination() const
+    { return _destination; }
+    std::string const &destinationTimeout() const
+    { return _destinationTimeout; }
+
+public:
+    bool parallelizeTargets() const
+    { return _parallelizeTargets; }
+    int jobs() const
+    { return _jobs; }
+    bool dryRun() const
+    { return _dryRun; }
+    bool hideShellScriptEnvironment() const
+    { return _hideShellScriptEnvironment; }
+
+public:
+    bool list() const
+    { return _list; }
+    bool showSDKs() const
+    { return _showSDKs; }
+    bool showBuildSettings() const
+    { return _showBuildSettings; }
+
+public:
+    std::string const &xcconfig() const
+    { return _xcconfig; }
+    std::vector<pbxsetting::Setting> const &settings() const
+    { return _settings; }
+
+public:
+    std::string const &find() const
+    { return _find; }
+    std::string const &findExecutable() const
+    { return _findExecutable; }
+    std::string const &findLibrary() const
+    { return _findLibrary; }
+
+public:
+    bool enableAddressSanitizer() const
+    { return _enableAddressSanitizer; }
+    bool enableCodeCoverage() const
+    { return _enableCodeCoverage; }
+
+public:
+    std::string const &resultBundlePath() const
+    { return _resultBundlePath; }
+    std::string const &derivedDataPath() const
+    { return _derivedDataPath; }
+
+public:
+    bool exportArchive() const
+    { return _exportArchive; }
+    std::string const &archivePath() const
+    { return _archivePath; }
+    std::string const &exportPath() const
+    { return _exportPath; }
+    std::string const &exportOptionsPlist() const
+    { return _exportOptionsPlist; }
+
+public:
+    bool skipUnavailableActions() const
+    { return _skipUnavailableActions; }
+    std::vector<std::string> const &actions() const
+    { return _actions; }
+
+public:
+    bool exportLocalizations() const
+    { return _exportLocalizations; }
+    bool importLocalizations() const
+    { return _importLocalizations; }
+    std::string const &localizationPath() const
+    { return _localizationPath; }
+    std::string const &exportLanguage() const
+    { return _exportLanguage; }
+    bool forceImport() const
+    { return _forceImport; }
 
 public:
     static std::pair<Options, std::string>

@@ -192,6 +192,7 @@ set(libpbxbuild_SOURCES
     )
 
 set(libxcdriver_SOURCES
+    Sources/xcdriver/Action.cpp
     Sources/xcdriver/Options.cpp)
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
