@@ -3,6 +3,8 @@
 #ifndef __xcdriver_xcdriver_h
 #define __xcdriver_xcdriver_h
 
+#include <xcdriver/Action.h>
+#include <xcdriver/Driver.h>
 #include <xcdriver/Options.h>
 
 #endif  // !__xcdriver_xcdriver_h

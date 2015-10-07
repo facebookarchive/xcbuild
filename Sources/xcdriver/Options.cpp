@@ -5,7 +5,28 @@
 using xcdriver::Options;
 
 Options::
-Options()
+Options() :
+    _usage                     (false),
+    _help                      (false),
+    _verbose                   (false),
+    _license                   (false),
+    _checkFirstLaunchStatus    (false),
+    _version                   (false),
+    _allTargets                (false),
+    _parallelizeTargets        (false),
+    _jobs                      (0),
+    _dryRun                    (false),
+    _hideShellScriptEnvironment(false),
+    _list                      (false),
+    _showSDKs                  (false),
+    _showBuildSettings         (false),
+    _enableAddressSanitizer    (false),
+    _enableCodeCoverage        (false),
+    _exportArchive             (false),
+    _skipUnavailableActions    (false),
+    _exportLocalizations       (false),
+    _importLocalizations       (false),
+    _forceImport               (false)
 {
 }
 

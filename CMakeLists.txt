@@ -193,6 +193,7 @@ set(libpbxbuild_SOURCES
 
 set(libxcdriver_SOURCES
     Sources/xcdriver/Action.cpp
+    Sources/xcdriver/Driver.cpp
     Sources/xcdriver/Options.cpp)
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
@@ -237,6 +238,8 @@ add_executable(settings Tools/settings.cpp)
 target_link_libraries(settings pbxbuild pbxbase pbxproj xcsdk pbxsetting pbxspec)
 add_executable(build Tools/build.cpp)
 target_link_libraries(build pbxbase pbxproj xcsdk pbxsetting pbxspec xcworkspace xcscheme pbxbuild)
+add_executable(xcbuild Tools/xcbuild.cpp)
+target_link_libraries(xcbuild xcdriver)
 
 enable_testing()
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/gtest/include)
