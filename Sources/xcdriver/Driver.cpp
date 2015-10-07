@@ -3,6 +3,7 @@
 #include <xcdriver/Driver.h>
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
+#include <xcdriver/ShowSDKsAction.h>
 
 using xcdriver::Driver;
 using xcdriver::Action;
@@ -27,7 +28,8 @@ Run(std::vector<std::string> const &args)
         return 1;
     }
 
-    Action::Type action = Action::Determine(opt.first);
+    Options const &options = opt.first;
+    Action::Type action = Action::Determine(options);
     switch (action) {
         case Action::Build:
             fprintf(stderr, "warning: build not implemented\n");
@@ -48,8 +50,7 @@ Run(std::vector<std::string> const &args)
             fprintf(stderr, "warning: check first launch not implemented\n");
             break;
         case Action::ShowSDKs:
-            fprintf(stderr, "warning: show sdks not implemented\n");
-            break;
+            return ShowSDKsAction::Run(options);
         case Action::Find:
             fprintf(stderr, "warning: find not implemented\n");
             break;

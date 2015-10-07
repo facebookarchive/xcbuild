@@ -194,7 +194,8 @@ set(libpbxbuild_SOURCES
 set(libxcdriver_SOURCES
     Sources/xcdriver/Action.cpp
     Sources/xcdriver/Driver.cpp
-    Sources/xcdriver/Options.cpp)
+    Sources/xcdriver/Options.cpp
+    Sources/xcdriver/ShowSDKsAction.cpp)
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting pbxbase)
@@ -218,7 +219,7 @@ add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
 target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec)
 
 add_library(xcdriver SHARED ${libxcdriver_SOURCES})
-target_link_libraries(xcdriver pbxsetting pbxbase)
+target_link_libraries(xcdriver xcsdk pbxsetting pbxbase)
 
 add_executable(plist Tools/plist.cpp)
 target_link_libraries(plist pbxbase)

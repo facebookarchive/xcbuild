@@ -7,4 +7,6 @@
 #include <xcdriver/Driver.h>
 #include <xcdriver/Options.h>
 
+#include <xcdriver/ShowSDKsAction.h>
+
 #endif  // !__xcdriver_xcdriver_h
