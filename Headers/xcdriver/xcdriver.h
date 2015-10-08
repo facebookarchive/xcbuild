@@ -8,5 +8,6 @@
 #include <xcdriver/Options.h>
 
 #include <xcdriver/ShowSDKsAction.h>
+#include <xcdriver/VersionAction.h>
 
 #endif  // !__xcdriver_xcdriver_h

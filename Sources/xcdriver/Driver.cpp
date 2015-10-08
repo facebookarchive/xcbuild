@@ -4,6 +4,7 @@
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
 #include <xcdriver/ShowSDKsAction.h>
+#include <xcdriver/VersionAction.h>
 
 using xcdriver::Driver;
 using xcdriver::Action;
@@ -35,8 +36,7 @@ Run(std::vector<std::string> const &args)
             fprintf(stderr, "warning: build not implemented\n");
             break;
         case Action::Version:
-            fprintf(stderr, "warning: version not implemented\n");
-            break;
+            return VersionAction::Run(options);
         case Action::Usage:
             fprintf(stderr, "warning: usage not implemented\n");
             break;

@@ -100,24 +100,6 @@ PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, std:
     return pbxsetting::Level(architectureSettings);
 }
 
-static xcsdk::SDK::Target::shared_ptr
-FindPlatformTarget(std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, std::string const &sdkroot)
-{
-    for (xcsdk::SDK::Platform::shared_ptr const &platform : sdkManager->platforms()) {
-        for (xcsdk::SDK::Target::shared_ptr const &sdk : platform->targets()) {
-            if (sdk->canonicalName() == sdkroot || sdk->path() == sdkroot) {
-                return sdk;
-            }
-        }
-
-        if (platform->name() == sdkroot || platform->path() == sdkroot) {
-            return platform->targets().back();
-        }
-    }
-
-    return nullptr;
-}
-
 static pbxsetting::Level
 PackageTypeLevel(pbxspec::PBX::PackageType::shared_ptr const &packageType)
 {
@@ -261,7 +243,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
         determinationEnvironment.insertFront(context->actionSettings(), false);
         std::string sdkroot = determinationEnvironment.resolve("SDKROOT");
-        sdk = FindPlatformTarget(buildEnvironment.sdkManager(), sdkroot);
+        sdk = buildEnvironment.sdkManager()->findTarget(sdkroot);
         if (sdk == nullptr) {
             fprintf(stderr, "error: unable to find sdkroot %s\n", sdkroot.c_str());
             return nullptr;

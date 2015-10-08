@@ -131,9 +131,9 @@ System(void)
 
         Setting::Parse("OS", "MACOS"),
         Setting::Parse("MAC_OS_X_PRODUCT_BUILD_VERSION", "14E46"),
-        Setting::Parse("MAC_OS_X_VERSION_ACTUAL", "101004"),
-        Setting::Parse("MAC_OS_X_VERSION_MAJOR", "101000"),
-        Setting::Parse("MAC_OS_X_VERSION_MINOR", "1004"),
+        Setting::Parse("MAC_OS_X_VERSION_ACTUAL", "101101"),
+        Setting::Parse("MAC_OS_X_VERSION_MAJOR", "101100"),
+        Setting::Parse("MAC_OS_X_VERSION_MINOR", "1001"),
     };
 
     return Level(settings);
@@ -174,9 +174,9 @@ Build(void)
 {
     std::vector<Setting> settings = {
         Setting::Parse("XCODE_PRODUCT_BUILD_VERSION", "6E35b"),
-        Setting::Parse("XCODE_VERSION_ACTUAL", "0640"),
-        Setting::Parse("XCODE_VERSION_MAJOR", "0600"),
-        Setting::Parse("XCODE_VERSION_MINOR", "0640"),
+        Setting::Parse("XCODE_VERSION_ACTUAL", "0710"),
+        Setting::Parse("XCODE_VERSION_MAJOR", "0700"),
+        Setting::Parse("XCODE_VERSION_MINOR", "0710"),
         Setting::Parse("XCODE_APP_SUPPORT_DIR", "$(DEVELOPER_LIBRARY_DIR)/Xcode"),
     };
 

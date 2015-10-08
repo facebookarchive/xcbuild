@@ -195,7 +195,8 @@ set(libxcdriver_SOURCES
     Sources/xcdriver/Action.cpp
     Sources/xcdriver/Driver.cpp
     Sources/xcdriver/Options.cpp
-    Sources/xcdriver/ShowSDKsAction.cpp)
+    Sources/xcdriver/ShowSDKsAction.cpp
+    Sources/xcdriver/VersionAction.cpp)
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting pbxbase)

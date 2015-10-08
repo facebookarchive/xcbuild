@@ -3,6 +3,7 @@
 #include <xcsdk/SDK/Manager.h>
 
 using xcsdk::SDK::Manager;
+using xcsdk::SDK::Target;
 using pbxsetting::Setting;
 using pbxsetting::Level;
 using libutil::FSUtil;
@@ -13,6 +14,24 @@ Manager::Manager()
 
 Manager::~Manager()
 {
+}
+
+Target::shared_ptr Manager::
+findTarget(std::string const &name) const
+{
+    for (Platform::shared_ptr const &platform : _platforms) {
+        for (Target::shared_ptr const &target : platform->targets()) {
+            if (target->canonicalName() == name || target->path() == name) {
+                return target;
+            }
+
+            if (platform->name() == name || platform->path() == name) {
+                return platform->targets().back();
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 pbxsetting::Level Manager::

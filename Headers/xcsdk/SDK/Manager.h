@@ -4,6 +4,8 @@
 #define __xcsdk_SDK_Manager_h
 
 #include <xcsdk/SDK/Platform.h>
+#include <xcsdk/SDK/Toolchain.h>
+#include <xcsdk/SDK/Target.h>
 
 namespace xcsdk { namespace SDK {
 
@@ -26,6 +28,9 @@ public:
 public:
     inline std::string const &path() const
     { return _path; }
+
+public:
+    Target::shared_ptr findTarget(std::string const &name) const;
 
 public:
     pbxsetting::Level computedSettings(void) const;
