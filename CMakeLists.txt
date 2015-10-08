@@ -170,6 +170,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/BuildGraph.cpp
     Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
+    Sources/pbxbuild/WorkspaceContext.cpp
     Sources/pbxbuild/ToolInvocation.cpp
     Sources/pbxbuild/Tool/SearchPaths.cpp
     Sources/pbxbuild/Tool/CopyInvocationContext.cpp

@@ -25,7 +25,7 @@ resolveReferenceProxy(pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceP
     pbxproj::PBX::FileReference::shared_ptr const &containerReference = proxy->containerPortal();
     std::string containerPath = environment.expand(containerReference->resolve());
 
-    auto remote = _buildContext.resolveProductIdentifier(_buildContext.project(containerPath), proxy->remoteGlobalIDString());
+    auto remote = _buildContext.resolveProductIdentifier(_buildContext.workspaceContext()->project(containerPath), proxy->remoteGlobalIDString());
     if (remote == nullptr) {
         fprintf(stderr, "error: unable to find remote target product from proxied reference\n");
         return nullptr;

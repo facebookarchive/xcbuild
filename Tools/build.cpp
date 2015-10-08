@@ -220,8 +220,9 @@ main(int argc, char **argv)
         return -1;
     }
 
-    pbxbuild::BuildContext buildContext = pbxbuild::BuildContext::Workspace(
-        workspace,
+    pbxbuild::WorkspaceContext workspaceContext = pbxbuild::WorkspaceContext::Workspace(workspace);
+    pbxbuild::BuildContext buildContext = pbxbuild::BuildContext::Create(
+        workspaceContext,
         scheme,
         argv[3],
         argv[4]

@@ -4,6 +4,7 @@
 #define __pbxbuild_BuildContext_h
 
 #include <pbxbuild/Base.h>
+#include <pbxbuild/WorkspaceContext.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/TargetEnvironment.h>
 
@@ -11,10 +12,8 @@ namespace pbxbuild {
 
 class BuildContext {
 private:
-    pbxproj::PBX::Project::shared_ptr       _project;
-    xcworkspace::XC::Workspace::shared_ptr  _workspace;
-    xcscheme::XC::Scheme::shared_ptr        _scheme;
-    std::shared_ptr<std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr>> _projects;
+    std::shared_ptr<WorkspaceContext> _workspaceContext;
+    xcscheme::XC::Scheme::shared_ptr  _scheme;
     std::shared_ptr<std::unordered_map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>> _targetEnvironments;
 
 private:
@@ -23,20 +22,17 @@ private:
 
 private:
     BuildContext(
-        pbxproj::PBX::Project::shared_ptr const &project,
-        xcworkspace::XC::Workspace::shared_ptr const &workspace,
+        std::shared_ptr<WorkspaceContext> const &workspaceContext,
         xcscheme::XC::Scheme::shared_ptr const &scheme,
         std::string const &action,
         std::string const &configuration
     );
 
 public:
+    std::shared_ptr<WorkspaceContext> const &workspaceContext() const
+    { return _workspaceContext; }
     xcscheme::XC::Scheme::shared_ptr const &scheme() const
     { return _scheme; }
-    xcworkspace::XC::Workspace::shared_ptr const &workspace() const
-    { return _workspace; }
-    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects() const
-    { return *_projects; }
 
 public:
     std::string const &action() const
@@ -49,8 +45,6 @@ public:
     pbxsetting::Level baseSettings(void) const;
 
 public:
-    pbxproj::PBX::Project::shared_ptr
-    project(std::string const &projectPath) const;
     std::unique_ptr<pbxbuild::TargetEnvironment>
     targetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const;
 
@@ -62,9 +56,7 @@ public:
 
 public:
     static BuildContext
-    Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration);
-    static BuildContext
-    Project(pbxproj::PBX::Project::shared_ptr const &project, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration);
+    Create(WorkspaceContext const &workspaceContext, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration);
 };
 
 }

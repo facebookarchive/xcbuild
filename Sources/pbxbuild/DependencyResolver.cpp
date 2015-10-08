@@ -41,16 +41,17 @@ ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext
 
     std::string path = targetEnvironment->environment().expand(fileReference->resolve());
 
+    pbxproj::PBX::Project::shared_ptr project = context.workspaceContext()->project(path);
     if (productReference) {
-        auto result = context.resolveProductIdentifier(context.project(path), proxy->remoteGlobalIDString());
+        auto result = context.resolveProductIdentifier(project, proxy->remoteGlobalIDString());
         if (result == nullptr) {
-            fprintf(stderr, "warning: not able to resolve product identifier %s in project %s\n", proxy->remoteGlobalIDString().c_str(), context.project(path) ? context.project(path)->name().c_str() : path.c_str());
+            fprintf(stderr, "warning: not able to resolve product identifier %s in project %s\n", proxy->remoteGlobalIDString().c_str(), project ? project->name().c_str() : path.c_str());
             return nullptr;
         }
 
         return result->first;
     } else {
-        return context.resolveTargetIdentifier(context.project(path), proxy->remoteGlobalIDString());
+        return context.resolveTargetIdentifier(project, proxy->remoteGlobalIDString());
     }
 }
 
@@ -159,8 +160,15 @@ resolveDependencies(BuildContext const &context) const
         }
 
         xcscheme::XC::BuildableReference::shared_ptr const &reference = entry->buildableReference();
-        std::string projectPath = reference->resolve(context.workspace()->basePath());
-        pbxproj::PBX::Target::shared_ptr target = context.resolveTargetIdentifier(context.project(projectPath), reference->blueprintIdentifier());
+
+        std::string projectPath = reference->resolve(context.workspaceContext()->basePath());
+        pbxproj::PBX::Project::shared_ptr project = context.workspaceContext()->project(projectPath);
+        if (project == nullptr) {
+            fprintf(stderr, "warning: couldn't find project in workspace for build action entry\n");
+            continue;
+        }
+
+        pbxproj::PBX::Target::shared_ptr target = context.resolveTargetIdentifier(project, reference->blueprintIdentifier());
         if (target == nullptr) {
             fprintf(stderr, "warning: couldn't find buildable reference for build action entry\n");
             continue;

@@ -8,6 +8,10 @@
 namespace xcworkspace { namespace XC {
 
 class Group : public GroupItem {
+public:
+    typedef std::shared_ptr <Group> shared_ptr;
+    typedef std::vector <shared_ptr> vector;
+
 private:
     std::string       _name;
     GroupItem::vector _items;

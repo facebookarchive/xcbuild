@@ -8,6 +8,7 @@
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/DependencyResolver.h>
 #include <pbxbuild/BuildContext.h>
+#include <pbxbuild/WorkspaceContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/TargetBuildRules.h>
 #include <pbxbuild/TargetEnvironment.h>

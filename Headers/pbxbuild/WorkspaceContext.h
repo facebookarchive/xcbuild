@@ -1,0 +1,57 @@
+// Copyright 2013-present Facebook. All Rights Reserved.
+
+#ifndef __pbxbuild_WorkspaceContext_h
+#define __pbxbuild_WorkspaceContext_h
+
+#include <pbxbuild/Base.h>
+
+namespace pbxbuild {
+
+class WorkspaceContext {
+private:
+    std::string                                   _basePath;
+    std::string                                   _derivedDataName;
+    xcworkspace::XC::Workspace::shared_ptr        _workspace;
+    std::vector<xcscheme::XC::Scheme::shared_ptr> _schemes;
+    mutable std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> _projects;
+
+public:
+    WorkspaceContext(
+        std::string const &basePath,
+        std::string const &derivedDataName,
+        xcworkspace::XC::Workspace::shared_ptr const &workspace,
+        std::vector<xcscheme::XC::Scheme::shared_ptr> const &schemes,
+        std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects
+    );
+    ~WorkspaceContext();
+
+public:
+    std::string const &basePath() const
+    { return _basePath; }
+    std::string const &derivedDataName() const
+    { return _derivedDataName; }
+
+public:
+    xcworkspace::XC::Workspace::shared_ptr const &workspace() const
+    { return _workspace; }
+    std::vector<xcscheme::XC::Scheme::shared_ptr> const &schemes() const
+    { return _schemes; }
+    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects() const
+    { return _projects; }
+
+public:
+    pbxproj::PBX::Project::shared_ptr
+    project(std::string const &projectPath) const;
+    xcscheme::XC::Scheme::shared_ptr
+    scheme(std::string const &name) const;
+
+public:
+    static WorkspaceContext
+    Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace);
+    static WorkspaceContext
+    Project(pbxproj::PBX::Project::shared_ptr const &project);
+};
+
+}
+
+#endif // !__pbxbuild_WorkspaceContext_h
