@@ -195,6 +195,7 @@ set(libxcdriver_SOURCES
     Sources/xcdriver/Action.cpp
     Sources/xcdriver/Driver.cpp
     Sources/xcdriver/Options.cpp
+    Sources/xcdriver/FindAction.cpp
     Sources/xcdriver/ShowSDKsAction.cpp
     Sources/xcdriver/VersionAction.cpp)
 

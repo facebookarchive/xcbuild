@@ -145,9 +145,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return MarkBool(&_showBuildSettings, arg);
     } else if (arg == "-list") {
         return MarkBool(&_list, arg);
-    } else if (arg == "-find") {
-        return NextString(&_find, args, it);
-    } else if (arg == "-find-executable") {
+    } else if (arg == "-find" || arg == "-find-executable") {
         return NextString(&_findExecutable, args, it);
     } else if (arg == "-find-library") {
         return NextString(&_findLibrary, args, it);

@@ -7,6 +7,7 @@
 #include <xcdriver/Driver.h>
 #include <xcdriver/Options.h>
 
+#include <xcdriver/FindAction.h>
 #include <xcdriver/ShowSDKsAction.h>
 #include <xcdriver/VersionAction.h>
 

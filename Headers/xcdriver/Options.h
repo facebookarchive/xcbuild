@@ -45,7 +45,6 @@ private:
     std::vector<pbxsetting::Setting> _settings;
 
 private:
-    std::string _find;
     std::string _findExecutable;
     std::string _findLibrary;
 
@@ -141,8 +140,6 @@ public:
     { return _settings; }
 
 public:
-    std::string const &find() const
-    { return _find; }
     std::string const &findExecutable() const
     { return _findExecutable; }
     std::string const &findLibrary() const

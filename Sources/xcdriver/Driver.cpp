@@ -3,6 +3,7 @@
 #include <xcdriver/Driver.h>
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
+#include <xcdriver/FindAction.h>
 #include <xcdriver/ShowSDKsAction.h>
 #include <xcdriver/VersionAction.h>
 
@@ -52,8 +53,7 @@ Run(std::vector<std::string> const &args)
         case Action::ShowSDKs:
             return ShowSDKsAction::Run(options);
         case Action::Find:
-            fprintf(stderr, "warning: find not implemented\n");
-            break;
+            return FindAction::Run(options);
         case Action::ExportArchive:
             fprintf(stderr, "warning: export archive not implemented\n");
             break;

@@ -31,7 +31,7 @@ Determine(Options const &options)
         return CheckFirstLaunch;
     } else if (options.showSDKs()) {
         return ShowSDKs;
-    } else if (!options.find().empty() || !options.findLibrary().empty() || !options.findExecutable().empty()) {
+    } else if (!options.findLibrary().empty() || !options.findExecutable().empty()) {
         return Find;
     } else if (options.exportArchive()) {
         return ExportArchive;
