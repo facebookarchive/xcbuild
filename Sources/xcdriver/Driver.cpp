@@ -4,6 +4,7 @@
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
 #include <xcdriver/FindAction.h>
+#include <xcdriver/ListAction.h>
 #include <xcdriver/ShowSDKsAction.h>
 #include <xcdriver/VersionAction.h>
 
@@ -36,6 +37,8 @@ Run(std::vector<std::string> const &args)
         case Action::Build:
             fprintf(stderr, "warning: build not implemented\n");
             break;
+        case Action::List:
+            return ListAction::Run(options);
         case Action::Version:
             return VersionAction::Run(options);
         case Action::Usage:

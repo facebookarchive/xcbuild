@@ -8,6 +8,7 @@
 #include <xcdriver/Options.h>
 
 #include <xcdriver/FindAction.h>
+#include <xcdriver/ListAction.h>
 #include <xcdriver/ShowSDKsAction.h>
 #include <xcdriver/VersionAction.h>
 

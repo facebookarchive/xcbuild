@@ -17,6 +17,7 @@ private:
 public:
     enum Type {
         Build,
+        List,
         Version,
         Usage,
         Help,
@@ -31,6 +32,10 @@ public:
 public:
     static Type
     Determine(Options const &options);
+
+public:
+    static std::unique_ptr<pbxbuild::WorkspaceContext>
+    CreateWorkspace(Options const &options);
 };
 
 }
