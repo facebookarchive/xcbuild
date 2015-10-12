@@ -39,6 +39,14 @@ FormatInvocation(ToolInvocation const &invocation, bool _color)
     return message;
 }
 
+static std::string
+FormatAction(std::string const &action)
+{
+    std::string result = action;
+    std::transform(result.begin(), result.end(), result.begin(), ::toupper);
+    return result;
+}
+
 std::string DefaultFormatter::
 begin(BuildContext const &buildContext)
 {
@@ -69,7 +77,7 @@ success(BuildContext const &buildContext)
     std::string result;
 
     result += "\n" + ANSI_STYLE_BOLD + ANSI_COLOR_GREEN;
-    result += "** BUILD SUCCEEDED **";
+    result += "** " + FormatAction(buildContext.action()) + " SUCCEEDED **";
     result += ANSI_STYLE_NO_BOLD + ANSI_COLOR_RESET + "\n";
 
     return result;
@@ -81,7 +89,7 @@ failure(BuildContext const &buildContext, std::vector<ToolInvocation> const &fai
     std::string result;
 
     result += "\n" + ANSI_STYLE_BOLD + ANSI_COLOR_RED;
-    result += "** BUILD FAILED **";
+    result += "** " + FormatAction(buildContext.action()) + " FAILED **";
     result += ANSI_STYLE_NO_BOLD + ANSI_COLOR_RESET + "\n";
 
     result += "\nThe following build commands failed:\n";
@@ -100,7 +108,7 @@ beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr c
     result += "\n" + ANSI_STYLE_BOLD + ANSI_COLOR_CYAN;
     result += "=== ";
 
-    result += "BUILD TARGET " + target->name() + " OF PROJECT " + target->project()->name();
+    result += FormatAction(buildContext.action()) + " TARGET " + target->name() + " OF PROJECT " + target->project()->name();
     if (buildContext.defaultConfiguration()) {
         result += " WITH THE DEFAULT CONFIGURATION (" + buildContext.configuration() + ")";
     } else {
