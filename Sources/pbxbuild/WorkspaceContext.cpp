@@ -10,12 +10,14 @@ WorkspaceContext(
     std::string const &basePath,
     std::string const &derivedDataName,
     xcworkspace::XC::Workspace::shared_ptr const &workspace,
+    pbxproj::PBX::Project::shared_ptr const &project,
     std::vector<xcscheme::XC::Scheme::shared_ptr> const &schemes,
     std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects
 ) :
     _basePath       (basePath),
     _derivedDataName(derivedDataName),
     _workspace      (workspace),
+    _project        (project),
     _schemes        (schemes),
     _projects       (projects)
 {
@@ -157,7 +159,7 @@ Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace)
 
     std::string derivedDataName = workspace->name() + "-" + DerivedDataHash(workspace->projectFile());
 
-    return WorkspaceContext(workspace->basePath(), derivedDataName, workspace, schemes, projects);
+    return WorkspaceContext(workspace->basePath(), derivedDataName, workspace, nullptr, schemes, projects);
 }
 
 WorkspaceContext WorkspaceContext::
@@ -176,5 +178,5 @@ Project(pbxproj::PBX::Project::shared_ptr const &project)
 
     std::string derivedDataName = project->name() + "-" + DerivedDataHash(project->projectFile());
 
-    return WorkspaceContext(project->basePath(), derivedDataName, nullptr, schemes, projects);
+    return WorkspaceContext(project->basePath(), derivedDataName, nullptr, project, schemes, projects);
 }

@@ -64,6 +64,12 @@ CreateWorkspace(Options const &options)
         pbxbuild::WorkspaceContext context = pbxbuild::WorkspaceContext::Workspace(workspace);
         return std::make_unique<pbxbuild::WorkspaceContext>(context);
     } else {
+        // TODO(grp): Implement support for building specific targets without a scheme.
+        if (options.allTargets() || !options.target().empty()) {
+            fprintf(stderr, "error: specific-target builds not implemented\n");
+            return nullptr;
+        }
+
         pbxproj::PBX::Project::shared_ptr project = OpenProject(options.project(), ".");
         if (project == nullptr) {
             return nullptr;

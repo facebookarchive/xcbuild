@@ -12,6 +12,7 @@ private:
     std::string                                   _basePath;
     std::string                                   _derivedDataName;
     xcworkspace::XC::Workspace::shared_ptr        _workspace;
+    pbxproj::PBX::Project::shared_ptr             _project;
     std::vector<xcscheme::XC::Scheme::shared_ptr> _schemes;
     mutable std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> _projects;
 
@@ -20,6 +21,7 @@ public:
         std::string const &basePath,
         std::string const &derivedDataName,
         xcworkspace::XC::Workspace::shared_ptr const &workspace,
+        pbxproj::PBX::Project::shared_ptr const &project,
         std::vector<xcscheme::XC::Scheme::shared_ptr> const &schemes,
         std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects
     );
@@ -34,6 +36,10 @@ public:
 public:
     xcworkspace::XC::Workspace::shared_ptr const &workspace() const
     { return _workspace; }
+    pbxproj::PBX::Project::shared_ptr const &project() const
+    { return _project; }
+
+public:
     std::vector<xcscheme::XC::Scheme::shared_ptr> const &schemes() const
     { return _schemes; }
     std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects() const

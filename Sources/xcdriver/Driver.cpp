@@ -3,6 +3,7 @@
 #include <xcdriver/Driver.h>
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
+#include <xcdriver/BuildAction.h>
 #include <xcdriver/FindAction.h>
 #include <xcdriver/ListAction.h>
 #include <xcdriver/ShowSDKsAction.h>
@@ -35,8 +36,7 @@ Run(std::vector<std::string> const &args)
     Action::Type action = Action::Determine(options);
     switch (action) {
         case Action::Build:
-            fprintf(stderr, "warning: build not implemented\n");
-            break;
+            return BuildAction::Run(options);
         case Action::List:
             return ListAction::Run(options);
         case Action::Version:

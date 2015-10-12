@@ -200,6 +200,7 @@ set(libxcdriver_SOURCES
     Sources/xcdriver/Action.cpp
     Sources/xcdriver/Driver.cpp
     Sources/xcdriver/Options.cpp
+    Sources/xcdriver/BuildAction.cpp
     Sources/xcdriver/FindAction.cpp
     Sources/xcdriver/ListAction.cpp
     Sources/xcdriver/ShowSDKsAction.cpp
@@ -245,8 +246,6 @@ add_executable(xctool Tools/xctool.cpp)
 target_link_libraries(xctool pbxbase pbxproj xcscheme xcworkspace)
 add_executable(settings Tools/settings.cpp)
 target_link_libraries(settings pbxbuild pbxbase pbxproj xcsdk pbxsetting pbxspec)
-add_executable(build Tools/build.cpp)
-target_link_libraries(build pbxbase pbxproj xcsdk pbxsetting pbxspec xcworkspace xcscheme pbxbuild)
 add_executable(xcbuild Tools/xcbuild.cpp)
 target_link_libraries(xcbuild xcdriver)
 
