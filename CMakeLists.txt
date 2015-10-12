@@ -232,8 +232,6 @@ target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting pbxbase)
 
 add_executable(plist Tools/plist.cpp)
 target_link_libraries(plist pbxbase)
-add_executable(sdktool Tools/sdktool.cpp)
-target_link_libraries(sdktool xcsdk)
 add_executable(xcconfig Tools/xcconfig.cpp)
 target_link_libraries(xcconfig pbxsetting)
 add_executable(hmap Tools/hmap.cpp)
