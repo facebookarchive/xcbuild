@@ -10,14 +10,16 @@ BuildContext(
     xcscheme::XC::Scheme::shared_ptr const &scheme,
     std::string const &action,
     std::string const &configuration,
+    bool defaultConfiguration,
     std::vector<pbxsetting::Level> const &overrideLevels
 ) :
-    _workspaceContext  (workspaceContext),
-    _scheme            (scheme),
-    _action            (action),
-    _configuration     (configuration),
-    _overrideLevels    (overrideLevels),
-    _targetEnvironments(std::make_shared<std::unordered_map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>>())
+    _workspaceContext    (workspaceContext),
+    _scheme              (scheme),
+    _action              (action),
+    _configuration       (configuration),
+    _defaultConfiguration(defaultConfiguration),
+    _overrideLevels      (overrideLevels),
+    _targetEnvironments  (std::make_shared<std::unordered_map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>>())
 {
 }
 
@@ -103,9 +105,17 @@ Create(
     xcscheme::XC::Scheme::shared_ptr const &scheme,
     std::string const &action,
     std::string const &configuration,
+    bool defaultConfiguration,
     std::vector<pbxsetting::Level> const &overrideLevels
 )
 {
-    return BuildContext(std::make_shared<WorkspaceContext>(workspaceContext), scheme, action, configuration, overrideLevels);
+    return BuildContext(
+        std::make_shared<WorkspaceContext>(workspaceContext),
+        scheme,
+        action,
+        configuration,
+        defaultConfiguration,
+        overrideLevels
+    );
 }
 

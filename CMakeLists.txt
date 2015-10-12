@@ -171,6 +171,13 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/WorkspaceContext.cpp
+    Sources/pbxbuild/TargetBuildRules.cpp
+    Sources/pbxbuild/TargetEnvironment.cpp
+    Sources/pbxbuild/TypeResolvedFile.cpp
+    Sources/pbxbuild/Build/Executor.cpp
+    Sources/pbxbuild/Build/SimpleExecutor.cpp
+    Sources/pbxbuild/Build/Formatter.cpp
+    Sources/pbxbuild/Build/DefaultFormatter.cpp
     Sources/pbxbuild/ToolInvocation.cpp
     Sources/pbxbuild/Tool/SearchPaths.cpp
     Sources/pbxbuild/Tool/CopyInvocationContext.cpp
@@ -179,9 +186,6 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/LinkerInvocationContext.cpp
     Sources/pbxbuild/Tool/ScriptInvocationContext.cpp
     Sources/pbxbuild/Tool/ToolInvocationContext.cpp
-    Sources/pbxbuild/TargetBuildRules.cpp
-    Sources/pbxbuild/TargetEnvironment.cpp
-    Sources/pbxbuild/TypeResolvedFile.cpp
     Sources/pbxbuild/Phase/PhaseContext.cpp
     Sources/pbxbuild/Phase/PhaseInvocations.cpp
     Sources/pbxbuild/Phase/CopyFilesResolver.cpp

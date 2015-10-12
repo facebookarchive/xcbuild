@@ -16,6 +16,7 @@ private:
     xcscheme::XC::Scheme::shared_ptr  _scheme;
     std::string                       _action;
     std::string                       _configuration;
+    bool                              _defaultConfiguration;
     std::vector<pbxsetting::Level>    _overrideLevels;
 
 private:
@@ -27,6 +28,7 @@ private:
         xcscheme::XC::Scheme::shared_ptr const &scheme,
         std::string const &action,
         std::string const &configuration,
+        bool defaultConfiguration,
         std::vector<pbxsetting::Level> const &overrideLevels
     );
 
@@ -41,6 +43,8 @@ public:
     { return _action; }
     std::string const &configuration() const
     { return _configuration; }
+    bool defaultConfiguration() const
+    { return _defaultConfiguration; }
 
 public:
     std::vector<pbxsetting::Level> const &overrideLevels() const
@@ -67,6 +71,7 @@ public:
         xcscheme::XC::Scheme::shared_ptr const &scheme,
         std::string const &action,
         std::string const &configuration,
+        bool defaultConfiguration,
         std::vector<pbxsetting::Level> const &overrideLevels
     );
 };

@@ -36,6 +36,7 @@ main(int argc, char **argv)
         nullptr,
         "build",
         "Release",
+        false,
         { }
     );
 

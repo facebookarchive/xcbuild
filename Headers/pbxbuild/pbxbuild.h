@@ -14,6 +14,11 @@
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/ToolInvocation.h>
 
+#include <pbxbuild/Build/Executor.h>
+#include <pbxbuild/Build/SimpleExecutor.h>
+#include <pbxbuild/Build/Formatter.h>
+#include <pbxbuild/Build/DefaultFormatter.h>
+
 #include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/CompilerInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
