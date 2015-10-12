@@ -70,6 +70,27 @@ LoadConfigurationFile(pbxproj::XC::BuildConfiguration::shared_ptr const &buildCo
     return pbxsetting::XC::Config::Open(configurationPath, environment);
 }
 
+static std::vector<std::string>
+SDKSpecificationDomains(xcsdk::SDK::Target::shared_ptr const &sdk)
+{
+    std::vector<std::string> domains;
+    domains.push_back(sdk->platform()->name());
+
+    // TODO(grp): Find a better way to determine what's embedded.
+    if (sdk->platform()->name() != "macosx") {
+        if (sdk->platform()->name().find("simulator") != std::string::npos) {
+            domains.push_back("embedded-simulator");
+        } else {
+            domains.push_back("embedded");
+        }
+
+        domains.push_back("embedded-shared");
+    }
+
+    domains.push_back("default");
+    return domains;
+}
+
 static pbxsetting::Level
 PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
@@ -260,7 +281,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         }
 
         buildEnvironment.specManager()->registerDomain({ sdk->platform()->name(), sdk->platform()->path() + "/Developer/Library/Xcode/Specifications" });
-        specDomains = { sdk->platform()->name(), pbxspec::Manager::AnyDomain() };
+        specDomains = SDKSpecificationDomains(sdk);
     }
 
     pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(buildEnvironment.specManager(), specDomains, target);
