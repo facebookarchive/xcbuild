@@ -225,7 +225,13 @@ main(int argc, char **argv)
         workspaceContext,
         scheme,
         argv[3],
-        argv[4]
+        argv[4],
+        {
+            pbxsetting::Level({
+                pbxsetting::Setting::Parse("SDKROOT", "iphonesimulator"),
+                pbxsetting::Setting::Parse("ARCHS", "i386"),
+            }),
+        }
     );
 
     pbxbuild::DependencyResolver resolver = pbxbuild::DependencyResolver(*buildEnvironment);

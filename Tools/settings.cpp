@@ -35,7 +35,8 @@ main(int argc, char **argv)
         workspaceContext,
         nullptr,
         "build",
-        "Release"
+        "Release",
+        { }
     );
 
     std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = context.targetEnvironment(*buildEnvironment, target);

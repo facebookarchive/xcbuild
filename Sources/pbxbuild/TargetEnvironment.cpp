@@ -217,6 +217,9 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
 
         pbxsetting::Environment projectActionEnvironment = determinationEnvironment;
         projectActionEnvironment.insertFront(context->actionSettings(), false);
+        for (pbxsetting::Level const &level : context->overrideLevels()) {
+            projectActionEnvironment.insertFront(level, false);
+        }
 
         projectConfigurationFile = LoadConfigurationFile(projectConfiguration, projectActionEnvironment);
         if (projectConfigurationFile != nullptr) {
@@ -235,6 +238,9 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         // FIXME(grp): Similar issue for the target xcconfig. These levels aren't complete (no platform) but are needed to *get* which SDK to use.
         pbxsetting::Environment targetActionEnvironment = determinationEnvironment;
         targetActionEnvironment.insertFront(context->actionSettings(), false);
+        for (pbxsetting::Level const &level : context->overrideLevels()) {
+            targetActionEnvironment.insertFront(level, false);
+        }
 
         targetConfigurationFile = LoadConfigurationFile(targetConfiguration, targetActionEnvironment);
         if (targetConfigurationFile != nullptr) {
@@ -242,6 +248,10 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         }
 
         determinationEnvironment.insertFront(context->actionSettings(), false);
+        for (pbxsetting::Level const &level : context->overrideLevels()) {
+            determinationEnvironment.insertFront(level, false);
+        }
+
         std::string sdkroot = determinationEnvironment.resolve("SDKROOT");
         sdk = buildEnvironment.sdkManager()->findTarget(sdkroot);
         if (sdk == nullptr) {
@@ -314,6 +324,9 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     }
 
     environment.insertFront(context->actionSettings(), false);
+    for (pbxsetting::Level const &level : context->overrideLevels()) {
+        environment.insertFront(level, false);
+    }
 
     std::vector<std::string> architectures = ResolveArchitectures(environment);
     std::vector<std::string> variants = ResolveVariants(environment);

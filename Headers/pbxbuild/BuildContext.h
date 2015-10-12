@@ -14,18 +14,20 @@ class BuildContext {
 private:
     std::shared_ptr<WorkspaceContext> _workspaceContext;
     xcscheme::XC::Scheme::shared_ptr  _scheme;
-    std::shared_ptr<std::unordered_map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>> _targetEnvironments;
+    std::string                       _action;
+    std::string                       _configuration;
+    std::vector<pbxsetting::Level>    _overrideLevels;
 
 private:
-    std::string _action;
-    std::string _configuration;
+    std::shared_ptr<std::unordered_map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>> _targetEnvironments;
 
 private:
     BuildContext(
         std::shared_ptr<WorkspaceContext> const &workspaceContext,
         xcscheme::XC::Scheme::shared_ptr const &scheme,
         std::string const &action,
-        std::string const &configuration
+        std::string const &configuration,
+        std::vector<pbxsetting::Level> const &overrideLevels
     );
 
 public:
@@ -41,8 +43,12 @@ public:
     { return _configuration; }
 
 public:
-    pbxsetting::Level actionSettings(void) const;
+    std::vector<pbxsetting::Level> const &overrideLevels() const
+    { return _overrideLevels; }
+
+public:
     pbxsetting::Level baseSettings(void) const;
+    pbxsetting::Level actionSettings(void) const;
 
 public:
     std::unique_ptr<pbxbuild::TargetEnvironment>
@@ -56,7 +62,13 @@ public:
 
 public:
     static BuildContext
-    Create(WorkspaceContext const &workspaceContext, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration);
+    Create(
+        WorkspaceContext const &workspaceContext,
+        xcscheme::XC::Scheme::shared_ptr const &scheme,
+        std::string const &action,
+        std::string const &configuration,
+        std::vector<pbxsetting::Level> const &overrideLevels
+    );
 };
 
 }

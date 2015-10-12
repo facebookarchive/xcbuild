@@ -5,12 +5,19 @@
 using pbxbuild::BuildContext;
 
 BuildContext::
-BuildContext(std::shared_ptr<WorkspaceContext> const &workspaceContext, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration) :
+BuildContext(
+    std::shared_ptr<WorkspaceContext> const &workspaceContext,
+    xcscheme::XC::Scheme::shared_ptr const &scheme,
+    std::string const &action,
+    std::string const &configuration,
+    std::vector<pbxsetting::Level> const &overrideLevels
+) :
     _workspaceContext  (workspaceContext),
     _scheme            (scheme),
-    _targetEnvironments(std::make_shared<std::unordered_map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>>()),
     _action            (action),
-    _configuration     (configuration)
+    _configuration     (configuration),
+    _overrideLevels    (overrideLevels),
+    _targetEnvironments(std::make_shared<std::unordered_map<pbxproj::PBX::Target::shared_ptr, pbxbuild::TargetEnvironment>>())
 {
 }
 
@@ -72,11 +79,8 @@ actionSettings(void) const
 {
     return pbxsetting::Level({
         pbxsetting::Setting::Parse("ACTION", _action),
-        pbxsetting::Setting::Parse("BUILD_COMPONENTS", "headers build"), // TODO(grp): Should depend on action?
-
+        pbxsetting::Setting::Parse("BUILD_COMPONENTS", "headers build"), // TODO(grp): Should depend on action.
         pbxsetting::Setting::Parse("CONFIGURATION", _configuration),
-
-        pbxsetting::Setting::Parse("ARCHS", "armv7"),
     });
 }
 
@@ -94,8 +98,14 @@ baseSettings(void) const
 }
 
 BuildContext BuildContext::
-Create(WorkspaceContext const &workspaceContext, xcscheme::XC::Scheme::shared_ptr const &scheme, std::string const &action, std::string const &configuration)
+Create(
+    WorkspaceContext const &workspaceContext,
+    xcscheme::XC::Scheme::shared_ptr const &scheme,
+    std::string const &action,
+    std::string const &configuration,
+    std::vector<pbxsetting::Level> const &overrideLevels
+)
 {
-    return BuildContext(std::make_shared<WorkspaceContext>(workspaceContext), scheme, action, configuration);
+    return BuildContext(std::make_shared<WorkspaceContext>(workspaceContext), scheme, action, configuration, overrideLevels);
 }
 
