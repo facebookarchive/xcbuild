@@ -95,7 +95,7 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
         }
     }
 
-    if (context.buildAction->parallelizeBuildables()) {
+    if (context.buildAction != nullptr && context.buildAction->parallelizeBuildables()) {
         context.graph->insert(target, dependencies);
     }
 }
@@ -120,7 +120,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
         }
     }
 
-    if (context.buildAction->parallelizeBuildables()) {
+    if (context.buildAction != nullptr && context.buildAction->parallelizeBuildables()) {
         context.graph->insert(target, dependencies);
     }
 }
@@ -128,27 +128,32 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
 static void
 AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared_ptr const &target)
 {
-    if (context.buildAction->buildImplicitDependencies()) {
+    if (context.buildAction != nullptr && context.buildAction->buildImplicitDependencies()) {
         AddImplicitDependencies(context, target);
     }
 
     AddExplicitDependencies(context, target);
 
-    if (!context.buildAction->parallelizeBuildables()) {
-        // FIXME(grp): This is inefficient, we just need this list.
+    if (context.buildAction == nullptr || !context.buildAction->parallelizeBuildables()) {
         context.graph->insert(target, *context.positional);
         context.positional->push_back(target);
     }
 }
 
 BuildGraph<pbxproj::PBX::Target::shared_ptr> DependencyResolver::
-resolveDependencies(BuildContext const &context) const
+resolveSchemeDependencies(BuildContext const &context) const
 {
     BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
 
-    BuildAction::shared_ptr buildAction = context.scheme()->buildAction();
+    xcscheme::XC::Scheme::shared_ptr const &scheme = context.scheme();
+    if (scheme == nullptr) {
+        fprintf(stderr, "error: scheme not available\n");
+        return graph;
+    }
+
+    BuildAction::shared_ptr buildAction = scheme->buildAction();
     if (buildAction == nullptr) {
-        fprintf(stderr, "Couldn't get build action.");
+        fprintf(stderr, "error: build action not available\n");
         return graph;
     }
 
@@ -160,6 +165,10 @@ resolveDependencies(BuildContext const &context) const
         }
 
         xcscheme::XC::BuildableReference::shared_ptr const &reference = entry->buildableReference();
+        if (reference == nullptr) {
+            fprintf(stderr, "warning: couldn't find buildable reference in scheme\n");
+            continue;
+        }
 
         std::string projectPath = reference->resolve(context.workspaceContext()->basePath());
         pbxproj::PBX::Project::shared_ptr project = context.workspaceContext()->project(projectPath);
@@ -179,6 +188,40 @@ resolveDependencies(BuildContext const &context) const
             .context = context,
             .graph = &graph,
             .buildAction = buildAction,
+            .positional = &positional,
+        };
+        AddDependencies(dependenciesContext, target);
+    }
+
+    return graph;
+}
+
+BuildGraph<pbxproj::PBX::Target::shared_ptr> DependencyResolver::
+resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::string const &targetName) const
+{
+    BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
+
+    pbxproj::PBX::Project::shared_ptr const &project  = context.workspaceContext()->project();
+    if (project == nullptr) {
+        fprintf(stderr, "error: cannot resolve legacy dependencies for workspace\n");
+        return graph;
+    }
+
+    std::vector<pbxproj::PBX::Target::shared_ptr> positional;
+    for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
+        if (!allTargets) {
+            if (!targetName.empty() && target->name() != targetName) {
+                continue;
+            } else if (target != project->targets().front()) {
+                continue;
+            }
+        }
+
+        DependenciesContext dependenciesContext = {
+            .buildEnvironment = _buildEnvironment,
+            .context = context,
+            .graph = &graph,
+            .buildAction = nullptr,
             .positional = &positional,
         };
         AddDependencies(dependenciesContext, target);

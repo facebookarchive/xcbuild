@@ -20,7 +20,11 @@ public:
 
 public:
     BuildGraph<pbxproj::PBX::Target::shared_ptr>
-    resolveDependencies(BuildContext const &context) const;
+    resolveSchemeDependencies(BuildContext const &context) const;
+
+public:
+    BuildGraph<pbxproj::PBX::Target::shared_ptr>
+    resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::string const &target) const;
 };
 
 }

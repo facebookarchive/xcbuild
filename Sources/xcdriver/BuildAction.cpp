@@ -138,15 +138,6 @@ Run(Options const &options)
         scheme = workspaceContext->scheme(options.scheme());
     }
 
-    if (scheme == nullptr) {
-        if (workspaceContext->workspace() != nullptr && scheme == nullptr) {
-            fprintf(stderr, "error: scheme is required to build workspace\n");
-            return -1;
-        } else {
-            // TODO(grp): Create pseudoscheme using options.target() or first target in project.
-        }
-    }
-
     std::vector<pbxsetting::Level> overrideLevels = OverrideLevels(options, buildEnvironment->baseEnvironment());
 
     std::vector<std::string> actions = (!options.actions().empty() ? options.actions() : std::vector<std::string>({ "build" }));
@@ -158,14 +149,15 @@ Run(Options const &options)
     }
 
     std::string configuration = options.configuration();
-    bool defaultConfiguration = configuration.empty();
-    if (defaultConfiguration) {
+    bool defaultConfiguration = false;
+    if (configuration.empty()) {
         if (scheme != nullptr) {
             configuration = scheme->buildAction()->buildConfiguration();
             if (configuration.empty()) {
                 configuration = "Debug";
             }
         } else if (workspaceContext->project() != nullptr) {
+            defaultConfiguration = true;
             configuration = workspaceContext->project()->buildConfigurationList()->defaultConfigurationName();
         }
 
@@ -185,7 +177,16 @@ Run(Options const &options)
     );
 
     pbxbuild::DependencyResolver resolver = pbxbuild::DependencyResolver(*buildEnvironment);
-    auto graph = resolver.resolveDependencies(buildContext);
+    pbxbuild::BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
+    if (scheme != nullptr) {
+        graph = resolver.resolveSchemeDependencies(buildContext);
+    } else if (workspaceContext->project() != nullptr) {
+        graph = resolver.resolveLegacyDependencies(buildContext, options.allTargets(), options.target());
+    } else {
+        fprintf(stderr, "error: scheme is required for workspace\n");
+        return -1;
+    }
+
     std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
     bool color = isatty(fileno(stdout));
