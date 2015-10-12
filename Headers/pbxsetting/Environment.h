@@ -40,6 +40,9 @@ public:
     void insertBack(Level const &level, bool isDefault);
 
 public:
+    void dump() const;
+
+public:
     static Environment const &Empty();
 
 private:

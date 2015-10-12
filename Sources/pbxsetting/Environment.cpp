@@ -251,6 +251,28 @@ insertBack(Level const &level, bool isDefault)
     }
 }
 
+void Environment::
+dump() const
+{
+    int offset = 0;
+
+    for (Level const &level : _levels) {
+        if (offset == _offset) {
+            printf("=== Default Levels ===\n");
+        } else if (offset == 0) {
+            printf("=== Remaining Levels ===\n");
+        }
+
+        printf("Level:\n");
+        for (Setting const &setting : level.settings()) {
+            printf("    %s = %s\n", setting.name().c_str(), setting.value().raw().c_str());
+        }
+        printf("\n");
+
+        ++offset;
+    }
+}
+
 Environment const &Environment::
 Empty()
 {
