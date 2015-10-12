@@ -169,7 +169,7 @@ invocation(ToolInvocation const &invocation, std::string const &executable)
         message += INDENT + "export " + entry.first + "=" + entry.second + "\n";
     }
 
-    message += executable;
+    message += INDENT + executable;
     for (std::string const &arg : invocation.arguments()) {
         message += " " + arg;
     }
