@@ -26,7 +26,11 @@ protected:
     bool                    _alwaysPerformSeparateStrip;
     bool                    _wantsSimpleTargetEditing;
     bool                    _addWatchCompanionRequirement;
+    bool                    _runsOnProxy;
     bool                    _disableSchemeAutocreation;
+    bool                    _validateEmbeddedBinaries;
+    bool                    _supportsOnDemandResources;
+    bool                    _canEmbedAddressSanitizerLibraries;
     std::string             _runpathSearchPathForEmbeddedFrameworks;
 
 protected:
@@ -90,8 +94,24 @@ public:
     { return _addWatchCompanionRequirement; }
 
 public:
+    inline bool runsOnProxy() const
+    { return _runsOnProxy; }
+
+public:
     inline bool disableSchemeAutocreation() const
     { return _disableSchemeAutocreation; }
+
+public:
+    inline bool validateEmbeddedBinaries() const
+    { return _validateEmbeddedBinaries; }
+
+public:
+    inline bool supportsOnDemandResources() const
+    { return _supportsOnDemandResources; }
+
+public:
+    inline bool canEmbedAddressSanitizerLibraries() const
+    { return _canEmbedAddressSanitizerLibraries; }
 
 public:
     inline std::string const &runpathSearchPathForEmbeddedFrameworks() const

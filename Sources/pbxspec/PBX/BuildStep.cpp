@@ -43,10 +43,18 @@ parse(Context *context, plist::Dictionary const *dict)
         plist::MakeKey <plist::String> ("Name"),
         plist::MakeKey <plist::String> ("Description"),
         plist::MakeKey <plist::String> ("Vendor"),
-        plist::MakeKey <plist::String> ("Version"));
+        plist::MakeKey <plist::String> ("Version"),
+        // BuildStep
+        plist::MakeKey <plist::String> ("BuildStepType"));
 
     if (!Specification::parse(context, dict))
         return false;
+
+    auto BST = dict->value <plist::String> ("BuildStepType");
+
+    if (BST != nullptr) {
+        _buildStepType = BST->value();
+    }
 
     return true;
 }
@@ -67,6 +75,8 @@ inherit(BuildStep::shared_ptr const &b)
         return false;
 
     auto base = this->base();
+
+    _buildStepType = base->buildStepType();
 
     return true;
 }

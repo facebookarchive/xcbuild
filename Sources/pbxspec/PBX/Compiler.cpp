@@ -72,6 +72,7 @@ inherit(Compiler::shared_ptr const &b)
     _outputDir                                = base->outputDir();
     _outputFileExtension                      = base->outputFileExtension();
     _commandResultsPostprocessor              = base->commandResultsPostprocessor();
+    _genericCommandFailedErrorString          = base->genericCommandFailedErrorString();
     _generatedInfoPlistContentFilePath        = base->generatedInfoPlistContentFilePath();
     _dependencyInfoFile                       = base->dependencyInfoFile();
     _dependencyInfoArgs                       = base->dependencyInfoArgs();
@@ -179,6 +180,7 @@ parse(Context *context, plist::Dictionary const *dict)
         plist::MakeKey <plist::String> ("OutputDir"),
         plist::MakeKey <plist::String> ("OutputFileExtension"),
         plist::MakeKey <plist::String> ("CommandResultsPostprocessor"),
+        plist::MakeKey <plist::String> ("GenericCommandFailedErrorString"),
         plist::MakeKey <plist::String> ("GeneratedInfoPlistContentFilePath"),
         plist::MakeKey <plist::String> ("DependencyInfoFile"),
         plist::MakeKey <plist::Array> ("DependencyInfoArgs"),
@@ -223,6 +225,7 @@ parse(Context *context, plist::Dictionary const *dict)
     auto OD       = dict->value <plist::String> ("OutputDir");
     auto OFE      = dict->value <plist::String> ("OutputFileExtension");
     auto CRP      = dict->value <plist::String> ("CommandResultsPostprocessor");
+    auto GCFES    = dict->value <plist::String> ("GenericCommandFailedErrorString");
     auto GIPCFP   = dict->value <plist::String> ("GeneratedInfoPlistContentFilePath");
     auto DIF      = dict->value <plist::String> ("DependencyInfoFile");
     auto DIAs     = dict->value <plist::Array> ("DependencyInfoArgs");
@@ -280,6 +283,10 @@ parse(Context *context, plist::Dictionary const *dict)
 
     if (CRP != nullptr) {
         _commandResultsPostprocessor = CRP->value();
+    }
+
+    if (GCFES != nullptr) {
+        _genericCommandFailedErrorString = GCFES->value();
     }
 
     if (GIPCFP != nullptr) {

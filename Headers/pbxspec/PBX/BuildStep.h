@@ -12,6 +12,9 @@ public:
     typedef std::shared_ptr <BuildStep> shared_ptr;
     typedef std::vector <shared_ptr> vector;
 
+private:
+    std::string _buildStepType;
+
 protected:
     BuildStep();
 
@@ -25,6 +28,10 @@ public:
 public:
     inline BuildStep::shared_ptr const &base() const
     { return reinterpret_cast <BuildStep::shared_ptr const &> (Specification::base()); }
+
+public:
+    inline std::string const &buildStepType() const
+    { return _buildStepType; }
 
 protected:
     friend class Specification;

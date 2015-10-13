@@ -17,7 +17,11 @@ ProductType::ProductType() :
     _alwaysPerformSeparateStrip            (false),
     _wantsSimpleTargetEditing              (false),
     _addWatchCompanionRequirement          (false),
-    _disableSchemeAutocreation             (false)
+    _runsOnProxy                           (false),
+    _disableSchemeAutocreation             (false),
+    _validateEmbeddedBinaries              (false),
+    _supportsOnDemandResources             (false),
+    _canEmbedAddressSanitizerLibraries     (false)
 {
 }
 
@@ -72,7 +76,11 @@ parse(Context *context, plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("AlwaysPerformSeparateStrip"),
         plist::MakeKey <plist::Boolean> ("WantsSimpleTargetEditing"),
         plist::MakeKey <plist::Boolean> ("AddWatchCompanionRequirement"),
+        plist::MakeKey <plist::Boolean> ("RunsOnProxy"),
         plist::MakeKey <plist::Boolean> ("DisableSchemeAutocreation"),
+        plist::MakeKey <plist::Object> ("ValidateEmbeddedBinaries"),
+        plist::MakeKey <plist::Object> ("SupportsOnDemandResources"),
+        plist::MakeKey <plist::Object> ("CanEmbedAddressSanitizerLibraries"),
         plist::MakeKey <plist::String> ("RunpathSearchPathForEmbeddedFrameworks"));
 
     if (!Specification::parse(context, dict))
@@ -90,7 +98,11 @@ parse(Context *context, plist::Dictionary const *dict)
     auto APSS = dict->value <plist::Boolean> ("AlwaysPerformSeparateStrip");
     auto WSTE = dict->value <plist::Boolean> ("WantsSimpleTargetEditing");
     auto AWCR = dict->value <plist::Boolean> ("AddWatchCompanionRequirement");
+    auto ROP  = dict->value <plist::Boolean> ("RunsOnProxy");
     auto DSA  = dict->value <plist::Boolean> ("DisableSchemeAutocreation");
+    auto VEB  = dict->value <plist::Object> ("ValidateEmbeddedBinaries");
+    auto SODR = dict->value <plist::Object> ("SupportsOnDemandResources");
+    auto CEAL = dict->value <plist::Object> ("CanEmbedAddressSanitizerLibraries");
     auto RSEF = dict->value <plist::String> ("RunpathSearchPathForEmbeddedFrameworks");
 
     if (DTN != nullptr) {
@@ -159,8 +171,36 @@ parse(Context *context, plist::Dictionary const *dict)
         _addWatchCompanionRequirement = AWCR->value();
     }
 
+    if (ROP != nullptr) {
+        _runsOnProxy = ROP->value();
+    }
+
     if (DSA != nullptr) {
         _disableSchemeAutocreation = DSA->value();
+    }
+
+    if (VEB != nullptr) {
+        if (auto VEBb = plist::CastTo <plist::Boolean> (VEB)) {
+            _validateEmbeddedBinaries = VEBb->value();
+        } else if (auto VEBs = plist::CastTo <plist::String> (VEB)) {
+            _validateEmbeddedBinaries = (VEBs->value() == "YES");
+        }
+    }
+
+    if (SODR != nullptr) {
+        if (auto SODRb = plist::CastTo <plist::Boolean> (SODR)) {
+            _supportsOnDemandResources = SODRb->value();
+        } else if (auto SODRs = plist::CastTo <plist::String> (SODR)) {
+            _supportsOnDemandResources = (SODRs->value() == "YES");
+        }
+    }
+
+    if (CEAL != nullptr) {
+        if (auto CEALb = plist::CastTo <plist::Boolean> (CEAL)) {
+            _canEmbedAddressSanitizerLibraries = CEALb->value();
+        } else if (auto CEALs = plist::CastTo <plist::String> (CEAL)) {
+            _canEmbedAddressSanitizerLibraries = (CEALs->value() == "YES");
+        }
     }
 
     if (RSEF != nullptr) {
@@ -199,7 +239,11 @@ inherit(ProductType::shared_ptr const &b)
     _alwaysPerformSeparateStrip             = base->alwaysPerformSeparateStrip();
     _wantsSimpleTargetEditing               = base->wantsSimpleTargetEditing();
     _addWatchCompanionRequirement           = base->addWatchCompanionRequirement();
+    _runsOnProxy                            = base->runsOnProxy();
     _disableSchemeAutocreation              = base->disableSchemeAutocreation();
+    _validateEmbeddedBinaries               = base->validateEmbeddedBinaries();
+    _supportsOnDemandResources              = base->supportsOnDemandResources();
+    _canEmbedAddressSanitizerLibraries      = base->canEmbedAddressSanitizerLibraries();
     _runpathSearchPathForEmbeddedFrameworks = base->runpathSearchPathForEmbeddedFrameworks();
 
     return true;

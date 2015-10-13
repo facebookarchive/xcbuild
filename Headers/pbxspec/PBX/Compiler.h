@@ -19,6 +19,7 @@ protected:
     pbxsetting::Value              _outputDir;
     std::string                    _outputFileExtension;
     std::string                    _commandResultsPostprocessor;
+    std::string                    _genericCommandFailedErrorString;
     pbxsetting::Value              _generatedInfoPlistContentFilePath;
     pbxsetting::Value              _dependencyInfoFile;
     std::vector<pbxsetting::Value> _dependencyInfoArgs;
@@ -89,6 +90,10 @@ public:
 public:
     inline std::string const &commandResultsPostprocessor() const
     { return _commandResultsPostprocessor; }
+
+public:
+    inline std::string const &genericCommandFailedErrorString() const
+    { return _genericCommandFailedErrorString; }
 
 public:
     inline pbxsetting::Value const &generatedInfoPlistContentFilePath() const
