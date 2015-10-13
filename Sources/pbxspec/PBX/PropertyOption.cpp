@@ -85,6 +85,7 @@ parse(plist::Dictionary const *dict)
             plist::MakeKey <plist::Object> ("Values"),
             plist::MakeKey <plist::Array> ("FileTypes"),
             plist::MakeKey <plist::Array> ("ConditionFlavors"),
+            plist::MakeKey <plist::Array> ("SupportedVersionRanges"),
             plist::MakeKey <plist::Boolean> ("IsInputDependency"),
             plist::MakeKey <plist::Boolean> ("IsCommandInput"),
             plist::MakeKey <plist::Boolean> ("IsCommandOutput"),
@@ -118,6 +119,7 @@ parse(plist::Dictionary const *dict)
     auto V      = dict->value("Values");
     auto FTs    = dict->value <plist::Array> ("FileTypes");
     auto CFs    = dict->value <plist::Array> ("ConditionFlavors");
+    auto SVRs   = dict->value <plist::Array> ("SupportedVersionRanges");
     auto IID    = dict->value <plist::Boolean> ("IsInputDependency");
     auto ICI    = dict->value <plist::Boolean> ("IsCommandInput");
     auto ICO    = dict->value <plist::Boolean> ("IsCommandOutput");
@@ -219,6 +221,14 @@ parse(plist::Dictionary const *dict)
         for (size_t n = 0; n < CFs->count(); n++) {
             if (auto CF = CFs->value <plist::String> (n)) {
                 _conditionFlavors.push_back(CF->value());
+            }
+        }
+    }
+
+    if (SVRs != nullptr) {
+        for (size_t n = 0; n < SVRs->count(); n++) {
+            if (auto SVR = SVRs->value <plist::String> (n)) {
+                _supportedVersionRanges.push_back(SVR->value());
             }
         }
     }

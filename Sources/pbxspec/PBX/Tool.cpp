@@ -15,7 +15,8 @@ Tool::Tool() :
     _synthesizeBuildRule            (false),
     _shouldRerunOnError             (false),
     _deeplyStatInputDirectories     (false),
-    _isUnsafeToInterrupt            (false)
+    _isUnsafeToInterrupt            (false),
+    _messageLimit                   (0)
 {
 }
 
@@ -99,6 +100,7 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
                 plist::MakeKey <plist::Boolean> ("ShouldRerunOnError"),
                 plist::MakeKey <plist::Boolean> ("DeeplyStatInputDirectories"),
                 plist::MakeKey <plist::Boolean> ("IsUnsafeToInterrupt"),
+                plist::MakeKey <plist::Integer> ("MessageLimit"),
                 plist::MakeKey <plist::Array> ("Options"),
                 plist::MakeKey <plist::Array> ("DeletedProperties"));
     }
@@ -137,6 +139,7 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
     auto SROE   = dict->value <plist::Boolean> ("ShouldRerunOnError");
     auto DSID   = dict->value <plist::Boolean> ("DeeplyStatInputDirectories");
     auto IUTI   = dict->value <plist::Boolean> ("IsUnsafeToInterrupt");
+    auto ML     = dict->value <plist::Integer> ("MessageLimit");
     auto OPs    = dict->value <plist::Array> ("Options");
     auto DPs    = dict->value <plist::Array> ("DeletedProperties");
 
@@ -292,6 +295,10 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
         _isUnsafeToInterrupt = IUTI->value();
     }
 
+    if (ML != nullptr) {
+        _messageLimit = ML->value();
+    }
+
     if (OPs != nullptr) {
         for (size_t n = 0; n < OPs->count(); n++) {
             if (auto OP = OPs->value <plist::Dictionary> (n)) {
@@ -361,6 +368,7 @@ inherit(Tool::shared_ptr const &b)
     _shouldRerunOnError                  = base->shouldRerunOnError();
     _deeplyStatInputDirectories          = base->deeplyStatInputDirectories();
     _isUnsafeToInterrupt                 = base->isUnsafeToInterrupt();
+    _messageLimit                        = base->messageLimit();
     _options                             = base->options();
     _optionsUsed                         = base->_optionsUsed;
     _deletedProperties                   = base->deletedProperties();

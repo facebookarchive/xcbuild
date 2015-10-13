@@ -171,6 +171,7 @@ parse(Context *context, plist::Dictionary const *dict)
         plist::MakeKey <plist::Boolean> ("SynthesizeBuildRule"),
         plist::MakeKey <plist::Boolean> ("ShouldRerunOnError"),
         plist::MakeKey <plist::Boolean> ("DeeplyStatInputDirectories"),
+        plist::MakeKey <plist::Integer> ("MessageLimit"),
         plist::MakeKey <plist::Array> ("Options"),
         plist::MakeKey <plist::Array> ("DeletedProperties"),
         // Compiler

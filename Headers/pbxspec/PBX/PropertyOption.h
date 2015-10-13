@@ -54,6 +54,7 @@ protected:
     libutil::string_vector  _architectures;
     libutil::string_vector  _fileTypes;
     libutil::string_vector  _conditionFlavors;
+    libutil::string_vector  _supportedVersionRanges;
     bool                    _isInputDependency;
     bool                    _isCommandInput;
     bool                    _isCommandOutput;
@@ -154,6 +155,10 @@ public:
 public:
     inline libutil::string_vector const &conditionFlavors() const
     { return _conditionFlavors; }
+
+public:
+    inline libutil::string_vector const &supportedVersionRanges() const
+    { return _supportedVersionRanges; }
 
 public:
     inline bool isInputDependency() const

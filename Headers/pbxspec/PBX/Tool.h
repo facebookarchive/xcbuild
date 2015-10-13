@@ -45,6 +45,7 @@ protected:
     bool                            _shouldRerunOnError;
     bool                            _deeplyStatInputDirectories;
     bool                            _isUnsafeToInterrupt;
+    int                             _messageLimit;
     PropertyOption::vector          _options;
     PropertyOption::used_map        _optionsUsed;
 
@@ -161,6 +162,10 @@ public:
 public:
     inline bool isUnsafeToInterrupt() const
     { return _isUnsafeToInterrupt; }
+
+public:
+    inline int messageLimit() const
+    { return _messageLimit; }
 
 public:
     inline PropertyOption::vector const &options() const
