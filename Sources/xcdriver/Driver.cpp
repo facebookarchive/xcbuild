@@ -7,6 +7,7 @@
 #include <xcdriver/FindAction.h>
 #include <xcdriver/ListAction.h>
 #include <xcdriver/ShowSDKsAction.h>
+#include <xcdriver/ShowBuildSettingsAction.h>
 #include <xcdriver/VersionAction.h>
 
 using xcdriver::Driver;
@@ -37,6 +38,8 @@ Run(std::vector<std::string> const &args)
     switch (action) {
         case Action::Build:
             return BuildAction::Run(options);
+        case Action::ShowBuildSettings:
+            return ShowBuildSettingsAction::Run(options);
         case Action::List:
             return ListAction::Run(options);
         case Action::Version:

@@ -203,6 +203,7 @@ set(libxcdriver_SOURCES
     Sources/xcdriver/BuildAction.cpp
     Sources/xcdriver/FindAction.cpp
     Sources/xcdriver/ListAction.cpp
+    Sources/xcdriver/ShowBuildSettingsAction.cpp
     Sources/xcdriver/ShowSDKsAction.cpp
     Sources/xcdriver/VersionAction.cpp)
 

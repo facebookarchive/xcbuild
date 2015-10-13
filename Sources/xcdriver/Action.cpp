@@ -74,6 +74,111 @@ CreateWorkspace(Options const &options)
     }
 }
 
+std::vector<pbxsetting::Level> Action::
+CreateOverrideLevels(Options const &options, pbxsetting::Environment const &environment)
+{
+    std::vector<pbxsetting::Level> levels;
+
+    std::vector<pbxsetting::Setting> settings;
+    if (!options.sdk().empty()) {
+        settings.push_back(pbxsetting::Setting::Parse("SDKROOT", options.sdk()));
+    }
+    if (!options.arch().empty()) {
+        settings.push_back(pbxsetting::Setting::Parse("ARCHS", options.arch()));
+    }
+    levels.push_back(pbxsetting::Level(settings));
+
+    levels.push_back(options.settings());
+
+    if (!options.xcconfig().empty()) {
+        pbxsetting::XC::Config::shared_ptr config = pbxsetting::XC::Config::Open(options.xcconfig(), environment);
+        if (config == nullptr) {
+            fprintf(stderr, "warning: unable to open xcconfig '%s'\n", options.xcconfig().c_str());
+        } else {
+            levels.push_back(config->level());
+        }
+    }
+
+    if (getenv("XCODE_XCCONFIG_FILE")) {
+        std::string path = getenv("XCODE_XCCONFIG_FILE");
+
+        pbxsetting::XC::Config::shared_ptr config = pbxsetting::XC::Config::Open(path, environment);
+        if (config == nullptr) {
+            fprintf(stderr, "warning: unable to open xcconfig from environment '%s'\n", path.c_str());
+        } else {
+            levels.push_back(config->level());
+        }
+    }
+
+    return levels;
+}
+
+std::unique_ptr<pbxbuild::BuildContext> Action::
+CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &workspaceContext, std::vector<pbxsetting::Level> const &overrideLevels)
+{
+    xcscheme::XC::Scheme::shared_ptr scheme = nullptr;
+    if (!options.scheme().empty()) {
+        scheme = workspaceContext.scheme(options.scheme());
+    }
+
+    std::vector<std::string> actions = (!options.actions().empty() ? options.actions() : std::vector<std::string>({ "build" }));
+    std::string action = actions.front(); // TODO(grp): Support multiple actions and skipUnavailableOptions.
+
+    if (action != "build") {
+        fprintf(stderr, "error: action '%s' is not implemented\n", action.c_str());
+        return nullptr;
+    }
+
+    std::string configuration = options.configuration();
+    bool defaultConfiguration = false;
+    if (configuration.empty()) {
+        if (scheme != nullptr) {
+            configuration = scheme->buildAction()->buildConfiguration();
+            if (configuration.empty()) {
+                configuration = "Debug";
+            }
+        } else if (workspaceContext.project() != nullptr) {
+            defaultConfiguration = true;
+            configuration = workspaceContext.project()->buildConfigurationList()->defaultConfigurationName();
+        }
+
+        if (configuration.empty()) {
+            fprintf(stderr, "error: unable to determine build configuration\n");
+            return nullptr;
+        }
+    }
+
+    pbxbuild::BuildContext buildContext = pbxbuild::BuildContext::Create(
+        workspaceContext,
+        scheme,
+        action,
+        configuration,
+        defaultConfiguration,
+        overrideLevels
+    );
+
+    return std::make_unique<pbxbuild::BuildContext>(buildContext);
+}
+
+bool Action::
+VerifyBuildActions(std::vector<std::string> const &actions)
+{
+    for (std::string const &action : actions) {
+        if (action != "build" &&
+            action != "analyze" &&
+            action != "archive" &&
+            action != "test" &&
+            action != "installsrc" &&
+            action != "install" &&
+            action != "clean") {
+            fprintf(stderr, "error: unknown build action '%s'\n", action.c_str());
+            return false;
+        }
+    }
+
+    return true;
+}
+
 Action::Type Action::
 Determine(Options const &options)
 {
@@ -97,6 +202,8 @@ Determine(Options const &options)
         return Localizations;
     } else if (options.list()) {
         return List;
+    } else if (options.showBuildSettings()) {
+        return ShowBuildSettings;
     } else {
         return Build;
     }
