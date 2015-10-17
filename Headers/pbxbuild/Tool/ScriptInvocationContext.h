@@ -25,11 +25,11 @@ public:
 public:
     static ScriptInvocationContext
     Create(
-        pbxspec::PBX::Tool::shared_ptr scriptTool,
-        std::string const &script,
-        std::string const &scriptPath,
+        pbxspec::PBX::Tool::shared_ptr const &scriptTool,
         std::string const &shell,
-        bool multipleInputs,
+        std::vector<std::string> const &arguments,
+        std::unordered_map<std::string, std::string> const &environmentVariables,
+        std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaries,
         std::vector<std::string> const &inputFiles,
         std::vector<std::string> const &outputFiles,
         pbxsetting::Environment const &environment,
@@ -38,14 +38,21 @@ public:
     );
     static ScriptInvocationContext
     Create(
-        pbxspec::PBX::Tool::shared_ptr scriptTool,
+        pbxspec::PBX::Tool::shared_ptr const &scriptTool,
+        pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget,
+        pbxsetting::Environment const &environment,
+        std::string const &workingDirectory
+    );
+    static ScriptInvocationContext
+    Create(
+        pbxspec::PBX::Tool::shared_ptr const &scriptTool,
         pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );
     static ScriptInvocationContext
     Create(
-        pbxspec::PBX::Tool::shared_ptr scriptTool,
+        pbxspec::PBX::Tool::shared_ptr const &scriptTool,
         std::string const &inputFile,
         pbxbuild::TargetBuildRules::BuildRule::shared_ptr const &buildRule,
         pbxsetting::Environment const &environment,

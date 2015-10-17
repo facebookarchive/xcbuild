@@ -201,7 +201,7 @@ resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::str
 {
     BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
 
-    pbxproj::PBX::Project::shared_ptr const &project  = context.workspaceContext()->project();
+    pbxproj::PBX::Project::shared_ptr const &project = context.workspaceContext()->project();
     if (project == nullptr) {
         fprintf(stderr, "error: cannot resolve legacy dependencies for workspace\n");
         return graph;

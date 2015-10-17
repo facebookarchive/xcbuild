@@ -190,6 +190,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Phase/PhaseInvocations.cpp
     Sources/pbxbuild/Phase/CopyFilesResolver.cpp
     Sources/pbxbuild/Phase/HeadersResolver.cpp
+    Sources/pbxbuild/Phase/LegacyTargetResolver.cpp
     Sources/pbxbuild/Phase/ResourcesResolver.cpp
     Sources/pbxbuild/Phase/FrameworksResolver.cpp
     Sources/pbxbuild/Phase/SourcesResolver.cpp

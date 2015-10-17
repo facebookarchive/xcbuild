@@ -56,7 +56,7 @@ ordered(void) const
         size_t stack = toExplore.size();
         for (T const &child : _contents.find(node)->second) {
             if (inProgress.find(child) != inProgress.end()) {
-                fprintf(stderr, "Cycle detected!\n");
+                fprintf(stderr, "error: dependency cycle detected!\n");
                 return std::vector<T>();
             }
 

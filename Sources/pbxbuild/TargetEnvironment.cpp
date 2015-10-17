@@ -154,7 +154,7 @@ TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, std::vector<s
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
         return specManager->buildSystem("com.apple.build-system.native", specDomains);
     } else if (target->type() == pbxproj::PBX::Target::kTypeLegacy) {
-        return specManager->buildSystem("com.apple.build-system.jam", specDomains);
+        return specManager->buildSystem("com.apple.build-system.external", specDomains);
     } else if (target->type() == pbxproj::PBX::Target::kTypeAggregate) {
        return specManager->buildSystem("com.apple.build-system.external", specDomains);
     } else {

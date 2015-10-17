@@ -1,28 +1,28 @@
 // Copyright 2013-present Facebook. All Rights Reserved.
 
-#include <pbxbuild/Phase/ShellScriptResolver.h>
+#include <pbxbuild/Phase/LegacyTargetResolver.h>
 #include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Tool/ScriptInvocationContext.h>
 
-using pbxbuild::Phase::ShellScriptResolver;
+using pbxbuild::Phase::LegacyTargetResolver;
 using pbxbuild::Phase::PhaseContext;
 using libutil::FSUtil;
 
-ShellScriptResolver::
-ShellScriptResolver(std::vector<pbxbuild::ToolInvocation> const &invocations) :
+LegacyTargetResolver::
+LegacyTargetResolver(std::vector<pbxbuild::ToolInvocation> const &invocations) :
     _invocations(invocations)
 {
 }
 
-ShellScriptResolver::
-~ShellScriptResolver()
+LegacyTargetResolver::
+~LegacyTargetResolver()
 {
 }
 
-std::unique_ptr<ShellScriptResolver> ShellScriptResolver::
+std::unique_ptr<LegacyTargetResolver> LegacyTargetResolver::
 Create(
     pbxbuild::Phase::PhaseContext const &phaseContext,
-    pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase
+    pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget
 )
 {
     pbxspec::PBX::Tool::shared_ptr scriptTool = phaseContext.buildEnvironment().specManager()->tool("com.apple.commands.shell-script", phaseContext.targetEnvironment().specDomains());
@@ -34,8 +34,8 @@ Create(
     std::string const &workingDirectory = phaseContext.targetEnvironment().workingDirectory();
     pbxsetting::Environment const &environment = phaseContext.targetEnvironment().environment();
 
-    auto context = pbxbuild::Tool::ScriptInvocationContext::Create(scriptTool, buildPhase, environment, workingDirectory);
+    auto context = pbxbuild::Tool::ScriptInvocationContext::Create(scriptTool, legacyTarget, environment, workingDirectory);
     std::vector<pbxbuild::ToolInvocation> invocations = { context.invocation() };
 
-    return std::make_unique<ShellScriptResolver>(invocations);
+    return std::make_unique<LegacyTargetResolver>(invocations);
 }

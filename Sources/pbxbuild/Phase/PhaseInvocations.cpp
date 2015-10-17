@@ -4,6 +4,7 @@
 #include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/HeadersResolver.h>
+#include <pbxbuild/Phase/LegacyTargetResolver.h>
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
@@ -65,15 +66,30 @@ phaseInvocations(pbxproj::PBX::BuildPhase::shared_ptr const &phase)
 PhaseInvocations PhaseInvocations::
 Create(PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
-    // Filter build phases to ones appropriate for this target.
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
+    std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> toolInvocations;
+
+    switch (target->type()) {
+        case pbxproj::PBX::Target::kTypeAggregate:
+        case pbxproj::PBX::Target::kTypeNative:
+            break;
+        case pbxproj::PBX::Target::kTypeLegacy:
+            pbxproj::PBX::LegacyTarget::shared_ptr LT = std::static_pointer_cast <pbxproj::PBX::LegacyTarget> (target);
+            auto legacyScript = pbxbuild::Phase::LegacyTargetResolver::Create(phaseContext, LT);
+
+            if (legacyScript != nullptr) {
+                toolInvocations.insert({ nullptr, legacyScript->invocations() });
+            }
+
+            break;
+    }
+
+    // Filter build phases to ones appropriate for this target.
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
         // TODO(grp): Check buildActionMask against buildContext.action.
         // TODO(grp): Check runOnlyForDeploymentPostprocessing.
         buildPhases.push_back(buildPhase);
     }
-
-    std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> toolInvocations;
 
     std::unique_ptr<pbxbuild::Phase::SourcesResolver> sourcesResolver;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {

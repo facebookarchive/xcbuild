@@ -108,11 +108,14 @@ beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr c
     result += "\n" + ANSI_STYLE_BOLD + ANSI_COLOR_CYAN;
     result += "=== ";
 
-    result += FormatAction(buildContext.action()) + " TARGET " + target->name() + " OF PROJECT " + target->project()->name();
+    result += FormatAction(buildContext.action()) + " ";
+    result += std::string(target->type() == pbxproj::PBX::Target::kTypeLegacy ? "LEGACY TARGET" : "TARGET") + " ";
+    result += target->name() + " ";
+    result += "OF PROJECT " + target->project()->name() + " ";
     if (buildContext.defaultConfiguration()) {
-        result += " WITH THE DEFAULT CONFIGURATION (" + buildContext.configuration() + ")";
+        result += "WITH THE DEFAULT CONFIGURATION (" + buildContext.configuration() + ")";
     } else {
-        result += " WITH CONFIGURATION " + buildContext.configuration();
+        result += "WITH CONFIGURATION " + buildContext.configuration();
     }
 
     result += " ===";
@@ -123,13 +126,21 @@ beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr c
 std::string DefaultFormatter::
 checkDependencies(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    return "\nCheck dependencies\n";
+    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+        return "\nCheck dependencies\n";
+    } else {
+        return std::string();
+    }
 }
 
 std::string DefaultFormatter::
 beginWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    return "\nWrite auxiliary files\n";
+    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+        return "\nWrite auxiliary files\n";
+    } else {
+        return std::string();
+    }
 }
 
 std::string DefaultFormatter::
@@ -159,8 +170,12 @@ finishWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target)
 std::string DefaultFormatter::
 createProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    // TODO(grp): Implement this fully.
-    return "\nCreate product structure\n";
+    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+        // TODO(grp): Implement this fully.
+        return "\nCreate product structure\n";
+    } else {
+        return std::string();
+    }
 }
 
 std::string DefaultFormatter::
