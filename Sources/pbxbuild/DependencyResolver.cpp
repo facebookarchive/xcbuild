@@ -87,6 +87,9 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
 
             pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, proxy->remoteRef(), true);
             if (proxiedTarget != nullptr) {
+#if 0
+                printf("implicit dependency: %s -> %s\n", target->name().c_str(), proxiedTarget->name().c_str());
+#endif
                 dependencies.push_back(proxiedTarget);
                 AddDependencies(context, proxiedTarget);
             } else {
@@ -95,7 +98,7 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
         }
     }
 
-    if (context.buildAction != nullptr && context.buildAction->parallelizeBuildables()) {
+    if (context.buildAction == nullptr || context.buildAction->parallelizeBuildables()) {
         context.graph->insert(target, dependencies);
     }
 }
@@ -107,11 +110,17 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
 
     for (pbxproj::PBX::TargetDependency::shared_ptr const &dependency : target->dependencies()) {
         if (dependency->target() != nullptr) {
+#if 0
+            printf("explicit dependency: %s -> %s\n", target->name().c_str(), dependency->target()->name().c_str());
+#endif
             dependencies.push_back(dependency->target());
             AddDependencies(context, dependency->target());
         } else if (dependency->targetProxy() != nullptr) {
             pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, dependency->targetProxy(), false);
             if (proxiedTarget != nullptr) {
+#if 0
+                printf("explicit dependency: %s -> %s\n", target->name().c_str(), proxiedTarget->name().c_str());
+#endif
                 dependencies.push_back(proxiedTarget);
                 AddDependencies(context, proxiedTarget);
             } else {
@@ -120,7 +129,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
         }
     }
 
-    if (context.buildAction != nullptr && context.buildAction->parallelizeBuildables()) {
+    if (context.buildAction == nullptr || context.buildAction->parallelizeBuildables()) {
         context.graph->insert(target, dependencies);
     }
 }
@@ -134,7 +143,7 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
 
     AddExplicitDependencies(context, target);
 
-    if (context.buildAction == nullptr || !context.buildAction->parallelizeBuildables()) {
+    if (context.buildAction != nullptr && !context.buildAction->parallelizeBuildables()) {
         context.graph->insert(target, *context.positional);
         context.positional->push_back(target);
     }
