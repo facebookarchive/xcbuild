@@ -249,8 +249,8 @@ add_executable(xcbuild Tools/xcbuild.cpp)
 target_link_libraries(xcbuild xcdriver)
 
 enable_testing()
-include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/gtest/include)
-add_subdirectory(ThirdParty/gtest)
+include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/googletest/googletest/include)
+add_subdirectory(ThirdParty/googletest/googletest)
 
 function (ADD_UNIT_GTEST NAME SOURCES)
     add_executable("${NAME}" ${SOURCES})
