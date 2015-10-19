@@ -32,7 +32,6 @@ set(libutil_SOURCES
     Sources/libutil/Wildcard.cpp
     Sources/libutil/UnixTime.cpp
     #
-    Sources/libutil/bsd_fnmatch.c
     Sources/libutil/bsd_glob.c
     Sources/libutil/rfc4648.c
     #

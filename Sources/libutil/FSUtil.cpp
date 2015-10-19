@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <libgen.h>
 #include <dirent.h>
-#include "bsd_fnmatch.h"
 #include "bsd_glob.h"
 
 #include <sstream>
