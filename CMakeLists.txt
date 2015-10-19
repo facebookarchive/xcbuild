@@ -11,11 +11,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
 
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/libjson)
-include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/expat/lib)
-include_directories(${CMAKE_BINARY_DIR}/ThirdParty/expat)
+include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/expat/expat/lib)
+include_directories(${CMAKE_BINARY_DIR}/ThirdParty/expat/expat)
 
 add_subdirectory(ThirdParty/libjson)
-add_subdirectory(ThirdParty/expat)
+add_subdirectory(ThirdParty/expat/expat)
 
 include_directories(Headers)
 include_directories(PrivateHeaders)
