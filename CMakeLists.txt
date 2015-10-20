@@ -178,6 +178,9 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Build/Formatter.cpp
     Sources/pbxbuild/Build/DefaultFormatter.cpp
     Sources/pbxbuild/ToolInvocation.cpp
+    Sources/pbxbuild/Tool/CommandLineResult.cpp
+    Sources/pbxbuild/Tool/OptionsResult.cpp
+    Sources/pbxbuild/Tool/ToolEnvironment.cpp
     Sources/pbxbuild/Tool/SearchPaths.cpp
     Sources/pbxbuild/Tool/CopyInvocationContext.cpp
     Sources/pbxbuild/Tool/HeadermapInvocationContext.cpp

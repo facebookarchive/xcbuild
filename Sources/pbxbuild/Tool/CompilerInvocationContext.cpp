@@ -4,13 +4,16 @@
 #include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
 #include <pbxbuild/Tool/SearchPaths.h>
+#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/OptionsResult.h>
+#include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::Tool::CompilerInvocationContext;
 using pbxbuild::Tool::ToolInvocationContext;
-using ToolEnvironment = pbxbuild::Tool::ToolInvocationContext::ToolEnvironment;
-using OptionsResult = pbxbuild::Tool::ToolInvocationContext::OptionsResult;
-using CommandLineResult = pbxbuild::Tool::ToolInvocationContext::CommandLineResult;
+using pbxbuild::Tool::ToolEnvironment;
+using pbxbuild::Tool::OptionsResult;
+using pbxbuild::Tool::CommandLineResult;
 using pbxbuild::Tool::HeadermapInvocationContext;
 using pbxbuild::Tool::SearchPaths;
 using pbxbuild::ToolInvocation;
