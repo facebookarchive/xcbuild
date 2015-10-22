@@ -37,16 +37,24 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
         pbxsetting::Setting::Parse("OutputPath", output),
         pbxsetting::Setting::Parse("OutputFileName", FSUtil::GetBaseName(output)),
         pbxsetting::Setting::Parse("OutputFileBase", FSUtil::GetBaseNameWithoutExtension(output)),
-        // TODO(grp): OutputDir (including tool->outputDir())
+        pbxsetting::Setting::Parse("ProductResourcesDir", environment.resolve("UNLOCALIZED_RESOURCES_FOLDER_PATH")),
+        pbxsetting::Setting::Parse("DerivedFilesDir", environment.resolve("DERIVED_FILES_DIR")),
         // TODO(grp): AdditionalContentFilePaths
         // TODO(grp): AdditionalFlags
-        // TODO(grp): ProductResourcesDir
         // TODO(grp): BitcodeArch
         // TODO(grp): StaticAnalyzerModeNameDescription
-        // TODO(grp): DependencyInfoFile (from tool->dependencyInfoFile())
         // TOOD(grp): CommandProgressByType
-        pbxsetting::Setting::Parse("DerivedFilesDir", environment.resolve("DERIVED_FILES_DIR")),
     };
+
+    if (tool->type() == pbxspec::PBX::Compiler::Type()) {
+        pbxspec::PBX::Compiler::shared_ptr const &compiler = std::static_pointer_cast<pbxspec::PBX::Compiler>(tool);
+
+        std::vector<pbxsetting::Setting> compilerSettings = {
+            pbxsetting::Setting::Parse("OutputDir", environment.expand(compiler->outputDir())),
+            pbxsetting::Setting::Parse("DependencyInfoFile", environment.expand(compiler->dependencyInfoFile())),
+        };
+        toolSettings.insert(toolSettings.end(), compilerSettings.begin(), compilerSettings.end());
+    }
 
     pbxsetting::Environment toolEnvironment = environment;
     toolEnvironment.insertFront(tool->defaultSettings(), true);
