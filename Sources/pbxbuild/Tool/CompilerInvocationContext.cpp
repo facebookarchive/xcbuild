@@ -41,7 +41,7 @@ AppendDialectFlags(std::vector<std::string> *args, std::string const &dialect, s
 }
 
 static void
-AppendPathFlag(std::vector<std::string> *args, std::string const &path, std::string const &prefix, bool concatenate)
+AppendCompoundFlag(std::vector<std::string> *args, std::string const &path, std::string const &prefix, bool concatenate)
 {
     if (concatenate) {
         args->push_back(prefix + path);
@@ -52,22 +52,22 @@ AppendPathFlag(std::vector<std::string> *args, std::string const &path, std::str
 }
 
 static void
-AppendPathFlags(std::vector<std::string> *args, std::vector<std::string> const &paths, std::string const &prefix, bool concatenate)
+AppendCompoundFlags(std::vector<std::string> *args, std::vector<std::string> const &paths, std::string const &prefix, bool concatenate)
 {
     for (std::string const &path : paths) {
-        AppendPathFlag(args, path, prefix, concatenate);
+        AppendCompoundFlag(args, path, prefix, concatenate);
     }
 }
 
 static void
-AppendAllPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, SearchPaths const &searchPaths, HeadermapInvocationContext const &headermaps)
+AppendPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, SearchPaths const &searchPaths, HeadermapInvocationContext const &headermaps)
 {
-    AppendPathFlags(args, headermaps.systemHeadermapFiles(), "-I", true);
-    AppendPathFlags(args, headermaps.userHeadermapFiles(), "-iquote", false);
+    AppendCompoundFlags(args, headermaps.systemHeadermapFiles(), "-I", true);
+    AppendCompoundFlags(args, headermaps.userHeadermapFiles(), "-iquote", false);
 
     if (environment.resolve("USE_HEADER_SYMLINKS") == "YES") {
         // TODO(grp): Create this symlink tree as needed.
-        AppendPathFlags(args, { environment.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
+        AppendCompoundFlags(args, { environment.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
     }
 
     std::vector<std::string> specialIncludePaths = {
@@ -75,15 +75,15 @@ AppendAllPathFlags(std::vector<std::string> *args, pbxsetting::Environment const
         environment.resolve("DERIVED_FILE_DIR") + "/" + environment.resolve("arch"),
         environment.resolve("BUILT_PRODUCTS_DIR") + "/include",
     };
-    AppendPathFlags(args, specialIncludePaths, "-I", true);
-    AppendPathFlags(args, searchPaths.userHeaderSearchPaths(), "-I", true);
-    AppendPathFlags(args, searchPaths.headerSearchPaths(), "-I", true);
+    AppendCompoundFlags(args, specialIncludePaths, "-I", true);
+    AppendCompoundFlags(args, searchPaths.userHeaderSearchPaths(), "-I", true);
+    AppendCompoundFlags(args, searchPaths.headerSearchPaths(), "-I", true);
 
     std::vector<std::string> specialFrameworkPaths = {
         environment.resolve("BUILT_PRODUCTS_DIR"),
     };
-    AppendPathFlags(args, specialFrameworkPaths, "-F", true);
-    AppendPathFlags(args, searchPaths.frameworkSearchPaths(), "-F", true);
+    AppendCompoundFlags(args, specialFrameworkPaths, "-F", true);
+    AppendCompoundFlags(args, searchPaths.frameworkSearchPaths(), "-F", true);
 }
 
 static void
@@ -117,6 +117,16 @@ AppendCustomFlags(std::vector<std::string> *args, pbxsetting::Environment const 
         std::vector<std::string> flags = pbxsetting::Type::ParseList(environment.resolve(flagSetting));
         args->insert(args->end(), flags.begin(), flags.end());
     }
+}
+
+static void
+AppendNotUsedInPrecompsFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment)
+{
+    std::vector<std::string> preprocessorDefinitions = pbxsetting::Type::ParseList(environment.resolve("GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS"));
+    AppendCompoundFlags(args, preprocessorDefinitions, "-D", true);
+
+    std::vector<std::string> otherFlags = pbxsetting::Type::ParseList(environment.resolve("GCC_OTHER_CFLAGS_NOT_USED_IN_PRECOMPS"));
+    args->insert(args->end(), otherFlags.begin(), otherFlags.end());
 }
 
 static void
@@ -257,8 +267,11 @@ Create(
     AppendDialectFlags(&arguments, dialect, dialectSuffix);
     arguments.insert(arguments.end(), commandLine.arguments().begin(), commandLine.arguments().end());
     AppendCustomFlags(&arguments, env, dialect);
-    AppendAllPathFlags(&arguments, env, searchPaths, headermaps);
+    AppendPathFlags(&arguments, env, searchPaths, headermaps);
+
+    // Below flags are not included in prefix header.
     AppendPrefixHeaderFlags(&arguments, prefixHeader);
+    AppendNotUsedInPrecompsFlags(&arguments, env);
     // After all of the configurable settings, so they can override.
     arguments.insert(arguments.end(), inputArguments.begin(), inputArguments.end());
     AppendDependencyInfoFlags(&arguments, compiler, env);
