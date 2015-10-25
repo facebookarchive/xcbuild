@@ -120,6 +120,14 @@ AppendCustomFlags(std::vector<std::string> *args, pbxsetting::Environment const 
 }
 
 static void
+AppendDependencyInfoFlags(std::vector<std::string> *args, pbxspec::PBX::Compiler::shared_ptr const &compiler, pbxsetting::Environment const &environment)
+{
+    for (pbxsetting::Value const &arg : compiler->dependencyInfoArgs()) {
+        args->push_back(environment.expand(arg));
+    }
+}
+
+static void
 AppendInputOutputFlags(std::vector<std::string> *args, pbxspec::PBX::Compiler::shared_ptr const &compiler, std::string const &input, std::string const &output)
 {
     std::string sourceFileOption = compiler->sourceFileOption();
@@ -253,6 +261,7 @@ Create(
     AppendPrefixHeaderFlags(&arguments, prefixHeader);
     // After all of the configurable settings, so they can override.
     arguments.insert(arguments.end(), inputArguments.begin(), inputArguments.end());
+    AppendDependencyInfoFlags(&arguments, compiler, env);
     AppendInputOutputFlags(&arguments, compiler, input, output);
 
     std::string logMessage = logTitle + " " + output + " " + FSUtil::GetRelativePath(input, workingDirectory) + " " + environment.resolve("variant") + " " + environment.resolve("arch") + " " + dialect + " " + compiler->identifier();
@@ -264,7 +273,7 @@ Create(
         workingDirectory,
         toolEnvironment.inputs(),
         toolEnvironment.outputs(),
-        std::string(),
+        env.expand(compiler->dependencyInfoFile()),
         { },
         logMessage
     );

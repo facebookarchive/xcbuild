@@ -89,8 +89,15 @@ Create(
         removed.insert("-arch_only");
     }
 
-    // TODO(grp): Do something more with this. Set $(DependencyInfoFile) in the environment?
-    std::string dependencyInfo = linker->dependencyInfoFile();
+    std::string dependencyInfo;
+    if (linker->identifier() == "com.apple.xcode.linkers.ld") {
+        dependencyInfo = environment.expand(linker->dependencyInfoFile());
+
+        special.push_back("-Xlinker");
+        special.push_back("-dependency_info");
+        special.push_back("-Xlinker");
+        special.push_back(dependencyInfo);
+    }
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (linker);
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, { output });

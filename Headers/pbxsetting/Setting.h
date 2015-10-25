@@ -33,6 +33,10 @@ public:
 
 public:
     static Setting
+    Create(std::string const &key, Value const &value);
+
+public:
+    static Setting
     Parse(std::string const &string);
     static Setting
     Parse(std::string const &key, std::string const &value);

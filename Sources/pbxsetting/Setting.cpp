@@ -27,6 +27,12 @@ match(std::string const &name, Condition const &condition) const
 }
 
 Setting Setting::
+Create(std::string const &key, Value const &value)
+{
+    return Setting(key, Condition::Empty(), value);
+}
+
+Setting Setting::
 Parse(std::string const &string)
 {
     size_t equal = 0;

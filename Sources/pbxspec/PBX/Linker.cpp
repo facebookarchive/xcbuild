@@ -6,7 +6,8 @@
 using pbxspec::PBX::Linker;
 
 Linker::Linker() :
-    _supportsInputFileList(false)
+    _supportsInputFileList(false),
+    _dependencyInfoFile(pbxsetting::Value::Empty())
 {
 }
 
@@ -132,7 +133,7 @@ parse(Context *context, plist::Dictionary const *dict)
     }
 
     if (DIF != nullptr) {
-        _dependencyInfoFile = DIF->value();
+        _dependencyInfoFile = pbxsetting::Value::Parse(DIF->value());
     }
 
     if (SIFL != nullptr) {

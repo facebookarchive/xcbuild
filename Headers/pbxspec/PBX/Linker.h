@@ -14,7 +14,7 @@ public:
 
 protected:
     libutil::string_vector _binaryFormats;
-    std::string            _dependencyInfoFile;
+    pbxsetting::Value      _dependencyInfoFile;
     bool                   _supportsInputFileList;
 
 protected:
@@ -40,7 +40,7 @@ public:
     { return _binaryFormats; }
 
 public:
-    inline std::string const &dependencyInfoFile() const
+    inline pbxsetting::Value const &dependencyInfoFile() const
     { return _dependencyInfoFile; }
 
 public:
