@@ -34,6 +34,13 @@ CompilerInvocationContext::
 }
 
 static void
+AppendDialectFlags(std::vector<std::string> *args, std::string const &dialect, std::string const &dialectSuffix)
+{
+    args->push_back("-x");
+    args->push_back(dialect + dialectSuffix);
+}
+
+static void
 AppendPathFlag(std::vector<std::string> *args, std::string const &path, std::string const &prefix, bool concatenate)
 {
     if (concatenate) {
@@ -50,6 +57,80 @@ AppendPathFlags(std::vector<std::string> *args, std::vector<std::string> const &
     for (std::string const &path : paths) {
         AppendPathFlag(args, path, prefix, concatenate);
     }
+}
+
+static void
+AppendAllPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, SearchPaths const &searchPaths, HeadermapInvocationContext const &headermaps)
+{
+    AppendPathFlags(args, headermaps.systemHeadermapFiles(), "-I", true);
+    AppendPathFlags(args, headermaps.userHeadermapFiles(), "-iquote", false);
+
+    if (environment.resolve("USE_HEADER_SYMLINKS") == "YES") {
+        // TODO(grp): Create this symlink tree as needed.
+        AppendPathFlags(args, { environment.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
+    }
+
+    std::vector<std::string> specialIncludePaths = {
+        environment.resolve("DERIVED_FILE_DIR"),
+        environment.resolve("DERIVED_FILE_DIR") + "/" + environment.resolve("arch"),
+        environment.resolve("BUILT_PRODUCTS_DIR") + "/include",
+    };
+    AppendPathFlags(args, specialIncludePaths, "-I", true);
+    AppendPathFlags(args, searchPaths.userHeaderSearchPaths(), "-I", true);
+    AppendPathFlags(args, searchPaths.headerSearchPaths(), "-I", true);
+
+    std::vector<std::string> specialFrameworkPaths = {
+        environment.resolve("BUILT_PRODUCTS_DIR"),
+    };
+    AppendPathFlags(args, specialFrameworkPaths, "-F", true);
+    AppendPathFlags(args, searchPaths.frameworkSearchPaths(), "-F", true);
+}
+
+static void
+AppendPrefixHeaderFlags(std::vector<std::string> *args, std::string const &prefixHeader)
+{
+    if (!prefixHeader.empty()) {
+        args->push_back("-include");
+        if (prefixHeader.size() > 8 && prefixHeader.substr(prefixHeader.size() - 8) == ".pch.pch") {
+            args->push_back(prefixHeader.substr(0, prefixHeader.size() - 4));
+        } else {
+            args->push_back(prefixHeader);
+        }
+    }
+}
+
+static void
+AppendCustomFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, std::string const &dialect)
+{
+    std::vector<std::string> flagSettings;
+    if (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++") {
+        flagSettings.push_back("OTHER_CPLUSPLUSFLAGS");
+    } else {
+        flagSettings.push_back("OTHER_CFLAGS");
+    }
+    flagSettings.push_back("OTHER_CFLAGS_" + environment.resolve("CURRENT_VARIANT"));
+    flagSettings.push_back("PER_ARCH_CFLAGS_" + environment.resolve("CURRENT_ARCH"));
+    flagSettings.push_back("WARNING_CFLAGS");
+    flagSettings.push_back("OPTIMIZATION_CFLAGS");
+
+    for (std::string const &flagSetting : flagSettings) {
+        std::vector<std::string> flags = pbxsetting::Type::ParseList(environment.resolve(flagSetting));
+        args->insert(args->end(), flags.begin(), flags.end());
+    }
+}
+
+static void
+AppendInputOutputFlags(std::vector<std::string> *args, pbxspec::PBX::Compiler::shared_ptr const &compiler, std::string const &input, std::string const &output)
+{
+    std::string sourceFileOption = compiler->sourceFileOption();
+    if (sourceFileOption.empty()) {
+        sourceFileOption = "-c";
+    }
+    args->push_back(sourceFileOption);
+    args->push_back(input);
+
+    args->push_back("-o");
+    args->push_back(output);
 }
 
 CompilerInvocationContext CompilerInvocationContext::
@@ -152,6 +233,8 @@ Create(
         inputFiles.push_back(prefixHeader);
     }
 
+    std::string const &dialect = fileType->GCCDialectName();
+
     std::vector<std::string> outputFiles;
     outputFiles.push_back(output);
 
@@ -159,77 +242,31 @@ Create(
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, outputFiles);
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
 
-    std::vector<std::string> special;
-
-    std::string const &dialect = fileType->GCCDialectName();
-    special.push_back("-x");
-    special.push_back(dialect + dialectSuffix);
-
-    std::vector<std::string> flagSettings;
-    if (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++") {
-        flagSettings.push_back("OTHER_CPLUSPLUSFLAGS");
-    } else {
-        flagSettings.push_back("OTHER_CFLAGS");
-    }
-    flagSettings.push_back("OTHER_CFLAGS_" + env.resolve("CURRENT_VARIANT"));
-    flagSettings.push_back("PER_ARCH_CFLAGS_" + env.resolve("CURRENT_ARCH"));
-    flagSettings.push_back("WARNING_CFLAGS");
-    flagSettings.push_back("OPTIMIZATION_CFLAGS");
-
-    for (std::string const &flagSetting : flagSettings) {
-        std::vector<std::string> flags = pbxsetting::Type::ParseList(env.resolve(flagSetting));
-        special.insert(special.end(), flags.begin(), flags.end());
-    }
-
-    AppendPathFlags(&special, headermaps.systemHeadermapFiles(), "-I", true);
-    AppendPathFlags(&special, headermaps.userHeadermapFiles(), "-iquote", false);
-
-    if (env.resolve("USE_HEADER_SYMLINKS") == "YES") {
-        // TODO(grp): Create this symlink tree as needed.
-		AppendPathFlags(&special, { env.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
-    }
-
-    std::vector<std::string> specialIncludePaths = {
-        env.resolve("DERIVED_FILE_DIR"),
-        env.resolve("DERIVED_FILE_DIR") + "/" + env.resolve("arch"),
-        env.resolve("BUILT_PRODUCTS_DIR") + "/include",
-    };
-    AppendPathFlags(&special, specialIncludePaths, "-I", true);
-    AppendPathFlags(&special, searchPaths.userHeaderSearchPaths(), "-I", true);
-    AppendPathFlags(&special, searchPaths.headerSearchPaths(), "-I", true);
-
-    std::vector<std::string> specialFrameworkPaths = {
-        env.resolve("BUILT_PRODUCTS_DIR"),
-    };
-    AppendPathFlags(&special, specialFrameworkPaths, "-F", true);
-    AppendPathFlags(&special, searchPaths.frameworkSearchPaths(), "-F", true);
-
-    if (!prefixHeader.empty()) {
-        special.push_back("-include");
-        if (prefixHeader.size() > 8 && prefixHeader.substr(prefixHeader.size() - 8) == ".pch.pch") {
-            special.push_back(prefixHeader.substr(0, prefixHeader.size() - 4));
-        } else {
-            special.push_back(prefixHeader);
-        }
-    }
-
-    // After all of the configurable settings, so they can override.
-    special.insert(special.end(), inputArguments.begin(), inputArguments.end());
-
-    std::string sourceFileOption = compiler->sourceFileOption();
-    if (sourceFileOption.empty()) {
-        sourceFileOption = "-c";
-    }
-    special.push_back(sourceFileOption);
-    special.push_back(input);
-
-    special.push_back("-o");
-    special.push_back(output);
-
-    std::string logMessage = logTitle +" " + output + " " + FSUtil::GetRelativePath(input, workingDirectory) + " " + environment.resolve("variant") + " " + environment.resolve("arch") + " " + dialect + " " + compiler->identifier();
-
     OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, fileType);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "", special);
-    ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory);
-    return CompilerInvocationContext(context.invocation(), output, options.linkerArgs());
+    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
+
+    std::vector<std::string> arguments;
+    AppendDialectFlags(&arguments, dialect, dialectSuffix);
+    arguments.insert(arguments.end(), commandLine.arguments().begin(), commandLine.arguments().end());
+    AppendCustomFlags(&arguments, env, dialect);
+    AppendAllPathFlags(&arguments, env, searchPaths, headermaps);
+    AppendPrefixHeaderFlags(&arguments, prefixHeader);
+    // After all of the configurable settings, so they can override.
+    arguments.insert(arguments.end(), inputArguments.begin(), inputArguments.end());
+    AppendInputOutputFlags(&arguments, compiler, input, output);
+
+    std::string logMessage = logTitle + " " + output + " " + FSUtil::GetRelativePath(input, workingDirectory) + " " + environment.resolve("variant") + " " + environment.resolve("arch") + " " + dialect + " " + compiler->identifier();
+
+    pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
+        commandLine.executable(),
+        arguments,
+        options.environment(),
+        workingDirectory,
+        toolEnvironment.inputs(),
+        toolEnvironment.outputs(),
+        std::string(),
+        { },
+        logMessage
+    );
+    return CompilerInvocationContext(invocation, output, options.linkerArgs());
 }
