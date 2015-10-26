@@ -181,6 +181,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/CommandLineResult.cpp
     Sources/pbxbuild/Tool/OptionsResult.cpp
     Sources/pbxbuild/Tool/ToolEnvironment.cpp
+    Sources/pbxbuild/Tool/PrecompiledHeaderInfo.cpp
     Sources/pbxbuild/Tool/SearchPaths.cpp
     Sources/pbxbuild/Tool/CopyInvocationContext.cpp
     Sources/pbxbuild/Tool/HeadermapInvocationContext.cpp

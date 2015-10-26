@@ -10,6 +10,7 @@
 #include <pbxbuild/Tool/ScriptInvocationContext.h>
 #include <pbxbuild/Tool/CompilerInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
+#include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 
 using pbxbuild::Phase::SourcesResolver;
@@ -19,6 +20,7 @@ using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::Tool::CompilerInvocationContext;
 using pbxbuild::Tool::ScriptInvocationContext;
 using pbxbuild::Tool::HeadermapInvocationContext;
+using pbxbuild::Tool::PrecompiledHeaderInfo;
 using pbxbuild::Tool::SearchPaths;
 using libutil::FSUtil;
 
@@ -79,6 +81,7 @@ Create(
 
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
     std::string prefixHeaderFile = compilerEnvironment.resolve("GCC_PREFIX_HEADER");
+    std::unordered_map<std::string, ToolInvocation::AuxiliaryFile> prefixHeaderAuxiliaryFiles;
 
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, TypeResolvedFile> files;
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
@@ -102,7 +105,7 @@ Create(
             currentEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch), false);
 
             std::vector<ToolInvocation> invocations;
-            std::unordered_map<std::string, std::string> prefixHeaders;
+            std::unordered_set<std::string> precompiledHeaders;
 
             for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
                 auto it = files.find(buildFile);
@@ -117,32 +120,6 @@ Create(
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
                             std::string const &dialect = file.fileType()->GCCDialectName();
-
-                            std::string prefixHeader;
-                            if (!prefixHeaderFile.empty()) {
-                                if (precompilePrefixHeader) {
-                                    auto it = prefixHeaders.find(dialect);
-                                    if (it != prefixHeaders.end()) {
-                                        prefixHeader = it->second;
-                                    } else {
-                                        auto context = CompilerInvocationContext::CreatePrecompiledHeader(
-                                            defaultCompiler,
-                                            prefixHeaderFile,
-                                            file.fileType(),
-                                            headermap,
-                                            searchPaths,
-                                            currentEnvironment,
-                                            workingDirectory
-                                        );
-                                        allInvocations.push_back(context.invocation());
-
-                                        prefixHeader = context.output();
-                                        prefixHeaders.insert({ dialect, prefixHeader });
-                                    }
-                                } else {
-                                    prefixHeader = workingDirectory + "/" + prefixHeaderFile;
-                                }
-                            }
 
                             if (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++") {
                                 linkerDriver = defaultCompiler->execCPlusPlusLinkerPath();
@@ -161,7 +138,6 @@ Create(
                                 file,
                                 buildFile->compilerFlags(),
                                 outputBaseName,
-                                prefixHeader,
                                 headermap,
                                 searchPaths,
                                 currentEnvironment,
@@ -169,6 +145,23 @@ Create(
                             );
                             invocations.push_back(context.invocation());
                             linkerArguments.insert(context.linkerArgs().begin(), context.linkerArgs().end());
+
+                            if (context.precompiledHeaderInfo() != nullptr) {
+                                PrecompiledHeaderInfo precompiledHeaderInfo = *context.precompiledHeaderInfo();
+                                std::string hash = precompiledHeaderInfo.hash();
+
+                                if (precompiledHeaders.find(hash) == precompiledHeaders.end()) {
+                                    precompiledHeaders.insert(hash);
+
+                                    auto precompiledHeaderContext = CompilerInvocationContext::CreatePrecompiledHeader(
+                                        defaultCompiler,
+                                        precompiledHeaderInfo,
+                                        currentEnvironment,
+                                        workingDirectory
+                                    );
+                                    invocations.push_back(precompiledHeaderContext.invocation());
+                                }
+                            }
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
                             auto context = ToolInvocationContext::Create(tool, { }, { file.filePath() }, currentEnvironment, workingDirectory);

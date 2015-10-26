@@ -21,10 +21,11 @@ using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 CompilerInvocationContext::
-CompilerInvocationContext(ToolInvocation const &invocation, std::string const &output, std::vector<std::string> const &linkerArgs) :
-    _invocation(invocation),
-    _output    (output),
-    _linkerArgs(linkerArgs)
+CompilerInvocationContext(ToolInvocation const &invocation, std::string const &output, std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo, std::vector<std::string> const &linkerArgs) :
+    _invocation           (invocation),
+    _output               (output),
+    _precompiledHeaderInfo(precompiledHeaderInfo),
+    _linkerArgs           (linkerArgs)
 {
 }
 
@@ -89,14 +90,8 @@ AppendPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &e
 static void
 AppendPrefixHeaderFlags(std::vector<std::string> *args, std::string const &prefixHeader)
 {
-    if (!prefixHeader.empty()) {
-        args->push_back("-include");
-        if (prefixHeader.size() > 8 && prefixHeader.substr(prefixHeader.size() - 8) == ".pch.pch") {
-            args->push_back(prefixHeader.substr(0, prefixHeader.size() - 4));
-        } else {
-            args->push_back(prefixHeader);
-        }
-    }
+    args->push_back("-include");
+    args->push_back(prefixHeader);
 }
 
 static void
@@ -151,13 +146,81 @@ AppendInputOutputFlags(std::vector<std::string> *args, pbxspec::PBX::Compiler::s
     args->push_back(output);
 }
 
+static std::string
+CompileLogMessage(
+    pbxspec::PBX::Compiler::shared_ptr const &compiler,
+    std::string const &logTitle,
+    std::string const &input,
+    pbxspec::PBX::FileType::shared_ptr const &fileType,
+    std::string const &output,
+    pbxsetting::Environment const &environment,
+    std::string const &workingDirectory
+)
+{
+    std::string logMessage;
+    logMessage += logTitle + " ";
+    logMessage += output + " ";
+    logMessage += FSUtil::GetRelativePath(input, workingDirectory) + " ";
+    logMessage += environment.resolve("variant") + " ";
+    logMessage += environment.resolve("arch") + " ";
+    logMessage += fileType->GCCDialectName() + " ";
+    logMessage += compiler->identifier();
+    return logMessage;
+}
+
+CompilerInvocationContext CompilerInvocationContext::
+CreatePrecompiledHeader(
+    pbxspec::PBX::Compiler::shared_ptr const &compiler,
+    PrecompiledHeaderInfo const &precompiledHeaderInfo,
+    pbxsetting::Environment const &environment,
+    std::string const &workingDirectory
+)
+{
+    std::string const &input = precompiledHeaderInfo.prefixHeader();
+    pbxspec::PBX::FileType::shared_ptr const &fileType = precompiledHeaderInfo.fileType();
+    std::string output = environment.expand(precompiledHeaderInfo.compileOutputPath());
+
+    pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (compiler);
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, { input }, { output });
+    pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
+    OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, fileType);
+    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
+
+    std::vector<std::string> arguments = precompiledHeaderInfo.arguments();
+    AppendDependencyInfoFlags(&arguments, compiler, env);
+    AppendInputOutputFlags(&arguments, compiler, input, output);
+
+    std::string const &dialect = fileType->GCCDialectName();
+    bool plusplus = (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++");
+    std::string logTitle = plusplus ? "ProcessPCH++" : "ProcessPCH";
+    std::string logMessage = CompileLogMessage(compiler, logTitle, input, fileType, output, env, workingDirectory);
+
+    ToolInvocation::AuxiliaryFile serializedFile = ToolInvocation::AuxiliaryFile(
+        env.expand(precompiledHeaderInfo.serializedOutputPath()),
+        precompiledHeaderInfo.serialize(),
+        false
+    );
+
+    pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
+        commandLine.executable(),
+        arguments,
+        options.environment(),
+        workingDirectory,
+        { input },
+        { output },
+        env.expand(compiler->dependencyInfoFile()),
+        { serializedFile },
+        logMessage
+    );
+    return CompilerInvocationContext(invocation, output, nullptr, { });
+}
+
 CompilerInvocationContext CompilerInvocationContext::
 CreateSource(
     pbxspec::PBX::Compiler::shared_ptr const &compiler,
-    TypeResolvedFile const &input,
+    TypeResolvedFile const &inputFile,
     std::vector<std::string> const &inputArguments,
     std::string const &outputBaseName,
-    std::string const &prefixHeader,
     HeadermapInvocationContext const &headermaps,
     SearchPaths const &searchPaths,
     pbxsetting::Environment const &environment,
@@ -176,119 +239,68 @@ CreateSource(
 
     std::string output = outputDirectory + "/" + outputBaseName + "." + outputExtension;
 
-    return Create(
-        compiler,
-        input.filePath(),
-        input.fileType(),
-        std::string(),
-        inputArguments,
-        output,
-        prefixHeader,
-        headermaps,
-        searchPaths,
-        environment,
-        workingDirectory,
-        "CompileC"
-    );
-}
-
-CompilerInvocationContext CompilerInvocationContext::
-CreatePrecompiledHeader(
-    pbxspec::PBX::Compiler::shared_ptr const &compiler,
-    std::string const &input,
-    pbxspec::PBX::FileType::shared_ptr const &fileType,
-    HeadermapInvocationContext const &headermaps,
-    SearchPaths const &searchPaths,
-    pbxsetting::Environment const &environment,
-    std::string const &workingDirectory
-)
-{
-    std::string const &dialect = fileType->GCCDialectName();
-    bool plusplus = (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++");
-    std::string logTitle = plusplus ? "ProcessPCH++" : "ProcessPCH";
-
-    // TODO(grp): This path generation should use a hash, not just the dialect.
-    std::string outputDirectory = environment.resolve("PRECOMP_DESTINATION_DIR") + "/" + environment.resolve("PRODUCT_NAME") + "-" + fileType->GCCDialectName();
-    std::string output = outputDirectory + "/" + FSUtil::GetBaseName(input) + ".pch";
-
-    return Create(
-        compiler,
-        input,
-        fileType,
-        "-header",
-        std::vector<std::string>(),
-        output,
-        std::string(),
-        headermaps,
-        searchPaths,
-        environment,
-        workingDirectory,
-        logTitle
-    );
-}
-
-CompilerInvocationContext CompilerInvocationContext::
-Create(
-    pbxspec::PBX::Compiler::shared_ptr const &compiler,
-    std::string const &input,
-    pbxspec::PBX::FileType::shared_ptr const &fileType,
-    std::string const &dialectSuffix,
-    std::vector<std::string> const &inputArguments,
-    std::string const &output,
-    std::string const &prefixHeader,
-    HeadermapInvocationContext const &headermaps,
-    SearchPaths const &searchPaths,
-    pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
-    std::string const &logTitle
-)
-{
-    std::vector<std::string> inputFiles;
-    inputFiles.push_back(input);
-    inputFiles.insert(inputFiles.end(), headermaps.systemHeadermapFiles().begin(), headermaps.systemHeadermapFiles().end());
-    inputFiles.insert(inputFiles.end(), headermaps.userHeadermapFiles().begin(), headermaps.userHeadermapFiles().end());
-    if (!prefixHeader.empty()) {
-        inputFiles.push_back(prefixHeader);
-    }
-
-    std::string const &dialect = fileType->GCCDialectName();
-
-    std::vector<std::string> outputFiles;
-    outputFiles.push_back(output);
+    std::string const &input = inputFile.filePath();
+    pbxspec::PBX::FileType::shared_ptr const &fileType = inputFile.fileType();
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (compiler);
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, outputFiles);
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
 
     OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, fileType);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
 
+    std::vector<std::string> inputFiles;
+    inputFiles.push_back(input);
+    inputFiles.insert(inputFiles.end(), headermaps.systemHeadermapFiles().begin(), headermaps.systemHeadermapFiles().end());
+    inputFiles.insert(inputFiles.end(), headermaps.userHeadermapFiles().begin(), headermaps.userHeadermapFiles().end());
+
     std::vector<std::string> arguments;
-    AppendDialectFlags(&arguments, dialect, dialectSuffix);
+    AppendDialectFlags(&arguments, fileType->GCCDialectName(), "");
+    size_t dialectOffset = arguments.size();
+
     arguments.insert(arguments.end(), commandLine.arguments().begin(), commandLine.arguments().end());
-    AppendCustomFlags(&arguments, env, dialect);
+    AppendCustomFlags(&arguments, env, fileType->GCCDialectName());
     AppendPathFlags(&arguments, env, searchPaths, headermaps);
 
-    // Below flags are not included in prefix header.
-    AppendPrefixHeaderFlags(&arguments, prefixHeader);
+    bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(env.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
+    std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");
+    std::shared_ptr<PrecompiledHeaderInfo> precompiledHeaderInfo = nullptr;
+
+    if (!prefixHeader.empty()) {
+        std::string prefixHeaderFile = workingDirectory + "/" + prefixHeader;
+
+        if (precompilePrefixHeader) {
+            std::vector<std::string> precompiledHeaderArguments;
+            AppendDialectFlags(&precompiledHeaderArguments, fileType->GCCDialectName(), "-header");
+            precompiledHeaderArguments.insert(precompiledHeaderArguments.end(), arguments.begin() + dialectOffset, arguments.end());
+
+            precompiledHeaderInfo = std::make_shared<PrecompiledHeaderInfo>(PrecompiledHeaderInfo::Create(compiler, prefixHeaderFile, fileType, precompiledHeaderArguments));
+            AppendPrefixHeaderFlags(&arguments, env.expand(precompiledHeaderInfo->logicalOutputPath()));
+            inputFiles.push_back(env.expand(precompiledHeaderInfo->compileOutputPath()));
+        } else {
+            AppendPrefixHeaderFlags(&arguments, prefixHeaderFile);
+            inputFiles.push_back(prefixHeaderFile);
+        }
+    }
+
     AppendNotUsedInPrecompsFlags(&arguments, env);
     // After all of the configurable settings, so they can override.
     arguments.insert(arguments.end(), inputArguments.begin(), inputArguments.end());
     AppendDependencyInfoFlags(&arguments, compiler, env);
     AppendInputOutputFlags(&arguments, compiler, input, output);
 
-    std::string logMessage = logTitle + " " + output + " " + FSUtil::GetRelativePath(input, workingDirectory) + " " + environment.resolve("variant") + " " + environment.resolve("arch") + " " + dialect + " " + compiler->identifier();
+    std::string logMessage = CompileLogMessage(compiler, "CompileC", input, fileType, output, env, workingDirectory);
 
     pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
         commandLine.executable(),
         arguments,
         options.environment(),
         workingDirectory,
-        toolEnvironment.inputs(),
+        inputFiles,
         toolEnvironment.outputs(),
         env.expand(compiler->dependencyInfoFile()),
         { },
         logMessage
     );
-    return CompilerInvocationContext(invocation, output, options.linkerArgs());
+    return CompilerInvocationContext(invocation, output, precompiledHeaderInfo, options.linkerArgs());
 }

@@ -5,6 +5,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 
 namespace pbxbuild {
 
@@ -14,15 +15,17 @@ namespace Tool {
 
 class SearchPaths;
 class HeadermapInvocationContext;
+class PrecompiledHeaderInfo;
 
 class CompilerInvocationContext {
 private:
-    ToolInvocation           _invocation;
-    std::string              _output;
-    std::vector<std::string> _linkerArgs;
+    ToolInvocation                         _invocation;
+    std::string                            _output;
+    std::shared_ptr<PrecompiledHeaderInfo> _precompiledHeaderInfo;
+    std::vector<std::string>               _linkerArgs;
 
 public:
-    CompilerInvocationContext(ToolInvocation const &invocation, std::string const &output, std::vector<std::string> const &linkerArgs);
+    CompilerInvocationContext(ToolInvocation const &invocation, std::string const &output, std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo, std::vector<std::string> const &linkerArgs);
     ~CompilerInvocationContext();
 
 public:
@@ -30,6 +33,8 @@ public:
     { return _invocation; }
     std::string const &output() const
     { return _output; }
+    std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo() const
+    { return _precompiledHeaderInfo; }
     std::vector<std::string> const &linkerArgs() const
     { return _linkerArgs; }
 
@@ -40,7 +45,6 @@ public:
         TypeResolvedFile const &input,
         std::vector<std::string> const &inputArguments,
         std::string const &outputBaseName,
-        std::string const &prefixHeader,
         HeadermapInvocationContext const &headermaps,
         SearchPaths const &searchPaths,
         pbxsetting::Environment const &environment,
@@ -50,28 +54,9 @@ public:
     static CompilerInvocationContext
     CreatePrecompiledHeader(
         pbxspec::PBX::Compiler::shared_ptr const &compiler,
-        std::string const &input,
-        pbxspec::PBX::FileType::shared_ptr const &fileType,
-        HeadermapInvocationContext const &headermaps,
-        SearchPaths const &searchPaths,
+        PrecompiledHeaderInfo const &precompiledHeaderInfo,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
-    );
-
-    static CompilerInvocationContext
-    Create(
-        pbxspec::PBX::Compiler::shared_ptr const &compiler,
-        std::string const &input,
-        pbxspec::PBX::FileType::shared_ptr const &fileType,
-        std::string const &dialectSuffix,
-        std::vector<std::string> const &inputArguments,
-        std::string const &output,
-        std::string const &prefixHeader,
-        HeadermapInvocationContext const &headermaps,
-        SearchPaths const &searchPaths,
-        pbxsetting::Environment const &environment,
-        std::string const &workingDirectory,
-        std::string const &logTitle
     );
 };
 
