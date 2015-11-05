@@ -275,5 +275,17 @@ target_link_libraries(test_FSUtil pbxbase)
 ADD_UNIT_GTEST(test_Wildcard Tests/libutil/test_Wildcard.cpp)
 target_link_libraries(test_Wildcard pbxbase)
 
-ADD_UNIT_GTEST(test_pbxsetting Tests/pbxsetting/test_pbxsetting.cpp)
-target_link_libraries(test_pbxsetting pbxsetting)
+ADD_UNIT_GTEST(test_Condition Tests/pbxsetting/test_Condition.cpp)
+target_link_libraries(test_Condition pbxsetting)
+
+ADD_UNIT_GTEST(test_Environment Tests/pbxsetting/test_Environment.cpp)
+target_link_libraries(test_Environment pbxsetting)
+
+ADD_UNIT_GTEST(test_Setting Tests/pbxsetting/test_Setting.cpp)
+target_link_libraries(test_Setting pbxsetting)
+
+ADD_UNIT_GTEST(test_Type Tests/pbxsetting/test_Type.cpp)
+target_link_libraries(test_Type pbxsetting)
+
+ADD_UNIT_GTEST(test_Value Tests/pbxsetting/test_Value.cpp)
+target_link_libraries(test_Value pbxsetting)
