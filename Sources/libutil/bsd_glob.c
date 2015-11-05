@@ -1,9 +1,16 @@
-/* Copyright 2013-present Facebook. All Rights Reserved. */
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
 /*      $OpenBSD: glob.c,v 1.40 2013/09/30 12:02:34 millert Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *      The Regents of the University of California.  All rights reserved.
- *
+*
  * This code is derived from software contributed to Berkeley by
  * Guido van Rossum.
  *

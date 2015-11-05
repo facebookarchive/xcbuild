@@ -3,7 +3,7 @@
 /*-
  * Copyright (c) 2007 The NetBSD Foundation, Inc.
  * All rights reserved.
- *
+*
  * This code is derived from software contributed to The NetBSD Foundation
  * by Dieter Baron.
  *
