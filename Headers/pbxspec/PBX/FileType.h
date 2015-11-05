@@ -3,6 +3,7 @@
 #ifndef __pbxspec_PBX_FileType_h
 #define __pbxspec_PBX_FileType_h
 
+#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
 namespace pbxspec { namespace PBX {
@@ -49,8 +50,47 @@ public:
         bool parse(FileType *ftype, plist::Array const *array);
     };
 
+public:
+    class BuildPhaseInjection {
+    protected:
+        std::string       _buildPhase;
+        std::string       _name;
+        bool              _runOnlyForDeploymentPostprocessing;
+        bool              _needsRunpathSearchPathForFrameworks;
+        int               _dstSubfolderSpec;
+        pbxsetting::Value _dstPath;
+
+    protected:
+        friend class FileType;
+        BuildPhaseInjection();
+
+    public:
+        inline std::string const &buildPhase() const
+        { return _buildPhase; }
+        inline std::string const &name() const
+        { return _name; }
+
+    public:
+        inline bool runOnlyForDeploymentPostprocessing() const
+        { return _runOnlyForDeploymentPostprocessing; }
+        inline bool needsRunpathSearchPathForFrameworks() const
+        { return _needsRunpathSearchPathForFrameworks; }
+
+    public:
+        inline int dstSubfolderSpec() const
+        { return _dstSubfolderSpec; }
+        inline pbxsetting::Value const &dstPath() const
+        { return _dstPath; }
+
+    protected:
+        bool parse(plist::Dictionary const *dict);
+    };
+
+protected:
+
 protected:
     friend class ComponentPart;
+    friend class BuildPhaseInjection;
     std::string            _uti;
     std::string            _language;
     std::string            _computerLanguage;
@@ -65,6 +105,7 @@ protected:
     libutil::string_vector _extraPropertyNames;
     libutil::string_vector _prefix;
     ComponentPart::map     _componentParts;
+    std::vector<BuildPhaseInjection>  _buildPhaseInjectionsWhenEmbedding;
     bool                   _isTextFile;
     bool                   _isBuildPropertiesFile;
     bool                   _isSourceCode;
@@ -204,6 +245,10 @@ public:
     { return _extraPropertyNames; }
     inline ComponentPart::map const &componentParts() const
     { return _componentParts; }
+
+public:
+    inline std::vector<BuildPhaseInjection> const &buildPhaseInjectionsWhenEmbedding() const
+    { return _buildPhaseInjectionsWhenEmbedding; }
 
 public:
     inline bool isSourceCode() const

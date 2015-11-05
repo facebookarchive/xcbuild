@@ -77,6 +77,8 @@ inherit(FileType::shared_ptr const &b)
     _gccDialectName                          = base->GCCDialectName();
     _prefix                                  = base->prefix();
     _permissions                             = base->permissions();
+    _buildPhaseInjectionsWhenEmbedding       = base->buildPhaseInjectionsWhenEmbedding();
+    _appliesToBuildRules                     = base->appliesToBuildRules();
     _isTextFile                              = base->isTextFile();
     _isBuildPropertiesFile                   = base->isBuildPropertiesFile();
     _isSourceCode                            = base->isSourceCode();
@@ -158,6 +160,7 @@ parse(Context *context, plist::Dictionary const *dict)
             plist::MakeKey <plist::Array> ("Prefix"),
             plist::MakeKey <plist::String> ("Permissions"),
             plist::MakeKey <plist::Boolean> ("AppliesToBuildRules"),
+            plist::MakeKey <plist::Array> ("BuildPhaseInjectionsWhenEmbedding"),
             plist::MakeKey <plist::Boolean> ("IsTextFile"),
             plist::MakeKey <plist::Boolean> ("IsBuildPropertiesFile"),
             plist::MakeKey <plist::Boolean> ("IsSourceCode"),
@@ -206,6 +209,7 @@ parse(Context *context, plist::Dictionary const *dict)
     auto GDN   = dict->value <plist::String> ("GccDialectName");
     auto Ps    = dict->value <plist::Array> ("Prefix");
     auto P     = dict->value <plist::String> ("Permissions");
+    auto BPIWE = dict->value <plist::Array> ("BuildPhaseInjectionsWhenEmbedding");
     auto ATBR  = dict->value <plist::Boolean> ("AppliesToBuildRules");
     auto ITF   = dict->value <plist::Boolean> ("IsTextFile");
     auto IBPF  = dict->value <plist::Boolean> ("IsBuildPropertiesFile");
@@ -320,6 +324,18 @@ parse(Context *context, plist::Dictionary const *dict)
 
     if (P != nullptr) {
         _permissions = P->value();
+    }
+
+    if (BPIWE != nullptr) {
+        for (size_t n = 0; n < BPIWE->count(); n++) {
+            auto BPI = BPIWE->value <plist::Dictionary> (n);
+            if (BPI != nullptr) {
+                BuildPhaseInjection injection;
+                if (injection.parse(BPI)) {
+                    _buildPhaseInjectionsWhenEmbedding.push_back(injection);
+                }
+            }
+        }
     }
 
     if (ATBR != nullptr) {
@@ -513,6 +529,59 @@ parse(FileType *ftype, plist::Array const *array)
         } else if (auto R = array->value <plist::String> (2)) {
             _reference = ftype->_componentParts[R->value()];
         }
+    }
+
+    return true;
+}
+
+FileType::BuildPhaseInjection::BuildPhaseInjection() :
+    _runOnlyForDeploymentPostprocessing (false),
+    _needsRunpathSearchPathForFrameworks(false),
+    _dstSubfolderSpec                   (0),
+    _dstPath                            (pbxsetting::Value::Empty())
+{
+}
+
+bool FileType::BuildPhaseInjection::
+parse(plist::Dictionary const *dict)
+{
+    plist::WarnUnhandledKeys(dict, "BuildPhaseInjection",
+            plist::MakeKey <plist::String> ("BuildPhase"),
+            plist::MakeKey <plist::String> ("Name"),
+            plist::MakeKey <plist::Boolean> ("RunOnlyForDeploymentPostprocessing"),
+            plist::MakeKey <plist::Boolean> ("NeedsRunpathSearchPathForFrameworks"),
+            plist::MakeKey <plist::Integer> ("DstSubFolderSpec"),
+            plist::MakeKey <plist::String> ("DstPath"));
+
+    auto BP     = dict->value <plist::String> ("BuildPhase");
+    auto N      = dict->value <plist::String> ("Name");
+    auto ROFDP  = dict->value <plist::Boolean> ("RunOnlyForDeploymentPostprocessing");
+    auto NRSPFF = dict->value <plist::Boolean> ("NeedsRunpathSearchPathForFrameworks");
+    auto DSS    = dict->value <plist::Integer> ("DstSubFolderSpec");
+    auto DP     = dict->value <plist::String> ("DstPath");
+
+    if (BP != nullptr) {
+        _buildPhase = BP->value();
+    }
+
+    if (N != nullptr) {
+        _name = N->value();
+    }
+
+    if (ROFDP != nullptr) {
+        _runOnlyForDeploymentPostprocessing = ROFDP->value();
+    }
+
+    if (NRSPFF != nullptr) {
+        _runOnlyForDeploymentPostprocessing = NRSPFF->value();
+    }
+
+    if (DSS != nullptr) {
+        _dstSubfolderSpec = DSS->value();
+    }
+
+    if (DP != nullptr) {
+        _dstPath = pbxsetting::Value::Parse(DP->value());
     }
 
     return true;
