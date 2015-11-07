@@ -28,7 +28,7 @@ static pbxproj::PBX::Project::shared_ptr
 OpenProject(std::string const &projectPath, std::string const &directory)
 {
     if (!projectPath.empty()) {
-        return pbxproj::PBX::Project::Open(directory + "/" + projectPath);
+        return pbxproj::PBX::Project::Open(projectPath);
     } else {
         bool multiple = false;
         std::string projectName;
