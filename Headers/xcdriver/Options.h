@@ -192,11 +192,8 @@ public:
     bool forceImport() const
     { return _forceImport; }
 
-public:
-    static std::pair<Options, std::string>
-    Parse(std::vector<std::string> const &arguments);
-
 private:
+    friend class libutil::Options;
     std::pair<bool, std::string>
     parseArgument(std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it);
 };

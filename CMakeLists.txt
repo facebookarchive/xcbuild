@@ -31,6 +31,7 @@ set(libutil_SOURCES
     Sources/libutil/FSUtil.cpp
     Sources/libutil/SysUtil.cpp
     Sources/libutil/Crypto.cpp
+    Sources/libutil/Options.cpp
     #
     Sources/libutil/Subprocess.cpp
     #
@@ -65,6 +66,14 @@ set(libpbxbase_SOURCES
 
 add_library(pbxbase SHARED ${libpbxbase_SOURCES})
 target_link_libraries(pbxbase json expat)
+
+set(libbuiltin_SOURCES
+    Sources/builtin/Driver.cpp
+    Sources/builtin/Registry.cpp
+    #
+    Sources/builtin/copy/Options.cpp
+    Sources/builtin/copy/Driver.cpp
+    )
 
 set(libpbxsetting_SOURCES
     Sources/pbxsetting/ConfigFile.cpp
@@ -218,6 +227,9 @@ set(libxcdriver_SOURCES
     Sources/xcdriver/ShowSDKsAction.cpp
     Sources/xcdriver/VersionAction.cpp)
 
+add_library(builtin SHARED ${libbuiltin_SOURCES})
+target_link_libraries(builtin pbxbase)
+
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting pbxbase)
 
@@ -237,10 +249,10 @@ add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxsetting pbxbase)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec)
+target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec builtin)
 
 add_library(xcdriver SHARED ${libxcdriver_SOURCES})
-target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting pbxbase)
+target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting pbxbase builtin)
 
 add_executable(plist Tools/plist.cpp)
 target_link_libraries(plist pbxbase)
@@ -258,6 +270,9 @@ add_executable(settings Tools/settings.cpp)
 target_link_libraries(settings pbxbuild pbxbase pbxproj xcsdk pbxsetting pbxspec)
 add_executable(xcbuild Tools/xcbuild.cpp)
 target_link_libraries(xcbuild xcdriver)
+
+add_executable(builtin-copy Tools/builtin-copy.cpp)
+target_link_libraries(builtin-copy builtin)
 
 enable_testing()
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/googletest/googletest/include)

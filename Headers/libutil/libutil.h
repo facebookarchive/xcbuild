@@ -13,6 +13,7 @@
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 #include <libutil/Crypto.h>
+#include <libutil/Options.h>
 #include <libutil/Subprocess.h>
 
 #include <libutil/Base64.h>

@@ -11,13 +11,17 @@
 #define __pbxbuild_SimpleExecutor_h
 
 #include <pbxbuild/Build/Executor.h>
+#include <builtin/builtin.h>
 
 namespace pbxbuild {
 namespace Build {
 
 class SimpleExecutor : public Executor {
+private:
+    builtin::Registry _builtins;
+
 public:
-    SimpleExecutor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun);
+    SimpleExecutor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
     ~SimpleExecutor();
 
 public:
@@ -34,7 +38,7 @@ public:
 
 public:
     static std::unique_ptr<SimpleExecutor>
-    Create(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun);
+    Create(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
 };
 
 }

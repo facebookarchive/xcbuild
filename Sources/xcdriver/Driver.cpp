@@ -34,13 +34,13 @@ Driver::
 int Driver::
 Run(std::vector<std::string> const &args)
 {
-    auto opt = Options::Parse(args);
-    if (!opt.second.empty()) {
-        fprintf(stderr, "error: %s\n", opt.second.c_str());
+    Options options;
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    if (!result.first) {
+        fprintf(stderr, "error: %s\n", result.second.c_str());
         return 1;
     }
 
-    Options const &options = opt.first;
     Action::Type action = Action::Determine(options);
     switch (action) {
         case Action::Build:

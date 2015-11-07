@@ -10,6 +10,7 @@
 #include <xcdriver/BuildAction.h>
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
+#include <builtin/builtin.h>
 
 using xcdriver::BuildAction;
 using xcdriver::Options;
@@ -110,7 +111,8 @@ Run(Options const &options)
         *buildEnvironment,
         *buildContext,
         std::static_pointer_cast<pbxbuild::Build::Formatter>(formatter),
-        options.dryRun()
+        options.dryRun(),
+        builtin::Registry::Default()
     );
 
     bool succeeded = true;

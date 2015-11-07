@@ -26,6 +26,7 @@ High level overview of each component library:
  - `pbxproj`: Parses project files into strongly-typed structures.
  - `xcworkspace`: Parses workspaces into strongly-typed structures.
  - `xcscheme`: Parses schemes into strongly-typed structures.
+ - `builtin`: Built-in tools used for building, like file copying and validation.
  - `xcbuild`: Performs the build. Made up of a number of subcomponents:
    - Top-level context for the scheme, targets, and action for a build.
    - Implementations for the various build phases (compile, link, copy, etc).

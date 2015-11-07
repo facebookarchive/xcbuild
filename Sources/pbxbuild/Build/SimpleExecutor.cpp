@@ -21,8 +21,9 @@ using libutil::FSUtil;
 using libutil::Subprocess;
 
 SimpleExecutor::
-SimpleExecutor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun) :
-    Executor(buildEnvironment, buildContext, formatter, dryRun)
+SimpleExecutor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins) :
+    Executor (buildEnvironment, buildContext, formatter, dryRun),
+    _builtins(builtins)
 {
 }
 
@@ -148,6 +149,7 @@ buildTarget(
             std::map<std::string, std::string> sortedEnvironment = std::map<std::string, std::string>(invocation.environment().begin(), invocation.environment().end());
 
             std::string executable = invocation.executable();
+
             std::string builtinPrefix = "builtin-";
             bool builtin = executable.compare(0, builtinPrefix.size(), builtinPrefix) == 0;
 
@@ -171,7 +173,16 @@ buildTarget(
                 }
 
                 if (builtin) {
-                    // TODO(grp): Implement builtin tools.
+                    std::shared_ptr<builtin::Driver> driver = _builtins.driver(executable);
+                    if (driver == nullptr) {
+                        Formatter::Print(_formatter->failure(_buildContext, { invocation }));
+                        return false;
+                    }
+
+                    if (driver->run(invocation.arguments()) != 0) {
+                        Formatter::Print(_formatter->failure(_buildContext, { invocation }));
+                        return false;
+                    }
                 } else {
                     // TODO(grp): Change into the working directory.
                     // TODO(grp): Apply environment variables.
@@ -189,12 +200,13 @@ buildTarget(
 }
 
 std::unique_ptr<SimpleExecutor> SimpleExecutor::
-Create(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun)
+Create(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins)
 {
     return std::make_unique<SimpleExecutor>(
         buildEnvironment,
         buildContext,
         formatter,
-        dryRun
+        dryRun,
+        builtins
     );
 }

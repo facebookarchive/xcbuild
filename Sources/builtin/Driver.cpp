@@ -7,23 +7,17 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __xcdriver_Driver_h
-#define __xcdriver_Driver_h
+#include <builtin/Driver.h>
 
-#include <xcdriver/Base.h>
+using builtin::Driver;
 
-namespace xcdriver {
-
-class Driver {
-private:
-    Driver();
-    ~Driver();
-
-public:
-    static int
-    Run(std::vector<std::string> const &args);
-};
-
+Driver::
+Driver()
+{
 }
 
-#endif // !__xcdriver_Driver_h
+Driver::
+~Driver()
+{
+}
+
