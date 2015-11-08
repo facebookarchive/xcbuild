@@ -61,16 +61,6 @@ public:
     }
 
 public:
-    //
-    // dict.key
-    // array[index]
-    //
-    Object const *traverse(std::string const &path) const;
-
-    template <typename T>
-    inline T const *traverse(std::string const &path) const;
-
-public:
     static Object *Parse(std::string const &path);
     static Object *Parse(std::string const &path,
             error_function const &error);
@@ -118,13 +108,6 @@ template <typename T>
 static inline T const *CastTo(Object const *obj)
 {
     return (obj != nullptr && obj->type() == T::Type()) ? static_cast <T const *> (obj) : nullptr;
-}
-
-template <typename T>
-inline T const *
-Object::traverse(std::string const &path) const
-{
-    return CastTo <T> (traverse(path));
 }
 
 class Integer : public Object {

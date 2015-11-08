@@ -47,63 +47,6 @@ GetTypeName(enum Object::Type type)
     return "unknown";
 }
 
-Object const *Object::
-traverse(std::string const &path) const
-{
-    char const   *cpath;
-    char const   *bpath;
-    Object const *obj = this;
-
-    if (obj == nullptr)
-        return nullptr;
-
-    if (path.empty())
-        return this;
-
-    cpath = path.c_str();
-
-    while (*cpath != '\0') {
-        if (*cpath == '[') {
-            if (Array const *a = CastTo <Array> (obj)) {
-                char *end;
-                unsigned long index = strtoul(cpath + 1, &end, 0);
-                if (index >= a->count())
-                    return nullptr;
-                if (*end != ']')
-                    return nullptr;
-
-                obj = a->value(index);
-                cpath = end + 1;
-            } else {
-                return nullptr;
-            }
-        } else if (obj == this || *cpath == '.') {
-            if (Dictionary const *d = CastTo <Dictionary> (obj)) {
-                if (*cpath == '.') {
-                    cpath++;
-                }
-                bpath = cpath;
-                while (*cpath != '\0') {
-                    if (*cpath == '.' || *cpath == '[') {
-                        if (cpath == bpath || *(cpath - 1) != '\\')
-                            break;
-                    }
-
-                    cpath++;
-                }
-
-                obj = d->value(std::string(bpath, cpath - bpath));
-                if (obj == nullptr)
-                    return nullptr;
-            }
-        } else {
-            return nullptr;
-        }
-    }
-
-    return obj;
-}
-
 void Object::
 dump(FILE *fp, size_t indent) const
 {
