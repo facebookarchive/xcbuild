@@ -9,6 +9,14 @@
 
 #include <builtin/Registry.h>
 #include <builtin/copy/Driver.h>
+#include <builtin/copyPlist/Driver.h>
+#include <builtin/copyStrings/Driver.h>
+#include <builtin/copyTiff/Driver.h>
+#include <builtin/infoPlistUtility/Driver.h>
+#include <builtin/lsRegisterURL/Driver.h>
+#include <builtin/productPackagingUtility/Driver.h>
+#include <builtin/validationUtility/Driver.h>
+#include <builtin/embeddedBinaryValidationUtility/Driver.h>
 
 using builtin::Registry;
 using builtin::Driver;
@@ -50,5 +58,13 @@ Default()
 {
     return Create({
         std::make_shared<builtin::copy::Driver>(),
+        std::make_shared<builtin::copyPlist::Driver>(),
+        std::make_shared<builtin::copyStrings::Driver>(),
+        std::make_shared<builtin::copyTiff::Driver>(),
+        std::make_shared<builtin::infoPlistUtility::Driver>(),
+        std::make_shared<builtin::lsRegisterURL::Driver>(),
+        std::make_shared<builtin::productPackagingUtility::Driver>(),
+        std::make_shared<builtin::validationUtility::Driver>(),
+        std::make_shared<builtin::embeddedBinaryValidationUtility::Driver>(),
     });
 }

@@ -73,6 +73,30 @@ set(libbuiltin_SOURCES
     #
     Sources/builtin/copy/Options.cpp
     Sources/builtin/copy/Driver.cpp
+    #
+    Sources/builtin/copyPlist/Options.cpp
+    Sources/builtin/copyPlist/Driver.cpp
+    #
+    Sources/builtin/copyStrings/Options.cpp
+    Sources/builtin/copyStrings/Driver.cpp
+    #
+    Sources/builtin/copyTiff/Options.cpp
+    Sources/builtin/copyTiff/Driver.cpp
+    #
+    Sources/builtin/infoPlistUtility/Options.cpp
+    Sources/builtin/infoPlistUtility/Driver.cpp
+    #
+    Sources/builtin/lsRegisterURL/Options.cpp
+    Sources/builtin/lsRegisterURL/Driver.cpp
+    #
+    Sources/builtin/productPackagingUtility/Options.cpp
+    Sources/builtin/productPackagingUtility/Driver.cpp
+    #
+    Sources/builtin/validationUtility/Options.cpp
+    Sources/builtin/validationUtility/Driver.cpp
+    #
+    Sources/builtin/embeddedBinaryValidationUtility/Options.cpp
+    Sources/builtin/embeddedBinaryValidationUtility/Driver.cpp
     )
 
 set(libpbxsetting_SOURCES
@@ -271,8 +295,24 @@ target_link_libraries(settings pbxbuild pbxbase pbxproj xcsdk pbxsetting pbxspec
 add_executable(xcbuild Tools/xcbuild.cpp)
 target_link_libraries(xcbuild xcdriver)
 
-add_executable(builtin-copy Tools/builtin-copy.cpp)
+add_executable(builtin-copy Tools/builtin/copy.cpp)
 target_link_libraries(builtin-copy builtin)
+add_executable(builtin-copyPlist Tools/builtin/copyPlist.cpp)
+target_link_libraries(builtin-copyPlist builtin)
+add_executable(builtin-copyStrings Tools/builtin/copyStrings.cpp)
+target_link_libraries(builtin-copyStrings builtin)
+add_executable(builtin-copyTiff Tools/builtin/copyTiff.cpp)
+target_link_libraries(builtin-copyTiff builtin)
+add_executable(builtin-infoPlistUtility Tools/builtin/infoPlistUtility.cpp)
+target_link_libraries(builtin-infoPlistUtility builtin)
+add_executable(builtin-lsRegisterURL Tools/builtin/lsRegisterURL.cpp)
+target_link_libraries(builtin-lsRegisterURL builtin)
+add_executable(builtin-productPackagingUtility Tools/builtin/productPackagingUtility.cpp)
+target_link_libraries(builtin-productPackagingUtility builtin)
+add_executable(builtin-validationUtility Tools/builtin/validationUtility.cpp)
+target_link_libraries(builtin-validationUtility builtin)
+add_executable(builtin-embeddedBinaryValidationUtility Tools/builtin/embeddedBinaryValidationUtility.cpp)
+target_link_libraries(builtin-embeddedBinaryValidationUtility builtin)
 
 enable_testing()
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/googletest/googletest/include)
