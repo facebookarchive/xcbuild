@@ -23,7 +23,7 @@ Value GroupItem::
 resolve(void) const
 {
     std::string path = _path;
-    if (_type != kTypeGroup) {
+    if (_type != kTypeGroup && _type != kTypeVariantGroup) {
         path = path.empty() ? _name : path;
     }
     path = path.empty() ? path : "/" + path;
