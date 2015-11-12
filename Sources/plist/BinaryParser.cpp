@@ -9,6 +9,8 @@
 
 #include <plist/BinaryParser.h>
 
+#include <plist/Objects.h>
+
 #include <cerrno>
 #include <cstring>
 #if notyet

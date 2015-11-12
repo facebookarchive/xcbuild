@@ -9,6 +9,8 @@
 
 #include <plist/XMLParser.h>
 
+#include <plist/Objects.h>
+
 using plist::XMLParser;
 using plist::Object;
 

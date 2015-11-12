@@ -9,6 +9,8 @@
 
 #include <plist/SimpleXMLParser.h>
 
+#include <plist/Objects.h>
+
 using plist::SimpleXMLParser;
 using plist::Dictionary;
 

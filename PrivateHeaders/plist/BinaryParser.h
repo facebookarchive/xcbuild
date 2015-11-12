@@ -10,7 +10,7 @@
 #ifndef __plist_BinaryParser_h
 #define __plist_BinaryParser_h
 
-#include <plist/Objects.h>
+#include <plist/Object.h>
 #include <plist/ABPReader.h>
 
 namespace plist {

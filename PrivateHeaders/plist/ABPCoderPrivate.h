@@ -12,6 +12,8 @@
 
 #include <plist/ABPReader.h>
 
+#include <plist/Objects.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 

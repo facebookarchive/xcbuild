@@ -10,7 +10,7 @@
 #ifndef __plist_ABPReader_h
 #define __plist_ABPReader_h
 
-#include <plist/Objects.h>
+#include <plist/Object.h>
 #include <plist/abplist-format.h>
 
 typedef struct _ABPContext ABPContext;

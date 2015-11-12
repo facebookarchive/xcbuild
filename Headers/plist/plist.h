@@ -10,6 +10,8 @@
 #ifndef __plist_plist_h
 #define __plist_plist_h
 
+#include <plist/Base.h>
 #include <plist/Objects.h>
+#include <plist/Keys.h>
 
 #endif  // !__plist_plist_h

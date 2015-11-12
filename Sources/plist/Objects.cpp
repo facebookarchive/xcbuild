@@ -7,10 +7,12 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <plist/Objects.h>
 #include <plist/SimpleXMLParser.h>
 #include <plist/XMLParser.h>
 #include <plist/BinaryParser.h>
+
+#include <plist/Objects.h>
+#include <plist/Keys.h>
 
 #include <jsoncb.h>
 

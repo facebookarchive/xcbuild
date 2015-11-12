@@ -11,7 +11,7 @@
 #define __plist_SimpleXMLParser_h
 
 #include <plist/BaseXMLParser.h>
-#include <plist/Objects.h>
+#include <plist/Dictionary.h>
 
 namespace plist {
 
