@@ -48,15 +48,17 @@ set(libutil_SOURCES
 
 set(libplist_SOURCES
     Sources/plist/Objects.cpp
+    #
     Sources/plist/BaseXMLParser.cpp
     Sources/plist/XMLParser.cpp
     Sources/plist/SimpleXMLParser.cpp
     #
+    Sources/plist/unicode.c
     Sources/plist/ABPCommon.cpp
     Sources/plist/ABPReader.cpp
-    Sources/plist/unicode.c
-    #
     Sources/plist/BinaryParser.cpp
+    #
+    Sources/plist/ASCIIParser.cpp
     )
 
 set(libpbxbase_SOURCES
