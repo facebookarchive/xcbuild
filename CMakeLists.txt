@@ -17,11 +17,9 @@ set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
 
-include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/libjson)
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/expat/expat/lib)
 include_directories(${CMAKE_BINARY_DIR}/ThirdParty/expat/expat)
 
-add_subdirectory(ThirdParty/libjson)
 add_subdirectory(ThirdParty/expat/expat)
 
 include_directories(Headers)
@@ -58,6 +56,8 @@ set(libplist_SOURCES
     Sources/plist/ABPReader.cpp
     Sources/plist/BinaryParser.cpp
     #
+    Sources/plist/ASCIIPListLexer.cpp
+    Sources/plist/ASCIIPListParser.cpp
     Sources/plist/ASCIIParser.cpp
     )
 
@@ -67,7 +67,7 @@ set(libpbxbase_SOURCES
     )
 
 add_library(pbxbase SHARED ${libpbxbase_SOURCES})
-target_link_libraries(pbxbase json expat)
+target_link_libraries(pbxbase expat)
 
 set(libbuiltin_SOURCES
     Sources/builtin/Driver.cpp

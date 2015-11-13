@@ -8,239 +8,412 @@
  */
 
 #include <plist/ASCIIParser.h>
+#include <plist/ASCIIPListLexer.h>
+#include <plist/ASCIIPListParser.h>
 
 #include <plist/Objects.h>
 
-#include <jsoncb.h>
-
 using plist::ASCIIParser;
-
-using namespace plist;
+using plist::Object;
+using plist::String;
+using plist::Integer;
+using plist::Real;
+using plist::Boolean;
+using plist::Data;
+using plist::Array;
+using plist::Dictionary;
 
 ASCIIParser::ASCIIParser()
 {
 }
 
-static int _json_string(void *obj, char const *m, char const *s);
-static int _json_data(void *obj, char const *m, unsigned char const *buf, size_t len);
-static int _json_int(void *obj, char const *m, int i);
-static int _json_double(void *obj, char const *m, double d);
-static int _json_bool(void *obj, char const *m, int b);
-static int _json_null(void *obj, char const *m);
-static int _json_new_obj(void *obj, char const *m, void **obj_new, struct json_cb_t **cb);
-static int _json_obj(void *obj, void *o);
-static int _json_new_array(void *obj, char const *m, void **array_new, struct json_cb_t **cb);
-static int _json_array(void *obj, void *a);
-static void *_json_delete(void *obj);
+typedef enum _ASCIIParseState {
+    kASCIIParsePList = 0,
+    kASCIIParseKeyValSeparator,
+    kASCIIParseEntrySeparator,
 
-static struct json_cb_t _json_vb = {
-    _json_string,
-    _json_data,
-    _json_int,
-    _json_double,
-    _json_bool,
-    _json_null,
+    kASCIIInvalid = -1
+} ASCIIParseState;
 
-    _json_new_obj,
-    _json_obj,
+#if 0
+#define ASCIIDebug(...) do { fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } while (0)
+#else
+#define ASCIIDebug(...)
+#endif
 
-    _json_new_array,
-    _json_array,
-
-    _json_delete
-};
-
-static int
-_json_string(void *obj, char const *m, char const *s)
+static inline uint8_t
+hex_to_bin_digit(char ch)
 {
-    if (Array *a = CastTo <Array> (reinterpret_cast <Object *> (obj))) {
-        a->append(String::New(s));
-    } else if (Dictionary *d = CastTo <Dictionary> (reinterpret_cast <Object *> (obj))) {
-        assert(m != nullptr && "key is null");
-        d->set(m, String::New(s));
-    } else {
-        assert(0 && "this shouldn't happen");
-    }
-    return 0;
+    if (ch >= 'a' && ch <= 'f')
+        return (ch - 'a') + 10;
+    else if (ch >= 'A' && ch <= 'F')
+        return (ch - 'A') + 10;
+    else if (ch >= '0' && ch <= '9')
+        return (ch - '0');
+    else
+        return 0;
 }
 
-static int
-_json_data(void *obj, char const *m, unsigned char const *buf, size_t len)
+static inline uint8_t
+hex_to_bin(char const *ascii)
 {
-    if (Array *a = CastTo <Array> (reinterpret_cast <Object *> (obj))) {
-        a->append(Data::New(buf, len));
-    } else if (Dictionary *d = CastTo <Dictionary> (reinterpret_cast <Object *> (obj))) {
-        assert(m != nullptr && "key is null");
-        d->set(m, Data::New(buf, len));
-    } else {
-        assert(0 && "this shouldn't happen");
-    }
-    return 0;
+    return (hex_to_bin_digit(ascii[0]) << 4) | hex_to_bin_digit(ascii[1]);
 }
 
-static int
-_json_int(void *obj, char const *m, int i)
+static bool
+ASCIIParserParse(ASCIIPListParserContext *context, ASCIIPListLexer *lexer)
 {
-    if (Array *a = CastTo <Array> (reinterpret_cast <Object *> (obj))) {
-        a->append(Integer::New(i));
-    } else if (Dictionary *d = CastTo <Dictionary> (reinterpret_cast <Object *> (obj))) {
-        assert(m != nullptr && "key is null");
-        d->set(m, Integer::New(i));
-    } else {
-        assert(0 && "this shouldn't happen");
-    }
-    return 0;
-}
+    int token;
+    ASCIIParseState state = kASCIIParsePList;
 
-static int
-_json_double(void *obj, char const *m, double r)
-{
-    if (Array *a = CastTo <Array> (reinterpret_cast <Object *> (obj))) {
-        a->append(Real::New(r));
-    } else if (Dictionary *d = CastTo <Dictionary> (reinterpret_cast <Object *> (obj))) {
-        assert(m != nullptr && "key is null");
-        d->set(m, Real::New(r));
-    } else {
-        assert(0 && "this shouldn't happen");
-    }
-    return 0;
-}
-
-static int
-_json_bool(void *obj, char const *m, int b)
-{
-    if (Array *a = CastTo <Array> (reinterpret_cast <Object *> (obj))) {
-        a->append(Boolean::New(b != 0));
-    } else if (Dictionary *d = CastTo <Dictionary> (reinterpret_cast <Object *> (obj))) {
-        assert(m != nullptr && "key is null");
-        d->set(m, Boolean::New(b != 0));
-    } else {
-        assert(0 && "this shouldn't happen");
-    }
-    return 0;
-}
-
-static int
-_json_null(void *obj, char const *m)
-{
-    if (Array *a = CastTo <Array> (reinterpret_cast <Object *> (obj))) {
-        a->append(Null::New());
-    } else if (Dictionary *d = CastTo <Dictionary> (reinterpret_cast <Object *> (obj))) {
-        assert(m != nullptr && "key is null");
-        d->set(m, Null::New());
-    } else {
-        assert(0 && "this shouldn't happen");
-    }
-    return 0;
-}
-
-static int
-_json_new_obj(void *obj, char const *m, void **obj_new, struct json_cb_t **cb)
-{
-    Dictionary *dict = Dictionary::New();
-    if (m == nullptr) {
-        if (*reinterpret_cast <Object **> (obj) == nullptr) {
-            *reinterpret_cast <Object **> (obj) = dict;
-        } else if (Array *a = CastTo <Array> (reinterpret_cast <Object *> (obj))) {
-            a->append(dict);
-        } else {
-            assert(0 && "this shouldn't happen");
+    for (;;) {
+        token = ASCIIPListLexerReadToken(lexer);
+        if (token < 0) {
+            if (token == kASCIIPListLexerEndOfFile && ASCIIPListParserIsDone(context)) {
+                /* success */
+                return true;
+            } else if (token == kASCIIPListLexerEndOfFile) {
+                ASCIIPListParserAbort(context, "Encountered premature EOF");
+                return false;
+            } else if (token == kASCIIPListLexerInvalidToken) {
+                ASCIIPListParserAbort(context, "Encountered invalid token");
+                return false;
+            } else if (token == kASCIIPListLexerUnterminatedLongComment) {
+                ASCIIPListParserAbort(context, "Encountered unterminated long comment");
+                return false;
+            } else if (token == kASCIIPListLexerUnterminatedUnquotedString) {
+                ASCIIPListParserAbort(context, "Encountered unterminated unquoted string");
+                return false;
+            } else if (token == kASCIIPListLexerUnterminatedQuotedString) {
+                ASCIIPListParserAbort(context, "Encountered unterminated quoted string");
+                return false;
+            } else if (token == kASCIIPListLexerUnterminatedData) {
+                ASCIIPListParserAbort(context, "Encountered unterminated data");
+                return false;
+            } else {
+                ASCIIPListParserAbort(context, "Encountered unrecognized token error code");
+                return false;
+            }
         }
-    } else if (Dictionary *d = CastTo <Dictionary> (reinterpret_cast <Object *> (obj))) {
-        assert(m != nullptr && "key is null");
-        d->set(m, dict);
-    } else {
-        assert(0 && "this shouldn't happen");
+
+        /* Ignore comments */
+        if (token == kASCIIPListLexerTokenInlineComment ||
+            token == kASCIIPListLexerTokenLongComment)
+            continue;
+
+        switch (state) {
+            case kASCIIParsePList:
+                if (token != kASCIIPListLexerTokenUnquotedString &&
+                    token != kASCIIPListLexerTokenQuotedString &&
+                    token != kASCIIPListLexerTokenData &&
+                    token != kASCIIPListLexerTokenNumber &&
+                    token != kASCIIPListLexerTokenHexNumber &&
+                    token != kASCIIPListLexerTokenBoolFalse &&
+                    token != kASCIIPListLexerTokenBoolTrue &&
+                    token != kASCIIPListLexerTokenDictionaryStart &&
+                    token != kASCIIPListLexerTokenArrayStart &&
+                    token != kASCIIPListLexerTokenDictionaryEnd &&
+                    token != kASCIIPListLexerTokenArrayEnd) {
+                    ASCIIPListParserAbort(context, "Encountered unexpected token code");
+                    return false;
+                }
+
+                if (ASCIIPListParserIsDone(context)) {
+                    ASCIIPListParserAbort(context, "Encountered token when finished.");
+                    return false;
+                }
+
+                if (token != kASCIIPListLexerTokenDictionaryStart &&
+                    token != kASCIIPListLexerTokenDictionaryEnd &&
+                    token != kASCIIPListLexerTokenArrayStart &&
+                    token != kASCIIPListLexerTokenArrayEnd) {
+                    /* Read all non-container tokens */
+                    bool topLevel     = ASCIIPListParserGetLevel(context) == 0;
+                    bool isDictionary = ASCIIPListParserIsDictionary(context);
+
+                    if (isDictionary || token == kASCIIPListLexerTokenUnquotedString || token == kASCIIPListLexerTokenQuotedString) {
+                        if (isDictionary && token == kASCIIPListLexerTokenData) {
+                            ASCIIPListParserAbort(context, "Data cannot be dictionary key");
+                            return false;
+                        }
+
+                        char *contents = ASCIIPListCopyUnquotedString(lexer, '?');
+                        String *string = String::New(std::string(contents));
+                        free(contents);
+
+                        if (string == NULL) {
+                            ASCIIPListParserAbort(context, "OOM when copying string");
+                            return false;
+                        }
+
+                        /* Container context */
+                        if (isDictionary) {
+                            ASCIIDebug("Storing string %s as key", string->value().c_str());
+                            if (!ASCIIPListParserStoreKey(context, string)) {
+                                string->release();
+                                return false;
+                            }
+                        } else {
+                            ASCIIDebug("Storing string %s", string->value().c_str());
+                            if (!ASCIIPListParserStoreValue(context, string)) {
+                                string->release();
+                                return false;
+                            }
+                        }
+
+                        string->release();
+                    } else if (token == kASCIIPListLexerTokenNumber || token == kASCIIPListLexerTokenHexNumber) {
+                        char *contents = ASCIIPListCopyUnquotedString(lexer, '?');
+                        bool isReal = strchr(contents, '.') != NULL;
+
+                        if (isReal) {
+                            Real *real = Real::New(atof(contents));
+                            free(contents);
+                            if (real == NULL) {
+                                ASCIIPListParserAbort(context, "OOM when creating real");
+                                return false;
+                            }
+
+                            ASCIIDebug("Storing real");
+                            if (!ASCIIPListParserStoreValue(context, real)) {
+                                real->release();
+                                return false;
+                            }
+
+                            real->release();
+                        } else {
+                            Integer *integer = Integer::New(atol(contents));
+                            free(contents);
+                            if (integer == NULL) {
+                                ASCIIPListParserAbort(context, "OOM when creating integer");
+                                return false;
+                            }
+
+                            ASCIIDebug("Storing integer");
+                            if (!ASCIIPListParserStoreValue(context, integer)) {
+                                integer->release();
+                                return false;
+                            }
+
+                            integer->release();
+                        }
+                    } else if (token == kASCIIPListLexerTokenBoolTrue || token == kASCIIPListLexerTokenBoolFalse) {
+                        bool value = (token == kASCIIPListLexerTokenBoolTrue);
+                        Boolean *boolean = Boolean::New(value);
+                        if (boolean == NULL) {
+                            ASCIIPListParserAbort(context, "OOM when creating boolean");
+                            return false;
+                        }
+
+                        ASCIIDebug("Storing boolean");
+                        if (!ASCIIPListParserStoreValue(context, boolean)) {
+                            boolean->release();
+                            return false;
+                        }
+
+                        boolean->release();
+                    } else if (token == kASCIIPListLexerTokenData) {
+                        char   *contents = ASCIIPListCopyData(lexer);
+                        size_t  alength  = strlen(contents);
+                        size_t  length   = alength / 2;
+                        auto    bytes    = std::vector<uint8_t>(length, 0);
+
+                        for (size_t n = 0; n < alength; n += 2) {
+                            bytes[n >> 1] = hex_to_bin(contents + n);
+                        }
+
+                        Data *data = Data::New(bytes);
+                        free(contents);
+
+                        if (data == NULL) {
+                            ASCIIPListParserAbort(context, "OOM when copying data");
+                            return false;
+                        }
+
+                        ASCIIDebug("Storing string as data");
+                        if (!ASCIIPListParserStoreValue(context, data)) {
+                            data->release();
+                            return false;
+                        }
+
+                        data->release();
+                    }
+
+                    if (topLevel) {
+                        if (!ASCIIPListParserFinish(context)) {
+                            return false;
+                        }
+                        state = kASCIIParsePList;
+                    } else {
+                        if (isDictionary) {
+                            state = kASCIIParseKeyValSeparator;
+                        } else {
+                            state = kASCIIParseEntrySeparator;
+                        }
+                    }
+                } else if (token == kASCIIPListLexerTokenDictionaryStart) {
+                    ASCIIDebug("Starting dictionary");
+                    if (!ASCIIPListParserDictionaryBegin(context)) {
+                        return false;
+                    }
+                    ASCIIPListParserIncrementLevel(context);
+                    state = kASCIIParsePList;
+                } else if (token == kASCIIPListLexerTokenArrayStart) {
+                    ASCIIDebug("Starting array");
+                    if (!ASCIIPListParserArrayBegin(context)) {
+                        return false;
+                    }
+                    ASCIIPListParserIncrementLevel(context);
+                    state = kASCIIParsePList;
+                } else if (token == kASCIIPListLexerTokenDictionaryEnd) {
+                    ASCIIDebug("Ending dictionary");
+                    if (!ASCIIPListParserDictionaryEnd(context)) {
+                        return false;
+                    }
+                    ASCIIPListParserDecrementLevel(context);
+                    if (ASCIIPListParserGetLevel(context)) {
+                        state = kASCIIParseEntrySeparator;
+                    } else {
+                        if (!ASCIIPListParserFinish(context)) {
+                            return false;
+                        }
+                        state = kASCIIParsePList;
+                    }
+                } else if (token == kASCIIPListLexerTokenArrayEnd) {
+                    ASCIIDebug("Ending array");
+                    if (!ASCIIPListParserArrayEnd(context)) {
+                        return false;
+                    }
+                    ASCIIPListParserDecrementLevel(context);
+                    if (ASCIIPListParserGetLevel(context)) {
+                        state = kASCIIParseEntrySeparator;
+                    } else {
+                        if (!ASCIIPListParserFinish(context)) {
+                            return false;
+                        }
+                        state = kASCIIParsePList;
+                    }
+                }
+                break;
+
+            case kASCIIParseKeyValSeparator:
+                if (token != kASCIIPListLexerTokenDictionaryKeyValSeparator) {
+                    ASCIIPListParserAbort(context, "Expected key-value separator; found something else");
+                    return false;
+                }
+                ASCIIDebug("Found keyval separator");
+                state = kASCIIParsePList;
+                break;
+
+            case kASCIIParseEntrySeparator:
+                if (token != ';' && token != ',' &&
+                    /*
+                     * Arrays do not require a final separator. Dictionaries do.
+                     */
+                    token != kASCIIPListLexerTokenArrayEnd) {
+                    ASCIIPListParserAbort(context, "Expected entry separator or array end; found something else");
+                    return false;
+                }
+
+                if (ASCIIPListParserIsDictionary(context) && token != ';') {
+                    ASCIIPListParserAbort(context, "Expected ';'");
+                    return false;
+                }
+
+                if (ASCIIPListParserIsArray(context) &&
+                    token != ',' &&
+                    token != kASCIIPListLexerTokenArrayEnd) {
+                    ASCIIPListParserAbort(context, "Expected ',' or ')'");
+                    return false;
+                }
+
+                if (token == kASCIIPListLexerTokenArrayEnd) {
+                    if (ASCIIPListParserIsDictionary(context)) {
+                        ASCIIPListParserAbort(context, NULL);
+                        return false;
+                    }
+                    ASCIIDebug("Found array end");
+                    if (!ASCIIPListParserArrayEnd(context)) {
+                        return false;
+                    }
+
+                    ASCIIPListParserDecrementLevel(context);
+                    if (ASCIIPListParserGetLevel(context)) {
+                        state = kASCIIParseEntrySeparator;
+                    } else {
+                        if (!ASCIIPListParserFinish(context)) {
+                            return false;
+                        }
+                        state = kASCIIParsePList;
+                    }
+                } else {
+                    ASCIIDebug("Found entry separator");
+                    state = kASCIIParsePList;
+                }
+                break;
+            default:
+                ASCIIPListParserAbort(context, "Unexpected state");
+                return false;
+        }
     }
-    *obj_new = dict;
-    *cb      = &_json_vb;
-    return 0;
-}
-
-static int
-_json_obj(void *obj, void *o)
-{
-    return 0;
-}
-
-static int
-_json_new_array(void *obj, char const *m, void **array_new, struct json_cb_t **cb)
-{
-    Array *array = Array::New();
-    if (*reinterpret_cast <Object **> (obj) == nullptr) {
-        *reinterpret_cast <Object **> (obj) = array;
-    } else if (Array *a = CastTo <Array> (reinterpret_cast <Object *> (obj))) {
-        a->append(array);
-    } else if (Dictionary *d = CastTo <Dictionary> (reinterpret_cast <Object *> (obj))) {
-        assert(m != nullptr && "key is null");
-        d->set(m, array);
-    } else {
-        assert(0 && "this shouldn't happen");
-    }
-    *array_new = array;
-    *cb        = &_json_vb;
-    return 0;
-}
-
-static int
-_json_array(void *obj, void *a)
-{
-    return 0;
-}
-
-static void *
-_json_delete(void *obj)
-{
-    return 0;
-}
-
-struct ErrorContext {
-    error_function const &ef;
-
-    ErrorContext(error_function const &func) :
-        ef(func)
-    { }
-};
-
-static int
-_json_err(void *err_data, unsigned int line, unsigned int column, char const *error)
-{
-    ErrorContext *ctx = reinterpret_cast <ErrorContext *> (err_data);
-
-    ctx->ef(line, column, error);
-
-    return -1;
 }
 
 Object *ASCIIParser::
 parse(std::string const &path, error_function const &error)
 {
-    Object       *root = nullptr;
-    ErrorContext  ectx(error);
+    std::FILE *fp = std::fopen(path.c_str(), "rb");
+    if (fp == nullptr)
+        return nullptr;
 
-    if (json_parse(path.c_str(), &_json_vb, &root, _json_err, &ectx) != 0) {
-        if (root != nullptr) {
-            root->release();
-        }
-        root = nullptr;
-    }
+    Object *object = parse(fp, error);
 
-    return root;
+    std::fclose(fp);
+    return object;
 }
 
 Object *ASCIIParser::
 parse(std::FILE *fp, error_function const &error)
 {
-    Object       *root = nullptr;
-    ErrorContext  ectx(error);
+    Object             *root = nullptr;
+    bool                success;
+    ASCIIPListParserContext  context;
+    ASCIIPListLexer     lexer;
 
-    if (json_fparse(fp, &_json_vb, &root, _json_err, &ectx) != 0) {
-        if (root != nullptr) {
-            root->release();
-        }
-        root = nullptr;
+    context.error = error;
+
+    if (fseek(fp, 0, SEEK_END) != 0) {
+        return nullptr;
     }
 
+    long fsize = ftell(fp);
+    if (fsize == -1) {
+        return nullptr;
+    }
+
+    if (fseek(fp, 0, SEEK_SET) != 0) {
+        return nullptr;
+    }
+
+    char *data = (char *)malloc(fsize + 1);
+    if (data == NULL) {
+        return nullptr;
+    }
+
+    if (fread(data, fsize, 1, fp) != 1) {
+        return nullptr;
+    }
+
+    ASCIIPListParserContextInit(&context);
+    ASCIIPListLexerInit(&lexer, data, fsize, kASCIIPListLexerStyleASCII);
+
+    /* Parse contents. */
+    success = ASCIIParserParse(&context, &lexer);
+    if (success) {
+        root = ASCIIPListParserCopyRoot(&context);
+    }
+
+    ASCIIPListParserContextFree(&context);
+    free(data);
     return root;
 }
 
