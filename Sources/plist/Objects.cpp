@@ -11,6 +11,7 @@
 #include <plist/XMLParser.h>
 #include <plist/BinaryParser.h>
 #include <plist/ASCIIParser.h>
+#include <plist/StringsParser.h>
 
 #include <plist/Objects.h>
 #include <plist/Keys.h>
@@ -394,6 +395,18 @@ ASCIIParse(std::string const &path, error_function const &error)
 }
 
 static Object *
+StringsParse(std::FILE *fp, error_function const &error)
+{
+    return StringsParser().parse(fp, error);
+}
+
+static Object *
+StringsParse(std::string const &path, error_function const &error)
+{
+    return StringsParser().parse(path, error);
+}
+
+static Object *
 XMLParse(std::FILE *fp, error_function const &error)
 {
     return XMLParser().parse(fp, error);
@@ -421,6 +434,7 @@ enum Format {
     kFormatSystemError = -1,
     kFormatUnknown,
     kFormatASCII,
+    kFormatStrings,
     kFormatXML,
     kFormatBinary
 };
@@ -446,6 +460,9 @@ Identify(std::FILE *fp)
 
                 if (buf[n] == '(' || buf[n] == '{' || buf[n] == '/') {
                     format = kFormatASCII;
+                    break;
+                } else if (buf[n] == '"' || buf[n] == '\'') {
+                    format = kFormatStrings;
                     break;
                 } else if (buf[n] == '<') {
                     format = kFormatXML;
@@ -500,6 +517,10 @@ Parse(std::string const &path, error_function const &error)
             object = ASCIIParse(path, error);
             break;
 
+        case kFormatStrings:
+            object = StringsParse(path, error);
+            break;
+
         case kFormatSystemError:
             error(0, 0, strerror(errno));
             break;
@@ -533,6 +554,10 @@ Parse(FILE *fp, error_function const &error)
 
         case kFormatXML:
             object = XMLParse(fp, error);
+            break;
+
+        case kFormatStrings:
+            object = StringsParse(fp, error);
             break;
 
         case kFormatASCII:

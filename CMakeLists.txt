@@ -59,6 +59,7 @@ set(libplist_SOURCES
     Sources/plist/ASCIIPListLexer.cpp
     Sources/plist/ASCIIPListParser.cpp
     Sources/plist/ASCIIParser.cpp
+    Sources/plist/StringsParser.cpp
     )
 
 set(libpbxbase_SOURCES
