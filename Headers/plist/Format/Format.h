@@ -10,27 +10,29 @@
 #ifndef __plist_Format_Format_h
 #define __plist_Format_Format_h
 
-#include <plist/Format/Info.h>
+#include <plist/Base.h>
+#include <plist/Object.h>
 
 namespace plist {
 namespace Format {
 
+template<typename T>
 class Format {
-private:
-    Format();
-    ~Format();
+protected:
+    Format() { };
+    ~Format() { };
 
 public:
-    static std::unique_ptr<Info>
+    static std::unique_ptr<T>
     Identify(std::vector<uint8_t> const &contents);
 
 public:
     static std::pair<Object *, std::string>
-    Deserialize(std::vector<uint8_t> const &contents, Info const &info);
+    Deserialize(std::vector<uint8_t> const &contents, T const &format);
 
 public:
     static std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string>
-    Serialize(Object *object, Info const &info);
+    Serialize(Object *object, T const &format);
 };
 
 }

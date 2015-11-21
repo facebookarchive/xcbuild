@@ -10,14 +10,18 @@
 #ifndef __plist_Format_Binary_h
 #define __plist_Format_Binary_h
 
-#include <plist/Format/Base.h>
+#include <plist/Format/Format.h>
+#include <plist/Format/Type.h>
 
 namespace plist {
 namespace Format {
 
-class Binary : public Base<Binary> {
+class Binary : public Format<Binary> {
 private:
     Binary();
+
+public:
+    static Type Type();
 
 public:
     static Binary Create();

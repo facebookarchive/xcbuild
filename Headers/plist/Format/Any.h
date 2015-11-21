@@ -7,10 +7,10 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __plist_Format_Info_h
-#define __plist_Format_Info_h
+#ifndef __plist_Format_Any_h
+#define __plist_Format_Any_h
 
-#include <plist/Format/Type.h>
+#include <plist/Format/Format.h>
 #include <plist/Format/Binary.h>
 #include <plist/Format/XML.h>
 #include <plist/Format/ASCII.h>
@@ -20,10 +20,11 @@
 namespace plist {
 namespace Format {
 
-class Info {
+class Any : public Format<Any> {
 private:
     union Contents {
         Contents() { };
+        ~Contents() { };
 
         Binary    binary;
         XML       xml;
@@ -36,8 +37,9 @@ private:
     Type     _type;
     Contents _contents;
 
-private:
-    Info(Type type, Contents const &contents);
+public:
+    Any(Type type, Contents const &contents);
+    ~Any();
 
 public:
     inline Type type() const
@@ -56,15 +58,15 @@ public:
 
 public:
     template<typename T>
-    static Info Create(T const &format)
+    static Any Create(T const &format)
     {
         Contents contents;
         *reinterpret_cast<T *>(&contents) = format;
-        return Info(T::Type(), contents);
+        return Any(T::Type(), contents);
     }
 };
 
 }
 }
 
-#endif  // !__plist_Format_Info_h
+#endif  // !__plist_Format_Any_h

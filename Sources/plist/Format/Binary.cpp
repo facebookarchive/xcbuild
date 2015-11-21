@@ -10,7 +10,7 @@
 #include <plist/Format/Binary.h>
 
 using plist::Format::Type;
-using plist::Format::Base;
+using plist::Format::Format;
 using plist::Format::Binary;
 using plist::Object;
 
@@ -19,29 +19,28 @@ Binary()
 {
 }
 
-template<>
-Type Base<Binary>::
+Type Binary::
 Type()
 {
     return Type::Binary;
 }
 
 template<>
-std::unique_ptr<Binary> Base<Binary>::
+std::unique_ptr<Binary> Format<Binary>::
 Identify(std::vector<uint8_t> const &contents)
 {
     return nullptr;
 }
 
 template<>
-std::pair<Object *, std::string> Base<Binary>::
+std::pair<Object *, std::string> Format<Binary>::
 Deserialize(std::vector<uint8_t> const &contents, Binary const &format)
 {
     return std::make_pair(nullptr, "not yet implemented");
 }
 
 template<>
-std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Base<Binary>::
+std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<Binary>::
 Serialize(Object *object, Binary const &format)
 {
     return std::make_pair(nullptr, "not yet implemented");

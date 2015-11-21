@@ -10,18 +10,22 @@
 #ifndef __plist_Format_Strings_h
 #define __plist_Format_Strings_h
 
-#include <plist/Format/Base.h>
+#include <plist/Format/Format.h>
+#include <plist/Format/Type.h>
 #include <plist/Format/Encoding.h>
 
 namespace plist {
 namespace Format {
 
-class Strings : public Base<Strings> {
+class Strings : public Format<Strings> {
 private:
     Encoding _encoding;
 
 private:
     Strings(Encoding encoding);
+
+public:
+    static Type Type();
 
 public:
     inline Encoding encoding() const

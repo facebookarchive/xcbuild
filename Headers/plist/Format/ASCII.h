@@ -10,18 +10,22 @@
 #ifndef __plist_Format_ASCII_h
 #define __plist_Format_ASCII_h
 
-#include <plist/Format/Base.h>
+#include <plist/Format/Format.h>
+#include <plist/Format/Type.h>
 #include <plist/Format/Encoding.h>
 
 namespace plist {
 namespace Format {
 
-class ASCII : public Base<ASCII> {
+class ASCII : public Format<ASCII> {
 private:
     Encoding _encoding;
 
 private:
     ASCII(Encoding encoding);
+
+public:
+    static Type Type();
 
 public:
     inline Encoding encoding() const

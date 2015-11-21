@@ -11,7 +11,7 @@
 
 using plist::Format::Type;
 using plist::Format::Encoding;
-using plist::Format::Base;
+using plist::Format::Format;
 using plist::Format::SimpleXML;
 using plist::Object;
 
@@ -21,29 +21,28 @@ SimpleXML(Encoding encoding) :
 {
 }
 
-template<>
-Type Base<SimpleXML>::
+Type SimpleXML::
 Type()
 {
     return Type::SimpleXML;
 }
 
 template<>
-std::unique_ptr<SimpleXML> Base<SimpleXML>::
+std::unique_ptr<SimpleXML> Format<SimpleXML>::
 Identify(std::vector<uint8_t> const &contents)
 {
     return nullptr;
 }
 
 template<>
-std::pair<Object *, std::string> Base<SimpleXML>::
+std::pair<Object *, std::string> Format<SimpleXML>::
 Deserialize(std::vector<uint8_t> const &contents, SimpleXML const &format)
 {
     return std::make_pair(nullptr, "not yet implemented");
 }
 
 template<>
-std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Base<SimpleXML>::
+std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<SimpleXML>::
 Serialize(Object *object, SimpleXML const &format)
 {
     return std::make_pair(nullptr, "not yet implemented");

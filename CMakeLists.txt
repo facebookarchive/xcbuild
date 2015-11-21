@@ -61,13 +61,12 @@ set(libplist_SOURCES
     Sources/plist/ASCIIParser.cpp
     Sources/plist/StringsParser.cpp
     #
-    Sources/plist/Format/Info.cpp
-    Sources/plist/Format/Format.cpp
     Sources/plist/Format/Binary.cpp
     Sources/plist/Format/XML.cpp
     Sources/plist/Format/ASCII.cpp
     Sources/plist/Format/Strings.cpp
     Sources/plist/Format/SimpleXML.cpp
+    Sources/plist/Format/Any.cpp
     )
 
 set(libpbxbase_SOURCES

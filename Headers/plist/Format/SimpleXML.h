@@ -10,18 +10,22 @@
 #ifndef __plist_Format_SimpleXML_h
 #define __plist_Format_SimpleXML_h
 
-#include <plist/Format/Base.h>
+#include <plist/Format/Format.h>
+#include <plist/Format/Type.h>
 #include <plist/Format/Encoding.h>
 
 namespace plist {
 namespace Format {
 
-class SimpleXML : public Base<SimpleXML> {
+class SimpleXML : public Format<SimpleXML> {
 private:
     Encoding _encoding;
 
 private:
     SimpleXML(Encoding encoding);
+
+public:
+    static Type Type();
 
 public:
     inline Encoding encoding() const

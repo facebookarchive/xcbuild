@@ -11,7 +11,7 @@
 
 using plist::Format::Type;
 using plist::Format::Encoding;
-using plist::Format::Base;
+using plist::Format::Format;
 using plist::Format::ASCII;
 using plist::Object;
 
@@ -21,29 +21,28 @@ ASCII(Encoding encoding) :
 {
 }
 
-template<>
-Type Base<ASCII>::
+Type ASCII::
 Type()
 {
     return Type::ASCII;
 }
 
 template<>
-std::unique_ptr<ASCII> Base<ASCII>::
+std::unique_ptr<ASCII> Format<ASCII>::
 Identify(std::vector<uint8_t> const &contents)
 {
     return nullptr;
 }
 
 template<>
-std::pair<Object *, std::string> Base<ASCII>::
+std::pair<Object *, std::string> Format<ASCII>::
 Deserialize(std::vector<uint8_t> const &contents, ASCII const &format)
 {
     return std::make_pair(nullptr, "not yet implemented");
 }
 
 template<>
-std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Base<ASCII>::
+std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<ASCII>::
 Serialize(Object *object, ASCII const &format)
 {
     return std::make_pair(nullptr, "not yet implemented");
