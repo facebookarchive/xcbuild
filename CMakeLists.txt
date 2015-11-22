@@ -57,7 +57,6 @@ set(libplist_SOURCES
     #
     Sources/plist/Format/ASCIIPListLexer.cpp
     Sources/plist/Format/ASCIIPListParser.cpp
-    Sources/plist/StringsParser.cpp
     #
     Sources/plist/Format/Encoding.cpp
     Sources/plist/Format/Binary.cpp
