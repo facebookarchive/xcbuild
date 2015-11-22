@@ -20,22 +20,30 @@ main(int argc, char **argv)
         return -1;
     }
 
-    auto X = plist::Object::Parse(argv[1],
-            [&](unsigned line, unsigned column, std::string const &message)
-            {
-                if (line != 0 && column != 0) {
-                    fprintf(stderr, "%s:%d.%d:error: %s\n", argv[1],
-                        line, column, message.c_str());
-                } else {
-                    fprintf(stderr, "%s:error: %s\n", argv[1],
-                        message.c_str());
-                }
+    std::vector<uint8_t> contents; // TODO(grp): Read from argv[1].
 
-                exit(EXIT_FAILURE);
-            });
+    auto format = plist::Format::Any::Identify(contents);
+    if (format == nullptr) {
+        fprintf(stderr, "error: not a plist\n");
+        return -1;
+    }
 
-    X->dump();
-    X->release();
+    auto deserialize = plist::Format::Any::Deserialize(contents, *format);
+    if (deserialize.first == nullptr) {
+        fprintf(stderr, "error: %s\n", deserialize.second.c_str());
+        return -1;
+    }
+
+    plist::Format::ASCII out = plist::Format::ASCII::Create(plist::Format::Encoding::UTF8);
+    auto serialize = plist::Format::ASCII::Serialize(deserialize.first, out);
+    if (serialize.first == nullptr) {
+        fprintf(stderr, "error: %s\n", serialize.second.c_str());
+    }
+
+    std::string output = std::string(reinterpret_cast<char *>(serialize.first->data()), serialize.first->size());
+    printf("%s\n", output.c_str());
+
+    deserialize.first->release();
 
     return 0;
 }

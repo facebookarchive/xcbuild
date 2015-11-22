@@ -110,9 +110,6 @@ public:
     {
         return (obj != nullptr && (obj == this || unixTimeValue() == obj->unixTimeValue()));
     }
-
-protected:
-    virtual void dump1(FILE *fp, size_t indent, size_t) const;
 };
 
 }

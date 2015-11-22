@@ -71,9 +71,6 @@ public:
     {
         return (obj != nullptr && obj == this);
     }
-
-protected:
-    virtual void dump1(FILE *fp, size_t indent, size_t) const;
 };
 
 }

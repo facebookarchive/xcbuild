@@ -61,27 +61,6 @@ public:
     }
 
 public:
-    static Object *Parse(std::string const &path);
-    static Object *Parse(std::string const &path,
-            error_function const &error);
-
-    static Object *Parse(std::FILE *fp);
-    static Object *Parse(std::FILE *fp,
-            error_function const &error);
-
-public:
-    void dump(FILE *fp = stderr, size_t indent = 0) const;
-
-protected:
-    static inline void Indent(FILE *fp, size_t n);
-    static inline std::string QuoteString(std::string const &s);
-
-protected:
-    friend class Array;
-    friend class Dictionary;
-    virtual void dump1(FILE *fp, size_t indent, size_t cindent) const = 0;
-
-public:
     static inline enum Object::Type Type()
     {
         return Object::kTypeNone;

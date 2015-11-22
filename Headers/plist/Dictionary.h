@@ -162,27 +162,6 @@ public:
 
 public:
     void merge(Dictionary const *dict, bool replace = true);
-
-protected:
-    virtual void dump1(FILE *fp, size_t, size_t cindent) const;
-
-public:
-    static Dictionary *Parse(std::string const &path);
-    static Dictionary *Parse(std::string const &path,
-            error_function const &error);
-
-    static Dictionary *Parse(std::FILE *fp);
-    static Dictionary *Parse(std::FILE *fp,
-            error_function const &error);
-
-public:
-    static Dictionary *ParseSimpleXML(std::string const &path);
-    static Dictionary *ParseSimpleXML(std::string const &path,
-            error_function const &error);
-
-    static Dictionary *ParseSimpleXML(std::FILE *fp);
-    static Dictionary *ParseSimpleXML(std::FILE *fp,
-            error_function const &error);
 };
 
 }

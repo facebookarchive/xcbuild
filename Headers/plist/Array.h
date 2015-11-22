@@ -127,18 +127,6 @@ public:
 
 public:
     void merge(Array const *array);
-
-public:
-    static Array *Parse(std::string const &path);
-    static Array *Parse(std::string const &path,
-            error_function const &error);
-
-    static Array *Parse(std::FILE *fp);
-    static Array *Parse(std::FILE *fp,
-            error_function const &error);
-
-public:
-    virtual void dump1(FILE *fp, size_t, size_t cindent) const;
 };
 
 }
