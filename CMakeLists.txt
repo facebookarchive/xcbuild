@@ -47,24 +47,24 @@ set(libutil_SOURCES
 set(libplist_SOURCES
     Sources/plist/Objects.cpp
     #
-    Sources/plist/BaseXMLParser.cpp
-    Sources/plist/XMLParser.cpp
-    Sources/plist/SimpleXMLParser.cpp
+    Sources/plist/Format/Encoding.cpp
+    Sources/plist/Format/Any.cpp
+    #
+    Sources/plist/Format/BaseXMLParser.cpp
+    Sources/plist/Format/XMLParser.cpp
+    Sources/plist/Format/XML.cpp
+    Sources/plist/Format/SimpleXMLParser.cpp
+    Sources/plist/Format/SimpleXML.cpp
     #
     Sources/plist/Format/unicode.c
     Sources/plist/Format/ABPCommon.cpp
     Sources/plist/Format/ABPReader.cpp
+    Sources/plist/Format/Binary.cpp
     #
     Sources/plist/Format/ASCIIPListLexer.cpp
-    Sources/plist/Format/ASCIIPListParser.cpp
-    #
-    Sources/plist/Format/Encoding.cpp
-    Sources/plist/Format/Binary.cpp
-    Sources/plist/Format/XML.cpp
-    Sources/plist/Format/ASCII.cpp
     Sources/plist/Format/Strings.cpp
-    Sources/plist/Format/SimpleXML.cpp
-    Sources/plist/Format/Any.cpp
+    Sources/plist/Format/ASCIIPListParser.cpp
+    Sources/plist/Format/ASCII.cpp
     )
 
 set(libpbxbase_SOURCES

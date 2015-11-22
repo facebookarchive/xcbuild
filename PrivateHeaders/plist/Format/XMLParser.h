@@ -7,13 +7,14 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __plist_XMLParser_h
-#define __plist_XMLParser_h
+#ifndef __plist_Format_XMLParser_h
+#define __plist_Format_XMLParser_h
 
-#include <plist/BaseXMLParser.h>
+#include <plist/Format/BaseXMLParser.h>
 #include <plist/Object.h>
 
 namespace plist {
+namespace Format {
 
 class XMLParser : public BaseXMLParser {
 private:
@@ -40,15 +41,14 @@ public:
     XMLParser();
 
 public:
-    Object *parse(std::string const &path, error_function const &error);
-    Object *parse(std::FILE *fp, error_function const &error);
+    Object *parse(std::vector<uint8_t> const &contents);
 
 private:
     virtual void onBeginParse();
     virtual void onEndParse(bool success);
 
 private:
-    void onStartElement(std::string const &name, string_map const &attrs, size_t depth);
+    void onStartElement(std::string const &name, std::unordered_map<std::string, std::string> const &attrs, size_t depth);
     void onEndElement(std::string const &name, size_t depth);
     void onCharacterData(std::string const &cdata, size_t depth);
 
@@ -91,5 +91,6 @@ private:
 };
 
 }
+}
 
-#endif  // !__plist_XMLParser_h
+#endif  // !__plist_Format_XMLParser_h

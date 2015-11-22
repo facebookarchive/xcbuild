@@ -7,11 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <plist/BaseXMLParser.h>
+#include <plist/Format/BaseXMLParser.h>
 
 #include <cerrno>
 
-using plist::BaseXMLParser;
+using plist::Format::BaseXMLParser;
 
 BaseXMLParser::BaseXMLParser() :
     _parser (nullptr),
@@ -20,33 +20,11 @@ BaseXMLParser::BaseXMLParser() :
 }
 
 bool BaseXMLParser::
-parse(std::string const &path, error_function const &error)
+parse(std::vector<uint8_t> const &contents)
 {
-    std::FILE *fp = std::fopen(path.c_str(), "rb");
-    if (fp == nullptr)
-        return false;
-
-    bool success = parse(fp, error);
-
-    std::fclose(fp);
-
-    return success;
-}
-
-bool BaseXMLParser::
-parse(std::FILE *fp, error_function const &error)
-{
-    if (fp == nullptr) {
-        errno = EBADF;
-        return false;
-    }
-
-    _errorFunction = error;
     _depth         = 0;
     _parser        = ::XML_ParserCreate(nullptr);
     if (_parser == nullptr) {
-        std::fclose(fp);
-        errno = ENOMEM;
         return false;
     }
 
@@ -57,25 +35,11 @@ parse(std::FILE *fp, error_function const &error)
 
     onBeginParse();
 
-    XML_Status status;
-    bool       stop = false;
-    while (!stop) {
-        char   buf[1024];
-        size_t nread;
-
-        nread = std::fread(buf, 1, sizeof(buf), fp);
-        stop = (nread <= 0);
-
-        status = ::XML_Parse(_parser, buf, nread, stop);
-        if (status != XML_STATUS_OK)
-            break;
-    }
-
+    XML_Status status = ::XML_Parse(_parser, reinterpret_cast<char const *>(contents.data()), contents.size(), true);
     ::XML_ParserFree(_parser);
 
     _parser        = nullptr;
     _depth         = 0;
-    _errorFunction = nullptr;
 
     onEndParse(status == XML_STATUS_OK);
 
@@ -102,7 +66,7 @@ onEndParse(bool success)
 }
 
 void BaseXMLParser::
-onStartElement(std::string const &name, string_map const &attrs, size_t depth)
+onStartElement(std::string const &name, std::unordered_map<std::string, std::string> const &attrs, size_t depth)
 {
 }
 
@@ -130,9 +94,9 @@ error(std::string const &format, ...)
     }
     va_end(ap);
 
-    _errorFunction(::XML_GetCurrentLineNumber(_parser),
-                   ::XML_GetCurrentColumnNumber(_parser),
-                   buf);
+    _line = ::XML_GetCurrentLineNumber(_parser);
+    _column = ::XML_GetCurrentColumnNumber(_parser);
+    _error = std::string(buf);
 
     if (buf != sErrorMessage) {
         std::free(buf);
@@ -144,7 +108,7 @@ error(std::string const &format, ...)
 void XMLCALL BaseXMLParser::
 StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts)
 {
-    string_map attrs;
+    std::unordered_map<std::string, std::string> attrs;
     auto       self = reinterpret_cast <BaseXMLParser *> (userData);
 
     for (const XML_Char **attsp = atts; *attsp != nullptr; attsp += 2) {

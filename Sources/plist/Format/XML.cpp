@@ -8,11 +8,13 @@
  */
 
 #include <plist/Format/XML.h>
+#include <plist/Format/XMLParser.h>
 
 using plist::Format::Type;
 using plist::Format::Encoding;
 using plist::Format::Format;
 using plist::Format::XML;
+using plist::Format::XMLParser;
 using plist::Object;
 
 XML::
@@ -81,7 +83,15 @@ template<>
 std::pair<Object *, std::string> Format<XML>::
 Deserialize(std::vector<uint8_t> const &contents, XML const &format)
 {
-    return std::make_pair(nullptr, "not yet implemented");
+    const std::vector<uint8_t> data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
+
+    XMLParser parser;
+    Object *root = parser.parse(data);
+    if (root == nullptr) {
+        return std::make_pair(nullptr, parser.error());
+    }
+
+    return std::make_pair(root, std::string());
 }
 
 template<>

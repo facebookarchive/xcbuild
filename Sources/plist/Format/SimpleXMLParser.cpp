@@ -7,11 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <plist/SimpleXMLParser.h>
+#include <plist/Format/SimpleXMLParser.h>
 
 #include <plist/Objects.h>
 
-using plist::SimpleXMLParser;
+using plist::Format::SimpleXMLParser;
 using plist::Dictionary;
 
 SimpleXMLParser::SimpleXMLParser() :
@@ -22,24 +22,12 @@ SimpleXMLParser::SimpleXMLParser() :
 }
 
 Dictionary *SimpleXMLParser::
-parse(std::string const &path, error_function const &error)
+parse(std::vector<uint8_t> const &contents)
 {
     if (_root != nullptr)
         return nullptr;
 
-    if (!BaseXMLParser::parse(path, error))
-        return nullptr;
-
-    return _root;
-}
-
-Dictionary *SimpleXMLParser::
-parse(std::FILE *fp, error_function const &error)
-{
-    if (_root != nullptr)
-        return nullptr;
-
-    if (!BaseXMLParser::parse(fp, error))
+    if (!BaseXMLParser::parse(contents))
         return nullptr;
 
     return _root;
@@ -73,7 +61,7 @@ onEndParse(bool success)
 }
 
 void SimpleXMLParser::
-onStartElement(std::string const &name, string_map const &attrs, size_t)
+onStartElement(std::string const &name, std::unordered_map<std::string, std::string> const &attrs, size_t)
 {
     Dictionary *dict = new Dictionary;
 

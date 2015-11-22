@@ -8,11 +8,13 @@
  */
 
 #include <plist/Format/SimpleXML.h>
+#include <plist/Format/SimpleXMLParser.h>
 
 using plist::Format::Type;
 using plist::Format::Encoding;
 using plist::Format::Format;
 using plist::Format::SimpleXML;
+using plist::Format::SimpleXMLParser;
 using plist::Object;
 
 SimpleXML::
@@ -39,7 +41,15 @@ template<>
 std::pair<Object *, std::string> Format<SimpleXML>::
 Deserialize(std::vector<uint8_t> const &contents, SimpleXML const &format)
 {
-    return std::make_pair(nullptr, "not yet implemented");
+    const std::vector<uint8_t> data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
+
+    SimpleXMLParser parser;
+    Object *root = parser.parse(data);
+    if (root == nullptr) {
+        return std::make_pair(nullptr, parser.error());
+    }
+
+    return std::make_pair(root, std::string());
 }
 
 template<>

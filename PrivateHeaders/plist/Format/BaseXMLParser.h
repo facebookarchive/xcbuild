@@ -7,26 +7,38 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __plist_BaseXMLParser_h
-#define __plist_BaseXMLParser_h
+#ifndef __plist_Format_BaseXMLParser_h
+#define __plist_Format_BaseXMLParser_h
 
 #include <plist/Base.h>
 #include <expat.h>
 
 namespace plist {
+namespace Format {
 
 class BaseXMLParser {
 private:
     ::XML_Parser   _parser;
     size_t         _depth;
-    error_function _errorFunction;
+
+private:
+    size_t         _line;
+    size_t         _column;
+    std::string    _error;
 
 public:
     BaseXMLParser();
 
+public:
+    size_t const &line() const
+    { return _line; }
+    size_t const &column() const
+    { return _column; }
+    std::string const &error() const
+    { return _error; }
+
 protected:
-    bool parse(std::string const &path, error_function const &error);
-    bool parse(std::FILE *fp, error_function const &error);
+    bool parse(std::vector<uint8_t> const &contents);
     bool stop();
 
 protected:
@@ -38,7 +50,7 @@ protected:
     virtual void onEndParse(bool success);
 
 protected:
-    virtual void onStartElement(std::string const &name, string_map const &attrs, size_t depth);
+    virtual void onStartElement(std::string const &name, std::unordered_map<std::string, std::string> const &attrs, size_t depth);
     virtual void onEndElement(std::string const &name, size_t depth);
     virtual void onCharacterData(std::string const &cdata, size_t depth);
 
@@ -52,5 +64,6 @@ private:
 };
 
 }
+}
 
-#endif  // !__plist_BaseXMLParser_h
+#endif  // !__plist_Format_BaseXMLParser_h

@@ -7,13 +7,14 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __plist_SimpleXMLParser_h
-#define __plist_SimpleXMLParser_h
+#ifndef __plist_Format_SimpleXMLParser_h
+#define __plist_Format_SimpleXMLParser_h
 
-#include <plist/BaseXMLParser.h>
+#include <plist/Format/BaseXMLParser.h>
 #include <plist/Dictionary.h>
 
 namespace plist {
+namespace Format {
 
 class SimpleXMLParser : public BaseXMLParser {
 private:
@@ -25,18 +26,18 @@ public:
     SimpleXMLParser();
 
 public:
-    Dictionary *parse(std::string const &path, error_function const &error);
-    Dictionary *parse(std::FILE *fp, error_function const &error);
+    Dictionary *parse(std::vector<uint8_t> const &contents);
 
 private:
     virtual void onBeginParse();
     virtual void onEndParse(bool success);
 
 private:
-    void onStartElement(std::string const &name, string_map const &attrs, size_t);
+    void onStartElement(std::string const &name, std::unordered_map<std::string, std::string> const &attrs, size_t);
     void onEndElement(std::string const &name, size_t);
 };
 
 }
+}
 
-#endif  // !__plist_SimpleXMLParser_h
+#endif  // !__plist_Format_SimpleXMLParser_h
