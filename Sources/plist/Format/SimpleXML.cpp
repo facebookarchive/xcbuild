@@ -31,6 +31,7 @@ template<>
 std::unique_ptr<SimpleXML> Format<SimpleXML>::
 Identify(std::vector<uint8_t> const &contents)
 {
+    /* Not a standard format; don't auto-detect. */
     return nullptr;
 }
 

@@ -379,8 +379,6 @@ parse(std::FILE *fp, error_function const &error)
     ASCIIPListParserContext  context;
     ASCIIPListLexer     lexer;
 
-    context.error = error;
-
     if (fseek(fp, 0, SEEK_END) != 0) {
         return nullptr;
     }
@@ -410,6 +408,8 @@ parse(std::FILE *fp, error_function const &error)
     success = ASCIIParserParse(&context, &lexer);
     if (success) {
         root = ASCIIPListParserCopyRoot(&context);
+    } else {
+        error(0, 0, context.error);
     }
 
     ASCIIPListParserContextFree(&context);

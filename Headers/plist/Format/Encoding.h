@@ -10,6 +10,8 @@
 #ifndef __plist_Format_Encoding_h
 #define __plist_Format_Encoding_h
 
+#include <plist/Base.h>
+
 namespace plist {
 namespace Format {
 
@@ -19,6 +21,20 @@ enum class Encoding {
     UTF16LE,
     UTF32BE,
     UTF32LE,
+};
+
+class Encodings {
+private:
+    Encodings();
+    ~Encodings();
+
+public:
+    static Encoding
+    Detect(std::vector<uint8_t> const &contents);
+
+public:
+    static std::vector<uint8_t>
+    Convert(std::vector<uint8_t> const &contents, Encoding from, Encoding to);
 };
 
 }

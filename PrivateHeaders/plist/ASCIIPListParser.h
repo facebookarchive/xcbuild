@@ -49,7 +49,7 @@ typedef struct _ASCIIPListParserContext {
     std::stack<plist::String *> keyStack;
 
     ASCIIContextState           contextState;
-    plist::error_function       error;
+    std::string                 error;
 } ASCIIPListParserContext;
 
 
@@ -74,7 +74,7 @@ bool
 ASCIIPListParserIsAborted(ASCIIPListParserContext *context);
 
 void
-ASCIIPListParserAbort(ASCIIPListParserContext *context, const char *reason);
+ASCIIPListParserAbort(ASCIIPListParserContext *context, std::string const &error);
 
 bool
 ASCIIPListParserIsDone(ASCIIPListParserContext *context);

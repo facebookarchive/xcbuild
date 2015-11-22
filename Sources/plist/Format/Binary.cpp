@@ -8,6 +8,7 @@
  */
 
 #include <plist/Format/Binary.h>
+#include <plist/BinaryParser.h>
 
 using plist::Format::Type;
 using plist::Format::Format;
@@ -29,6 +30,16 @@ template<>
 std::unique_ptr<Binary> Format<Binary>::
 Identify(std::vector<uint8_t> const &contents)
 {
+    size_t length = strlen(ABPLIST_MAGIC ABPLIST_VERSION);
+
+    if (contents.size() < length) {
+        return nullptr;
+    }
+
+    if (std::memcmp(contents.data(), ABPLIST_MAGIC ABPLIST_VERSION, length) == 0) {
+        return std::make_unique<Binary>(Binary::Create());
+    }
+
     return nullptr;
 }
 

@@ -93,9 +93,9 @@ ASCIIPListParserDecrementLevel(ASCIIPListParserContext *context)
 }
 
 void
-ASCIIPListParserAbort(ASCIIPListParserContext *context, const char *reason)
+ASCIIPListParserAbort(ASCIIPListParserContext *context, std::string const &error)
 {
-    context->error(0, 0, std::string(reason));
+    context->error = error;
     context->contextState = kASCIIContextStateAborted;
 }
 

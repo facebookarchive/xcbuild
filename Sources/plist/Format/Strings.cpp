@@ -31,6 +31,7 @@ template<>
 std::unique_ptr<Strings> Format<Strings>::
 Identify(std::vector<uint8_t> const &contents)
 {
+    /* Should be merged with ASCII parsing. */
     return nullptr;
 }
 

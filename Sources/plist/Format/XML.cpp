@@ -31,6 +31,49 @@ template<>
 std::unique_ptr<XML> Format<XML>::
 Identify(std::vector<uint8_t> const &contents)
 {
+    /*
+     * To identify XML document, we look for a <? or <!, ignoring
+     * any whitespace or UTF BOM characters.
+     */
+
+    uint8_t last = '\0';
+
+    for (std::vector<uint8_t>::const_iterator bp = contents.begin(); bp != contents.end(); ++bp) {
+        /* Conceal zeroes for UTF-16/32 encodings. */
+        if (*bp == 0 || isspace(*bp)) {
+            bp++;
+        } else if (last == 0 && *bp == '<') {
+            last = *bp++;
+        } else if (last == '<') {
+            if (*bp == '?' || *bp == '!') {
+                /* Found <? or <! */
+            }
+
+            Encoding encoding = Encodings::Detect(contents);
+            return std::make_unique<XML>(XML::Create(encoding));
+        } else if (bp - contents.begin() < 4) {
+            /*
+             * We conceal some BOM chars for UTF encodings in the first
+             * four bytes.
+             */
+            switch (*bp) {
+                case 0xfe: /* UTF-16/32 */
+                case 0xff:
+                case 0xef: /* UTF-8 */
+                case 0xbb:
+                case 0xbf:
+                    bp++;
+                    break;
+                default:
+                    return nullptr;
+            }
+        } else {
+            return nullptr;
+        }
+
+        last = *bp;
+    }
+
     return nullptr;
 }
 
