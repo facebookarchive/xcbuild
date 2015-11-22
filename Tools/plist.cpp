@@ -40,7 +40,7 @@ main(int argc, char **argv)
         fprintf(stderr, "error: %s\n", serialize.second.c_str());
     }
 
-    std::string output = std::string(reinterpret_cast<char *>(serialize.first->data()), serialize.first->size());
+    std::string output = std::string(reinterpret_cast<char const *>(serialize.first->data()), serialize.first->size());
     printf("%s\n", output.c_str());
 
     deserialize.first->release();

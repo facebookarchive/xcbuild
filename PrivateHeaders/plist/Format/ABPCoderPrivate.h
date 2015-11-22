@@ -10,7 +10,7 @@
 #ifndef __plist_ABPCoderPrivate_h
 #define __plist_ABPCoderPrivate_h
 
-#include <plist/ABPReader.h>
+#include <plist/Format/ABPReader.h>
 
 #include <plist/Objects.h>
 

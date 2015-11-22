@@ -38,7 +38,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "unicode.h"
+#include <plist/Format/unicode.h>
 
 #define IS_CONT(c)  (((c)&0xc0) == 0x80)
 

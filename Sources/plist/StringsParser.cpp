@@ -8,8 +8,8 @@
  */
 
 #include <plist/StringsParser.h>
-#include <plist/ASCIIPListLexer.h>
-#include <plist/ASCIIPListParser.h>
+#include <plist/Format/ASCIIPListLexer.h>
+#include <plist/Format/ASCIIPListParser.h>
 
 #include <plist/Objects.h>
 

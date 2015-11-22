@@ -8,7 +8,7 @@
  */
 
 #include <plist/Format/Binary.h>
-#include <plist/BinaryParser.h>
+#include <plist/Format/ABPReader.h>
 #include <plist/Objects.h>
 
 #include <cerrno>
@@ -16,7 +16,7 @@
 #if notyet
 #include <codecvt>
 #else
-#include "../unicode.h"
+#include <plist/Format/unicode.h>
 #define char16_t uint16_t
 #endif
 

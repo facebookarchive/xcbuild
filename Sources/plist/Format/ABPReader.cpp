@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <plist/ABPReaderPrivate.h>
+#include <plist/Format/ABPReaderPrivate.h>
 
 #if 0
 #define dprintf(...) fprintf(stderr, __VA_ARGS__)

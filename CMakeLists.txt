@@ -51,14 +51,12 @@ set(libplist_SOURCES
     Sources/plist/XMLParser.cpp
     Sources/plist/SimpleXMLParser.cpp
     #
-    Sources/plist/unicode.c
-    Sources/plist/ABPCommon.cpp
-    Sources/plist/ABPReader.cpp
-    Sources/plist/BinaryParser.cpp
+    Sources/plist/Format/unicode.c
+    Sources/plist/Format/ABPCommon.cpp
+    Sources/plist/Format/ABPReader.cpp
     #
-    Sources/plist/ASCIIPListLexer.cpp
-    Sources/plist/ASCIIPListParser.cpp
-    Sources/plist/ASCIIParser.cpp
+    Sources/plist/Format/ASCIIPListLexer.cpp
+    Sources/plist/Format/ASCIIPListParser.cpp
     Sources/plist/StringsParser.cpp
     #
     Sources/plist/Format/Encoding.cpp

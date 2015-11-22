@@ -8,9 +8,9 @@
  */
 
 #include <plist/Format/ASCII.h>
+#include <plist/Format/ASCIIPListLexer.h>
+#include <plist/Format/ASCIIPListParser.h>
 #include <plist/Objects.h>
-#include <plist/ASCIIPListLexer.h>
-#include <plist/ASCIIPListParser.h>
 
 using plist::Format::Type;
 using plist::Format::Encoding;

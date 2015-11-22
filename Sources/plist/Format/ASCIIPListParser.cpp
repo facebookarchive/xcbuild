@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <plist/ASCIIPListParser.h>
+#include <plist/Format/ASCIIPListParser.h>
 #include <plist/Objects.h>
 
 using plist::Object;

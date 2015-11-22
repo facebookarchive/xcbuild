@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <plist/ASCIIPListLexer.h>
+#include <plist/Format/ASCIIPListLexer.h>
 
 #include <ctype.h>
 #include <stdint.h>
