@@ -36,8 +36,8 @@ main(int argc, char **argv)
         return -1;
     }
 
-    plist::Format::XML out = plist::Format::XML::Create(plist::Format::Encoding::UTF8);
-    auto serialize = plist::Format::XML::Serialize(deserialize.first, out);
+    plist::Format::ASCII out = plist::Format::ASCII::Create(plist::Format::Encoding::UTF8);
+    auto serialize = plist::Format::ASCII::Serialize(deserialize.first, out);
     if (serialize.first == nullptr) {
         fprintf(stderr, "error: %s\n", serialize.second.c_str());
         return -1;

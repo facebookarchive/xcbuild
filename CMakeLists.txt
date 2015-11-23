@@ -66,6 +66,7 @@ set(libplist_SOURCES
     Sources/plist/Format/ASCIIPListLexer.cpp
     Sources/plist/Format/Strings.cpp
     Sources/plist/Format/ASCIIPListParser.cpp
+    Sources/plist/Format/ASCIIWriter.cpp
     Sources/plist/Format/ASCII.cpp
     )
 
