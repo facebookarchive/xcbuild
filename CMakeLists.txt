@@ -52,7 +52,9 @@ set(libplist_SOURCES
     #
     Sources/plist/Format/BaseXMLParser.cpp
     Sources/plist/Format/XMLParser.cpp
+    Sources/plist/Format/XMLWriter.cpp
     Sources/plist/Format/XML.cpp
+    #
     Sources/plist/Format/SimpleXMLParser.cpp
     Sources/plist/Format/SimpleXML.cpp
     #

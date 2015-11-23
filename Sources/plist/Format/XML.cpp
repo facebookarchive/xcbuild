@@ -9,12 +9,14 @@
 
 #include <plist/Format/XML.h>
 #include <plist/Format/XMLParser.h>
+#include <plist/Format/XMLWriter.h>
 
 using plist::Format::Type;
 using plist::Format::Encoding;
 using plist::Format::Format;
 using plist::Format::XML;
 using plist::Format::XMLParser;
+using plist::Format::XMLWriter;
 using plist::Object;
 
 XML::
@@ -98,7 +100,18 @@ template<>
 std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<XML>::
 Serialize(Object *object, XML const &format)
 {
-    return std::make_pair(nullptr, "not yet implemented");
+    if (object == nullptr) {
+        return std::make_pair(nullptr, "object was null");
+    }
+
+    XMLWriter writer = XMLWriter(object);
+    if (!writer.write()) {
+        return std::make_pair(nullptr, "serialization failed");
+    }
+
+    const std::vector<uint8_t> data = Encodings::Convert(writer.contents(), Encoding::UTF8, format.encoding());
+
+    return std::make_pair(std::make_unique<std::vector<uint8_t>>(data), std::string());
 }
 
 XML XML::
