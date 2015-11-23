@@ -49,7 +49,7 @@ write()
         return false;
     }
 
-    if (handleObject(_root)) {
+    if (!handleObject(_root)) {
         return false;
     }
 

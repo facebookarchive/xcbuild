@@ -116,6 +116,7 @@ Read(void *opaque, void *buffer, size_t size)
     /* Copy into read buffer. */
     memcpy(buffer, self->contents->data() + self->offset, size);
 
+    self->offset += size;
     return size;
 }
 

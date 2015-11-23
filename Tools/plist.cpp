@@ -9,6 +9,7 @@
 
 #include <plist/plist.h>
 
+#include <fstream>
 #include <cstring>
 #include <cerrno>
 
@@ -20,7 +21,8 @@ main(int argc, char **argv)
         return -1;
     }
 
-    std::vector<uint8_t> contents; // TODO(grp): Read from argv[1].
+    std::ifstream file = std::ifstream(argv[1], std::ios::binary);
+    std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 
     auto format = plist::Format::Any::Identify(contents);
     if (format == nullptr) {
@@ -34,10 +36,11 @@ main(int argc, char **argv)
         return -1;
     }
 
-    plist::Format::ASCII out = plist::Format::ASCII::Create(plist::Format::Encoding::UTF8);
-    auto serialize = plist::Format::ASCII::Serialize(deserialize.first, out);
+    plist::Format::XML out = plist::Format::XML::Create(plist::Format::Encoding::UTF8);
+    auto serialize = plist::Format::XML::Serialize(deserialize.first, out);
     if (serialize.first == nullptr) {
         fprintf(stderr, "error: %s\n", serialize.second.c_str());
+        return -1;
     }
 
     std::string output = std::string(reinterpret_cast<char const *>(serialize.first->data()), serialize.first->size());
