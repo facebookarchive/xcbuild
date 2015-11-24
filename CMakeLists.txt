@@ -45,7 +45,17 @@ set(libutil_SOURCES
     )
 
 set(libplist_SOURCES
-    Sources/plist/Objects.cpp
+    Sources/plist/Array.cpp
+    Sources/plist/Boolean.cpp
+    Sources/plist/Data.cpp
+    Sources/plist/Date.cpp
+    Sources/plist/Dictionary.cpp
+    Sources/plist/Integer.cpp
+    Sources/plist/Null.cpp
+    Sources/plist/Object.cpp
+    Sources/plist/Real.cpp
+    Sources/plist/String.cpp
+    Sources/plist/Keys.cpp
     #
     Sources/plist/Format/Encoding.cpp
     Sources/plist/Format/unicode.c
