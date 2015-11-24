@@ -43,8 +43,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    std::string output = std::string(reinterpret_cast<char const *>(serialize.first->data()), serialize.first->size());
-    printf("%s\n", output.c_str());
+    std::copy(serialize.first->begin(), serialize.first->end(), std::ostream_iterator<char>(std::cout));
 
     deserialize.first->release();
 

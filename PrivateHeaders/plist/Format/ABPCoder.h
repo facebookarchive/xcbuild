@@ -11,6 +11,8 @@
 #define __plist_Format_ABPCoder_h
 
 #include <plist/Object.h>
+#include <plist/String.h>
+#include <plist/Dictionary.h>
 #include <plist/Format/abplist-format.h>
 
 typedef struct _ABPContext ABPContext;
@@ -66,6 +68,7 @@ struct _ABPContext {
     std::unordered_map<plist::Object const *, int>                      references;
     std::unordered_map<plist::Object const *, plist::Object const *>    mappings;
     std::unordered_set<plist::Object const *>                           written;
+    std::unordered_map<plist::Dictionary const *, std::unordered_map<int, plist::String *>> keyStrings;
     union {
         ABPCreateCallBacks  createCallBacks;
         ABPProcessCallBacks processCallBacks;

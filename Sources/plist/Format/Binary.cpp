@@ -114,7 +114,7 @@ Read(void *opaque, void *buffer, size_t size)
     }
 
     /* Copy into read buffer. */
-    memcpy(buffer, self->contents->data() + self->offset, size);
+    ::memcpy(buffer, self->contents->data() + self->offset, size);
 
     self->offset += size;
     return size;
@@ -320,7 +320,6 @@ Deserialize(std::vector<uint8_t> const &contents, Binary const &format)
     parseContext.contents                = &contents;
     parseContext.offset                  = 0;
 
-    std::memset(&parseContext.context, 0, sizeof(parseContext.context));
     ::ABPReaderInit(&parseContext.context, &parseContext.streamCallBacks, &parseContext.createCallBacks);
 
     Object *object = nullptr;
@@ -378,14 +377,19 @@ Write(void *opaque, void const *buffer, size_t size)
 
     ssize_t needed = (self->contents.size() - self->offset + size);
     if (needed > 0) {
-        self->contents.reserve(self->contents.size() + needed);
+        self->contents.resize(self->contents.size() + needed);
     }
 
     /* Copy into read buffer. */
-    memcpy(self->contents.data() + self->offset, buffer, size);
+    ::memcpy(self->contents.data() + self->offset, buffer, size);
 
     self->offset += size;
     return size;
+}
+
+bool Process(void *opaque, plist::Object const **object)
+{
+    return true;
 }
 
 template<>
@@ -403,12 +407,14 @@ Serialize(Object *object, Binary const &format)
 
     writeContext.processCallBacks.version = 0;
     writeContext.processCallBacks.opaque = nullptr;
-    writeContext.processCallBacks.process = nullptr;
-
-    std::memset(&writeContext.context, 0, sizeof(writeContext.context));
-    ::ABPWriterInit(&writeContext.context, &writeContext.streamCallBacks, &writeContext.processCallBacks);
+    writeContext.processCallBacks.process = &Process;
 
     bool success;
+    success = ::ABPWriterInit(&writeContext.context, &writeContext.streamCallBacks, &writeContext.processCallBacks);
+    if (!success) {
+        return std::make_pair(nullptr, "init failed");
+    }
+
     success = ::ABPWriterOpen(&writeContext.context);
     if (!success) {
         return std::make_pair(nullptr, "open failed");

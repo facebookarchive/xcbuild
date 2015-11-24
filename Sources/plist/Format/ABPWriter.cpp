@@ -50,13 +50,13 @@ __ABPWriteOffsetTable(ABPContext *context)
 
     /* Estimate offset integer size. */
     if (highestOffset > UINT32_MAX) {
-        context->trailer.offsetIntByteSize = 8;
+        context->trailer.offsetIntByteSize = sizeof(uint64_t);
     } else if (highestOffset > UINT16_MAX) {
-        context->trailer.offsetIntByteSize = 4;
+        context->trailer.offsetIntByteSize = sizeof(uint32_t);
     } else if (highestOffset > UINT8_MAX) {
-        context->trailer.offsetIntByteSize = 2;
+        context->trailer.offsetIntByteSize = sizeof(uint16_t);
     } else {
-        context->trailer.offsetIntByteSize = 1;
+        context->trailer.offsetIntByteSize = sizeof(uint8_t);
     }
 
     /* Update offset in trailer. */
@@ -222,11 +222,30 @@ __ABPWriteString(ABPContext *context, String *string)
     return success;
 }
 
+/*
+ * Workaround for Dictionaries not having keys with identity. Map from integer key
+ * index to key value to use as the identity when writing the key object out.
+ */
+static String *
+__ABPDictionaryKeyString(ABPContext *context, Dictionary const *dict, int key)
+{
+    std::unordered_map<int, String *> *map = &context->keyStrings[dict];
+
+    auto it = map->find(key);
+    if (it != map->end()) {
+        return it->second;
+    } else {
+        String *string = String::New(dict->key(key));
+        map->insert({ key, string });
+        return string;
+    }
+}
+
 static inline void
 __ABPWriteArrayReferences(ABPContext *context, Array const *array)
 {
     for (int i = 0; i < array->count(); ++i) {
-        _ABPWritePreflightObject(context, array->value(i), kABPWriteObjectReference);
+        _ABPWriteObject(context, array->value(i), kABPWriteObjectReference);
     }
 }
 
@@ -234,7 +253,7 @@ static inline void
 __ABPWriteArrayValues(ABPContext *context, Array const *array)
 {
     for (int i = 0; i < array->count(); ++i) {
-        _ABPWritePreflightObject(context, array->value(i), kABPWriteObjectValue);
+        _ABPWriteObject(context, array->value(i), kABPWriteObjectValue);
     }
 }
 
@@ -260,9 +279,8 @@ static void
 __ABPWriteDictionaryReferences(ABPContext *context, Dictionary const *dict)
 {
     for (int i = 0; i < dict->count(); ++i) {
-        String *key = String::New(dict->key(i));
+        String *key = __ABPDictionaryKeyString(context, dict, i);
         _ABPWriteObject(context, key, kABPWriteObjectReference);
-        key->release();
     }
 
     for (int i = 0; i < dict->count(); ++i) {
@@ -274,9 +292,8 @@ static void
 __ABPWriteDictionaryValues(ABPContext *context, Dictionary const *dict)
 {
     for (int i = 0; i < dict->count(); ++i) {
-        String *key = String::New(dict->key(i));
+        String *key = __ABPDictionaryKeyString(context, dict, i);
         _ABPWriteObject(context, key, kABPWriteObjectValue);
-        key->release();
     }
 
     for (int i = 0; i < dict->count(); ++i) {
@@ -325,13 +342,12 @@ __ABPWritePreflightDictionaryReferences(ABPContext *context,
         Dictionary const *dict)
 {
     for (int i = 0; i < dict->count(); ++i) {
-        String *key = String::New(dict->key(i));
-        _ABPWriteObject(context, key, 0);
-        key->release();
+        String *key = __ABPDictionaryKeyString(context, dict, i);
+        _ABPWritePreflightObject(context, key, 0);
     }
 
     for (int i = 0; i < dict->count(); ++i) {
-        _ABPWriteObject(context, dict->value(i), 0);
+        _ABPWritePreflightObject(context, dict->value(i), 0);
     }
 }
 
@@ -388,8 +404,10 @@ _ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *re
     assert(newObject != NULL);
 
     /* Is this new object already written? */
-    *refno = context->references[newObject];
-    if (*refno != 0) {
+    auto it = context->references.find(newObject);
+    if (it != context->references.end()) {
+        *refno = it->second;
+
         /* 
          * Yes, invalidate newObject so the caller knows that this is
          * a reference.
@@ -401,8 +419,8 @@ _ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *re
         /*
          * No, add a new reference for this newObject.
          */
-        *refno = context->references.size() + 1;
-        context->references[newObject] = *refno;
+        *refno = context->references.size();
+        context->references.insert({ newObject, *refno });
     }
 
     /* Return the new object to the user. */
@@ -439,14 +457,12 @@ _ABPWritePreflightObject(ABPContext *context, Object const *object,
 
     /* If this is the top level object, store reference in the header. */
     if (flags & kABPWriteObjectTopLevel) {
-        context->trailer.topLevelObject = refno - 1;
+        context->trailer.topLevelObject = refno;
     }
-
-    assert(refno > 0);
 
     /* Add this object to the offsets table. */
     if (refno >= context->trailer.objectsCount) {
-        context->trailer.objectsCount = refno;
+        context->trailer.objectsCount = refno + 1;
     }
 
     /* Preflight dictionaries and arrays. */
@@ -486,7 +502,7 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
     }
 
     if (flags & kABPWriteObjectReference) {
-        return __ABPWriteReference(context, refno - 1);
+        return __ABPWriteReference(context, refno);
     }
 
     /* Cache written object. */
@@ -523,7 +539,7 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
 
     if (success) {
         /* Update offsets table. */
-        context->offsets[refno - 1] = offset;
+        context->offsets[refno] = offset;
     }
 
     return success;
@@ -629,6 +645,12 @@ ABPWriterClose(ABPContext *context)
             return false;
     }
 
+    for (auto const &map : context->keyStrings) {
+        for (auto const &item : map.second) {
+            item.second->release();
+        }
+    }
+
     _ABPContextFree(context);
     return true;
 }
@@ -654,12 +676,12 @@ ABPWriteTopLevelObject(ABPContext *context, Object const *object)
             kABPWriteObjectTopLevel);
     if (success) {
         /* Estimate the object reference size. */
-        size_t nrefs = context->references.size();
-        if (sizeof(int) > sizeof(uint32_t) && nrefs > (int)UINT32_MAX) {
+        uint64_t nrefs = context->references.size();
+        if (nrefs > UINT32_MAX) {
             context->trailer.objectRefByteSize = sizeof(uint64_t);
-        } else if (nrefs > (int)UINT16_MAX) {
+        } else if (nrefs > UINT16_MAX) {
             context->trailer.objectRefByteSize = sizeof(uint32_t);
-        } else if (nrefs > (int)UINT8_MAX) {
+        } else if (nrefs > UINT8_MAX) {
             context->trailer.objectRefByteSize = sizeof(uint16_t);
         } else {
             context->trailer.objectRefByteSize = sizeof(uint8_t);
