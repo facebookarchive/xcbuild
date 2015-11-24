@@ -48,7 +48,7 @@ set(libplist_SOURCES
     Sources/plist/Objects.cpp
     #
     Sources/plist/Format/Encoding.cpp
-    Sources/plist/Format/Any.cpp
+    Sources/plist/Format/unicode.c
     #
     Sources/plist/Format/BaseXMLParser.cpp
     Sources/plist/Format/XMLParser.cpp
@@ -58,16 +58,17 @@ set(libplist_SOURCES
     Sources/plist/Format/SimpleXMLParser.cpp
     Sources/plist/Format/SimpleXML.cpp
     #
-    Sources/plist/Format/unicode.c
     Sources/plist/Format/ABPCommon.cpp
     Sources/plist/Format/ABPReader.cpp
     Sources/plist/Format/Binary.cpp
     #
     Sources/plist/Format/ASCIIPListLexer.cpp
     Sources/plist/Format/Strings.cpp
-    Sources/plist/Format/ASCIIPListParser.cpp
+    Sources/plist/Format/ASCIIParser.cpp
     Sources/plist/Format/ASCIIWriter.cpp
     Sources/plist/Format/ASCII.cpp
+    #
+    Sources/plist/Format/Any.cpp
     )
 
 set(libpbxbase_SOURCES
