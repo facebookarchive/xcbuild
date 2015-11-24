@@ -134,7 +134,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
         case kABPRecordTypeBoolTrue:
             return Boolean::New(true);
         case kABPRecordTypeBoolFalse:
-            return Boolean::New(true);
+            return Boolean::New(false);
         case kABPRecordTypeDate:
             return Date::New(*reinterpret_cast <uint64_t *> (arg1) - ReferenceTimestamp);
         case kABPRecordTypeInteger:
