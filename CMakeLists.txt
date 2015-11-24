@@ -60,6 +60,7 @@ set(libplist_SOURCES
     #
     Sources/plist/Format/ABPCommon.cpp
     Sources/plist/Format/ABPReader.cpp
+    Sources/plist/Format/ABPWriter.cpp
     Sources/plist/Format/Binary.cpp
     #
     Sources/plist/Format/ASCIIPListLexer.cpp

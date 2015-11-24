@@ -118,27 +118,6 @@ __ABPReadData(ABPContext *context, size_t nbytes)
     return data;
 }
 
-static inline plist::Data *
-__ABPReadUid(ABPContext *context, size_t nbytes)
-{
-    uint64_t value = 0;
-
-    if (!__ABPReadLength(context, &nbytes)) {
-        __ABPError(context, "EOF reading UID length value");
-        return NULL;
-    }
-
-    dprintf("uid - %zu bytes\n", nbytes);
-
-    if (nbytes > 4)
-        return NULL;
-
-    if (nbytes > 0 && !__ABPReadWord(context, nbytes, &value))
-        return NULL;
-
-    return __ABPCreateUid(context, value);
-}
-
 static inline plist::String *
 __ABPReadStringASCII(ABPContext *context, size_t nchars)
 {
@@ -300,8 +279,6 @@ _ABPReadObject(ABPContext *context)
                 return __ABPReadStringASCII(context, byte & 0x0f);
             case kABPRecordTypeStringUnicode:
                 return __ABPReadStringUnicode(context, byte & 0x0f);
-            case kABPRecordTypeUid:
-                return __ABPReadUid(context, (byte & 0x0f) + 1);
             case kABPRecordTypeArray:
                 return _ABPReadArray(context, byte & 0x0f);
             case kABPRecordTypeDictionary:

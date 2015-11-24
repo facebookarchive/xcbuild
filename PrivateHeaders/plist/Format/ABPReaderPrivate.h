@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __plist_ABPReaderPrivate_h
-#define __plist_ABPReaderPrivate_h
+#ifndef __plist_Format_ABPReaderPrivate_h
+#define __plist_Format_ABPReaderPrivate_h
 
 #include <plist/Format/ABPCoderPrivate.h>
 
@@ -123,4 +123,4 @@ __ABPReadTrailer(ABPContext *context)
     return true;
 }
 
-#endif  /* !__plist_ABPReaderPrivate_h */
+#endif  /* !__plist_Format_ABPReaderPrivate_h */

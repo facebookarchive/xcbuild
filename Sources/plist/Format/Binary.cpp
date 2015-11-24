@@ -8,7 +8,7 @@
  */
 
 #include <plist/Format/Binary.h>
-#include <plist/Format/ABPReader.h>
+#include <plist/Format/ABPCoder.h>
 #include <plist/Objects.h>
 
 #include <cerrno>
@@ -76,7 +76,7 @@ struct BinaryParseContext {
 };
 
 static off_t
-Seek(void *opaque, off_t offset, int whence)
+ReadSeek(void *opaque, off_t offset, int whence)
 {
     auto self = reinterpret_cast <BinaryParseContext *> (opaque);
 
@@ -153,7 +153,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             std::vector <uint8_t> bytes;
 
             if (nbytes > 0) {
-                if (Seek(opaque, offset, SEEK_SET) < 0)
+                if (ReadSeek(opaque, offset, SEEK_SET) < 0)
                     return nullptr;
 
                 bytes.resize(nbytes);
@@ -173,7 +173,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             std::string string;
 
             if (nchars > 0) {
-                if (Seek(opaque, offset, SEEK_SET) < 0)
+                if (ReadSeek(opaque, offset, SEEK_SET) < 0)
                     return nullptr;
 
                 string.resize(nchars);
@@ -196,7 +196,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
 #endif
 
             if (nchars > 0) {
-                if (Seek(opaque, offset, SEEK_SET) < 0)
+                if (ReadSeek(opaque, offset, SEEK_SET) < 0)
                     return nullptr;
 
                 string.resize(nchars);
@@ -216,8 +216,6 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             return String::New(std::move(u8string));
 #endif
         }
-        case kABPRecordTypeUid:
-            return Data::New(arg1, sizeof(uint32_t));
         case kABPRecordTypeArray:
         {
             uint64_t *refs  = reinterpret_cast <uint64_t *> (arg1);
@@ -310,7 +308,8 @@ Deserialize(std::vector<uint8_t> const &contents, Binary const &format)
     parseContext.streamCallBacks.version = 0;
     parseContext.streamCallBacks.opaque  = &parseContext;
     parseContext.streamCallBacks.close   = nullptr;
-    parseContext.streamCallBacks.seek    = &Seek;
+    parseContext.streamCallBacks.write   = nullptr;
+    parseContext.streamCallBacks.seek    = &ReadSeek;
     parseContext.streamCallBacks.read    = &Read;
 
     parseContext.createCallBacks.version = 0;
@@ -336,11 +335,101 @@ Deserialize(std::vector<uint8_t> const &contents, Binary const &format)
     return std::make_pair(object, parseContext.error);
 }
 
+struct BinaryWriteContext {
+    ABPContext                    context;
+    ABPStreamCallBacks            streamCallBacks;
+    ABPProcessCallBacks           processCallBacks;
+
+    std::vector<uint8_t>          contents;
+    off_t                         offset;
+};
+
+static off_t
+WriteSeek(void *opaque, off_t offset, int whence)
+{
+    auto self = reinterpret_cast <BinaryWriteContext *> (opaque);
+
+    switch (whence) {
+        case SEEK_SET:
+            self->offset = offset;
+            break;
+        case SEEK_CUR:
+            self->offset += offset;
+            break;
+        case SEEK_END:
+            self->offset = self->contents.size() + offset;
+        default:
+            break;
+    }
+
+    /* Error if past the end. */
+    if (self->offset > self->contents.size()) {
+        return -1;
+    }
+
+    /* Success, return current offset. */
+    return self->offset;
+}
+
+static ssize_t
+Write(void *opaque, void const *buffer, size_t size)
+{
+    auto self = reinterpret_cast <BinaryWriteContext *> (opaque);
+
+    ssize_t needed = (self->contents.size() - self->offset + size);
+    if (needed > 0) {
+        self->contents.reserve(self->contents.size() + needed);
+    }
+
+    /* Copy into read buffer. */
+    memcpy(self->contents.data() + self->offset, buffer, size);
+
+    self->offset += size;
+    return size;
+}
+
 template<>
 std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<Binary>::
 Serialize(Object *object, Binary const &format)
 {
-    return std::make_pair(nullptr, "not yet implemented");
+    BinaryWriteContext writeContext;
+
+    writeContext.streamCallBacks.version = 0;
+    writeContext.streamCallBacks.opaque  = &writeContext;
+    writeContext.streamCallBacks.write   = &Write;
+    writeContext.streamCallBacks.seek    = &WriteSeek;
+    writeContext.streamCallBacks.close   = nullptr;
+    writeContext.streamCallBacks.read    = nullptr;
+
+    writeContext.processCallBacks.version = 0;
+    writeContext.processCallBacks.opaque = nullptr;
+    writeContext.processCallBacks.process = nullptr;
+
+    std::memset(&writeContext.context, 0, sizeof(writeContext.context));
+    ::ABPWriterInit(&writeContext.context, &writeContext.streamCallBacks, &writeContext.processCallBacks);
+
+    bool success;
+    success = ::ABPWriterOpen(&writeContext.context);
+    if (!success) {
+        return std::make_pair(nullptr, "open failed");
+    }
+
+    success = ::ABPWriteTopLevelObject(&writeContext.context, object);
+    if (!success) {
+        return std::make_pair(nullptr, "write failed");
+    }
+
+    success = ::ABPWriterFinalize(&writeContext.context);
+    if (!success) {
+        return std::make_pair(nullptr, "finalize failed");
+    }
+
+    success = ::ABPWriterClose(&writeContext.context);
+    if (!success) {
+        return std::make_pair(nullptr, "close failed");
+    }
+
+    return std::make_pair(std::make_unique<std::vector<uint8_t>>(writeContext.contents), std::string());
 }
 
 Binary Binary::

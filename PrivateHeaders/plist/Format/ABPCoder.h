@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __plist_ABPReader_h
-#define __plist_ABPReader_h
+#ifndef __plist_Format_ABPCoder_h
+#define __plist_Format_ABPCoder_h
 
 #include <plist/Object.h>
 #include <plist/Format/abplist-format.h>
@@ -27,7 +27,6 @@ typedef enum _ABPRecordType {
     kABPRecordTypeData,
     kABPRecordTypeStringASCII,
     kABPRecordTypeStringUnicode,
-    kABPRecordTypeUid,
     kABPRecordTypeArray,
     kABPRecordTypeDictionary
 } ABPRecordType;
@@ -39,24 +38,38 @@ typedef struct _ABPStreamCallBacks {
     void (*close)(void *);
     off_t (*seek)(void *, off_t, int);
     ssize_t (*read)(void *, void *, size_t);
+    ssize_t (*write)(void *, void const *, size_t);
 } ABPStreamCallBacks;
 
 typedef struct _ABPCreateCallBacks {
-    int   version;
-    void *opaque;
+    int      version;
+    void    *opaque;
 
-    plist::Object * (*create)(void *, ABPRecordType, void *, void *, void *);
+    plist::Object *(*create)(void *, ABPRecordType, void *, void *, void *);
     void (*error)(void *, char const *);
 } ABPCreateCallBacks;
 
+typedef struct _ABPProcessCallBacks {
+    int      version;
+    void    *opaque;
+
+    bool   (*process)(void *, plist::Object const **);
+} ABPProcessCallBacks;
+
 struct _ABPContext {
-    unsigned             flags;
-    abplist_header_t     header;
-    abplist_trailer_t    trailer;
-    uint64_t            *offsets;
-    plist::Object      **objects;
-    ABPStreamCallBacks   streamCallBacks;
-    ABPCreateCallBacks   createCallBacks;
+    unsigned                flags;
+    abplist_header_t        header;
+    abplist_trailer_t       trailer;
+    uint64_t               *offsets;
+    plist::Object         **objects;
+    ABPStreamCallBacks      streamCallBacks;
+    std::unordered_map<plist::Object const *, int>                      references;
+    std::unordered_map<plist::Object const *, plist::Object const *>    mappings;
+    std::unordered_set<plist::Object const *>                           written;
+    union {
+        ABPCreateCallBacks  createCallBacks;
+        ABPProcessCallBacks processCallBacks;
+    };
 };
 
 /* Private Coder Flags */
@@ -85,8 +98,20 @@ size_t ABPReaderGetObjectsCount(ABPContext *context);
 plist::Object *ABPReadTopLevelObject(ABPContext *context);
 plist::Object *ABPReadObject(ABPContext *context, uint64_t reference);
 
+/* Writer */
+
+bool ABPWriterInit(ABPContext *context,
+        ABPStreamCallBacks const *streamCallBacks,
+        ABPProcessCallBacks const *callbacks);
+
+bool ABPWriterOpen(ABPContext *context);
+bool ABPWriterFinalize(ABPContext *context);
+bool ABPWriterClose(ABPContext *context);
+
+bool ABPWriteTopLevelObject(ABPContext *context, plist::Object const *object);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif  /* !__plist_ABPReader_h */
+#endif  /* !__plist_Format_ABPCoder_h */

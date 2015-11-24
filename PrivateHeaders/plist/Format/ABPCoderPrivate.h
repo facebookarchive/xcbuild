@@ -7,10 +7,10 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __plist_ABPCoderPrivate_h
-#define __plist_ABPCoderPrivate_h
+#ifndef __plist_Format_ABPCoderPrivate_h
+#define __plist_Format_ABPCoderPrivate_h
 
-#include <plist/Format/ABPReader.h>
+#include <plist/Format/ABPCoder.h>
 
 #include <plist/Objects.h>
 
@@ -47,8 +47,6 @@ __ABPByteToRecordType(uint8_t byte)
                 return kABPRecordTypeStringASCII;
             case 0x6: /* 0110 nnnn: unicode string */
                 return kABPRecordTypeStringUnicode;
-            case 0x8: /* 1000 nnnn: uid */
-                return kABPRecordTypeUid;
             case 0xa: /* 1010 nnnn: array */
                 return kABPRecordTypeArray;
             case 0xd: /* 1101 nnnn: dictionary */
@@ -86,9 +84,6 @@ __ABPRecordTypeToByte(ABPRecordType type, size_t size)
         case kABPRecordTypeStringUnicode:
             if (size > 15) size = 0xf;
             return 0x60 | (size & 0xf); /* 0110 nnnn: unicode string */
-        case kABPRecordTypeUid:
-            if (size > 16) size = 0xf; else size--;
-            return 0x80 | (size & 0xf); /* 1000 nnnn: uid */
         case kABPRecordTypeArray:
             if (size > 15) size = 0xf;
             return 0xa0 | (size & 0xf); /* 1010 nnnn: array */
@@ -126,6 +121,16 @@ __ABPReadBytes(ABPContext *context, void *data, size_t length)
     else
         return (*(context->streamCallBacks.read))(context->streamCallBacks.opaque,
                 data, length);
+}
+
+static inline ssize_t
+__ABPWriteBytes(ABPContext *context, void const *data, size_t length)
+{
+    if (context->streamCallBacks.write == NULL)
+        return EOF;
+    else
+        return (*(context->streamCallBacks.write))(context->streamCallBacks.opaque,
+                                                   data, length);
 }
 
 /* Reader Objects Callback */
@@ -207,13 +212,6 @@ __ABPCreateData(ABPContext *context, off_t offset, size_t nbytes)
                 kABPRecordTypeData, &offset, &nbytes));
 }
 
-static inline plist::Data *
-__ABPCreateUid(ABPContext *context, uint32_t value)
-{
-    return plist::CastTo <plist::Data> (__ABPCreateObject(context,
-                kABPRecordTypeUid, &value));
-}
-
 static inline plist::Date *
 __ABPCreateDate(ABPContext *context, uint64_t timestamp)
 {
@@ -238,4 +236,4 @@ __ABPCreateDictionary(ABPContext *context, uint64_t *refs, size_t nrefs)
 void
 _ABPContextFree(ABPContext *context);
 
-#endif  /* !__plist_ABPCoderPrivate_h */
+#endif  /* !__plist_Format_ABPCoderPrivate_h */
