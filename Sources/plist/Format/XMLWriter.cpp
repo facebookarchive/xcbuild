@@ -78,25 +78,24 @@ primitiveWriteEscapedString(std::string const &string)
 
     for (char c : string) {
         switch (c) {
-            case '<': {
-                std::string quoted = "&lt;";
-                _contents.insert(_contents.end(), quoted.begin(), quoted.end());
+            case '<':
+                if (!primitiveWriteString("&lt;")) {
+                    return false;
+                }
                 break;
-            }
-            case '>': {
-                std::string quoted = "&gt;";
-                _contents.insert(_contents.end(), quoted.begin(), quoted.end());
+            case '>':
+                if (!primitiveWriteString("&gt;")) {
+                    return false;
+                }
                 break;
-            }
-            case '&': {
-                std::string quoted = "&amp;";
-                _contents.insert(_contents.end(), quoted.begin(), quoted.end());
+            case '&':
+                if (!primitiveWriteString("&amp;")) {
+                    return false;
+                }
                 break;
-            }
-            default: {
+            default:
                 _contents.push_back(c);
                 break;
-            }
         }
     }
 
