@@ -82,14 +82,6 @@ set(libplist_SOURCES
     Sources/plist/Format/Any.cpp
     )
 
-set(libpbxbase_SOURCES
-    ${libutil_SOURCES}
-    ${libplist_SOURCES}
-    )
-
-add_library(pbxbase SHARED ${libpbxbase_SOURCES})
-target_link_libraries(pbxbase expat)
-
 set(libbuiltin_SOURCES
     Sources/builtin/Driver.cpp
     Sources/builtin/Registry.cpp
@@ -274,45 +266,51 @@ set(libxcdriver_SOURCES
     Sources/xcdriver/ShowSDKsAction.cpp
     Sources/xcdriver/VersionAction.cpp)
 
+add_library(util SHARED ${libutil_SOURCES})
+target_link_libraries(util)
+
+add_library(plist SHARED ${libplist_SOURCES})
+target_link_libraries(plist util expat)
+
 add_library(builtin SHARED ${libbuiltin_SOURCES})
-target_link_libraries(builtin pbxbase)
+target_link_libraries(builtin util plist)
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
-target_link_libraries(pbxsetting pbxbase)
+target_link_libraries(pbxsetting util plist)
 
 add_library(xcsdk SHARED ${libxcsdk_SOURCES})
-target_link_libraries(xcsdk pbxsetting pbxbase)
+target_link_libraries(xcsdk pbxsetting util plist)
 
 add_library(xcscheme SHARED ${libxcscheme_SOURCES})
-target_link_libraries(xcscheme pbxbase)
+target_link_libraries(xcscheme util plist)
 
 add_library(pbxproj SHARED ${libpbxproj_SOURCES})
-target_link_libraries(pbxproj pbxsetting pbxbase)
+target_link_libraries(pbxproj pbxsetting util plist)
 
 add_library(xcworkspace SHARED ${libxcworkspace_SOURCES})
-target_link_libraries(xcworkspace pbxbase)
+target_link_libraries(xcworkspace util plist)
 
 add_library(pbxspec SHARED ${libpbxspec_SOURCES})
-target_link_libraries(pbxspec pbxsetting pbxbase)
+target_link_libraries(pbxspec pbxsetting util plist)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
 target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec builtin)
 
 add_library(xcdriver SHARED ${libxcdriver_SOURCES})
-target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting pbxbase builtin)
+target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
 
-add_executable(plist Tools/plist.cpp)
-target_link_libraries(plist pbxbase)
+add_executable(plutil Tools/plutil.cpp)
+target_link_libraries(plutil plist)
 add_executable(xcconfig Tools/xcconfig.cpp)
 target_link_libraries(xcconfig pbxsetting)
 add_executable(hmap Tools/hmap.cpp)
 target_link_libraries(hmap pbxbase pbxbuild)
 add_executable(pbxtool Tools/pbxtool.cpp)
-target_link_libraries(pbxtool pbxbase pbxproj xcscheme pbxsetting)
+target_link_libraries(pbxtool util plist pbxproj xcscheme pbxsetting)
 add_executable(xcspec Tools/xcspec.cpp)
 target_link_libraries(xcspec pbxspec)
 add_executable(xctool Tools/xctool.cpp)
-target_link_libraries(xctool pbxbase pbxproj xcscheme xcworkspace)
+target_link_libraries(xctool util plist pbxproj xcscheme xcworkspace)
 add_executable(xcbuild Tools/xcbuild.cpp)
 target_link_libraries(xcbuild xcdriver)
 
@@ -346,10 +344,10 @@ function (ADD_UNIT_GTEST NAME SOURCES)
 endfunction ()
 
 ADD_UNIT_GTEST(test_FSUtil Tests/libutil/test_FSUtil.cpp)
-target_link_libraries(test_FSUtil pbxbase)
+target_link_libraries(test_FSUtil util)
 
 ADD_UNIT_GTEST(test_Wildcard Tests/libutil/test_Wildcard.cpp)
-target_link_libraries(test_Wildcard pbxbase)
+target_link_libraries(test_Wildcard util)
 
 ADD_UNIT_GTEST(test_Condition Tests/pbxsetting/test_Condition.cpp)
 target_link_libraries(test_Condition pbxsetting)
