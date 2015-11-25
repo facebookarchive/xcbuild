@@ -22,6 +22,9 @@ include_directories(${CMAKE_BINARY_DIR}/ThirdParty/expat/expat)
 
 add_subdirectory(ThirdParty/expat/expat)
 
+find_library(CORE_FOUNDATION CoreFoundation)
+find_library(CORE_SERVICES CoreSERVICES)
+
 include_directories(Headers)
 include_directories(PrivateHeaders)
 
@@ -273,7 +276,7 @@ add_library(plist SHARED ${libplist_SOURCES})
 target_link_libraries(plist util expat)
 
 add_library(builtin SHARED ${libbuiltin_SOURCES})
-target_link_libraries(builtin util plist)
+target_link_libraries(builtin util plist ${CORE_FOUNDATION} ${CORE_SERVICES})
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting util plist)

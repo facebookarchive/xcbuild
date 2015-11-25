@@ -10,6 +10,14 @@
 #include <builtin/lsRegisterURL/Driver.h>
 #include <builtin/lsRegisterURL/Options.h>
 
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#if TARGET_OS_MAC && !TARGET_OS_IPHONE
+#include <CoreFoundation/CoreFoundation.h>
+#include <CoreServices/CoreServices.h>
+#endif
+#endif
+
 using builtin::lsRegisterURL::Driver;
 using builtin::lsRegisterURL::Options;
 
@@ -39,7 +47,21 @@ run(std::vector<std::string> const &args)
         return 1;
     }
 
-    // TODO(grp): Implement LSRegisterURL builtin.
-    fprintf(stderr, "error: LSRegisterURL not supported\n");
-    return 1;
+#if defined(__APPLE__) && TARGET_OS_MAC && !TARGET_OS_IPHONE
+    CFURLRef URL = CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault, reinterpret_cast<const UInt8 *>(options.input().c_str()), options.input().size(), false);
+    if (URL == NULL) {
+        fprintf(stderr, "error: failed to create URL\n");
+        return -1;
+    }
+
+    OSStatus status = LSRegisterURL(URL, true);
+    if (status != noErr) {
+        fprintf(stderr, "error: LSRegisterURL failed %ld\n", (long)status);
+        return 1;
+    }
+#else
+    fprintf(stderr, "warning: not supported on this platform\n");
+#endif
+
+    return 0;
 }
