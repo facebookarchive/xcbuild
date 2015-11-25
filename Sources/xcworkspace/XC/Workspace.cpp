@@ -70,9 +70,16 @@ Open(std::string const &path)
     //
     // Parse property list
     //
-    plist::Dictionary *plist = plist::Dictionary::ParseSimpleXML(projectFileName);
-    if (plist == nullptr)
+    plist::Object *root = plist::Format::SimpleXML::Read(projectFileName).first;
+    if (root == nullptr) {
         return nullptr;
+    }
+
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(root);
+    if (plist == nullptr) {
+        root->release();
+        return nullptr;
+    }
 
     //
     // Create the workspace object and parse the property list

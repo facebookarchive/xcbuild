@@ -25,11 +25,13 @@ Default(void)
     std::string developerRoot = xcsdk::Environment::DeveloperRoot();
     std::shared_ptr<xcsdk::SDK::Manager> sdkManager = xcsdk::SDK::Manager::Open(developerRoot);
     if (sdkManager == nullptr) {
+        fprintf(stderr, "error: couldn't create SDK manager\n");
         return nullptr;
     }
 
     auto specManager = pbxspec::Manager::Create();
     if (specManager == nullptr) {
+        fprintf(stderr, "error: couldn't create spec manager\n");
         return nullptr;
     }
 
@@ -46,6 +48,7 @@ Default(void)
 
     pbxspec::PBX::BuildSystem::shared_ptr buildSystem = specManager->buildSystem("com.apple.build-system.core", { "default" });
     if (buildSystem == nullptr) {
+        fprintf(stderr, "error: couldn't create build system\n");
         return nullptr;
     }
 

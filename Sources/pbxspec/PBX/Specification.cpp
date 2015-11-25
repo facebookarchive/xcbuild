@@ -164,26 +164,24 @@ bool Specification::
 Open(Context *context, std::string const &filename)
 {
     if (filename.empty()) {
-        errno = EINVAL;
+        fprintf(stderr, "stderr: empty specification path\n");
         return false;
     }
 
     std::string realPath = FSUtil::ResolvePath(filename);
     if (realPath.empty()) {
+        fprintf(stderr, "stderr: invalid specification path\n");
         return false;
     }
 
     //
     // Parse property list
     //
-    plist::Object *plist = plist::Object::Parse(filename);
+    plist::Object *plist = plist::Format::Any::Read(filename).first;
     if (plist == nullptr) {
+        fprintf(stderr, "stderr: unable to read specification plist\n");
         return false;
     }
-
-#if 0
-    plist->dump(stdout);
-#endif
 
     //
     // If this is a dictionary, then it's a single specification,

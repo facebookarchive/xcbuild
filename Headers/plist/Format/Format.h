@@ -38,20 +38,17 @@ public:
 
 public:
     static std::pair<Object *, std::string>
-    Read(std::string const &path, T *format)
+    Read(std::string const &path)
     {
         std::ifstream file = std::ifstream(path, std::ios::binary);
         std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 
-        T f = Identify(contents);
-        if (format != nullptr) {
-            *format = f;
-        }
-        if (f == nullptr) {
+        std::unique_ptr<T> format = Identify(contents);
+        if (format == nullptr) {
             return std::make_pair(nullptr, "couldn't identify format");
         }
 
-        return Deserialize(contents, f);
+        return Deserialize(contents, *format);
     }
 
 public:

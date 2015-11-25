@@ -67,9 +67,16 @@ Open(std::string const &path)
     //
     // Parse property list
     //
-    plist::Dictionary *plist = plist::Dictionary::Parse(settingsFileName);
-    if (plist == nullptr)
+    auto result = plist::Format::Any::Read(settingsFileName);
+    if (result.first == nullptr) {
         return nullptr;
+    }
+
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(result.first);
+    if (plist == nullptr) {
+        result.first->release();
+        return nullptr;
+    }
 
     //
     // Parse the Product dictionary and create the object.

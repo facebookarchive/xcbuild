@@ -160,15 +160,18 @@ Open(std::string const &path)
     //
     // Parse property list
     //
-    plist::Dictionary *plist = plist::Dictionary::Parse(projectFileName);
-    if (plist == nullptr) {
-        fprintf(stderr, "error: project file %s is not parseable\n", projectFileName.c_str());
+    auto result = plist::Format::Any::Read(projectFileName);
+    if (result.first == nullptr) {
+        fprintf(stderr, "error: project file %s is not parseable: %s\n", projectFileName.c_str(), result.second.c_str());
         return nullptr;
     }
 
-#if 0
-    plist->dump(stdout);
-#endif
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(result.first);
+    if (plist == nullptr) {
+        fprintf(stderr, "error: project file %s is not a dictionary\n", projectFileName.c_str());
+        result.first->release();
+        return nullptr;
+    }
 
     //
     // Fetch basic objects

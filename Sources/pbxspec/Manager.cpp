@@ -339,7 +339,7 @@ registerDomain(std::pair<std::string, std::string> const &domain)
 void Manager::
 registerBuildRules(std::string const &path)
 {
-    plist::Object *plist = plist::Object::Parse(path);
+    plist::Object *plist = plist::Format::Any::Read(path).first;
     if (plist == nullptr) {
         return;
     }

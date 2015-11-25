@@ -101,13 +101,16 @@ Open(std::string const &name, std::string const &owner, std::string const &path)
     //
     // Parse simple XML
     //
-    plist::Dictionary *plist = plist::Dictionary::ParseSimpleXML(path);
-    if (plist == nullptr)
+    plist::Object *root = plist::Format::SimpleXML::Read(path).first;
+    if (root == nullptr) {
         return nullptr;
+    }
 
-#if 0
-    plist->dump(stdout);
-#endif
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(root);
+    if (plist == nullptr) {
+        root->release();
+        return nullptr;
+    }
 
     //
     // Parse the scheme dictionary and create the scheme object.
@@ -118,7 +121,7 @@ Open(std::string const &name, std::string const &owner, std::string const &path)
     } else {
         scheme = nullptr;
     }
-                                                        
+
     //
     // Release the property list.
     //

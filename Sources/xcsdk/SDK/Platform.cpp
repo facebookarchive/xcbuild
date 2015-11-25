@@ -243,13 +243,16 @@ Open(std::shared_ptr<Manager> manager, std::string const &path)
     //
     // Parse property list
     //
-    plist::Dictionary *plist = plist::Dictionary::Parse(settingsFileName);
-    if (plist == nullptr)
+    auto result = plist::Format::Any::Read(settingsFileName);
+    if (result.first == nullptr) {
         return nullptr;
+    }
 
-#if 0
-    plist->dump(stdout);
-#endif
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(result.first);
+    if (plist == nullptr) {
+        result.first->release();
+        return nullptr;
+    }
 
     //
     // Parse the SDK platform dictionary and create the object.
