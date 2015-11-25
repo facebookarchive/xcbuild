@@ -18,7 +18,6 @@ enum class Type {
     XML,
     ASCII,
     Strings,
-    SimpleXML,
 };
 
 }

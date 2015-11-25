@@ -42,7 +42,7 @@ Identify(std::vector<uint8_t> const &contents)
 
     uint8_t last = '\0';
 
-    for (std::vector<uint8_t>::const_iterator bp = contents.begin(); bp != contents.end(); ++bp) {
+    for (std::vector<uint8_t>::const_iterator bp = contents.begin(); bp != contents.end();) {
         /* Conceal zeroes for UTF-16/32 encodings. */
         if (*bp == 0 || isspace(*bp)) {
             bp++;
@@ -74,8 +74,6 @@ Identify(std::vector<uint8_t> const &contents)
         } else {
             return nullptr;
         }
-
-        last = *bp;
     }
 
     return nullptr;

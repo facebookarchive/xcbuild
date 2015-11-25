@@ -37,9 +37,6 @@ Any::
         case Type::Strings:
             _contents.strings.~Strings();
             break;
-        case Type::SimpleXML:
-            _contents.simpleXML.~SimpleXML();
-            break;
     }
 }
 
@@ -71,7 +68,6 @@ Identify(std::vector<uint8_t> const &contents)
     FORMAT(XML);
     FORMAT(ASCII);
     FORMAT(Strings);
-    FORMAT(SimpleXML);
 
 #undef FORMAT
 
@@ -98,8 +94,6 @@ Deserialize(std::vector<uint8_t> const &contents, Any const &format)
             return DeserializeImpl<ASCII>(contents, format);
         case Type::Strings:
             return DeserializeImpl<Strings>(contents, format);
-        case Type::SimpleXML:
-            return DeserializeImpl<SimpleXML>(contents, format);
     }
 }
 
@@ -127,7 +121,5 @@ Serialize(Object const *object, Any const &format)
             return SerializeImpl<ASCII>(object, format);
         case Type::Strings:
             return SerializeImpl<Strings>(object, format);
-        case Type::SimpleXML:
-            return SerializeImpl<SimpleXML>(object, format);
     }
 }

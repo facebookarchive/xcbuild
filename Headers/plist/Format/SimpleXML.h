@@ -25,9 +25,6 @@ private:
     SimpleXML(Encoding encoding);
 
 public:
-    static Type Type();
-
-public:
     inline Encoding encoding() const
     { return _encoding; }
 

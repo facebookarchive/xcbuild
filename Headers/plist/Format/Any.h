@@ -15,7 +15,6 @@
 #include <plist/Format/XML.h>
 #include <plist/Format/ASCII.h>
 #include <plist/Format/Strings.h>
-#include <plist/Format/SimpleXML.h>
 
 namespace plist {
 namespace Format {
@@ -30,7 +29,6 @@ private:
         XML       xml;
         ASCII     ascii;
         Strings   strings;
-        SimpleXML simpleXML;
     };
 
 private:
