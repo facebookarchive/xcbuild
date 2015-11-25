@@ -103,7 +103,7 @@ ReadSeek(void *opaque, off_t offset, int whence)
 }
 
 static ssize_t
-Read(void *opaque, void *buffer, size_t size)
+ReadData(void *opaque, void *buffer, size_t size)
 {
     auto self = reinterpret_cast <BinaryParseContext *> (opaque);
 
@@ -157,7 +157,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
                     return nullptr;
 
                 bytes.resize(nbytes);
-                size_t nread = Read(opaque, &bytes[0], nbytes);
+                size_t nread = ReadData(opaque, &bytes[0], nbytes);
                 if (nread < nbytes)
                     return nullptr;
             }
@@ -177,7 +177,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
                     return nullptr;
 
                 string.resize(nchars);
-                size_t nread = Read(opaque, &string[0], sizeof(char) * nchars);
+                size_t nread = ReadData(opaque, &string[0], sizeof(char) * nchars);
                 if (nread < nchars)
                     return nullptr;
             }
@@ -200,7 +200,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
                     return nullptr;
 
                 string.resize(nchars);
-                size_t nread = Read(opaque, &string[0], sizeof(char16_t) * nchars);
+                size_t nread = ReadData(opaque, &string[0], sizeof(char16_t) * nchars);
                 if (nread < nchars)
                     return nullptr;
             }
@@ -310,7 +310,7 @@ Deserialize(std::vector<uint8_t> const &contents, Binary const &format)
     parseContext.streamCallBacks.close   = nullptr;
     parseContext.streamCallBacks.write   = nullptr;
     parseContext.streamCallBacks.seek    = &ReadSeek;
-    parseContext.streamCallBacks.read    = &Read;
+    parseContext.streamCallBacks.read    = &ReadData;
 
     parseContext.createCallBacks.version = 0;
     parseContext.createCallBacks.opaque  = &parseContext;
@@ -371,7 +371,7 @@ WriteSeek(void *opaque, off_t offset, int whence)
 }
 
 static ssize_t
-Write(void *opaque, void const *buffer, size_t size)
+WriteData(void *opaque, void const *buffer, size_t size)
 {
     auto self = reinterpret_cast <BinaryWriteContext *> (opaque);
 
@@ -394,13 +394,13 @@ bool Process(void *opaque, plist::Object const **object)
 
 template<>
 std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<Binary>::
-Serialize(Object *object, Binary const &format)
+Serialize(Object const *object, Binary const &format)
 {
     BinaryWriteContext writeContext;
 
     writeContext.streamCallBacks.version = 0;
     writeContext.streamCallBacks.opaque  = &writeContext;
-    writeContext.streamCallBacks.write   = &Write;
+    writeContext.streamCallBacks.write   = &WriteData;
     writeContext.streamCallBacks.seek    = &WriteSeek;
     writeContext.streamCallBacks.close   = nullptr;
     writeContext.streamCallBacks.read    = nullptr;

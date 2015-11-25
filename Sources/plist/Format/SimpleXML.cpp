@@ -54,7 +54,7 @@ Deserialize(std::vector<uint8_t> const &contents, SimpleXML const &format)
 
 template<>
 std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<SimpleXML>::
-Serialize(Object *object, SimpleXML const &format)
+Serialize(Object const *object, SimpleXML const &format)
 {
     return std::make_pair(nullptr, "not yet implemented");
 }

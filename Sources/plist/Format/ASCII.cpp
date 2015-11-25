@@ -235,7 +235,7 @@ Deserialize(std::vector<uint8_t> const &contents, ASCII const &format)
 
 template<>
 std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<ASCII>::
-Serialize(Object *object, ASCII const &format)
+Serialize(Object const *object, ASCII const &format)
 {
     if (object == nullptr) {
         return std::make_pair(nullptr, "object was null");

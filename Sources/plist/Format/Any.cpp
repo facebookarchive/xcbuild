@@ -105,14 +105,14 @@ Deserialize(std::vector<uint8_t> const &contents, Any const &format)
 
 template<typename T>
 static std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string>
-SerializeImpl(Object *object, Any const &format)
+SerializeImpl(Object const *object, Any const &format)
 {
     return T::Serialize(object, *format.format<T>());
 }
 
 template<>
 std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<Any>::
-Serialize(Object *object, Any const &format)
+Serialize(Object const *object, Any const &format)
 {
     if (object == nullptr) {
         return std::make_pair(std::make_unique<std::vector<uint8_t>>(std::vector<uint8_t>()), "invalid object to serialize");

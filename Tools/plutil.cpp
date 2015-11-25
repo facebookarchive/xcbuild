@@ -9,7 +9,6 @@
 
 #include <plist/plist.h>
 
-#include <fstream>
 #include <cstring>
 #include <cerrno>
 
@@ -21,16 +20,8 @@ main(int argc, char **argv)
         return -1;
     }
 
-    std::ifstream file = std::ifstream(argv[1], std::ios::binary);
-    std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-
-    auto format = plist::Format::Any::Identify(contents);
-    if (format == nullptr) {
-        fprintf(stderr, "error: not a plist\n");
-        return -1;
-    }
-
-    auto deserialize = plist::Format::Any::Deserialize(contents, *format);
+    plist::Format::Any format;
+    auto deserialize = plist::Format::Any::Read(argv[1], &format);
     if (deserialize.first == nullptr) {
         fprintf(stderr, "error: %s\n", deserialize.second.c_str());
         return -1;

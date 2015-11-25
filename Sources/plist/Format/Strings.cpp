@@ -141,7 +141,7 @@ StringsParserParse(ASCIIPListLexer *lexer, Dictionary *strings)
                 value = NULL;
                 state = 0; /* Back to state 0 */
                 break;
-                
+
             default:
                 return false;
         }
@@ -172,13 +172,13 @@ Deserialize(std::vector<uint8_t> const &contents, Strings const &format)
 
         error = "unable to parse strings";
     }
-    
+
     return std::make_pair(root, error);
 }
 
 template<>
 std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<Strings>::
-Serialize(Object *object, Strings const &format)
+Serialize(Object const *object, Strings const &format)
 {
     return std::make_pair(nullptr, "not yet implemented");
 }

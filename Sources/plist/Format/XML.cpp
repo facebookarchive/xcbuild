@@ -98,7 +98,7 @@ Deserialize(std::vector<uint8_t> const &contents, XML const &format)
 
 template<>
 std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<XML>::
-Serialize(Object *object, XML const &format)
+Serialize(Object const *object, XML const &format)
 {
     if (object == nullptr) {
         return std::make_pair(nullptr, "object was null");
