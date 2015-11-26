@@ -44,5 +44,5 @@ Create(
     auto context = pbxbuild::Tool::ScriptInvocationContext::Create(scriptTool, buildPhase, environment, workingDirectory);
     std::vector<pbxbuild::ToolInvocation> invocations = { context.invocation() };
 
-    return std::make_unique<ShellScriptResolver>(invocations);
+    return std::unique_ptr<ShellScriptResolver>(new ShellScriptResolver(invocations));
 }

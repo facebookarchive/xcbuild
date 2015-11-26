@@ -44,7 +44,7 @@ ordered(void) const
     std::vector<T> result;
 
     std::list<T> toExplore;
-    std::transform(_contents.begin(), _contents.end(), std::back_inserter(toExplore), [](auto const &pair) {
+    std::transform(_contents.begin(), _contents.end(), std::back_inserter(toExplore), [](std::pair<T, std::vector<T>> const &pair) {
         return pair.first;
     });
 

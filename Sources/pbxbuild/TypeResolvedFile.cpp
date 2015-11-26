@@ -176,11 +176,11 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
         //
         // Matched all checks.
         //
-        return std::make_unique<TypeResolvedFile>(TypeResolvedFile(filePath, fileType));
+        return std::unique_ptr<TypeResolvedFile>(new TypeResolvedFile(TypeResolvedFile(filePath, fileType)));
     }
 
     pbxspec::PBX::FileType::shared_ptr fileType = (isFolder ? specManager->fileType("folder", domains) : specManager->fileType("file", domains));
-    return std::make_unique<TypeResolvedFile>(TypeResolvedFile(filePath, fileType));
+    return std::unique_ptr<TypeResolvedFile>(new TypeResolvedFile(TypeResolvedFile(filePath, fileType)));
 }
 
 std::unique_ptr<TypeResolvedFile> TypeResolvedFile::
@@ -194,13 +194,13 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
 
     if (!fileReference->explicitFileType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(fileReference->explicitFileType(), domains)) {
-            return std::make_unique<TypeResolvedFile>(TypeResolvedFile(filePath, fileType));
+            return std::unique_ptr<TypeResolvedFile>(new TypeResolvedFile(TypeResolvedFile(filePath, fileType)));
         }
     }
 
     if (!fileReference->lastKnownFileType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(fileReference->lastKnownFileType(), domains)) {
-            return std::make_unique<TypeResolvedFile>(TypeResolvedFile(filePath, fileType));
+            return std::unique_ptr<TypeResolvedFile>(new TypeResolvedFile(TypeResolvedFile(filePath, fileType)));
         }
     }
 

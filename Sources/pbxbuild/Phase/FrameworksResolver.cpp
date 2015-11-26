@@ -167,5 +167,5 @@ Create(
         }
     }
 
-    return std::make_unique<FrameworksResolver>(invocations);
+    return std::unique_ptr<FrameworksResolver>(new FrameworksResolver(invocations));
 }

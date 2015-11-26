@@ -46,7 +46,7 @@ IdentifyImpl(std::vector<uint8_t> const &contents)
 {
     std::unique_ptr<T> format = T::Identify(contents);
     if (format != nullptr) {
-        return std::make_unique<Any>(Any::Create<T>(*format));
+        return std::unique_ptr<Any>(new Any(Any::Create<T>(*format)));
     }
 
     return nullptr;
@@ -109,7 +109,7 @@ std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> Format<Any>::
 Serialize(Object const *object, Any const &format)
 {
     if (object == nullptr) {
-        return std::make_pair(std::make_unique<std::vector<uint8_t>>(std::vector<uint8_t>()), "invalid object to serialize");
+        return std::make_pair(std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>()), "invalid object to serialize");
     }
 
     switch (format.type()) {

@@ -44,5 +44,5 @@ Create(
     auto context = pbxbuild::Tool::ScriptInvocationContext::Create(scriptTool, legacyTarget, environment, workingDirectory);
     std::vector<pbxbuild::ToolInvocation> invocations = { context.invocation() };
 
-    return std::make_unique<LegacyTargetResolver>(invocations);
+    return std::unique_ptr<LegacyTargetResolver>(new LegacyTargetResolver(invocations));
 }

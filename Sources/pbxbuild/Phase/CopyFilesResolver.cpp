@@ -119,5 +119,5 @@ Create(
         invocations.push_back(context.invocation());
     }
 
-    return std::make_unique<CopyFilesResolver>(invocations);
+    return std::unique_ptr<CopyFilesResolver>(new CopyFilesResolver(invocations));
 }

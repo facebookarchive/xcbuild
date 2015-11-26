@@ -60,5 +60,5 @@ Default(void)
         baseEnvironment.insertBack(level, false);
     }
 
-    return std::make_unique<BuildEnvironment>(BuildEnvironment(specManager, sdkManager, baseEnvironment));
+    return std::unique_ptr<BuildEnvironment>(new BuildEnvironment(BuildEnvironment(specManager, sdkManager, baseEnvironment)));
 }

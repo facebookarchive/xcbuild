@@ -69,7 +69,7 @@ CreateWorkspace(Options const &options)
         }
 
         pbxbuild::WorkspaceContext context = pbxbuild::WorkspaceContext::Workspace(workspace);
-        return std::make_unique<pbxbuild::WorkspaceContext>(context);
+        return std::unique_ptr<pbxbuild::WorkspaceContext>(new pbxbuild::WorkspaceContext(context));
     } else {
         pbxproj::PBX::Project::shared_ptr project = OpenProject(options.project(), ".");
         if (project == nullptr) {
@@ -77,7 +77,7 @@ CreateWorkspace(Options const &options)
         }
 
         pbxbuild::WorkspaceContext context = pbxbuild::WorkspaceContext::Project(project);
-        return std::make_unique<pbxbuild::WorkspaceContext>(context);
+        return std::unique_ptr<pbxbuild::WorkspaceContext>(new pbxbuild::WorkspaceContext(context));
     }
 }
 
@@ -164,7 +164,7 @@ CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &wor
         overrideLevels
     );
 
-    return std::make_unique<pbxbuild::BuildContext>(buildContext);
+    return std::unique_ptr<pbxbuild::BuildContext>(new pbxbuild::BuildContext(buildContext));
 }
 
 bool Action::

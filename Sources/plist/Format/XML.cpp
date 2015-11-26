@@ -54,7 +54,7 @@ Identify(std::vector<uint8_t> const &contents)
             }
 
             Encoding encoding = Encodings::Detect(contents);
-            return std::make_unique<XML>(XML::Create(encoding));
+            return std::unique_ptr<XML>(new XML(XML::Create(encoding)));
         } else if (bp - contents.begin() < 4) {
             /*
              * We conceal some BOM chars for UTF encodings in the first
@@ -109,7 +109,7 @@ Serialize(Object const *object, XML const &format)
 
     const std::vector<uint8_t> data = Encodings::Convert(writer.contents(), Encoding::UTF8, format.encoding());
 
-    return std::make_pair(std::make_unique<std::vector<uint8_t>>(data), std::string());
+    return std::make_pair(std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>(data.begin(), data.end())), std::string());
 }
 
 XML XML::

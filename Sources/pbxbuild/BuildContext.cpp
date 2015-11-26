@@ -35,7 +35,7 @@ targetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target
 {
     auto TEI = _targetEnvironments->find(target);
     if (TEI != _targetEnvironments->end()) {
-        return std::make_unique<pbxbuild::TargetEnvironment>(TEI->second);
+        return std::unique_ptr<pbxbuild::TargetEnvironment>(new pbxbuild::TargetEnvironment(TEI->second));
     } else {
         std::unique_ptr<TargetEnvironment> targetEnvironment = TargetEnvironment::Create(buildEnvironment, target, this);
         if (targetEnvironment != nullptr) {
@@ -75,7 +75,7 @@ resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::
             pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast<pbxproj::PBX::NativeTarget>(target);
             if (nativeTarget->productReference() != nullptr && nativeTarget->productReference()->blueprintIdentifier() == identifier) {
                 auto pair = std::make_pair(target, nativeTarget->productReference());
-                return std::make_unique<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>>(pair);
+                return std::unique_ptr<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>>(new std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>(pair));
             }
         }
     }

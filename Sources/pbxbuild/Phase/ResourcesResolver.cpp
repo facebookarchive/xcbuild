@@ -108,5 +108,5 @@ Create(
         }
     }
 
-    return std::make_unique<ResourcesResolver>(invocations);
+    return std::unique_ptr<ResourcesResolver>(new ResourcesResolver(invocations));
 }

@@ -57,7 +57,7 @@ Identify(std::vector<uint8_t> const &contents)
     }
 
     if (std::memcmp(contents.data(), ABPLIST_MAGIC ABPLIST_VERSION, length) == 0) {
-        return std::make_unique<Binary>(Binary::Create());
+        return std::unique_ptr<Binary>(new Binary(Binary::Create()));
     }
 
     return nullptr;
@@ -435,7 +435,7 @@ Serialize(Object const *object, Binary const &format)
         return std::make_pair(nullptr, "close failed");
     }
 
-    return std::make_pair(std::make_unique<std::vector<uint8_t>>(writeContext.contents), std::string());
+    return std::make_pair(std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>(writeContext.contents.begin(), writeContext.contents.end())), std::string());
 }
 
 Binary Binary::

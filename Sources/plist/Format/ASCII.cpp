@@ -151,7 +151,7 @@ Identify(std::vector<uint8_t> const &contents)
                 case '\"':
                 case '(': {
                     Encoding encoding = Encodings::Detect(contents);
-                    return std::make_unique<ASCII>(ASCII::Create(encoding));
+                    return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(encoding)));
                 }
                 case '{':
                     state = kStateIdentifier;
@@ -160,13 +160,13 @@ Identify(std::vector<uint8_t> const &contents)
                 case '<':
                     if (bp[1] != '?' && bp[1] != '!') {
                         Encoding encoding = Encodings::Detect(contents);
-                        return std::make_unique<ASCII>(ASCII::Create(encoding));
+                        return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(encoding)));
                     }
                     return nullptr;
                 default:
                     if (isalnum(*bp) || *bp == '_' || *bp == '.' || *bp == '$') {
                         Encoding encoding = Encodings::Detect(contents);
-                        return std::make_unique<ASCII>(ASCII::Create(encoding));
+                        return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(encoding)));
                     }
                     return nullptr;
             }
@@ -198,7 +198,7 @@ Identify(std::vector<uint8_t> const &contents)
             }
 
             Encoding encoding = Encodings::Detect(contents);
-            return std::make_unique<ASCII>(ASCII::Create(encoding));
+            return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(encoding)));
         } else {
             return nullptr;
         }
@@ -246,7 +246,7 @@ Serialize(Object const *object, ASCII const &format)
 
     const std::vector<uint8_t> data = Encodings::Convert(writer.contents(), Encoding::UTF8, format.encoding());
 
-    return std::make_pair(std::make_unique<std::vector<uint8_t>>(data), std::string());
+    return std::make_pair(std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>(data.begin(), data.end())), std::string());
 }
 
 ASCII ASCII::

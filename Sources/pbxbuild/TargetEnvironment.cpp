@@ -368,9 +368,9 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
     std::string workingDirectory = target->project()->basePath();
 
-    std::unique_ptr<TargetEnvironment> te = std::make_unique<TargetEnvironment>();
+    std::unique_ptr<TargetEnvironment> te = std::unique_ptr<TargetEnvironment>(new TargetEnvironment());
     te->_buildRules = buildRules;
-    te->_environment = std::make_unique<pbxsetting::Environment>(environment);
+    te->_environment = std::unique_ptr<pbxsetting::Environment>(new pbxsetting::Environment(environment));
     te->_variants = variants;
     te->_architectures = architectures;
     te->_buildSystem = buildSystem;

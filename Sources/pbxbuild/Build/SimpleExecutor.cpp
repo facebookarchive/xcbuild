@@ -202,11 +202,11 @@ buildTarget(
 std::unique_ptr<SimpleExecutor> SimpleExecutor::
 Create(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins)
 {
-    return std::make_unique<SimpleExecutor>(
+    return std::unique_ptr<SimpleExecutor>(new SimpleExecutor(
         buildEnvironment,
         buildContext,
         formatter,
         dryRun,
         builtins
-    );
+    ));
 }

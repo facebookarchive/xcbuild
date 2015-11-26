@@ -191,5 +191,5 @@ Create(
         }
     }
 
-    return std::make_unique<SourcesResolver>(allInvocations, variantArchitectureInvocations, linkerDriver, linkerArguments);
+    return std::unique_ptr<SourcesResolver>(new SourcesResolver(allInvocations, variantArchitectureInvocations, linkerDriver, linkerArguments));
 }

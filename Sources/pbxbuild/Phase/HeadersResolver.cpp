@@ -74,5 +74,5 @@ Create(
         }
     }
 
-    return std::make_unique<HeadersResolver>(invocations);
+    return std::unique_ptr<HeadersResolver>(new HeadersResolver(invocations));
 }

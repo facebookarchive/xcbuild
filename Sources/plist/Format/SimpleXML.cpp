@@ -45,7 +45,7 @@ Identify(std::vector<uint8_t> const &contents)
             }
 
             Encoding encoding = Encodings::Detect(contents);
-            return std::make_unique<SimpleXML>(SimpleXML::Create(encoding));
+            return std::unique_ptr<SimpleXML>(new SimpleXML(SimpleXML::Create(encoding)));
         } else if (bp - contents.begin() < 4) {
             /*
              * We conceal some BOM chars for UTF encodings in the first
