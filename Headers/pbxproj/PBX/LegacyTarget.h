@@ -19,10 +19,10 @@ public:
     typedef std::shared_ptr <LegacyTarget> shared_ptr;
 
 private:
-    std::string _buildWorkingDirectory;
-    std::string _buildToolPath;
-    std::string _buildArgumentsString;
-    bool        _passBuildSettingsInEnvironment;
+    std::string       _buildWorkingDirectory;
+    std::string       _buildToolPath;
+    pbxsetting::Value _buildArgumentsString;
+    bool              _passBuildSettingsInEnvironment;
 
 public:
     LegacyTarget();
@@ -32,7 +32,7 @@ public:
     { return _buildToolPath; }
 
 public:
-    inline std::string const &buildArgumentsString() const
+    inline pbxsetting::Value const &buildArgumentsString() const
     { return _buildArgumentsString; }
 
 public:

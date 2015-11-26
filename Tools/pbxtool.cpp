@@ -327,7 +327,7 @@ CompleteDump(PBX::Project::shared_ptr const &project)
                         printf("\t\t\t\tRun Only For Deployment Postprocessing = %s\n",
                                 BP->runOnlyForDeploymentPostprocessing() ? "YES" : "NO");
                         printf("\t\t\t\tDestination Path                       = %s\n",
-                                BP->dstPath().c_str());
+                                BP->dstPath().raw().c_str());
                         printf("\t\t\t\tDestination Subfolder Specifier        = %#x\n",
                                 BP->dstSubfolderSpec());
                         printf("\t\t\t\tFiles:\n");

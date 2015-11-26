@@ -14,6 +14,7 @@ using pbxproj::PBX::LegacyTarget;
 
 LegacyTarget::LegacyTarget() :
     Target                         (Isa(), kTypeLegacy),
+    _buildArgumentsString          (pbxsetting::Value::Empty()),
     _passBuildSettingsInEnvironment(false)
 {
 }
@@ -38,7 +39,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (BAS != nullptr) {
-        _buildArgumentsString = BAS->value();
+        _buildArgumentsString = pbxsetting::Value::Parse(BAS->value());
     }
 
     if (PBSIE != nullptr) {

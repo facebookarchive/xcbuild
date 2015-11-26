@@ -81,7 +81,7 @@ Create(
     }
 
     std::string root = environment.expand(DestinationOutputPath(buildPhase->dstSubfolderSpec()));
-    std::string path = environment.expand(pbxsetting::Value::Parse(buildPhase->dstPath()));
+    std::string path = environment.expand(buildPhase->dstPath());
     std::string outputDirectory = root + "/" + path;
 
     // TODO(grp): There are subtleties here involving encodings, stripping, deleting headers, etc.

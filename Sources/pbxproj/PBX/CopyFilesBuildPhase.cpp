@@ -13,6 +13,7 @@ using pbxproj::PBX::CopyFilesBuildPhase;
 
 CopyFilesBuildPhase::CopyFilesBuildPhase() :
     BuildPhase       (Isa(), kTypeCopyFiles),
+    _dstPath         (pbxsetting::Value::Empty()),
     _dstSubfolderSpec(kDestinationAbsolute)
 {
 }
@@ -27,7 +28,7 @@ parse(Context &context, plist::Dictionary const *dict)
     auto DSS = dict->value <plist::Integer> ("dstSubfolderSpec");
 
     if (DP != nullptr) {
-        _dstPath = DP->value();
+        _dstPath = pbxsetting::Value::Parse(DP->value());
     }
 
     if (DSS != nullptr) {

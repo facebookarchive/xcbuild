@@ -36,14 +36,14 @@ public:
     };
 
 private:
-    std::string _dstPath;
-    Destination _dstSubfolderSpec;
+    pbxsetting::Value _dstPath;
+    Destination       _dstSubfolderSpec;
 
 public:
     CopyFilesBuildPhase();
 
 public:
-    inline std::string const &dstPath() const
+    inline pbxsetting::Value const &dstPath() const
     { return _dstPath; }
 
 public:

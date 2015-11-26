@@ -89,7 +89,7 @@ Create(
 {
     std::string logMessage = "ExternalBuildToolExecution " + legacyTarget->name();
 
-    std::string script = environment.expand(pbxsetting::Value::Parse(legacyTarget->buildArgumentsString()));
+    std::string script = environment.expand(legacyTarget->buildArgumentsString());
 
     std::unordered_map<std::string, std::string> environmentVariables;
     if (legacyTarget->passBuildSettingsInEnvironment()) {
