@@ -94,10 +94,10 @@ public:
     };
 
 protected:
-
-protected:
     friend class ComponentPart;
     friend class BuildPhaseInjection;
+
+protected:
     std::string            _uti;
     std::string            _language;
     std::string            _computerLanguage;

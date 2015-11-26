@@ -16,7 +16,6 @@ using pbxsetting::Setting;
 ProductType::ProductType() :
     Specification                          (),
     _defaultBuildProperties                (Level({ })),
-    _validation                            (nullptr),
     _hasInfoPlist                          (false),
     _hasInfoPlistStrings                   (false),
     _isWrapper                             (false),
@@ -34,9 +33,6 @@ ProductType::ProductType() :
 
 ProductType::~ProductType()
 {
-    if (_validation != nullptr) {
-        _validation->release();
-    }
 }
 
 ProductType::shared_ptr ProductType::
@@ -131,11 +127,7 @@ parse(Context *context, plist::Dictionary const *dict)
     }
 
     if (V != nullptr) {
-        if (_validation != nullptr) {
-            _validation->release();
-        }
-
-        _validation = plist::Copy(V);
+        _validation.parse(V);
     }
 
     if (INP != nullptr) {
@@ -236,7 +228,7 @@ inherit(ProductType::shared_ptr const &b)
 
     _defaultTargetName                      = base->defaultTargetName();
     _defaultBuildProperties                 = base->defaultBuildProperties();
-    _validation                             = plist::Copy(base->validation());
+    _validation                             = base->validation();
     _iconNamePrefix                         = base->iconNamePrefix();
     _packageTypes                           = base->packageTypes();
     _hasInfoPlist                           = base->hasInfoPlist();
@@ -255,3 +247,42 @@ inherit(ProductType::shared_ptr const &b)
 
     return true;
 }
+
+ProductType::Validation::
+Validation()
+{
+}
+
+bool ProductType::Validation::
+parse(plist::Dictionary const *dict)
+{
+    plist::WarnUnhandledKeys(dict, "Validation",
+            plist::MakeKey <plist::String> ("ValidationToolSpec"),
+            plist::MakeKey <plist::Dictionary> ("Checks"));
+
+    auto VTS = dict->value <plist::String> ("ValidationToolSpec");
+    auto Cs  = dict->value <plist::Dictionary> ("Checks");
+
+    if (VTS != nullptr) {
+        _validationToolSpec = VTS->value();;
+    }
+
+    if (Cs != nullptr) {
+        for (size_t n = 0; n < Cs->count(); n++) {
+            if (auto CV = Cs->value <plist::String> (n)) {
+                auto C = ProductType::Validation::Check(Cs->key(n), CV->value());
+                _checks.push_back(C);
+            }
+        }
+    }
+
+    return true;
+}
+
+ProductType::Validation::Check::
+Check(std::string const &check, std::string const &description) :
+    _check      (check),
+    _description(description)
+{
+}
+

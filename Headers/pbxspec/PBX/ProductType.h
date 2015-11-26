@@ -20,10 +20,55 @@ public:
     typedef std::shared_ptr <ProductType> shared_ptr;
     typedef std::vector <shared_ptr> vector;
 
+public:
+    class Validation {
+    public:
+        class Check {
+        private:
+            std::string _check;
+            std::string _description;
+
+        protected:
+            friend class Validation;
+            Check(std::string const &check, std::string const &description);
+
+        public:
+            inline std::string const &check()
+            { return _check; }
+            inline std::string const &description()
+            { return _description; }
+        };
+
+    protected:
+        friend class Check;
+
+    private:
+        std::string        _validationToolSpec;
+        std::vector<Check> _checks;
+
+    protected:
+        friend class ProductType;
+        Validation();
+
+    public:
+        inline std::string const &validationToolSpec()
+        { return _validationToolSpec; }
+
+    public:
+        inline std::vector<Check> const &checks()
+        { return _checks; }
+
+    protected:
+        bool parse(plist::Dictionary const *dict);
+    };
+
+protected:
+    friend class Validation;
+
 protected:
     std::string             _defaultTargetName;
     pbxsetting::Level       _defaultBuildProperties;
-    plist::Dictionary      *_validation;
+    Validation              _validation;
     libutil::string_vector  _packageTypes;
     std::string             _iconNamePrefix;
     bool                    _hasInfoPlist;
@@ -63,7 +108,7 @@ public:
     { return _defaultBuildProperties; }
 
 public:
-    inline plist::Dictionary const *validation() const
+    inline Validation const validation() const
     { return _validation; }
 
 public:
