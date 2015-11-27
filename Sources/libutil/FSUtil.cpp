@@ -300,48 +300,6 @@ EnumerateRecursive(std::string const &path, std::string const &pattern,
     return true;
 }
 
-libutil::string_vector FSUtil::
-GetDirectoryContents(std::string const &path, std::string const &pattern,
-        bool insensitive)
-{
-    libutil::string_vector files;
-    if (!EnumerateDirectory(path, pattern,
-                [&path,&files](std::string const &filename) -> bool
-                {
-                    files.push_back(path + "/" + filename);
-                    return true;
-                }, insensitive)) {
-        files.clear();
-    }
-
-    return files;
-}
-
-libutil::string_vector FSUtil::
-GetDirectoryContents(std::string const &path,
-        std::initializer_list <std::string> const &patterns,
-        bool insensitive)
-{
-    if (patterns.size() == 0)
-        return libutil::string_vector();
-    
-    std::string pattern;
-
-    if (patterns.size() == 1) {
-        pattern = *(patterns.begin());
-    } else {
-        pattern = "{";
-        for (auto const &pat : patterns) {
-            if (pattern.length() > 1) {
-                pattern += ",";
-            }
-            pattern += pat;
-        }
-        pattern += "}";
-    }
-
-    return GetDirectoryContents(path, pattern, insensitive);
-}
 std::string FSUtil::
 FindExecutable(std::string const &name)
 {

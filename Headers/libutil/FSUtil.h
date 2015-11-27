@@ -71,13 +71,6 @@ public:
     { return EnumerateRecursive(path, std::string(), cb, insensitive); }
 
 public:
-    static libutil::string_vector GetDirectoryContents(std::string const &path,
-            std::string const &pattern, bool insensitive = false);
-    static libutil::string_vector GetDirectoryContents(std::string const &path,
-            std::initializer_list <std::string> const &patterns,
-            bool insensitive = false);
-
-public:
     static std::string GetCurrentDirectory();
 
 public:
