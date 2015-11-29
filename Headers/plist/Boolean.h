@@ -36,7 +36,7 @@ protected:
     }
 
 public:
-    virtual void release()
+    virtual void release() const
     {
     }
 

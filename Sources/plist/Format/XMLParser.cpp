@@ -144,6 +144,8 @@ isExpectingCDATA() const
     return (CastTo <Integer> (_state.current) != nullptr ||
             CastTo <Real> (_state.current) != nullptr ||
             CastTo <String> (_state.current) != nullptr ||
+            CastTo <Data> (_state.current) != nullptr ||
+            CastTo <Date> (_state.current) != nullptr ||
             (inDictionary() && _state.key.active));
 }
 
@@ -345,7 +347,7 @@ beginReal()
 bool XMLParser::
 endReal()
 {
-    CastTo <Integer> (_state.current)->setValue(std::stod(_cdata));
+    CastTo <Real> (_state.current)->setValue(std::stod(_cdata));
     pop();
     return true;
 }

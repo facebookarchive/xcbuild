@@ -48,7 +48,7 @@ public:
     virtual Type type() const = 0;
 
 public:
-    virtual void release()
+    virtual void release() const
     {
         delete this;
     }
