@@ -55,10 +55,28 @@ public:
         return _array[index];
     }
 
+    inline Object *value(size_t index)
+    {
+        return _array[index];
+    }
+
+    template <typename T>
+    inline T *value(size_t index)
+    {
+        return CastTo <T> (value(index));
+    }
+
     template <typename T>
     inline T const *value(size_t index) const
     {
         return CastTo <T> (value(index));
+    }
+
+public:
+    inline void remove(size_t index)
+    {
+        _array[index]->release();
+        _array.erase(_array.begin() + index);
     }
 
 public:
@@ -68,6 +86,18 @@ public:
             _array[n]->release();
         }
         _array.clear();
+    }
+
+public:
+    inline void insert(size_t index, Object *obj)
+    {
+        _array.insert(_array.begin() + index, obj);
+    }
+
+    inline void set(size_t index, Object *obj)
+    {
+        _array[index]->release();
+        _array[index] = obj;
     }
 
 public:

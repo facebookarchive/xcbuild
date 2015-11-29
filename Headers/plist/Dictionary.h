@@ -62,8 +62,19 @@ public:
         return (index < _keys.size()) ? value(_keys[index]) : nullptr;
     }
 
+    inline Object *value(size_t index)
+    {
+        return (index < _keys.size()) ? value(_keys[index]) : nullptr;
+    }
+
     template <typename T>
     inline T const *value(size_t index) const
+    {
+        return CastTo <T> (value(index));
+    }
+
+    template <typename T>
+    inline T *value(size_t index)
     {
         return CastTo <T> (value(index));
     }
@@ -74,8 +85,20 @@ public:
         return (i != _map.end()) ? i->second : nullptr;
     }
 
+    inline Object *value(std::string const &key)
+    {
+        Map::const_iterator i = _map.find(key);
+        return (i != _map.end()) ? i->second : nullptr;
+    }
+
     template <typename T>
     inline T const *value(std::string const &key) const
+    {
+        return CastTo <T> (value(key));
+    }
+
+    template <typename T>
+    inline T *value(std::string const &key)
     {
         return CastTo <T> (value(key));
     }
