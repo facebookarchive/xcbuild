@@ -21,7 +21,7 @@ all:
 	cd $(build) && $(ninja) $(ninja_flags)
 
 test: all
-	build/test_*
+	set -e; for test in build/test_*; do ./$$test; done
 
 clean:
 	rm -rf $(build)
