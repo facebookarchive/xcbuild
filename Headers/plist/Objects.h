@@ -21,32 +21,4 @@
 #include <plist/Real.h>
 #include <plist/String.h>
 
-namespace plist {
-
-static inline char const *
-GetObjectTypeName(int type)
-{
-    if (type == plist::String::Type())
-        return "string";
-    if (type == plist::Boolean::Type())
-        return "boolean";
-    if (type == plist::Array::Type())
-        return "array";
-    if (type == plist::Dictionary::Type())
-        return "dictionary";
-    if (type == plist::Integer::Type())
-        return "integer";
-    if (type == plist::Real::Type())
-        return "real";
-    if (type == plist::Data::Type())
-        return "data";
-    if (type == plist::Date::Type())
-        return "date";
-    if (type == plist::Null::Type())
-        return "null";
-    return "unknown";
-}
-
-}
-
 #endif  // !__plist_Objects_h
