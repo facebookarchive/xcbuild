@@ -21,7 +21,7 @@ private:
     {
     }
 
-private:
+public:
     static void *operator new(size_t) throw()
     {
         return nullptr;

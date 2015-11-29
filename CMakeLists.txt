@@ -352,6 +352,9 @@ target_link_libraries(test_FSUtil util)
 ADD_UNIT_GTEST(test_Wildcard Tests/libutil/test_Wildcard.cpp)
 target_link_libraries(test_Wildcard util)
 
+ADD_UNIT_GTEST(test_Boolean Tests/plist/test_Boolean.cpp)
+target_link_libraries(test_Boolean plist)
+
 ADD_UNIT_GTEST(test_Condition Tests/pbxsetting/test_Condition.cpp)
 target_link_libraries(test_Condition pbxsetting)
 
