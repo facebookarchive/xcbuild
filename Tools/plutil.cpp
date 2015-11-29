@@ -639,6 +639,10 @@ main(int argc, char **argv)
     } else {
         bool success = true;
 
+        if (options.inputs().empty()) {
+            return Help("no input files");
+        }
+
         /* Actions applied to each input file separately. */
         for (std::string const &file : options.inputs()) {
             std::pair<bool, std::vector<uint8_t>> result = Read(file);
