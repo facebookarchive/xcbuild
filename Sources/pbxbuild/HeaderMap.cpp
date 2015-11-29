@@ -218,7 +218,7 @@ rehash(uint32_t newNumBuckets)
     _modified = false;
 }
 
-HeaderMap::string_offset_map::iterator HeaderMap::
+std::unordered_map<std::string, size_t>::iterator HeaderMap::
 add(std::string const &string, bool key)
 {
     auto I = _offsets.find(string);
