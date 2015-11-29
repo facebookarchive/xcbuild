@@ -42,7 +42,7 @@ xcbuild actively welcomes contributions from the community. If you run into prob
 
 To learn about xcbuild, start with the techincal overview above. Each of the components of xcbulid is documented in the `Headers` directory, with both module and API documentation available.
 
-If you're new to xcbuild, we have a [list of xissues](https://github.com/facebook/xcbuild/labels/help%20wanted) designed for new contributors to get started in the codebase. We're always happy to help people working on these issues and learning about xcbuild.
+If you're new to xcbuild, we have a [list of issues](https://github.com/facebook/xcbuild/labels/help%20wanted) designed for new contributors to get started in the codebase. We're always happy to help people working on these issues and learning about xcbuild.
 
 ### Style
 
