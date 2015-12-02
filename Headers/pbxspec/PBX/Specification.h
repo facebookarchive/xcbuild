@@ -66,7 +66,7 @@ public:
     { return _version; }
 
 protected:
-    virtual bool parse(Context *context, plist::Dictionary const *dict);
+    virtual bool parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 
 protected:
     virtual bool inherit(Specification::shared_ptr const &base);

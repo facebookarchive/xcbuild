@@ -25,7 +25,13 @@ Type::
 bool Type::
 ParseBoolean(std::string const &value)
 {
-    return (!value.empty() && value != "NO");
+    return strcasecmp(value.c_str(), "yes") == 0 || strcasecmp(value.c_str(), "true") == 0;
+}
+
+int64_t Type::
+ParseInteger(std::string const &value)
+{
+    return std::strtoll(value.c_str(), NULL, 0);
 }
 
 static std::string

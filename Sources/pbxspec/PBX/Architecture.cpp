@@ -46,45 +46,31 @@ Parse(Context *context, plist::Dictionary const *dict)
     Architecture::shared_ptr result;
     result.reset(new Architecture());
 
-    if (!result->parse(context, dict))
+    std::unordered_set<std::string> seen;
+    if (!result->parse(context, dict, &seen, true))
         return nullptr;
 
     return result;
 }
 
 bool Architecture::
-parse(Context *context, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    plist::WarnUnhandledKeys(dict, "Architecture",
-        // Specification
-        plist::MakeKey <plist::String> ("Class"),
-        plist::MakeKey <plist::String> ("Type"),
-        plist::MakeKey <plist::String> ("Identifier"),
-        plist::MakeKey <plist::String> ("BasedOn"),
-        plist::MakeKey <plist::String> ("Domain"),
-        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
-        plist::MakeKey <plist::String> ("Name"),
-        plist::MakeKey <plist::String> ("Description"),
-        plist::MakeKey <plist::String> ("Vendor"),
-        plist::MakeKey <plist::String> ("Version"),
-        // Architecture
-        plist::MakeKey <plist::Array> ("RealArchitectures"),
-        plist::MakeKey <plist::String> ("ArchitectureSetting"),
-        plist::MakeKey <plist::String> ("PerArchBuildSettingName"),
-        plist::MakeKey <plist::String> ("ByteOrder"),
-        plist::MakeKey <plist::Boolean> ("ListInEnum"),
-        plist::MakeKey <plist::Object> ("SortNumber"));
-
-    if (!Specification::parse(context, dict))
+    if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto RAs = dict->value <plist::Array> ("RealArchitectures");
-    auto AS  = dict->value <plist::String> ("ArchitectureSetting");
-    auto PAB = dict->value <plist::String> ("PerArchBuildSettingName");
-    auto BO  = dict->value <plist::String> ("ByteOrder");
-    auto LIE = dict->value <plist::Boolean> ("ListInEnum");
-    auto SNi = dict->value <plist::Integer> ("SortNumber");
-    auto SNs = dict->value <plist::String> ("SortNumber");
+    auto unpack = plist::Keys::Unpack("Architecture", dict, seen);
+
+    auto RAs = unpack.cast <plist::Array> ("RealArchitectures");
+    auto AS  = unpack.cast <plist::String> ("ArchitectureSetting");
+    auto PAB = unpack.cast <plist::String> ("PerArchBuildSettingName");
+    auto BO  = unpack.cast <plist::String> ("ByteOrder");
+    auto LIE = unpack.coerce <plist::Boolean> ("ListInEnum");
+    auto SN  = unpack.coerce <plist::Integer> ("SortNumber");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (RAs != nullptr) {
         for (size_t n = 0; n < RAs->count(); n++) {
@@ -110,10 +96,8 @@ parse(Context *context, plist::Dictionary const *dict)
         _listInEnum = LIE->value();
     }
 
-    if (SNi != nullptr) {
-        _sortNumber = SNi->value();
-    } else if (SNs != nullptr) {
-        _sortNumber = std::stoi(SNs->value());
+    if (SN != nullptr) {
+        _sortNumber = SN->value();
     }
 
     return true;

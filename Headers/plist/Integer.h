@@ -43,6 +43,9 @@ public:
     }
 
 public:
+    static std::unique_ptr<Integer> Coerce(Object const *obj);
+
+public:
     virtual enum Object::Type type() const
     {
         return Integer::Type();

@@ -24,8 +24,8 @@ parse(Context &context, plist::Dictionary const *dict)
 {
     auto N     = dict->value <plist::String> ("name");
     auto Fs    = dict->value <plist::Array> ("files");
-    auto ROFDP = dict->value <plist::Integer> ("runOnlyForDeploymentPostprocessing");
-    auto BAM   = dict->value <plist::Integer> ("buildActionMask");
+    auto ROFDP = dict->value <plist::String> ("runOnlyForDeploymentPostprocessing");
+    auto BAM   = dict->value <plist::String> ("buildActionMask");
 
     if (N != nullptr) {
         _name = N->value();
@@ -46,11 +46,11 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (ROFDP != nullptr) {
-        _runOnlyForDeploymentPostprocessing = (ROFDP->value() != 0);
+        _runOnlyForDeploymentPostprocessing = (pbxsetting::Type::ParseInteger(ROFDP->value()) != 0);
     }
 
     if (BAM != nullptr) {
-        _buildActionMask = BAM->value();
+        _buildActionMask = pbxsetting::Type::ParseInteger(BAM->value());
     }
 
     return true;

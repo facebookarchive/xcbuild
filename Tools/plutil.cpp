@@ -229,9 +229,23 @@ NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, 
         bool boolean = (value == "YES" || value == "true");
         object.reset(plist::Boolean::New(boolean));
     } else if (arg == "-integer") {
-        object.reset(plist::Integer::New(std::stoi(value)));
+        char *end = NULL;
+        long long integer = std::strtoll(value.c_str(), &end, 0);
+
+        if (end != value.c_str()) {
+            object.reset(plist::Integer::New(integer));
+        } else {
+            return std::make_pair(false, "invalid integer argument");
+        }
     } else if (arg == "-float") {
-        object.reset(plist::Real::New(std::stod(value)));
+        char *end = NULL;
+        double real = std::strtod(value.c_str(), &end);
+
+        if (end != value.c_str()) {
+            object.reset(plist::Real::New(real));
+        } else {
+            return std::make_pair(false, "invalid float argument");
+        }
     } else if (arg == "-string") {
         object.reset(plist::String::New(value));
     } else if (arg == "-date") {
@@ -497,7 +511,7 @@ PerformAdjustment(plist::Object *object, plist::Object **rootObject, std::string
                 break;
         }
     } else if (plist::Array *array = plist::CastTo<plist::Array>(object)) {
-        uint64_t index = std::stoi(key);
+        uint64_t index = std::stoull(key.c_str(), NULL, 0);
 
         switch (adjustment.type()) {
             case Options::Adjustment::Type::Insert: {
@@ -554,7 +568,7 @@ Modify(Options const &options, std::string const &file, std::unique_ptr<plist::O
                 if (plist::Dictionary *dict = plist::CastTo<plist::Dictionary>(currentObject)) {
                     currentObject = dict->value(key);
                 } else if (plist::Array *array = plist::CastTo<plist::Array>(currentObject)) {
-                    uint64_t index = std::stoi(key);
+                    uint64_t index = std::stoull(key.c_str(), NULL, 0);
                     currentObject = dict->value(index);
                 }
             } else {

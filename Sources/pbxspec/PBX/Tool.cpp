@@ -54,101 +54,58 @@ Parse(Context *context, plist::Dictionary const *dict)
     Tool::shared_ptr result;
     result.reset(new Tool());
 
-    if (!result->parse(context, dict))
+    std::unordered_set<std::string> seen;
+    if (!result->parse(context, dict, &seen, true))
         return nullptr;
 
     return result;
 }
 
 bool Tool::
-parse(Context *context, plist::Dictionary const *dict, bool check)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (check) {
-        plist::WarnUnhandledKeys(dict, "Tool",
-                // Specification
-                plist::MakeKey <plist::String> ("Class"),
-                plist::MakeKey <plist::String> ("Type"),
-                plist::MakeKey <plist::String> ("Identifier"),
-                plist::MakeKey <plist::String> ("BasedOn"),
-                plist::MakeKey <plist::String> ("Domain"),
-                plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
-                plist::MakeKey <plist::String> ("Name"),
-                plist::MakeKey <plist::String> ("Description"),
-                plist::MakeKey <plist::String> ("Vendor"),
-                plist::MakeKey <plist::String> ("Version"),
-                // Tool
-                plist::MakeKey <plist::String> ("ExecPath"),
-                plist::MakeKey <plist::String> ("ExecDescription"),
-                plist::MakeKey <plist::String> ("ExecDescriptionForPrecompile"),
-                plist::MakeKey <plist::String> ("ExecDescriptionForCompile"),
-                plist::MakeKey <plist::String> ("ExecDescriptionForCreateBitcode"),
-                plist::MakeKey <plist::String> ("ProgressDescription"),
-                plist::MakeKey <plist::String> ("ProgressDescriptionForPrecompile"),
-                plist::MakeKey <plist::String> ("ProgressDescriptionForCompile"),
-                plist::MakeKey <plist::String> ("ProgressDescriptionForCreateBitcode"),
-                plist::MakeKey <plist::String> ("CommandLine"),
-                plist::MakeKey <plist::String> ("CommandInvocationClass"),
-                plist::MakeKey <plist::String> ("CommandIdentifier"),
-                plist::MakeKey <plist::Object> ("RuleName"),
-                plist::MakeKey <plist::String> ("RuleFormat"),
-                plist::MakeKey <plist::String> ("AdditionalInputFiles"),
-                plist::MakeKey <plist::String> ("BuiltinJambaseRuleName"),
-                plist::MakeKey <plist::Array> ("FileTypes"),
-                plist::MakeKey <plist::Array> ("InputFileTypes"),
-                plist::MakeKey <plist::Array> ("Outputs"),
-                plist::MakeKey <plist::Object> ("Architectures"),
-                plist::MakeKey <plist::Dictionary> ("EnvironmentVariables"),
-                plist::MakeKey <plist::Array> ("SuccessExitCodes"),
-                plist::MakeKey <plist::Object> ("CommandOutputParser"),
-                plist::MakeKey <plist::Boolean> ("IsAbstract"),
-                plist::MakeKey <plist::Boolean> ("IsArchitectureNeutral"),
-                plist::MakeKey <plist::Boolean> ("CaresAboutInclusionDependencies"),
-                plist::MakeKey <plist::Boolean> ("SynthesizeBuildRule"),
-                plist::MakeKey <plist::Boolean> ("ShouldRerunOnError"),
-                plist::MakeKey <plist::Boolean> ("DeeplyStatInputDirectories"),
-                plist::MakeKey <plist::Boolean> ("IsUnsafeToInterrupt"),
-                plist::MakeKey <plist::Integer> ("MessageLimit"),
-                plist::MakeKey <plist::Array> ("Options"),
-                plist::MakeKey <plist::Array> ("DeletedProperties"));
-    }
-
-    if (!Specification::parse(context, dict))
+    if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto EP     = dict->value <plist::String> ("ExecPath");
-    auto ED     = dict->value <plist::String> ("ExecDescription");
-    auto EDPC   = dict->value <plist::String> ("ExecDescriptionForPrecompile");
-    auto EDC    = dict->value <plist::String> ("ExecDescriptionForCompile");
-    auto EDCB   = dict->value <plist::String> ("ExecDescriptionForCreateBitcode");
-    auto PD     = dict->value <plist::String> ("ProgressDescription");
-    auto PDPC   = dict->value <plist::String> ("ProgressDescriptionForPrecompile");
-    auto PDC    = dict->value <plist::String> ("ProgressDescriptionForCompile");
-    auto PDCB   = dict->value <plist::String> ("ProgressDescriptionForCreateBitcode");
-    auto CL     = dict->value <plist::String> ("CommandLine");
-    auto CIC    = dict->value <plist::String> ("CommandInvocationClass");
-    auto CI     = dict->value <plist::String> ("CommandIdentifier");
-    auto RN     = dict->value <plist::String> ("RuleName");
-    auto RF     = dict->value <plist::String> ("RuleFormat");
-    auto AIF    = dict->value <plist::String> ("AdditionalInputFiles");
-    auto BJRN   = dict->value <plist::String> ("BuiltinJambaseRuleName");
-    auto FTs    = dict->value <plist::Array> ("FileTypes");
-    auto IFTs   = dict->value <plist::Array> ("InputFileTypes");
-    auto Os     = dict->value <plist::Array> ("Outputs");
-    auto As     = dict->value <plist::Array> ("Architectures");
-    auto AS     = dict->value <plist::String> ("Architectures");
-    auto EVs    = dict->value <plist::Dictionary> ("EnvironmentVariables");
-    auto SECs   = dict->value <plist::Array> ("SuccessExitCodes");
-    auto COP    = dict->value("CommandOutputParser");
-    auto IA     = dict->value <plist::Boolean> ("IsAbstract");
-    auto IAN    = dict->value <plist::Boolean> ("IsArchitectureNeutral");
-    auto CAID   = dict->value <plist::Boolean> ("CaresAboutInclusionDependencies");
-    auto SBR    = dict->value <plist::Boolean> ("SynthesizeBuildRule");
-    auto SROE   = dict->value <plist::Boolean> ("ShouldRerunOnError");
-    auto DSID   = dict->value <plist::Boolean> ("DeeplyStatInputDirectories");
-    auto IUTI   = dict->value <plist::Boolean> ("IsUnsafeToInterrupt");
-    auto ML     = dict->value <plist::Integer> ("MessageLimit");
-    auto OPs    = dict->value <plist::Array> ("Options");
-    auto DPs    = dict->value <plist::Array> ("DeletedProperties");
+    auto unpack = plist::Keys::Unpack("Tool", dict, seen);
+
+    auto EP     = unpack.cast <plist::String> ("ExecPath");
+    auto ED     = unpack.cast <plist::String> ("ExecDescription");
+    auto EDPC   = unpack.cast <plist::String> ("ExecDescriptionForPrecompile");
+    auto EDC    = unpack.cast <plist::String> ("ExecDescriptionForCompile");
+    auto EDCB   = unpack.cast <plist::String> ("ExecDescriptionForCreateBitcode");
+    auto PD     = unpack.cast <plist::String> ("ProgressDescription");
+    auto PDPC   = unpack.cast <plist::String> ("ProgressDescriptionForPrecompile");
+    auto PDC    = unpack.cast <plist::String> ("ProgressDescriptionForCompile");
+    auto PDCB   = unpack.cast <plist::String> ("ProgressDescriptionForCreateBitcode");
+    auto CL     = unpack.cast <plist::String> ("CommandLine");
+    auto CIC    = unpack.cast <plist::String> ("CommandInvocationClass");
+    auto CI     = unpack.cast <plist::String> ("CommandIdentifier");
+    auto RN     = unpack.cast <plist::String> ("RuleName");
+    auto RF     = unpack.cast <plist::String> ("RuleFormat");
+    auto AIF    = unpack.cast <plist::String> ("AdditionalInputFiles");
+    auto BJRN   = unpack.cast <plist::String> ("BuiltinJambaseRuleName");
+    auto FTs    = unpack.cast <plist::Array> ("FileTypes");
+    auto IFTs   = unpack.cast <plist::Array> ("InputFileTypes");
+    auto Os     = unpack.cast <plist::Array> ("Outputs");
+    auto As     = unpack.cast <plist::Object> ("Architectures");
+    auto EVs    = unpack.cast <plist::Dictionary> ("EnvironmentVariables");
+    auto SECs   = unpack.cast <plist::Array> ("SuccessExitCodes");
+    auto COP    = unpack.cast <plist::Object> ("CommandOutputParser");
+    auto IA     = unpack.coerce <plist::Boolean> ("IsAbstract");
+    auto IAN    = unpack.coerce <plist::Boolean> ("IsArchitectureNeutral");
+    auto CAID   = unpack.coerce <plist::Boolean> ("CaresAboutInclusionDependencies");
+    auto SBR    = unpack.coerce <plist::Boolean> ("SynthesizeBuildRule");
+    auto SROE   = unpack.coerce <plist::Boolean> ("ShouldRerunOnError");
+    auto DSID   = unpack.coerce <plist::Boolean> ("DeeplyStatInputDirectories");
+    auto IUTI   = unpack.coerce <plist::Boolean> ("IsUnsafeToInterrupt");
+    auto ML     = unpack.coerce <plist::Integer> ("MessageLimit");
+    auto OPs    = unpack.cast <plist::Array> ("Options");
+    auto DPs    = unpack.cast <plist::Array> ("DeletedProperties");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (EP != nullptr) {
         _execPath = EP->value();
@@ -230,13 +187,13 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
         }
     }
 
-    if (As != nullptr) {
-        for (size_t n = 0; n < As->count(); n++) {
-            if (auto A = As->value <plist::String> (n)) {
+    if (auto AS = plist::CastTo<plist::Array>(As)) {
+        for (size_t n = 0; n < AS->count(); n++) {
+            if (auto A = AS->value <plist::String> (n)) {
                 _architectures.push_back(A->value());
             }
         }
-    } else if (AS != nullptr) {
+    } else if (auto AS = plist::CastTo<plist::String>(As)) {
         std::vector<std::string> values = pbxsetting::Type::ParseList(AS->value());
         _architectures.insert(_architectures.end(), values.begin(), values.end());
     }
@@ -260,8 +217,8 @@ parse(Context *context, plist::Dictionary const *dict, bool check)
 
     if (SECs != nullptr) {
         for (size_t n = 0; n < SECs->count(); n++) {
-            if (auto SEC = SECs->value <plist::Integer> (n)) {
-                _successExitCodes.push_back(SEC->value());
+            if (auto SEC = SECs->value <plist::String> (n)) {
+                _successExitCodes.push_back(pbxsetting::Type::ParseInteger(SEC->value()));
             }
         }
     }

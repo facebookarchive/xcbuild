@@ -80,7 +80,7 @@ parse(plist::Dictionary const *dict)
     auto SBTV = dict->value <plist::Array> ("SupportedBuildToolsVersion");
     auto CP   = dict->value <plist::Dictionary> ("CustomProperties");
     auto DP   = dict->value <plist::Dictionary> ("DefaultProperties");
-    auto IBS  = dict->value <plist::Boolean> ("IsBaseSDK");
+    auto IBS  = dict->value <plist::String> ("IsBaseSDK");
     auto TCV  = dict->value <plist::Array> ("Toolchains");
 
     if (V != nullptr) {
@@ -141,7 +141,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (IBS != nullptr) {
-        _isBaseSDK = IBS->value();
+        _isBaseSDK = pbxsetting::Type::ParseBoolean(IBS->value());
     }
 
     if (TCV != nullptr) {

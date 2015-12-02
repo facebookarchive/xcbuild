@@ -47,17 +47,24 @@ inherit(Specification::shared_ptr const &base)
 }
 
 bool Specification::
-parse(Context *context, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    auto C  = dict->value <plist::String> ("Class");
-    auto I  = dict->value <plist::String> ("Identifier");
-    auto BO = dict->value <plist::String> ("BasedOn");
-    auto DO = dict->value <plist::String> ("Domain");
-    auto GD = dict->value <plist::Boolean> ("IsGlobalDomainInUI");
-    auto N  = dict->value <plist::String> ("Name");
-    auto D  = dict->value <plist::String> ("Description");
-    auto V1 = dict->value <plist::String> ("Vendor");
-    auto V2 = dict->value <plist::String> ("Version");
+    auto unpack = plist::Keys::Unpack("Specification", dict, seen);
+
+    auto T  = unpack.cast <plist::String> ("Type");
+    auto C  = unpack.cast <plist::String> ("Class");
+    auto I  = unpack.cast <plist::String> ("Identifier");
+    auto BO = unpack.cast <plist::String> ("BasedOn");
+    auto DO = unpack.cast <plist::String> ("Domain");
+    auto GD = unpack.coerce <plist::Boolean> ("IsGlobalDomainInUI");
+    auto N  = unpack.cast <plist::String> ("Name");
+    auto D  = unpack.cast <plist::String> ("Description");
+    auto V1 = unpack.cast <plist::String> ("Vendor");
+    auto V2 = unpack.cast <plist::String> ("Version");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (C != nullptr) {
         _clazz = C->value();

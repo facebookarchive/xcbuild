@@ -61,7 +61,7 @@ protected:
 
 protected:
     friend class Specification;
-    bool parse(Context *context, plist::Dictionary const *dict) override;
+    bool parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 protected:
     static Linker::shared_ptr Parse(Context *context, plist::Dictionary const *dict);

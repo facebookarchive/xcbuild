@@ -45,68 +45,43 @@ Parse(Context *context, plist::Dictionary const *dict)
     ProductType::shared_ptr result;
     result.reset(new ProductType());
 
-    if (!result->parse(context, dict))
+    std::unordered_set<std::string> seen;
+    if (!result->parse(context, dict, &seen, true))
         return nullptr;
 
     return result;
 }
 
 bool ProductType::
-parse(Context *context, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    plist::WarnUnhandledKeys(dict, "ProductType",
-        // Specification
-        plist::MakeKey <plist::String> ("Class"),
-        plist::MakeKey <plist::String> ("Type"),
-        plist::MakeKey <plist::String> ("Identifier"),
-        plist::MakeKey <plist::String> ("BasedOn"),
-        plist::MakeKey <plist::String> ("Domain"),
-        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
-        plist::MakeKey <plist::String> ("Name"),
-        plist::MakeKey <plist::String> ("Description"),
-        plist::MakeKey <plist::String> ("Vendor"),
-        plist::MakeKey <plist::String> ("Version"),
-        // ProductType
-        plist::MakeKey <plist::String> ("DefaultTargetName"),
-        plist::MakeKey <plist::Dictionary> ("DefaultBuildProperties"),
-        plist::MakeKey <plist::Dictionary> ("Validation"),
-        plist::MakeKey <plist::String> ("IconNamePrefix"),
-        plist::MakeKey <plist::Array> ("PackageTypes"),
-        plist::MakeKey <plist::Boolean> ("HasInfoPlist"),
-        plist::MakeKey <plist::Boolean> ("HasInfoPlistStrings"),
-        plist::MakeKey <plist::Boolean> ("IsWrapper"),
-        plist::MakeKey <plist::Boolean> ("SupportsZeroLink"),
-        plist::MakeKey <plist::Boolean> ("AlwaysPerformSeparateStrip"),
-        plist::MakeKey <plist::Boolean> ("WantsSimpleTargetEditing"),
-        plist::MakeKey <plist::Boolean> ("AddWatchCompanionRequirement"),
-        plist::MakeKey <plist::Boolean> ("RunsOnProxy"),
-        plist::MakeKey <plist::Boolean> ("DisableSchemeAutocreation"),
-        plist::MakeKey <plist::Object> ("ValidateEmbeddedBinaries"),
-        plist::MakeKey <plist::Object> ("SupportsOnDemandResources"),
-        plist::MakeKey <plist::Object> ("CanEmbedAddressSanitizerLibraries"),
-        plist::MakeKey <plist::String> ("RunpathSearchPathForEmbeddedFrameworks"));
-
-    if (!Specification::parse(context, dict))
+    if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto DTN  = dict->value <plist::String> ("DefaultTargetName");
-    auto DBP  = dict->value <plist::Dictionary> ("DefaultBuildProperties");
-    auto V    = dict->value <plist::Dictionary> ("Validation");
-    auto INP  = dict->value <plist::String> ("IconNamePrefix");
-    auto PTs  = dict->value <plist::Array> ("PackageTypes");
-    auto HIP  = dict->value <plist::Boolean> ("HasInfoPlist");
-    auto HIPS = dict->value <plist::Boolean> ("HasInfoPlistStrings");
-    auto IW   = dict->value <plist::Boolean> ("IsWrapper");
-    auto SZL  = dict->value <plist::Boolean> ("SupportsZeroLink");
-    auto APSS = dict->value <plist::Boolean> ("AlwaysPerformSeparateStrip");
-    auto WSTE = dict->value <plist::Boolean> ("WantsSimpleTargetEditing");
-    auto AWCR = dict->value <plist::Boolean> ("AddWatchCompanionRequirement");
-    auto ROP  = dict->value <plist::Boolean> ("RunsOnProxy");
-    auto DSA  = dict->value <plist::Boolean> ("DisableSchemeAutocreation");
-    auto VEB  = dict->value <plist::Object> ("ValidateEmbeddedBinaries");
-    auto SODR = dict->value <plist::Object> ("SupportsOnDemandResources");
-    auto CEAL = dict->value <plist::Object> ("CanEmbedAddressSanitizerLibraries");
-    auto RSEF = dict->value <plist::String> ("RunpathSearchPathForEmbeddedFrameworks");
+    auto unpack = plist::Keys::Unpack("BuildPhase", dict, seen);
+
+    auto DTN  = unpack.cast <plist::String> ("DefaultTargetName");
+    auto DBP  = unpack.cast <plist::Dictionary> ("DefaultBuildProperties");
+    auto V    = unpack.cast <plist::Dictionary> ("Validation");
+    auto INP  = unpack.cast <plist::String> ("IconNamePrefix");
+    auto PTs  = unpack.cast <plist::Array> ("PackageTypes");
+    auto HIP  = unpack.coerce <plist::Boolean> ("HasInfoPlist");
+    auto HIPS = unpack.coerce <plist::Boolean> ("HasInfoPlistStrings");
+    auto IW   = unpack.coerce <plist::Boolean> ("IsWrapper");
+    auto SZL  = unpack.coerce <plist::Boolean> ("SupportsZeroLink");
+    auto APSS = unpack.coerce <plist::Boolean> ("AlwaysPerformSeparateStrip");
+    auto WSTE = unpack.coerce <plist::Boolean> ("WantsSimpleTargetEditing");
+    auto AWCR = unpack.coerce <plist::Boolean> ("AddWatchCompanionRequirement");
+    auto ROP  = unpack.coerce <plist::Boolean> ("RunsOnProxy");
+    auto DSA  = unpack.coerce <plist::Boolean> ("DisableSchemeAutocreation");
+    auto VEB  = unpack.coerce <plist::Boolean> ("ValidateEmbeddedBinaries");
+    auto SODR = unpack.coerce <plist::Boolean> ("SupportsOnDemandResources");
+    auto CEAL = unpack.coerce <plist::Boolean> ("CanEmbedAddressSanitizerLibraries");
+    auto RSEF = unpack.coerce <plist::Boolean> ("RunpathSearchPathForEmbeddedFrameworks");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (DTN != nullptr) {
         _defaultTargetName = DTN->value();
@@ -179,27 +154,15 @@ parse(Context *context, plist::Dictionary const *dict)
     }
 
     if (VEB != nullptr) {
-        if (auto VEBb = plist::CastTo <plist::Boolean> (VEB)) {
-            _validateEmbeddedBinaries = VEBb->value();
-        } else if (auto VEBs = plist::CastTo <plist::String> (VEB)) {
-            _validateEmbeddedBinaries = (VEBs->value() == "YES");
-        }
+        _validateEmbeddedBinaries = VEB->value();
     }
 
     if (SODR != nullptr) {
-        if (auto SODRb = plist::CastTo <plist::Boolean> (SODR)) {
-            _supportsOnDemandResources = SODRb->value();
-        } else if (auto SODRs = plist::CastTo <plist::String> (SODR)) {
-            _supportsOnDemandResources = (SODRs->value() == "YES");
-        }
+        _supportsOnDemandResources = SODR->value();
     }
 
     if (CEAL != nullptr) {
-        if (auto CEALb = plist::CastTo <plist::Boolean> (CEAL)) {
-            _canEmbedAddressSanitizerLibraries = CEALb->value();
-        } else if (auto CEALs = plist::CastTo <plist::String> (CEAL)) {
-            _canEmbedAddressSanitizerLibraries = (CEALs->value() == "YES");
-        }
+        _canEmbedAddressSanitizerLibraries = CEAL->value();
     }
 
     if (RSEF != nullptr) {
@@ -256,12 +219,15 @@ Validation()
 bool ProductType::Validation::
 parse(plist::Dictionary const *dict)
 {
-    plist::WarnUnhandledKeys(dict, "Validation",
-            plist::MakeKey <plist::String> ("ValidationToolSpec"),
-            plist::MakeKey <plist::Dictionary> ("Checks"));
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("Validation", dict, &seen);
 
-    auto VTS = dict->value <plist::String> ("ValidationToolSpec");
-    auto Cs  = dict->value <plist::Dictionary> ("Checks");
+    auto VTS = unpack.cast <plist::String> ("ValidationToolSpec");
+    auto Cs  = unpack.cast <plist::Dictionary> ("Checks");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (VTS != nullptr) {
         _validationToolSpec = VTS->value();;

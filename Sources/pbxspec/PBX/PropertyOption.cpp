@@ -70,74 +70,46 @@ defaultPropertyValue(void) const
 bool PropertyOption::
 parse(plist::Dictionary const *dict)
 {
-    plist::WarnUnhandledKeys(dict, "Property/Option",
-            plist::MakeKey <plist::String> ("Name"),
-            plist::MakeKey <plist::String> ("DisplayName"),
-            plist::MakeKey <plist::String> ("Type"),
-            plist::MakeKey <plist::String> ("UIType"),
-            plist::MakeKey <plist::String> ("Category"),
-            plist::MakeKey <plist::String> ("Description"),
-            plist::MakeKey <plist::String> ("Condition"),
-            plist::MakeKey <plist::String> ("AppearsAfter"),
-            plist::MakeKey <plist::Boolean> ("Basic"),
-            plist::MakeKey <plist::Boolean> ("CommonOption"),
-            plist::MakeKey <plist::Boolean> ("AvoidEmptyValue"),
-            plist::MakeKey <plist::Boolean> ("CommandLineCondition"),
-            plist::MakeKey <plist::Object> ("CommandLineArgs"),
-            plist::MakeKey <plist::String> ("CommandLineFlag"),
-            plist::MakeKey <plist::String> ("CommandLineFlagIfFalse"),
-            plist::MakeKey <plist::String> ("CommandLinePrefixFlag"),
-            plist::MakeKey <plist::Object> ("DefaultValue"),
-            plist::MakeKey <plist::Object> ("AllowedValues"),
-            plist::MakeKey <plist::Object> ("Values"),
-            plist::MakeKey <plist::Array> ("FileTypes"),
-            plist::MakeKey <plist::Array> ("ConditionFlavors"),
-            plist::MakeKey <plist::Array> ("SupportedVersionRanges"),
-            plist::MakeKey <plist::Boolean> ("IsInputDependency"),
-            plist::MakeKey <plist::Boolean> ("IsCommandInput"),
-            plist::MakeKey <plist::Boolean> ("IsCommandOutput"),
-            plist::MakeKey <plist::Boolean> ("AvoidMacroDefinition"),
-            plist::MakeKey <plist::Boolean> ("FlattenRecursiveSearchPathsInValue"),
-            plist::MakeKey <plist::String> ("SetValueInEnvironmentVariable"),
-            plist::MakeKey <plist::String> ("InputInclusions"),
-            plist::MakeKey <plist::String> ("OutputDependencies"),
-            plist::MakeKey <plist::Boolean> ("OutputsAreSourceFiles"),
-            plist::MakeKey <plist::Object> ("AdditionalLinkerArgs"),
-            plist::MakeKey <plist::Array> ("Architectures"));
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("Property/Option", dict, &seen);
 
-    auto N      = dict->value <plist::String> ("Name");
-    auto DN     = dict->value <plist::String> ("DisplayName");
-    auto T      = dict->value <plist::String> ("Type");
-    auto UT     = dict->value <plist::String> ("UIType");
-    auto C      = dict->value <plist::String> ("Category");
-    auto D      = dict->value <plist::String> ("Description");
-    auto COND   = dict->value <plist::String> ("Condition");
-    auto AA     = dict->value <plist::String> ("AppearsAfter");
-    auto B      = dict->value <plist::Boolean> ("Basic");
-    auto CO     = dict->value <plist::Boolean> ("CommonOption");
-    auto AEV    = dict->value <plist::Boolean> ("AvoidEmptyValue");
-    auto CLC    = dict->value <plist::Boolean> ("CommandLineCondition");
-    auto CLA    = dict->value("CommandLineArgs");
-    auto CLF    = dict->value <plist::String> ("CommandLineFlag");
-    auto CLFIF  = dict->value <plist::String> ("CommandLineFlagIfFalse");
-    auto CLPF   = dict->value <plist::String> ("CommandLinePrefixFlag");
-    auto DV     = dict->value("DefaultValue");
-    auto AV     = dict->value("AllowedValues");
-    auto V      = dict->value("Values");
-    auto FTs    = dict->value <plist::Array> ("FileTypes");
-    auto CFs    = dict->value <plist::Array> ("ConditionFlavors");
-    auto SVRs   = dict->value <plist::Array> ("SupportedVersionRanges");
-    auto IID    = dict->value <plist::Boolean> ("IsInputDependency");
-    auto ICI    = dict->value <plist::Boolean> ("IsCommandInput");
-    auto ICO    = dict->value <plist::Boolean> ("IsCommandOutput");
-    auto AMD    = dict->value <plist::Boolean> ("AvoidMacroDefinition");
-    auto FRSPIV = dict->value <plist::Boolean> ("FlattenRecursiveSearchPathsInValue");
-    auto SVIEV  = dict->value <plist::String> ("SetValueInEnvironmentVariable");
-    auto II     = dict->value <plist::String> ("InputInclusions");
-    auto OD     = dict->value <plist::String> ("OutputDependencies");
-    auto OASF   = dict->value <plist::Boolean> ("OutputsAreSourceFiles");
-    auto ALA    = dict->value("AdditionalLinkerArgs");
-    auto As     = dict->value <plist::Array> ("Architectures");
+    auto N      = unpack.cast <plist::String> ("Name");
+    auto DN     = unpack.cast <plist::String> ("DisplayName");
+    auto T      = unpack.cast <plist::String> ("Type");
+    auto UT     = unpack.cast <plist::String> ("UIType");
+    auto C      = unpack.cast <plist::String> ("Category");
+    auto D      = unpack.cast <plist::String> ("Description");
+    auto COND   = unpack.cast <plist::String> ("Condition");
+    auto AA     = unpack.cast <plist::String> ("AppearsAfter");
+    auto B      = unpack.coerce <plist::Boolean> ("Basic");
+    auto CO     = unpack.coerce <plist::Boolean> ("CommonOption");
+    auto AEV    = unpack.coerce <plist::Boolean> ("AvoidEmptyValue");
+    auto CLC    = unpack.coerce <plist::Boolean> ("CommandLineCondition");
+    auto CLA    = unpack.cast <plist::Object> ("CommandLineArgs");
+    auto CLF    = unpack.cast <plist::String> ("CommandLineFlag");
+    auto CLFIF  = unpack.cast <plist::String> ("CommandLineFlagIfFalse");
+    auto CLPF   = unpack.cast <plist::String> ("CommandLinePrefixFlag");
+    auto DV     = unpack.cast <plist::Object> ("DefaultValue");
+    auto AV     = unpack.cast <plist::Object> ("AllowedValues");
+    auto V      = unpack.cast <plist::Object> ("Values");
+    auto FTs    = unpack.cast <plist::Array> ("FileTypes");
+    auto CFs    = unpack.cast <plist::Array> ("ConditionFlavors");
+    auto SVRs   = unpack.cast <plist::Array> ("SupportedVersionRanges");
+    auto IID    = unpack.coerce <plist::Boolean> ("IsInputDependency");
+    auto ICI    = unpack.coerce <plist::Boolean> ("IsCommandInput");
+    auto ICO    = unpack.coerce <plist::Boolean> ("IsCommandOutput");
+    auto AMD    = unpack.coerce <plist::Boolean> ("AvoidMacroDefinition");
+    auto FRSPIV = unpack.coerce <plist::Boolean> ("FlattenRecursiveSearchPathsInValue");
+    auto SVIEV  = unpack.cast <plist::String> ("SetValueInEnvironmentVariable");
+    auto II     = unpack.cast <plist::String> ("InputInclusions");
+    auto OD     = unpack.cast <plist::String> ("OutputDependencies");
+    auto OASF   = unpack.coerce <plist::Boolean> ("OutputsAreSourceFiles");
+    auto ALA    = unpack.cast <plist::Object> ("AdditionalLinkerArgs");
+    auto As     = unpack.cast <plist::Array> ("Architectures");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (N != nullptr) {
         _name = N->value();

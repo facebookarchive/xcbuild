@@ -22,7 +22,7 @@ parse(Context &context, plist::Dictionary const *dict)
     auto CS = dict->value <plist::String> ("compilerSpec");
     auto FP = dict->value <plist::String> ("filePatterns");
     auto FT = dict->value <plist::String> ("fileType");
-    auto IE = dict->value <plist::Integer> ("isEditable");
+    auto IE = dict->value <plist::String> ("isEditable");
     auto OF = dict->value <plist::Array> ("outputFiles");
     auto S  = dict->value <plist::String> ("script");
 
@@ -39,7 +39,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (IE != nullptr) {
-        _isEditable = (IE->value() != 0);
+        _isEditable = (pbxsetting::Type::ParseInteger(IE->value()) != 0);
     }
 
     if (OF != nullptr) {

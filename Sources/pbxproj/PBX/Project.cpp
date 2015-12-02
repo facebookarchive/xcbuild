@@ -49,7 +49,7 @@ Project::parse(Context &context, plist::Dictionary const *dict)
     auto A    = dict->value <plist::Array> ("attributes");
     auto CV   = dict->value <plist::String> ("compatibilityVersion");
     auto DR   = dict->value <plist::String> ("developmentRegion");
-    auto HSFE = dict->value <plist::Integer> ("hasScannedForEncodings");
+    auto HSFE = dict->value <plist::String> ("hasScannedForEncodings");
     auto KR   = dict->value <plist::Array> ("knownRegions");
     auto MG   = context.indirect <Group> (dict, "mainGroup", &MGID);
     auto PDP  = dict->value <plist::String> ("projectDirPath");
@@ -74,7 +74,7 @@ Project::parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (HSFE != nullptr) {
-        _hasScannedForEncodings = (HSFE->value() != 0);
+        _hasScannedForEncodings = (pbxsetting::Type::ParseInteger(HSFE->value()) != 0);
     }
 
     if (KR != nullptr) {
@@ -181,17 +181,15 @@ Open(std::string const &path)
         fprintf(stderr, "error: project file %s is not parseable (no archive version)\n", projectFileName.c_str());
         return nullptr;
     } else {
-        auto archiveVersionInteger = plist::CastTo <plist::Integer> (archiveVersion);
-        auto archiveVersionString  = plist::CastTo <plist::String> (archiveVersion);
-        if (archiveVersionInteger == nullptr && archiveVersionString == nullptr) {
+        auto archiveVersionInteger = plist::Integer::Coerce(archiveVersion);
+        if (archiveVersionInteger == nullptr) {
             fprintf(stderr, "error: project file %s is not parseable (unknown archive version)\n", projectFileName.c_str());
             return nullptr;
         }
 
-        int archiveVersionValue = (archiveVersionInteger != nullptr ? archiveVersionInteger->value() : stoi(archiveVersionString->value()));
-        if (archiveVersionValue > 1) {
+        if (archiveVersionInteger->value() > 1) {
             fprintf(stderr, "warning: archive version %u may be unsupported\n",
-                    static_cast <unsigned> (archiveVersionValue));
+                    static_cast <unsigned> (archiveVersionInteger->value()));
         }
     }
 
@@ -200,17 +198,15 @@ Open(std::string const &path)
         fprintf(stderr, "error: project file %s is not parseable (no object version)\n", projectFileName.c_str());
         return nullptr;
     } else {
-        auto objectVersionInteger = plist::CastTo <plist::Integer> (objectVersion);
-        auto objectVersionString  = plist::CastTo <plist::String> (objectVersion);
-        if (objectVersionInteger == nullptr && objectVersionString == nullptr) {
+        auto objectVersionInteger = plist::Integer::Coerce(objectVersion);
+        if (objectVersionInteger == nullptr) {
             fprintf(stderr, "error: project file %s is not parseable (unknown object version)\n", projectFileName.c_str());
             return nullptr;
         }
 
-        int objectVersionValue = (objectVersionInteger != nullptr ? objectVersionInteger->value() : stoi(objectVersionString->value()));
-        if (objectVersionValue > 46) {
+        if (objectVersionInteger->value() > 46) {
             fprintf(stderr, "warning: object version %u may be unsupported\n",
-                    static_cast <unsigned> (objectVersionValue));
+                    static_cast <unsigned> (objectVersionInteger->value()));
         }
     }
 

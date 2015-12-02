@@ -17,3 +17,15 @@ copy() const
 {
     return new Data(_value);
 }
+
+std::unique_ptr<Data> Data::
+Coerce(Object const *obj)
+{
+    Data *result = nullptr;
+
+    if (obj->type() == Type()) {
+        result = CastTo<Data>(obj->copy());
+    }
+
+    return std::unique_ptr<Data>(result);
+}

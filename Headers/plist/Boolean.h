@@ -44,11 +44,6 @@ private:
     static Boolean const kTrue;
     static Boolean const kFalse;
 
-protected:
-    friend Boolean *CastTo <> (Object *);
-    friend Boolean const *CastTo <> (Object const *);
-    static Boolean *New(Object const *object);
-
 public:
     inline static Boolean *New(bool value)
     {
@@ -60,6 +55,9 @@ public:
     {
         return _value;
     }
+
+public:
+    static std::unique_ptr<Boolean> Coerce(Object const *obj);
 
 public:
     virtual enum Object::Type type() const
@@ -80,28 +78,6 @@ public:
         return (obj != nullptr && (obj == this || value() == obj->value()));
     }
 };
-
-template <>
-inline Boolean *CastTo(Object *obj)
-{
-    if (obj == nullptr)
-        return nullptr;
-    else if (obj->type() == Boolean::Type())
-        return static_cast <Boolean *> (obj);
-    else
-        return Boolean::New(obj);
-}
-
-template <>
-inline Boolean const *CastTo(Object const *obj)
-{
-    if (obj == nullptr)
-        return nullptr;
-    else if (obj->type() == Boolean::Type())
-        return static_cast <Boolean const *> (obj);
-    else
-        return Boolean::New(obj);
-}
 
 }
 

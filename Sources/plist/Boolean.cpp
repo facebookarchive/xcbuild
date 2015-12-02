@@ -9,9 +9,13 @@
 
 #include <plist/Boolean.h>
 #include <plist/String.h>
+#include <plist/Integer.h>
+#include <plist/Real.h>
 
 using plist::Object;
 using plist::Boolean;
+using plist::Integer;
+using plist::Real;
 using plist::String;
 
 Boolean const Boolean::kTrue(true);
@@ -33,17 +37,21 @@ copy() const
     return const_cast <Boolean *> (this);
 }
 
-Boolean *
-Boolean::New(Object const *object)
+std::unique_ptr<Boolean> Boolean::
+Coerce(Object const *obj)
 {
-    if (object->type() == Type())
-        return static_cast <Boolean *> (const_cast <Object *> (object));
-    if (auto s = CastTo <String> (object)) {
-        if (::strcasecmp(s->value().c_str(), "yes") == 0)
-            return Boolean::New(true);
-        if (::strcasecmp(s->value().c_str(), "no") == 0)
-            return Boolean::New(false);
+    Boolean *result = nullptr;
+
+    if (obj->type() == Type()) {
+        result = CastTo<Boolean>(obj->copy());
+    } else if (String const *string = CastTo<String>(obj)) {
+        bool value = (strcasecmp(string->value().c_str(), "yes") == 0 || strcasecmp(string->value().c_str(), "true") == 0);
+        result = Boolean::New(value);
+    } else if (Integer const *integer = CastTo<Integer>(obj)) {
+        result = Boolean::New(integer->value() != 0);
+    } else if (Real const *real = CastTo<Real>(obj)) {
+        result = Boolean::New(real->value() != 0.0);
     }
 
-    return nullptr;
+    return std::unique_ptr<Boolean>(result);
 }

@@ -24,15 +24,15 @@ parse(Context &context, plist::Dictionary const *dict)
     if (!BaseGroup::parse(context, dict))
         return false;
 
-    auto IW = dict->value <plist::Integer> ("indentWidth");
-    auto TW = dict->value <plist::Integer> ("tabWidth");
+    auto IW = dict->value <plist::String> ("indentWidth");
+    auto TW = dict->value <plist::String> ("tabWidth");
 
     if (IW != nullptr) {
-        _indentWidth = IW->value();
+        _indentWidth = pbxsetting::Type::ParseInteger(IW->value());
     }
 
     if (TW != nullptr) {
-        _tabWidth = TW->value();
+        _tabWidth = pbxsetting::Type::ParseInteger(TW->value());
     }
 
     return true;

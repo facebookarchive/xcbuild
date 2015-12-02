@@ -85,6 +85,9 @@ public:
     }
 
 public:
+    static std::unique_ptr<Date> Coerce(Object const *obj);
+
+public:
     virtual enum Object::Type type() const
     {
         return Date::Type();

@@ -25,6 +25,8 @@ private:
 public:
     static bool
     ParseBoolean(std::string const &value);
+    static int64_t
+    ParseInteger(std::string const &value);
     static std::vector<std::string>
     ParseList(std::string const &value);
 };

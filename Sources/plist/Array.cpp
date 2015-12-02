@@ -33,3 +33,14 @@ merge(Array const *array)
     }
 }
 
+std::unique_ptr<Array> Array::
+Coerce(Object const *obj)
+{
+    Array *result = nullptr;
+
+    if (obj->type() == Type()) {
+        result = CastTo<Array>(obj->copy());
+    }
+
+    return std::unique_ptr<Array>(result);
+}

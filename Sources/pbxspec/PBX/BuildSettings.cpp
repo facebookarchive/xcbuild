@@ -30,34 +30,26 @@ Parse(Context *context, plist::Dictionary const *dict)
     BuildSettings::shared_ptr result;
     result.reset(new BuildSettings());
 
-    if (!result->parse(context, dict))
+    std::unordered_set<std::string> seen;
+    if (!result->parse(context, dict, &seen, true))
         return nullptr;
 
     return result;
 }
 
 bool BuildSettings::
-parse(Context *context, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    plist::WarnUnhandledKeys(dict, "BuildSettings",
-        // Specification
-        plist::MakeKey <plist::String> ("Class"),
-        plist::MakeKey <plist::String> ("Type"),
-        plist::MakeKey <plist::String> ("Identifier"),
-        plist::MakeKey <plist::String> ("BasedOn"),
-        plist::MakeKey <plist::String> ("Domain"),
-        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
-        plist::MakeKey <plist::String> ("Name"),
-        plist::MakeKey <plist::String> ("Description"),
-        plist::MakeKey <plist::String> ("Vendor"),
-        plist::MakeKey <plist::String> ("Version"),
-        // BuildSettings
-        plist::MakeKey <plist::Array> ("Options"));
-
-    if (!Specification::parse(context, dict))
+    if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto Os = dict->value <plist::Array> ("Options");
+    auto unpack = plist::Keys::Unpack("BuildSettings", dict, seen);
+
+    auto Os = unpack.cast <plist::Array> ("Options");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (Os != nullptr) {
         for (size_t n = 0; n < Os->count(); n++) {

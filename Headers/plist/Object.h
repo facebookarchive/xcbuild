@@ -62,6 +62,9 @@ public:
     }
 
 public:
+    static std::unique_ptr<Object> Coerce(Object const *obj);
+
+public:
     static inline enum Object::Type Type()
     {
         return Object::kTypeNone;
@@ -80,14 +83,13 @@ public:
 template <typename T>
 static inline T *CastTo(Object *obj)
 {
-    return (obj != nullptr && obj->type() == T::Type()) ? static_cast <T *> (obj) : nullptr;
+    return (obj != nullptr && (obj->type() == T::Type() || T::Type() == Object::Type())) ? static_cast <T *> (obj) : nullptr;
 }
-
 
 template <typename T>
 static inline T const *CastTo(Object const *obj)
 {
-    return (obj != nullptr && obj->type() == T::Type()) ? static_cast <T const *> (obj) : nullptr;
+    return (obj != nullptr && (obj->type() == T::Type() || T::Type() == Object::Type())) ? static_cast <T const *> (obj) : nullptr;
 }
 
 template <typename T>

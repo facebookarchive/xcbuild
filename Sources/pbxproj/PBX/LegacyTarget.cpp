@@ -28,7 +28,7 @@ parse(Context &context, plist::Dictionary const *dict)
     auto BWD   = dict->value <plist::String> ("buildWorkingDirectory");
     auto BTP   = dict->value <plist::String> ("buildToolPath");
     auto BAS   = dict->value <plist::String> ("buildArgumentsString");
-    auto PBSIE = dict->value <plist::Integer> ("passBuildSettingsInEnvironment");
+    auto PBSIE = dict->value <plist::String> ("passBuildSettingsInEnvironment");
 
     if (BWD != nullptr) {
         _buildWorkingDirectory = BWD->value();
@@ -43,7 +43,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (PBSIE != nullptr) {
-        _passBuildSettingsInEnvironment = (PBSIE->value() != 0);
+        _passBuildSettingsInEnvironment = (pbxsetting::Type::ParseInteger(PBSIE->value()) != 0);
     }
 
     return true;

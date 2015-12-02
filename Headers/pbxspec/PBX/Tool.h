@@ -187,11 +187,7 @@ public:
 
 protected:
     friend class Specification;
-    bool parse(Context *context, plist::Dictionary const *dict) override
-    { return parse(context, dict, true); }
-
-protected:
-    bool parse(Context *context, plist::Dictionary const *dict, bool check);
+    bool parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 protected:
     bool inherit(Specification::shared_ptr const &base) override;

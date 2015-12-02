@@ -29,7 +29,6 @@ public:
     {
     }
 
-protected:
     virtual ~Dictionary()
     {
         clear();
@@ -144,6 +143,9 @@ public:
     {
         return _keys.end();
     }
+
+public:
+    static std::unique_ptr<Dictionary> Coerce(Object const *obj);
 
 public:
     virtual enum Object::Type type() const

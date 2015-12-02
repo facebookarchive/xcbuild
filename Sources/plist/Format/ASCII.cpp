@@ -17,13 +17,6 @@ using plist::Format::Encoding;
 using plist::Format::Format;
 using plist::Format::ASCII;
 using plist::Object;
-using plist::String;
-using plist::Integer;
-using plist::Real;
-using plist::Boolean;
-using plist::Data;
-using plist::Array;
-using plist::Dictionary;
 
 ASCII::
 ASCII(Encoding encoding) :

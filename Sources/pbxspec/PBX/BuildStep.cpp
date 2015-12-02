@@ -30,34 +30,26 @@ Parse(Context *context, plist::Dictionary const *dict)
     BuildStep::shared_ptr result;
     result.reset(new BuildStep());
 
-    if (!result->parse(context, dict))
+    std::unordered_set<std::string> seen;
+    if (!result->parse(context, dict, &seen, true))
         return nullptr;
 
     return result;
 }
 
 bool BuildStep::
-parse(Context *context, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    plist::WarnUnhandledKeys(dict, "BuildStep",
-        // Specification
-        plist::MakeKey <plist::String> ("Class"),
-        plist::MakeKey <plist::String> ("Type"),
-        plist::MakeKey <plist::String> ("Identifier"),
-        plist::MakeKey <plist::String> ("BasedOn"),
-        plist::MakeKey <plist::String> ("Domain"),
-        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
-        plist::MakeKey <plist::String> ("Name"),
-        plist::MakeKey <plist::String> ("Description"),
-        plist::MakeKey <plist::String> ("Vendor"),
-        plist::MakeKey <plist::String> ("Version"),
-        // BuildStep
-        plist::MakeKey <plist::String> ("BuildStepType"));
-
-    if (!Specification::parse(context, dict))
+    if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto BST = dict->value <plist::String> ("BuildStepType");
+    auto unpack = plist::Keys::Unpack("BuildStep", dict, seen);
+
+    auto BST = unpack.cast <plist::String> ("BuildStepType");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (BST != nullptr) {
         _buildStepType = BST->value();

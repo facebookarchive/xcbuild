@@ -34,3 +34,15 @@ merge(Dictionary const *dict, bool replace)
         }
     }
 }
+
+std::unique_ptr<Dictionary> Dictionary::
+Coerce(Object const *obj)
+{
+    Dictionary *result = nullptr;
+
+    if (obj->type() == Type()) {
+        result = CastTo<Dictionary>(obj->copy());
+    }
+
+    return std::unique_ptr<Dictionary>(result);
+}

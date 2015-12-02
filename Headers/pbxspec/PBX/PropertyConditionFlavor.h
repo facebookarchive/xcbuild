@@ -10,6 +10,7 @@
 #ifndef __pbxspec_PBX_PropertyConditionFlavor_h
 #define __pbxspec_PBX_PropertyConditionFlavor_h
 
+#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
 namespace pbxspec { namespace PBX {
@@ -42,7 +43,7 @@ public:
 
 protected:
     friend class Specification;
-    bool parse(Context *context, plist::Dictionary const *dict) override;
+    bool parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 protected:
     bool inherit(Specification::shared_ptr const &base) override;

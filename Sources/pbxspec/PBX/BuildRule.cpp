@@ -26,15 +26,16 @@ BuildRule(libutil::string_vector const &fileTypes, std::string const &compilerSp
 bool BuildRule::
 parse(plist::Dictionary const *dict)
 {
-    plist::WarnUnhandledKeys(dict, "BuildRule",
-        plist::MakeKey <plist::Object> ("Name"),
-        plist::MakeKey <plist::String> ("FileType"),
-        plist::MakeKey <plist::String> ("CompilerSpec")
-        );
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("BuildRule", dict, &seen);
 
-    auto N  = dict->value <plist::String> ("Name");
-    auto FT = dict->value <plist::String> ("FileType");
-    auto CS = dict->value <plist::String> ("CompilerSpec");
+    auto N  = unpack.cast <plist::String> ("Name");
+    auto FT = unpack.cast <plist::String> ("FileType");
+    auto CS = unpack.cast <plist::String> ("CompilerSpec");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (N != nullptr) {
         _name = N->value();

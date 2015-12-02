@@ -19,3 +19,15 @@ copy() const
 {
     return const_cast <Null *> (this);
 }
+
+std::unique_ptr<Null> Null::
+Coerce(Object const *obj)
+{
+    Null *result = nullptr;
+
+    if (obj->type() == Type()) {
+        result = CastTo<Null>(obj->copy());
+    }
+
+    return std::unique_ptr<Null>(result);
+}

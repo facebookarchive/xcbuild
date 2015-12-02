@@ -17,3 +17,15 @@ copy() const
 {
     return new Date(_value);
 }
+
+std::unique_ptr<Date> Date::
+Coerce(Object const *obj)
+{
+    Date *result = nullptr;
+
+    if (obj->type() == Type()) {
+        result = CastTo<Date>(obj->copy());
+    }
+
+    return std::unique_ptr<Date>(result);
+}

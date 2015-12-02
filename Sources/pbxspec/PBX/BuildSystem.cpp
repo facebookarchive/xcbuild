@@ -43,36 +43,27 @@ Parse(Context *context, plist::Dictionary const *dict)
     BuildSystem::shared_ptr result;
     result.reset(new BuildSystem());
 
-    if (!result->parse(context, dict))
+    std::unordered_set<std::string> seen;
+    if (!result->parse(context, dict, &seen, true))
         return nullptr;
 
     return result;
 }
 
 bool BuildSystem::
-parse(Context *context, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    plist::WarnUnhandledKeys(dict, "BuildPhase",
-        // Specification
-        plist::MakeKey <plist::String> ("Class"),
-        plist::MakeKey <plist::String> ("Type"),
-        plist::MakeKey <plist::String> ("Identifier"),
-        plist::MakeKey <plist::String> ("BasedOn"),
-        plist::MakeKey <plist::String> ("Domain"),
-        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
-        plist::MakeKey <plist::String> ("Name"),
-        plist::MakeKey <plist::String> ("Description"),
-        plist::MakeKey <plist::String> ("Vendor"),
-        plist::MakeKey <plist::String> ("Version"),
-        // BuildSystem
-        plist::MakeKey <plist::Array> ("Options"),
-        plist::MakeKey <plist::Array> ("Properties"));
-
-    if (!Specification::parse(context, dict))
+    if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto Os = dict->value <plist::Array> ("Options");
-    auto Ps = dict->value <plist::Array> ("Properties");
+    auto unpack = plist::Keys::Unpack("BuildSystem", dict, seen);
+
+    auto Os = unpack.cast <plist::Array> ("Options");
+    auto Ps = unpack.cast <plist::Array> ("Properties");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (Os != nullptr) {
         for (size_t n = 0; n < Os->count(); n++) {

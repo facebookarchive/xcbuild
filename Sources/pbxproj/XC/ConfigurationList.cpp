@@ -21,15 +21,15 @@ bool ConfigurationList::
 parse(Context &context, plist::Dictionary const *dict)
 {
     auto DCN  = dict->value <plist::String> ("defaultConfigurationName");
-    auto DCIV = dict->value <plist::Integer> ("defaultConfigurationIsVisible");
+    auto DCIV = dict->value <plist::String> ("defaultConfigurationIsVisible");
     auto BCs  = dict->value <plist::Array> ("buildConfigurations");
 
     if (DCN != nullptr) {
         _defaultConfigurationName = DCN->value();
     }
-    
+
     if (DCIV != nullptr) {
-        _defaultConfigurationIsVisible = (DCIV->value() != 0);
+        _defaultConfigurationIsVisible = (pbxsetting::Type::ParseInteger(DCIV->value()) != 0);
     }
 
     if (BCs != nullptr) {

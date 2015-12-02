@@ -27,7 +27,6 @@ public:
     {
     }
 
-protected:
     virtual ~Array()
     {
         clear();
@@ -116,6 +115,9 @@ public:
     {
         return _array.end();
     }
+
+public:
+    static std::unique_ptr<Array> Coerce(Object const *obj);
 
 public:
     virtual enum Object::Type type() const

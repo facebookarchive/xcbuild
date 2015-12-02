@@ -43,6 +43,9 @@ public:
     }
 
 public:
+    static std::unique_ptr<Real> Coerce(Object const *obj);
+
+public:
     virtual enum Object::Type type() const
     {
         return Real::Type();

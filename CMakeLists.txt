@@ -58,7 +58,8 @@ set(libplist_SOURCES
     Sources/plist/Object.cpp
     Sources/plist/Real.cpp
     Sources/plist/String.cpp
-    Sources/plist/Keys.cpp
+    #
+    Sources/plist/Keys/Unpack.cpp
     #
     Sources/plist/Format/Encoding.cpp
     Sources/plist/Format/unicode.c
@@ -354,6 +355,9 @@ target_link_libraries(test_Wildcard util)
 
 ADD_UNIT_GTEST(test_Boolean Tests/plist/test_Boolean.cpp)
 target_link_libraries(test_Boolean plist)
+
+ADD_UNIT_GTEST(test_String Tests/plist/test_String.cpp)
+target_link_libraries(test_String plist)
 
 ADD_UNIT_GTEST(test_Condition Tests/pbxsetting/test_Condition.cpp)
 target_link_libraries(test_Condition pbxsetting)

@@ -25,14 +25,14 @@ parse(Context &context, plist::Dictionary const *dict)
         return false;
 
     auto DP  = dict->value <plist::String> ("dstPath");
-    auto DSS = dict->value <plist::Integer> ("dstSubfolderSpec");
+    auto DSS = dict->value <plist::String> ("dstSubfolderSpec");
 
     if (DP != nullptr) {
         _dstPath = pbxsetting::Value::Parse(DP->value());
     }
 
     if (DSS != nullptr) {
-        _dstSubfolderSpec = static_cast <Destination> (DSS->value());
+        _dstSubfolderSpec = static_cast <Destination> (pbxsetting::Type::ParseInteger(DSS->value()));
     }
 
     return true;

@@ -508,12 +508,37 @@ parse(ASCIIPListLexer *lexer)
                     bool topLevel     = getLevel() == 0;
                     bool isDictionary = this->isDictionary();
 
-                    if (isDictionary || token == kASCIIPListLexerTokenUnquotedString || token == kASCIIPListLexerTokenQuotedString) {
-                        if (isDictionary && token == kASCIIPListLexerTokenData) {
+                    if (token == kASCIIPListLexerTokenData) {
+                        if (isDictionary) {
                             abort("Data cannot be dictionary key");
                             return false;
                         }
 
+                        char   *contents = ASCIIPListCopyData(lexer);
+                        size_t  alength  = strlen(contents);
+                        size_t  length   = alength / 2;
+                        auto    bytes    = std::vector<uint8_t>(length, 0);
+
+                        for (size_t n = 0; n < alength; n += 2) {
+                            bytes[n >> 1] = hex_to_bin(contents + n);
+                        }
+
+                        Data *data = Data::New(bytes);
+                        free(contents);
+
+                        if (data == NULL) {
+                            abort("OOM when copying data");
+                            return false;
+                        }
+
+                        ASCIIDebug("Storing string as data");
+                        if (!storeValue(data)) {
+                            data->release();
+                            return false;
+                        }
+
+                        data->release();
+                    } else {
                         char *contents = ASCIIPListCopyUnquotedString(lexer, '?');
                         String *string = String::New(std::string(contents));
                         free(contents);
@@ -539,81 +564,6 @@ parse(ASCIIPListLexer *lexer)
                         }
 
                         string->release();
-                    } else if (token == kASCIIPListLexerTokenNumber || token == kASCIIPListLexerTokenHexNumber) {
-                        char *contents = ASCIIPListCopyUnquotedString(lexer, '?');
-                        bool isReal = strchr(contents, '.') != NULL;
-
-                        if (isReal) {
-                            Real *real = Real::New(atof(contents));
-                            free(contents);
-                            if (real == NULL) {
-                                abort("OOM when creating real");
-                                return false;
-                            }
-
-                            ASCIIDebug("Storing real");
-                            if (!storeValue(real)) {
-                                real->release();
-                                return false;
-                            }
-
-                            real->release();
-                        } else {
-                            Integer *integer = Integer::New(atol(contents));
-                            free(contents);
-                            if (integer == NULL) {
-                                abort("OOM when creating integer");
-                                return false;
-                            }
-
-                            ASCIIDebug("Storing integer");
-                            if (!storeValue(integer)) {
-                                integer->release();
-                                return false;
-                            }
-
-                            integer->release();
-                        }
-                    } else if (token == kASCIIPListLexerTokenBoolTrue || token == kASCIIPListLexerTokenBoolFalse) {
-                        bool value = (token == kASCIIPListLexerTokenBoolTrue);
-                        Boolean *boolean = Boolean::New(value);
-                        if (boolean == NULL) {
-                            abort("OOM when creating boolean");
-                            return false;
-                        }
-
-                        ASCIIDebug("Storing boolean");
-                        if (!storeValue(boolean)) {
-                            boolean->release();
-                            return false;
-                        }
-
-                        boolean->release();
-                    } else if (token == kASCIIPListLexerTokenData) {
-                        char   *contents = ASCIIPListCopyData(lexer);
-                        size_t  alength  = strlen(contents);
-                        size_t  length   = alength / 2;
-                        auto    bytes    = std::vector<uint8_t>(length, 0);
-
-                        for (size_t n = 0; n < alength; n += 2) {
-                            bytes[n >> 1] = hex_to_bin(contents + n);
-                        }
-
-                        Data *data = Data::New(bytes);
-                        free(contents);
-
-                        if (data == NULL) {
-                            abort("OOM when copying data");
-                            return false;
-                        }
-
-                        ASCIIDebug("Storing string as data");
-                        if (!storeValue(data)) {
-                            data->release();
-                            return false;
-                        }
-
-                        data->release();
                     }
 
                     if (topLevel) {

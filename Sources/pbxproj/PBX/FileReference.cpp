@@ -26,8 +26,8 @@ parse(Context &context, plist::Dictionary const *dict)
 
     auto LKFT = dict->value <plist::String> ("lastKnownFileType");
     auto EFT  = dict->value <plist::String> ("explicitFileType");
-    auto III  = dict->value <plist::Integer> ("includeInIndex");
-    auto FE   = dict->value <plist::Integer> ("fileEncoding");
+    auto III  = dict->value <plist::String> ("includeInIndex");
+    auto FE   = dict->value <plist::String> ("fileEncoding");
 
     if (LKFT != nullptr) {
         _lastKnownFileType = LKFT->value();
@@ -38,11 +38,11 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (III != nullptr) {
-        _includeInIndex = (III->value() != 0);
+        _includeInIndex = (pbxsetting::Type::ParseInteger(III->value()) != 0);
     }
 
     if (FE != nullptr) {
-        _fileEncoding = FE->value();
+        _fileEncoding = pbxsetting::Type::ParseInteger(FE->value());
     }
 
     return true;

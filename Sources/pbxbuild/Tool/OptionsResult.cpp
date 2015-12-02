@@ -118,18 +118,29 @@ Create(ToolEnvironment const &toolEnvironment, std::string const &workingDirecto
             continue;
         }
 
-        std::string flag;
         std::string value = environment.resolve(option->name());
-        if (pbxsetting::Type::ParseBoolean(value)) {
-            flag = option->commandLineFlag();
-        } else {
-            flag = option->commandLineFlagIfFalse();
-        }
-        if (!flag.empty()) {
-            arguments.push_back(environment.expand(pbxsetting::Value::Parse(flag)));
 
-            if (option->type() != "Boolean" && option->type() != "bool") {
-                arguments.push_back(value);
+        if (option->type() == "Boolean" || option->type() == "bool") {
+            std::string flag;
+
+            if (pbxsetting::Type::ParseBoolean(value)) {
+                flag = option->commandLineFlag();
+            } else {
+                flag = option->commandLineFlagIfFalse();
+            }
+
+            if (!flag.empty()) {
+                /* Boolean flags don't get the flag value after, since that would be just YES or NO. */
+                arguments.push_back(environment.expand(pbxsetting::Value::Parse(flag)));
+            }
+        } else {
+            if (!value.empty()) {
+                /* Pass both the command line flag and the option value itself. */
+                std::string flag = option->commandLineFlag();
+                if (!flag.empty()) {
+                    arguments.push_back(environment.expand(pbxsetting::Value::Parse(flag)));
+                    arguments.push_back(value);
+                }
             }
         }
 

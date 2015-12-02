@@ -33,36 +33,27 @@ Parse(Context *context, plist::Dictionary const *dict)
     PackageType::shared_ptr result;
     result.reset(new PackageType());
 
-    if (!result->parse(context, dict))
+    std::unordered_set<std::string> seen;
+    if (!result->parse(context, dict, &seen, true))
         return nullptr;
 
     return result;
 }
 
 bool PackageType::
-parse(Context *context, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    plist::WarnUnhandledKeys(dict, "PackageType",
-        // Specification
-        plist::MakeKey <plist::String> ("Class"),
-        plist::MakeKey <plist::String> ("Type"),
-        plist::MakeKey <plist::String> ("Identifier"),
-        plist::MakeKey <plist::String> ("BasedOn"),
-        plist::MakeKey <plist::String> ("Domain"),
-        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
-        plist::MakeKey <plist::String> ("Name"),
-        plist::MakeKey <plist::String> ("Description"),
-        plist::MakeKey <plist::String> ("Vendor"),
-        plist::MakeKey <plist::String> ("Version"),
-        // PackageType
-        plist::MakeKey <plist::Dictionary> ("ProductReference"),
-        plist::MakeKey <plist::Dictionary> ("DefaultBuildSettings"));
-
-    if (!Specification::parse(context, dict))
+    if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto PR  = dict->value <plist::Dictionary> ("ProductReference");
-    auto DBS = dict->value <plist::Dictionary> ("DefaultBuildSettings");
+    auto unpack = plist::Keys::Unpack("PackageType", dict, seen);
+
+    auto PR  = unpack.cast <plist::Dictionary> ("ProductReference");
+    auto DBS = unpack.cast <plist::Dictionary> ("DefaultBuildSettings");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (PR != nullptr) {
         _productReference.reset(new ProductReference);
@@ -119,14 +110,16 @@ PackageType::ProductReference::ProductReference() :
 bool PackageType::ProductReference::
 parse(plist::Dictionary const *dict)
 {
-    plist::WarnUnhandledKeys(dict, "ProductReference",
-        plist::MakeKey <plist::String> ("Name"),
-        plist::MakeKey <plist::String> ("FileType"),
-        plist::MakeKey <plist::Boolean> ("IsLaunchable"));
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("ProductReference", dict, &seen);
 
-    auto N  = dict->value <plist::String> ("Name");
-    auto FT = dict->value <plist::String> ("FileType");
-    auto IL = dict->value <plist::Boolean> ("IsLaunchable");
+    auto N  = unpack.cast <plist::String> ("Name");
+    auto FT = unpack.cast <plist::String> ("FileType");
+    auto IL = unpack.coerce <plist::Boolean> ("IsLaunchable");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (N != nullptr) {
         _name = N->value();

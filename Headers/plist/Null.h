@@ -46,6 +46,9 @@ public:
     }
 
 public:
+    static std::unique_ptr<Null> Coerce(Object const *obj);
+
+public:
     virtual enum Object::Type type() const
     {
         return Null::Type();

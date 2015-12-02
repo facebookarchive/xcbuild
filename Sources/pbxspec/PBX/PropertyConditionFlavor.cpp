@@ -31,34 +31,26 @@ Parse(Context *context, plist::Dictionary const *dict)
     PropertyConditionFlavor::shared_ptr result;
     result.reset(new PropertyConditionFlavor());
 
-    if (!result->parse(context, dict))
+    std::unordered_set<std::string> seen;
+    if (!result->parse(context, dict, &seen, true))
         return nullptr;
 
     return result;
 }
 
 bool PropertyConditionFlavor::
-parse(Context *context, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    plist::WarnUnhandledKeys(dict, "PropertyConditionFlavor",
-        // Specification
-        plist::MakeKey <plist::String> ("Class"),
-        plist::MakeKey <plist::String> ("Type"),
-        plist::MakeKey <plist::String> ("Identifier"),
-        plist::MakeKey <plist::String> ("BasedOn"),
-        plist::MakeKey <plist::String> ("Domain"),
-        plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
-        plist::MakeKey <plist::String> ("Name"),
-        plist::MakeKey <plist::String> ("Description"),
-        plist::MakeKey <plist::String> ("Vendor"),
-        plist::MakeKey <plist::String> ("Version"),
-        // PropertyConditionFlavor
-        plist::MakeKey <plist::Integer> ("Precedence"));
-
-    if (!Specification::parse(context, dict))
+    if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto P = dict->value <plist::Integer> ("Precedence");
+    auto unpack = plist::Keys::Unpack("PropertyConditionFlavor", dict, seen);
+
+    auto P = unpack.coerce <plist::Integer> ("Precedence");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (P != nullptr) {
         _precedence = P->value();

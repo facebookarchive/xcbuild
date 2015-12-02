@@ -23,14 +23,14 @@ parse(Context &context, plist::Dictionary const *dict)
         return false;
 
     auto CN = dict->value <plist::String> ("contextName");
-    auto SC = dict->value <plist::Integer> ("isSharedContext");
+    auto SC = dict->value <plist::String> ("isSharedContext");
 
     if (CN != nullptr) {
         _contextName = CN->value();
     }
 
     if (SC != nullptr) {
-        _isSharedContext = (SC->value() != 0);
+        _isSharedContext = (pbxsetting::Type::ParseInteger(SC->value()) != 0);
     }
 
     return true;

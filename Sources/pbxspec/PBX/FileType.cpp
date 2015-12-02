@@ -133,124 +133,71 @@ Parse(Context *context, plist::Dictionary const *dict)
     FileType::shared_ptr result;
     result.reset(new FileType());
 
-    if (!result->parse(context, dict))
+    std::unordered_set<std::string> seen;
+    if (!result->parse(context, dict, &seen, true))
         return nullptr;
 
     return result;
 }
 
 bool FileType::
-parse(Context *context, plist::Dictionary const *dict)
+parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    plist::WarnUnhandledKeys(dict, "FileType",
-            // Specification
-            plist::MakeKey <plist::String> ("Class"),
-            plist::MakeKey <plist::String> ("Type"),
-            plist::MakeKey <plist::String> ("Identifier"),
-            plist::MakeKey <plist::String> ("BasedOn"),
-            plist::MakeKey <plist::String> ("Domain"),
-            plist::MakeKey <plist::Boolean> ("IsGlobalDomainInUI"),
-            plist::MakeKey <plist::String> ("Name"),
-            plist::MakeKey <plist::String> ("Description"),
-            plist::MakeKey <plist::String> ("Vendor"),
-            plist::MakeKey <plist::String> ("Version"),
-            // FileType
-            plist::MakeKey <plist::Array> ("MIMETypes"),
-            plist::MakeKey <plist::String> ("UTI"),
-            plist::MakeKey <plist::Array> ("Extensions"),
-            plist::MakeKey <plist::Array> ("TypeCodes"),
-            plist::MakeKey <plist::Array> ("FilenamePatterns"),
-            plist::MakeKey <plist::Array> ("MagicWord"),
-            plist::MakeKey <plist::String> ("Language"),
-            plist::MakeKey <plist::String> ("ComputerLanguage"),
-            plist::MakeKey <plist::String> ("GccDialectName"),
-            plist::MakeKey <plist::Array> ("Prefix"),
-            plist::MakeKey <plist::String> ("Permissions"),
-            plist::MakeKey <plist::Boolean> ("AppliesToBuildRules"),
-            plist::MakeKey <plist::Array> ("BuildPhaseInjectionsWhenEmbedding"),
-            plist::MakeKey <plist::Boolean> ("IsTextFile"),
-            plist::MakeKey <plist::Boolean> ("IsBuildPropertiesFile"),
-            plist::MakeKey <plist::Boolean> ("IsSourceCode"),
-            plist::MakeKey <plist::Boolean> ("IsPreprocessed"),
-            plist::MakeKey <plist::Boolean> ("IsTransparent"),
-            plist::MakeKey <plist::Boolean> ("IsDocumentation"),
-            plist::MakeKey <plist::Boolean> ("IsEmbeddable"),
-            plist::MakeKey <plist::Boolean> ("IsExecutable"),
-            plist::MakeKey <plist::Boolean> ("IsExecutableWithGUI"),
-            plist::MakeKey <plist::Boolean> ("IsApplication"),
-            plist::MakeKey <plist::Boolean> ("IsBundle"),
-            plist::MakeKey <plist::Boolean> ("IsLibrary"),
-            plist::MakeKey <plist::Boolean> ("IsDynamicLibrary"),
-            plist::MakeKey <plist::Boolean> ("IsStaticLibrary"),
-            plist::MakeKey <plist::Boolean> ("IsFolder"),
-            plist::MakeKey <plist::Boolean> ("IsWrapperFolder"),
-            plist::MakeKey <plist::Boolean> ("IsScannedForIncludes"),
-            plist::MakeKey <plist::Boolean> ("IsFrameworkWrapper"),
-            plist::MakeKey <plist::Boolean> ("IsStaticFrameworkWrapper"),
-            plist::MakeKey <plist::Boolean> ("IsProjectWrapper"),
-            plist::MakeKey <plist::Boolean> ("IsTargetWrapper"),
-            plist::MakeKey <plist::Array> ("ExtraPropertyNames"),
-            plist::MakeKey <plist::Dictionary> ("ComponentParts"),
-            plist::MakeKey <plist::Boolean> ("IncludeInIndex"),
-            plist::MakeKey <plist::Boolean> ("CanSetIncludeInIndex"),
-            plist::MakeKey <plist::Boolean> ("RequiresHardTabs"),
-            plist::MakeKey <plist::Boolean> ("ContainsNativeCode"),
-            plist::MakeKey <plist::String> ("PlistStructureDefinition"),
-            plist::MakeKey <plist::Boolean> ("ChangesCauseDependencyGraphInvalidation"),
-            plist::MakeKey <plist::String> ("FallbackAutoroutingBuildPhase"),
-            plist::MakeKey <plist::Boolean> ("CodeSignOnCopy"),
-            plist::MakeKey <plist::Boolean> ("RemoveHeadersOnCopy"),
-            plist::MakeKey <plist::Boolean> ("ValidateOnCopy"));
-
-    if (!Specification::parse(context, dict))
+    if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto MTs   = dict->value <plist::Array> ("MIMETypes");
-    auto U     = dict->value <plist::String> ("UTI");
-    auto Es    = dict->value <plist::Array> ("Extensions");
-    auto TCs   = dict->value <plist::Array> ("TypeCodes");
-    auto FPs   = dict->value <plist::Array> ("FilenamePatterns");
-    auto MWs   = dict->value <plist::Array> ("MagicWord");
-    auto L     = dict->value <plist::String> ("Language");
-    auto CL    = dict->value <plist::String> ("ComputerLanguage");
-    auto GDN   = dict->value <plist::String> ("GccDialectName");
-    auto Ps    = dict->value <plist::Array> ("Prefix");
-    auto P     = dict->value <plist::String> ("Permissions");
-    auto BPIWE = dict->value <plist::Array> ("BuildPhaseInjectionsWhenEmbedding");
-    auto ATBR  = dict->value <plist::Boolean> ("AppliesToBuildRules");
-    auto ITF   = dict->value <plist::Boolean> ("IsTextFile");
-    auto IBPF  = dict->value <plist::Boolean> ("IsBuildPropertiesFile");
-    auto ISC   = dict->value <plist::Boolean> ("IsSourceCode");
-    auto IP    = dict->value <plist::Boolean> ("IsPreprocessed");
-    auto IT    = dict->value <plist::Boolean> ("IsTransparent");
-    auto ID    = dict->value <plist::Boolean> ("IsDocumentation");
-    auto IEM   = dict->value <plist::Boolean> ("IsEmbeddable");
-    auto IE    = dict->value <plist::Boolean> ("IsExecutable");
-    auto IEWG  = dict->value <plist::Boolean> ("IsExecutableWithGUI");
-    auto IA    = dict->value <plist::Boolean> ("IsApplication");
-    auto IB    = dict->value <plist::Boolean> ("IsBundle");
-    auto IL    = dict->value <plist::Boolean> ("IsLibrary");
-    auto IDL   = dict->value <plist::Boolean> ("IsDynamicLibrary");
-    auto ISL   = dict->value <plist::Boolean> ("IsStaticLibrary");
-    auto IF    = dict->value <plist::Boolean> ("IsFolder");
-    auto IWF   = dict->value <plist::Boolean> ("IsWrapperFolder");
-    auto ISFI  = dict->value <plist::Boolean> ("IsScannedForIncludes");
-    auto IFW   = dict->value <plist::Boolean> ("IsFrameworkWrapper");
-    auto ISFW  = dict->value <plist::Boolean> ("IsStaticFrameworkWrapper");
-    auto IPW   = dict->value <plist::Boolean> ("IsProjectWrapper");
-    auto ITW   = dict->value <plist::Boolean> ("IsTargetWrapper");
-    auto EPNs  = dict->value <plist::Array> ("ExtraPropertyNames");
-    auto CPs   = dict->value <plist::Dictionary> ("ComponentParts");
-    auto III   = dict->value <plist::Boolean> ("IncludeInIndex");
-    auto CSIII = dict->value <plist::Boolean> ("CanSetIncludeInIndex");
-    auto RHT   = dict->value <plist::Boolean> ("RequiresHardTabs");
-    auto CNC   = dict->value <plist::Boolean> ("ContainsNativeCode");
-    auto PDS   = dict->value <plist::String> ("PlistStructureDefinition");
-    auto CCDGI = dict->value <plist::Boolean> ("ChangesCauseDependencyGraphInvalidation");
-    auto FABP  = dict->value <plist::String> ("FallbackAutoroutingBuildPhase");
-    auto CSOC  = dict->value <plist::Boolean> ("CodeSignOnCopy");
-    auto RHOC  = dict->value <plist::Boolean> ("RemoveHeadersOnCopy");
-    auto VOC   = dict->value <plist::Boolean> ("ValidateOnCopy");
+    auto unpack = plist::Keys::Unpack("FileType", dict, seen);
+
+    auto MTs   = unpack.cast <plist::Array> ("MIMETypes");
+    auto U     = unpack.cast <plist::String> ("UTI");
+    auto Es    = unpack.cast <plist::Array> ("Extensions");
+    auto TCs   = unpack.cast <plist::Array> ("TypeCodes");
+    auto FPs   = unpack.cast <plist::Array> ("FilenamePatterns");
+    auto MWs   = unpack.cast <plist::Array> ("MagicWord");
+    auto L     = unpack.cast <plist::String> ("Language");
+    auto CL    = unpack.cast <plist::String> ("ComputerLanguage");
+    auto GDN   = unpack.cast <plist::String> ("GccDialectName");
+    auto Ps    = unpack.cast <plist::Array> ("Prefix");
+    auto P     = unpack.cast <plist::String> ("Permissions");
+    auto BPIWE = unpack.cast <plist::Array> ("BuildPhaseInjectionsWhenEmbedding");
+    auto ATBR  = unpack.coerce <plist::Boolean> ("AppliesToBuildRules");
+    auto ITF   = unpack.coerce <plist::Boolean> ("IsTextFile");
+    auto IBPF  = unpack.coerce <plist::Boolean> ("IsBuildPropertiesFile");
+    auto ISC   = unpack.coerce <plist::Boolean> ("IsSourceCode");
+    auto IP    = unpack.coerce <plist::Boolean> ("IsPreprocessed");
+    auto IT    = unpack.coerce <plist::Boolean> ("IsTransparent");
+    auto ID    = unpack.coerce <plist::Boolean> ("IsDocumentation");
+    auto IEM   = unpack.coerce <plist::Boolean> ("IsEmbeddable");
+    auto IE    = unpack.coerce <plist::Boolean> ("IsExecutable");
+    auto IEWG  = unpack.coerce <plist::Boolean> ("IsExecutableWithGUI");
+    auto IA    = unpack.coerce <plist::Boolean> ("IsApplication");
+    auto IB    = unpack.coerce <plist::Boolean> ("IsBundle");
+    auto IL    = unpack.coerce <plist::Boolean> ("IsLibrary");
+    auto IDL   = unpack.coerce <plist::Boolean> ("IsDynamicLibrary");
+    auto ISL   = unpack.coerce <plist::Boolean> ("IsStaticLibrary");
+    auto IF    = unpack.coerce <plist::Boolean> ("IsFolder");
+    auto IWF   = unpack.coerce <plist::Boolean> ("IsWrapperFolder");
+    auto ISFI  = unpack.coerce <plist::Boolean> ("IsScannedForIncludes");
+    auto IFW   = unpack.coerce <plist::Boolean> ("IsFrameworkWrapper");
+    auto ISFW  = unpack.coerce <plist::Boolean> ("IsStaticFrameworkWrapper");
+    auto IPW   = unpack.coerce <plist::Boolean> ("IsProjectWrapper");
+    auto ITW   = unpack.coerce <plist::Boolean> ("IsTargetWrapper");
+    auto EPNs  = unpack.cast <plist::Array> ("ExtraPropertyNames");
+    auto CPs   = unpack.cast <plist::Dictionary> ("ComponentParts");
+    auto III   = unpack.coerce <plist::Boolean> ("IncludeInIndex");
+    auto CSIII = unpack.coerce <plist::Boolean> ("CanSetIncludeInIndex");
+    auto RHT   = unpack.coerce <plist::Boolean> ("RequiresHardTabs");
+    auto CNC   = unpack.coerce <plist::Boolean> ("ContainsNativeCode");
+    auto PDS   = unpack.cast <plist::String> ("PlistStructureDefinition");
+    auto CCDGI = unpack.coerce <plist::Boolean> ("ChangesCauseDependencyGraphInvalidation");
+    auto FABP  = unpack.cast <plist::String> ("FallbackAutoroutingBuildPhase");
+    auto CSOC  = unpack.coerce <plist::Boolean> ("CodeSignOnCopy");
+    auto RHOC  = unpack.coerce <plist::Boolean> ("RemoveHeadersOnCopy");
+    auto VOC   = unpack.coerce <plist::Boolean> ("ValidateOnCopy");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (U != nullptr) {
         _uti = U->value();
@@ -552,20 +499,19 @@ FileType::BuildPhaseInjection::BuildPhaseInjection() :
 bool FileType::BuildPhaseInjection::
 parse(plist::Dictionary const *dict)
 {
-    plist::WarnUnhandledKeys(dict, "BuildPhaseInjection",
-            plist::MakeKey <plist::String> ("BuildPhase"),
-            plist::MakeKey <plist::String> ("Name"),
-            plist::MakeKey <plist::Boolean> ("RunOnlyForDeploymentPostprocessing"),
-            plist::MakeKey <plist::Boolean> ("NeedsRunpathSearchPathForFrameworks"),
-            plist::MakeKey <plist::Integer> ("DstSubFolderSpec"),
-            plist::MakeKey <plist::String> ("DstPath"));
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("BuildPhaseInjection", dict, &seen);
 
-    auto BP     = dict->value <plist::String> ("BuildPhase");
-    auto N      = dict->value <plist::String> ("Name");
-    auto ROFDP  = dict->value <plist::Boolean> ("RunOnlyForDeploymentPostprocessing");
-    auto NRSPFF = dict->value <plist::Boolean> ("NeedsRunpathSearchPathForFrameworks");
-    auto DSS    = dict->value <plist::Integer> ("DstSubFolderSpec");
-    auto DP     = dict->value <plist::String> ("DstPath");
+    auto BP     = unpack.cast <plist::String> ("BuildPhase");
+    auto N      = unpack.cast <plist::String> ("Name");
+    auto ROFDP  = unpack.coerce <plist::Boolean> ("RunOnlyForDeploymentPostprocessing");
+    auto NRSPFF = unpack.coerce <plist::Boolean> ("NeedsRunpathSearchPathForFrameworks");
+    auto DSS    = unpack.coerce <plist::Integer> ("DstSubFolderSpec");
+    auto DP     = unpack.cast <plist::String> ("DstPath");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (BP != nullptr) {
         _buildPhase = BP->value();
@@ -580,7 +526,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (NRSPFF != nullptr) {
-        _runOnlyForDeploymentPostprocessing = NRSPFF->value();
+        _needsRunpathSearchPathForFrameworks = NRSPFF->value();
     }
 
     if (DSS != nullptr) {

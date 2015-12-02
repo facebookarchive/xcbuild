@@ -23,7 +23,7 @@ parse(Context &context, plist::Dictionary const *dict)
     std::string CPID;
 
     auto CP   = context.indirect <FileReference> (dict, "containerPortal", &CPID);
-    auto PT   = dict->value <plist::Integer> ("proxyType");
+    auto PT   = dict->value <plist::String> ("proxyType");
     auto RGIS = dict->value <plist::String> ("remoteGlobalIDString");
     auto RI   = dict->value <plist::String> ("remoteInfo");
 
@@ -38,7 +38,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (PT != nullptr) {
-        _proxyType = PT->value();
+        _proxyType = pbxsetting::Type::ParseInteger(PT->value());
     }
 
     if (RGIS != nullptr) {

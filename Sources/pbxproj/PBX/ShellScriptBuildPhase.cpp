@@ -28,7 +28,7 @@ parse(Context &context, plist::Dictionary const *dict)
     auto SS = dict->value <plist::String> ("shellScript");
     auto IP = dict->value <plist::Array> ("inputPaths");
     auto OP = dict->value <plist::Array> ("outputPaths");
-    auto SE = dict->value <plist::Boolean> ("showEnvVarsInLog");
+    auto SE = dict->value <plist::String> ("showEnvVarsInLog");
 
     if (N != nullptr) {
         _name = N->value();
@@ -63,7 +63,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (SE != nullptr) {
-        _showEnvVarsInLog = SE->value();
+        _showEnvVarsInLog = pbxsetting::Type::ParseInteger(SE->value());
     }
 
     return true;
