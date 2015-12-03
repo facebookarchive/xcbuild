@@ -339,7 +339,7 @@ bool ASCIIWriter::
 handleReal(Real const *real)
 {
     char buf[64];
-    int rc = snprintf(buf, sizeof(buf), "%.17g", real->value());
+    int rc = snprintf(buf, sizeof(buf), "%g", real->value());
     assert(rc < (int)sizeof(buf));
 
     if (!writeString(buf, !_lastKey)) {
