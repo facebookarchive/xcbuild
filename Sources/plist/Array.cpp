@@ -12,6 +12,12 @@
 using plist::Object;
 using plist::Array;
 
+std::unique_ptr<Array> Array::
+New()
+{
+    return std::unique_ptr<Array>(new Array());
+}
+
 Object *Array::
 copy() const
 {

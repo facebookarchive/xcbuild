@@ -21,6 +21,12 @@ using plist::String;
 Boolean const Boolean::kTrue(true);
 Boolean const Boolean::kFalse(false);
 
+std::unique_ptr<Boolean> Boolean::
+New(bool value)
+{
+    return std::unique_ptr<Boolean>(const_cast<Boolean *>(value ? &kTrue : &kFalse));
+}
+
 bool Boolean::
 equals(Object const *obj) const
 {
@@ -40,18 +46,16 @@ copy() const
 std::unique_ptr<Boolean> Boolean::
 Coerce(Object const *obj)
 {
-    Boolean *result = nullptr;
-
     if (obj->type() == Type()) {
-        result = CastTo<Boolean>(obj->copy());
+        return std::unique_ptr<Boolean>(CastTo<Boolean>(obj->copy()));
     } else if (String const *string = CastTo<String>(obj)) {
         bool value = (strcasecmp(string->value().c_str(), "yes") == 0 || strcasecmp(string->value().c_str(), "true") == 0);
-        result = Boolean::New(value);
+        return Boolean::New(value);
     } else if (Integer const *integer = CastTo<Integer>(obj)) {
-        result = Boolean::New(integer->value() != 0);
+        return Boolean::New(integer->value() != 0);
     } else if (Real const *real = CastTo<Real>(obj)) {
-        result = Boolean::New(real->value() != 0.0);
+        return Boolean::New(real->value() != 0.0);
     }
 
-    return std::unique_ptr<Boolean>(result);
+    return nullptr;
 }

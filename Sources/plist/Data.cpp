@@ -12,6 +12,30 @@
 using plist::Object;
 using plist::Data;
 
+std::unique_ptr<Data> Data::
+New(std::vector<uint8_t> const &value)
+{
+    return std::unique_ptr<Data>(new Data(value));
+}
+
+std::unique_ptr<Data> Data::
+New(std::vector<uint8_t> &&value)
+{
+    return std::unique_ptr<Data>(new Data(value));
+}
+
+std::unique_ptr<Data> Data::
+New(std::string const &value)
+{
+    return std::unique_ptr<Data>(new Data(value));
+}
+
+std::unique_ptr<Data> Data::
+New(void const *bytes, size_t length)
+{
+    return std::unique_ptr<Data>(new Data(bytes, length));
+}
+
 Object *Data::
 copy() const
 {

@@ -14,6 +14,12 @@ using plist::Null;
 
 Null const Null::kNull;
 
+std::unique_ptr<Null> Null::
+New()
+{
+    return std::unique_ptr<Null>(const_cast<Null *>(&kNull));
+}
+
 Object *Null::
 copy() const
 {

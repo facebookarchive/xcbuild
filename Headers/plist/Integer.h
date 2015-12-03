@@ -37,10 +37,7 @@ public:
     }
 
 public:
-    inline static Integer *New(int64_t value = 0)
-    {
-        return new Integer(value);
-    }
+    static std::unique_ptr<Integer> New(int64_t value = 0);
 
 public:
     static std::unique_ptr<Integer> Coerce(Object const *obj);

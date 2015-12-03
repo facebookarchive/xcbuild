@@ -14,6 +14,12 @@ using plist::Object;
 using plist::Real;
 using plist::String;
 
+std::unique_ptr<Real> Real::
+New(double value)
+{
+    return std::unique_ptr<Real>(new Real(value));
+}
+
 Object *Real::
 copy() const
 {
@@ -23,18 +29,16 @@ copy() const
 std::unique_ptr<Real> Real::
 Coerce(Object const *obj)
 {
-    Real *result = nullptr;
-
     if (obj->type() == Type()) {
-        result = CastTo<Real>(obj->copy());
+        return std::unique_ptr<Real>(CastTo<Real>(obj->copy()));
     } else if (String const *string = CastTo<String>(obj)) {
         char *end = NULL;
         double real = std::strtod(string->value().c_str(), &end);
 
         if (end != string->value().c_str()) {
-            result = Real::New(real);
+            return Real::New(real);
         }
     }
 
-    return std::unique_ptr<Real>(result);
+    return nullptr;
 }

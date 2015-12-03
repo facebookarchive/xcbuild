@@ -33,10 +33,7 @@ public:
     }
 
 public:
-    inline static Array *New()
-    {
-        return new Array;
-    }
+    static std::unique_ptr<Array> New();
 
 public:
     inline bool empty() const

@@ -87,7 +87,7 @@ StringsParserParse(ASCIIPListLexer *lexer, Dictionary *strings)
                 if (string == NULL)
                     return false;
 
-                key = String::New(std::string(string));
+                key = String::New(std::string(string)).release();
                 free(string);
                 if (key == NULL)
                     return false;
@@ -116,7 +116,7 @@ StringsParserParse(ASCIIPListLexer *lexer, Dictionary *strings)
                     return false;
                 }
 
-                value = String::New(std::string(string));
+                value = String::New(std::string(string)).release();
                 free(string);
                 if (value == NULL) {
                     key->release();
@@ -152,9 +152,9 @@ template<>
 std::pair<Object *, std::string> Format<Strings>::
 Deserialize(std::vector<uint8_t> const &contents, Strings const &format)
 {
-    Dictionary         *root;
-    std::string         error;
-    ASCIIPListLexer     lexer;
+    std::unique_ptr<Dictionary> root;
+    std::string                 error;
+    ASCIIPListLexer             lexer;
 
     const std::vector<uint8_t> data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
 
@@ -166,14 +166,12 @@ Deserialize(std::vector<uint8_t> const &contents, Strings const &format)
     ASCIIPListLexerInit(&lexer, reinterpret_cast<char const *>(data.data()), data.size(), kASCIIPListLexerStyleStrings);
 
     /* Parse contents. */
-    if (!StringsParserParse(&lexer, root)) {
-        root->release();
-        root = NULL;
-
+    if (!StringsParserParse(&lexer, root.get())) {
+        root = nullptr;
         error = "unable to parse strings";
     }
 
-    return std::make_pair(root, error);
+    return std::make_pair(root.release(), error);
 }
 
 template<>

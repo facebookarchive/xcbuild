@@ -12,6 +12,24 @@
 using plist::Object;
 using plist::Date;
 
+std::unique_ptr<Date> Date::
+New(struct tm const &value)
+{
+    return std::unique_ptr<Date>(new Date(value));
+}
+
+std::unique_ptr<Date> Date::
+New(std::string const &value)
+{
+    return std::unique_ptr<Date>(new Date(value));
+}
+
+std::unique_ptr<Date> Date::
+New(uint64_t value)
+{
+    return std::unique_ptr<Date>(new Date(value));
+}
+
 Object *Date::
 copy() const
 {

@@ -45,10 +45,7 @@ private:
     static Boolean const kFalse;
 
 public:
-    inline static Boolean *New(bool value)
-    {
-        return const_cast <Boolean *> (value ? &kTrue : &kFalse);
-    }
+    static std::unique_ptr<Boolean> New(bool value);
 
 public:
     inline bool value() const

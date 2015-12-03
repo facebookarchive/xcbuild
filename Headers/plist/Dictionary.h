@@ -35,10 +35,7 @@ public:
     }
 
 public:
-    inline static Dictionary *New()
-    {
-        return new Dictionary;
-    }
+    static std::unique_ptr<Dictionary> New();
 
 public:
     inline bool empty() const

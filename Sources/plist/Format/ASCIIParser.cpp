@@ -293,7 +293,7 @@ beginArray()
 {
     Array   *array;
 
-    array = Array::New();
+    array = Array::New().release();
     if (array == NULL) {
         abort("Cannot create an array.");
         return false;
@@ -314,7 +314,7 @@ beginDictionary()
 {
     Dictionary  *dict;
 
-    dict = Dictionary::New();
+    dict = Dictionary::New().release();
     if (dict == NULL) {
         abort("Cannot create a dictionary.");
         return false;
@@ -339,7 +339,7 @@ storeKey(String *key)
     String *copy;
 
     if (key == NULL) {
-        copy = String::New();
+        copy = String::New().release();
     } else {
         copy = (String *)key->copy();
     }
@@ -523,7 +523,7 @@ parse(ASCIIPListLexer *lexer)
                             bytes[n >> 1] = hex_to_bin(contents + n);
                         }
 
-                        Data *data = Data::New(bytes);
+                        std::unique_ptr<Data> data = Data::New(bytes);
                         free(contents);
 
                         if (data == NULL) {
@@ -532,15 +532,12 @@ parse(ASCIIPListLexer *lexer)
                         }
 
                         ASCIIDebug("Storing string as data");
-                        if (!storeValue(data)) {
-                            data->release();
+                        if (!storeValue(data.release())) {
                             return false;
                         }
-
-                        data->release();
                     } else {
                         char *contents = ASCIIPListCopyUnquotedString(lexer, '?');
-                        String *string = String::New(std::string(contents));
+                        std::unique_ptr<String> string = String::New(std::string(contents));
                         free(contents);
 
                         if (string == NULL) {
@@ -551,19 +548,15 @@ parse(ASCIIPListLexer *lexer)
                         /* Container context */
                         if (isDictionary) {
                             ASCIIDebug("Storing string %s as key", string->value().c_str());
-                            if (!storeKey(string)) {
-                                string->release();
+                            if (!storeKey(string.release())) {
                                 return false;
                             }
                         } else {
                             ASCIIDebug("Storing string %s", string->value().c_str());
-                            if (!storeValue(string)) {
-                                string->release();
+                            if (!storeValue(string.release())) {
                                 return false;
                             }
                         }
-
-                        string->release();
                     }
 
                     if (topLevel) {

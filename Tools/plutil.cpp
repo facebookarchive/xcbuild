@@ -227,13 +227,13 @@ NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, 
 
     if (arg == "-bool") {
         bool boolean = (value == "YES" || value == "true");
-        object.reset(plist::Boolean::New(boolean));
+        object = plist::Boolean::New(boolean);
     } else if (arg == "-integer") {
         char *end = NULL;
         long long integer = std::strtoll(value.c_str(), &end, 0);
 
         if (end != value.c_str()) {
-            object.reset(plist::Integer::New(integer));
+            object = plist::Integer::New(integer);
         } else {
             return std::make_pair(false, "invalid integer argument");
         }
@@ -242,16 +242,16 @@ NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, 
         double real = std::strtod(value.c_str(), &end);
 
         if (end != value.c_str()) {
-            object.reset(plist::Real::New(real));
+            object = plist::Real::New(real);
         } else {
             return std::make_pair(false, "invalid float argument");
         }
     } else if (arg == "-string") {
-        object.reset(plist::String::New(value));
+        object = plist::String::New(value);
     } else if (arg == "-date") {
-        object.reset(plist::Date::New(value));
+        object = plist::Date::New(value);
     } else if (arg == "-data") {
-        object.reset(plist::Data::New(value));
+        object = plist::Data::New(value);
     } else if (arg == "-xml") {
         std::pair<bool, std::string> result = SanitizeXMLFormat(&value);
         if (!result.first) {

@@ -76,25 +76,10 @@ public:
     }
 
 public:
-    inline static Data *New(std::vector <uint8_t> const &value = std::vector <uint8_t> ())
-    {
-        return new Data(value);
-    }
-
-    inline static Data *New(std::vector <uint8_t> &&value)
-    {
-        return new Data(value);
-    }
-
-    inline static Data *New(std::string const &value)
-    {
-        return new Data(value);
-    }
-
-    inline static Data *New(void const *bytes, size_t length)
-    {
-        return new Data(bytes, length);
-    }
+    static std::unique_ptr<Data> New(std::vector<uint8_t> const &value = std::vector<uint8_t>());
+    static std::unique_ptr<Data> New(std::vector<uint8_t> &&value);
+    static std::unique_ptr<Data> New(std::string const &value);
+    static std::unique_ptr<Data> New(void const *bytes, size_t length);
 
 public:
     static std::unique_ptr<Data> Coerce(Object const *obj);

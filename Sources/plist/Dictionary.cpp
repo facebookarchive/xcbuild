@@ -12,6 +12,12 @@
 using plist::Object;
 using plist::Dictionary;
 
+std::unique_ptr<Dictionary> Dictionary::
+New()
+{
+    return std::unique_ptr<Dictionary>(new Dictionary());
+}
+
 Object *Dictionary::
 copy() const
 {

@@ -277,7 +277,7 @@ pop()
 bool XMLParser::
 beginArray()
 {
-    push(Array::New());
+    push(Array::New().release());
     return true;
 }
 
@@ -291,7 +291,7 @@ endArray()
 bool XMLParser::
 beginDictionary()
 {
-    push(Dictionary::New());
+    push(Dictionary::New().release());
     _state.key.valid  = false;
     _state.key.active = false;
     return true;
@@ -307,7 +307,7 @@ endDictionary()
 bool XMLParser::
 beginString()
 {
-    push(String::New());
+    push(String::New().release());
     _cdata.clear();
     return true;
 }
@@ -323,7 +323,7 @@ endString()
 bool XMLParser::
 beginInteger()
 {
-    push(Integer::New());
+    push(Integer::New().release());
     _cdata.clear();
     return true;
 }
@@ -339,7 +339,7 @@ endInteger()
 bool XMLParser::
 beginReal()
 {
-    push(Real::New());
+    push(Real::New().release());
     _cdata.clear();
     return true;
 }
@@ -355,7 +355,7 @@ endReal()
 bool XMLParser::
 beginNull()
 {
-    push(Null::New());
+    push(Null::New().release());
     return true;
 }
 
@@ -369,7 +369,7 @@ endNull()
 bool XMLParser::
 beginBoolean(bool value)
 {
-    push(Boolean::New(value));
+    push(Boolean::New(value).release());
     return true;
 }
 
@@ -383,7 +383,7 @@ endBoolean()
 bool XMLParser::
 beginData()
 {
-    push(Data::New());
+    push(Data::New().release());
     _cdata.clear();
     return true;
 }
@@ -399,7 +399,7 @@ endData()
 bool XMLParser::
 beginDate()
 {
-    push(Date::New());
+    push(Date::New().release());
     _cdata.clear();
     return true;
 }

@@ -37,10 +37,7 @@ public:
     }
 
 public:
-    inline static Real *New(double value = 0.0)
-    {
-        return new Real(value);
-    }
+    static std::unique_ptr<Real> New(double value = 0.0);
 
 public:
     static std::unique_ptr<Real> Coerce(Object const *obj);

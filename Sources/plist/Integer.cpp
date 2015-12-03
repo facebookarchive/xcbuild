@@ -14,6 +14,12 @@ using plist::Object;
 using plist::Integer;
 using plist::String;
 
+std::unique_ptr<Integer> Integer::
+New(int64_t value)
+{
+    return std::unique_ptr<Integer>(new Integer(value));
+}
+
 Object *Integer::
 copy() const
 {
@@ -23,18 +29,16 @@ copy() const
 std::unique_ptr<Integer> Integer::
 Coerce(Object const *obj)
 {
-    Integer *result = nullptr;
-
     if (obj->type() == Type()) {
-        result = CastTo<Integer>(obj->copy());
+        return std::unique_ptr<Integer>(CastTo<Integer>(obj->copy()));
     } else if (String const *string = CastTo<String>(obj)) {
         char *end = NULL;
         long long integer = std::strtoll(string->value().c_str(), &end, 0);
 
         if (end != string->value().c_str()) {
-            result = Integer::New(integer);
+            return Integer::New(integer);
         }
     }
 
-    return std::unique_ptr<Integer>(result);
+    return nullptr;
 }

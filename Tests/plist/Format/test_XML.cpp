@@ -42,9 +42,9 @@ TEST(XML, Boolean)
     auto deserialize = XML::Deserialize(contents, XML::Create(Encoding::UTF8));
     ASSERT_NE(deserialize.first, nullptr);
 
-    auto dictionary = std::unique_ptr<Dictionary>(Dictionary::New());
-    dictionary->set("true", Boolean::New(true));
-    dictionary->set("false", Boolean::New(false));
+    auto dictionary = Dictionary::New();
+    dictionary->set("true", Boolean::New(true).release());
+    dictionary->set("false", Boolean::New(false).release());
 
     EXPECT_TRUE(deserialize.first->equals(dictionary.get()));
     deserialize.first->release();

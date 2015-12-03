@@ -69,20 +69,9 @@ public:
     }
 
 public:
-    inline static Date *New(struct tm const &value = tm ())
-    {
-        return new Date(value);
-    }
-
-    inline static Date *New(std::string const &value)
-    {
-        return new Date(value);
-    }
-
-    inline static Date *New(uint64_t value)
-    {
-        return new Date(value);
-    }
+    static std::unique_ptr<Date> New(struct tm const &value = tm());
+    static std::unique_ptr<Date> New(std::string const &value);
+    static std::unique_ptr<Date> New(uint64_t value);
 
 public:
     static std::unique_ptr<Date> Coerce(Object const *obj);

@@ -235,9 +235,9 @@ __ABPDictionaryKeyString(ABPContext *context, Dictionary const *dict, int key)
     if (it != map->end()) {
         return it->second;
     } else {
-        String *string = String::New(dict->key(key));
-        map->insert({ key, string });
-        return string;
+        auto string = String::New(dict->key(key));
+        map->insert({ key, string.get() });
+        return string.release();
     }
 }
 

@@ -34,7 +34,7 @@ TEST(ASCII, QuotedString)
     auto deserialize = ASCII::Deserialize(contents, ASCII::Create(Encoding::UTF8));
     ASSERT_NE(deserialize.first, nullptr);
 
-    auto string = std::unique_ptr<String>(String::New("str*ng"));
+    auto string = String::New("str*ng");
     EXPECT_TRUE(deserialize.first->equals(string.get()));
 
     auto serialize = ASCII::Serialize(deserialize.first, ASCII::Create(Encoding::UTF8));
@@ -52,7 +52,7 @@ TEST(ASCII, UnquotedString)
     auto deserialize = ASCII::Deserialize(contents, ASCII::Create(Encoding::UTF8));
     ASSERT_NE(deserialize.first, nullptr);
 
-    auto string = std::unique_ptr<String>(String::New("string"));
+    auto string = String::New("string");
     EXPECT_TRUE(deserialize.first->equals(string.get()));
 
     auto serialize = ASCII::Serialize(deserialize.first, ASCII::Create(Encoding::UTF8));
@@ -71,19 +71,19 @@ TEST(ASCII, BooleanNumberAreStrings)
     ASSERT_NE(deserialize.first, nullptr);
 
     /* Integers, reals, and booleans should always be parsed as strings. */
-    auto dictionary = std::unique_ptr<Dictionary>(Dictionary::New());
-    dictionary->set("boolean", String::New("YES"));
-    dictionary->set("integer", String::New("42"));
-    dictionary->set("real", String::New("3.14"));
+    auto dictionary = Dictionary::New();
+    dictionary->set("boolean", String::New("YES").release());
+    dictionary->set("integer", String::New("42").release());
+    dictionary->set("real", String::New("3.14").release());
     EXPECT_TRUE(deserialize.first->equals(dictionary.get()));
 
     deserialize.first->release();
 
     /* Test that real booleans, integers, and reals are serialized as strings. */
-    std::unique_ptr<Dictionary> typed = std::unique_ptr<Dictionary>(Dictionary::New());
-    typed->set("boolean", Boolean::New(true));
-    typed->set("integer", Integer::New(42));
-    typed->set("real", Real::New(3.14));
+    auto typed = Dictionary::New();
+    typed->set("boolean", Boolean::New(true).release());
+    typed->set("integer", Integer::New(42).release());
+    typed->set("real", Real::New(3.14).release());
 
     auto serialize2 = ASCII::Serialize(typed.get(), ASCII::Create(Encoding::UTF8));
     ASSERT_NE(serialize2.first, nullptr);

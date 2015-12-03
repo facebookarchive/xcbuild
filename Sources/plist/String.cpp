@@ -21,6 +21,18 @@ using plist::Boolean;
 using plist::Integer;
 using plist::Real;
 
+std::unique_ptr<String> String::
+New(std::string const &value)
+{
+    return std::unique_ptr<String>(new String(value));
+}
+
+std::unique_ptr<String> String::
+New(std::string &&value)
+{
+    return std::unique_ptr<String>(new String(value));
+}
+
 Object *String::
 copy() const
 {
@@ -30,19 +42,17 @@ copy() const
 std::unique_ptr<String> String::
 Coerce(Object const *obj)
 {
-    String *result = nullptr;
-
     if (obj->type() == Type()) {
-        result = CastTo<String>(obj->copy());
+        return std::unique_ptr<String>(CastTo<String>(obj->copy()));
     } else if (Real const *real = CastTo<Real>(obj)) {
         std::ostringstream out;
         out << real->value();
-        result = String::New(out.str());
+        return String::New(out.str());
     } else if (Integer const *integer = CastTo<Integer>(obj)) {
-        result = String::New(std::to_string(integer->value()));
+        return String::New(std::to_string(integer->value()));
     } else if (Boolean const *boolean = CastTo<Boolean>(obj)) {
-        result = String::New(boolean->value() ? "YES" : "NO");
+        return String::New(boolean->value() ? "YES" : "NO");
     }
 
-    return std::unique_ptr<String>(result);
+    return nullptr;
 }

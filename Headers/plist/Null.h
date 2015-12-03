@@ -40,10 +40,7 @@ private:
     static Null const kNull;
 
 public:
-    inline static Null *New()
-    {
-        return const_cast <Null *> (&kNull);
-    }
+    static std::unique_ptr<Null> New();
 
 public:
     static std::unique_ptr<Null> Coerce(Object const *obj);

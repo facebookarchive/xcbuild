@@ -67,11 +67,11 @@ onStartElement(std::string const &name, std::unordered_map<std::string, std::str
 
     for (auto I : attrs) {
         if (I.second == "YES") {
-            dict->set(I.first, Boolean::New(true));
+            dict->set(I.first, Boolean::New(true).release());
         } else if (I.second == "NO") {
-            dict->set(I.first, Boolean::New(false));
+            dict->set(I.first, Boolean::New(false).release());
         } else {
-            dict->set(I.first, String::New(I.second));
+            dict->set(I.first, String::New(I.second).release());
         }
     }
 

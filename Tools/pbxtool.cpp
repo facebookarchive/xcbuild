@@ -84,7 +84,7 @@ GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
     for (pbxsetting::Setting const &setting : BC.buildSettings().settings()) {
         std::string key = setting.name().c_str();
         std::string value = setting.value().raw().c_str();
-        settings->set(key, plist::String::New(value));
+        settings->set(key, plist::String::New(value).release());
     }
 
     if (auto baseConfigurationReference = BC.baseConfigurationReference()) {
@@ -113,7 +113,7 @@ GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
                 for (pbxsetting::Setting const &setting : config->level().settings()) {
                     std::string key = setting.name().c_str();
                     std::string value = setting.value().raw().c_str();
-                    settings->set(key, plist::String::New(value));
+                    settings->set(key, plist::String::New(value).release());
                 }
             }
         }

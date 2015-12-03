@@ -47,15 +47,8 @@ public:
     }
 
 public:
-    inline static String *New(std::string const &value = std::string())
-    {
-        return new String(value);
-    }
-
-    inline static String *New(std::string &&value)
-    {
-        return new String(value);
-    }
+    static std::unique_ptr<String> New(std::string const &value = std::string());
+    static std::unique_ptr<String> New(std::string &&value);
 
 public:
     static std::unique_ptr<String> Coerce(Object const *obj);

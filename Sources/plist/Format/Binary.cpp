@@ -130,20 +130,20 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
 
     switch (type) {
         case kABPRecordTypeNull:
-            return Null::New();
+            return Null::New().release();
         case kABPRecordTypeBoolTrue:
-            return Boolean::New(true);
+            return Boolean::New(true).release();
         case kABPRecordTypeBoolFalse:
-            return Boolean::New(false);
+            return Boolean::New(false).release();
         case kABPRecordTypeDate:
-            return Date::New(*reinterpret_cast <uint64_t *> (arg1) - ReferenceTimestamp);
+            return Date::New(*reinterpret_cast <uint64_t *> (arg1) - ReferenceTimestamp).release();
         case kABPRecordTypeInteger:
-            return Integer::New(*reinterpret_cast <int64_t *> (arg1));
+            return Integer::New(*reinterpret_cast <int64_t *> (arg1)).release();
         case kABPRecordTypeReal:
             switch (*reinterpret_cast <size_t *> (arg2)) {
-                case 4:  return Real::New(*reinterpret_cast <float *> (arg1));
-                case 8:  return Real::New(*reinterpret_cast <double *> (arg1));
-                default: return Real::New(0.0);
+                case 4:  return Real::New(*reinterpret_cast <float *> (arg1)).release();
+                case 8:  return Real::New(*reinterpret_cast <double *> (arg1)).release();
+                default: return Real::New(0.0).release();
             }
         case kABPRecordTypeData:
         {
@@ -162,7 +162,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
                     return nullptr;
             }
 
-            return Data::New(std::move(bytes));
+            return Data::New(std::move(bytes)).release();
         }
             break;
         case kABPRecordTypeStringASCII:
@@ -182,7 +182,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
                     return nullptr;
             }
 
-            return String::New(std::move(string));
+            return String::New(std::move(string)).release();
         }
         case kABPRecordTypeStringUnicode:
         {
@@ -206,14 +206,14 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             }
 
 #if notyet
-            return String::New(std::move(std::codecvt_utf8_utf16 <char16_t> ().to_bytes(string)));
+            return String::New(std::move(std::codecvt_utf8_utf16 <char16_t> ().to_bytes(string))).release();
 #else
             std::string u8string;
             u8string.resize(string.size() * 6);
             size_t length = ::utf16_to_utf8(&u8string[0], u8string.size(),
                                             &string[0], string.size(), 0, nullptr);
             u8string.resize(length);
-            return String::New(std::move(u8string));
+            return String::New(std::move(u8string)).release();
 #endif
         }
         case kABPRecordTypeArray:
@@ -226,7 +226,6 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             for (size_t n = 0; n < nrefs; n++) {
                 auto object = ::ABPReadObject(&self->context, refs[n]);
                 if (object == nullptr) {
-                    array->release();
                     return nullptr;
                 }
 
@@ -241,7 +240,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
 
                 array->append(object);
             }
-            return array;
+            return array.release();
         }
         case kABPRecordTypeDictionary:
         {
@@ -253,13 +252,11 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             for (size_t n = 0; n < nrefs; n++) {
                 auto keyObject = ::ABPReadObject(&self->context, refs[n * 2 + 0]);
                 if (keyObject == nullptr) {
-                    dict->release();
                     return nullptr;
                 }
 
                 auto object = ::ABPReadObject(&self->context, refs[n * 2 + 1]);
                 if (object == nullptr) {
-                    dict->release();
                     return nullptr;
                 }
 
@@ -268,7 +265,6 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
                 //
                 auto keyString = CastTo <String> (keyObject);
                 if (keyString == nullptr) {
-                    dict->release();
                     return nullptr;
                 }
 
@@ -283,7 +279,7 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
 
                 dict->set(keyString->value(), object);
             }
-            return dict;
+            return dict.release();
         }
         default:
             break;
