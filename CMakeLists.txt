@@ -362,6 +362,9 @@ target_link_libraries(test_String plist)
 ADD_UNIT_GTEST(test_ASCII Tests/plist/Format/test_ASCII.cpp)
 target_link_libraries(test_ASCII plist)
 
+ADD_UNIT_GTEST(test_XML Tests/plist/Format/test_XML.cpp)
+target_link_libraries(test_XML plist)
+
 ADD_UNIT_GTEST(test_Condition Tests/pbxsetting/test_Condition.cpp)
 target_link_libraries(test_Condition pbxsetting)
 

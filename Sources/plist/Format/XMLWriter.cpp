@@ -24,8 +24,7 @@ using plist::CastTo;
 XMLWriter::
 XMLWriter(Object const *root) :
     _root   (root),
-    _indent (0),
-    _lastKey(false)
+    _indent (0)
 {
 }
 
@@ -179,13 +178,6 @@ handleObject(Object const *object)
 bool XMLWriter::
 handleDictionary(Dictionary const *dictionary)
 {
-    if (_lastKey) {
-        _lastKey = false;
-        if (!writeString("\n", true)) {
-            return false;
-        }
-    }
-
     /* Write '<dict>'. */
     if (!writeString("<dict>", true)) {
         return false;
@@ -210,8 +202,10 @@ handleDictionary(Dictionary const *dictionary)
         if (!writeString("</key>", false)) {
             return false;
         }
-        
-        _lastKey = true;
+
+        if (!writeString("\n", false)) {
+            return false;
+        }
 
         if (!handleObject(dictionary->value(i))) {
             return false;
@@ -230,13 +224,6 @@ handleDictionary(Dictionary const *dictionary)
 bool XMLWriter::
 handleArray(Array const *array)
 {
-    if (_lastKey) {
-        _lastKey = false;
-        if (!writeString("\n", true)) {
-            return false;
-        }
-    }
-
     /* Write '<array>'. */
     if (!writeString("<array>", true)) {
         return false;
@@ -266,11 +253,10 @@ handleArray(Array const *array)
 bool XMLWriter::
 handleBoolean(Boolean const *boolean)
 {
-    if (!writeString(boolean->value() ? "<true />" : "<false />", !_lastKey)) {
+    if (!writeString(boolean->value() ? "<true />" : "<false />", true)) {
         return false;
     }
 
-    _lastKey = false;
     return true;
 }
 
@@ -278,11 +264,9 @@ bool XMLWriter::
 handleString(String const *string)
 {
     /* Write '<string>string</string>'. */
-    if (!writeString("<string>", !_lastKey)) {
+    if (!writeString("<string>", true)) {
         return false;
     }
-
-    _lastKey = false;
 
     if (!writeEscapedString(string->value(), false)) {
         return false;
@@ -294,18 +278,9 @@ handleString(String const *string)
 bool XMLWriter::
 handleData(Data const *data)
 {
-    if (_lastKey) {
-        _lastKey = false;
-        if (!writeString("\n", true)) {
-            return false;
-        }
-    }
-
     if (!writeString("<data>", true)) {
         return false;
     }
-
-    _lastKey = false;
 
     if (!writeString(data->base64Value(), false)) {
         return false;
@@ -324,11 +299,9 @@ handleReal(Real const *real)
     assert(rc < (int)sizeof(buf));
 
     /* Write '<real>number</real>'. */
-    if (!writeString("<real>", !_lastKey)) {
+    if (!writeString("<real>", true)) {
         return false;
     }
-
-    _lastKey = false;
 
     if (!writeString(buf, false)) {
         return false;
@@ -347,11 +320,9 @@ handleInteger(Integer const *integer)
     assert(rc < (int)sizeof(buf));
 
     /* Write '<integer>number</integer>'. */
-    if (!writeString("<integer>", !_lastKey)) {
+    if (!writeString("<integer>", true)) {
         return false;
     }
-
-    _lastKey = false;
 
     if (!writeString(buf, false)) {
         return false;
@@ -364,12 +335,10 @@ bool XMLWriter::
 handleDate(Date const *date)
 {
     /* Write '<date>YYYY-MM-DDTHH:MM:SSZ+ZZZZ</date>'. */
-    if (!writeString("<date>", !_lastKey)) {
+    if (!writeString("<date>", true)) {
         return false;
     }
 
-    _lastKey = false;
-    
     if (!writeString(date->stringValue(), false)) {
         return false;
     }

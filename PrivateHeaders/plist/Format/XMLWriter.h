@@ -21,7 +21,6 @@ private:
     Object const         *_root;
     std::vector<uint8_t>  _contents;
     int                   _indent;
-    bool                  _lastKey;
 
 public:
     XMLWriter(Object const *root);
