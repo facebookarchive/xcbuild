@@ -296,7 +296,7 @@ Error(void *opaque, char const *message)
 }
 
 template<>
-std::pair<Object *, std::string> Format<Binary>::
+std::pair<std::unique_ptr<Object>, std::string> Format<Binary>::
 Deserialize(std::vector<uint8_t> const &contents, Binary const &format)
 {
     BinaryParseContext parseContext;
@@ -318,16 +318,16 @@ Deserialize(std::vector<uint8_t> const &contents, Binary const &format)
 
     ::ABPReaderInit(&parseContext.context, &parseContext.streamCallBacks, &parseContext.createCallBacks);
 
-    Object *object = nullptr;
+    std::unique_ptr<Object> object = nullptr;
     if (::ABPReaderOpen(&parseContext.context)) {
-        object = ::ABPReadTopLevelObject(&parseContext.context);
-        if (object != nullptr) {
-            object = object->copy().release();
+        Object *topObject = ::ABPReadTopLevelObject(&parseContext.context);
+        if (topObject != nullptr) {
+            object = topObject->copy();
         }
         ::ABPReaderClose(&parseContext.context);
     }
 
-    return std::make_pair(object, parseContext.error);
+    return std::make_pair(std::move(object), parseContext.error);
 }
 
 struct BinaryWriteContext {

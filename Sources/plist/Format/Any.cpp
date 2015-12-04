@@ -75,14 +75,14 @@ Identify(std::vector<uint8_t> const &contents)
 }
 
 template<typename T>
-static std::pair<Object *, std::string>
+static std::pair<std::unique_ptr<Object>, std::string>
 DeserializeImpl(std::vector<uint8_t> const &contents, Any const &format)
 {
     return T::Deserialize(contents, *format.format<T>());
 }
 
 template<>
-std::pair<Object *, std::string> Format<Any>::
+std::pair<std::unique_ptr<Object>, std::string> Format<Any>::
 Deserialize(std::vector<uint8_t> const &contents, Any const &format)
 {
     switch (format.type()) {

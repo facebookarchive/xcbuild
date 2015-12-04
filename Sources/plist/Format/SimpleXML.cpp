@@ -71,18 +71,18 @@ Identify(std::vector<uint8_t> const &contents)
 }
 
 template<>
-std::pair<Object *, std::string> Format<SimpleXML>::
+std::pair<std::unique_ptr<Object>, std::string> Format<SimpleXML>::
 Deserialize(std::vector<uint8_t> const &contents, SimpleXML const &format)
 {
     const std::vector<uint8_t> data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
 
     SimpleXMLParser parser;
-    Object *root = parser.parse(data);
+    std::unique_ptr<Object> root = std::unique_ptr<Object>(parser.parse(data));
     if (root == nullptr) {
         return std::make_pair(nullptr, parser.error());
     }
 
-    return std::make_pair(root, std::string());
+    return std::make_pair(std::move(root), std::string());
 }
 
 template<>

@@ -266,7 +266,7 @@ NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, 
             return std::make_pair(false, deserialize.second);
         }
 
-        object.reset(deserialize.first);
+        object = std::move(deserialize.first);
     } else if (arg == "-json") {
         return std::make_pair(false, "JSON not yet implemented");
     } else {
@@ -680,13 +680,11 @@ main(int argc, char **argv)
                 continue;
             }
 
-            std::unique_ptr<plist::Object> object = std::unique_ptr<plist::Object>(deserialize.first);
-
             /* Perform the sepcific action. */
             if (modify) {
-                success = success && Modify(options, file, std::move(object), *format);
+                success = success && Modify(options, file, std::move(deserialize.first), *format);
             } else if (options.print()) {
-                success = success && Print(options, std::move(object), *format);
+                success = success && Print(options, std::move(deserialize.first), *format);
             } else if (options.lint() || true) {
                 success = success && Lint(options, file);
             }

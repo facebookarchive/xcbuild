@@ -80,18 +80,18 @@ Identify(std::vector<uint8_t> const &contents)
 }
 
 template<>
-std::pair<Object *, std::string> Format<XML>::
+std::pair<std::unique_ptr<Object>, std::string> Format<XML>::
 Deserialize(std::vector<uint8_t> const &contents, XML const &format)
 {
     const std::vector<uint8_t> data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
 
     XMLParser parser;
-    Object *root = parser.parse(data);
+    std::unique_ptr<Object> root = std::unique_ptr<Object>(parser.parse(data));
     if (root == nullptr) {
         return std::make_pair(nullptr, parser.error());
     }
 
-    return std::make_pair(root, std::string());
+    return std::make_pair(std::move(root), std::string());
 }
 
 template<>

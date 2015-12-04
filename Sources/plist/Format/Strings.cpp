@@ -149,7 +149,7 @@ StringsParserParse(ASCIIPListLexer *lexer, Dictionary *strings)
 }
 
 template<>
-std::pair<Object *, std::string> Format<Strings>::
+std::pair<std::unique_ptr<Object>, std::string> Format<Strings>::
 Deserialize(std::vector<uint8_t> const &contents, Strings const &format)
 {
     std::unique_ptr<Dictionary> root;
@@ -171,7 +171,7 @@ Deserialize(std::vector<uint8_t> const &contents, Strings const &format)
         error = "unable to parse strings";
     }
 
-    return std::make_pair(root.release(), error);
+    return std::make_pair(std::move(root), error);
 }
 
 template<>

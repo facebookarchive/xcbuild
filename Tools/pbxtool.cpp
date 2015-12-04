@@ -61,12 +61,12 @@ MakePath(PBX::Project const &P, PBX::FileReference const &FR)
     return MakePath(P, std::string(), FR);
 }
 
-plist::Dictionary *
+std::unique_ptr<plist::Dictionary>
 GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
                               XC::BuildConfiguration const &BC,
                               bool isProjectBC = false)
 {
-    plist::Dictionary *settings = nullptr;
+    std::unique_ptr<plist::Dictionary> settings = nullptr;
 
     if (!isProjectBC) {
         for (auto PBC : *project->buildConfigurationList()) {
@@ -78,7 +78,7 @@ GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
     }
 
     if (settings == nullptr) {
-        settings = new plist::Dictionary;
+        settings = plist::Dictionary::New();
     }
 
     for (pbxsetting::Setting const &setting : BC.buildSettings().settings()) {
@@ -120,7 +120,6 @@ GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
     }
 
     if (settings->empty()) {
-        settings->release();
         settings = nullptr;
     }
 

@@ -67,9 +67,8 @@ Open(std::string const &path)
         return nullptr;
     }
 
-    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(result.first);
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(result.first.get());
     if (plist == nullptr) {
-        result.first->release();
         return nullptr;
     }
 
@@ -81,11 +80,6 @@ Open(std::string const &path)
     if (!platformVersion->parse(plist)) {
         platformVersion = nullptr;
     }
-
-    //
-    // Release the property list.
-    //
-    plist->release();
 
     return platformVersion;
 }

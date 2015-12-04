@@ -184,7 +184,7 @@ Open(Context *context, std::string const &filename)
     //
     // Parse property list
     //
-    plist::Object *plist = plist::Format::Any::Read(filename).first;
+    std::unique_ptr<plist::Object> plist = plist::Format::Any::Read(filename).first;
     if (plist == nullptr) {
         fprintf(stderr, "stderr: unable to read specification plist\n");
         return false;
@@ -194,7 +194,7 @@ Open(Context *context, std::string const &filename)
     // If this is a dictionary, then it's a single specification,
     // if it's an array then multiple specifications are present.
     //
-    if (auto dict = plist::CastTo <plist::Dictionary> (plist)) {
+    if (auto dict = plist::CastTo <plist::Dictionary> (plist.get())) {
         auto spec = Parse(context, dict);
         if (spec != nullptr) {
             //
@@ -203,9 +203,8 @@ Open(Context *context, std::string const &filename)
             context->manager->addSpecification(spec);
         }
 
-        plist->release();
         return (spec != nullptr);
-    } else if (auto array = plist::CastTo <plist::Array> (plist)) {
+    } else if (auto array = plist::CastTo <plist::Array> (plist.get())) {
         size_t errors = 0;
         size_t count  = array->count();
         for (size_t n = 0; n < count; n++) {
@@ -219,13 +218,11 @@ Open(Context *context, std::string const &filename)
             }
         }
 
-        plist->release();
         return (errors < count);
     }
 
     fprintf(stderr, "error: specification file '%s' does not contain "
             "a dictionary nor an array", filename.c_str());
-    plist->release();
     return false;
 }
 

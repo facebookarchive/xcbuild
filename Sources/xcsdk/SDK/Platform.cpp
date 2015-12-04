@@ -248,9 +248,8 @@ Open(std::shared_ptr<Manager> manager, std::string const &path)
         return nullptr;
     }
 
-    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(result.first);
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(result.first.get());
     if (plist == nullptr) {
-        result.first->release();
         return nullptr;
     }
 
@@ -268,11 +267,6 @@ Open(std::shared_ptr<Manager> manager, std::string const &path)
     } else {
         platform = nullptr;
     }
-
-    //
-    // Release the property list.
-    //
-    plist->release();
 
     if (platform) {
         //

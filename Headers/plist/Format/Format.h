@@ -29,7 +29,7 @@ public:
     Identify(std::vector<uint8_t> const &contents);
 
 public:
-    static std::pair<Object *, std::string>
+    static std::pair<std::unique_ptr<Object>, std::string>
     Deserialize(std::vector<uint8_t> const &contents, T const &format);
 
 public:
@@ -37,7 +37,7 @@ public:
     Serialize(Object const *object, T const &format);
 
 public:
-    static std::pair<Object *, std::string>
+    static std::pair<std::unique_ptr<Object>, std::string>
     Read(std::string const &path)
     {
         std::ifstream file = std::ifstream(path, std::ios::binary);

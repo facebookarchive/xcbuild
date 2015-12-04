@@ -201,11 +201,11 @@ Identify(std::vector<uint8_t> const &contents)
 }
 
 template<>
-std::pair<Object *, std::string> Format<ASCII>::
+std::pair<std::unique_ptr<Object>, std::string> Format<ASCII>::
 Deserialize(std::vector<uint8_t> const &contents, ASCII const &format)
 {
-    Object                  *root = nullptr;
-    std::string              error;
+    std::unique_ptr<Object> root = nullptr;
+    std::string             error;
 
     const std::vector<uint8_t> data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
 
@@ -216,12 +216,12 @@ Deserialize(std::vector<uint8_t> const &contents, ASCII const &format)
     /* Parse contents. */
     ASCIIParser parser;
     if (parser.parse(&lexer)) {
-        root = parser.root()->copy().release();
+        root = parser.root()->copy();
     } else {
         error = parser.error();
     }
 
-    return std::make_pair(root, error);
+    return std::make_pair(std::move(root), error);
 }
 
 template<>

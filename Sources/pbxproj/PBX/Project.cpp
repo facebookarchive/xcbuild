@@ -166,10 +166,9 @@ Open(std::string const &path)
         return nullptr;
     }
 
-    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(result.first);
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(result.first.get());
     if (plist == nullptr) {
         fprintf(stderr, "error: project file %s is not a dictionary\n", projectFileName.c_str());
-        result.first->release();
         return nullptr;
     }
 
@@ -248,11 +247,6 @@ Open(std::string const &path)
 
     project->_basePath    = project->_projectFile.substr(0, slash);
     project->_name        = project->_projectFile.substr(slash + 1, dot - slash - 1);
-
-    //
-    // Release the property list.
-    //
-    plist->release();
 
     //
     // Transfer all file references from cache.

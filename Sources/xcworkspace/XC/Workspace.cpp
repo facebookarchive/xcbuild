@@ -70,14 +70,13 @@ Open(std::string const &path)
     //
     // Parse property list
     //
-    plist::Object *root = plist::Format::SimpleXML::Read(projectFileName).first;
+    std::unique_ptr<plist::Object> root = plist::Format::SimpleXML::Read(projectFileName).first;
     if (root == nullptr) {
         return nullptr;
     }
 
-    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(root);
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(root.get());
     if (plist == nullptr) {
-        root->release();
         return nullptr;
     }
 
@@ -99,8 +98,6 @@ Open(std::string const &path)
     } else {
         workspace = nullptr;
     }
-
-    plist->release();
 
     return workspace;
 }

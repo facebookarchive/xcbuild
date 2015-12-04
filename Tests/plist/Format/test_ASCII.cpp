@@ -37,11 +37,9 @@ TEST(ASCII, QuotedString)
     auto string = String::New("str*ng");
     EXPECT_TRUE(deserialize.first->equals(string.get()));
 
-    auto serialize = ASCII::Serialize(deserialize.first, ASCII::Create(Encoding::UTF8));
+    auto serialize = ASCII::Serialize(deserialize.first.get(), ASCII::Create(Encoding::UTF8));
     ASSERT_NE(serialize.first, nullptr);
     EXPECT_EQ(*serialize.first, contents);
-
-    deserialize.first->release();
 }
 
 TEST(ASCII, UnquotedString)
@@ -55,11 +53,9 @@ TEST(ASCII, UnquotedString)
     auto string = String::New("string");
     EXPECT_TRUE(deserialize.first->equals(string.get()));
 
-    auto serialize = ASCII::Serialize(deserialize.first, ASCII::Create(Encoding::UTF8));
+    auto serialize = ASCII::Serialize(deserialize.first.get(), ASCII::Create(Encoding::UTF8));
     ASSERT_NE(serialize.first, nullptr);
     EXPECT_EQ(*serialize.first, contents);
-
-    deserialize.first->release();
 }
 
 TEST(ASCII, BooleanNumberAreStrings)
@@ -76,8 +72,6 @@ TEST(ASCII, BooleanNumberAreStrings)
     dictionary->set("integer", String::New("42"));
     dictionary->set("real", String::New("3.14"));
     EXPECT_TRUE(deserialize.first->equals(dictionary.get()));
-
-    deserialize.first->release();
 
     /* Test that real booleans, integers, and reals are serialized as strings. */
     auto typed = Dictionary::New();

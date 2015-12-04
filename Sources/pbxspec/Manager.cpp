@@ -339,12 +339,12 @@ registerDomain(std::pair<std::string, std::string> const &domain)
 void Manager::
 registerBuildRules(std::string const &path)
 {
-    plist::Object *plist = plist::Format::Any::Read(path).first;
+    std::unique_ptr<plist::Object> plist = plist::Format::Any::Read(path).first;
     if (plist == nullptr) {
         return;
     }
 
-    if (auto array = plist::CastTo <plist::Array> (plist)) {
+    if (auto array = plist::CastTo <plist::Array> (plist.get())) {
         size_t count  = array->count();
         for (size_t n = 0; n < count; n++) {
             if (auto dict = array->value <plist::Dictionary> (n)) {
@@ -355,8 +355,6 @@ registerBuildRules(std::string const &path)
             }
         }
     }
-
-    plist->release();
 }
 
 Manager::shared_ptr Manager::

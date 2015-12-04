@@ -47,7 +47,6 @@ TEST(XML, Boolean)
     dictionary->set("false", Boolean::New(false));
 
     EXPECT_TRUE(deserialize.first->equals(dictionary.get()));
-    deserialize.first->release();
 
     auto serialize = XML::Serialize(dictionary.get(), XML::Create(Encoding::UTF8));
     ASSERT_NE(serialize.first, nullptr);

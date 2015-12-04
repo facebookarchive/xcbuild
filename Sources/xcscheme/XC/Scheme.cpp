@@ -101,14 +101,13 @@ Open(std::string const &name, std::string const &owner, std::string const &path)
     //
     // Parse simple XML
     //
-    plist::Object *root = plist::Format::SimpleXML::Read(path).first;
+    std::unique_ptr<plist::Object> root = plist::Format::SimpleXML::Read(path).first;
     if (root == nullptr) {
         return nullptr;
     }
 
-    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(root);
+    plist::Dictionary *plist = plist::CastTo<plist::Dictionary>(root.get());
     if (plist == nullptr) {
-        root->release();
         return nullptr;
     }
 
@@ -121,11 +120,6 @@ Open(std::string const &name, std::string const &owner, std::string const &path)
     } else {
         scheme = nullptr;
     }
-
-    //
-    // Release the property list.
-    //
-    plist->release();
 
     return scheme;
 }
