@@ -43,8 +43,8 @@ TEST(XML, Boolean)
     ASSERT_NE(deserialize.first, nullptr);
 
     auto dictionary = Dictionary::New();
-    dictionary->set("true", Boolean::New(true).release());
-    dictionary->set("false", Boolean::New(false).release());
+    dictionary->set("true", Boolean::New(true));
+    dictionary->set("false", Boolean::New(false));
 
     EXPECT_TRUE(deserialize.first->equals(dictionary.get()));
     deserialize.first->release();

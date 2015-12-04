@@ -160,7 +160,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (CLA != nullptr) {
-        _commandLineArgs = CLA->copy();
+        _commandLineArgs = CLA->copy().release();
     }
 
     if (CLF != nullptr) {
@@ -177,15 +177,15 @@ parse(plist::Dictionary const *dict)
     _hasCommandLinePrefixFlag = (CLPF != nullptr);
 
     if (DV != nullptr) {
-        _defaultValue = DV->copy();
+        _defaultValue = DV->copy().release();
     }
 
     if (AV != nullptr) {
-        _allowedValues = AV->copy();
+        _allowedValues = AV->copy().release();
     }
 
     if (V != nullptr) {
-        _values = V->copy();
+        _values = V->copy().release();
     }
 
     if (FTs != nullptr) {
@@ -249,7 +249,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (ALA != nullptr) {
-        _additionalLinkerArgs = ALA->copy();
+        _additionalLinkerArgs = ALA->copy().release();
     }
 
     if (As != nullptr) {

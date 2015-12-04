@@ -20,17 +20,17 @@ New(int64_t value)
     return std::unique_ptr<Integer>(new Integer(value));
 }
 
-Object *Integer::
-copy() const
+std::unique_ptr<Object> Integer::
+_copy() const
 {
-    return new Integer(value());
+    return libutil::static_unique_pointer_cast<Object>(Integer::New(value()));
 }
 
 std::unique_ptr<Integer> Integer::
 Coerce(Object const *obj)
 {
-    if (obj->type() == Type()) {
-        return std::unique_ptr<Integer>(CastTo<Integer>(obj->copy()));
+    if (Integer const *integer = CastTo<Integer>(obj)) {
+        return integer->copy();
     } else if (String const *string = CastTo<String>(obj)) {
         char *end = NULL;
         long long integer = std::strtoll(string->value().c_str(), &end, 0);

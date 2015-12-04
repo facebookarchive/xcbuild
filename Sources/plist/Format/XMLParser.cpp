@@ -261,10 +261,10 @@ pop()
         _stack.pop_back();
 
         if (auto array = CastTo <Array> (_state.current)) {
-            array->append(old.current);
+            array->append(std::unique_ptr<Object>(old.current));
         } else if (auto dict = CastTo <Dictionary> (_state.current)) {
             if (!isExpectingKey()) {
-                dict->set(_state.key.value, old.current);
+                dict->set(_state.key.value, std::unique_ptr<Object>(old.current));
                 _state.key.valid  = false;
                 _state.key.active = false;
             }

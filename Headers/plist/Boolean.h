@@ -67,8 +67,14 @@ public:
         return Object::kTypeBoolean;
     }
 
+protected:
+    virtual std::unique_ptr<Object> _copy() const;
+
 public:
-    virtual Object *copy() const;
+    std::unique_ptr<Boolean> copy() const
+    { return libutil::static_unique_pointer_cast<Boolean>(_copy()); }
+
+public:
     virtual bool equals(Object const *obj) const;
     virtual bool equals(Boolean const *obj) const
     {

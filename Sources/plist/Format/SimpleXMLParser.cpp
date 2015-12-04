@@ -46,7 +46,7 @@ IsNumber(std::string const &s)
 void SimpleXMLParser::
 onBeginParse()
 {
-    _root = new Dictionary;
+    _root = Dictionary::New().release();
     _current = _root;
 }
 
@@ -63,15 +63,15 @@ onEndParse(bool success)
 void SimpleXMLParser::
 onStartElement(std::string const &name, std::unordered_map<std::string, std::string> const &attrs, size_t)
 {
-    Dictionary *dict = new Dictionary;
+    Dictionary *dict = Dictionary::New().release();
 
     for (auto I : attrs) {
         if (I.second == "YES") {
-            dict->set(I.first, Boolean::New(true).release());
+            dict->set(I.first, Boolean::New(true));
         } else if (I.second == "NO") {
-            dict->set(I.first, Boolean::New(false).release());
+            dict->set(I.first, Boolean::New(false));
         } else {
-            dict->set(I.first, String::New(I.second).release());
+            dict->set(I.first, String::New(I.second));
         }
     }
 
@@ -79,15 +79,15 @@ onStartElement(std::string const &name, std::unordered_map<std::string, std::str
     if (old != nullptr) {
         Array *array = CastTo <Array> (old);
         if (array == nullptr) {
-            array = new Array;
-            array->append(old);
+            array = Array::New().release();
+            array->append(std::unique_ptr<Object>(old));
 
             _current->remove(name, false);
-            _current->set(name, array);
+            _current->set(name, std::unique_ptr<Object>(array));
         }
-        array->append(dict);
+        array->append(std::unique_ptr<Object>(dict));
     } else {
-        _current->set(name, dict);
+        _current->set(name, std::unique_ptr<Object>(dict));
     }
 
     _stack.push_back(_current);

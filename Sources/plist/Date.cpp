@@ -30,20 +30,18 @@ New(uint64_t value)
     return std::unique_ptr<Date>(new Date(value));
 }
 
-Object *Date::
-copy() const
+std::unique_ptr<Object> Date::
+_copy() const
 {
-    return new Date(_value);
+    return libutil::static_unique_pointer_cast<Object>(Date::New(_value));
 }
 
 std::unique_ptr<Date> Date::
 Coerce(Object const *obj)
 {
-    Date *result = nullptr;
-
-    if (obj->type() == Type()) {
-        result = CastTo<Date>(obj->copy());
+    if (Date const *date = CastTo<Date>(obj)) {
+        return date->copy();
     }
 
-    return std::unique_ptr<Date>(result);
+    return nullptr;
 }

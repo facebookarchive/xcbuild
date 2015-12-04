@@ -18,14 +18,14 @@ New()
     return std::unique_ptr<Array>(new Array());
 }
 
-Object *Array::
-copy() const
+std::unique_ptr<Object> Array::
+_copy() const
 {
-    Array *result = new Array;
+    auto result = Array::New();
     for (size_t n = 0; n < count(); n++) {
         result->append(value(n)->copy());
     }
-    return result;
+    return libutil::static_unique_pointer_cast<Object>(std::move(result));
 }
 
 void Array::
@@ -42,11 +42,9 @@ merge(Array const *array)
 std::unique_ptr<Array> Array::
 Coerce(Object const *obj)
 {
-    Array *result = nullptr;
-
-    if (obj->type() == Type()) {
-        result = CastTo<Array>(obj->copy());
+    if (Array const *array = CastTo<Array>(obj)) {
+        return array->copy();
     }
 
-    return std::unique_ptr<Array>(result);
+    return nullptr;
 }

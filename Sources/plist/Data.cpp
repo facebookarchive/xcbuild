@@ -36,20 +36,18 @@ New(void const *bytes, size_t length)
     return std::unique_ptr<Data>(new Data(bytes, length));
 }
 
-Object *Data::
-copy() const
+std::unique_ptr<Object> Data::
+_copy() const
 {
-    return new Data(_value);
+    return libutil::static_unique_pointer_cast<Object>(Data::New(_value));
 }
 
 std::unique_ptr<Data> Data::
 Coerce(Object const *obj)
 {
-    Data *result = nullptr;
-
-    if (obj->type() == Type()) {
-        result = CastTo<Data>(obj->copy());
+    if (Data const *data = CastTo<Data>(obj)) {
+        return data->copy();
     }
 
-    return std::unique_ptr<Data>(result);
+    return nullptr;
 }

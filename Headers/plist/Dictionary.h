@@ -110,11 +110,11 @@ public:
     }
 
 public:
-    inline void set(std::string const &key, Object *obj)
+    inline void set(std::string const &key, std::unique_ptr<Object> obj)
     {
         remove(key);
         _keys.push_back(key);
-        _map.insert(std::make_pair(key, obj));
+        _map.insert(std::make_pair(key, obj.release()));
     }
 
     inline void remove(std::string const &key, bool release = true)
@@ -155,8 +155,14 @@ public:
         return Object::kTypeDictionary;
     }
 
+protected:
+    virtual std::unique_ptr<Object> _copy() const;
+
 public:
-    virtual Object *copy() const;
+    std::unique_ptr<Dictionary> copy() const
+    { return libutil::static_unique_pointer_cast<Dictionary>(_copy()); }
+
+public:
     virtual bool equals(Object const *obj) const
     {
         if (Object::equals(obj))

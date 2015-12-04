@@ -56,8 +56,14 @@ public:
         return Object::kTypeNull;
     }
 
+protected:
+    virtual std::unique_ptr<Object> _copy() const;
+
 public:
-    virtual Object *copy() const;
+    std::unique_ptr<Null> copy() const
+    { return libutil::static_unique_pointer_cast<Null>(_copy()); }
+
+public:
     virtual bool equals(Object const *obj) const
     {
         if (Object::equals(obj))

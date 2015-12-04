@@ -18,14 +18,14 @@ New()
     return std::unique_ptr<Dictionary>(new Dictionary());
 }
 
-Object *Dictionary::
-copy() const
+std::unique_ptr<Object> Dictionary::
+_copy() const
 {
-    Dictionary *result = new Dictionary;
+    auto result = Dictionary::New();
     for (size_t n = 0; n < count(); n++) {
         result->set(key(n), value(n)->copy());
     }
-    return result;
+    return libutil::static_unique_pointer_cast<Object>(std::move(result));
 }
 
 void Dictionary::
@@ -44,11 +44,9 @@ merge(Dictionary const *dict, bool replace)
 std::unique_ptr<Dictionary> Dictionary::
 Coerce(Object const *obj)
 {
-    Dictionary *result = nullptr;
-
-    if (obj->type() == Type()) {
-        result = CastTo<Dictionary>(obj->copy());
+    if (Dictionary const *dictionary = CastTo<Dictionary>(obj)) {
+        return dictionary->copy();
     }
 
-    return std::unique_ptr<Dictionary>(result);
+    return nullptr;
 }

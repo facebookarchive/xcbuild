@@ -116,13 +116,13 @@ push(ValueState state, Object *container, String *key)
     _state = state;
 
     if (container != NULL) {
-        _container = container->copy();
+        _container = container->copy().release();
     } else {
         _container = NULL;
     }
 
     if (key != NULL) {
-        _key = (String *)key->copy();
+        _key = (String *)key->copy().release();
     } else {
         _key = NULL;
     }
@@ -212,7 +212,7 @@ storeKeyValue(String *key, Object *value)
             return false;
         }
 
-        _root = value->copy();
+        _root = value->copy().release();
         return true;
     }
 
@@ -257,7 +257,7 @@ endContainer(bool isArray)
         return false;
     }
 
-    value = _container->copy();
+    value = _container->copy().release();
     if (value == NULL) {
         abort("Couldn't copy container.");
         return false;
@@ -341,7 +341,7 @@ storeKey(String *key)
     if (key == NULL) {
         copy = String::New().release();
     } else {
-        copy = (String *)key->copy();
+        copy = (String *)key->copy().release();
     }
 
     if (copy == NULL) {

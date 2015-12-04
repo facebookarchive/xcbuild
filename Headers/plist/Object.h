@@ -54,8 +54,14 @@ public:
         delete this;
     }
 
+protected:
+    virtual std::unique_ptr<Object> _copy() const = 0;
+
 public:
-    virtual Object *copy() const = 0;
+    std::unique_ptr<Object> copy() const
+    { return _copy(); }
+
+public:
     virtual bool equals(Object const *obj) const
     {
         return (obj == this);
@@ -90,18 +96,6 @@ template <typename T>
 static inline T const *CastTo(Object const *obj)
 {
     return (obj != nullptr && (obj->type() == T::Type() || T::Type() == Object::Type())) ? static_cast <T const *> (obj) : nullptr;
-}
-
-template <typename T>
-T *Copy(T const *object)
-{
-    if (object == nullptr)
-        return nullptr;
-
-    if (auto o = CastTo <T> (object))
-        return CastTo <T> (o->copy());
-
-    return nullptr;
 }
 
 }

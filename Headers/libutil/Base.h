@@ -53,6 +53,13 @@ static inline std::string &trim(std::string &s)
     return ltrim(rtrim(s));
 }
 
+template<typename T, typename U>
+static inline std::unique_ptr<T>
+static_unique_pointer_cast(std::unique_ptr<U> &&p)
+{
+    return std::unique_ptr<T>(static_cast<T *>(p.release()));
+}
+
 }
 
 #endif  // !__libutil_Base_h

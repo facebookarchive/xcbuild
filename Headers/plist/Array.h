@@ -85,21 +85,21 @@ public:
     }
 
 public:
-    inline void insert(size_t index, Object *obj)
+    inline void insert(size_t index, std::unique_ptr<Object> obj)
     {
-        _array.insert(_array.begin() + index, obj);
+        _array.insert(_array.begin() + index, obj.release());
     }
 
-    inline void set(size_t index, Object *obj)
+    inline void set(size_t index, std::unique_ptr<Object> obj)
     {
         _array[index]->release();
-        _array[index] = obj;
+        _array[index] = obj.release();
     }
 
 public:
-    inline void append(Object *obj)
+    inline void append(std::unique_ptr<Object> obj)
     {
-        _array.push_back(obj);
+        _array.push_back(obj.release());
     }
 
 public:
@@ -127,8 +127,14 @@ public:
         return Object::kTypeArray;
     }
 
+protected:
+    virtual std::unique_ptr<Object> _copy() const;
+
 public:
-    virtual Object *copy() const;
+    std::unique_ptr<Array> copy() const
+    { return libutil::static_unique_pointer_cast<Array>(_copy()); }
+
+public:
     virtual bool equals(Object const *obj) const
     {
         if (Object::equals(obj))

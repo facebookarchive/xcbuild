@@ -153,7 +153,7 @@ parse(plist::Dictionary const *dict)
     auto FI  = dict->value <plist::String> ("FamilyIdentifier");
     auto FN  = dict->value <plist::String> ("FamilyName");
     auto Ic  = dict->value <plist::String> ("Icon");
-    auto DDS = dict->value <plist::String> ("DefaultDebuggerSettings");
+    auto DDS = dict->value <plist::Dictionary> ("DefaultDebuggerSettings");
     auto DP  = dict->value <plist::Dictionary> ("DefaultProperties");
     auto OP  = dict->value <plist::Dictionary> ("OverrideProperties");
 
@@ -190,7 +190,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (DDS != nullptr) {
-        _defaultDebuggerSettings = plist::CastTo <plist::Dictionary> (DDS->copy());
+        _defaultDebuggerSettings = DDS->copy().release();
     }
 
     if (DP != nullptr) {

@@ -216,7 +216,7 @@ Deserialize(std::vector<uint8_t> const &contents, ASCII const &format)
     /* Parse contents. */
     ASCIIParser parser;
     if (parser.parse(&lexer)) {
-        root = parser.root()->copy();
+        root = parser.root()->copy().release();
     } else {
         error = parser.error();
     }

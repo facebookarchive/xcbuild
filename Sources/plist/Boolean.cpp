@@ -37,17 +37,17 @@ equals(Object const *obj) const
     return (objt != nullptr && equals(objt));
 }
 
-Object *Boolean::
-copy() const
+std::unique_ptr<Object> Boolean::
+_copy() const
 {
-    return const_cast <Boolean *> (this);
+    return libutil::static_unique_pointer_cast<Object>(Boolean::New(value()));
 }
 
 std::unique_ptr<Boolean> Boolean::
 Coerce(Object const *obj)
 {
-    if (obj->type() == Type()) {
-        return std::unique_ptr<Boolean>(CastTo<Boolean>(obj->copy()));
+    if (Boolean const *boolean = CastTo<Boolean>(obj)) {
+        return boolean->copy();
     } else if (String const *string = CastTo<String>(obj)) {
         bool value = (strcasecmp(string->value().c_str(), "yes") == 0 || strcasecmp(string->value().c_str(), "true") == 0);
         return Boolean::New(value);

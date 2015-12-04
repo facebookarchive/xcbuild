@@ -33,17 +33,17 @@ New(std::string &&value)
     return std::unique_ptr<String>(new String(value));
 }
 
-Object *String::
-copy() const
+std::unique_ptr<Object> String::
+_copy() const
 {
-    return new String(value());
+    return libutil::static_unique_pointer_cast<Object>(String::New(value()));
 }
 
 std::unique_ptr<String> String::
 Coerce(Object const *obj)
 {
-    if (obj->type() == Type()) {
-        return std::unique_ptr<String>(CastTo<String>(obj->copy()));
+    if (String const *string = CastTo<String>(obj)) {
+        return string->copy();
     } else if (Real const *real = CastTo<Real>(obj)) {
         std::ostringstream out;
         out << real->value();

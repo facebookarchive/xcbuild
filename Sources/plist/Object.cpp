@@ -33,5 +33,5 @@ GetTypeName(enum Object::Type type)
 std::unique_ptr<Object> Object::
 Coerce(Object const *obj)
 {
-    return std::unique_ptr<Object>(obj->copy());
+    return obj->copy();
 }

@@ -20,17 +20,17 @@ New(double value)
     return std::unique_ptr<Real>(new Real(value));
 }
 
-Object *Real::
-copy() const
+std::unique_ptr<Object> Real::
+_copy() const
 {
-    return new Real(value());
+    return libutil::static_unique_pointer_cast<Object>(Real::New(value()));
 }
 
 std::unique_ptr<Real> Real::
 Coerce(Object const *obj)
 {
-    if (obj->type() == Type()) {
-        return std::unique_ptr<Real>(CastTo<Real>(obj->copy()));
+    if (Real const *real = CastTo<Real>(obj)) {
+        return real->copy();
     } else if (String const *string = CastTo<String>(obj)) {
         char *end = NULL;
         double real = std::strtod(string->value().c_str(), &end);

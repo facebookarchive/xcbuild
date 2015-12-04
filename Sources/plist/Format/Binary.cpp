@@ -236,9 +236,9 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
                 if (self->seen.find(object) != self->seen.end()) {
                     self->seen.insert(object);
                 }
-                object = object->copy();
+                object = object->copy().release();
 
-                array->append(object);
+                array->append(std::unique_ptr<Object>(object));
             }
             return array.release();
         }
@@ -275,9 +275,9 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
                 if (self->seen.find(object) != self->seen.end()) {
                     self->seen.insert(object);
                 }
-                object = object->copy();
+                object = object->copy().release();
 
-                dict->set(keyString->value(), object);
+                dict->set(keyString->value(), std::unique_ptr<Object>(object));
             }
             return dict.release();
         }
@@ -322,7 +322,7 @@ Deserialize(std::vector<uint8_t> const &contents, Binary const &format)
     if (::ABPReaderOpen(&parseContext.context)) {
         object = ::ABPReadTopLevelObject(&parseContext.context);
         if (object != nullptr) {
-            object = object->copy();
+            object = object->copy().release();
         }
         ::ABPReaderClose(&parseContext.context);
     }

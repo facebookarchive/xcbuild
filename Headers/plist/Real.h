@@ -53,8 +53,14 @@ public:
         return Object::kTypeReal;
     }
 
+protected:
+    virtual std::unique_ptr<Object> _copy() const;
+
 public:
-    virtual Object *copy() const;
+    std::unique_ptr<Real> copy() const
+    { return libutil::static_unique_pointer_cast<Real>(_copy()); }
+
+public:
     virtual bool equals(Object const *obj) const
     {
         if (Object::equals(obj))

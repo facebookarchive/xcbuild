@@ -228,7 +228,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
             _commandOutputParser->release();
         }
 
-        _commandOutputParser = COP->copy();
+        _commandOutputParser = COP->copy().release();
     }
 
     if (IA != nullptr) {
@@ -324,7 +324,7 @@ inherit(Tool::shared_ptr const &b)
     _architectures                       = base->architectures();
     _outputs                             = base->outputs();
     _environmentVariables                = base->environmentVariables();
-    _commandOutputParser                 = plist::Copy(base->commandOutputParser());
+    _commandOutputParser                 = base->commandOutputParser()->copy().release();
     _isAbstract                          = base->isAbstract();
     _isArchitectureNeutral               = base->isArchitectureNeutral();
     _caresAboutInclusionDependencies     = base->caresAboutInclusionDependencies();

@@ -20,20 +20,18 @@ New()
     return std::unique_ptr<Null>(const_cast<Null *>(&kNull));
 }
 
-Object *Null::
-copy() const
+std::unique_ptr<Object> Null::
+_copy() const
 {
-    return const_cast <Null *> (this);
+    return libutil::static_unique_pointer_cast<Object>(Null::New());
 }
 
 std::unique_ptr<Null> Null::
 Coerce(Object const *obj)
 {
-    Null *result = nullptr;
-
-    if (obj->type() == Type()) {
-        result = CastTo<Null>(obj->copy());
+    if (Null const *null = CastTo<Null>(null)) {
+        return null->copy();
     }
 
-    return std::unique_ptr<Null>(result);
+    return nullptr;
 }
