@@ -80,9 +80,8 @@ onStartElement(std::string const &name, std::unordered_map<std::string, std::str
         Array *array = CastTo <Array> (old);
         if (array == nullptr) {
             array = Array::New().release();
-            array->append(std::unique_ptr<Object>(old));
+            array->append(old->copy());
 
-            _current->remove(name, false);
             _current->set(name, std::unique_ptr<Object>(array));
         }
         array->append(std::unique_ptr<Object>(dict));

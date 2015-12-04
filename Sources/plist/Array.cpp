@@ -34,7 +34,7 @@ merge(Array const *array)
     if (array == nullptr || array == this)
         return;
 
-    for (auto obj : *array) {
+    for (auto const &obj : *array) {
         append(obj->copy());
     }
 }

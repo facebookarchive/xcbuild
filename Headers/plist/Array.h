@@ -17,7 +17,7 @@ namespace plist {
 
 class Array : public Object {
 public:
-    typedef std::vector <Object *> Vector;
+    typedef std::vector<std::unique_ptr<Object>> Vector;
 
 private:
     Vector _array;
@@ -48,12 +48,12 @@ public:
 
     inline Object const *value(size_t index) const
     {
-        return _array[index];
+        return _array[index].get();
     }
 
     inline Object *value(size_t index)
     {
-        return _array[index];
+        return _array[index].get();
     }
 
     template <typename T>
@@ -71,35 +71,30 @@ public:
 public:
     inline void remove(size_t index)
     {
-        _array[index]->release();
         _array.erase(_array.begin() + index);
     }
 
 public:
     inline void clear()
     {
-        for (size_t n = 0; n < _array.size(); n++) {
-            _array[n]->release();
-        }
         _array.clear();
     }
 
 public:
     inline void insert(size_t index, std::unique_ptr<Object> obj)
     {
-        _array.insert(_array.begin() + index, obj.release());
+        _array.insert(_array.begin() + index, std::move(obj));
     }
 
     inline void set(size_t index, std::unique_ptr<Object> obj)
     {
-        _array[index]->release();
-        _array[index] = obj.release();
+        _array[index] = std::move(obj);
     }
 
 public:
     inline void append(std::unique_ptr<Object> obj)
     {
-        _array.push_back(obj.release());
+        _array.push_back(std::move(obj));
     }
 
 public:

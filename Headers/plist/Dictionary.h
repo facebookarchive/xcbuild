@@ -17,8 +17,8 @@ namespace plist {
 
 class Dictionary : public Object {
 private:
-    typedef std::vector <std::string> KeyVector;
-    typedef std::map <std::string, Object *> Map;
+    typedef std::vector<std::string>                       KeyVector;
+    typedef std::map<std::string, std::unique_ptr<Object>> Map;
 
 private:
     KeyVector _keys;
@@ -78,13 +78,13 @@ public:
     inline Object const *value(std::string const &key) const
     {
         Map::const_iterator i = _map.find(key);
-        return (i != _map.end()) ? i->second : nullptr;
+        return (i != _map.end() ? i->second.get() : nullptr);
     }
 
     inline Object *value(std::string const &key)
     {
         Map::const_iterator i = _map.find(key);
-        return (i != _map.end()) ? i->second : nullptr;
+        return (i != _map.end() ? i->second.get() : nullptr);
     }
 
     template <typename T>
@@ -102,9 +102,6 @@ public:
 public:
     inline void clear()
     {
-        for (auto I : _map) {
-            I.second->release();
-        }
         _keys.clear();
         _map.clear();
     }
@@ -114,17 +111,14 @@ public:
     {
         remove(key);
         _keys.push_back(key);
-        _map.insert(std::make_pair(key, obj.release()));
+        _map.insert(std::make_pair(key, std::move(obj)));
     }
 
-    inline void remove(std::string const &key, bool release = true)
+    inline void remove(std::string const &key)
     {
         Map::iterator I;
 
         if ((I = _map.find(key)) != _map.end()) {
-            if (release) {
-                I->second->release();
-            }
             _map.erase(I);
             _keys.erase(std::find(_keys.begin(), _keys.end(), key));
         }
