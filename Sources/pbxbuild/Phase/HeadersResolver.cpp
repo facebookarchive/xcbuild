@@ -8,12 +8,12 @@
  */
 
 #include <pbxbuild/Phase/HeadersResolver.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Tool/CopyInvocationContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::Phase::HeadersResolver;
-using pbxbuild::Phase::PhaseContext;
+using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Tool::CopyInvocationContext;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -31,14 +31,14 @@ HeadersResolver::
 
 std::unique_ptr<HeadersResolver> HeadersResolver::
 Create(
-    pbxbuild::Phase::PhaseContext const &phaseContext,
+    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
     pbxproj::PBX::HeadersBuildPhase::shared_ptr const &buildPhase
 )
 {
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseContext.targetEnvironment();
+    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
-    pbxspec::PBX::Tool::shared_ptr copyTool = phaseContext.buildEnvironment().specManager()->tool("com.apple.compilers.pbxcp", phaseContext.targetEnvironment().specDomains());
+    pbxspec::PBX::Tool::shared_ptr copyTool = phaseEnvironment.buildEnvironment().specManager()->tool("com.apple.compilers.pbxcp", phaseEnvironment.targetEnvironment().specDomains());
     if (copyTool == nullptr) {
         fprintf(stderr, "warning: could not find copy tool\n");
         return nullptr;
@@ -56,7 +56,7 @@ Create(
         }
 
         pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-        std::unique_ptr<TypeResolvedFile> file = phaseContext.resolveFileReference(fileReference, environment);
+        std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
         if (file == nullptr) {
             continue;
         }

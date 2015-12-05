@@ -16,7 +16,7 @@
 namespace pbxbuild {
 namespace Phase {
 
-class PhaseContext;
+class PhaseEnvironment;
 
 class LegacyTargetResolver {
 private:
@@ -33,7 +33,7 @@ public:
 public:
     static std::unique_ptr<LegacyTargetResolver>
     Create(
-        PhaseContext const &phaseContext,
+        PhaseEnvironment const &phaseEnvironment,
         pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget
     );
 };

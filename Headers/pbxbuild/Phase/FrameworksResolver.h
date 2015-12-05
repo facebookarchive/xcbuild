@@ -16,7 +16,7 @@
 namespace pbxbuild {
 namespace Phase {
 
-class PhaseContext;
+class PhaseEnvironment;
 class SourcesResolver;
 
 class FrameworksResolver {
@@ -34,7 +34,7 @@ public:
 public:
     static std::unique_ptr<FrameworksResolver>
     Create(
-        PhaseContext const &phaseContext,
+        PhaseEnvironment const &phaseEnvironment,
         pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase,
         SourcesResolver const &sourcesResolver
     );

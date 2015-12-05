@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/Phase/FrameworksResolver.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/TargetEnvironment.h>
@@ -18,7 +18,7 @@
 #include <pbxbuild/Tool/LinkerInvocationContext.h>
 
 using pbxbuild::Phase::FrameworksResolver;
-using pbxbuild::Phase::PhaseContext;
+using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -35,7 +35,7 @@ FrameworksResolver::
 }
 
 static std::vector<pbxbuild::TypeResolvedFile>
-InputFiles(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase, pbxsetting::Environment const &environment)
+InputFiles(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase, pbxsetting::Environment const &environment)
 {
     std::vector<pbxbuild::TypeResolvedFile> files;
 
@@ -49,12 +49,12 @@ InputFiles(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX::Fram
         switch (buildFile->fileRef()->type()) {
             case pbxproj::PBX::GroupItem::kTypeFileReference: {
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-                file = phaseContext.resolveFileReference(fileReference, environment);
+                file = phaseEnvironment.resolveFileReference(fileReference, environment);
                 break;
             }
             case pbxproj::PBX::GroupItem::kTypeReferenceProxy: {
                 pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (buildFile->fileRef());
-                file = phaseContext.resolveReferenceProxy(referenceProxy, environment);
+                file = phaseEnvironment.resolveReferenceProxy(referenceProxy, environment);
                 break;
             }
             default: {
@@ -73,13 +73,13 @@ InputFiles(pbxbuild::Phase::PhaseContext const &phaseContext, pbxproj::PBX::Fram
 
 std::unique_ptr<FrameworksResolver> FrameworksResolver::
 Create(
-    pbxbuild::Phase::PhaseContext const &phaseContext,
+    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
     pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase,
     SourcesResolver const &sourcesResolver
 )
 {
-    pbxbuild::BuildEnvironment const &buildEnvironment = phaseContext.buildEnvironment();
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseContext.targetEnvironment();
+    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     std::vector<pbxbuild::ToolInvocation> invocations;
 
@@ -108,11 +108,11 @@ Create(
     std::string workingDirectory = targetEnvironment.workingDirectory();
     std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
 
-    std::vector<pbxbuild::TypeResolvedFile> files = InputFiles(phaseContext, buildPhase, targetEnvironment.environment());
+    std::vector<pbxbuild::TypeResolvedFile> files = InputFiles(phaseEnvironment, buildPhase, targetEnvironment.environment());
 
     for (std::string const &variant : targetEnvironment.variants()) {
         pbxsetting::Environment variantEnvironment = targetEnvironment.environment();
-        variantEnvironment.insertFront(PhaseContext::VariantLevel(variant), false);
+        variantEnvironment.insertFront(PhaseEnvironment::VariantLevel(variant), false);
 
         std::string variantIntermediatesName = variantEnvironment.resolve("EXECUTABLE_NAME") + variantEnvironment.resolve("EXECUTABLE_VARIANT_SUFFIX");
         std::string variantIntermediatesDirectory = variantEnvironment.resolve("OBJECT_FILE_DIR_" + variant);
@@ -125,7 +125,7 @@ Create(
 
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment archEnvironment = variantEnvironment;
-            archEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch), false);
+            archEnvironment.insertFront(PhaseEnvironment::ArchitectureLevel(arch), false);
 
             std::vector<std::string> sourceOutputs;
             auto it = sourcesResolver.variantArchitectureInvocations().find(std::make_pair(variant, arch));

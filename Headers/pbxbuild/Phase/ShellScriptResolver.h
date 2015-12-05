@@ -16,7 +16,7 @@
 namespace pbxbuild {
 namespace Phase {
 
-class PhaseContext;
+class PhaseEnvironment;
 
 class ShellScriptResolver {
 private:
@@ -33,7 +33,7 @@ public:
 public:
     static std::unique_ptr<ShellScriptResolver>
     Create(
-        PhaseContext const &phaseContext,
+        PhaseEnvironment const &phaseEnvironment,
         pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase
     );
 };

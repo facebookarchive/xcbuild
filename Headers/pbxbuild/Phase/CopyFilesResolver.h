@@ -16,7 +16,7 @@
 namespace pbxbuild {
 namespace Phase {
 
-class PhaseContext;
+class PhaseEnvironment;
 
 class CopyFilesResolver {
 private:
@@ -33,7 +33,7 @@ public:
 public:
     static std::unique_ptr<CopyFilesResolver>
     Create(
-        PhaseContext const &phaseContext,
+        PhaseEnvironment const &phaseEnvironment,
         pbxproj::PBX::CopyFilesBuildPhase::shared_ptr const &buildPhase
     );
 };

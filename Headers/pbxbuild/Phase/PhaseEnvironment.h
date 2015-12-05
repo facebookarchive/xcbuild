@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_Phase_PhaseContext_h
-#define __pbxbuild_Phase_PhaseContext_h
+#ifndef __pbxbuild_Phase_PhaseEnvironment_h
+#define __pbxbuild_Phase_PhaseEnvironment_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/BuildEnvironment.h>
@@ -18,7 +18,7 @@
 namespace pbxbuild {
 namespace Phase {
 
-class PhaseContext {
+class PhaseEnvironment {
 private:
     BuildEnvironment                 _buildEnvironment;
     BuildContext                     _buildContext;
@@ -26,8 +26,8 @@ private:
     TargetEnvironment                _targetEnvironment;
 
 public:
-    PhaseContext(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, TargetEnvironment const &targetEnvironment);
-    ~PhaseContext();
+    PhaseEnvironment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, TargetEnvironment const &targetEnvironment);
+    ~PhaseEnvironment();
 
 public:
     BuildEnvironment const &buildEnvironment() const
@@ -53,4 +53,4 @@ public:
 }
 }
 
-#endif // !__pbxbuild_Phase_PhaseContext_h
+#endif // !__pbxbuild_Phase_PhaseEnvironment_h

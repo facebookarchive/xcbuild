@@ -248,7 +248,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/LinkerInvocationContext.cpp
     Sources/pbxbuild/Tool/ScriptInvocationContext.cpp
     Sources/pbxbuild/Tool/ToolInvocationContext.cpp
-    Sources/pbxbuild/Phase/PhaseContext.cpp
+    Sources/pbxbuild/Phase/PhaseEnvironment.cpp
     Sources/pbxbuild/Phase/PhaseInvocations.cpp
     Sources/pbxbuild/Phase/CopyFilesResolver.cpp
     Sources/pbxbuild/Phase/HeadersResolver.cpp

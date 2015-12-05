@@ -125,8 +125,8 @@ Run(Options const &options)
         }
 
         pbxbuild::Build::Formatter::Print(formatter->checkDependencies(target));
-        pbxbuild::Phase::PhaseContext phaseContext = pbxbuild::Phase::PhaseContext(*buildEnvironment, *buildContext, target, *targetEnvironment);
-        pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseContext, target);
+        pbxbuild::Phase::PhaseEnvironment phaseEnvironment = pbxbuild::Phase::PhaseEnvironment(*buildEnvironment, *buildContext, target, *targetEnvironment);
+        pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
 
         if (!executor->buildTarget(target, *targetEnvironment, phaseInvocations.orderedPhases(), phaseInvocations.invocations())) {
             return 1;

@@ -8,11 +8,11 @@
  */
 
 #include <pbxbuild/Phase/CopyFilesResolver.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Tool/CopyInvocationContext.h>
 
 using pbxbuild::Phase::CopyFilesResolver;
-using pbxbuild::Phase::PhaseContext;
+using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Tool::CopyInvocationContext;
 using libutil::FSUtil;
 
@@ -67,14 +67,14 @@ DestinationOutputPath(pbxproj::PBX::CopyFilesBuildPhase::Destination destination
 
 std::unique_ptr<CopyFilesResolver> CopyFilesResolver::
 Create(
-    pbxbuild::Phase::PhaseContext const &phaseContext,
+    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
     pbxproj::PBX::CopyFilesBuildPhase::shared_ptr const &buildPhase
 )
 {
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseContext.targetEnvironment();
+    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
-    pbxspec::PBX::Tool::shared_ptr copyTool = phaseContext.buildEnvironment().specManager()->tool("com.apple.compilers.pbxcp", phaseContext.targetEnvironment().specDomains());
+    pbxspec::PBX::Tool::shared_ptr copyTool = phaseEnvironment.buildEnvironment().specManager()->tool("com.apple.compilers.pbxcp", phaseEnvironment.targetEnvironment().specDomains());
     if (copyTool == nullptr) {
         fprintf(stderr, "warning: could not find copy tool\n");
         return nullptr;
@@ -97,12 +97,12 @@ Create(
         switch (buildFile->fileRef()->type()) {
             case pbxproj::PBX::GroupItem::kTypeFileReference: {
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-                file = phaseContext.resolveFileReference(fileReference, environment);
+                file = phaseEnvironment.resolveFileReference(fileReference, environment);
                 break;
             }
             case pbxproj::PBX::GroupItem::kTypeReferenceProxy: {
                 pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (buildFile->fileRef());
-                file = phaseContext.resolveReferenceProxy(referenceProxy, environment);
+                file = phaseEnvironment.resolveReferenceProxy(referenceProxy, environment);
                 break;
             }
             default: {

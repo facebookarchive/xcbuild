@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/Phase/SourcesResolver.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
@@ -21,7 +21,7 @@
 #include <pbxbuild/Tool/SearchPaths.h>
 
 using pbxbuild::Phase::SourcesResolver;
-using pbxbuild::Phase::PhaseContext;
+using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::ToolInvocation;
 using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::Tool::CompilerInvocationContext;
@@ -52,12 +52,12 @@ SourcesResolver::
 
 std::unique_ptr<SourcesResolver> SourcesResolver::
 Create(
-    pbxbuild::Phase::PhaseContext const &phaseContext,
+    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
     pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase
 )
 {
-    pbxbuild::BuildEnvironment const &buildEnvironment = phaseContext.buildEnvironment();
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseContext.targetEnvironment();
+    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     std::vector<ToolInvocation> allInvocations;
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> variantArchitectureInvocations;
@@ -83,7 +83,7 @@ Create(
     std::string workingDirectory = targetEnvironment.workingDirectory();
     SearchPaths searchPaths = SearchPaths::Create(workingDirectory, compilerEnvironment);
 
-    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, buildEnvironment.specManager(), phaseContext.target(), searchPaths, compilerEnvironment, workingDirectory);
+    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, buildEnvironment.specManager(), phaseEnvironment.target(), searchPaths, compilerEnvironment, workingDirectory);
     allInvocations.push_back(headermap.invocation());
 
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
@@ -97,7 +97,7 @@ Create(
         }
 
         pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-        std::unique_ptr<TypeResolvedFile> file = phaseContext.resolveFileReference(fileReference, targetEnvironment.environment());
+        std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, targetEnvironment.environment());
         if (file == nullptr) {
             continue;
         }
@@ -108,8 +108,8 @@ Create(
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment currentEnvironment = targetEnvironment.environment();
-            currentEnvironment.insertFront(PhaseContext::VariantLevel(variant), false);
-            currentEnvironment.insertFront(PhaseContext::ArchitectureLevel(arch), false);
+            currentEnvironment.insertFront(PhaseEnvironment::VariantLevel(variant), false);
+            currentEnvironment.insertFront(PhaseEnvironment::ArchitectureLevel(arch), false);
 
             std::vector<ToolInvocation> invocations;
             std::unordered_set<std::string> precompiledHeaders;

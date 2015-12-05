@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/Phase/PhaseInvocations.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/HeadersResolver.h>
 #include <pbxbuild/Phase/LegacyTargetResolver.h>
@@ -71,7 +71,7 @@ phaseInvocations(pbxproj::PBX::BuildPhase::shared_ptr const &phase)
 }
 
 PhaseInvocations PhaseInvocations::
-Create(PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const &target)
+Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
 {
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
     std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> toolInvocations;
@@ -82,7 +82,7 @@ Create(PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const 
             break;
         case pbxproj::PBX::Target::kTypeLegacy:
             pbxproj::PBX::LegacyTarget::shared_ptr LT = std::static_pointer_cast <pbxproj::PBX::LegacyTarget> (target);
-            auto legacyScript = pbxbuild::Phase::LegacyTargetResolver::Create(phaseContext, LT);
+            auto legacyScript = pbxbuild::Phase::LegacyTargetResolver::Create(phaseEnvironment, LT);
 
             if (legacyScript != nullptr) {
                 toolInvocations.insert({ nullptr, legacyScript->invocations() });
@@ -102,7 +102,7 @@ Create(PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
             auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
-            sourcesResolver = pbxbuild::Phase::SourcesResolver::Create(phaseContext, BP);
+            sourcesResolver = pbxbuild::Phase::SourcesResolver::Create(phaseEnvironment, BP);
 
             if (sourcesResolver != nullptr) {
                 toolInvocations.insert({ buildPhase, sourcesResolver->invocations() });
@@ -128,7 +128,7 @@ Create(PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const 
             frameworksPhase = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
         }
 
-        auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseContext, frameworksPhase, *sourcesResolver);
+        auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseEnvironment, frameworksPhase, *sourcesResolver);
         if (link != nullptr) {
             toolInvocations.insert({ buildPhase, link->invocations() });
         }
@@ -138,7 +138,7 @@ Create(PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const 
         switch (buildPhase->type()) {
             case pbxproj::PBX::BuildPhase::kTypeShellScript: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
-                auto shellScript = pbxbuild::Phase::ShellScriptResolver::Create(phaseContext, BP);
+                auto shellScript = pbxbuild::Phase::ShellScriptResolver::Create(phaseEnvironment, BP);
                 if (shellScript != nullptr) {
                     toolInvocations.insert({ buildPhase, shellScript->invocations() });
                 }
@@ -146,7 +146,7 @@ Create(PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const 
             }
             case pbxproj::PBX::BuildPhase::kTypeCopyFiles: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
-                auto copyFiles = pbxbuild::Phase::CopyFilesResolver::Create(phaseContext, BP);
+                auto copyFiles = pbxbuild::Phase::CopyFilesResolver::Create(phaseEnvironment, BP);
                 if (copyFiles != nullptr) {
                     toolInvocations.insert({ buildPhase, copyFiles->invocations() });
                 }
@@ -154,7 +154,7 @@ Create(PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const 
             }
             case pbxproj::PBX::BuildPhase::kTypeHeaders: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
-                auto headers = pbxbuild::Phase::HeadersResolver::Create(phaseContext, BP);
+                auto headers = pbxbuild::Phase::HeadersResolver::Create(phaseEnvironment, BP);
                 if (headers != nullptr) {
                     toolInvocations.insert({ buildPhase, headers->invocations() });
                 }
@@ -162,7 +162,7 @@ Create(PhaseContext const &phaseContext, pbxproj::PBX::Target::shared_ptr const 
             }
             case pbxproj::PBX::BuildPhase::kTypeResources: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ResourcesBuildPhase> (buildPhase);
-                auto resources = pbxbuild::Phase::ResourcesResolver::Create(phaseContext, BP);
+                auto resources = pbxbuild::Phase::ResourcesResolver::Create(phaseEnvironment, BP);
                 if (resources != nullptr) {
                     toolInvocations.insert({ buildPhase, resources->invocations() });
                 }
