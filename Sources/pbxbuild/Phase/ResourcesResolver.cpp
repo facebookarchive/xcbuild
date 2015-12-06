@@ -10,11 +10,11 @@
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Tool/ToolInvocationContext.h>
-#include <pbxbuild/Tool/CopyInvocationContext.h>
+#include <pbxbuild/Tool/CopyResolver.h>
 
 using pbxbuild::Phase::ResourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::Tool::CopyInvocationContext;
+using pbxbuild::Tool::CopyResolver;
 using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
@@ -32,7 +32,7 @@ ResourcesResolver::
 }
 
 static ToolInvocation
-CopyInvocation(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, pbxspec::PBX::Tool::shared_ptr const &copyTool, TypeResolvedFile const &file, std::string const &outputDirectory, pbxsetting::Environment const &environment)
+CopyInvocation(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, CopyResolver const *copyResolver, TypeResolvedFile const &file, std::string const &outputDirectory, pbxsetting::Environment const &environment)
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     std::string const &workingDirectory = targetEnvironment.workingDirectory();
@@ -45,8 +45,7 @@ CopyInvocation(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, pbxspe
         auto context = ToolInvocationContext::Create(tool, { file.filePath() }, { outputPath }, environment, workingDirectory);
         return context.invocation();
     } else {
-        auto context = CopyInvocationContext::Create(copyTool, file.filePath(), outputDirectory, "CpResource", environment, workingDirectory);
-        return context.invocation();
+        return copyResolver->invocation(file.filePath(), outputDirectory, "CpResource", environment, workingDirectory);
     }
 }
 
@@ -60,9 +59,8 @@ Create(
     pbxspec::Manager::shared_ptr const &specManager = phaseEnvironment.buildEnvironment().specManager();
     std::string resourcesDirectory = environment.resolve("BUILT_PRODUCTS_DIR") + "/" + environment.resolve("UNLOCALIZED_RESOURCES_FOLDER_PATH");
 
-    pbxspec::PBX::Tool::shared_ptr copyTool = specManager->tool("com.apple.compilers.pbxcp", phaseEnvironment.targetEnvironment().specDomains());
-    if (copyTool == nullptr) {
-        fprintf(stderr, "warning: could not find copy tool\n");
+    std::unique_ptr<CopyResolver> copyResolver = CopyResolver::Create(phaseEnvironment);
+    if (copyResolver == nullptr) {
         return nullptr;
     }
 
@@ -78,7 +76,7 @@ Create(
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
                 std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
                 if (file != nullptr) {
-                    ToolInvocation invocation = CopyInvocation(phaseEnvironment, copyTool, *file, resourcesDirectory, environment);
+                    ToolInvocation invocation = CopyInvocation(phaseEnvironment, copyResolver.get(), *file, resourcesDirectory, environment);
                     invocations.push_back(invocation);
                 }
                 break;
@@ -95,7 +93,7 @@ Create(
 
                     std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
                     if (file != nullptr) {
-                        ToolInvocation invocation = CopyInvocation(phaseEnvironment, copyTool, *file, outputDirectory, environment);
+                        ToolInvocation invocation = CopyInvocation(phaseEnvironment, copyResolver.get(), *file, outputDirectory, environment);
                         invocations.push_back(invocation);
                     }
                 }

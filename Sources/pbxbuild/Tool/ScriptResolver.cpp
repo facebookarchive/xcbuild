@@ -7,14 +7,14 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Tool/ScriptInvocationContext.h>
+#include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::Tool::ScriptInvocationContext;
+using pbxbuild::Tool::ScriptResolver;
 using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::Tool::ToolEnvironment;
 using pbxbuild::Tool::OptionsResult;
@@ -23,14 +23,9 @@ using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
-ScriptInvocationContext::
-ScriptInvocationContext(ToolInvocation const &invocation) :
-    _invocation(invocation)
-{
-}
-
-ScriptInvocationContext::
-~ScriptInvocationContext()
+ScriptResolver::
+ScriptResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
+    _tool(tool)
 {
 }
 
@@ -58,9 +53,8 @@ ScriptInputOutputLevel(std::vector<std::string> const &inputFiles, std::vector<s
     return pbxsetting::Level(settings);
 }
 
-ScriptInvocationContext ScriptInvocationContext::
-Create(
-    pbxspec::PBX::Tool::shared_ptr const &scriptTool,
+ToolInvocation ScriptResolver::
+invocation(
     std::string const &shell,
     std::vector<std::string> const &arguments,
     std::unordered_map<std::string, std::string> const &environmentVariables,
@@ -72,16 +66,15 @@ Create(
     std::string const &logMessage
 )
 {
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(scriptTool, environment, inputFiles, outputFiles);
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, inputFiles, outputFiles);
     OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr, environmentVariables);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, shell, arguments);
     ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", auxiliaries);
-    return ScriptInvocationContext(context.invocation());
+    return context.invocation();
 }
 
-ScriptInvocationContext ScriptInvocationContext::
-Create(
-    pbxspec::PBX::Tool::shared_ptr const &scriptTool,
+ToolInvocation ScriptResolver::
+invocation(
     pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
@@ -98,8 +91,7 @@ Create(
 
     std::string fullWorkingDirectory = workingDirectory + "/" + legacyTarget->buildWorkingDirectory();
 
-    return Create(
-        scriptTool,
+    return invocation(
         legacyTarget->buildToolPath(),
         pbxsetting::Type::ParseList(script),
         environmentVariables,
@@ -112,9 +104,8 @@ Create(
     );
 }
 
-ScriptInvocationContext ScriptInvocationContext::
-Create(
-    pbxspec::PBX::Tool::shared_ptr const &scriptTool,
+ToolInvocation ScriptResolver::
+invocation(
     pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
@@ -150,8 +141,7 @@ Create(
     std::unordered_map<std::string, std::string> environmentVariables = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
 
     // TODO(grp): Use PBX::ShellScriptBuildPhase::showEnvVarsInLog().
-    return Create(
-        scriptTool,
+    return invocation(
         "/bin/sh",
         { "-c", scriptFilePath },
         environmentVariables,
@@ -164,9 +154,8 @@ Create(
     );
 }
 
-ScriptInvocationContext ScriptInvocationContext::
-Create(
-    pbxspec::PBX::Tool::shared_ptr const &scriptTool,
+ToolInvocation ScriptResolver::
+invocation(
     std::string const &inputFile,
     pbxbuild::TargetBuildRules::BuildRule::shared_ptr const &buildRule,
     pbxsetting::Environment const &environment,
@@ -197,8 +186,7 @@ Create(
     ruleEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, false), false);
     std::unordered_map<std::string, std::string> environmentVariables = ruleEnvironment.computeValues(pbxsetting::Condition::Empty());
 
-    return Create(
-        scriptTool,
+    return invocation(
         "/bin/sh",
         { "-c", buildRule->script() },
         ruleEnvironment.computeValues(pbxsetting::Condition::Empty()),
@@ -209,5 +197,20 @@ Create(
         workingDirectory,
         ruleEnvironment.expand(logMessage)
     );
+}
+
+std::unique_ptr<ScriptResolver> ScriptResolver::
+Create(Phase::PhaseEnvironment const &phaseEnvironment)
+{
+    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+
+    pbxspec::PBX::Tool::shared_ptr scriptTool = phaseEnvironment.buildEnvironment().specManager()->tool(ScriptResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    if (scriptTool == nullptr) {
+        fprintf(stderr, "warning: could not find shell script tool\n");
+        return nullptr;
+    }
+
+    return std::unique_ptr<ScriptResolver>(new ScriptResolver(scriptTool));
 }
 

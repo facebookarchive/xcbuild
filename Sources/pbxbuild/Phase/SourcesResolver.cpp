@@ -14,7 +14,7 @@
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/Tool/ToolInvocationContext.h>
-#include <pbxbuild/Tool/ScriptInvocationContext.h>
+#include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/CompilerInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
@@ -26,7 +26,7 @@ using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::Tool::CompilerInvocationContext;
-using pbxbuild::Tool::ScriptInvocationContext;
+using pbxbuild::Tool::ScriptResolver;
 using pbxbuild::Tool::HeadermapInvocationContext;
 using pbxbuild::Tool::PrecompiledHeaderInfo;
 using pbxbuild::Tool::SearchPaths;
@@ -129,14 +129,18 @@ Create(
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> variantArchitectureInvocations;
     std::unordered_set<std::string> linkerArguments;
 
-    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool("com.apple.commands.shell-script", targetEnvironment.specDomains());
+    std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
+    if (scriptResolver == nullptr) {
+        return nullptr;
+    }
+
     pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool("com.apple.commands.built-in.headermap-generator", targetEnvironment.specDomains());
 
     // TODO(grp): This should probably try a number of other compilers if it's not clang.
     std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
     pbxspec::PBX::Compiler::shared_ptr defaultCompiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomains());
 
-    if (scriptTool == nullptr || headermapTool == nullptr || defaultCompiler == nullptr) {
+    if (headermapTool == nullptr || defaultCompiler == nullptr) {
         fprintf(stderr, "error: couldn't get compiler tools\n");
         return nullptr;
     }
@@ -210,8 +214,8 @@ Create(
                             invocations.push_back(context.invocation());
                         }
                     } else if (!buildRule->script().empty()) {
-                        auto context = ScriptInvocationContext::Create(scriptTool, file.filePath(), buildRule, currentEnvironment, workingDirectory);
-                        invocations.push_back(context.invocation());
+                        ToolInvocation invocation = scriptResolver->invocation(file.filePath(), buildRule, currentEnvironment, workingDirectory);
+                        invocations.push_back(invocation);
                     }
                 } else {
                     fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());

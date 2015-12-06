@@ -7,40 +7,42 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_CopyInvocationContext_h
-#define __pbxbuild_CopyInvocationContext_h
+#ifndef __pbxbuild_CopyResolver_h
+#define __pbxbuild_CopyResolver_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Phase/PhaseEnvironment.h>
 
 namespace pbxbuild {
 namespace Tool {
 
-class CopyInvocationContext {
+class CopyResolver {
 private:
-    ToolInvocation _invocation;
+    pbxspec::PBX::Tool::shared_ptr _tool;
+
+private:
+    explicit CopyResolver(pbxspec::PBX::Tool::shared_ptr const &tool);
 
 public:
-    explicit CopyInvocationContext(ToolInvocation const &invocation);
-    ~CopyInvocationContext();
-
-public:
-    ToolInvocation const &invocation(void) const
-    { return _invocation; }
-
-public:
-    static CopyInvocationContext
-    Create(
-        pbxspec::PBX::Tool::shared_ptr const &copyTool,
+    ToolInvocation invocation(
         std::string const &inputFile,
         std::string const &outputDirectory,
         std::string const &logMessageTitle,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
-    );
+    ) const;
+
+public:
+    static std::string ToolIdentifier()
+    { return "com.apple.compilers.pbxcp"; }
+
+public:
+    static std::unique_ptr<CopyResolver>
+    Create(Phase::PhaseEnvironment const &phaseEnvironment);
 };
 
 }
 }
 
-#endif // !__pbxbuild_CopyInvocationContext_h
+#endif // !__pbxbuild_CopyResolver_h

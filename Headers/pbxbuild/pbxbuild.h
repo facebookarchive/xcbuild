@@ -28,9 +28,10 @@
 
 #include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/CompilerInvocationContext.h>
+#include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
 #include <pbxbuild/Tool/LinkerInvocationContext.h>
-#include <pbxbuild/Tool/ScriptInvocationContext.h>
+#include <pbxbuild/Tool/ScriptResolver.h>
 
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>

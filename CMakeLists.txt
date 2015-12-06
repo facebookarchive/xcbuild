@@ -242,11 +242,11 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/ToolEnvironment.cpp
     Sources/pbxbuild/Tool/PrecompiledHeaderInfo.cpp
     Sources/pbxbuild/Tool/SearchPaths.cpp
-    Sources/pbxbuild/Tool/CopyInvocationContext.cpp
+    Sources/pbxbuild/Tool/CopyResolver.cpp
     Sources/pbxbuild/Tool/HeadermapInvocationContext.cpp
     Sources/pbxbuild/Tool/CompilerInvocationContext.cpp
     Sources/pbxbuild/Tool/LinkerInvocationContext.cpp
-    Sources/pbxbuild/Tool/ScriptInvocationContext.cpp
+    Sources/pbxbuild/Tool/ScriptResolver.cpp
     Sources/pbxbuild/Tool/ToolInvocationContext.cpp
     Sources/pbxbuild/Phase/PhaseEnvironment.cpp
     Sources/pbxbuild/Phase/PhaseInvocations.cpp

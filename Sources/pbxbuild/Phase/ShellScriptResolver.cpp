@@ -9,10 +9,11 @@
 
 #include <pbxbuild/Phase/ShellScriptResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Tool/ScriptInvocationContext.h>
+#include <pbxbuild/Tool/ScriptResolver.h>
 
 using pbxbuild::Phase::ShellScriptResolver;
 using pbxbuild::Phase::PhaseEnvironment;
+using pbxbuild::Tool::ScriptResolver;
 using libutil::FSUtil;
 
 ShellScriptResolver::
@@ -32,17 +33,17 @@ Create(
     pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase
 )
 {
-    pbxspec::PBX::Tool::shared_ptr scriptTool = phaseEnvironment.buildEnvironment().specManager()->tool("com.apple.commands.shell-script", phaseEnvironment.targetEnvironment().specDomains());
-    if (scriptTool == nullptr) {
-        fprintf(stderr, "warning: could not find shell script tool\n");
+    std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
+    if (scriptResolver == nullptr) {
         return nullptr;
     }
 
     std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
 
-    auto context = pbxbuild::Tool::ScriptInvocationContext::Create(scriptTool, buildPhase, environment, workingDirectory);
-    std::vector<pbxbuild::ToolInvocation> invocations = { context.invocation() };
+    std::vector<pbxbuild::ToolInvocation> invocations = {
+        scriptResolver->invocation(buildPhase, environment, workingDirectory),
+    };
 
     return std::unique_ptr<ShellScriptResolver>(new ShellScriptResolver(invocations));
 }

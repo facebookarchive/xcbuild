@@ -7,32 +7,26 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_ScriptInvocationContext_h
-#define __pbxbuild_ScriptInvocationContext_h
+#ifndef __pbxbuild_ScriptResolver_h
+#define __pbxbuild_ScriptResolver_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
 #include <pbxbuild/TargetBuildRules.h>
+#include <pbxbuild/Phase/PhaseEnvironment.h>
 
 namespace pbxbuild {
 namespace Tool {
 
-class ScriptInvocationContext {
+class ScriptResolver {
 private:
-    ToolInvocation _invocation;
+    pbxspec::PBX::Tool::shared_ptr _tool;
+
+private:
+    explicit ScriptResolver(pbxspec::PBX::Tool::shared_ptr const &tool);
 
 public:
-    explicit ScriptInvocationContext(ToolInvocation const &invocation);
-    ~ScriptInvocationContext();
-
-public:
-    ToolInvocation const &invocation(void) const
-    { return _invocation; }
-
-public:
-    static ScriptInvocationContext
-    Create(
-        pbxspec::PBX::Tool::shared_ptr const &scriptTool,
+    ToolInvocation invocation(
         std::string const &shell,
         std::vector<std::string> const &arguments,
         std::unordered_map<std::string, std::string> const &environmentVariables,
@@ -43,28 +37,30 @@ public:
         std::string const &workingDirectory,
         std::string const &logMessage
     );
-    static ScriptInvocationContext
-    Create(
-        pbxspec::PBX::Tool::shared_ptr const &scriptTool,
+    ToolInvocation invocation(
         pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );
-    static ScriptInvocationContext
-    Create(
-        pbxspec::PBX::Tool::shared_ptr const &scriptTool,
+    ToolInvocation invocation(
         pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );
-    static ScriptInvocationContext
-    Create(
-        pbxspec::PBX::Tool::shared_ptr const &scriptTool,
+    ToolInvocation invocation(
         std::string const &inputFile,
         pbxbuild::TargetBuildRules::BuildRule::shared_ptr const &buildRule,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory
     );
+
+public:
+    static std::string ToolIdentifier()
+    { return "com.apple.commands.shell-script"; }
+
+public:
+    static std::unique_ptr<ScriptResolver>
+    Create(Phase::PhaseEnvironment const &phaseEnvironment);
 };
 
 }

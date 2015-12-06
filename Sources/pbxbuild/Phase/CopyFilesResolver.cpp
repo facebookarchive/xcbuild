@@ -9,11 +9,11 @@
 
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Tool/CopyInvocationContext.h>
+#include <pbxbuild/Tool/CopyResolver.h>
 
 using pbxbuild::Phase::CopyFilesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::Tool::CopyInvocationContext;
+using pbxbuild::Tool::CopyResolver;
 using libutil::FSUtil;
 
 CopyFilesResolver::
@@ -74,9 +74,8 @@ Create(
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
-    pbxspec::PBX::Tool::shared_ptr copyTool = phaseEnvironment.buildEnvironment().specManager()->tool("com.apple.compilers.pbxcp", phaseEnvironment.targetEnvironment().specDomains());
-    if (copyTool == nullptr) {
-        fprintf(stderr, "warning: could not find copy tool\n");
+    std::unique_ptr<CopyResolver> copyResolver = CopyResolver::Create(phaseEnvironment);
+    if (copyResolver == nullptr) {
         return nullptr;
     }
 
@@ -115,8 +114,8 @@ Create(
             continue;
         }
 
-        auto context = CopyInvocationContext::Create(copyTool, file->filePath(), outputDirectory, "PBXCp", environment, targetEnvironment.workingDirectory());
-        invocations.push_back(context.invocation());
+        ToolInvocation invocation = copyResolver->invocation(file->filePath(), outputDirectory, "PBXCp", environment, targetEnvironment.workingDirectory());
+        invocations.push_back(invocation);
     }
 
     return std::unique_ptr<CopyFilesResolver>(new CopyFilesResolver(invocations));

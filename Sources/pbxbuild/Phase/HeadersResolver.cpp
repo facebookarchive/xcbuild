@@ -9,12 +9,12 @@
 
 #include <pbxbuild/Phase/HeadersResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Tool/CopyInvocationContext.h>
+#include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::Phase::HeadersResolver;
 using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::Tool::CopyInvocationContext;
+using pbxbuild::Tool::CopyResolver;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
@@ -38,17 +38,16 @@ Create(
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
-    pbxspec::PBX::Tool::shared_ptr copyTool = phaseEnvironment.buildEnvironment().specManager()->tool("com.apple.compilers.pbxcp", phaseEnvironment.targetEnvironment().specDomains());
-    if (copyTool == nullptr) {
-        fprintf(stderr, "warning: could not find copy tool\n");
-        return nullptr;
-    }
-
     std::string targetBuildDirectory = environment.resolve("TARGET_BUILD_DIR");
     std::string publicOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH");
     std::string privateOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PRIVATE_HEADERS_FOLDER_PATH");
 
     std::vector<pbxbuild::ToolInvocation> invocations;
+
+    std::unique_ptr<CopyResolver> copyResolver = CopyResolver::Create(phaseEnvironment);
+    if (copyResolver == nullptr) {
+        return nullptr;
+    }
 
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
         if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeFileReference) {
@@ -69,8 +68,8 @@ Create(
         std::string const &outputDirectory = (isPublic ? publicOutputDirectory : privateOutputDirectory);
 
         if (isPublic || isPrivate) {
-            auto context = CopyInvocationContext::Create(copyTool, filePath, outputDirectory, "CpHeader", environment, targetEnvironment.workingDirectory());
-            invocations.push_back(context.invocation());
+            ToolInvocation invocation = copyResolver->invocation(filePath, outputDirectory, "CpHeader", environment, targetEnvironment.workingDirectory());
+            invocations.push_back(invocation);
         }
     }
 
