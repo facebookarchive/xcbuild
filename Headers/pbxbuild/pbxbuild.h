@@ -30,7 +30,7 @@
 #include <pbxbuild/Tool/CompilerInvocationContext.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/HeadermapInvocationContext.h>
-#include <pbxbuild/Tool/LinkerInvocationContext.h>
+#include <pbxbuild/Tool/LinkerResolver.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
 
 #include <pbxbuild/Phase/PhaseEnvironment.h>

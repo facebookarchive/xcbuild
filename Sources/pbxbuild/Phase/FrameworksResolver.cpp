@@ -15,11 +15,12 @@
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/Tool/ToolInvocationContext.h>
-#include <pbxbuild/Tool/LinkerInvocationContext.h>
+#include <pbxbuild/Tool/LinkerResolver.h>
 
 using pbxbuild::Phase::FrameworksResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Phase::SourcesResolver;
+using pbxbuild::Tool::LinkerResolver;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
@@ -83,24 +84,25 @@ Create(
 
     std::vector<pbxbuild::ToolInvocation> invocations;
 
-    pbxspec::PBX::Linker::shared_ptr ld = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.ld", targetEnvironment.specDomains());
-    pbxspec::PBX::Linker::shared_ptr libtool = buildEnvironment.specManager()->linker("com.apple.pbx.linkers.libtool", targetEnvironment.specDomains());
-    pbxspec::PBX::Linker::shared_ptr lipo = buildEnvironment.specManager()->linker("com.apple.xcode.linkers.lipo", targetEnvironment.specDomains());
+    std::unique_ptr<LinkerResolver> ldResolver = LinkerResolver::Create(phaseEnvironment, LinkerResolver::LinkerToolIdentifier());
+    std::unique_ptr<LinkerResolver> libtoolResolver = LinkerResolver::Create(phaseEnvironment, LinkerResolver::LibtoolToolIdentifier());
+    std::unique_ptr<LinkerResolver> lipoResolver = LinkerResolver::Create(phaseEnvironment, LinkerResolver::LipoToolIdentifier());
     pbxspec::PBX::Tool::shared_ptr dsymutil = buildEnvironment.specManager()->tool("com.apple.tools.dsymutil", targetEnvironment.specDomains());
-    if (ld == nullptr || libtool == nullptr || lipo == nullptr || dsymutil == nullptr) {
+    if (ldResolver == nullptr || libtoolResolver == nullptr || lipoResolver == nullptr || dsymutil == nullptr) {
         fprintf(stderr, "error: couldn't get linker tools\n");
         return nullptr;
     }
 
     std::string binaryType = targetEnvironment.environment().resolve("MACH_O_TYPE");
 
-    pbxspec::PBX::Linker::shared_ptr linker;
+    LinkerResolver *linkerResolver = nullptr;
     std::string linkerExecutable;
     std::vector<std::string> linkerArguments;
+
     if (binaryType == "staticlib") {
-        linker = libtool;
+        linkerResolver = libtoolResolver.get();
     } else {
-        linker = ld;
+        linkerResolver = ldResolver.get();
         linkerExecutable = sourcesResolver.linkerDriver();
         linkerArguments.insert(linkerArguments.end(), sourcesResolver.linkerArgs().begin(), sourcesResolver.linkerArgs().end());
     }
@@ -145,19 +147,19 @@ Create(
                 std::string architectureIntermediatesDirectory = variantIntermediatesDirectory + "/" + arch;
                 std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
 
-                auto context = pbxbuild::Tool::LinkerInvocationContext::Create(linker, sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
-                invocations.push_back(context.invocation());
+                ToolInvocation invocation = linkerResolver->invocation(sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
+                invocations.push_back(invocation);
 
                 universalBinaryInputs.push_back(architectureIntermediatesOutput);
             } else {
-                auto context = pbxbuild::Tool::LinkerInvocationContext::Create(linker, sourceOutputs, files, variantProductsOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
-                invocations.push_back(context.invocation());
+                ToolInvocation invocation = linkerResolver->invocation(sourceOutputs, files, variantProductsOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
+                invocations.push_back(invocation);
             }
         }
 
         if (createUniversalBinary) {
-            auto context = pbxbuild::Tool::LinkerInvocationContext::Create(lipo, universalBinaryInputs, { }, variantProductsOutput, { }, variantEnvironment, workingDirectory);
-            invocations.push_back(context.invocation());
+            ToolInvocation invocation = lipoResolver->invocation(universalBinaryInputs, { }, variantProductsOutput, { }, variantEnvironment, workingDirectory);
+            invocations.push_back(invocation);
         }
 
         if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {

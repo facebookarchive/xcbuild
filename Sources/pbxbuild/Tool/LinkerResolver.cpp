@@ -7,14 +7,14 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Tool/LinkerInvocationContext.h>
+#include <pbxbuild/Tool/LinkerResolver.h>
 #include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::Tool::LinkerInvocationContext;
+using pbxbuild::Tool::LinkerResolver;
 using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::Tool::ToolEnvironment;
 using pbxbuild::Tool::OptionsResult;
@@ -23,20 +23,19 @@ using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
-LinkerInvocationContext::
-LinkerInvocationContext(ToolInvocation const &invocation) :
-    _invocation(invocation)
+LinkerResolver::
+LinkerResolver(pbxspec::PBX::Linker::shared_ptr const &linker) :
+    _linker(linker)
 {
 }
 
-LinkerInvocationContext::
-~LinkerInvocationContext()
+LinkerResolver::
+~LinkerResolver()
 {
 }
 
-LinkerInvocationContext LinkerInvocationContext::
-Create(
-    pbxspec::PBX::Linker::shared_ptr const &linker,
+ToolInvocation LinkerResolver::
+invocation(
     std::vector<std::string> const &inputFiles,
     std::vector<TypeResolvedFile> const &inputLibraries,
     std::string const &output,
@@ -51,7 +50,7 @@ Create(
 
     special.insert(special.end(), additionalArguments.begin(), additionalArguments.end());
 
-    if (linker->supportsInputFileList() || linker->identifier() == "com.apple.pbx.linkers.libtool") {
+    if (_linker->supportsInputFileList() || _linker->identifier() == LinkerResolver::LibtoolToolIdentifier()) {
         std::string path = environment.expand(pbxsetting::Value::Parse("$(LINK_FILE_LIST_$(variant)_$(arch))"));
         std::string contents;
         for (std::string const &input : inputFiles) {
@@ -91,14 +90,14 @@ Create(
     }
 
     std::unordered_set<std::string> removed;
-    if (linker->identifier() == "com.apple.xcode.linkers.lipo") {
+    if (_linker->identifier() == LinkerResolver::LipoToolIdentifier()) {
         // This is weird, but this flag is invalid yet is in the specification.
         removed.insert("-arch_only");
     }
 
     std::string dependencyInfo;
-    if (linker->identifier() == "com.apple.xcode.linkers.ld") {
-        dependencyInfo = environment.expand(linker->dependencyInfoFile());
+    if (_linker->identifier() == LinkerResolver::LinkerToolIdentifier()) {
+        dependencyInfo = environment.expand(_linker->dependencyInfoFile());
 
         special.push_back("-Xlinker");
         special.push_back("-dependency_info");
@@ -106,11 +105,27 @@ Create(
         special.push_back(dependencyInfo);
     }
 
-    pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (linker);
+    pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_linker);
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, { output });
     OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
     std::string logMessage = ToolInvocationContext::LogMessage(toolEnvironment);
     ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, dependencyInfo, auxiliaries);
-    return LinkerInvocationContext(context.invocation());
+    return context.invocation();
 }
+
+std::unique_ptr<LinkerResolver> LinkerResolver::
+Create(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &identifier)
+{
+    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+
+    pbxspec::PBX::Linker::shared_ptr linker = phaseEnvironment.buildEnvironment().specManager()->linker(identifier, targetEnvironment.specDomains());
+    if (linker == nullptr) {
+        fprintf(stderr, "warning: could not find linker\n");
+        return nullptr;
+    }
+
+    return std::unique_ptr<LinkerResolver>(new LinkerResolver(linker));
+}
+
