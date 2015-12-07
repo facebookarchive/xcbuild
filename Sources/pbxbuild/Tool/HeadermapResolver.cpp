@@ -223,8 +223,8 @@ invocation(
         }
     }
 
-    headermapInfo->systemHeadermapFiles() = systemHeadermapFiles;
-    headermapInfo->userHeadermapFiles() = userHeadermapFiles;
+    headermapInfo->systemHeadermapFiles().insert(headermapInfo->systemHeadermapFiles().end(), systemHeadermapFiles.begin(), systemHeadermapFiles.end());
+    headermapInfo->userHeadermapFiles().insert(headermapInfo->userHeadermapFiles().end(), userHeadermapFiles.begin(), userHeadermapFiles.end());
     return invocation;
 }
 
