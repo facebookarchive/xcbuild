@@ -51,6 +51,10 @@ public:
     ) const;
 
 public:
+    pbxspec::PBX::Compiler::shared_ptr const &compiler() const
+    { return _compiler; }
+
+public:
     static std::string ToolIdentifier()
     { return "com.apple.compilers.gcc"; }
 

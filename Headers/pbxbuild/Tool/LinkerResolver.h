@@ -40,8 +40,12 @@ public:
     );
 
 public:
+    pbxspec::PBX::Linker::shared_ptr const &linker() const
+    { return _linker; }
+
+public:
     static std::string LinkerToolIdentifier()
-    { return "com.apple.xcode.linkers.ld"; }
+    { return "com.apple.pbx.linkers.ld"; }
     static std::string LibtoolToolIdentifier()
     { return "com.apple.pbx.linkers.libtool"; }
     static std::string LipoToolIdentifier()

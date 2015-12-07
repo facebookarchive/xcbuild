@@ -122,7 +122,7 @@ Create(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &ident
 
     pbxspec::PBX::Linker::shared_ptr linker = buildEnvironment.specManager()->linker(identifier, targetEnvironment.specDomains());
     if (linker == nullptr) {
-        fprintf(stderr, "warning: could not find linker\n");
+        fprintf(stderr, "warning: could not find linker %s\n", identifier.c_str());
         return nullptr;
     }
 

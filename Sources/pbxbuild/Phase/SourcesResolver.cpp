@@ -130,13 +130,13 @@ Create(
         return nullptr;
     }
 
-    std::unique_ptr<HeadermapResolver> headermapResolver = HeadermapResolver::Create(phaseEnvironment);
-    if (headermapResolver == nullptr) {
+    std::unique_ptr<ClangResolver> clangResolver = ClangResolver::Create(phaseEnvironment);
+    if (clangResolver == nullptr) {
         return nullptr;
     }
 
-    std::unique_ptr<ClangResolver> clangResolver = ClangResolver::Create(phaseEnvironment);
-    if (clangResolver == nullptr) {
+    std::unique_ptr<HeadermapResolver> headermapResolver = HeadermapResolver::Create(phaseEnvironment, clangResolver->compiler());
+    if (headermapResolver == nullptr) {
         return nullptr;
     }
 

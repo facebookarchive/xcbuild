@@ -24,8 +24,9 @@ using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 HeadermapResolver::
-HeadermapResolver(pbxspec::PBX::Tool::shared_ptr const &tool, pbxspec::Manager::shared_ptr const &specManager) :
+HeadermapResolver(pbxspec::PBX::Tool::shared_ptr const &tool, pbxspec::PBX::Compiler::shared_ptr const &compiler, pbxspec::Manager::shared_ptr const &specManager) :
     _tool       (tool),
+    _compiler   (compiler),
     _specManager(specManager)
 {
 }
@@ -75,11 +76,15 @@ invocation(
     HeadermapInfo *headermapInfo
 ) const
 {
-    if (!pbxsetting::Type::ParseBoolean(environment.resolve("USE_HEADERMAP"))) {
+    /* Add the compiler default environment, which contains the headermap setting defaults. */
+    pbxsetting::Environment compilerEnvironment = environment;
+    compilerEnvironment.insertFront(_compiler->defaultSettings(), true);
+
+    if (!pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("USE_HEADERMAP"))) {
         return ToolInvocation({ }, { }, { });
     }
 
-    if (pbxsetting::Type::ParseBoolean(environment.resolve("HEADERMAP_USES_VFS"))) {
+    if (pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_USES_VFS"))) {
         // TODO(grp): Support VFS-based header maps.
     }
 
@@ -89,16 +94,16 @@ invocation(
     HeaderMap allTargetHeaders;
     HeaderMap allNonFrameworkTargetHeaders;
 
-    bool includeFlatEntriesForTargetBeingBuilt     = pbxsetting::Type::ParseBoolean(environment.resolve("HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT"));
-    bool includeFrameworkEntriesForAllProductTypes = pbxsetting::Type::ParseBoolean(environment.resolve("HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES"));
-    bool includeProjectHeaders                     = pbxsetting::Type::ParseBoolean(environment.resolve("HEADERMAP_INCLUDES_PROJECT_HEADERS"));
+    bool includeFlatEntriesForTargetBeingBuilt     = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT"));
+    bool includeFrameworkEntriesForAllProductTypes = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES"));
+    bool includeProjectHeaders                     = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_INCLUDES_PROJECT_HEADERS"));
 
     // TODO(grp): Populate generated headers.
     HeaderMap generatedFiles;
 
     pbxproj::PBX::Project::shared_ptr project = target->project();
 
-    std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, environment, target, searchPaths, workingDirectory);
+    std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, compilerEnvironment, target, searchPaths, workingDirectory);
     for (std::string const &path : headermapSearchPaths) {
         FSUtil::EnumerateDirectory(path, [&](std::string const &fileName) -> bool {
             // TODO(grp): Use TypeResolvedFile when reliable.
@@ -113,7 +118,7 @@ invocation(
     }
 
     for (pbxproj::PBX::FileReference::shared_ptr const &fileReference : project->fileReferences()) {
-        auto file = pbxbuild::TypeResolvedFile::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, environment);
+        auto file = pbxbuild::TypeResolvedFile::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, compilerEnvironment);
         if (file == nullptr || (file->fileType()->identifier() != "sourcecode.c.h" && file->fileType()->identifier() != "sourcecode.cpp.h")) {
             continue;
         }
@@ -139,7 +144,7 @@ invocation(
                 }
 
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-                std::unique_ptr<TypeResolvedFile> file = pbxbuild::TypeResolvedFile::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, environment);
+                std::unique_ptr<TypeResolvedFile> file = pbxbuild::TypeResolvedFile::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, compilerEnvironment);
                 if (file == nullptr || (file->fileType()->identifier() != "sourcecode.c.h" && file->fileType()->identifier() != "sourcecode.cpp.h")) {
                     continue;
                 }
@@ -181,12 +186,12 @@ invocation(
         }
     }
 
-    std::string headermapFile                                = environment.resolve("CPP_HEADERMAP_FILE");
-    std::string headermapFileForOwnTargetHeaders             = environment.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS");
-    std::string headermapFileForAllTargetHeaders             = environment.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS");
-    std::string headermapFileForAllNonFrameworkTargetHeaders = environment.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS");
-    std::string headermapFileForGeneratedFiles               = environment.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES");
-    std::string headermapFileForProjectFiles                 = environment.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES");
+    std::string headermapFile                                = compilerEnvironment.resolve("CPP_HEADERMAP_FILE");
+    std::string headermapFileForOwnTargetHeaders             = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS");
+    std::string headermapFileForAllTargetHeaders             = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS");
+    std::string headermapFileForAllNonFrameworkTargetHeaders = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS");
+    std::string headermapFileForGeneratedFiles               = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES");
+    std::string headermapFileForProjectFiles                 = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES");
 
     ToolInvocation invocation = ToolInvocation({ }, { }, {
         AuxiliaryFile(headermapFile, targetName.write(), false),
@@ -200,7 +205,7 @@ invocation(
     std::vector<std::string> systemHeadermapFiles;
     std::vector<std::string> userHeadermapFiles;
 
-    if (!pbxsetting::Type::ParseBoolean(environment.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS")) || pbxsetting::Type::ParseBoolean(environment.resolve("ALWAYS_SEARCH_USER_PATHS"))) {
+    if (!pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS")) || pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("ALWAYS_SEARCH_USER_PATHS"))) {
         systemHeadermapFiles.push_back(headermapFile);
     } else {
         if (includeFlatEntriesForTargetBeingBuilt) {
@@ -224,7 +229,7 @@ invocation(
 }
 
 std::unique_ptr<HeadermapResolver> HeadermapResolver::
-Create(Phase::PhaseEnvironment const &phaseEnvironment)
+Create(Phase::PhaseEnvironment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
@@ -235,5 +240,5 @@ Create(Phase::PhaseEnvironment const &phaseEnvironment)
         return nullptr;
     }
 
-    return std::unique_ptr<HeadermapResolver>(new HeadermapResolver(headermapTool, buildEnvironment.specManager()));
+    return std::unique_ptr<HeadermapResolver>(new HeadermapResolver(headermapTool, compiler, buildEnvironment.specManager()));
 }

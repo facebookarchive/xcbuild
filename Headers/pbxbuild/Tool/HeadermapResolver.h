@@ -22,11 +22,12 @@ class HeadermapInfo;
 
 class HeadermapResolver {
 private:
-    pbxspec::PBX::Tool::shared_ptr _tool;
-    pbxspec::Manager::shared_ptr   _specManager;
+    pbxspec::PBX::Tool::shared_ptr     _tool;
+    pbxspec::PBX::Compiler::shared_ptr _compiler;
+    pbxspec::Manager::shared_ptr       _specManager;
 
 public:
-    HeadermapResolver(pbxspec::PBX::Tool::shared_ptr const &tool, pbxspec::Manager::shared_ptr const &specManager);
+    HeadermapResolver(pbxspec::PBX::Tool::shared_ptr const &tool, pbxspec::PBX::Compiler::shared_ptr const &compiler, pbxspec::Manager::shared_ptr const &specManager);
 
 public:
     ToolInvocation invocation(
@@ -38,12 +39,16 @@ public:
     ) const;
 
 public:
+    pbxspec::PBX::Tool::shared_ptr const &tool() const
+    { return _tool; }
+
+public:
     static std::string ToolIdentifier()
     { return "com.apple.commands.built-in.headermap-generator"; }
 
 public:
     static std::unique_ptr<HeadermapResolver>
-    Create(Phase::PhaseEnvironment const &phaseEnvironment);
+    Create(Phase::PhaseEnvironment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler);
 };
 
 }

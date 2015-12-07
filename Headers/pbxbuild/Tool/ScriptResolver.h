@@ -55,6 +55,10 @@ public:
     );
 
 public:
+    pbxspec::PBX::Tool::shared_ptr const &tool() const
+    { return _tool; }
+
+public:
     static std::string ToolIdentifier()
     { return "com.apple.commands.shell-script"; }
 
