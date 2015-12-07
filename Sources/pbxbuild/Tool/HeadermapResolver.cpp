@@ -7,13 +7,15 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Tool/HeadermapInvocationContext.h>
+#include <pbxbuild/Tool/HeadermapResolver.h>
+#include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/HeaderMap.h>
 
-using pbxbuild::Tool::HeadermapInvocationContext;
+using pbxbuild::Tool::HeadermapResolver;
+using pbxbuild::Tool::HeadermapInfo;
 using pbxbuild::Tool::SearchPaths;
 using pbxbuild::ToolInvocation;
 using AuxiliaryFile = pbxbuild::ToolInvocation::AuxiliaryFile;
@@ -21,16 +23,10 @@ using pbxbuild::HeaderMap;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
-HeadermapInvocationContext::
-HeadermapInvocationContext(ToolInvocation const &invocation, std::vector<std::string> const &systemHeadermapFiles, std::vector<std::string> const &userHeadermapFiles) :
-    _invocation          (invocation),
-    _systemHeadermapFiles(systemHeadermapFiles),
-    _userHeadermapFiles  (userHeadermapFiles)
-{
-}
-
-HeadermapInvocationContext::
-~HeadermapInvocationContext()
+HeadermapResolver::
+HeadermapResolver(pbxspec::PBX::Tool::shared_ptr const &tool, pbxspec::Manager::shared_ptr const &specManager) :
+    _tool       (tool),
+    _specManager(specManager)
 {
 }
 
@@ -70,18 +66,17 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
     return orderedHeaderSearchPaths;
 }
 
-HeadermapInvocationContext HeadermapInvocationContext::
-Create(
-    pbxspec::PBX::Tool::shared_ptr const &headermapTool,
-    pbxspec::Manager::shared_ptr const &specManager,
+ToolInvocation HeadermapResolver::
+invocation(
     pbxproj::PBX::Target::shared_ptr const &target,
     SearchPaths const &searchPaths,
     pbxsetting::Environment const &environment,
-    std::string const &workingDirectory
-)
+    std::string const &workingDirectory,
+    HeadermapInfo *headermapInfo
+) const
 {
     if (!pbxsetting::Type::ParseBoolean(environment.resolve("USE_HEADERMAP"))) {
-        return HeadermapInvocationContext(ToolInvocation({ }, { }, { }), { }, { });
+        return ToolInvocation({ }, { }, { });
     }
 
     if (pbxsetting::Type::ParseBoolean(environment.resolve("HEADERMAP_USES_VFS"))) {
@@ -103,7 +98,7 @@ Create(
 
     pbxproj::PBX::Project::shared_ptr project = target->project();
 
-    std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(specManager, environment, target, searchPaths, workingDirectory);
+    std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, environment, target, searchPaths, workingDirectory);
     for (std::string const &path : headermapSearchPaths) {
         FSUtil::EnumerateDirectory(path, [&](std::string const &fileName) -> bool {
             // TODO(grp): Use TypeResolvedFile when reliable.
@@ -118,7 +113,7 @@ Create(
     }
 
     for (pbxproj::PBX::FileReference::shared_ptr const &fileReference : project->fileReferences()) {
-        auto file = pbxbuild::TypeResolvedFile::Resolve(specManager, { pbxspec::Manager::AnyDomain() }, fileReference, environment);
+        auto file = pbxbuild::TypeResolvedFile::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, environment);
         if (file == nullptr || (file->fileType()->identifier() != "sourcecode.c.h" && file->fileType()->identifier() != "sourcecode.cpp.h")) {
             continue;
         }
@@ -144,7 +139,7 @@ Create(
                 }
 
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-                std::unique_ptr<TypeResolvedFile> file = pbxbuild::TypeResolvedFile::Resolve(specManager, { pbxspec::Manager::AnyDomain() }, fileReference, environment);
+                std::unique_ptr<TypeResolvedFile> file = pbxbuild::TypeResolvedFile::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, environment);
                 if (file == nullptr || (file->fileType()->identifier() != "sourcecode.c.h" && file->fileType()->identifier() != "sourcecode.cpp.h")) {
                     continue;
                 }
@@ -223,5 +218,22 @@ Create(
         }
     }
 
-    return HeadermapInvocationContext(invocation, systemHeadermapFiles, userHeadermapFiles);
+    *headermapInfo->systemHeadermapFiles() = systemHeadermapFiles;
+    *headermapInfo->userHeadermapFiles() = userHeadermapFiles;
+    return invocation;
+}
+
+std::unique_ptr<HeadermapResolver> HeadermapResolver::
+Create(Phase::PhaseEnvironment const &phaseEnvironment)
+{
+    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+
+    pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool(HeadermapResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    if (headermapTool == nullptr) {
+        fprintf(stderr, "warning: could not find headermap tool\n");
+        return nullptr;
+    }
+
+    return std::unique_ptr<HeadermapResolver>(new HeadermapResolver(headermapTool, buildEnvironment.specManager()));
 }

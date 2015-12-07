@@ -54,7 +54,7 @@ Create(Phase::PhaseEnvironment const &phaseEnvironment)
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    pbxspec::PBX::Tool::shared_ptr copyTool = phaseEnvironment.buildEnvironment().specManager()->tool(CopyResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr copyTool = buildEnvironment.specManager()->tool(CopyResolver::ToolIdentifier(), targetEnvironment.specDomains());
     if (copyTool == nullptr) {
         fprintf(stderr, "warning: could not find copy tool\n");
         return nullptr;

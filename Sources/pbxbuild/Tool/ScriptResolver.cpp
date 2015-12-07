@@ -205,7 +205,7 @@ Create(Phase::PhaseEnvironment const &phaseEnvironment)
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    pbxspec::PBX::Tool::shared_ptr scriptTool = phaseEnvironment.buildEnvironment().specManager()->tool(ScriptResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool(ScriptResolver::ToolIdentifier(), targetEnvironment.specDomains());
     if (scriptTool == nullptr) {
         fprintf(stderr, "warning: could not find shell script tool\n");
         return nullptr;

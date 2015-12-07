@@ -16,20 +16,21 @@
 #include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/CompilerInvocationContext.h>
-#include <pbxbuild/Tool/HeadermapInvocationContext.h>
+#include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::ToolInvocation;
-using pbxbuild::TypeResolvedFile;
 using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::Tool::CompilerInvocationContext;
 using pbxbuild::Tool::ScriptResolver;
-using pbxbuild::Tool::HeadermapInvocationContext;
+using pbxbuild::Tool::HeadermapResolver;
+using pbxbuild::Tool::HeadermapInfo;
 using pbxbuild::Tool::PrecompiledHeaderInfo;
 using pbxbuild::Tool::SearchPaths;
+using pbxbuild::ToolInvocation;
+using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 SourcesResolver::
@@ -59,7 +60,7 @@ CreateCompilation(
 
     PhaseEnvironment const &phaseEnvironment,
     pbxspec::PBX::Compiler::shared_ptr const &defaultCompiler,
-    HeadermapInvocationContext const &headermap,
+    HeadermapInfo const &headermapInfo,
     SearchPaths const &searchPaths,
 
     std::string *linkerDriver,
@@ -90,7 +91,7 @@ CreateCompilation(
         file,
         buildFile->compilerFlags(),
         outputBaseName,
-        headermap,
+        headermapInfo,
         searchPaths,
         environment,
         workingDirectory
@@ -134,13 +135,15 @@ Create(
         return nullptr;
     }
 
-    pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool("com.apple.commands.built-in.headermap-generator", targetEnvironment.specDomains());
+    std::unique_ptr<HeadermapResolver> headermapResolver = HeadermapResolver::Create(phaseEnvironment);
+    if (headermapResolver == nullptr) {
+        return nullptr;
+    }
 
     // TODO(grp): This should probably try a number of other compilers if it's not clang.
     std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
     pbxspec::PBX::Compiler::shared_ptr defaultCompiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomains());
-
-    if (headermapTool == nullptr || defaultCompiler == nullptr) {
+    if (defaultCompiler == nullptr) {
         fprintf(stderr, "error: couldn't get compiler tools\n");
         return nullptr;
     }
@@ -153,8 +156,9 @@ Create(
     std::string const &workingDirectory = targetEnvironment.workingDirectory();
     SearchPaths searchPaths = SearchPaths::Create(workingDirectory, compilerEnvironment);
 
-    HeadermapInvocationContext headermap = HeadermapInvocationContext::Create(headermapTool, buildEnvironment.specManager(), phaseEnvironment.target(), searchPaths, compilerEnvironment, workingDirectory);
-    allInvocations.push_back(headermap.invocation());
+    HeadermapInfo headermapInfo;
+    ToolInvocation headermapInvocation = headermapResolver->invocation(phaseEnvironment.target(), searchPaths, compilerEnvironment, workingDirectory, &headermapInfo);
+    allInvocations.push_back(headermapInvocation);
 
     std::unordered_set<std::string> precompiledHeaders;
 
@@ -200,7 +204,7 @@ Create(
 
                                 phaseEnvironment,
                                 defaultCompiler,
-                                headermap,
+                                headermapInfo,
                                 searchPaths,
 
                                 &linkerDriver,

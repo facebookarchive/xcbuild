@@ -12,6 +12,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 
 namespace pbxbuild {
@@ -21,7 +22,7 @@ class TypeResolvedFile;
 namespace Tool {
 
 class SearchPaths;
-class HeadermapInvocationContext;
+class HeadermapInfo;
 class PrecompiledHeaderInfo;
 
 class CompilerInvocationContext {
@@ -52,7 +53,7 @@ public:
         TypeResolvedFile const &input,
         std::vector<std::string> const &inputArguments,
         std::string const &outputBaseName,
-        HeadermapInvocationContext const &headermaps,
+        HeadermapInfo const &headermapInfo,
         SearchPaths const &searchPaths,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory

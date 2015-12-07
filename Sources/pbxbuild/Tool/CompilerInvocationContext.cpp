@@ -9,7 +9,7 @@
 
 #include <pbxbuild/Tool/CompilerInvocationContext.h>
 #include <pbxbuild/Tool/ToolInvocationContext.h>
-#include <pbxbuild/Tool/HeadermapInvocationContext.h>
+#include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
@@ -21,7 +21,7 @@ using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::Tool::ToolEnvironment;
 using pbxbuild::Tool::OptionsResult;
 using pbxbuild::Tool::CommandLineResult;
-using pbxbuild::Tool::HeadermapInvocationContext;
+using pbxbuild::Tool::HeadermapInfo;
 using pbxbuild::Tool::SearchPaths;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
@@ -68,10 +68,10 @@ AppendCompoundFlags(std::vector<std::string> *args, std::vector<std::string> con
 }
 
 static void
-AppendPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, SearchPaths const &searchPaths, HeadermapInvocationContext const &headermaps)
+AppendPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, SearchPaths const &searchPaths, HeadermapInfo const &headermapInfo)
 {
-    AppendCompoundFlags(args, headermaps.systemHeadermapFiles(), "-I", true);
-    AppendCompoundFlags(args, headermaps.userHeadermapFiles(), "-iquote", false);
+    AppendCompoundFlags(args, headermapInfo.systemHeadermapFiles(), "-I", true);
+    AppendCompoundFlags(args, headermapInfo.userHeadermapFiles(), "-iquote", false);
 
     if (environment.resolve("USE_HEADER_SYMLINKS") == "YES") {
         // TODO(grp): Create this symlink tree as needed.
@@ -228,7 +228,7 @@ CreateSource(
     TypeResolvedFile const &inputFile,
     std::vector<std::string> const &inputArguments,
     std::string const &outputBaseName,
-    HeadermapInvocationContext const &headermaps,
+    HeadermapInfo const &headermapInfo,
     SearchPaths const &searchPaths,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
@@ -258,8 +258,8 @@ CreateSource(
 
     std::vector<std::string> inputFiles;
     inputFiles.push_back(input);
-    inputFiles.insert(inputFiles.end(), headermaps.systemHeadermapFiles().begin(), headermaps.systemHeadermapFiles().end());
-    inputFiles.insert(inputFiles.end(), headermaps.userHeadermapFiles().begin(), headermaps.userHeadermapFiles().end());
+    inputFiles.insert(inputFiles.end(), headermapInfo.systemHeadermapFiles().begin(), headermapInfo.systemHeadermapFiles().end());
+    inputFiles.insert(inputFiles.end(), headermapInfo.userHeadermapFiles().begin(), headermapInfo.userHeadermapFiles().end());
 
     std::vector<std::string> arguments;
     AppendDialectFlags(&arguments, fileType->GCCDialectName(), "");
@@ -267,7 +267,7 @@ CreateSource(
 
     arguments.insert(arguments.end(), commandLine.arguments().begin(), commandLine.arguments().end());
     AppendCustomFlags(&arguments, env, fileType->GCCDialectName());
-    AppendPathFlags(&arguments, env, searchPaths, headermaps);
+    AppendPathFlags(&arguments, env, searchPaths, headermapInfo);
 
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(env.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
     std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");
