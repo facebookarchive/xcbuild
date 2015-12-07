@@ -28,19 +28,16 @@ class PrecompiledHeaderInfo;
 class CompilerInvocationContext {
 private:
     ToolInvocation                         _invocation;
-    std::string                            _output;
     std::shared_ptr<PrecompiledHeaderInfo> _precompiledHeaderInfo;
     std::vector<std::string>               _linkerArgs;
 
 public:
-    CompilerInvocationContext(ToolInvocation const &invocation, std::string const &output, std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo, std::vector<std::string> const &linkerArgs);
+    CompilerInvocationContext(ToolInvocation const &invocation, std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo, std::vector<std::string> const &linkerArgs);
     ~CompilerInvocationContext();
 
 public:
     ToolInvocation const &invocation() const
     { return _invocation; }
-    std::string const &output() const
-    { return _output; }
     std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo() const
     { return _precompiledHeaderInfo; }
     std::vector<std::string> const &linkerArgs() const

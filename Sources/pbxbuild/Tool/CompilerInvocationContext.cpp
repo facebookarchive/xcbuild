@@ -28,9 +28,8 @@ using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 CompilerInvocationContext::
-CompilerInvocationContext(ToolInvocation const &invocation, std::string const &output, std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo, std::vector<std::string> const &linkerArgs) :
+CompilerInvocationContext(ToolInvocation const &invocation, std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo, std::vector<std::string> const &linkerArgs) :
     _invocation           (invocation),
-    _output               (output),
     _precompiledHeaderInfo(precompiledHeaderInfo),
     _linkerArgs           (linkerArgs)
 {
@@ -219,7 +218,7 @@ CreatePrecompiledHeader(
         { serializedFile },
         logMessage
     );
-    return CompilerInvocationContext(invocation, output, nullptr, { });
+    return CompilerInvocationContext(invocation, nullptr, { });
 }
 
 CompilerInvocationContext CompilerInvocationContext::
@@ -309,5 +308,5 @@ CreateSource(
         { },
         logMessage
     );
-    return CompilerInvocationContext(invocation, output, precompiledHeaderInfo, options.linkerArgs());
+    return CompilerInvocationContext(invocation, precompiledHeaderInfo, options.linkerArgs());
 }
