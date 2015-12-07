@@ -8,14 +8,14 @@
  */
 
 #include <pbxbuild/Tool/LinkerResolver.h>
-#include <pbxbuild/Tool/ToolInvocationContext.h>
+#include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::Tool::LinkerResolver;
-using pbxbuild::Tool::ToolInvocationContext;
+using pbxbuild::Tool::ToolResult;
 using pbxbuild::Tool::ToolEnvironment;
 using pbxbuild::Tool::OptionsResult;
 using pbxbuild::Tool::CommandLineResult;
@@ -109,9 +109,8 @@ invocation(
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, { output });
     OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
-    std::string logMessage = ToolInvocationContext::LogMessage(toolEnvironment);
-    ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, dependencyInfo, auxiliaries);
-    return context.invocation();
+    std::string logMessage = ToolResult::LogMessage(toolEnvironment);
+    return ToolResult::CreateInvocation(toolEnvironment, options, commandLine, logMessage, workingDirectory, dependencyInfo, auxiliaries);
 }
 
 std::unique_ptr<LinkerResolver> LinkerResolver::

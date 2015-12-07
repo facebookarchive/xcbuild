@@ -240,6 +240,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/CommandLineResult.cpp
     Sources/pbxbuild/Tool/OptionsResult.cpp
     Sources/pbxbuild/Tool/ToolEnvironment.cpp
+    Sources/pbxbuild/Tool/ToolResult.cpp
     Sources/pbxbuild/Tool/CompilationInfo.cpp
     Sources/pbxbuild/Tool/HeadermapInfo.cpp
     Sources/pbxbuild/Tool/PrecompiledHeaderInfo.cpp
@@ -249,7 +250,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/ClangResolver.cpp
     Sources/pbxbuild/Tool/LinkerResolver.cpp
     Sources/pbxbuild/Tool/ScriptResolver.cpp
-    Sources/pbxbuild/Tool/ToolInvocationContext.cpp
+    Sources/pbxbuild/Tool/ToolResolver.cpp
     Sources/pbxbuild/Phase/PhaseEnvironment.cpp
     Sources/pbxbuild/Phase/PhaseInvocations.cpp
     Sources/pbxbuild/Phase/CopyFilesResolver.cpp

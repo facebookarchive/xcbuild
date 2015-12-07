@@ -8,14 +8,14 @@
  */
 
 #include <pbxbuild/Tool/ScriptResolver.h>
-#include <pbxbuild/Tool/ToolInvocationContext.h>
+#include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::Tool::ScriptResolver;
-using pbxbuild::Tool::ToolInvocationContext;
+using pbxbuild::Tool::ToolResult;
 using pbxbuild::Tool::ToolEnvironment;
 using pbxbuild::Tool::OptionsResult;
 using pbxbuild::Tool::CommandLineResult;
@@ -69,8 +69,7 @@ invocation(
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, inputFiles, outputFiles);
     OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr, environmentVariables);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, shell, arguments);
-    ToolInvocationContext context = ToolInvocationContext::Create(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", auxiliaries);
-    return context.invocation();
+    return ToolResult::CreateInvocation(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", auxiliaries);
 }
 
 ToolInvocation ScriptResolver::

@@ -9,13 +9,13 @@
 
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Tool/ToolInvocationContext.h>
+#include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 
 using pbxbuild::Phase::ResourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Tool::CopyResolver;
-using pbxbuild::Tool::ToolInvocationContext;
+using pbxbuild::Tool::ToolResolver;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -42,8 +42,8 @@ CopyInvocation(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, CopyRe
         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
 
         std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(file.filePath());
-        auto context = ToolInvocationContext::Create(tool, { file.filePath() }, { outputPath }, environment, workingDirectory);
-        return context.invocation();
+        std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, tool->identifier());
+        return toolResolver->invocation({ file.filePath() }, { outputPath }, environment, workingDirectory);
     } else {
         return copyResolver->invocation(file.filePath(), outputDirectory, "CpResource", environment, workingDirectory);
     }

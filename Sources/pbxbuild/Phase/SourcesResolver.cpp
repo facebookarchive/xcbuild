@@ -13,7 +13,7 @@
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
-#include <pbxbuild/Tool/ToolInvocationContext.h>
+#include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
@@ -24,7 +24,7 @@
 
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::Tool::ToolInvocationContext;
+using pbxbuild::Tool::ToolResolver;
 using pbxbuild::Tool::ClangResolver;
 using pbxbuild::Tool::ScriptResolver;
 using pbxbuild::Tool::HeadermapResolver;
@@ -201,8 +201,9 @@ Create(
                             );
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
-                            auto context = ToolInvocationContext::Create(tool, { }, { file.filePath() }, currentEnvironment, workingDirectory);
-                            invocations.push_back(context.invocation());
+                            std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, tool->identifier());
+                            ToolInvocation invocation = toolResolver->invocation({ }, { file.filePath() }, currentEnvironment, workingDirectory);
+                            invocations.push_back(invocation);
                         }
                     } else if (!buildRule->script().empty()) {
                         ToolInvocation invocation = scriptResolver->invocation(file.filePath(), buildRule, currentEnvironment, workingDirectory);

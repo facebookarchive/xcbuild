@@ -14,13 +14,14 @@
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
-#include <pbxbuild/Tool/ToolInvocationContext.h>
+#include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/Tool/LinkerResolver.h>
 
 using pbxbuild::Phase::FrameworksResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Tool::LinkerResolver;
+using pbxbuild::Tool::ToolResolver;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
@@ -87,7 +88,7 @@ Create(
     std::unique_ptr<LinkerResolver> ldResolver = LinkerResolver::Create(phaseEnvironment, LinkerResolver::LinkerToolIdentifier());
     std::unique_ptr<LinkerResolver> libtoolResolver = LinkerResolver::Create(phaseEnvironment, LinkerResolver::LibtoolToolIdentifier());
     std::unique_ptr<LinkerResolver> lipoResolver = LinkerResolver::Create(phaseEnvironment, LinkerResolver::LipoToolIdentifier());
-    pbxspec::PBX::Tool::shared_ptr dsymutil = buildEnvironment.specManager()->tool("com.apple.tools.dsymutil", targetEnvironment.specDomains());
+    std::unique_ptr<ToolResolver> dsymutil = ToolResolver::Create(phaseEnvironment, "com.apple.tools.dsymutil");
     if (ldResolver == nullptr || libtoolResolver == nullptr || lipoResolver == nullptr || dsymutil == nullptr) {
         fprintf(stderr, "error: couldn't get linker tools\n");
         return nullptr;
@@ -164,8 +165,8 @@ Create(
 
         if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {
             std::string dsymfile = variantEnvironment.resolve("DWARF_DSYM_FOLDER_PATH") + "/" + variantEnvironment.resolve("DWARF_DSYM_FILE_NAME");
-            auto context = pbxbuild::Tool::ToolInvocationContext::Create(dsymutil, { variantProductsOutput }, { dsymfile }, variantEnvironment, workingDirectory);
-            invocations.push_back(context.invocation());
+            ToolInvocation invocation = dsymutil->invocation({ variantProductsOutput }, { dsymfile }, variantEnvironment, workingDirectory);
+            invocations.push_back(invocation);
         }
     }
 

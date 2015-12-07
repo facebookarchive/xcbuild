@@ -8,7 +8,6 @@
  */
 
 #include <pbxbuild/Tool/ClangResolver.h>
-#include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
@@ -20,7 +19,6 @@
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::Tool::ClangResolver;
-using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::Tool::ToolEnvironment;
 using pbxbuild::Tool::OptionsResult;
 using pbxbuild::Tool::CommandLineResult;

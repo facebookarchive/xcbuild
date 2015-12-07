@@ -7,33 +7,19 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Tool/ToolInvocationContext.h>
+#include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
-#include <pbxbuild/Tool/SearchPaths.h>
 #include <sstream>
 
-using pbxbuild::Tool::ToolInvocationContext;
+using pbxbuild::Tool::ToolResult;
 using pbxbuild::Tool::ToolEnvironment;
 using pbxbuild::Tool::OptionsResult;
 using pbxbuild::Tool::CommandLineResult;
 using pbxbuild::ToolInvocation;
-using pbxbuild::Tool::SearchPaths;
-using libutil::FSUtil;
 
-ToolInvocationContext::
-ToolInvocationContext(ToolInvocation const &invocation) :
-    _invocation(invocation)
-{
-}
-
-ToolInvocationContext::
-~ToolInvocationContext()
-{
-}
-
-std::string ToolInvocationContext::
+std::string ToolResult::
 LogMessage(ToolEnvironment const &toolEnvironment)
 {
     pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
@@ -49,8 +35,8 @@ LogMessage(ToolEnvironment const &toolEnvironment)
     }
 }
 
-ToolInvocationContext ToolInvocationContext::
-Create(
+ToolInvocation ToolResult::
+CreateInvocation(
     ToolEnvironment const &toolEnvironment,
     OptionsResult const &options,
     CommandLineResult const &commandLine,
@@ -60,7 +46,7 @@ Create(
     std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaryFiles
 )
 {
-    pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
+    return pbxbuild::ToolInvocation(
         commandLine.executable(),
         commandLine.arguments(),
         options.environment(),
@@ -71,22 +57,5 @@ Create(
         auxiliaryFiles,
         logMessage
     );
-    return ToolInvocationContext(invocation);
 }
 
-ToolInvocationContext ToolInvocationContext::
-Create(
-    pbxspec::PBX::Tool::shared_ptr const &tool,
-    std::vector<std::string> const &inputs,
-    std::vector<std::string> const &outputs,
-    pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
-    std::string const &logMessage
-)
-{
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputs, outputs);
-    OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
-    std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolInvocationContext::LogMessage(toolEnvironment));
-    return ToolInvocationContext::Create(toolEnvironment, options, commandLine, resolvedLogMessage, workingDirectory);
-}

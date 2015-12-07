@@ -26,12 +26,12 @@
 #include <pbxbuild/Build/Formatter.h>
 #include <pbxbuild/Build/DefaultFormatter.h>
 
-#include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/LinkerResolver.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
+#include <pbxbuild/Tool/ToolResolver.h>
 
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
