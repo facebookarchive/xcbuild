@@ -15,17 +15,20 @@
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
-#include <pbxbuild/Tool/CompilerInvocationContext.h>
+#include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
+#include <pbxbuild/Tool/CompilationInfo.h>
+#include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Tool::ToolInvocationContext;
-using pbxbuild::Tool::CompilerInvocationContext;
+using pbxbuild::Tool::ClangResolver;
 using pbxbuild::Tool::ScriptResolver;
 using pbxbuild::Tool::HeadermapResolver;
+using pbxbuild::Tool::CompilationInfo;
 using pbxbuild::Tool::HeadermapInfo;
 using pbxbuild::Tool::PrecompiledHeaderInfo;
 using pbxbuild::Tool::SearchPaths;
@@ -54,29 +57,23 @@ SourcesResolver::
 
 static void
 CreateCompilation(
+    ClangResolver const &clangResolver,
+
     pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
     TypeResolvedFile const &file,
     pbxsetting::Environment const &environment,
 
     PhaseEnvironment const &phaseEnvironment,
-    pbxspec::PBX::Compiler::shared_ptr const &defaultCompiler,
     HeadermapInfo const &headermapInfo,
     SearchPaths const &searchPaths,
 
-    std::string *linkerDriver,
-    std::unordered_set<std::string> *linkerArguments,
+    CompilationInfo *compilationInfo,
     std::unordered_set<std::string> *precompiledHeaders,
     std::vector<ToolInvocation> *invocations
 )
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     std::string const &workingDirectory = targetEnvironment.workingDirectory();
-
-    std::string const &dialect = file.fileType()->GCCDialectName();
-
-    if (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++") {
-        *linkerDriver = defaultCompiler->execCPlusPlusLinkerPath();
-    }
 
     std::string outputBaseName;
     auto it = targetEnvironment.buildFileDisambiguation().find(buildFile);
@@ -86,33 +83,31 @@ CreateCompilation(
         outputBaseName = FSUtil::GetBaseNameWithoutExtension(file.filePath());
     }
 
-    auto context = CompilerInvocationContext::CreateSource(
-        defaultCompiler,
+    ToolInvocation invocation = clangResolver.sourceInvocation(
         file,
         buildFile->compilerFlags(),
         outputBaseName,
         headermapInfo,
         searchPaths,
+        compilationInfo,
         environment,
         workingDirectory
     );
-    invocations->push_back(context.invocation());
-    linkerArguments->insert(context.linkerArgs().begin(), context.linkerArgs().end());
+    invocations->push_back(invocation);
 
-    if (context.precompiledHeaderInfo() != nullptr) {
-        PrecompiledHeaderInfo precompiledHeaderInfo = *context.precompiledHeaderInfo();
+    if (compilationInfo->precompiledHeaderInfo() != nullptr) {
+        PrecompiledHeaderInfo precompiledHeaderInfo = *compilationInfo->precompiledHeaderInfo();
         std::string hash = precompiledHeaderInfo.hash();
 
         if (precompiledHeaders->find(hash) == precompiledHeaders->end()) {
             precompiledHeaders->insert(hash);
 
-            auto precompiledHeaderContext = CompilerInvocationContext::CreatePrecompiledHeader(
-                defaultCompiler,
+            ToolInvocation precompiledHeaderInvocation = clangResolver.precompiledHeaderInvocation(
                 precompiledHeaderInfo,
                 environment,
                 workingDirectory
             );
-            invocations->push_back(precompiledHeaderContext.invocation());
+            invocations->push_back(precompiledHeaderInvocation);
         }
     }
 }
@@ -128,7 +123,7 @@ Create(
 
     std::vector<ToolInvocation> allInvocations;
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> variantArchitectureInvocations;
-    std::unordered_set<std::string> linkerArguments;
+    CompilationInfo compilationInfo;
 
     std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
     if (scriptResolver == nullptr) {
@@ -140,24 +135,16 @@ Create(
         return nullptr;
     }
 
-    // TODO(grp): This should probably try a number of other compilers if it's not clang.
-    std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
-    pbxspec::PBX::Compiler::shared_ptr defaultCompiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomains());
-    if (defaultCompiler == nullptr) {
-        fprintf(stderr, "error: couldn't get compiler tools\n");
+    std::unique_ptr<ClangResolver> clangResolver = ClangResolver::Create(phaseEnvironment);
+    if (clangResolver == nullptr) {
         return nullptr;
     }
 
-    std::string linkerDriver = defaultCompiler->execPath();
-
-    pbxsetting::Environment compilerEnvironment = targetEnvironment.environment();
-    compilerEnvironment.insertFront(defaultCompiler->defaultSettings(), true);
-
     std::string const &workingDirectory = targetEnvironment.workingDirectory();
-    SearchPaths searchPaths = SearchPaths::Create(workingDirectory, compilerEnvironment);
+    SearchPaths searchPaths = SearchPaths::Create(workingDirectory, targetEnvironment.environment());
 
     HeadermapInfo headermapInfo;
-    ToolInvocation headermapInvocation = headermapResolver->invocation(phaseEnvironment.target(), searchPaths, compilerEnvironment, workingDirectory, &headermapInfo);
+    ToolInvocation headermapInvocation = headermapResolver->invocation(phaseEnvironment.target(), searchPaths, targetEnvironment.environment(), workingDirectory, &headermapInfo);
     allInvocations.push_back(headermapInvocation);
 
     std::unordered_set<std::string> precompiledHeaders;
@@ -198,17 +185,17 @@ Create(
                         pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
                         if (tool->identifier() == "com.apple.compilers.gcc") {
                             CreateCompilation(
+                                *clangResolver,
+
                                 buildFile,
                                 file,
                                 currentEnvironment,
 
                                 phaseEnvironment,
-                                defaultCompiler,
                                 headermapInfo,
                                 searchPaths,
 
-                                &linkerDriver,
-                                &linkerArguments,
+                                &compilationInfo,
                                 &precompiledHeaders,
                                 &invocations
                             );
@@ -234,5 +221,5 @@ Create(
         }
     }
 
-    return std::unique_ptr<SourcesResolver>(new SourcesResolver(allInvocations, variantArchitectureInvocations, linkerDriver, linkerArguments));
+    return std::unique_ptr<SourcesResolver>(new SourcesResolver(allInvocations, variantArchitectureInvocations, compilationInfo.linkerDriver(), compilationInfo.linkerArguments()));
 }

@@ -27,7 +27,7 @@
 #include <pbxbuild/Build/DefaultFormatter.h>
 
 #include <pbxbuild/Tool/ToolInvocationContext.h>
-#include <pbxbuild/Tool/CompilerInvocationContext.h>
+#include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/LinkerResolver.h>

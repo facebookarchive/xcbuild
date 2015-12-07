@@ -218,8 +218,8 @@ invocation(
         }
     }
 
-    *headermapInfo->systemHeadermapFiles() = systemHeadermapFiles;
-    *headermapInfo->userHeadermapFiles() = userHeadermapFiles;
+    headermapInfo->systemHeadermapFiles() = systemHeadermapFiles;
+    headermapInfo->userHeadermapFiles() = userHeadermapFiles;
     return invocation;
 }
 

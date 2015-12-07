@@ -25,16 +25,16 @@ public:
     ~HeadermapInfo();
 
 public:
-    std::vector<std::string> const &systemHeadermapFiles(void) const
+    std::vector<std::string> const &systemHeadermapFiles() const
     { return _systemHeadermapFiles; }
-    std::vector<std::string> const &userHeadermapFiles(void) const
+    std::vector<std::string> const &userHeadermapFiles() const
     { return _userHeadermapFiles; }
 
 public:
-    std::vector<std::string> *systemHeadermapFiles(void)
-    { return &_systemHeadermapFiles; }
-    std::vector<std::string> *userHeadermapFiles(void)
-    { return &_userHeadermapFiles; }
+    std::vector<std::string> &systemHeadermapFiles()
+    { return _systemHeadermapFiles; }
+    std::vector<std::string> &userHeadermapFiles()
+    { return _userHeadermapFiles; }
 };
 
 }

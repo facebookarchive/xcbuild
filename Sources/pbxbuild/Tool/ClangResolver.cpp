@@ -7,37 +7,46 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Tool/CompilerInvocationContext.h>
+#include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/ToolInvocationContext.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
+#include <pbxbuild/Tool/CompilationInfo.h>
+#include <pbxbuild/Tool/HeadermapInfo.h>
+#include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::Tool::CompilerInvocationContext;
+using pbxbuild::Tool::ClangResolver;
 using pbxbuild::Tool::ToolInvocationContext;
 using pbxbuild::Tool::ToolEnvironment;
 using pbxbuild::Tool::OptionsResult;
 using pbxbuild::Tool::CommandLineResult;
+using pbxbuild::Tool::CompilationInfo;
 using pbxbuild::Tool::HeadermapInfo;
+using pbxbuild::Tool::PrecompiledHeaderInfo;
 using pbxbuild::Tool::SearchPaths;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
-CompilerInvocationContext::
-CompilerInvocationContext(ToolInvocation const &invocation, std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo, std::vector<std::string> const &linkerArgs) :
-    _invocation           (invocation),
-    _precompiledHeaderInfo(precompiledHeaderInfo),
-    _linkerArgs           (linkerArgs)
+ClangResolver::
+ClangResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler) :
+    _compiler(compiler)
 {
 }
 
-CompilerInvocationContext::
-~CompilerInvocationContext()
+ClangResolver::
+~ClangResolver()
 {
+}
+
+static bool
+DialectIsCPlusPlus(std::string const &dialect)
+{
+    return (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++");
 }
 
 static void
@@ -104,7 +113,7 @@ static void
 AppendCustomFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, std::string const &dialect)
 {
     std::vector<std::string> flagSettings;
-    if (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++") {
+    if (DialectIsCPlusPlus(dialect)) {
         flagSettings.push_back("OTHER_CPLUSPLUSFLAGS");
     } else {
         flagSettings.push_back("OTHER_CFLAGS");
@@ -174,32 +183,30 @@ CompileLogMessage(
     return logMessage;
 }
 
-CompilerInvocationContext CompilerInvocationContext::
-CreatePrecompiledHeader(
-    pbxspec::PBX::Compiler::shared_ptr const &compiler,
+ToolInvocation ClangResolver::
+precompiledHeaderInvocation(
     PrecompiledHeaderInfo const &precompiledHeaderInfo,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
-)
+) const
 {
     std::string const &input = precompiledHeaderInfo.prefixHeader();
     pbxspec::PBX::FileType::shared_ptr const &fileType = precompiledHeaderInfo.fileType();
     std::string output = environment.expand(precompiledHeaderInfo.compileOutputPath());
 
-    pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (compiler);
+    pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
     OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, fileType);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
 
     std::vector<std::string> arguments = precompiledHeaderInfo.arguments();
-    AppendDependencyInfoFlags(&arguments, compiler, env);
-    AppendInputOutputFlags(&arguments, compiler, input, output);
+    AppendDependencyInfoFlags(&arguments, _compiler, env);
+    AppendInputOutputFlags(&arguments, _compiler, input, output);
 
     std::string const &dialect = fileType->GCCDialectName();
-    bool plusplus = (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++");
-    std::string logTitle = plusplus ? "ProcessPCH++" : "ProcessPCH";
-    std::string logMessage = CompileLogMessage(compiler, logTitle, input, fileType, output, env, workingDirectory);
+    std::string logTitle = DialectIsCPlusPlus(dialect) ? "ProcessPCH++" : "ProcessPCH";
+    std::string logMessage = CompileLogMessage(_compiler, logTitle, input, fileType, output, env, workingDirectory);
 
     ToolInvocation::AuxiliaryFile serializedFile = ToolInvocation::AuxiliaryFile(
         env.expand(precompiledHeaderInfo.serializedOutputPath()),
@@ -207,38 +214,37 @@ CreatePrecompiledHeader(
         false
     );
 
-    pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
+    return pbxbuild::ToolInvocation(
         commandLine.executable(),
         arguments,
         options.environment(),
         workingDirectory,
         { input },
         { output },
-        env.expand(compiler->dependencyInfoFile()),
+        env.expand(_compiler->dependencyInfoFile()),
         { serializedFile },
         logMessage
     );
-    return CompilerInvocationContext(invocation, nullptr, { });
 }
 
-CompilerInvocationContext CompilerInvocationContext::
-CreateSource(
-    pbxspec::PBX::Compiler::shared_ptr const &compiler,
+ToolInvocation ClangResolver::
+sourceInvocation(
     TypeResolvedFile const &inputFile,
     std::vector<std::string> const &inputArguments,
     std::string const &outputBaseName,
     HeadermapInfo const &headermapInfo,
     SearchPaths const &searchPaths,
+    CompilationInfo *compilationInfo,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
-)
+) const
 {
-    std::string outputDirectory = environment.expand(compiler->outputDir());
+    std::string outputDirectory = environment.expand(_compiler->outputDir());
     if (outputDirectory.empty()) {
         outputDirectory = environment.expand(pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)"));
     }
 
-    std::string outputExtension = compiler->outputFileExtension();
+    std::string outputExtension = _compiler->outputFileExtension();
     if (outputExtension.empty()) {
         outputExtension = "o";
     }
@@ -248,7 +254,7 @@ CreateSource(
     std::string const &input = inputFile.filePath();
     pbxspec::PBX::FileType::shared_ptr const &fileType = inputFile.fileType();
 
-    pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (compiler);
+    pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
 
@@ -280,7 +286,7 @@ CreateSource(
             AppendDialectFlags(&precompiledHeaderArguments, fileType->GCCDialectName(), "-header");
             precompiledHeaderArguments.insert(precompiledHeaderArguments.end(), arguments.begin() + dialectOffset, arguments.end());
 
-            precompiledHeaderInfo = std::make_shared<PrecompiledHeaderInfo>(PrecompiledHeaderInfo::Create(compiler, prefixHeaderFile, fileType, precompiledHeaderArguments));
+            precompiledHeaderInfo = std::make_shared<PrecompiledHeaderInfo>(PrecompiledHeaderInfo::Create(_compiler, prefixHeaderFile, fileType, precompiledHeaderArguments));
             AppendPrefixHeaderFlags(&arguments, env.expand(precompiledHeaderInfo->logicalOutputPath()));
             inputFiles.push_back(env.expand(precompiledHeaderInfo->compileOutputPath()));
         } else {
@@ -292,21 +298,51 @@ CreateSource(
     AppendNotUsedInPrecompsFlags(&arguments, env);
     // After all of the configurable settings, so they can override.
     arguments.insert(arguments.end(), inputArguments.begin(), inputArguments.end());
-    AppendDependencyInfoFlags(&arguments, compiler, env);
-    AppendInputOutputFlags(&arguments, compiler, input, output);
+    AppendDependencyInfoFlags(&arguments, _compiler, env);
+    AppendInputOutputFlags(&arguments, _compiler, input, output);
 
-    std::string logMessage = CompileLogMessage(compiler, "CompileC", input, fileType, output, env, workingDirectory);
+    std::string logMessage = CompileLogMessage(_compiler, "CompileC", input, fileType, output, env, workingDirectory);
 
-    pbxbuild::ToolInvocation invocation = pbxbuild::ToolInvocation(
+    compilationInfo->precompiledHeaderInfo() = precompiledHeaderInfo;
+
+    if (DialectIsCPlusPlus(fileType->GCCDialectName())) {
+        /* If a single C++ file is seen, use the C++ linker driver. */
+        compilationInfo->linkerDriver() = _compiler->execCPlusPlusLinkerPath();
+    } else if (compilationInfo->linkerDriver().empty()) {
+        /* If a C file is seen after a C++ file, don't reset back to the C driver. */
+        compilationInfo->linkerDriver() = _compiler->execPath();
+    }
+
+    compilationInfo->linkerArguments().insert(options.linkerArgs().begin(), options.linkerArgs().end());
+
+    return pbxbuild::ToolInvocation(
         commandLine.executable(),
         arguments,
         options.environment(),
         workingDirectory,
         inputFiles,
         toolEnvironment.outputs(),
-        env.expand(compiler->dependencyInfoFile()),
+        env.expand(_compiler->dependencyInfoFile()),
         { },
         logMessage
     );
-    return CompilerInvocationContext(invocation, precompiledHeaderInfo, options.linkerArgs());
+}
+
+std::unique_ptr<ClangResolver> ClangResolver::
+Create(Phase::PhaseEnvironment const &phaseEnvironment)
+{
+    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+
+    // TODO(grp): This should probably try a number of other compilers if it's not clang.
+    std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
+
+    // TODO(grp): Depending on the build action, add a different suffix than ".compiler".
+    pbxspec::PBX::Compiler::shared_ptr defaultCompiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomains());
+    if (defaultCompiler == nullptr) {
+        fprintf(stderr, "error: couldn't get default compiler\n");
+        return nullptr;
+    }
+
+    return std::unique_ptr<ClangResolver>(new ClangResolver(defaultCompiler));
 }
