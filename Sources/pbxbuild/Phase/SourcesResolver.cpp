@@ -21,6 +21,7 @@
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
+#include <pbxbuild/Tool/ToolContext.h>
 
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
@@ -32,6 +33,7 @@ using pbxbuild::Tool::CompilationInfo;
 using pbxbuild::Tool::HeadermapInfo;
 using pbxbuild::Tool::PrecompiledHeaderInfo;
 using pbxbuild::Tool::SearchPaths;
+using pbxbuild::Tool::ToolContext;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -64,12 +66,10 @@ CreateCompilation(
     pbxsetting::Environment const &environment,
 
     PhaseEnvironment const &phaseEnvironment,
-    HeadermapInfo const &headermapInfo,
     SearchPaths const &searchPaths,
 
-    CompilationInfo *compilationInfo,
-    std::unordered_set<std::string> *precompiledHeaders,
-    std::vector<ToolInvocation> *invocations
+    ToolContext *toolContext,
+    std::unordered_set<std::string> *precompiledHeaders
 )
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
@@ -87,16 +87,19 @@ CreateCompilation(
         file,
         buildFile->compilerFlags(),
         outputBaseName,
-        headermapInfo,
+        toolContext->headermapInfo(),
         searchPaths,
-        compilationInfo,
+        &toolContext->compilationInfo(),
         environment,
         workingDirectory
     );
-    invocations->push_back(invocation);
+    toolContext->invocations().push_back(invocation);
 
-    if (compilationInfo->precompiledHeaderInfo() != nullptr) {
-        PrecompiledHeaderInfo precompiledHeaderInfo = *compilationInfo->precompiledHeaderInfo();
+    auto variantArchitectureKey = std::make_pair(environment.resolve("variant"), environment.resolve("arch"));
+    toolContext->variantArchitectureInvocations()[variantArchitectureKey].push_back(invocation);
+
+    if (toolContext->compilationInfo().precompiledHeaderInfo() != nullptr) {
+        PrecompiledHeaderInfo precompiledHeaderInfo = *toolContext->compilationInfo().precompiledHeaderInfo();
         std::string hash = precompiledHeaderInfo.hash();
 
         if (precompiledHeaders->find(hash) == precompiledHeaders->end()) {
@@ -107,7 +110,7 @@ CreateCompilation(
                 environment,
                 workingDirectory
             );
-            invocations->push_back(precompiledHeaderInvocation);
+            toolContext->invocations().push_back(precompiledHeaderInvocation);
         }
     }
 }
@@ -121,9 +124,7 @@ Create(
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    std::vector<ToolInvocation> allInvocations;
-    std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> variantArchitectureInvocations;
-    CompilationInfo compilationInfo;
+    ToolContext toolContext;
 
     std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
     if (scriptResolver == nullptr) {
@@ -143,9 +144,8 @@ Create(
     std::string const &workingDirectory = targetEnvironment.workingDirectory();
     SearchPaths searchPaths = SearchPaths::Create(workingDirectory, targetEnvironment.environment());
 
-    HeadermapInfo headermapInfo;
-    ToolInvocation headermapInvocation = headermapResolver->invocation(phaseEnvironment.target(), searchPaths, targetEnvironment.environment(), workingDirectory, &headermapInfo);
-    allInvocations.push_back(headermapInvocation);
+    ToolInvocation headermapInvocation = headermapResolver->invocation(phaseEnvironment.target(), searchPaths, targetEnvironment.environment(), workingDirectory, &toolContext.headermapInfo());
+    toolContext.invocations().push_back(headermapInvocation);
 
     std::unordered_set<std::string> precompiledHeaders;
 
@@ -170,8 +170,6 @@ Create(
             currentEnvironment.insertFront(PhaseEnvironment::VariantLevel(variant), false);
             currentEnvironment.insertFront(PhaseEnvironment::ArchitectureLevel(arch), false);
 
-            std::vector<ToolInvocation> invocations;
-
             for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
                 auto it = files.find(buildFile);
                 if (it == files.end()) {
@@ -192,35 +190,28 @@ Create(
                                 currentEnvironment,
 
                                 phaseEnvironment,
-                                headermapInfo,
                                 searchPaths,
 
-                                &compilationInfo,
-                                &precompiledHeaders,
-                                &invocations
+                                &toolContext,
+                                &precompiledHeaders
                             );
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
                             std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, tool->identifier());
                             ToolInvocation invocation = toolResolver->invocation({ }, { file.filePath() }, currentEnvironment, workingDirectory);
-                            invocations.push_back(invocation);
+                            toolContext.invocations().push_back(invocation);
                         }
                     } else if (!buildRule->script().empty()) {
                         ToolInvocation invocation = scriptResolver->invocation(file.filePath(), buildRule, currentEnvironment, workingDirectory);
-                        invocations.push_back(invocation);
+                        toolContext.invocations().push_back(invocation);
                     }
                 } else {
                     fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
                     continue;
                 }
             }
-
-            allInvocations.insert(allInvocations.end(), invocations.begin(), invocations.end());
-
-            std::pair<std::string, std::string> variantArchitectureKey = std::make_pair(variant, arch);
-            variantArchitectureInvocations.insert({ variantArchitectureKey, invocations });
         }
     }
 
-    return std::unique_ptr<SourcesResolver>(new SourcesResolver(allInvocations, variantArchitectureInvocations, compilationInfo.linkerDriver(), compilationInfo.linkerArguments()));
+    return std::unique_ptr<SourcesResolver>(new SourcesResolver(toolContext.invocations(), toolContext.variantArchitectureInvocations(), toolContext.compilationInfo().linkerDriver(), toolContext.compilationInfo().linkerArguments()));
 }
