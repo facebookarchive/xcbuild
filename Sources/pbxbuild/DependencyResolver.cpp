@@ -97,10 +97,13 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
 
                     pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, proxy->remoteRef(), true);
                     if (proxiedTarget != nullptr) {
+                        dependencies.push_back(proxiedTarget);
+
 #if DEPENDENCY_RESOLVER_LOGGING
                         printf("implicit dependency: %s -> %s\n", target->name().c_str(), proxiedTarget->name().c_str());
 #endif
-                        dependencies.push_back(proxiedTarget);
+
+                        /* Recursively search for implicit & explicit dependencies. */
                         AddDependencies(context, proxiedTarget);
                     } else {
                         fprintf(stderr, "warning: was not able to load target for implicit dependency %s (from %s)\n", proxy->remoteRef()->remoteInfo().c_str(), proxy->name().c_str());
@@ -115,22 +118,28 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
                     auto it = context.productPathToTarget->find(path.raw());
                     if (it != context.productPathToTarget->end()) {
                         pbxproj::PBX::Target::shared_ptr dependentTarget = it->second;
+                        dependencies.push_back(dependentTarget);
+
 #if DEPENDENCY_RESOLVER_LOGGING
                         printf("implicit dependency: %s -> %s\n", target->name().c_str(), dependentTarget->name().c_str());
 #endif
-                        dependencies.push_back(dependentTarget);
+
+                        /* Recursively search for implicit & explicit dependencies. */
                         AddDependencies(context, dependentTarget);
                     }
                     break;
                 }
                 default: {
+                    /* Any other type of build file isn't relevant. */
                     break;
                 }
             }
         }
     }
 
+    /* If there's no build action, this is a legacy context which always parallelizes builds. */
     if (context.buildAction == nullptr || context.buildAction->parallelizeBuildables()) {
+        /* If builds are parallelized, use the actual dependencies for ordering. */
         context.graph->insert(target, dependencies);
     }
 }
@@ -142,18 +151,26 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
 
     for (pbxproj::PBX::TargetDependency::shared_ptr const &dependency : target->dependencies()) {
         if (dependency->target() != nullptr) {
+            /* A dependency for another target in the same project. */
+            dependencies.push_back(dependency->target());
+
 #if DEPENDENCY_RESOLVER_LOGGING
             printf("explicit dependency: %s -> %s\n", target->name().c_str(), dependency->target()->name().c_str());
 #endif
-            dependencies.push_back(dependency->target());
+
+            /* Recursively search for implicit & explicit dependencies. */
             AddDependencies(context, dependency->target());
         } else if (dependency->targetProxy() != nullptr) {
+            /* A dependency referencing a target in another project. Get that target. */
             pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, dependency->targetProxy(), false);
             if (proxiedTarget != nullptr) {
+                dependencies.push_back(proxiedTarget);
+
 #if DEPENDENCY_RESOLVER_LOGGING
                 printf("explicit dependency: %s -> %s\n", target->name().c_str(), proxiedTarget->name().c_str());
 #endif
-                dependencies.push_back(proxiedTarget);
+
+                /* Recursively search for implicit & explicit dependencies. */
                 AddDependencies(context, proxiedTarget);
             } else {
                 fprintf(stderr, "warning: was not able to load target for explicit dependency %s\n", dependency->targetProxy()->remoteInfo().c_str());
@@ -161,7 +178,9 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
         }
     }
 
+    /* If there's no build action, this is a legacy context which always parallelizes builds. */
     if (context.buildAction == nullptr || context.buildAction->parallelizeBuildables()) {
+        /* If builds are parallelized, use the actual dependencies for ordering. */
         context.graph->insert(target, dependencies);
     }
 }
@@ -169,13 +188,19 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
 static void
 AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared_ptr const &target)
 {
+    /* If there's no build action, this is a legacy context which always have implicit dependencies. */
     if (context.buildAction != nullptr && context.buildAction->buildImplicitDependencies()) {
         AddImplicitDependencies(context, target);
     }
 
     AddExplicitDependencies(context, target);
 
+    /* If there's no build action, this is a legacy context which always parallelizes builds. */
     if (context.buildAction != nullptr && !context.buildAction->parallelizeBuildables()) {
+        /*
+         * Non-parallel targets are currently implemented by adding a dependency from this target
+         * on all previous targets seen. This is inefficient: the space used in the graph is O(N^2).
+         */
         context.graph->insert(target, *context.positional);
         context.positional->push_back(target);
     }
@@ -294,8 +319,10 @@ resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::str
     for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
         if (!allTargets) {
             if (!targetName.empty() && target->name() != targetName) {
+                /* Building a specific target, and not this one. */
                 continue;
             } else if (target != project->targets().front()) {
+                /* No specific target, build whatever the first target is. */
                 continue;
             }
         }
