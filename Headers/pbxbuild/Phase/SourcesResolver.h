@@ -14,43 +14,27 @@
 #include <pbxbuild/ToolInvocation.h>
 
 namespace pbxbuild {
+
+namespace Tool { class ToolContext; }
+
 namespace Phase {
 
 class PhaseEnvironment;
 
 class SourcesResolver {
 private:
-    std::vector<ToolInvocation>                                                _invocations;
-    std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> _variantArchitectureInvocations;
-    std::string                                                                _linkerDriver;
-    std::unordered_set<std::string>                                            _linkerArgs;
+    pbxproj::PBX::SourcesBuildPhase::shared_ptr _buildPhase;
 
 public:
-    SourcesResolver(
-        std::vector<ToolInvocation> const &invocations,
-        std::map<std::pair<std::string, std::string>,
-        std::vector<ToolInvocation>> const &variantArchitectureInvocations,
-        std::string const &linkerDriver,
-        std::unordered_set<std::string> const &linkerArgs
-    );
+    explicit SourcesResolver(pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase);
     ~SourcesResolver();
 
 public:
-    std::vector<ToolInvocation> const &invocations() const
-    { return _invocations; }
-    std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations() const
-    { return _variantArchitectureInvocations; }
-    std::string const &linkerDriver() const
-    { return _linkerDriver; }
-    std::unordered_set<std::string> const &linkerArgs() const
-    { return _linkerArgs; }
+    pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase() const
+    { return _buildPhase; }
 
 public:
-    static std::unique_ptr<SourcesResolver>
-    Create(
-        PhaseEnvironment const &phaseEnvironment,
-        pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase
-    );
+    bool resolve(PhaseEnvironment const &phaseEnvironment, Tool::ToolContext *toolContext);
 };
 
 }

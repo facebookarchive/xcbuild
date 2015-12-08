@@ -16,11 +16,13 @@
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/ShellScriptResolver.h>
+#include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/BuildGraph.h>
 
 using pbxbuild::Phase::PhaseInvocations;
 using pbxbuild::BuildGraph;
 using pbxbuild::ToolInvocation;
+using pbxbuild::Tool::ToolContext;
 
 PhaseInvocations::
 PhaseInvocations(std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<ToolInvocation>> const &invocations) :
@@ -98,16 +100,20 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
         buildPhases.push_back(buildPhase);
     }
 
+    /* Create the tool context for building. */
+    ToolContext toolContext = ToolContext(phaseEnvironment.targetEnvironment().workingDirectory());
+
     std::unique_ptr<pbxbuild::Phase::SourcesResolver> sourcesResolver;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
             auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
-            sourcesResolver = pbxbuild::Phase::SourcesResolver::Create(phaseEnvironment, BP);
+            sourcesResolver = std::unique_ptr<Phase::SourcesResolver>(new Phase::SourcesResolver(BP));
 
-            if (sourcesResolver != nullptr) {
-                toolInvocations.insert({ buildPhase, sourcesResolver->invocations() });
+            if (!sourcesResolver->resolve(phaseEnvironment, &toolContext)) {
+                fprintf(stderr, "error: unable to resolve sources\n");
             }
 
+            toolInvocations.insert({ buildPhase, toolContext.invocations() });
             break;
         }
     }
@@ -128,7 +134,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
             frameworksPhase = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
         }
 
-        auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseEnvironment, frameworksPhase, *sourcesResolver);
+        auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseEnvironment, &toolContext, frameworksPhase);
         if (link != nullptr) {
             toolInvocations.insert({ buildPhase, link->invocations() });
         }

@@ -39,16 +39,8 @@ using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 SourcesResolver::
-SourcesResolver(
-    std::vector<ToolInvocation> const &invocations,
-    std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> const &variantArchitectureInvocations,
-    std::string const &linkerDriver,
-    std::unordered_set<std::string> const &linkerArgs
-) :
-    _invocations                   (invocations),
-    _variantArchitectureInvocations(variantArchitectureInvocations),
-    _linkerDriver                  (linkerDriver),
-    _linkerArgs                    (linkerArgs)
+SourcesResolver(pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase) :
+    _buildPhase(buildPhase)
 {
 }
 
@@ -89,37 +81,33 @@ CreateCompilation(
     );
 }
 
-std::unique_ptr<SourcesResolver> SourcesResolver::
-Create(
-    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
-    pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase
-)
+bool SourcesResolver::
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
     if (scriptResolver == nullptr) {
-        return nullptr;
+        return false;
     }
 
     std::unique_ptr<ClangResolver> clangResolver = ClangResolver::Create(phaseEnvironment);
     if (clangResolver == nullptr) {
-        return nullptr;
+        return false;
     }
 
     std::unique_ptr<HeadermapResolver> headermapResolver = HeadermapResolver::Create(phaseEnvironment, clangResolver->compiler());
     if (headermapResolver == nullptr) {
-        return nullptr;
+        return false;
     }
 
-    /* Create and populate the tool context with what's needed for compilation. */
-    ToolContext toolContext = ToolContext(targetEnvironment.workingDirectory());
-    SearchPaths::Resolve(&toolContext, targetEnvironment.environment());
-    headermapResolver->resolve(&toolContext, targetEnvironment.environment(), phaseEnvironment.target());
+    /* Populate the tool context with what's needed for compilation. */
+    SearchPaths::Resolve(toolContext, targetEnvironment.environment());
+    headermapResolver->resolve(toolContext, targetEnvironment.environment(), phaseEnvironment.target());
 
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, TypeResolvedFile> files;
-    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
         if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeFileReference) {
             continue;
         }
@@ -139,7 +127,7 @@ Create(
             currentEnvironment.insertFront(PhaseEnvironment::VariantLevel(variant), false);
             currentEnvironment.insertFront(PhaseEnvironment::ArchitectureLevel(arch), false);
 
-            for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+            for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
                 auto it = files.find(buildFile);
                 if (it == files.end()) {
                     continue;
@@ -160,17 +148,17 @@ Create(
 
                                 phaseEnvironment,
 
-                                &toolContext
+                                toolContext
                             );
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
                             std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, tool->identifier());
-                            ToolInvocation invocation = toolResolver->invocation({ }, { file.filePath() }, currentEnvironment, toolContext.workingDirectory());
-                            toolContext.invocations().push_back(invocation);
+                            ToolInvocation invocation = toolResolver->invocation({ }, { file.filePath() }, currentEnvironment, toolContext->workingDirectory());
+                            toolContext->invocations().push_back(invocation);
                         }
                     } else if (!buildRule->script().empty()) {
-                        ToolInvocation invocation = scriptResolver->invocation(file.filePath(), buildRule, currentEnvironment, toolContext.workingDirectory());
-                        toolContext.invocations().push_back(invocation);
+                        ToolInvocation invocation = scriptResolver->invocation(file.filePath(), buildRule, currentEnvironment, toolContext->workingDirectory());
+                        toolContext->invocations().push_back(invocation);
                     }
                 } else {
                     fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
@@ -180,5 +168,5 @@ Create(
         }
     }
 
-    return std::unique_ptr<SourcesResolver>(new SourcesResolver(toolContext.invocations(), toolContext.variantArchitectureInvocations(), toolContext.compilationInfo().linkerDriver(), toolContext.compilationInfo().linkerArguments()));
+    return true;
 }

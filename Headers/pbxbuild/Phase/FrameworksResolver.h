@@ -14,10 +14,12 @@
 #include <pbxbuild/ToolInvocation.h>
 
 namespace pbxbuild {
+
+namespace Tool { class ToolContext; }
+
 namespace Phase {
 
 class PhaseEnvironment;
-class SourcesResolver;
 
 class FrameworksResolver {
 private:
@@ -35,8 +37,8 @@ public:
     static std::unique_ptr<FrameworksResolver>
     Create(
         PhaseEnvironment const &phaseEnvironment,
-        pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase,
-        SourcesResolver const &sourcesResolver
+        Tool::ToolContext *toolContext,
+        pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase
     );
 };
 

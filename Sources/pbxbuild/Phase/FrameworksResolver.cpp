@@ -16,12 +16,16 @@
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/Tool/LinkerResolver.h>
+#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/CompilationInfo.h>
 
 using pbxbuild::Phase::FrameworksResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Tool::LinkerResolver;
 using pbxbuild::Tool::ToolResolver;
+using pbxbuild::Tool::ToolContext;
+using pbxbuild::Tool::CompilationInfo;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
@@ -76,12 +80,14 @@ InputFiles(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::P
 std::unique_ptr<FrameworksResolver> FrameworksResolver::
 Create(
     pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
-    pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase,
-    SourcesResolver const &sourcesResolver
+    ToolContext *toolContext,
+    pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase
 )
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+
+    CompilationInfo const &compilationInfo = toolContext->compilationInfo();
 
     std::vector<pbxbuild::ToolInvocation> invocations;
 
@@ -104,8 +110,8 @@ Create(
         linkerResolver = libtoolResolver.get();
     } else {
         linkerResolver = ldResolver.get();
-        linkerExecutable = sourcesResolver.linkerDriver();
-        linkerArguments.insert(linkerArguments.end(), sourcesResolver.linkerArgs().begin(), sourcesResolver.linkerArgs().end());
+        linkerExecutable = compilationInfo.linkerDriver();
+        linkerArguments.insert(linkerArguments.end(), compilationInfo.linkerArguments().begin(), compilationInfo.linkerArguments().end());
     }
 
     std::string workingDirectory = targetEnvironment.workingDirectory();
@@ -131,8 +137,8 @@ Create(
             archEnvironment.insertFront(PhaseEnvironment::ArchitectureLevel(arch), false);
 
             std::vector<std::string> sourceOutputs;
-            auto it = sourcesResolver.variantArchitectureInvocations().find(std::make_pair(variant, arch));
-            if (it != sourcesResolver.variantArchitectureInvocations().end()) {
+            auto it = toolContext->variantArchitectureInvocations().find(std::make_pair(variant, arch));
+            if (it != toolContext->variantArchitectureInvocations().end()) {
                 std::vector<pbxbuild::ToolInvocation> const &sourceInvocations = it->second;
                 for (pbxbuild::ToolInvocation const &invocation : sourceInvocations) {
                     for (std::string const &output : invocation.outputs()) {
