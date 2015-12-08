@@ -15,6 +15,7 @@
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
+#include <pbxbuild/Tool/SearchPaths.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -26,6 +27,7 @@ private:
 private:
     HeadermapInfo               _headermapInfo;
     CompilationInfo             _compilationInfo;
+    SearchPaths                 _searchPaths;
 
 private:
     std::vector<ToolInvocation> _invocations;
@@ -44,12 +46,16 @@ public:
     { return _headermapInfo; }
     CompilationInfo const &compilationInfo() const
     { return _compilationInfo; }
+    SearchPaths const &searchPaths() const
+    { return _searchPaths; }
 
 public:
     HeadermapInfo &headermapInfo()
     { return _headermapInfo; }
     CompilationInfo &compilationInfo()
     { return _compilationInfo; }
+    SearchPaths &searchPaths()
+    { return _searchPaths; }
 
 public:
     std::vector<ToolInvocation> const &invocations() const

@@ -66,7 +66,6 @@ CreateCompilation(
     pbxsetting::Environment const &environment,
 
     PhaseEnvironment const &phaseEnvironment,
-    SearchPaths const &searchPaths,
 
     ToolContext *toolContext
 )
@@ -86,8 +85,7 @@ CreateCompilation(
         environment,
         file,
         buildFile->compilerFlags(),
-        outputBaseName,
-        searchPaths
+        outputBaseName
     );
 }
 
@@ -99,8 +97,6 @@ Create(
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    ToolContext toolContext = ToolContext(targetEnvironment.workingDirectory());
 
     std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
     if (scriptResolver == nullptr) {
@@ -117,10 +113,10 @@ Create(
         return nullptr;
     }
 
-    std::string const &workingDirectory = targetEnvironment.workingDirectory();
-    SearchPaths searchPaths = SearchPaths::Create(workingDirectory, targetEnvironment.environment());
-
-    headermapResolver->resolve(&toolContext, targetEnvironment.environment(), phaseEnvironment.target(), searchPaths);
+    /* Create and populate the tool context with what's needed for compilation. */
+    ToolContext toolContext = ToolContext(targetEnvironment.workingDirectory());
+    SearchPaths::Resolve(&toolContext, targetEnvironment.environment());
+    headermapResolver->resolve(&toolContext, targetEnvironment.environment(), phaseEnvironment.target());
 
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, TypeResolvedFile> files;
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
@@ -163,18 +159,17 @@ Create(
                                 currentEnvironment,
 
                                 phaseEnvironment,
-                                searchPaths,
 
                                 &toolContext
                             );
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
                             std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, tool->identifier());
-                            ToolInvocation invocation = toolResolver->invocation({ }, { file.filePath() }, currentEnvironment, workingDirectory);
+                            ToolInvocation invocation = toolResolver->invocation({ }, { file.filePath() }, currentEnvironment, toolContext.workingDirectory());
                             toolContext.invocations().push_back(invocation);
                         }
                     } else if (!buildRule->script().empty()) {
-                        ToolInvocation invocation = scriptResolver->invocation(file.filePath(), buildRule, currentEnvironment, workingDirectory);
+                        ToolInvocation invocation = scriptResolver->invocation(file.filePath(), buildRule, currentEnvironment, toolContext.workingDirectory());
                         toolContext.invocations().push_back(invocation);
                     }
                 } else {

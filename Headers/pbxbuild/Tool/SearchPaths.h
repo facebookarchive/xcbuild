@@ -15,6 +15,8 @@
 namespace pbxbuild {
 namespace Tool {
 
+class ToolContext;
+
 class SearchPaths {
 private:
     std::vector<std::string> _headerSearchPaths;
@@ -23,7 +25,7 @@ private:
     std::vector<std::string> _librarySearchPaths;
 
 public:
-    SearchPaths(std::vector<std::string> const &headerSearchPaths, std::vector<std::string> const &userHeaderSearchPaths, std::vector<std::string> const &frameworkSearchPaths, std::vector<std::string> const &librarySearchPaths);
+    SearchPaths();
     ~SearchPaths();
 
 public:
@@ -37,8 +39,18 @@ public:
     { return _librarySearchPaths; }
 
 public:
-    static SearchPaths
-    Create(std::string const &workingDirectory, pbxsetting::Environment const &environment);
+    std::vector<std::string> &headerSearchPaths(void)
+    { return _headerSearchPaths; }
+    std::vector<std::string> &userHeaderSearchPaths(void)
+    { return _userHeaderSearchPaths; }
+    std::vector<std::string> &frameworkSearchPaths(void)
+    { return _frameworkSearchPaths; }
+    std::vector<std::string> &librarySearchPaths(void)
+    { return _librarySearchPaths; }
+
+public:
+    static void
+    Resolve(ToolContext *toolContext, pbxsetting::Environment const &environment);
 
 public:
     static std::vector<std::string>

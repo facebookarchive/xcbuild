@@ -234,8 +234,7 @@ resolveSource(
     pbxsetting::Environment const &environment,
     TypeResolvedFile const &inputFile,
     std::vector<std::string> const &inputArguments,
-    std::string const &outputBaseName,
-    SearchPaths const &searchPaths
+    std::string const &outputBaseName
 ) const
 {
     HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
@@ -273,7 +272,7 @@ resolveSource(
 
     arguments.insert(arguments.end(), commandLine.arguments().begin(), commandLine.arguments().end());
     AppendCustomFlags(&arguments, env, fileType->GCCDialectName());
-    AppendPathFlags(&arguments, env, searchPaths, headermapInfo);
+    AppendPathFlags(&arguments, env, toolContext->searchPaths(), headermapInfo);
 
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(env.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
     std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");

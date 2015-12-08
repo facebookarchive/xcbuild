@@ -33,8 +33,7 @@ public:
     void resolve(
         ToolContext *toolContext,
         pbxsetting::Environment const &environment,
-        pbxproj::PBX::Target::shared_ptr const &target,
-        SearchPaths const &searchPaths
+        pbxproj::PBX::Target::shared_ptr const &target
     ) const;
 
 public:

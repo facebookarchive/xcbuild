@@ -72,8 +72,7 @@ void HeadermapResolver::
 resolve(
     ToolContext *toolContext,
     pbxsetting::Environment const &environment,
-    pbxproj::PBX::Target::shared_ptr const &target,
-    SearchPaths const &searchPaths
+    pbxproj::PBX::Target::shared_ptr const &target
 ) const
 {
     /* Add the compiler default environment, which contains the headermap setting defaults. */
@@ -103,7 +102,7 @@ resolve(
 
     pbxproj::PBX::Project::shared_ptr project = target->project();
 
-    std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, compilerEnvironment, target, searchPaths, toolContext->workingDirectory());
+    std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, compilerEnvironment, target, toolContext->searchPaths(), toolContext->workingDirectory());
     for (std::string const &path : headermapSearchPaths) {
         FSUtil::EnumerateDirectory(path, [&](std::string const &fileName) -> bool {
             // TODO(grp): Use TypeResolvedFile when reliable.
