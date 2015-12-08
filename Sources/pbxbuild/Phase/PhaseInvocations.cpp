@@ -64,19 +64,21 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
         buildPhases.push_back(buildPhase);
     }
 
-    std::unique_ptr<pbxbuild::Phase::SourcesResolver> sourcesResolver;
+    bool hasSourcesPhase = false;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
             auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
-            sourcesResolver = std::unique_ptr<Phase::SourcesResolver>(new Phase::SourcesResolver(BP));
-            if (!sourcesResolver->resolve(phaseEnvironment, &toolContext)) {
+            hasSourcesPhase = true;
+
+            Phase::SourcesResolver sourcesResolver = Phase::SourcesResolver(BP);
+            if (!sourcesResolver.resolve(phaseEnvironment, &toolContext)) {
                 fprintf(stderr, "error: unable to resolve sources\n");
             }
             break;
         }
     }
 
-    if (sourcesResolver != nullptr) {
+    if (hasSourcesPhase) {
         pbxproj::PBX::BuildPhase::shared_ptr buildPhase;
         pbxproj::PBX::FrameworksBuildPhase::shared_ptr frameworksPhase;
 
@@ -85,16 +87,18 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
         });
 
         if (it == buildPhases.end()) {
+            /* The target does not have an explicit frameworks phase, so synthesize an empty one. */
             frameworksPhase = std::make_shared <pbxproj::PBX::FrameworksBuildPhase> ();
             buildPhase = std::static_pointer_cast <pbxproj::PBX::BuildPhase> (frameworksPhase);
         } else {
+            /* Use the frameworks phase from the target. */
             buildPhase = *it;
             frameworksPhase = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
         }
 
-        auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseEnvironment, &toolContext, frameworksPhase);
-        if (link != nullptr) {
-            toolContext.invocations().insert(toolContext.invocations().end(), link->invocations().begin(), link->invocations().end());
+        Phase::FrameworksResolver link = Phase::FrameworksResolver(frameworksPhase);
+        if (!link.resolve(phaseEnvironment, &toolContext)) {
+            fprintf(stderr, "error: unable to resolve linking\n");
         }
     }
 

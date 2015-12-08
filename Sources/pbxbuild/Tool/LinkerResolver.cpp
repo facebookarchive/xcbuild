@@ -10,6 +10,7 @@
 #include <pbxbuild/Tool/LinkerResolver.h>
 #include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
@@ -17,6 +18,7 @@
 using pbxbuild::Tool::LinkerResolver;
 using pbxbuild::Tool::ToolResult;
 using pbxbuild::Tool::ToolEnvironment;
+using pbxbuild::Tool::ToolContext;
 using pbxbuild::Tool::OptionsResult;
 using pbxbuild::Tool::CommandLineResult;
 using pbxbuild::ToolInvocation;
@@ -34,14 +36,14 @@ LinkerResolver::
 {
 }
 
-ToolInvocation LinkerResolver::
-invocation(
+void LinkerResolver::
+resolve(
+    ToolContext *toolContext,
+    pbxsetting::Environment const &environment,
     std::vector<std::string> const &inputFiles,
     std::vector<TypeResolvedFile> const &inputLibraries,
     std::string const &output,
     std::vector<std::string> const &additionalArguments,
-    pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
     std::string const &executable
 )
 {
@@ -107,10 +109,12 @@ invocation(
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_linker);
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, { output });
-    OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
     std::string logMessage = ToolResult::LogMessage(toolEnvironment);
-    return ToolResult::CreateInvocation(toolEnvironment, options, commandLine, logMessage, workingDirectory, dependencyInfo, auxiliaries);
+
+    ToolInvocation invocation = ToolResult::CreateInvocation(toolEnvironment, options, commandLine, logMessage, toolContext->workingDirectory(), dependencyInfo, auxiliaries);
+    toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<LinkerResolver> LinkerResolver::

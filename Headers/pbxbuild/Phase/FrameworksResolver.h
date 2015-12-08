@@ -23,23 +23,18 @@ class PhaseEnvironment;
 
 class FrameworksResolver {
 private:
-    std::vector<ToolInvocation> _invocations;
+    pbxproj::PBX::FrameworksBuildPhase::shared_ptr _buildPhase;
 
 public:
-    explicit FrameworksResolver(std::vector<ToolInvocation> const &invocations);
+    explicit FrameworksResolver(pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase);
     ~FrameworksResolver();
 
 public:
-    std::vector<ToolInvocation> const &invocations() const
-    { return _invocations; }
+    pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase() const
+    { return _buildPhase; }
 
 public:
-    static std::unique_ptr<FrameworksResolver>
-    Create(
-        PhaseEnvironment const &phaseEnvironment,
-        Tool::ToolContext *toolContext,
-        pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase
-    );
+    bool resolve(PhaseEnvironment const &phaseEnvironment, Tool::ToolContext *toolContext);
 };
 
 }

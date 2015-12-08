@@ -20,6 +20,8 @@ class TypeResolvedFile;
 
 namespace Tool {
 
+class ToolContext;
+
 class LinkerResolver {
 private:
     pbxspec::PBX::Linker::shared_ptr _linker;
@@ -29,13 +31,13 @@ public:
     ~LinkerResolver();
 
 public:
-    ToolInvocation invocation(
+    void resolve(
+        ToolContext *toolContext,
+        pbxsetting::Environment const &environment,
         std::vector<std::string> const &inputFiles,
         std::vector<TypeResolvedFile> const &inputLibraries,
         std::string const &output,
         std::vector<std::string> const &additionalArguments,
-        pbxsetting::Environment const &environment,
-        std::string const &workingDirectory,
         std::string const &executable = ""
     );
 

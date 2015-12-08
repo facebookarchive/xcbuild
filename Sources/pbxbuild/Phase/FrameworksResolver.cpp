@@ -30,8 +30,8 @@ using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 FrameworksResolver::
-FrameworksResolver(std::vector<pbxbuild::ToolInvocation> const &invocations) :
-    _invocations(invocations)
+FrameworksResolver(pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase) :
+    _buildPhase(buildPhase)
 {
 }
 
@@ -77,12 +77,8 @@ InputFiles(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::P
     return files;
 }
 
-std::unique_ptr<FrameworksResolver> FrameworksResolver::
-Create(
-    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
-    ToolContext *toolContext,
-    pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase
-)
+bool FrameworksResolver::
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
@@ -97,7 +93,7 @@ Create(
     std::unique_ptr<ToolResolver> dsymutil = ToolResolver::Create(phaseEnvironment, "com.apple.tools.dsymutil");
     if (ldResolver == nullptr || libtoolResolver == nullptr || lipoResolver == nullptr || dsymutil == nullptr) {
         fprintf(stderr, "error: couldn't get linker tools\n");
-        return nullptr;
+        return false;
     }
 
     std::string binaryType = targetEnvironment.environment().resolve("MACH_O_TYPE");
@@ -117,7 +113,7 @@ Create(
     std::string workingDirectory = targetEnvironment.workingDirectory();
     std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
 
-    std::vector<pbxbuild::TypeResolvedFile> files = InputFiles(phaseEnvironment, buildPhase, targetEnvironment.environment());
+    std::vector<pbxbuild::TypeResolvedFile> files = InputFiles(phaseEnvironment, _buildPhase, targetEnvironment.environment());
 
     for (std::string const &variant : targetEnvironment.variants()) {
         pbxsetting::Environment variantEnvironment = targetEnvironment.environment();
@@ -154,27 +150,23 @@ Create(
                 std::string architectureIntermediatesDirectory = variantIntermediatesDirectory + "/" + arch;
                 std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
 
-                ToolInvocation invocation = linkerResolver->invocation(sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
-                invocations.push_back(invocation);
-
+                linkerResolver->resolve(toolContext, archEnvironment, sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, linkerExecutable);
                 universalBinaryInputs.push_back(architectureIntermediatesOutput);
             } else {
-                ToolInvocation invocation = linkerResolver->invocation(sourceOutputs, files, variantProductsOutput, linkerArguments, archEnvironment, workingDirectory, linkerExecutable);
-                invocations.push_back(invocation);
+                linkerResolver->resolve(toolContext, archEnvironment, sourceOutputs, files, variantProductsOutput, linkerArguments, linkerExecutable);
             }
         }
 
         if (createUniversalBinary) {
-            ToolInvocation invocation = lipoResolver->invocation(universalBinaryInputs, { }, variantProductsOutput, { }, variantEnvironment, workingDirectory);
-            invocations.push_back(invocation);
+            lipoResolver->resolve(toolContext, variantEnvironment, universalBinaryInputs, { }, variantProductsOutput, { });
         }
 
         if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {
             std::string dsymfile = variantEnvironment.resolve("DWARF_DSYM_FOLDER_PATH") + "/" + variantEnvironment.resolve("DWARF_DSYM_FILE_NAME");
             ToolInvocation invocation = dsymutil->invocation({ variantProductsOutput }, { dsymfile }, variantEnvironment, workingDirectory);
-            invocations.push_back(invocation);
+            toolContext->invocations().push_back(invocation);
         }
     }
 
-    return std::unique_ptr<FrameworksResolver>(new FrameworksResolver(invocations));
+    return true;
 }
