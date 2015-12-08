@@ -12,7 +12,8 @@
 using pbxbuild::Tool::ToolContext;
 
 ToolContext::
-ToolContext()
+ToolContext(std::string const &workingDirectory) :
+    _workingDirectory(workingDirectory)
 {
 }
 

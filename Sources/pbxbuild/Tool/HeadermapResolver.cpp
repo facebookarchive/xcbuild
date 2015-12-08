@@ -10,12 +10,14 @@
 #include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
+#include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/HeaderMap.h>
 
 using pbxbuild::Tool::HeadermapResolver;
 using pbxbuild::Tool::HeadermapInfo;
 using pbxbuild::Tool::SearchPaths;
+using pbxbuild::Tool::ToolContext;
 using pbxbuild::ToolInvocation;
 using AuxiliaryFile = pbxbuild::ToolInvocation::AuxiliaryFile;
 using pbxbuild::HeaderMap;
@@ -66,13 +68,12 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
     return orderedHeaderSearchPaths;
 }
 
-ToolInvocation HeadermapResolver::
-invocation(
-    pbxproj::PBX::Target::shared_ptr const &target,
-    SearchPaths const &searchPaths,
+void HeadermapResolver::
+resolve(
+    ToolContext *toolContext,
     pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
-    HeadermapInfo *headermapInfo
+    pbxproj::PBX::Target::shared_ptr const &target,
+    SearchPaths const &searchPaths
 ) const
 {
     /* Add the compiler default environment, which contains the headermap setting defaults. */
@@ -80,7 +81,7 @@ invocation(
     compilerEnvironment.insertFront(_compiler->defaultSettings(), true);
 
     if (!pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("USE_HEADERMAP"))) {
-        return ToolInvocation({ }, { }, { });
+        return;
     }
 
     if (pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_USES_VFS"))) {
@@ -102,7 +103,7 @@ invocation(
 
     pbxproj::PBX::Project::shared_ptr project = target->project();
 
-    std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, compilerEnvironment, target, searchPaths, workingDirectory);
+    std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, compilerEnvironment, target, searchPaths, toolContext->workingDirectory());
     for (std::string const &path : headermapSearchPaths) {
         FSUtil::EnumerateDirectory(path, [&](std::string const &fileName) -> bool {
             // TODO(grp): Use TypeResolvedFile when reliable.
@@ -222,9 +223,11 @@ invocation(
         }
     }
 
+    toolContext->invocations().push_back(invocation);
+
+    HeadermapInfo *headermapInfo = &toolContext->headermapInfo();
     headermapInfo->systemHeadermapFiles().insert(headermapInfo->systemHeadermapFiles().end(), systemHeadermapFiles.begin(), systemHeadermapFiles.end());
     headermapInfo->userHeadermapFiles().insert(headermapInfo->userHeadermapFiles().end(), userHeadermapFiles.begin(), userHeadermapFiles.end());
-    return invocation;
 }
 
 std::unique_ptr<HeadermapResolver> HeadermapResolver::

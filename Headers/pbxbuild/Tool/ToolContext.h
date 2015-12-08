@@ -21,6 +21,9 @@ namespace Tool {
 
 class ToolContext {
 private:
+    std::string                 _workingDirectory;
+
+private:
     HeadermapInfo               _headermapInfo;
     CompilationInfo             _compilationInfo;
 
@@ -29,8 +32,12 @@ private:
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation>> _variantArchitectureInvocations;
 
 public:
-    ToolContext();
+    ToolContext(std::string const &workingDirectory);
     ~ToolContext();
+
+public:
+    std::string const &workingDirectory() const
+    { return _workingDirectory; }
 
 public:
     HeadermapInfo const &headermapInfo() const

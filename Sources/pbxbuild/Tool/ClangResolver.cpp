@@ -185,10 +185,9 @@ CompileLogMessage(
 
 void ClangResolver::
 resolvePrecompiledHeader(
-    PrecompiledHeaderInfo const &precompiledHeaderInfo,
     ToolContext *toolContext,
     pbxsetting::Environment const &environment,
-    std::string const &workingDirectory
+    PrecompiledHeaderInfo const &precompiledHeaderInfo
 ) const
 {
     std::string const &input = precompiledHeaderInfo.prefixHeader();
@@ -198,7 +197,7 @@ resolvePrecompiledHeader(
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
-    OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, fileType);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
 
     std::vector<std::string> arguments = precompiledHeaderInfo.arguments();
@@ -207,7 +206,7 @@ resolvePrecompiledHeader(
 
     std::string const &dialect = fileType->GCCDialectName();
     std::string logTitle = DialectIsCPlusPlus(dialect) ? "ProcessPCH++" : "ProcessPCH";
-    std::string logMessage = CompileLogMessage(_compiler, logTitle, input, fileType, output, env, workingDirectory);
+    std::string logMessage = CompileLogMessage(_compiler, logTitle, input, fileType, output, env, toolContext->workingDirectory());
 
     ToolInvocation::AuxiliaryFile serializedFile = ToolInvocation::AuxiliaryFile(
         env.expand(precompiledHeaderInfo.serializedOutputPath()),
@@ -219,7 +218,7 @@ resolvePrecompiledHeader(
         commandLine.executable(),
         arguments,
         options.environment(),
-        workingDirectory,
+        toolContext->workingDirectory(),
         { input },
         { output },
         env.expand(_compiler->dependencyInfoFile()),
@@ -231,13 +230,12 @@ resolvePrecompiledHeader(
 
 void ClangResolver::
 resolveSource(
+    ToolContext *toolContext,
+    pbxsetting::Environment const &environment,
     TypeResolvedFile const &inputFile,
     std::vector<std::string> const &inputArguments,
     std::string const &outputBaseName,
-    SearchPaths const &searchPaths,
-    ToolContext *toolContext,
-    pbxsetting::Environment const &environment,
-    std::string const &workingDirectory
+    SearchPaths const &searchPaths
 ) const
 {
     HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
@@ -261,7 +259,7 @@ resolveSource(
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
 
-    OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, fileType);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
 
     std::vector<std::string> inputFiles;
@@ -282,7 +280,7 @@ resolveSource(
     std::shared_ptr<PrecompiledHeaderInfo> precompiledHeaderInfo = nullptr;
 
     if (!prefixHeader.empty()) {
-        std::string prefixHeaderFile = workingDirectory + "/" + prefixHeader;
+        std::string prefixHeaderFile = toolContext->workingDirectory() + "/" + prefixHeader;
 
         if (precompilePrefixHeader) {
             std::vector<std::string> precompiledHeaderArguments;
@@ -304,13 +302,13 @@ resolveSource(
     AppendDependencyInfoFlags(&arguments, _compiler, env);
     AppendInputOutputFlags(&arguments, _compiler, input, output);
 
-    std::string logMessage = CompileLogMessage(_compiler, "CompileC", input, fileType, output, env, workingDirectory);
+    std::string logMessage = CompileLogMessage(_compiler, "CompileC", input, fileType, output, env, toolContext->workingDirectory());
 
     ToolInvocation invocation = pbxbuild::ToolInvocation(
         commandLine.executable(),
         arguments,
         options.environment(),
-        workingDirectory,
+        toolContext->workingDirectory(),
         inputFiles,
         toolEnvironment.outputs(),
         env.expand(_compiler->dependencyInfoFile()),
@@ -335,10 +333,9 @@ resolveSource(
             precompiledHeaderInfoMap->insert({ hash, *precompiledHeaderInfo });
 
             resolvePrecompiledHeader(
-                *precompiledHeaderInfo,
                 toolContext,
                 environment,
-                workingDirectory
+                *precompiledHeaderInfo
             );
         }
     }

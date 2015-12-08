@@ -72,7 +72,6 @@ CreateCompilation(
 )
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-    std::string const &workingDirectory = targetEnvironment.workingDirectory();
 
     std::string outputBaseName;
     auto it = targetEnvironment.buildFileDisambiguation().find(buildFile);
@@ -83,13 +82,12 @@ CreateCompilation(
     }
 
     clangResolver.resolveSource(
+        toolContext,
+        environment,
         file,
         buildFile->compilerFlags(),
         outputBaseName,
-        searchPaths,
-        toolContext,
-        environment,
-        workingDirectory
+        searchPaths
     );
 }
 
@@ -102,7 +100,7 @@ Create(
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    ToolContext toolContext;
+    ToolContext toolContext = ToolContext(targetEnvironment.workingDirectory());
 
     std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
     if (scriptResolver == nullptr) {
@@ -122,8 +120,7 @@ Create(
     std::string const &workingDirectory = targetEnvironment.workingDirectory();
     SearchPaths searchPaths = SearchPaths::Create(workingDirectory, targetEnvironment.environment());
 
-    ToolInvocation headermapInvocation = headermapResolver->invocation(phaseEnvironment.target(), searchPaths, targetEnvironment.environment(), workingDirectory, &toolContext.headermapInfo());
-    toolContext.invocations().push_back(headermapInvocation);
+    headermapResolver->resolve(&toolContext, targetEnvironment.environment(), phaseEnvironment.target(), searchPaths);
 
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, TypeResolvedFile> files;
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {

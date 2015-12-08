@@ -18,7 +18,7 @@ namespace pbxbuild {
 namespace Tool {
 
 class SearchPaths;
-class HeadermapInfo;
+class ToolContext;
 
 class HeadermapResolver {
 private:
@@ -30,12 +30,11 @@ public:
     HeadermapResolver(pbxspec::PBX::Tool::shared_ptr const &tool, pbxspec::PBX::Compiler::shared_ptr const &compiler, pbxspec::Manager::shared_ptr const &specManager);
 
 public:
-    ToolInvocation invocation(
-        pbxproj::PBX::Target::shared_ptr const &target,
-        SearchPaths const &searchPaths,
+    void resolve(
+        ToolContext *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &workingDirectory,
-        HeadermapInfo *headermapInfo
+        pbxproj::PBX::Target::shared_ptr const &target,
+        SearchPaths const &searchPaths
     ) const;
 
 public:

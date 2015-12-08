@@ -34,19 +34,17 @@ public:
 
 public:
     void resolveSource(
+        ToolContext *toolContext,
+        pbxsetting::Environment const &environment,
         TypeResolvedFile const &input,
         std::vector<std::string> const &inputArguments,
         std::string const &outputBaseName,
-        SearchPaths const &searchPaths,
-        ToolContext *toolContext,
-        pbxsetting::Environment const &environment,
-        std::string const &workingDirectory
+        SearchPaths const &searchPaths
     ) const;
     void resolvePrecompiledHeader(
-        PrecompiledHeaderInfo const &precompiledHeaderInfo,
         ToolContext *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &workingDirectory
+        PrecompiledHeaderInfo const &precompiledHeaderInfo
     ) const;
 
 public:
