@@ -66,7 +66,9 @@ Run(Options const &options)
             input = FSUtil::ResolvePath(input);
         }
 
-        if (!FSUtil::TestForRead(input)) {
+        bool isDirectory = FSUtil::TestForDirectory(input);
+
+        if (!isDirectory && !FSUtil::TestForRead(input)) {
             if (options.ignoreMissingInputs()) {
                 continue;
             } else {
@@ -79,7 +81,7 @@ Run(Options const &options)
             printf("verbose: copying %s -> %s\n", input.c_str(), output.c_str());
         }
 
-        if (FSUtil::TestForDirectory(input)) {
+        if (isDirectory) {
             bool succeeded = true;
             FSUtil::EnumerateRecursive(input, [&](std::string const &path) -> bool {
                 if (excludes.find(FSUtil::GetBaseName(path)) != excludes.end()) {
