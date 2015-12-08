@@ -128,7 +128,7 @@ Run(Options const &options)
         pbxbuild::Phase::PhaseEnvironment phaseEnvironment = pbxbuild::Phase::PhaseEnvironment(*buildEnvironment, *buildContext, target, *targetEnvironment);
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
 
-        if (!executor->buildTarget(target, *targetEnvironment, phaseInvocations.orderedPhases(), phaseInvocations.invocations())) {
+        if (!executor->buildTarget(target, *targetEnvironment, phaseInvocations.invocations())) {
             return 1;
         }
     }

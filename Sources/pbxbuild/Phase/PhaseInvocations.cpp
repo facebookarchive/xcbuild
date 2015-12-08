@@ -25,7 +25,7 @@ using pbxbuild::ToolInvocation;
 using pbxbuild::Tool::ToolContext;
 
 PhaseInvocations::
-PhaseInvocations(std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<ToolInvocation>> const &invocations) :
+PhaseInvocations(std::vector<ToolInvocation> const &invocations) :
     _invocations(invocations)
 {
 }
@@ -35,48 +35,11 @@ PhaseInvocations::
 {
 }
 
-std::vector<pbxproj::PBX::BuildPhase::shared_ptr> PhaseInvocations::
-orderedPhases(void)
-{
-    std::unordered_map<std::string, pbxproj::PBX::BuildPhase::shared_ptr> outputToPhase;
-    for (auto const &entry : _invocations) {
-        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
-            for (std::string const &output : invocation.outputs()) {
-                outputToPhase.insert({ output, entry.first });
-            }
-        }
-    }
-
-    pbxbuild::BuildGraph<pbxproj::PBX::BuildPhase::shared_ptr> phaseGraph;
-    for (auto const &entry : _invocations) {
-        phaseGraph.insert(entry.first, { });
-
-        for (pbxbuild::ToolInvocation const &invocation : entry.second) {
-            for (std::string const &input : invocation.inputs()) {
-                auto it = outputToPhase.find(input);
-                if (it != outputToPhase.end()) {
-                    if (it->second != entry.first) {
-                        phaseGraph.insert(entry.first, { it->second });
-                    }
-                }
-            }
-        }
-    }
-
-    return phaseGraph.ordered();
-}
-
-std::vector<ToolInvocation> PhaseInvocations::
-phaseInvocations(pbxproj::PBX::BuildPhase::shared_ptr const &phase)
-{
-    return _invocations.find(phase)->second;
-}
-
 PhaseInvocations PhaseInvocations::
 Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
 {
-    std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
-    std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<pbxbuild::ToolInvocation>> toolInvocations;
+    /* Create the tool context for building. */
+    ToolContext toolContext = ToolContext(phaseEnvironment.targetEnvironment().workingDirectory());
 
     switch (target->type()) {
         case pbxproj::PBX::Target::kTypeAggregate:
@@ -87,33 +50,28 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
             auto legacyScript = pbxbuild::Phase::LegacyTargetResolver::Create(phaseEnvironment, LT);
 
             if (legacyScript != nullptr) {
-                toolInvocations.insert({ nullptr, legacyScript->invocations() });
+                toolContext.invocations().insert(toolContext.invocations().end(), legacyScript->invocations().begin(), legacyScript->invocations().end());
             }
 
             break;
     }
 
-    // Filter build phases to ones appropriate for this target.
+    /* Filter build phases to ones appropriate for this target. */
+    std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
         // TODO(grp): Check buildActionMask against buildContext.action.
         // TODO(grp): Check runOnlyForDeploymentPostprocessing.
         buildPhases.push_back(buildPhase);
     }
 
-    /* Create the tool context for building. */
-    ToolContext toolContext = ToolContext(phaseEnvironment.targetEnvironment().workingDirectory());
-
     std::unique_ptr<pbxbuild::Phase::SourcesResolver> sourcesResolver;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
             auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
             sourcesResolver = std::unique_ptr<Phase::SourcesResolver>(new Phase::SourcesResolver(BP));
-
             if (!sourcesResolver->resolve(phaseEnvironment, &toolContext)) {
                 fprintf(stderr, "error: unable to resolve sources\n");
             }
-
-            toolInvocations.insert({ buildPhase, toolContext.invocations() });
             break;
         }
     }
@@ -136,7 +94,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
 
         auto link = pbxbuild::Phase::FrameworksResolver::Create(phaseEnvironment, &toolContext, frameworksPhase);
         if (link != nullptr) {
-            toolInvocations.insert({ buildPhase, link->invocations() });
+            toolContext.invocations().insert(toolContext.invocations().end(), link->invocations().begin(), link->invocations().end());
         }
     }
 
@@ -146,7 +104,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
                 auto shellScript = pbxbuild::Phase::ShellScriptResolver::Create(phaseEnvironment, BP);
                 if (shellScript != nullptr) {
-                    toolInvocations.insert({ buildPhase, shellScript->invocations() });
+                    toolContext.invocations().insert(toolContext.invocations().end(), shellScript->invocations().begin(), shellScript->invocations().end());
                 }
                 break;
             }
@@ -154,7 +112,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
                 auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
                 auto copyFiles = pbxbuild::Phase::CopyFilesResolver::Create(phaseEnvironment, BP);
                 if (copyFiles != nullptr) {
-                    toolInvocations.insert({ buildPhase, copyFiles->invocations() });
+                    toolContext.invocations().insert(toolContext.invocations().end(), copyFiles->invocations().begin(), copyFiles->invocations().end());
                 }
                 break;
             }
@@ -162,7 +120,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
                 auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
                 auto headers = pbxbuild::Phase::HeadersResolver::Create(phaseEnvironment, BP);
                 if (headers != nullptr) {
-                    toolInvocations.insert({ buildPhase, headers->invocations() });
+                    toolContext.invocations().insert(toolContext.invocations().end(), headers->invocations().begin(), headers->invocations().end());
                 }
                 break;
             }
@@ -170,7 +128,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ResourcesBuildPhase> (buildPhase);
                 auto resources = pbxbuild::Phase::ResourcesResolver::Create(phaseEnvironment, BP);
                 if (resources != nullptr) {
-                    toolInvocations.insert({ buildPhase, resources->invocations() });
+                    toolContext.invocations().insert(toolContext.invocations().end(), resources->invocations().begin(), resources->invocations().end());
                 }
                 break;
             }
@@ -183,6 +141,6 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
         }
     }
 
-    return PhaseInvocations(toolInvocations);
+    return PhaseInvocations(toolContext.invocations());
 }
 

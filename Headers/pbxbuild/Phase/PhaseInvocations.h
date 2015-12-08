@@ -20,21 +20,15 @@ class PhaseEnvironment;
 
 class PhaseInvocations {
 private:
-    std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<ToolInvocation>> _invocations;
+    std::vector<ToolInvocation> _invocations;
 
 public:
-    PhaseInvocations(std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<ToolInvocation>> const &invocations);
+    PhaseInvocations(std::vector<ToolInvocation> const &invocations);
     ~PhaseInvocations();
 
 public:
-    std::map<pbxproj::PBX::BuildPhase::shared_ptr, std::vector<ToolInvocation>> const &invocations() const
+    std::vector<ToolInvocation> const &invocations() const
     { return _invocations; }
-
-public:
-    std::vector<pbxproj::PBX::BuildPhase::shared_ptr> orderedPhases(void);
-
-public:
-    std::vector<ToolInvocation> phaseInvocations(pbxproj::PBX::BuildPhase::shared_ptr const &phase);
 
 public:
     static PhaseInvocations
