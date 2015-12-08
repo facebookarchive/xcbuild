@@ -9,6 +9,7 @@
 
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
+#include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
@@ -26,6 +27,7 @@ using pbxbuild::Tool::CompilationInfo;
 using pbxbuild::Tool::HeadermapInfo;
 using pbxbuild::Tool::PrecompiledHeaderInfo;
 using pbxbuild::Tool::SearchPaths;
+using pbxbuild::Tool::ToolContext;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -181,9 +183,10 @@ CompileLogMessage(
     return logMessage;
 }
 
-ToolInvocation ClangResolver::
-precompiledHeaderInvocation(
+void ClangResolver::
+resolvePrecompiledHeader(
     PrecompiledHeaderInfo const &precompiledHeaderInfo,
+    ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
 ) const
@@ -212,7 +215,7 @@ precompiledHeaderInvocation(
         false
     );
 
-    return pbxbuild::ToolInvocation(
+    ToolInvocation invocation = ToolInvocation(
         commandLine.executable(),
         arguments,
         options.environment(),
@@ -223,20 +226,22 @@ precompiledHeaderInvocation(
         { serializedFile },
         logMessage
     );
+    toolContext->invocations().push_back(invocation);
 }
 
-ToolInvocation ClangResolver::
-sourceInvocation(
+void ClangResolver::
+resolveSource(
     TypeResolvedFile const &inputFile,
     std::vector<std::string> const &inputArguments,
     std::string const &outputBaseName,
-    HeadermapInfo const &headermapInfo,
     SearchPaths const &searchPaths,
-    CompilationInfo *compilationInfo,
+    ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
 ) const
 {
+    HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
+
     std::string outputDirectory = environment.expand(_compiler->outputDir());
     if (outputDirectory.empty()) {
         outputDirectory = environment.expand(pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)"));
@@ -301,19 +306,7 @@ sourceInvocation(
 
     std::string logMessage = CompileLogMessage(_compiler, "CompileC", input, fileType, output, env, workingDirectory);
 
-    compilationInfo->precompiledHeaderInfo() = precompiledHeaderInfo;
-
-    if (DialectIsCPlusPlus(fileType->GCCDialectName())) {
-        /* If a single C++ file is seen, use the C++ linker driver. */
-        compilationInfo->linkerDriver() = _compiler->execCPlusPlusLinkerPath();
-    } else if (compilationInfo->linkerDriver().empty()) {
-        /* If a C file is seen after a C++ file, don't reset back to the C driver. */
-        compilationInfo->linkerDriver() = _compiler->execPath();
-    }
-
-    compilationInfo->linkerArguments().insert(options.linkerArgs().begin(), options.linkerArgs().end());
-
-    return pbxbuild::ToolInvocation(
+    ToolInvocation invocation = pbxbuild::ToolInvocation(
         commandLine.executable(),
         arguments,
         options.environment(),
@@ -324,6 +317,41 @@ sourceInvocation(
         { },
         logMessage
     );
+
+    /* Add the compilation invocation to the context. */
+    toolContext->invocations().push_back(invocation);
+    auto variantArchitectureKey = std::make_pair(environment.resolve("variant"), environment.resolve("arch"));
+    toolContext->variantArchitectureInvocations()[variantArchitectureKey].push_back(invocation);
+
+    CompilationInfo *compilationInfo = &toolContext->compilationInfo();
+
+    /* If we have precompiled header info, create an invocation for the precompiled header. */
+    if (precompiledHeaderInfo != nullptr) {
+        std::string hash = precompiledHeaderInfo->hash();
+
+        auto precompiledHeaderInfoMap = &compilationInfo->precompiledHeaderInfo();
+        if (precompiledHeaderInfoMap->find(hash) == precompiledHeaderInfoMap->end()) {
+            /* This precompiled header wasn't already created, create it now. */
+            precompiledHeaderInfoMap->insert({ hash, *precompiledHeaderInfo });
+
+            resolvePrecompiledHeader(
+                *precompiledHeaderInfo,
+                toolContext,
+                environment,
+                workingDirectory
+            );
+        }
+    }
+
+    if (DialectIsCPlusPlus(fileType->GCCDialectName())) {
+        /* If a single C++ file is seen, use the C++ linker driver. */
+        compilationInfo->linkerDriver() = _compiler->execCPlusPlusLinkerPath();
+    } else if (compilationInfo->linkerDriver().empty()) {
+        /* If a C file is seen after a C++ file, don't reset back to the C driver. */
+        compilationInfo->linkerDriver() = _compiler->execPath();
+    }
+
+    compilationInfo->linkerArguments().insert(options.linkerArgs().begin(), options.linkerArgs().end());
 }
 
 std::unique_ptr<ClangResolver> ClangResolver::

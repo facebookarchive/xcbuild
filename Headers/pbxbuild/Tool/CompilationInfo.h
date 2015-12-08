@@ -11,26 +11,29 @@
 #define __pbxbuild_CompilationInfo_h
 
 #include <pbxbuild/Base.h>
+#include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 
 namespace pbxbuild {
 namespace Tool {
 
-class PrecompiledHeaderInfo;
-
 class CompilationInfo {
 private:
-    std::shared_ptr<PrecompiledHeaderInfo> _precompiledHeaderInfo;
+    std::unordered_map<std::string, PrecompiledHeaderInfo> _precompiledHeaderInfo;
 
 private:
-    std::string                            _linkerDriver;
-    std::unordered_set<std::string>        _linkerArguments;
+    std::string                                            _linkerDriver;
+    std::unordered_set<std::string>                        _linkerArguments;
 
 public:
     CompilationInfo();
     ~CompilationInfo();
 
 public:
-    std::shared_ptr<PrecompiledHeaderInfo> const &precompiledHeaderInfo() const
+    std::unordered_map<std::string, PrecompiledHeaderInfo> const &precompiledHeaderInfo() const
+    { return _precompiledHeaderInfo; }
+
+public:
+    std::unordered_map<std::string, PrecompiledHeaderInfo> &precompiledHeaderInfo()
     { return _precompiledHeaderInfo; }
 
 public:
@@ -38,10 +41,6 @@ public:
     { return _linkerDriver; }
     std::unordered_set<std::string> const &linkerArguments() const
     { return _linkerArguments; }
-
-public:
-    std::shared_ptr<PrecompiledHeaderInfo> &precompiledHeaderInfo()
-    { return _precompiledHeaderInfo; }
 
 public:
     std::string &linkerDriver()

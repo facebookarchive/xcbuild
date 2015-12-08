@@ -68,8 +68,7 @@ CreateCompilation(
     PhaseEnvironment const &phaseEnvironment,
     SearchPaths const &searchPaths,
 
-    ToolContext *toolContext,
-    std::unordered_set<std::string> *precompiledHeaders
+    ToolContext *toolContext
 )
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
@@ -83,36 +82,15 @@ CreateCompilation(
         outputBaseName = FSUtil::GetBaseNameWithoutExtension(file.filePath());
     }
 
-    ToolInvocation invocation = clangResolver.sourceInvocation(
+    clangResolver.resolveSource(
         file,
         buildFile->compilerFlags(),
         outputBaseName,
-        toolContext->headermapInfo(),
         searchPaths,
-        &toolContext->compilationInfo(),
+        toolContext,
         environment,
         workingDirectory
     );
-    toolContext->invocations().push_back(invocation);
-
-    auto variantArchitectureKey = std::make_pair(environment.resolve("variant"), environment.resolve("arch"));
-    toolContext->variantArchitectureInvocations()[variantArchitectureKey].push_back(invocation);
-
-    if (toolContext->compilationInfo().precompiledHeaderInfo() != nullptr) {
-        PrecompiledHeaderInfo precompiledHeaderInfo = *toolContext->compilationInfo().precompiledHeaderInfo();
-        std::string hash = precompiledHeaderInfo.hash();
-
-        if (precompiledHeaders->find(hash) == precompiledHeaders->end()) {
-            precompiledHeaders->insert(hash);
-
-            ToolInvocation precompiledHeaderInvocation = clangResolver.precompiledHeaderInvocation(
-                precompiledHeaderInfo,
-                environment,
-                workingDirectory
-            );
-            toolContext->invocations().push_back(precompiledHeaderInvocation);
-        }
-    }
 }
 
 std::unique_ptr<SourcesResolver> SourcesResolver::
@@ -146,8 +124,6 @@ Create(
 
     ToolInvocation headermapInvocation = headermapResolver->invocation(phaseEnvironment.target(), searchPaths, targetEnvironment.environment(), workingDirectory, &toolContext.headermapInfo());
     toolContext.invocations().push_back(headermapInvocation);
-
-    std::unordered_set<std::string> precompiledHeaders;
 
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, TypeResolvedFile> files;
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
@@ -192,8 +168,7 @@ Create(
                                 phaseEnvironment,
                                 searchPaths,
 
-                                &toolContext,
-                                &precompiledHeaders
+                                &toolContext
                             );
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
