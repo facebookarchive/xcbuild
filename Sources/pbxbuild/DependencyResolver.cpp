@@ -10,8 +10,11 @@
 #include <pbxbuild/DependencyResolver.h>
 #include <pbxbuild/TargetEnvironment.h>
 
+#define DEPENDENCY_RESOLVER_LOGGING 0
+
 using pbxbuild::DependencyResolver;
 using pbxbuild::BuildContext;
+using pbxbuild::WorkspaceContext;
 using pbxbuild::BuildGraph;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::TargetEnvironment;
@@ -68,6 +71,7 @@ struct DependenciesContext {
     BuildGraph<pbxproj::PBX::Target::shared_ptr> *graph;
     BuildAction::shared_ptr buildAction;
     std::vector<pbxproj::PBX::Target::shared_ptr> *positional;
+    std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> *productPathToTarget;
 };
 
 static void
@@ -86,21 +90,42 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
         }
 
         for (pbxproj::PBX::BuildFile::shared_ptr const &file : buildPhase->files()) {
-            if (file->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeReferenceProxy) {
-                continue;
-            }
+            switch (file->fileRef()->type()) {
+                case pbxproj::PBX::GroupItem::kTypeReferenceProxy: {
+                    /* A implicit dependency referencing the product of another target through a direct reference to that target's product. */
+                    pbxproj::PBX::ReferenceProxy::shared_ptr proxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (file->fileRef());
 
-            pbxproj::PBX::ReferenceProxy::shared_ptr proxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (file->fileRef());
-
-            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, proxy->remoteRef(), true);
-            if (proxiedTarget != nullptr) {
-#if 0
-                printf("implicit dependency: %s -> %s\n", target->name().c_str(), proxiedTarget->name().c_str());
+                    pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, proxy->remoteRef(), true);
+                    if (proxiedTarget != nullptr) {
+#if DEPENDENCY_RESOLVER_LOGGING
+                        printf("implicit dependency: %s -> %s\n", target->name().c_str(), proxiedTarget->name().c_str());
 #endif
-                dependencies.push_back(proxiedTarget);
-                AddDependencies(context, proxiedTarget);
-            } else {
-                fprintf(stderr, "warning: was not able to load target for implicit dependency %s (from %s)\n", proxy->remoteRef()->remoteInfo().c_str(), proxy->name().c_str());
+                        dependencies.push_back(proxiedTarget);
+                        AddDependencies(context, proxiedTarget);
+                    } else {
+                        fprintf(stderr, "warning: was not able to load target for implicit dependency %s (from %s)\n", proxy->remoteRef()->remoteInfo().c_str(), proxy->name().c_str());
+                    }
+                    break;
+                }
+                case pbxproj::PBX::GroupItem::kTypeFileReference: {
+                    /* A implicit dependency referencing the product of another target through a filesystem path. */
+                    pbxproj::PBX::FileReference::shared_ptr fileReference = std::static_pointer_cast<pbxproj::PBX::FileReference>(file->fileRef());
+                    pbxsetting::Value path = fileReference->resolve();
+
+                    auto it = context.productPathToTarget->find(path.raw());
+                    if (it != context.productPathToTarget->end()) {
+                        pbxproj::PBX::Target::shared_ptr dependentTarget = it->second;
+#if DEPENDENCY_RESOLVER_LOGGING
+                        printf("implicit dependency: %s -> %s\n", target->name().c_str(), dependentTarget->name().c_str());
+#endif
+                        dependencies.push_back(dependentTarget);
+                        AddDependencies(context, dependentTarget);
+                    }
+                    break;
+                }
+                default: {
+                    break;
+                }
             }
         }
     }
@@ -117,7 +142,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
 
     for (pbxproj::PBX::TargetDependency::shared_ptr const &dependency : target->dependencies()) {
         if (dependency->target() != nullptr) {
-#if 0
+#if DEPENDENCY_RESOLVER_LOGGING
             printf("explicit dependency: %s -> %s\n", target->name().c_str(), dependency->target()->name().c_str());
 #endif
             dependencies.push_back(dependency->target());
@@ -125,7 +150,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
         } else if (dependency->targetProxy() != nullptr) {
             pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, dependency->targetProxy(), false);
             if (proxiedTarget != nullptr) {
-#if 0
+#if DEPENDENCY_RESOLVER_LOGGING
                 printf("explicit dependency: %s -> %s\n", target->name().c_str(), proxiedTarget->name().c_str());
 #endif
                 dependencies.push_back(proxiedTarget);
@@ -156,6 +181,39 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
     }
 }
 
+static std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr>
+BuildProductPathsToTargets(WorkspaceContext const &workspaceContext)
+{
+    std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> productPathToTarget;
+
+    /*
+     * Build a mapping of product path -> target, in order to look up implicit dependencies
+     * where the product paths match, but the dependency is not through a container portal.
+     */
+    for (auto const &pair : workspaceContext.projects()) {
+        for (pbxproj::PBX::Target::shared_ptr const &target : pair.second->targets()) {
+            if (target->type() != pbxproj::PBX::Target::kTypeNative) {
+                /* Only native targets have products. */
+                continue;
+            }
+
+            pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast<pbxproj::PBX::NativeTarget>(target);
+            pbxproj::PBX::FileReference::shared_ptr const &productReference = nativeTarget->productReference();
+
+            if (productReference != nullptr) {
+                /* Use the raw setting value because we can't resolve it yet. */
+                pbxsetting::Value productPath = productReference->resolve();
+#if DEPENDENCY_RESOLVER_LOGGING
+                fprintf(stderr, "product output: %s\n", productPath.raw().c_str());
+#endif
+                productPathToTarget.insert({ productPath.raw(), nativeTarget });
+            }
+        }
+    }
+
+    return productPathToTarget;
+}
+
 BuildGraph<pbxproj::PBX::Target::shared_ptr> DependencyResolver::
 resolveSchemeDependencies(BuildContext const &context) const
 {
@@ -167,10 +225,16 @@ resolveSchemeDependencies(BuildContext const &context) const
         return graph;
     }
 
-    BuildAction::shared_ptr buildAction = scheme->buildAction();
+    BuildAction::shared_ptr const &buildAction = scheme->buildAction();
     if (buildAction == nullptr) {
         fprintf(stderr, "error: build action not available\n");
         return graph;
+    }
+
+    /* Only create the product path mapping if we have implicit dependencies on to use it. */
+    std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> productPathToTarget;
+    if (buildAction->buildImplicitDependencies()) {
+        productPathToTarget = BuildProductPathsToTargets(*context.workspaceContext());
     }
 
     std::vector<pbxproj::PBX::Target::shared_ptr> positional;
@@ -205,6 +269,7 @@ resolveSchemeDependencies(BuildContext const &context) const
             .graph = &graph,
             .buildAction = buildAction,
             .positional = &positional,
+            .productPathToTarget = &productPathToTarget,
         };
         AddDependencies(dependenciesContext, target);
     }
@@ -223,6 +288,8 @@ resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::str
         return graph;
     }
 
+    auto productPathToTarget = BuildProductPathsToTargets(*context.workspaceContext());
+
     std::vector<pbxproj::PBX::Target::shared_ptr> positional;
     for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
         if (!allTargets) {
@@ -239,6 +306,7 @@ resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::str
             .graph = &graph,
             .buildAction = nullptr,
             .positional = &positional,
+            .productPathToTarget = &productPathToTarget,
         };
         AddDependencies(dependenciesContext, target);
     }
