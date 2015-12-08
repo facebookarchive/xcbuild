@@ -17,6 +17,8 @@
 namespace pbxbuild {
 namespace Tool {
 
+class ToolContext;
+
 class CopyResolver {
 private:
     pbxspec::PBX::Tool::shared_ptr _tool;
@@ -25,12 +27,12 @@ private:
     explicit CopyResolver(pbxspec::PBX::Tool::shared_ptr const &tool);
 
 public:
-    ToolInvocation invocation(
+    void resolve(
+        ToolContext *toolContext,
+        pbxsetting::Environment const &environment,
         std::string const &inputFile,
         std::string const &outputDirectory,
-        std::string const &logMessageTitle,
-        pbxsetting::Environment const &environment,
-        std::string const &workingDirectory
+        std::string const &logMessageTitle
     ) const;
 
 public:

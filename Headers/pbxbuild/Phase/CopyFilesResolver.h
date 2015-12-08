@@ -14,28 +14,27 @@
 #include <pbxbuild/ToolInvocation.h>
 
 namespace pbxbuild {
+
+namespace Tool { class ToolContext; }
+
 namespace Phase {
 
 class PhaseEnvironment;
 
 class CopyFilesResolver {
 private:
-    std::vector<ToolInvocation> _invocations;
+    pbxproj::PBX::CopyFilesBuildPhase::shared_ptr _buildPhase;
 
 public:
-    explicit CopyFilesResolver(std::vector<ToolInvocation> const &invocations);
+    explicit CopyFilesResolver(pbxproj::PBX::CopyFilesBuildPhase::shared_ptr const &buildPhase);
     ~CopyFilesResolver();
 
 public:
-    std::vector<ToolInvocation> const &invocations() const
-    { return _invocations; }
+    pbxproj::PBX::CopyFilesBuildPhase::shared_ptr const &buildPhase() const
+    { return _buildPhase; }
 
 public:
-    static std::unique_ptr<CopyFilesResolver>
-    Create(
-        PhaseEnvironment const &phaseEnvironment,
-        pbxproj::PBX::CopyFilesBuildPhase::shared_ptr const &buildPhase
-    );
+    bool resolve(PhaseEnvironment const &phaseEnvironment, Tool::ToolContext *toolContext);
 };
 
 }

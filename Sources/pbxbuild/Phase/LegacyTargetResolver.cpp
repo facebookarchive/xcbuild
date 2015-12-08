@@ -10,15 +10,15 @@
 #include <pbxbuild/Phase/LegacyTargetResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
+#include <pbxbuild/Tool/ToolContext.h>
 
 using pbxbuild::Phase::LegacyTargetResolver;
-using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Tool::ScriptResolver;
-using libutil::FSUtil;
+using pbxbuild::Tool::ToolContext;
 
 LegacyTargetResolver::
-LegacyTargetResolver(std::vector<pbxbuild::ToolInvocation> const &invocations) :
-    _invocations(invocations)
+LegacyTargetResolver(pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget) :
+    _legacyTarget(legacyTarget)
 {
 }
 
@@ -27,23 +27,17 @@ LegacyTargetResolver::
 {
 }
 
-std::unique_ptr<LegacyTargetResolver> LegacyTargetResolver::
-Create(
-    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
-    pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget
-)
+bool LegacyTargetResolver::
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
 {
     std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
     if (scriptResolver == nullptr) {
-        return nullptr;
+        return false;
     }
 
     std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
 
-    std::vector<pbxbuild::ToolInvocation> invocations = {
-        scriptResolver->invocation(legacyTarget, environment, workingDirectory),
-    };
-
-    return std::unique_ptr<LegacyTargetResolver>(new LegacyTargetResolver(invocations));
+    scriptResolver->resolve(toolContext, environment, _legacyTarget);
+    return true;
 }

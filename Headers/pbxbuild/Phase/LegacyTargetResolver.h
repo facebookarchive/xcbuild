@@ -14,28 +14,27 @@
 #include <pbxbuild/ToolInvocation.h>
 
 namespace pbxbuild {
+
+namespace Tool { class ToolContext; }
+
 namespace Phase {
 
 class PhaseEnvironment;
 
 class LegacyTargetResolver {
 private:
-    std::vector<ToolInvocation> _invocations;
+    pbxproj::PBX::LegacyTarget::shared_ptr _legacyTarget;
 
 public:
-    explicit LegacyTargetResolver(std::vector<ToolInvocation> const &invocations);
+    explicit LegacyTargetResolver(pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget);
     ~LegacyTargetResolver();
 
 public:
-    std::vector<ToolInvocation> const &invocations() const
-    { return _invocations; }
+    pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget() const
+    { return _legacyTarget; }
 
 public:
-    static std::unique_ptr<LegacyTargetResolver>
-    Create(
-        PhaseEnvironment const &phaseEnvironment,
-        pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget
-    );
+    bool resolve(PhaseEnvironment const &phaseEnvironment, Tool::ToolContext *toolContext);
 };
 
 }

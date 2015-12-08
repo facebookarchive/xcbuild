@@ -163,8 +163,7 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
 
         if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {
             std::string dsymfile = variantEnvironment.resolve("DWARF_DSYM_FOLDER_PATH") + "/" + variantEnvironment.resolve("DWARF_DSYM_FILE_NAME");
-            ToolInvocation invocation = dsymutil->invocation({ variantProductsOutput }, { dsymfile }, variantEnvironment, workingDirectory);
-            toolContext->invocations().push_back(invocation);
+            dsymutil->resolve(toolContext, variantEnvironment, { variantProductsOutput }, { dsymfile });
         }
     }
 

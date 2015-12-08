@@ -14,11 +14,12 @@
 using pbxbuild::Phase::CopyFilesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Tool::CopyResolver;
+using pbxbuild::Tool::ToolContext;
 using libutil::FSUtil;
 
 CopyFilesResolver::
-CopyFilesResolver(std::vector<pbxbuild::ToolInvocation> const &invocations) :
-    _invocations(invocations)
+CopyFilesResolver(pbxproj::PBX::CopyFilesBuildPhase::shared_ptr const &buildPhase) :
+    _buildPhase(buildPhase)
 {
 }
 
@@ -65,28 +66,23 @@ DestinationOutputPath(pbxproj::PBX::CopyFilesBuildPhase::Destination destination
     }
 }
 
-std::unique_ptr<CopyFilesResolver> CopyFilesResolver::
-Create(
-    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
-    pbxproj::PBX::CopyFilesBuildPhase::shared_ptr const &buildPhase
-)
+bool CopyFilesResolver::
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
     std::unique_ptr<CopyResolver> copyResolver = CopyResolver::Create(phaseEnvironment);
     if (copyResolver == nullptr) {
-        return nullptr;
+        return false;
     }
 
-    std::string root = environment.expand(DestinationOutputPath(buildPhase->dstSubfolderSpec()));
-    std::string path = environment.expand(buildPhase->dstPath());
+    std::string root = environment.expand(DestinationOutputPath(_buildPhase->dstSubfolderSpec()));
+    std::string path = environment.expand(_buildPhase->dstPath());
     std::string outputDirectory = root + "/" + path;
 
     // TODO(grp): There are subtleties here involving encodings, stripping, deleting headers, etc.
-    std::vector<pbxbuild::ToolInvocation> invocations;
-
-    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
         if (buildFile->fileRef() == nullptr) {
             continue;
         }
@@ -114,9 +110,8 @@ Create(
             continue;
         }
 
-        ToolInvocation invocation = copyResolver->invocation(file->filePath(), outputDirectory, "PBXCp", environment, targetEnvironment.workingDirectory());
-        invocations.push_back(invocation);
+        copyResolver->resolve(toolContext, environment, file->filePath(), outputDirectory, "PBXCp");
     }
 
-    return std::unique_ptr<CopyFilesResolver>(new CopyFilesResolver(invocations));
+    return true;
 }

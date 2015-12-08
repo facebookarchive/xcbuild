@@ -10,15 +10,15 @@
 #include <pbxbuild/Phase/ShellScriptResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
+#include <pbxbuild/Tool/ToolContext.h>
 
 using pbxbuild::Phase::ShellScriptResolver;
-using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Tool::ScriptResolver;
-using libutil::FSUtil;
+using pbxbuild::Tool::ToolContext;
 
 ShellScriptResolver::
-ShellScriptResolver(std::vector<pbxbuild::ToolInvocation> const &invocations) :
-    _invocations(invocations)
+ShellScriptResolver(pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase) :
+    _buildPhase(buildPhase)
 {
 }
 
@@ -27,23 +27,17 @@ ShellScriptResolver::
 {
 }
 
-std::unique_ptr<ShellScriptResolver> ShellScriptResolver::
-Create(
-    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
-    pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase
-)
+bool ShellScriptResolver::
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
 {
     std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
     if (scriptResolver == nullptr) {
-        return nullptr;
+        return false;
     }
 
     std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
 
-    std::vector<pbxbuild::ToolInvocation> invocations = {
-        scriptResolver->invocation(buildPhase, environment, workingDirectory),
-    };
-
-    return std::unique_ptr<ShellScriptResolver>(new ShellScriptResolver(invocations));
+    scriptResolver->resolve(toolContext, environment, _buildPhase);
+    return true;
 }

@@ -17,6 +17,8 @@
 namespace pbxbuild {
 namespace Tool {
 
+class ToolContext;
+
 class ToolResolver {
 private:
     pbxspec::PBX::Tool::shared_ptr _tool;
@@ -30,11 +32,11 @@ public:
     { return _tool; }
 
 public:
-    ToolInvocation invocation(
+    void resolve(
+        ToolContext *toolContext,
+        pbxsetting::Environment const &environment,
         std::vector<std::string> const &inputs,
         std::vector<std::string> const &outputs,
-        pbxsetting::Environment const &environment,
-        std::string const &workingDirectory,
         std::string const &logMessage = ""
     ) const;
 

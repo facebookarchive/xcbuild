@@ -13,6 +13,7 @@
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/SearchPaths.h>
+#include <pbxbuild/Tool/ToolContext.h>
 
 using pbxbuild::Tool::ToolResolver;
 using pbxbuild::Tool::ToolEnvironment;
@@ -33,19 +34,21 @@ ToolResolver::
 {
 }
 
-ToolInvocation ToolResolver::
-invocation(
+void ToolResolver::
+resolve(
+    ToolContext *toolContext,
+    pbxsetting::Environment const &environment,
     std::vector<std::string> const &inputs,
     std::vector<std::string> const &outputs,
-    pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
     std::string const &logMessage) const
 {
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, inputs, outputs);
-    OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
     std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));
-    return ToolResult::CreateInvocation(toolEnvironment, options, commandLine, resolvedLogMessage, workingDirectory);
+
+    ToolInvocation invocation = ToolResult::CreateInvocation(toolEnvironment, options, commandLine, resolvedLogMessage, toolContext->workingDirectory());
+    toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<ToolResolver> ToolResolver::

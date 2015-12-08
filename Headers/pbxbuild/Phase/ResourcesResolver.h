@@ -14,28 +14,27 @@
 #include <pbxbuild/ToolInvocation.h>
 
 namespace pbxbuild {
+
+namespace Tool { class ToolContext; }
+
 namespace Phase {
 
 class PhaseEnvironment;
 
 class ResourcesResolver {
 private:
-    std::vector<ToolInvocation> _invocations;
+    pbxproj::PBX::ResourcesBuildPhase::shared_ptr _buildPhase;
 
 public:
-    explicit ResourcesResolver(std::vector<ToolInvocation> const &invocations);
+    explicit ResourcesResolver(pbxproj::PBX::ResourcesBuildPhase::shared_ptr const &buildPhase);
     ~ResourcesResolver();
 
 public:
-    std::vector<ToolInvocation> const &invocations() const
-    { return _invocations; }
+    pbxproj::PBX::ResourcesBuildPhase::shared_ptr const &buildPhase() const
+    { return _buildPhase; }
 
 public:
-    static std::unique_ptr<ResourcesResolver>
-    Create(
-        PhaseEnvironment const &phaseEnvironment,
-        pbxproj::PBX::ResourcesBuildPhase::shared_ptr const &buildPhase
-    );
+    bool resolve(PhaseEnvironment const &phaseEnvironment, Tool::ToolContext *toolContext);
 };
 
 }

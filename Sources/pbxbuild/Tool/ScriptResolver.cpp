@@ -12,6 +12,7 @@
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
+#include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::Tool::ScriptResolver;
@@ -53,31 +54,32 @@ ScriptInputOutputLevel(std::vector<std::string> const &inputFiles, std::vector<s
     return pbxsetting::Level(settings);
 }
 
-ToolInvocation ScriptResolver::
-invocation(
+void ScriptResolver::
+resolve(
+    ToolContext *toolContext,
+    pbxsetting::Environment const &environment,
+    std::string const &workingDirectory,
     std::string const &shell,
     std::vector<std::string> const &arguments,
     std::unordered_map<std::string, std::string> const &environmentVariables,
     std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaries,
     std::vector<std::string> const &inputFiles,
     std::vector<std::string> const &outputFiles,
-    pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
-    std::string const &logMessage
-)
+    std::string const &logMessage) const
 {
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, inputFiles, outputFiles);
     OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr, environmentVariables);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, shell, arguments);
-    return ToolResult::CreateInvocation(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", auxiliaries);
+
+    ToolInvocation invocation = ToolResult::CreateInvocation(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", auxiliaries);
+    toolContext->invocations().push_back(invocation);
 }
 
-ToolInvocation ScriptResolver::
-invocation(
-    pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget,
+void ScriptResolver::
+resolve(
+    ToolContext *toolContext,
     pbxsetting::Environment const &environment,
-    std::string const &workingDirectory
-)
+    pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget) const
 {
     std::string logMessage = "ExternalBuildToolExecution " + legacyTarget->name();
 
@@ -88,27 +90,27 @@ invocation(
         environmentVariables = environment.computeValues(pbxsetting::Condition::Empty());
     }
 
-    std::string fullWorkingDirectory = workingDirectory + "/" + legacyTarget->buildWorkingDirectory();
+    std::string fullWorkingDirectory = toolContext->workingDirectory() + "/" + legacyTarget->buildWorkingDirectory();
 
-    return invocation(
+    resolve(
+        toolContext,
+        environment,
+        fullWorkingDirectory,
         legacyTarget->buildToolPath(),
         pbxsetting::Type::ParseList(script),
         environmentVariables,
         { },
         { },
         { },
-        environment,
-        fullWorkingDirectory,
         logMessage
     );
 }
 
-ToolInvocation ScriptResolver::
-invocation(
-    pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase,
+void ScriptResolver::
+resolve(
+    ToolContext *toolContext,
     pbxsetting::Environment const &environment,
-    std::string const &workingDirectory
-)
+    pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase) const
 {
     pbxsetting::Level level = pbxsetting::Level({
         pbxsetting::Setting::Parse("BuildPhaseName", (!buildPhase->name().empty() ? buildPhase->name() : "Run Script")),
@@ -140,26 +142,26 @@ invocation(
     std::unordered_map<std::string, std::string> environmentVariables = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
 
     // TODO(grp): Use PBX::ShellScriptBuildPhase::showEnvVarsInLog().
-    return invocation(
+    resolve(
+        toolContext,
+        scriptEnvironment,
+        toolContext->workingDirectory(),
         "/bin/sh",
         { "-c", scriptFilePath },
         environmentVariables,
         { scriptFile },
         inputFiles,
         outputFiles,
-        scriptEnvironment,
-        workingDirectory,
         phaseEnvironment.expand(logMessage)
     );
 }
 
-ToolInvocation ScriptResolver::
-invocation(
-    std::string const &inputFile,
-    pbxbuild::TargetBuildRules::BuildRule::shared_ptr const &buildRule,
+void ScriptResolver::
+resolve(
+    ToolContext *toolContext,
     pbxsetting::Environment const &environment,
-    std::string const &workingDirectory
-)
+    std::string const &inputFile,
+    pbxbuild::TargetBuildRules::BuildRule::shared_ptr const &buildRule) const
 {
     pbxsetting::Level level = pbxsetting::Level({
         pbxsetting::Setting::Parse("INPUT_FILE_DIR", FSUtil::GetDirectoryName(inputFile)),
@@ -173,7 +175,7 @@ invocation(
     pbxsetting::Environment ruleEnvironment = environment;
     ruleEnvironment.insertFront(level, false);
 
-    pbxsetting::Value logMessage = pbxsetting::Value::Parse("RuleScriptExecution " + FSUtil::GetRelativePath(inputFile, workingDirectory) + " $(variant) $(arch)");
+    pbxsetting::Value logMessage = pbxsetting::Value::Parse("RuleScriptExecution " + FSUtil::GetRelativePath(inputFile, toolContext->workingDirectory()) + " $(variant) $(arch)");
 
     std::vector<std::string> outputFiles;
     std::transform(buildRule->outputFiles().begin(), buildRule->outputFiles().end(), std::back_inserter(outputFiles), [&](pbxsetting::Value const &output) -> std::string {
@@ -185,15 +187,16 @@ invocation(
     ruleEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, false), false);
     std::unordered_map<std::string, std::string> environmentVariables = ruleEnvironment.computeValues(pbxsetting::Condition::Empty());
 
-    return invocation(
+    resolve(
+        toolContext,
+        ruleEnvironment,
+        toolContext->workingDirectory(),
         "/bin/sh",
         { "-c", buildRule->script() },
         ruleEnvironment.computeValues(pbxsetting::Condition::Empty()),
         { },
         inputFiles,
         outputFiles,
-        ruleEnvironment,
-        workingDirectory,
         ruleEnvironment.expand(logMessage)
     );
 }

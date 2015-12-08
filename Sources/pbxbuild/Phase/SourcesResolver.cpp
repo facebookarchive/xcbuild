@@ -153,12 +153,10 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
                         } else {
                             // TODO(grp): Use an appropriate compiler context to create this invocation.
                             std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, tool->identifier());
-                            ToolInvocation invocation = toolResolver->invocation({ }, { file.filePath() }, currentEnvironment, toolContext->workingDirectory());
-                            toolContext->invocations().push_back(invocation);
+                            toolResolver->resolve(toolContext, currentEnvironment, { }, { file.filePath() });
                         }
                     } else if (!buildRule->script().empty()) {
-                        ToolInvocation invocation = scriptResolver->invocation(file.filePath(), buildRule, currentEnvironment, toolContext->workingDirectory());
-                        toolContext->invocations().push_back(invocation);
+                        scriptResolver->resolve(toolContext, currentEnvironment, file.filePath(), buildRule);
                     }
                 } else {
                     fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());

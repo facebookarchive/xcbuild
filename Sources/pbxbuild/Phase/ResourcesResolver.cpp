@@ -10,19 +10,21 @@
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Tool/ToolResolver.h>
+#include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 
 using pbxbuild::Phase::ResourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Tool::CopyResolver;
 using pbxbuild::Tool::ToolResolver;
+using pbxbuild::Tool::ToolContext;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 ResourcesResolver::
-ResourcesResolver(std::vector<pbxbuild::ToolInvocation> const &invocations) :
-    _invocations(invocations)
+ResourcesResolver(pbxproj::PBX::ResourcesBuildPhase::shared_ptr const &buildPhase) :
+    _buildPhase(buildPhase)
 {
 }
 
@@ -31,8 +33,8 @@ ResourcesResolver::
 {
 }
 
-static ToolInvocation
-CopyInvocation(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, CopyResolver const *copyResolver, TypeResolvedFile const &file, std::string const &outputDirectory, pbxsetting::Environment const &environment)
+static void
+CopyInvocation(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext, CopyResolver const *copyResolver, TypeResolvedFile const &file, std::string const &outputDirectory, pbxsetting::Environment const &environment)
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     std::string const &workingDirectory = targetEnvironment.workingDirectory();
@@ -43,17 +45,14 @@ CopyInvocation(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, CopyRe
 
         std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(file.filePath());
         std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, tool->identifier());
-        return toolResolver->invocation({ file.filePath() }, { outputPath }, environment, workingDirectory);
+        toolResolver->resolve(toolContext, environment, { file.filePath() }, { outputPath });
     } else {
-        return copyResolver->invocation(file.filePath(), outputDirectory, "CpResource", environment, workingDirectory);
+        copyResolver->resolve(toolContext, environment, file.filePath(), outputDirectory, "CpResource");
     }
 }
 
-std::unique_ptr<ResourcesResolver> ResourcesResolver::
-Create(
-    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
-    pbxproj::PBX::ResourcesBuildPhase::shared_ptr const &buildPhase
-)
+bool ResourcesResolver::
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
 {
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
     pbxspec::Manager::shared_ptr const &specManager = phaseEnvironment.buildEnvironment().specManager();
@@ -61,12 +60,10 @@ Create(
 
     std::unique_ptr<CopyResolver> copyResolver = CopyResolver::Create(phaseEnvironment);
     if (copyResolver == nullptr) {
-        return nullptr;
+        return false;
     }
 
-    std::vector<pbxbuild::ToolInvocation> invocations;
-
-    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
         if (buildFile->fileRef() == nullptr) {
             continue;
         }
@@ -76,8 +73,7 @@ Create(
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
                 std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
                 if (file != nullptr) {
-                    ToolInvocation invocation = CopyInvocation(phaseEnvironment, copyResolver.get(), *file, resourcesDirectory, environment);
-                    invocations.push_back(invocation);
+                    CopyInvocation(phaseEnvironment, toolContext, copyResolver.get(), *file, resourcesDirectory, environment);
                 }
                 break;
             }
@@ -93,8 +89,7 @@ Create(
 
                     std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
                     if (file != nullptr) {
-                        ToolInvocation invocation = CopyInvocation(phaseEnvironment, copyResolver.get(), *file, outputDirectory, environment);
-                        invocations.push_back(invocation);
+                        CopyInvocation(phaseEnvironment, toolContext, copyResolver.get(), *file, outputDirectory, environment);
                     }
                 }
                 break;
@@ -106,5 +101,5 @@ Create(
         }
     }
 
-    return std::unique_ptr<ResourcesResolver>(new ResourcesResolver(invocations));
+    return true;
 }

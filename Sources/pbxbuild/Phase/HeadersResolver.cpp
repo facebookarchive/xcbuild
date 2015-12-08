@@ -10,17 +10,17 @@
 #include <pbxbuild/Phase/HeadersResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Tool/CopyResolver.h>
+#include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 using pbxbuild::Phase::HeadersResolver;
-using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Tool::CopyResolver;
+using pbxbuild::Tool::ToolContext;
 using pbxbuild::TypeResolvedFile;
-using libutil::FSUtil;
 
 HeadersResolver::
-HeadersResolver(std::vector<pbxbuild::ToolInvocation> const &invocations) :
-    _invocations(invocations)
+HeadersResolver(pbxproj::PBX::HeadersBuildPhase::shared_ptr const &buildPhase) :
+    _buildPhase(buildPhase)
 {
 }
 
@@ -29,11 +29,8 @@ HeadersResolver::
 {
 }
 
-std::unique_ptr<HeadersResolver> HeadersResolver::
-Create(
-    pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment,
-    pbxproj::PBX::HeadersBuildPhase::shared_ptr const &buildPhase
-)
+bool HeadersResolver::
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
@@ -42,14 +39,12 @@ Create(
     std::string publicOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH");
     std::string privateOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PRIVATE_HEADERS_FOLDER_PATH");
 
-    std::vector<pbxbuild::ToolInvocation> invocations;
-
     std::unique_ptr<CopyResolver> copyResolver = CopyResolver::Create(phaseEnvironment);
     if (copyResolver == nullptr) {
-        return nullptr;
+        return false;
     }
 
-    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
         if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeFileReference) {
             continue;
         }
@@ -68,10 +63,9 @@ Create(
         std::string const &outputDirectory = (isPublic ? publicOutputDirectory : privateOutputDirectory);
 
         if (isPublic || isPrivate) {
-            ToolInvocation invocation = copyResolver->invocation(filePath, outputDirectory, "CpHeader", environment, targetEnvironment.workingDirectory());
-            invocations.push_back(invocation);
+            copyResolver->resolve(toolContext, environment, filePath, outputDirectory, "CpHeader");
         }
     }
 
-    return std::unique_ptr<HeadersResolver>(new HeadersResolver(invocations));
+    return true;
 }

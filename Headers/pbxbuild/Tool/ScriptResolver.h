@@ -18,6 +18,8 @@
 namespace pbxbuild {
 namespace Tool {
 
+class ToolContext;
+
 class ScriptResolver {
 private:
     pbxspec::PBX::Tool::shared_ptr _tool;
@@ -26,33 +28,34 @@ private:
     explicit ScriptResolver(pbxspec::PBX::Tool::shared_ptr const &tool);
 
 public:
-    ToolInvocation invocation(
+    void resolve(
+        ToolContext *toolContext,
+        pbxsetting::Environment const &environment,
+        std::string const &workingDirectory,
         std::string const &shell,
         std::vector<std::string> const &arguments,
         std::unordered_map<std::string, std::string> const &environmentVariables,
         std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaries,
         std::vector<std::string> const &inputFiles,
         std::vector<std::string> const &outputFiles,
-        pbxsetting::Environment const &environment,
-        std::string const &workingDirectory,
         std::string const &logMessage
-    );
-    ToolInvocation invocation(
-        pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget,
+    ) const;
+    void resolve(
+        ToolContext *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &workingDirectory
-    );
-    ToolInvocation invocation(
-        pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase,
+        pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget
+    ) const;
+    void resolve(
+        ToolContext *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &workingDirectory
-    );
-    ToolInvocation invocation(
+        pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase
+    ) const;
+    void resolve(
+        ToolContext *toolContext,
+        pbxsetting::Environment const &environment,
         std::string const &inputFile,
-        pbxbuild::TargetBuildRules::BuildRule::shared_ptr const &buildRule,
-        pbxsetting::Environment const &environment,
-        std::string const &workingDirectory
-    );
+        pbxbuild::TargetBuildRules::BuildRule::shared_ptr const &buildRule
+    ) const;
 
 public:
     pbxspec::PBX::Tool::shared_ptr const &tool() const
