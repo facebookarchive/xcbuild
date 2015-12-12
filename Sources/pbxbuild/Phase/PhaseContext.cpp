@@ -116,7 +116,7 @@ resolveBuildFile(
             }
 
             if (ClangResolver const *clangResolver = this->clangResolver(phaseEnvironment)) {
-                _clangResolver->resolveSource(&_toolContext, environment, file, buildFile->compilerFlags(), outputBaseName);
+                _clangResolver->resolveSource(&_toolContext, environment, file, buildFile->compilerFlags(), outputDirectory, outputBaseName);
                 return true;
             } else {
                 return false;

@@ -38,6 +38,7 @@ public:
         pbxsetting::Environment const &environment,
         TypeResolvedFile const &input,
         std::vector<std::string> const &inputArguments,
+        std::string const &outputDirectory,
         std::string const &outputBaseName
     ) const;
     void resolvePrecompiledHeader(

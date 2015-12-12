@@ -234,14 +234,15 @@ resolveSource(
     pbxsetting::Environment const &environment,
     TypeResolvedFile const &inputFile,
     std::vector<std::string> const &inputArguments,
+    std::string const &outputDirectory,
     std::string const &outputBaseName
 ) const
 {
     HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
 
-    std::string outputDirectory = environment.expand(_compiler->outputDir());
-    if (outputDirectory.empty()) {
-        outputDirectory = environment.expand(pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)"));
+    std::string resolvedOutputDirectory = environment.expand(_compiler->outputDir());
+    if (resolvedOutputDirectory.empty()) {
+        resolvedOutputDirectory = outputDirectory;
     }
 
     std::string outputExtension = _compiler->outputFileExtension();
@@ -249,7 +250,7 @@ resolveSource(
         outputExtension = "o";
     }
 
-    std::string output = outputDirectory + "/" + outputBaseName + "." + outputExtension;
+    std::string output = resolvedOutputDirectory + "/" + outputBaseName + "." + outputExtension;
 
     std::string const &input = inputFile.filePath();
     pbxspec::PBX::FileType::shared_ptr const &fileType = inputFile.fileType();
