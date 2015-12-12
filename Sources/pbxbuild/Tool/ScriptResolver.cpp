@@ -65,13 +65,25 @@ resolve(
     std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaries,
     std::vector<std::string> const &inputFiles,
     std::vector<std::string> const &outputFiles,
-    std::string const &logMessage) const
+    std::string const &logMessage,
+    bool showEnvironmentInLog) const
 {
     ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, inputFiles, outputFiles);
     OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr, environmentVariables);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, shell, arguments);
 
-    ToolInvocation invocation = ToolResult::CreateInvocation(toolEnvironment, options, commandLine, logMessage, workingDirectory, "", auxiliaries);
+    ToolInvocation invocation = ToolInvocation(
+        commandLine.executable(),
+        commandLine.arguments(),
+        options.environment(),
+        workingDirectory,
+        toolEnvironment.inputs(),
+        toolEnvironment.outputs(),
+        std::string(),
+        auxiliaries,
+        logMessage,
+        showEnvironmentInLog
+    );
     toolContext->invocations().push_back(invocation);
 }
 
@@ -102,7 +114,8 @@ resolve(
         { },
         { },
         { },
-        logMessage
+        logMessage,
+        true
     );
 }
 
@@ -141,7 +154,6 @@ resolve(
     scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, true), false);
     std::unordered_map<std::string, std::string> environmentVariables = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
 
-    // TODO(grp): Use PBX::ShellScriptBuildPhase::showEnvVarsInLog().
     resolve(
         toolContext,
         scriptEnvironment,
@@ -152,7 +164,8 @@ resolve(
         { scriptFile },
         inputFiles,
         outputFiles,
-        phaseEnvironment.expand(logMessage)
+        phaseEnvironment.expand(logMessage),
+        buildPhase->showEnvVarsInLog()
     );
 }
 
@@ -197,7 +210,8 @@ resolve(
         { },
         inputFiles,
         outputFiles,
-        ruleEnvironment.expand(logMessage)
+        ruleEnvironment.expand(logMessage),
+        true
     );
 }
 

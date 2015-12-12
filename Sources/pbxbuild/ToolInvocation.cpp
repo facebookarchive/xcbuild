@@ -44,17 +44,19 @@ ToolInvocation(
     std::vector<std::string> const                     &outputs,
     std::string const                                  &dependencyInfo,
     std::vector<AuxiliaryFile> const                   &auxiliaryFiles,
-    std::string const                                  &logMessage
+    std::string const                                  &logMessage,
+    bool                                               showEnvironmentInLog
 ) :
-    _executable      (executable),
-    _arguments       (arguments),
-    _environment     (environment),
-    _workingDirectory(workingDirectory),
-    _inputs          (inputs),
-    _outputs         (outputs),
-    _dependencyInfo  (dependencyInfo),
-    _auxiliaryFiles  (auxiliaryFiles),
-    _logMessage      (logMessage)
+    _executable          (executable),
+    _arguments           (arguments),
+    _environment         (environment),
+    _workingDirectory    (workingDirectory),
+    _inputs              (inputs),
+    _outputs             (outputs),
+    _dependencyInfo      (dependencyInfo),
+    _auxiliaryFiles      (auxiliaryFiles),
+    _logMessage          (logMessage),
+    _showEnvironmentInLog(showEnvironmentInLog)
 {
 }
 

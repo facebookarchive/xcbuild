@@ -50,6 +50,7 @@ private:
 
 private:
     std::string                                  _logMessage;
+    bool                                         _showEnvironmentInLog;
 
 public:
     ToolInvocation(
@@ -61,7 +62,8 @@ public:
         std::vector<std::string> const                     &outputs,
         std::string const                                  &dependencyInfo,
         std::vector<AuxiliaryFile> const                   &auxiliaryFiles,
-        std::string const                                  &logMessage
+        std::string const                                  &logMessage,
+        bool                                               showEnvironmentInLog = true
     );
     ToolInvocation(
         std::vector<std::string> const                     &inputs,
@@ -71,28 +73,30 @@ public:
     ~ToolInvocation();
 
 public:
-    std::string const &executable(void) const
+    std::string const &executable() const
     { return _executable; }
-    std::vector<std::string> const &arguments(void) const
+    std::vector<std::string> const &arguments() const
     { return _arguments; }
-    std::unordered_map<std::string, std::string> const &environment(void) const
+    std::unordered_map<std::string, std::string> const &environment() const
     { return _environment; }
-    std::string const &workingDirectory(void) const
+    std::string const &workingDirectory() const
     { return _workingDirectory; }
 
 public:
-    std::vector<std::string> const &inputs(void) const
+    std::vector<std::string> const &inputs() const
     { return _inputs; }
-    std::vector<std::string> const &outputs(void) const
+    std::vector<std::string> const &outputs() const
     { return _outputs; }
-    std::string const &dependencyInfo(void) const
+    std::string const &dependencyInfo() const
     { return _dependencyInfo; }
-    std::vector<AuxiliaryFile> const &auxiliaryFiles(void) const
+    std::vector<AuxiliaryFile> const &auxiliaryFiles() const
     { return _auxiliaryFiles; }
 
 public:
-    std::string const &logMessage(void) const
+    std::string const &logMessage() const
     { return _logMessage; }
+    bool showEnvironmentInLog() const
+    { return _showEnvironmentInLog; }
 };
 
 }

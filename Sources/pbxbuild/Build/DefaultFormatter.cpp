@@ -194,9 +194,11 @@ invocation(ToolInvocation const &invocation, std::string const &executable)
     message += FormatInvocation(invocation, _color) + "\n";
     message += INDENT + "cd " + invocation.workingDirectory() + "\n";
 
-    std::map<std::string, std::string> sortedEnvironment = std::map<std::string, std::string>(invocation.environment().begin(), invocation.environment().end());
-    for (std::pair<std::string, std::string> const &entry : sortedEnvironment) {
-        message += INDENT + "export " + entry.first + "=" + entry.second + "\n";
+    if (invocation.showEnvironmentInLog()) {
+        std::map<std::string, std::string> sortedEnvironment = std::map<std::string, std::string>(invocation.environment().begin(), invocation.environment().end());
+        for (std::pair<std::string, std::string> const &entry : sortedEnvironment) {
+            message += INDENT + "export " + entry.first + "=" + entry.second + "\n";
+        }
     }
 
     message += INDENT + executable;

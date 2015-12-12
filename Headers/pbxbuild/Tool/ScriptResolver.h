@@ -38,7 +38,8 @@ public:
         std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaries,
         std::vector<std::string> const &inputFiles,
         std::vector<std::string> const &outputFiles,
-        std::string const &logMessage
+        std::string const &logMessage,
+        bool showEnvironmentInLog
     ) const;
     void resolve(
         ToolContext *toolContext,
