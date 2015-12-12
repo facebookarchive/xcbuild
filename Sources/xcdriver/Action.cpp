@@ -33,7 +33,7 @@ OpenProject(std::string const &projectPath, std::string const &directory)
         bool multiple = false;
         std::string projectName;
 
-        FSUtil::EnumerateDirectory(directory, "*.pbxproj", [&](std::string const &filename) -> bool {
+        FSUtil::EnumerateDirectory(directory, "*.xcodeproj", [&](std::string const &filename) -> bool {
             if (!projectName.empty()) {
                 multiple = true;
             }
@@ -71,7 +71,7 @@ CreateWorkspace(Options const &options)
         pbxbuild::WorkspaceContext context = pbxbuild::WorkspaceContext::Workspace(workspace);
         return std::unique_ptr<pbxbuild::WorkspaceContext>(new pbxbuild::WorkspaceContext(context));
     } else {
-        pbxproj::PBX::Project::shared_ptr project = OpenProject(options.project(), ".");
+        pbxproj::PBX::Project::shared_ptr project = OpenProject(options.project(), FSUtil::GetCurrentDirectory());
         if (project == nullptr) {
             return nullptr;
         }
