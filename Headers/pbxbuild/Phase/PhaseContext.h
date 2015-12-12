@@ -21,8 +21,9 @@ class TypeResolvedFile;
 
 namespace Tool {
     class ClangResolver;
-    class ScriptResolver;
     class CopyResolver;
+    class ScriptResolver;
+    class TouchResolver;
     class ToolResolver;
 }
 
@@ -36,8 +37,9 @@ private:
 
 private:
     std::unique_ptr<Tool::ClangResolver>                _clangResolver;
-    std::unique_ptr<Tool::ScriptResolver>               _scriptResolver;
     std::unique_ptr<Tool::CopyResolver>                 _copyResolver;
+    std::unique_ptr<Tool::ScriptResolver>               _scriptResolver;
+    std::unique_ptr<Tool::TouchResolver>                _touchResolver;
     std::unordered_map<std::string, Tool::ToolResolver> _toolResolvers;
 
 public:
@@ -54,8 +56,9 @@ public:
 
 public:
     Tool::ClangResolver const  *clangResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::ScriptResolver const *scriptResolver(PhaseEnvironment const &phaseEnvironment);
     Tool::CopyResolver const   *copyResolver(PhaseEnvironment const &phaseEnvironment);
+    Tool::ScriptResolver const *scriptResolver(PhaseEnvironment const &phaseEnvironment);
+    Tool::TouchResolver const  *touchResolver(PhaseEnvironment const &phaseEnvironment);
     Tool::ToolResolver const   *toolResolver(PhaseEnvironment const &phaseEnvironment, std::string const &identifier);
 
 public:

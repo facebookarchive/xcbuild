@@ -12,6 +12,7 @@
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
+#include <pbxbuild/Tool/TouchResolver.h>
 #include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/TargetBuildRules.h>
@@ -22,6 +23,7 @@ using pbxbuild::Tool::ToolContext;
 using pbxbuild::Tool::ClangResolver;
 using pbxbuild::Tool::CopyResolver;
 using pbxbuild::Tool::ScriptResolver;
+using pbxbuild::Tool::TouchResolver;
 using pbxbuild::Tool::ToolResolver;
 using libutil::FSUtil;
 
@@ -46,6 +48,16 @@ clangResolver(PhaseEnvironment const &phaseEnvironment)
     return _clangResolver.get();
 }
 
+CopyResolver const *PhaseContext::
+copyResolver(PhaseEnvironment const &phaseEnvironment)
+{
+    if (_copyResolver == nullptr) {
+        _copyResolver = CopyResolver::Create(phaseEnvironment);
+    }
+
+    return _copyResolver.get();
+}
+
 ScriptResolver const *PhaseContext::
 scriptResolver(PhaseEnvironment const &phaseEnvironment)
 {
@@ -56,14 +68,14 @@ scriptResolver(PhaseEnvironment const &phaseEnvironment)
     return _scriptResolver.get();
 }
 
-CopyResolver const *PhaseContext::
-copyResolver(PhaseEnvironment const &phaseEnvironment)
+TouchResolver const *PhaseContext::
+touchResolver(PhaseEnvironment const &phaseEnvironment)
 {
-    if (_copyResolver == nullptr) {
-        _copyResolver = CopyResolver::Create(phaseEnvironment);
+    if (_touchResolver == nullptr) {
+        _touchResolver = TouchResolver::Create(phaseEnvironment);
     }
 
-    return _copyResolver.get();
+    return _touchResolver.get();
 }
 
 ToolResolver const *PhaseContext::

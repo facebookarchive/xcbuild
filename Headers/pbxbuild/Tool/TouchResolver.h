@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_CopyResolver_h
-#define __pbxbuild_CopyResolver_h
+#ifndef __pbxbuild_TouchResolver_h
+#define __pbxbuild_TouchResolver_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
@@ -18,32 +18,35 @@ namespace Tool {
 
 class ToolContext;
 
-class CopyResolver {
+class TouchResolver {
 private:
     pbxspec::PBX::Tool::shared_ptr _tool;
 
-private:
-    explicit CopyResolver(pbxspec::PBX::Tool::shared_ptr const &tool);
+public:
+    explicit TouchResolver(pbxspec::PBX::Tool::shared_ptr const &tool);
+    ~TouchResolver();
+
+public:
+    pbxspec::PBX::Tool::shared_ptr const &tool() const
+    { return _tool; }
 
 public:
     void resolve(
         ToolContext *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &inputFile,
-        std::string const &outputDirectory,
-        std::string const &logMessageTitle
-    ) const;
+        std::string const &input,
+        std::vector<std::string> const &dependencies) const;
 
 public:
     static std::string ToolIdentifier()
-    { return "com.apple.compilers.pbxcp"; }
+    { return "com.apple.tools.touch"; }
 
 public:
-    static std::unique_ptr<CopyResolver>
+    static std::unique_ptr<TouchResolver>
     Create(Phase::PhaseEnvironment const &phaseEnvironment);
 };
 
 }
 }
 
-#endif // !__pbxbuild_CopyResolver_h
+#endif // !__pbxbuild_TouchResolver_h

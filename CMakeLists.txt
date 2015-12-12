@@ -251,6 +251,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/ClangResolver.cpp
     Sources/pbxbuild/Tool/LinkerResolver.cpp
     Sources/pbxbuild/Tool/ScriptResolver.cpp
+    Sources/pbxbuild/Tool/TouchResolver.cpp
     Sources/pbxbuild/Tool/ToolResolver.cpp
     Sources/pbxbuild/Phase/PhaseContext.cpp
     Sources/pbxbuild/Phase/PhaseEnvironment.cpp
@@ -258,6 +259,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Phase/CopyFilesResolver.cpp
     Sources/pbxbuild/Phase/HeadersResolver.cpp
     Sources/pbxbuild/Phase/LegacyTargetResolver.cpp
+    Sources/pbxbuild/Phase/ProductTypeResolver.cpp
     Sources/pbxbuild/Phase/ResourcesResolver.cpp
     Sources/pbxbuild/Phase/FrameworksResolver.cpp
     Sources/pbxbuild/Phase/SourcesResolver.cpp

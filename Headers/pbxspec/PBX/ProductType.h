@@ -33,9 +33,9 @@ public:
             Check(std::string const &check, std::string const &description);
 
         public:
-            inline std::string const &check()
+            inline std::string const &check() const
             { return _check; }
-            inline std::string const &description()
+            inline std::string const &description() const
             { return _description; }
         };
 
@@ -51,11 +51,11 @@ public:
         Validation();
 
     public:
-        inline std::string const &validationToolSpec()
+        inline std::string const &validationToolSpec() const
         { return _validationToolSpec; }
 
     public:
-        inline std::vector<Check> const &checks()
+        inline std::vector<Check> const &checks() const
         { return _checks; }
 
     protected:

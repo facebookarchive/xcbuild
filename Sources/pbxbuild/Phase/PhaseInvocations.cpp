@@ -13,6 +13,7 @@
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/HeadersResolver.h>
 #include <pbxbuild/Phase/LegacyTargetResolver.h>
+#include <pbxbuild/Phase/ProductTypeResolver.h>
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
@@ -21,6 +22,7 @@
 #include <pbxbuild/BuildGraph.h>
 
 using pbxbuild::Phase::PhaseInvocations;
+using pbxbuild::Phase::PhaseContext;
 using pbxbuild::BuildGraph;
 using pbxbuild::ToolInvocation;
 using pbxbuild::Tool::ToolContext;
@@ -42,21 +44,6 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
     /* Create the tool context for building. */
     std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
     PhaseContext phaseContext{ToolContext(workingDirectory)};
-
-    switch (target->type()) {
-        case pbxproj::PBX::Target::kTypeAggregate:
-        case pbxproj::PBX::Target::kTypeNative:
-            break;
-        case pbxproj::PBX::Target::kTypeLegacy:
-            pbxproj::PBX::LegacyTarget::shared_ptr LT = std::static_pointer_cast <pbxproj::PBX::LegacyTarget> (target);
-
-            Phase::LegacyTargetResolver legacyScript = Phase::LegacyTargetResolver(LT);
-            if (!legacyScript.resolve(phaseEnvironment, &phaseContext)) {
-                fprintf(stderr, "error: unable to resolve legacy script\n");
-            }
-
-            break;
-    }
 
     /* Filter build phases to ones appropriate for this target. */
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
@@ -149,6 +136,42 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
             }
             default: break;
         }
+    }
+
+    /*
+     * Add target-level invocations. Note these must come last as they use the context values set
+     * by tools added above for the various build phases. For example, the final 'touch' must depend
+     * on all previous invocations that created the output bundle.
+     */
+    switch (target->type()) {
+        case pbxproj::PBX::Target::kTypeNative: {
+            /*
+             * Various product types have special (post-)processing. For example, bundles have
+             * have info plist processing and applications additionally have a validation step.
+             */
+            if (pbxspec::PBX::ProductType::shared_ptr const &PT = phaseEnvironment.targetEnvironment().productType()) {
+                Phase::ProductTypeResolver productType = Phase::ProductTypeResolver(PT);
+                if (!productType.resolve(phaseEnvironment, &phaseContext)) {
+                    fprintf(stderr, "error: unable to resolve product type\n");
+                }
+            }
+            break;
+        }
+        case pbxproj::PBX::Target::kTypeLegacy: {
+            /*
+             * Run the script to build the legacy target.
+             */
+            pbxproj::PBX::LegacyTarget::shared_ptr LT = std::static_pointer_cast<pbxproj::PBX::LegacyTarget>(target);
+
+            Phase::LegacyTargetResolver legacyScript = Phase::LegacyTargetResolver(LT);
+            if (!legacyScript.resolve(phaseEnvironment, &phaseContext)) {
+                fprintf(stderr, "error: unable to resolve legacy script\n");
+            }
+
+            break;
+        }
+        case pbxproj::PBX::Target::kTypeAggregate:
+            break;
     }
 
     return PhaseInvocations(phaseContext.toolContext().invocations());
