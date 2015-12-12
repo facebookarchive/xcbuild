@@ -57,8 +57,14 @@ Create(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &ident
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    pbxspec::PBX::Tool::shared_ptr tool = buildEnvironment.specManager()->tool(identifier, targetEnvironment.specDomains());
-    if (tool == nullptr) {
+    pbxspec::PBX::Tool::shared_ptr tool = nullptr;
+    if (pbxspec::PBX::Tool::shared_ptr tool_ = buildEnvironment.specManager()->tool(identifier, targetEnvironment.specDomains())) {
+        tool = tool_;
+    } else if (pbxspec::PBX::Compiler::shared_ptr compiler = buildEnvironment.specManager()->compiler(identifier, targetEnvironment.specDomains())) {
+        tool = std::static_pointer_cast<pbxspec::PBX::Tool>(compiler);
+    } else if (pbxspec::PBX::Linker::shared_ptr linker = buildEnvironment.specManager()->linker(identifier, targetEnvironment.specDomains())) {
+        tool = std::static_pointer_cast<pbxspec::PBX::Tool>(linker);
+    } else {
         fprintf(stderr, "warning: could not find tool %s\n", identifier.c_str());
         return nullptr;
     }
