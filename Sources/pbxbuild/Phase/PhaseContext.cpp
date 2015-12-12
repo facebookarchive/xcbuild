@@ -11,6 +11,7 @@
 #include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
+#include <pbxbuild/Tool/InfoPlistResolver.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/TouchResolver.h>
 #include <pbxbuild/Tool/ToolResolver.h>
@@ -22,6 +23,7 @@ using pbxbuild::Phase::PhaseContext;
 using pbxbuild::Tool::ToolContext;
 using pbxbuild::Tool::ClangResolver;
 using pbxbuild::Tool::CopyResolver;
+using pbxbuild::Tool::InfoPlistResolver;
 using pbxbuild::Tool::ScriptResolver;
 using pbxbuild::Tool::TouchResolver;
 using pbxbuild::Tool::ToolResolver;
@@ -56,6 +58,16 @@ copyResolver(PhaseEnvironment const &phaseEnvironment)
     }
 
     return _copyResolver.get();
+}
+
+InfoPlistResolver const *PhaseContext::
+infoPlistResolver(PhaseEnvironment const &phaseEnvironment)
+{
+    if (_infoPlistResolver == nullptr) {
+        _infoPlistResolver = InfoPlistResolver::Create(phaseEnvironment);
+    }
+
+    return _infoPlistResolver.get();
 }
 
 ScriptResolver const *PhaseContext::

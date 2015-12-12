@@ -28,6 +28,7 @@ private:
     HeadermapInfo               _headermapInfo;
     CompilationInfo             _compilationInfo;
     SearchPaths                 _searchPaths;
+    std::vector<std::string>    _additionalInfoPlistContents;
 
 private:
     std::vector<ToolInvocation> _invocations;
@@ -48,6 +49,8 @@ public:
     { return _compilationInfo; }
     SearchPaths const &searchPaths() const
     { return _searchPaths; }
+    std::vector<std::string> const &additionalInfoPlistContents() const
+    { return _additionalInfoPlistContents; }
 
 public:
     HeadermapInfo &headermapInfo()
@@ -56,6 +59,8 @@ public:
     { return _compilationInfo; }
     SearchPaths &searchPaths()
     { return _searchPaths; }
+    std::vector<std::string> &additionalInfoPlistContents()
+    { return _additionalInfoPlistContents; }
 
 public:
     std::vector<ToolInvocation> const &invocations() const

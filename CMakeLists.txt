@@ -16,6 +16,7 @@ set(CMAKE_BUILD_TYPE "Debug")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/expat/expat/lib)
 include_directories(${CMAKE_BINARY_DIR}/ThirdParty/expat/expat)
@@ -248,6 +249,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/SearchPaths.cpp
     Sources/pbxbuild/Tool/CopyResolver.cpp
     Sources/pbxbuild/Tool/HeadermapResolver.cpp
+    Sources/pbxbuild/Tool/InfoPlistResolver.cpp
     Sources/pbxbuild/Tool/ClangResolver.cpp
     Sources/pbxbuild/Tool/LinkerResolver.cpp
     Sources/pbxbuild/Tool/ScriptResolver.cpp

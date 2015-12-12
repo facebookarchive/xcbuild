@@ -10,12 +10,14 @@
 #include <pbxbuild/Phase/ProductTypeResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Phase/PhaseContext.h>
-#include <pbxbuild/Tool/ToolResolver.h>
+#include <pbxbuild/Tool/InfoPlistResolver.h>
 #include <pbxbuild/Tool/TouchResolver.h>
+#include <pbxbuild/Tool/ToolResolver.h>
 
 using pbxbuild::Phase::ProductTypeResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Phase::PhaseContext;
+using pbxbuild::Tool::InfoPlistResolver;
 using pbxbuild::Tool::TouchResolver;
 using pbxbuild::Tool::ToolResolver;
 
@@ -43,7 +45,16 @@ resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext) co
      * Copy and compose the info plist.
      */
     if (_productType->hasInfoPlist()) {
-        // TODO(grp): Invoke builtin-infoPlistUtility here.
+        if (pbxsetting::Type::ParseBoolean(environment.resolve("INFOPLIST_PREPROCESS"))) {
+            // TODO(grp): Preprocess Info.plist using configuration from other build settings.
+        }
+
+        if (InfoPlistResolver const *infoPlistResolver = phaseContext->infoPlistResolver(phaseEnvironment)) {
+            /* Create the Info.plist. Note that INFOPLIST_FILE is the input, and INFOPLIST_PATH is the output. */
+            infoPlistResolver->resolve(&phaseContext->toolContext(), environment, environment.resolve("INFOPLIST_FILE"));
+        } else {
+            fprintf(stderr, "warning: could not find info plist tool\n");
+        }
     }
 
     /*

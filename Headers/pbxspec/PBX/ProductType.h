@@ -108,7 +108,7 @@ public:
     { return _defaultBuildProperties; }
 
 public:
-    inline Validation const validation() const
+    inline Validation const &validation() const
     { return _validation; }
 
 public:

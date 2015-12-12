@@ -81,7 +81,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto CL     = unpack.cast <plist::String> ("CommandLine");
     auto CIC    = unpack.cast <plist::String> ("CommandInvocationClass");
     auto CI     = unpack.cast <plist::String> ("CommandIdentifier");
-    auto RN     = unpack.cast <plist::String> ("RuleName");
+    auto RN     = unpack.cast <plist::Object> ("RuleName");
     auto RF     = unpack.cast <plist::String> ("RuleFormat");
     auto AIF    = unpack.cast <plist::String> ("AdditionalInputFiles");
     auto BJRN   = unpack.cast <plist::String> ("BuiltinJambaseRuleName");
@@ -155,8 +155,22 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
         _commandIdentifier = CI->value();
     }
 
-    if (RN != nullptr) {
-        _ruleName = pbxsetting::Value::Parse(RN->value());
+    if (auto RNS = plist::CastTo<plist::String>(RN)) {
+        _ruleName = pbxsetting::Value::Parse(RNS->value());
+    } else if (auto RNA = plist::CastTo<plist::Array>(RN)) {
+        std::string value;
+
+        for (size_t n = 0; n < RNA->count(); n++) {
+            if (n != 0) {
+                value += " ";
+            }
+
+            if (auto entry = RNA->value<plist::String>(n)) {
+                value += entry->value();
+            }
+        }
+
+        _ruleName = pbxsetting::Value::Parse(value);
     }
 
     if (RF != nullptr) {

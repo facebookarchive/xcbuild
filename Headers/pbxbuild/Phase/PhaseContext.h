@@ -22,6 +22,7 @@ class TypeResolvedFile;
 namespace Tool {
     class ClangResolver;
     class CopyResolver;
+    class InfoPlistResolver;
     class ScriptResolver;
     class TouchResolver;
     class ToolResolver;
@@ -38,6 +39,7 @@ private:
 private:
     std::unique_ptr<Tool::ClangResolver>                _clangResolver;
     std::unique_ptr<Tool::CopyResolver>                 _copyResolver;
+    std::unique_ptr<Tool::InfoPlistResolver>            _infoPlistResolver;
     std::unique_ptr<Tool::ScriptResolver>               _scriptResolver;
     std::unique_ptr<Tool::TouchResolver>                _touchResolver;
     std::unordered_map<std::string, Tool::ToolResolver> _toolResolvers;
@@ -55,11 +57,12 @@ public:
     { return _toolContext; }
 
 public:
-    Tool::ClangResolver const  *clangResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::CopyResolver const   *copyResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::ScriptResolver const *scriptResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::TouchResolver const  *touchResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::ToolResolver const   *toolResolver(PhaseEnvironment const &phaseEnvironment, std::string const &identifier);
+    Tool::ClangResolver const     *clangResolver(PhaseEnvironment const &phaseEnvironment);
+    Tool::CopyResolver const      *copyResolver(PhaseEnvironment const &phaseEnvironment);
+    Tool::InfoPlistResolver const *infoPlistResolver(PhaseEnvironment const &phaseEnvironment);
+    Tool::ScriptResolver const    *scriptResolver(PhaseEnvironment const &phaseEnvironment);
+    Tool::TouchResolver const     *touchResolver(PhaseEnvironment const &phaseEnvironment);
+    Tool::ToolResolver const      *toolResolver(PhaseEnvironment const &phaseEnvironment, std::string const &identifier);
 
 public:
     bool resolveBuildFile(
