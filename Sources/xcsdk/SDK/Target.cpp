@@ -161,6 +161,14 @@ parse(plist::Dictionary const *dict)
                 }
             }
         }
+    } else {
+        if (std::shared_ptr<Manager> manager = _manager.lock()) {
+            auto const &TCS = manager->toolchains();
+            auto TCII = TCS.find(Toolchain::DefaultIdentifier());
+            if (TCII != TCS.end()) {
+                _toolchains.push_back(TCII->second);
+            }
+        }
     }
 
     return true;

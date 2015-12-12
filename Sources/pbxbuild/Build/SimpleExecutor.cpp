@@ -148,6 +148,9 @@ buildTarget(
 
         if (!builtin && !FSUtil::IsAbsolutePath(executable)) {
             executable = FSUtil::FindExecutable(executable, targetEnvironment.sdk()->executablePaths());
+            if (executable.empty()) {
+                fprintf(stderr, "error: unable to find executable %s\n", invocation.executable().c_str());
+            }
         }
 
         Formatter::Print(_formatter->invocation(invocation, executable));

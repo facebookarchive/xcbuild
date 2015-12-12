@@ -95,7 +95,7 @@ resolveBuildFile(
     TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
     if (buildRule == nullptr) {
         fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
-        return false;
+        return true;
     }
 
     if (!buildRule->script().empty()) {
