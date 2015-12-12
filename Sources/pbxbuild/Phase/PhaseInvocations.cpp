@@ -9,6 +9,7 @@
 
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/HeadersResolver.h>
 #include <pbxbuild/Phase/LegacyTargetResolver.h>
@@ -39,7 +40,8 @@ PhaseInvocations PhaseInvocations::
 Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
 {
     /* Create the tool context for building. */
-    ToolContext toolContext = ToolContext(phaseEnvironment.targetEnvironment().workingDirectory());
+    std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
+    PhaseContext phaseContext{ToolContext(workingDirectory)};
 
     switch (target->type()) {
         case pbxproj::PBX::Target::kTypeAggregate:
@@ -49,7 +51,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
             pbxproj::PBX::LegacyTarget::shared_ptr LT = std::static_pointer_cast <pbxproj::PBX::LegacyTarget> (target);
 
             Phase::LegacyTargetResolver legacyScript = Phase::LegacyTargetResolver(LT);
-            if (!legacyScript.resolve(phaseEnvironment, &toolContext)) {
+            if (!legacyScript.resolve(phaseEnvironment, &phaseContext)) {
                 fprintf(stderr, "error: unable to resolve legacy script\n");
             }
 
@@ -71,7 +73,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
             hasSourcesPhase = true;
 
             Phase::SourcesResolver sourcesResolver = Phase::SourcesResolver(BP);
-            if (!sourcesResolver.resolve(phaseEnvironment, &toolContext)) {
+            if (!sourcesResolver.resolve(phaseEnvironment, &phaseContext)) {
                 fprintf(stderr, "error: unable to resolve sources\n");
             }
             break;
@@ -97,7 +99,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
         }
 
         Phase::FrameworksResolver link = Phase::FrameworksResolver(frameworksPhase);
-        if (!link.resolve(phaseEnvironment, &toolContext)) {
+        if (!link.resolve(phaseEnvironment, &phaseContext)) {
             fprintf(stderr, "error: unable to resolve linking\n");
         }
     }
@@ -108,7 +110,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
 
                 Phase::ShellScriptResolver shellScript = Phase::ShellScriptResolver(BP);
-                if (!shellScript.resolve(phaseEnvironment, &toolContext)) {
+                if (!shellScript.resolve(phaseEnvironment, &phaseContext)) {
                     fprintf(stderr, "error: unable to resolve shell script\n");
                 }
                 break;
@@ -117,7 +119,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
                 auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
 
                 Phase::CopyFilesResolver copyFiles = Phase::CopyFilesResolver(BP);
-                if (!copyFiles.resolve(phaseEnvironment, &toolContext)) {
+                if (!copyFiles.resolve(phaseEnvironment, &phaseContext)) {
                     fprintf(stderr, "error: unable to resolve copy files\n");
                 }
                 break;
@@ -126,7 +128,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
                 auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
 
                 Phase::HeadersResolver headers = Phase::HeadersResolver(BP);
-                if (!headers.resolve(phaseEnvironment, &toolContext)) {
+                if (!headers.resolve(phaseEnvironment, &phaseContext)) {
                     fprintf(stderr, "error: unable to resolve headers\n");
                 }
                 break;
@@ -135,7 +137,7 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ResourcesBuildPhase> (buildPhase);
 
                 Phase::ResourcesResolver resources = Phase::ResourcesResolver(BP);
-                if (!resources.resolve(phaseEnvironment, &toolContext)) {
+                if (!resources.resolve(phaseEnvironment, &phaseContext)) {
                     fprintf(stderr, "error: unable to resolve resources\n");
                 }
                 break;
@@ -149,6 +151,6 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
         }
     }
 
-    return PhaseInvocations(toolContext.invocations());
+    return PhaseInvocations(phaseContext.toolContext().invocations());
 }
 

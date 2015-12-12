@@ -9,6 +9,7 @@
 
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/TargetEnvironment.h>
@@ -16,15 +17,14 @@
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/Tool/LinkerResolver.h>
-#include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 
 using pbxbuild::Phase::FrameworksResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Phase::SourcesResolver;
+using pbxbuild::Phase::PhaseContext;
 using pbxbuild::Tool::LinkerResolver;
 using pbxbuild::Tool::ToolResolver;
-using pbxbuild::Tool::ToolContext;
 using pbxbuild::Tool::CompilationInfo;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -78,12 +78,12 @@ InputFiles(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::P
 }
 
 bool FrameworksResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    CompilationInfo const &compilationInfo = toolContext->compilationInfo();
+    CompilationInfo const &compilationInfo = phaseContext->toolContext().compilationInfo();
 
     std::vector<pbxbuild::ToolInvocation> invocations;
 
@@ -133,8 +133,8 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
             archEnvironment.insertFront(PhaseEnvironment::ArchitectureLevel(arch), false);
 
             std::vector<std::string> sourceOutputs;
-            auto it = toolContext->variantArchitectureInvocations().find(std::make_pair(variant, arch));
-            if (it != toolContext->variantArchitectureInvocations().end()) {
+            auto it = phaseContext->toolContext().variantArchitectureInvocations().find(std::make_pair(variant, arch));
+            if (it != phaseContext->toolContext().variantArchitectureInvocations().end()) {
                 std::vector<pbxbuild::ToolInvocation> const &sourceInvocations = it->second;
                 for (pbxbuild::ToolInvocation const &invocation : sourceInvocations) {
                     for (std::string const &output : invocation.outputs()) {
@@ -150,20 +150,20 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
                 std::string architectureIntermediatesDirectory = variantIntermediatesDirectory + "/" + arch;
                 std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
 
-                linkerResolver->resolve(toolContext, archEnvironment, sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, linkerExecutable);
+                linkerResolver->resolve(&phaseContext->toolContext(), archEnvironment, sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, linkerExecutable);
                 universalBinaryInputs.push_back(architectureIntermediatesOutput);
             } else {
-                linkerResolver->resolve(toolContext, archEnvironment, sourceOutputs, files, variantProductsOutput, linkerArguments, linkerExecutable);
+                linkerResolver->resolve(&phaseContext->toolContext(), archEnvironment, sourceOutputs, files, variantProductsOutput, linkerArguments, linkerExecutable);
             }
         }
 
         if (createUniversalBinary) {
-            lipoResolver->resolve(toolContext, variantEnvironment, universalBinaryInputs, { }, variantProductsOutput, { });
+            lipoResolver->resolve(&phaseContext->toolContext(), variantEnvironment, universalBinaryInputs, { }, variantProductsOutput, { });
         }
 
         if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {
             std::string dsymfile = variantEnvironment.resolve("DWARF_DSYM_FOLDER_PATH") + "/" + variantEnvironment.resolve("DWARF_DSYM_FILE_NAME");
-            dsymutil->resolve(toolContext, variantEnvironment, { variantProductsOutput }, { dsymfile });
+            dsymutil->resolve(&phaseContext->toolContext(), variantEnvironment, { variantProductsOutput }, { dsymfile });
         }
     }
 

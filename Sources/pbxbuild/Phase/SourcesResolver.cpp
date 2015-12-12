@@ -9,34 +9,28 @@
 
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
-#include <pbxbuild/Tool/ToolResolver.h>
-#include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
-#include <pbxbuild/Tool/ToolContext.h>
 
 using pbxbuild::Phase::SourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::Tool::ToolResolver;
+using pbxbuild::Phase::PhaseContext;
 using pbxbuild::Tool::ClangResolver;
-using pbxbuild::Tool::ScriptResolver;
 using pbxbuild::Tool::HeadermapResolver;
 using pbxbuild::Tool::CompilationInfo;
 using pbxbuild::Tool::HeadermapInfo;
 using pbxbuild::Tool::PrecompiledHeaderInfo;
 using pbxbuild::Tool::SearchPaths;
-using pbxbuild::Tool::ToolContext;
-using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
-using libutil::FSUtil;
 
 SourcesResolver::
 SourcesResolver(pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase) :
@@ -49,50 +43,13 @@ SourcesResolver::
 {
 }
 
-static void
-CreateCompilation(
-    ClangResolver const &clangResolver,
-
-    pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
-    TypeResolvedFile const &file,
-    pbxsetting::Environment const &environment,
-
-    PhaseEnvironment const &phaseEnvironment,
-
-    ToolContext *toolContext
-)
-{
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    std::string outputBaseName;
-    auto it = targetEnvironment.buildFileDisambiguation().find(buildFile);
-    if (it != targetEnvironment.buildFileDisambiguation().end()) {
-        outputBaseName = it->second;
-    } else {
-        outputBaseName = FSUtil::GetBaseNameWithoutExtension(file.filePath());
-    }
-
-    clangResolver.resolveSource(
-        toolContext,
-        environment,
-        file,
-        buildFile->compilerFlags(),
-        outputBaseName
-    );
-}
-
 bool SourcesResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
-    if (scriptResolver == nullptr) {
-        return false;
-    }
-
-    std::unique_ptr<ClangResolver> clangResolver = ClangResolver::Create(phaseEnvironment);
+    ClangResolver const *clangResolver = phaseContext->clangResolver(phaseEnvironment);
     if (clangResolver == nullptr) {
         return false;
     }
@@ -103,8 +60,8 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
     }
 
     /* Populate the tool context with what's needed for compilation. */
-    SearchPaths::Resolve(toolContext, targetEnvironment.environment());
-    headermapResolver->resolve(toolContext, targetEnvironment.environment(), phaseEnvironment.target());
+    SearchPaths::Resolve(&phaseContext->toolContext(), targetEnvironment.environment());
+    headermapResolver->resolve(&phaseContext->toolContext(), targetEnvironment.environment(), phaseEnvironment.target());
 
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, TypeResolvedFile> files;
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
@@ -127,6 +84,8 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
             currentEnvironment.insertFront(PhaseEnvironment::VariantLevel(variant), false);
             currentEnvironment.insertFront(PhaseEnvironment::ArchitectureLevel(arch), false);
 
+            std::string outputDirectory = currentEnvironment.expand(pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)"));
+
             for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
                 auto it = files.find(buildFile);
                 if (it == files.end()) {
@@ -134,33 +93,8 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
                 }
                 TypeResolvedFile const &file = it->second;
 
-                pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
-                if (buildRule != nullptr) {
-                    if (buildRule->tool() != nullptr) {
-                        pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
-                        if (tool->identifier() == "com.apple.compilers.gcc") {
-                            CreateCompilation(
-                                *clangResolver,
-
-                                buildFile,
-                                file,
-                                currentEnvironment,
-
-                                phaseEnvironment,
-
-                                toolContext
-                            );
-                        } else {
-                            // TODO(grp): Use an appropriate compiler context to create this invocation.
-                            std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, tool->identifier());
-                            toolResolver->resolve(toolContext, currentEnvironment, { }, { file.filePath() });
-                        }
-                    } else if (!buildRule->script().empty()) {
-                        scriptResolver->resolve(toolContext, currentEnvironment, file.filePath(), buildRule);
-                    }
-                } else {
-                    fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
-                    continue;
+                if (!phaseContext->resolveBuildFile(phaseEnvironment, currentEnvironment, _buildPhase, buildFile, file, outputDirectory)) {
+                    return false;
                 }
             }
         }

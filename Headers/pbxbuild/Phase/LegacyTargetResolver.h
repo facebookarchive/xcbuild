@@ -11,15 +11,12 @@
 #define __pbxbuild_Phase_LegacyTargetResolver_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/ToolInvocation.h>
 
 namespace pbxbuild {
-
-namespace Tool { class ToolContext; }
-
 namespace Phase {
 
 class PhaseEnvironment;
+class PhaseContext;
 
 class LegacyTargetResolver {
 private:
@@ -34,7 +31,7 @@ public:
     { return _legacyTarget; }
 
 public:
-    bool resolve(PhaseEnvironment const &phaseEnvironment, Tool::ToolContext *toolContext);
+    bool resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext);
 };
 
 }

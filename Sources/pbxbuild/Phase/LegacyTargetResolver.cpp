@@ -9,12 +9,12 @@
 
 #include <pbxbuild/Phase/LegacyTargetResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
-#include <pbxbuild/Tool/ToolContext.h>
 
 using pbxbuild::Phase::LegacyTargetResolver;
+using pbxbuild::Phase::PhaseContext;
 using pbxbuild::Tool::ScriptResolver;
-using pbxbuild::Tool::ToolContext;
 
 LegacyTargetResolver::
 LegacyTargetResolver(pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget) :
@@ -28,9 +28,9 @@ LegacyTargetResolver::
 }
 
 bool LegacyTargetResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
 {
-    std::unique_ptr<ScriptResolver> scriptResolver = ScriptResolver::Create(phaseEnvironment);
+    ScriptResolver const *scriptResolver = phaseContext->scriptResolver(phaseEnvironment);
     if (scriptResolver == nullptr) {
         return false;
     }
@@ -38,6 +38,6 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
     std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
 
-    scriptResolver->resolve(toolContext, environment, _legacyTarget);
+    scriptResolver->resolve(&phaseContext->toolContext(), environment, _legacyTarget);
     return true;
 }

@@ -9,18 +9,12 @@
 
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Tool/ToolResolver.h>
-#include <pbxbuild/Tool/ToolContext.h>
-#include <pbxbuild/Tool/CopyResolver.h>
+#include <pbxbuild/Phase/PhaseContext.h>
 
 using pbxbuild::Phase::ResourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::Tool::CopyResolver;
-using pbxbuild::Tool::ToolResolver;
-using pbxbuild::Tool::ToolContext;
-using pbxbuild::ToolInvocation;
+using pbxbuild::Phase::PhaseContext;
 using pbxbuild::TypeResolvedFile;
-using libutil::FSUtil;
 
 ResourcesResolver::
 ResourcesResolver(pbxproj::PBX::ResourcesBuildPhase::shared_ptr const &buildPhase) :
@@ -33,35 +27,12 @@ ResourcesResolver::
 {
 }
 
-static void
-CopyInvocation(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext, CopyResolver const *copyResolver, TypeResolvedFile const &file, std::string const &outputDirectory, pbxsetting::Environment const &environment)
-{
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-    std::string const &workingDirectory = targetEnvironment.workingDirectory();
-
-    pbxbuild::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
-    if (buildRule != nullptr && buildRule->tool() != nullptr) {
-        pbxspec::PBX::Tool::shared_ptr tool = buildRule->tool();
-
-        std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(file.filePath());
-        std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, tool->identifier());
-        toolResolver->resolve(toolContext, environment, { file.filePath() }, { outputPath });
-    } else {
-        copyResolver->resolve(toolContext, environment, file.filePath(), outputDirectory, "CpResource");
-    }
-}
-
 bool ResourcesResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
 {
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
     pbxspec::Manager::shared_ptr const &specManager = phaseEnvironment.buildEnvironment().specManager();
     std::string resourcesDirectory = environment.resolve("BUILT_PRODUCTS_DIR") + "/" + environment.resolve("UNLOCALIZED_RESOURCES_FOLDER_PATH");
-
-    std::unique_ptr<CopyResolver> copyResolver = CopyResolver::Create(phaseEnvironment);
-    if (copyResolver == nullptr) {
-        return false;
-    }
 
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
         if (buildFile->fileRef() == nullptr) {
@@ -73,7 +44,9 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
                 std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
                 if (file != nullptr) {
-                    CopyInvocation(phaseEnvironment, toolContext, copyResolver.get(), *file, resourcesDirectory, environment);
+                    if (!phaseContext->resolveBuildFile(phaseEnvironment, environment, _buildPhase, buildFile, *file, resourcesDirectory)) {
+                        return false;
+                    }
                 }
                 break;
             }
@@ -89,7 +62,9 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
 
                     std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
                     if (file != nullptr) {
-                        CopyInvocation(phaseEnvironment, toolContext, copyResolver.get(), *file, outputDirectory, environment);
+                        if (!phaseContext->resolveBuildFile(phaseEnvironment, environment, _buildPhase, buildFile, *file, outputDirectory)) {
+                            return false;
+                        }
                     }
                 }
                 break;

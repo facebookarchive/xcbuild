@@ -9,12 +9,13 @@
 
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 
 using pbxbuild::Phase::CopyFilesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
+using pbxbuild::Phase::PhaseContext;
 using pbxbuild::Tool::CopyResolver;
-using pbxbuild::Tool::ToolContext;
 using libutil::FSUtil;
 
 CopyFilesResolver::
@@ -67,12 +68,12 @@ DestinationOutputPath(pbxproj::PBX::CopyFilesBuildPhase::Destination destination
 }
 
 bool CopyFilesResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *toolContext)
+resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
 {
     pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
-    std::unique_ptr<CopyResolver> copyResolver = CopyResolver::Create(phaseEnvironment);
+    CopyResolver const *copyResolver = phaseContext->copyResolver(phaseEnvironment);
     if (copyResolver == nullptr) {
         return false;
     }
@@ -110,7 +111,7 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, ToolContext *
             continue;
         }
 
-        copyResolver->resolve(toolContext, environment, file->filePath(), outputDirectory, "PBXCp");
+        copyResolver->resolve(&phaseContext->toolContext(), environment, file->filePath(), outputDirectory, "PBXCp");
     }
 
     return true;
