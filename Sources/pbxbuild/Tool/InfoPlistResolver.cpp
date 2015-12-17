@@ -50,7 +50,7 @@ resolve(
     }
 
     pbxsetting::Level level = pbxsetting::Level({
-        pbxsetting::Setting::Parse("GeneratedPkgInfoFile", (pkginfoFile ? "$(PKGINFO_FILE_PATH)" : "")),
+        pbxsetting::Setting::Parse("GeneratedPkgInfoFile", (pkginfoFile ? "$(TARGET_BUILD_DIR)/$(PKGINFO_PATH)" : "")),
         pbxsetting::Setting::Parse("ExpandBuildSettings", "$(INFOPLIST_EXPAND_BUILD_SETTINGS)"),
         pbxsetting::Setting::Parse("OutputFormat", "$(INFOPLIST_OUTPUT_FORMAT)"),
         pbxsetting::Setting::Parse("AdditionalContentFilePaths", additionalContentPaths),
@@ -64,7 +64,7 @@ resolve(
 
     std::string infoPlistPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("INFOPLIST_PATH");
 
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, env, { input }, { infoPlistPath });
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, env, { toolContext->workingDirectory() + "/" + input }, { infoPlistPath });
     OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, std::string());
     std::string logMessage = ToolResult::LogMessage(toolEnvironment);

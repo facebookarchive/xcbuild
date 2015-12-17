@@ -23,7 +23,10 @@ public:
     virtual std::string name() = 0;
 
 public:
-    virtual int run(std::vector<std::string> const &args) = 0;
+    virtual int run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment) = 0;
+
+public:
+    int runc(int argc, char **argv, char **envp);
 };
 
 }

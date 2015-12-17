@@ -175,7 +175,7 @@ buildTarget(
                     return false;
                 }
 
-                if (driver->run(invocation.arguments()) != 0) {
+                if (driver->run(invocation.arguments(), invocation.environment()) != 0) {
                     Formatter::Print(_formatter->failure(_buildContext, { invocation }));
                     return false;
                 }

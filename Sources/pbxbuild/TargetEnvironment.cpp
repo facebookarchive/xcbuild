@@ -339,10 +339,10 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
     environment.insertFront(projectConfiguration->buildSettings(), false);
 
     if (packageType != nullptr) {
-        environment.insertFront(PackageTypeLevel(packageType), false);
+        environment.insertFront(PackageTypeLevel(packageType), true);
     }
     if (productType != nullptr) {
-        environment.insertFront(ProductTypeLevel(productType), false);
+        environment.insertFront(ProductTypeLevel(productType), true);
     }
 
     environment.insertFront(target->settings(), false);

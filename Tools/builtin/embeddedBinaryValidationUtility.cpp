@@ -10,10 +10,8 @@
 #include <builtin/embeddedBinaryValidationUtility/Driver.h>
 
 int
-main(int argc, char **argv)
+main(int argc, char **argv, char **envp)
 {
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-
     builtin::embeddedBinaryValidationUtility::Driver driver;
-    return driver.run(args);
+    return driver.runc(argc, argv, envp);
 }

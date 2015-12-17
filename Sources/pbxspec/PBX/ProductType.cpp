@@ -110,6 +110,8 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (PTs != nullptr) {
+        _packageTypes.clear();
+
         for (size_t n = 0; n < PTs->count(); n++) {
             if (auto PT = PTs->value <plist::String> (n)) {
                 _packageTypes.push_back(PT->value());

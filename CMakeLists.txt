@@ -285,11 +285,11 @@ target_link_libraries(util)
 add_library(plist SHARED ${libplist_SOURCES})
 target_link_libraries(plist util expat)
 
-add_library(builtin SHARED ${libbuiltin_SOURCES})
-target_link_libraries(builtin util plist ${CORE_FOUNDATION} ${CORE_SERVICES})
-
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting util plist)
+
+add_library(builtin SHARED ${libbuiltin_SOURCES})
+target_link_libraries(builtin util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
 
 add_library(xcsdk SHARED ${libxcsdk_SOURCES})
 target_link_libraries(xcsdk pbxsetting util plist)

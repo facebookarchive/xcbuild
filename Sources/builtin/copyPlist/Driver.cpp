@@ -33,7 +33,7 @@ name()
 }
 
 int Driver::
-run(std::vector<std::string> const &args)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -64,7 +64,7 @@ run(std::vector<std::string> const &args)
             convertFormat = std::unique_ptr<plist::Format::Any>(new plist::Format::Any(plist::Format::Any::Create(
                 plist::Format::XML::Create(plist::Format::Encoding::UTF8)
             )));
-        } else if (options.convertFormat() == "ascii" || options.convertFormat() == "openstep1") {
+        } else if (options.convertFormat() == "ascii1" || options.convertFormat() == "openstep1") {
             convertFormat = std::unique_ptr<plist::Format::Any>(new plist::Format::Any(plist::Format::Any::Create(
                 plist::Format::ASCII::Create(plist::Format::Encoding::UTF8)
             )));

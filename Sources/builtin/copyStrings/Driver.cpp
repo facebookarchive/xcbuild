@@ -32,7 +32,7 @@ name()
 }
 
 int Driver::
-run(std::vector<std::string> const &args)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
