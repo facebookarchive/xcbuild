@@ -213,7 +213,7 @@ __ABPWriteString(ABPContext *context, String *string)
     } else {
         std::u16string u16string;
         u16string.resize(string->value().size() * 2);
-        size_t length = ::utf8_to_utf16(reinterpret_cast<uint16_t *>(&u16string[0]), u16string.size(),                                           string->value().data(), string->value().size(), 0, nullptr);
+        size_t length = ::utf8_to_utf16(reinterpret_cast<uint16_t *>(&u16string[0]), u16string.size(), string->value().data(), string->value().size(), 0, nullptr);
         u16string.resize(length);
 
         success = __ABPWriteStringUnicode(context, u16string.data(), length);
@@ -376,8 +376,10 @@ _ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *re
     Object const *origObject = *object;
 
     /* Is this object already mapped? */
-    newObject = context->mappings[origObject];
-    if (newObject == NULL) {
+    auto mit = context->mappings.find(origObject);
+    if (mit != context->mappings.end()) {
+        newObject = mit->second;
+    } else {
         newObject = origObject;
 
         /* Process the object for mapping. */
@@ -391,10 +393,10 @@ _ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *re
                                             type != Dictionary::Type() &&
                                             type != Null::Type() &&
                                             type != Boolean::Type())) {
-                context->mappings[origObject] = newObject;
+                context->mappings.insert({ origObject, newObject });
             }
         } else {
-            /* 
+            /*
              * The user callback can't handle this object, supposedly because
              * we can.
              */
@@ -569,6 +571,10 @@ ABPWriterInit(ABPContext *context, ABPStreamCallBacks const *streamCallBacks,
     context->streamCallBacks  = *streamCallBacks;
     context->processCallBacks = *callbacks;
     context->flags            = 0;
+    context->references       = std::unordered_map<plist::Object const *, int>();
+    context->mappings         = std::unordered_map<plist::Object const *, plist::Object const *>();
+    context->written          = std::unordered_set<plist::Object const *>();
+    context->keyStrings       = std::unordered_map<plist::Dictionary const *, std::unordered_map<int, plist::String *>>();
 
     return true;
 }
