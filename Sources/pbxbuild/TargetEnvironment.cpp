@@ -32,6 +32,10 @@ BuildFileDisambiguation(pbxproj::PBX::Target::shared_ptr const &target)
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> buildFileDisambiguation;
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
+        if (buildPhase->type() != pbxproj::PBX::BuildPhase::kTypeSources) {
+            continue;
+        }
+
         for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
             std::string name = FSUtil::GetBaseNameWithoutExtension(buildFile->fileRef()->name());
 
