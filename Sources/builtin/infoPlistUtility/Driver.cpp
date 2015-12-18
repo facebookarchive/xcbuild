@@ -95,6 +95,27 @@ AddBuildEnvironment(plist::Dictionary *root, pbxsetting::Environment const &envi
     root->set("DTSDKBuild", plist::String::New(environment.resolve("SDK_PRODUCT_BUILD_VERSION")));
 
     root->set("MinimumOSVersion", plist::String::New(environment.expand(pbxsetting::Value::Parse("$($(DEPLOYMENT_TARGET_SETTING_NAME))"))));
+
+    std::string targetedDeviceFamily = environment.resolve("TARGETED_DEVICE_FAMILY");
+    if (!targetedDeviceFamily.empty()) {
+        std::unique_ptr<plist::Array> deviceFamily = plist::Array::New();
+
+        std::string::size_type off = 0;
+        do {
+            std::string::size_type noff = targetedDeviceFamily.find(',', off);
+            std::string entry = (noff == std::string::npos ? targetedDeviceFamily.substr(off) : targetedDeviceFamily.substr(off, noff));
+
+            if (!entry.empty()) {
+                int value = pbxsetting::Type::ParseInteger(entry);
+                deviceFamily->append(plist::Integer::New(value));
+            }
+
+            off = noff;
+        } while ((off != std::string::npos) && (off++ < targetedDeviceFamily.size()));
+
+        std::unique_ptr<plist::Object> deviceFamilyObject = std::unique_ptr<plist::Object>(deviceFamily.release());
+        root->set("UIDeviceFamily", std::move(deviceFamilyObject));
+    }
 }
 
 static pbxsetting::Environment
