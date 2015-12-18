@@ -112,25 +112,39 @@ resolveBuildFile(
     pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
     pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
     TypeResolvedFile const &file,
-    std::string const &outputDirectory)
+    std::string const &outputDirectory,
+    std::string const &fallbackToolIdentifier)
 {
     TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
-    if (buildRule == nullptr) {
+    if (buildRule == nullptr && fallbackToolIdentifier.empty()) {
         fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
         return true;
     }
 
-    if (!buildRule->script().empty()) {
+    if (buildRule != nullptr && !buildRule->script().empty()) {
         if (ScriptResolver const *scriptResolver = this->scriptResolver(phaseEnvironment)) {
             _scriptResolver->resolve(&_toolContext, environment, file.filePath(), buildRule);
             return true;
         } else {
             return false;
         }
-    } else if (pbxspec::PBX::Tool::shared_ptr const &tool = buildRule->tool()) {
-        if (tool->identifier() == ClangResolver::ToolIdentifier()) {
+    } else {
+        std::string toolIdentifier = fallbackToolIdentifier;
+
+        if (buildRule != nullptr) {
+            if (pbxspec::PBX::Tool::shared_ptr const &tool = buildRule->tool()) {
+                toolIdentifier = tool->identifier();
+            }
+        }
+
+        if (toolIdentifier.empty()) {
+            fprintf(stderr, "warning: no tool available for build rule\n");
+            return false;
+        }
+
+        if (toolIdentifier == ClangResolver::ToolIdentifier()) {
             std::string outputBaseName;
             auto it = targetEnvironment.buildFileDisambiguation().find(buildFile);
             if (it != targetEnvironment.buildFileDisambiguation().end()) {
@@ -145,7 +159,7 @@ resolveBuildFile(
             } else {
                 return false;
             }
-        } else if (tool->identifier() == CopyResolver::ToolIdentifier()) {
+        } else if (toolIdentifier == CopyResolver::ToolIdentifier()) {
             std::string logMessageTitle;
             switch (buildPhase->type()) {
                 case pbxproj::PBX::BuildPhase::kTypeHeaders:
@@ -165,16 +179,13 @@ resolveBuildFile(
         } else {
             std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(file.filePath());
 
-            if (ToolResolver const *toolResolver = this->toolResolver(phaseEnvironment, tool->identifier())) {
+            if (ToolResolver const *toolResolver = this->toolResolver(phaseEnvironment, toolIdentifier)) {
                 toolResolver->resolve(&_toolContext, environment, { file.filePath() }, { outputPath });
                 return true;
             } else {
                 return false;
             }
         }
-    } else {
-        assert(false && "build rule should have a script or a tool");
-        return false;
     }
 }
 

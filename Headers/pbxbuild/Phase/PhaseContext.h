@@ -71,7 +71,8 @@ public:
         pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
         pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
         TypeResolvedFile const &file,
-        std::string const &outputDirectory);
+        std::string const &outputDirectory,
+        std::string const &fallbackToolIdentifier = std::string());
 };
 
 }

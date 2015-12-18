@@ -10,10 +10,12 @@
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Tool/CopyResolver.h>
 
 using pbxbuild::Phase::ResourcesResolver;
 using pbxbuild::Phase::PhaseEnvironment;
 using pbxbuild::Phase::PhaseContext;
+using pbxbuild::Tool::CopyResolver;
 using pbxbuild::TypeResolvedFile;
 
 ResourcesResolver::
@@ -44,7 +46,7 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext 
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
                 std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
                 if (file != nullptr) {
-                    if (!phaseContext->resolveBuildFile(phaseEnvironment, environment, _buildPhase, buildFile, *file, resourcesDirectory)) {
+                    if (!phaseContext->resolveBuildFile(phaseEnvironment, environment, _buildPhase, buildFile, *file, resourcesDirectory, CopyResolver::ToolIdentifier())) {
                         return false;
                     }
                 }
@@ -62,7 +64,7 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext 
 
                     std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
                     if (file != nullptr) {
-                        if (!phaseContext->resolveBuildFile(phaseEnvironment, environment, _buildPhase, buildFile, *file, outputDirectory)) {
+                        if (!phaseContext->resolveBuildFile(phaseEnvironment, environment, _buildPhase, buildFile, *file, outputDirectory, CopyResolver::ToolIdentifier())) {
                             return false;
                         }
                     }
