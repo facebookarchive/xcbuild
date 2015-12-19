@@ -41,6 +41,7 @@ public:
     static bool IsAbsolutePath(std::string const &path);
 
 public:
+    static std::string ResolveRelativePath(std::string const &path, std::string const &workingDirectory);
     static std::string ResolvePath(std::string const &path);
     static std::string NormalizePath(std::string const &path);
 

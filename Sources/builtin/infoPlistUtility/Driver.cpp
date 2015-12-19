@@ -9,11 +9,13 @@
 
 #include <builtin/infoPlistUtility/Driver.h>
 #include <builtin/infoPlistUtility/Options.h>
+#include <libutil/FSUtil.h>
 #include <plist/plist.h>
 #include <pbxsetting/pbxsetting.h>
 
 using builtin::infoPlistUtility::Driver;
 using builtin::infoPlistUtility::Options;
+using libutil::FSUtil;
 
 Driver::
 Driver()
@@ -135,7 +137,7 @@ CreateBuildEnvironment(std::unordered_map<std::string, std::string> const &envir
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -147,7 +149,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     pbxsetting::Environment settingsEnvironment = CreateBuildEnvironment(environment);
 
     /* Read in the input. */
-    std::ifstream inputFile = std::ifstream(options.input(), std::ios::binary);
+    std::ifstream inputFile = std::ifstream(FSUtil::ResolveRelativePath(options.input(), workingDirectory), std::ios::binary);
     if (inputFile.fail()) {
         fprintf(stderr, "error: unable to read input %s\n", options.input().c_str());
         return 1;
@@ -188,7 +190,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      * main Info.plist at the top level.
      */
     for (std::string const &additionalContentFile : options.additionalContentFiles()) {
-        auto additionalContent = plist::Format::Any::Read(additionalContentFile);
+        auto additionalContent = plist::Format::Any::Read(FSUtil::ResolveRelativePath(additionalContentFile, workingDirectory));
         if (additionalContent.first == nullptr) {
             fprintf(stderr, "error: unable to open additional content file %s: %s\n", additionalContentFile.c_str(), additionalContent.second.c_str());
             return 1;
@@ -225,7 +227,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      * Write the PkgInfo file. This is just the package type and signature.
      */
     if (!options.genPkgInfo().empty()) {
-        auto result = WritePkgInfo(root, options.genPkgInfo());
+        auto result = WritePkgInfo(root, FSUtil::ResolveRelativePath(options.genPkgInfo(), workingDirectory));
         if (!result.first) {
             fprintf(stderr, "error: %s\n", result.second.c_str());
             return 1;
@@ -238,13 +240,13 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     if (!options.resourceRulesFile().empty()) {
         std::string resourceRulesInputPath = settingsEnvironment.resolve("CODE_SIGN_RESOURCE_RULES_PATH");
         if (!resourceRulesInputPath.empty()) {
-            std::ifstream resourceRulesInput = std::ifstream(resourceRulesInputPath, std::ios::binary);
+            std::ifstream resourceRulesInput = std::ifstream(FSUtil::ResolveRelativePath(resourceRulesInputPath, workingDirectory), std::ios::binary);
             if (resourceRulesInput.fail()) {
                 fprintf(stderr, "error: unable to read input %s\n", resourceRulesInputPath.c_str());
                 return 1;
             }
 
-            std::ofstream resourceRulesOutput = std::ofstream(options.resourceRulesFile(), std::ios::binary);
+            std::ofstream resourceRulesOutput = std::ofstream(FSUtil::ResolveRelativePath(options.resourceRulesFile(), workingDirectory), std::ios::binary);
             if (resourceRulesOutput.fail()) {
                 fprintf(stderr, "error: could not open output path %s to write\n", options.resourceRulesFile().c_str());
                 return 1;
@@ -284,7 +286,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     }
 
     /* Write out the output. */
-    std::ofstream outputFile = std::ofstream(options.output(), std::ios::binary);
+    std::ofstream outputFile = std::ofstream(FSUtil::ResolveRelativePath(options.output(), workingDirectory), std::ios::binary);
     if (outputFile.fail()) {
         fprintf(stderr, "error: could not open output path %s to write\n", options.output().c_str());
         return 1;

@@ -195,6 +195,16 @@ IsAbsolutePath(std::string const &path)
 }
 
 std::string FSUtil::
+ResolveRelativePath(std::string const &path, std::string const &workingDirectory)
+{
+    if (IsAbsolutePath(path)) {
+        return path;
+    } else {
+        return NormalizePath(workingDirectory + "/" + path);
+    }
+}
+
+std::string FSUtil::
 ResolvePath(std::string const &path)
 {
     char realPath[PATH_MAX + 1];

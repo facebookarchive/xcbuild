@@ -33,7 +33,7 @@ name()
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -48,6 +48,14 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      */
     if (options.outputDirectory().empty()) {
         fprintf(stderr, "error: output directory not provided\n");
+        return 1;
+    }
+
+    /*
+     * Require at least one input.
+     */
+    if (options.inputs().empty()) {
+        fprintf(stderr, "error: no input files provided\n");
         return 1;
     }
 
@@ -79,7 +87,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      */
     for (std::string const &inputPath : options.inputs()) {
         /* Read in the input. */
-        std::ifstream inputFile = std::ifstream(inputPath, std::ios::binary);
+        std::ifstream inputFile = std::ifstream(FSUtil::ResolveRelativePath(inputPath, workingDirectory), std::ios::binary);
         if (inputFile.fail()) {
             fprintf(stderr, "error: unable to read input %s\n", inputPath.c_str());
             return 1;
@@ -122,7 +130,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         }
 
         /* Output to the same name as the input, but in the output directory. */
-        std::string outputPath = options.outputDirectory() + "/" + FSUtil::GetBaseName(inputPath);
+        std::string outputPath = FSUtil::ResolveRelativePath(options.outputDirectory(), workingDirectory) + "/" + FSUtil::GetBaseName(inputPath);
 
         /* Write out the output. */
         std::ofstream outputFile = std::ofstream(outputPath, std::ios::binary);

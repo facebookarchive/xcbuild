@@ -175,13 +175,11 @@ buildTarget(
                     return false;
                 }
 
-                if (driver->run(invocation.arguments(), invocation.environment()) != 0) {
+                if (driver->run(invocation.arguments(), invocation.environment(), invocation.workingDirectory()) != 0) {
                     Formatter::Print(_formatter->failure(_buildContext, { invocation }));
                     return false;
                 }
             } else {
-                // TODO(grp): Change into the working directory.
-                // TODO(grp): Apply environment variables.
                 Subprocess process;
                 if (!process.execute(executable, invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
                     Formatter::Print(_formatter->failure(_buildContext, { invocation }));

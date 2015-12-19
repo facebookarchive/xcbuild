@@ -8,8 +8,10 @@
  */
 
 #include <builtin/Driver.h>
+#include <libutil/FSUtil.h>
 
 using builtin::Driver;
+using libutil::FSUtil;
 
 Driver::
 Driver()
@@ -38,5 +40,5 @@ runc(int argc, char **argv, char **envp)
         }
     }
 
-    return run(args, environment);
+    return run(args, environment, FSUtil::GetCurrentDirectory());
 }

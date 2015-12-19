@@ -24,7 +24,7 @@ public:
     virtual std::string name();
 
 public:
-    virtual int run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment);
+    virtual int run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory);
 };
 
 }

@@ -48,7 +48,7 @@ CopyFile(std::string const &inputPath, std::string const &outputPath)
 }
 
 static int
-Run(Options const &options)
+Run(Options const &options, std::string const &workingDirectory)
 {
     if (options.stripDebugSymbols() || options.bitcodeStrip() != Options::BitcodeStripMode::None) {
         // TODO(grp): Implement strip support when copying.
@@ -59,10 +59,12 @@ Run(Options const &options)
         fprintf(stderr, "warning: preserve HFS data is not supported\n");
     }
 
-    std::string const &output = options.output();
+    std::string const &output = FSUtil::ResolveRelativePath(options.output(), workingDirectory);
     auto excludes = std::unordered_set<std::string>(options.excludes().begin(), options.excludes().end());
 
     for (std::string input : options.inputs()) {
+        input = FSUtil::ResolveRelativePath(input, workingDirectory);
+
         if (options.resolveSrcSymlinks()) {
             input = FSUtil::ResolvePath(input);
         }
@@ -113,7 +115,7 @@ Run(Options const &options)
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -122,5 +124,5 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         return 1;
     }
 
-    return Run(options);
+    return Run(options, workingDirectory);
 }
