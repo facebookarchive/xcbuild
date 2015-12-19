@@ -48,7 +48,7 @@ protected:
     bool                    _basic;
     bool                    _commonOption;
     bool                    _avoidEmptyValues;
-    bool                    _commandLineCondition;
+    std::string             _commandLineCondition;
     std::string             _commandLineFlag;
     std::string             _commandLineFlagIfFalse;
     std::string             _commandLinePrefixFlag;
@@ -122,17 +122,17 @@ public:
     { return _values; }
 
 public:
-    inline bool commandLineCondition() const
+    inline std::string const &commandLineCondition() const
     { return _commandLineCondition; }
     inline plist::Object const *commandLineArgs() const
     { return _commandLineArgs; }
-    inline std::string const commandLineFlag() const
+    inline std::string const &commandLineFlag() const
     { return _commandLineFlag; }
-    inline std::string const commandLineFlagIfFalse() const
+    inline std::string const &commandLineFlagIfFalse() const
     { return _commandLineFlagIfFalse; }
-    inline std::string const commandLinePrefixFlag() const
+    inline std::string const &commandLinePrefixFlag() const
     { return _commandLinePrefixFlag; }
-    inline bool const hasCommandLinePrefixFlag() const
+    inline bool hasCommandLinePrefixFlag() const
     { return _hasCommandLinePrefixFlag; }
 
 public:

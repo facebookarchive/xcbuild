@@ -15,7 +15,6 @@ PropertyOption::PropertyOption() :
     _basic                             (false),
     _commonOption                      (false),
     _avoidEmptyValues                  (false),
-    _commandLineCondition              (true),
     _hasCommandLinePrefixFlag          (false),
     _commandLineArgs                   (nullptr),
     _additionalLinkerArgs              (nullptr),
@@ -84,7 +83,7 @@ parse(plist::Dictionary const *dict)
     auto B      = unpack.coerce <plist::Boolean> ("Basic");
     auto CO     = unpack.coerce <plist::Boolean> ("CommonOption");
     auto AEV    = unpack.coerce <plist::Boolean> ("AvoidEmptyValue");
-    auto CLC    = unpack.coerce <plist::Boolean> ("CommandLineCondition");
+    auto CLC    = unpack.cast <plist::String> ("CommandLineCondition");
     auto CLA    = unpack.cast <plist::Object> ("CommandLineArgs");
     auto CLF    = unpack.cast <plist::String> ("CommandLineFlag");
     auto CLFIF  = unpack.cast <plist::String> ("CommandLineFlagIfFalse");

@@ -32,14 +32,39 @@ OptionsResult::
 static bool
 EvaluateCondition(std::string const &condition, pbxsetting::Environment const &environment)
 {
-    std::string expression = environment.expand(pbxsetting::Value::Parse(condition));
-
-    // TODO(grp): Evaluate condition expression language correctly.
-    if (expression.find("==") != std::string::npos) {
-        return expression.substr(0, expression.find("==")) == expression.substr(expression.find("=="));
+    if (condition.empty()) {
+        return true;
     }
 
-    return true;
+#define WARN_UNHANDLED_CONDITION 0
+
+    // TODO(grp): Evaluate condition expression language correctly.
+    std::string expression = environment.expand(pbxsetting::Value::Parse(condition));
+
+    std::string::size_type eq = expression.find(" == ");
+    if (eq != std::string::npos) {
+        std::string lhs = expression.substr(0, eq);
+        std::string rhs = expression.substr(eq + 4);
+#if WARN_UNHANDLED_CONDITION
+        fprintf(stderr, "warning: unhandled condition evaluation '%s' == '%s'\n", lhs.c_str(), rhs.c_str());
+#endif
+        return (lhs == rhs);
+    }
+
+    std::string::size_type noteq = expression.find(" != ");
+    if (noteq != std::string::npos) {
+        std::string lhs = expression.substr(0, noteq);
+        std::string rhs = expression.substr(noteq + 4);
+#if WARN_UNHANDLED_CONDITION
+        fprintf(stderr, "warning: unhandled condition evaluation '%s' != '%s'\n", lhs.c_str(), rhs.c_str());
+#endif
+        return (lhs != rhs);
+    }
+
+#if WARN_UNHANDLED_CONDITION
+    fprintf(stderr, "warning: unhandled condition evaluation '%s'\n", expression.c_str());
+#endif
+    return expression != "NO";
 }
 
 static void
@@ -127,7 +152,7 @@ Create(ToolEnvironment const &toolEnvironment, std::string const &workingDirecto
             continue;
         }
 
-        if (!EvaluateCondition(option->condition(), environment)) {
+        if (!EvaluateCondition(option->condition(), environment) || !EvaluateCondition(option->commandLineCondition(), environment)) {
             continue;
         }
 

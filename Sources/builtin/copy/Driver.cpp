@@ -60,7 +60,8 @@ Run(Options const &options)
     }
 
     std::string const &output = options.output();
-    std::unordered_set<std::string> excludes = std::unordered_set<std::string>(options.excludes().begin(), options.excludes().end());
+    auto excludes = std::unordered_set<std::string>(options.excludes().begin(), options.excludes().end());
+
     for (std::string input : options.inputs()) {
         if (options.resolveSrcSymlinks()) {
             input = FSUtil::ResolvePath(input);
@@ -72,7 +73,7 @@ Run(Options const &options)
             if (options.ignoreMissingInputs()) {
                 continue;
             } else {
-                fprintf(stderr, "error: missing input %s\n", input.c_str());
+                fprintf(stderr, "error: missing input '%s'\n", input.c_str());
                 return 1;
             }
         }
