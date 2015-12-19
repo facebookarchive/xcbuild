@@ -85,6 +85,8 @@ Run(Options const &options, std::string const &workingDirectory)
         }
 
         if (isDirectory) {
+            std::string inputName = FSUtil::GetBaseName(input);
+
             bool succeeded = true;
             FSUtil::EnumerateRecursive(input, [&](std::string const &path) -> bool {
                 if (excludes.find(FSUtil::GetBaseName(path)) != excludes.end()) {
@@ -95,7 +97,7 @@ Run(Options const &options, std::string const &workingDirectory)
                 }
 
                 std::string relative = FSUtil::GetRelativePath(path, input);
-                std::string outputFile = output + "/" + relative;
+                std::string outputFile = output + "/" + inputName + "/" + relative;
 
                 succeeded = CopyFile(path, outputFile);
                 return succeeded;
