@@ -45,7 +45,7 @@ ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext
 
     std::unique_ptr<TargetEnvironment> targetEnvironment = context.targetEnvironment(buildEnvironment, target);
     if (targetEnvironment == nullptr) {
-        fprintf(stderr, "warning: not able to get target environment for target %s\n", target->name().c_str());
+        fprintf(stderr, "warning: not able to get target environment for target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
         return nullptr;
     }
 
@@ -100,7 +100,7 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
                         dependencies.push_back(proxiedTarget);
 
 #if DEPENDENCY_RESOLVER_LOGGING
-                        printf("implicit dependency: %s -> %s\n", target->name().c_str(), proxiedTarget->name().c_str());
+                        fprintf(stderr, "debug: implicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), proxiedTarget->blueprintIdentifier().c_str(), proxiedTarget->name().c_str());
 #endif
 
                         /* Recursively search for implicit & explicit dependencies. */
@@ -121,7 +121,7 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
                         dependencies.push_back(dependentTarget);
 
 #if DEPENDENCY_RESOLVER_LOGGING
-                        printf("implicit dependency: %s -> %s\n", target->name().c_str(), dependentTarget->name().c_str());
+                        fprintf(stderr, "debug: implicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), dependentTarget->blueprintIdentifier().c_str(), dependentTarget->name().c_str());
 #endif
 
                         /* Recursively search for implicit & explicit dependencies. */
@@ -155,7 +155,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
             dependencies.push_back(dependency->target());
 
 #if DEPENDENCY_RESOLVER_LOGGING
-            printf("explicit dependency: %s -> %s\n", target->name().c_str(), dependency->target()->name().c_str());
+            fprintf(stderr, "debug: explicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), dependency->blueprintIdentifier().c_str(), dependency->target()->name().c_str());
 #endif
 
             /* Recursively search for implicit & explicit dependencies. */
@@ -167,7 +167,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
                 dependencies.push_back(proxiedTarget);
 
 #if DEPENDENCY_RESOLVER_LOGGING
-                printf("explicit dependency: %s -> %s\n", target->name().c_str(), proxiedTarget->name().c_str());
+                fprintf(stderr, "debug: explicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), proxiedTarget->blueprintIdentifier().c_str(), proxiedTarget->name().c_str());
 #endif
 
                 /* Recursively search for implicit & explicit dependencies. */
@@ -229,7 +229,7 @@ BuildProductPathsToTargets(WorkspaceContext const &workspaceContext)
                 /* Use the raw setting value because we can't resolve it yet. */
                 pbxsetting::Value productPath = productReference->resolve();
 #if DEPENDENCY_RESOLVER_LOGGING
-                fprintf(stderr, "product output: %s\n", productPath.raw().c_str());
+                fprintf(stderr, "debug: product output: %s %s => %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), productPath.raw().c_str());
 #endif
                 productPathToTarget.insert({ productPath.raw(), nativeTarget });
             }
@@ -299,6 +299,13 @@ resolveSchemeDependencies(BuildContext const &context) const
         AddDependencies(dependenciesContext, target);
     }
 
+#if DEPENDENCY_RESOLVER_LOGGING
+    fprintf(stderr, "debug: scheme-based target ordering\n");
+    for (pbxproj::PBX::Target::shared_ptr const &target : graph.ordered()) {
+        fprintf(stderr, "debug: ordered target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
+    }
+#endif
+
     return graph;
 }
 
@@ -337,6 +344,13 @@ resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::str
         };
         AddDependencies(dependenciesContext, target);
     }
+
+#if DEPENDENCY_RESOLVER_LOGGING
+    fprintf(stderr, "debug: legacy target ordering\n");
+    for (pbxproj::PBX::Target::shared_ptr const &target : graph.ordered()) {
+        fprintf(stderr, "debug: ordered target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
+    }
+#endif
 
     return graph;
 }

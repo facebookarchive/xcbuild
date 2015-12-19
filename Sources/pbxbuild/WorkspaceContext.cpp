@@ -8,9 +8,11 @@
  */
 
 #include <pbxbuild/WorkspaceContext.h>
+#include <libutil/FSUtil.h>
 #include <libutil/md5.h>
 
 using pbxbuild::WorkspaceContext;
+using libutil::FSUtil;
 
 WorkspaceContext::
 WorkspaceContext(
@@ -38,14 +40,17 @@ WorkspaceContext::
 pbxproj::PBX::Project::shared_ptr WorkspaceContext::
 project(std::string const &projectPath) const
 {
-    auto PI = _projects.find(projectPath);
+    /* Normalize the path in case it has relative components. */
+    std::string resolvedProjectPath = FSUtil::NormalizePath(projectPath);
+
+    auto PI = _projects.find(resolvedProjectPath);
     if (PI != _projects.end()) {
         return PI->second;
     } else {
         // TODO(grp): Limit this to just subprojects of existing projects.
-        pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(projectPath);
+        pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(resolvedProjectPath);
         if (project != nullptr) {
-            _projects.insert({ projectPath, project });
+            _projects.insert({ resolvedProjectPath, project });
         } else {
             fprintf(stderr, "warning: unable to load project at %s\n", projectPath.c_str());
         }
