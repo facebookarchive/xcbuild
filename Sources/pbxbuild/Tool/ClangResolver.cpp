@@ -50,7 +50,7 @@ DialectIsCPlusPlus(std::string const &dialect)
 }
 
 static void
-AppendDialectFlags(std::vector<std::string> *args, std::string const &dialect, std::string const &dialectSuffix)
+AppendDialectFlags(std::vector<std::string> *args, std::string const &dialect, std::string const &dialectSuffix = "")
 {
     args->push_back("-x");
     args->push_back(dialect + dialectSuffix);
@@ -268,7 +268,7 @@ resolveSource(
     inputFiles.insert(inputFiles.end(), headermapInfo.userHeadermapFiles().begin(), headermapInfo.userHeadermapFiles().end());
 
     std::vector<std::string> arguments;
-    AppendDialectFlags(&arguments, fileType->GCCDialectName(), "");
+    AppendDialectFlags(&arguments, fileType->GCCDialectName());
     size_t dialectOffset = arguments.size();
 
     arguments.insert(arguments.end(), commandLine.arguments().begin(), commandLine.arguments().end());
@@ -286,6 +286,8 @@ resolveSource(
             std::vector<std::string> precompiledHeaderArguments;
             AppendDialectFlags(&precompiledHeaderArguments, fileType->GCCDialectName(), "-header");
             precompiledHeaderArguments.insert(precompiledHeaderArguments.end(), arguments.begin() + dialectOffset, arguments.end());
+            // Added below, but need to have here in case it affects the precompiled header (as it often does).
+            precompiledHeaderArguments.insert(precompiledHeaderArguments.end(), inputArguments.begin(), inputArguments.end());
 
             precompiledHeaderInfo = std::make_shared<PrecompiledHeaderInfo>(PrecompiledHeaderInfo::Create(_compiler, prefixHeaderFile, fileType, precompiledHeaderArguments));
             AppendPrefixHeaderFlags(&arguments, env.expand(precompiledHeaderInfo->logicalOutputPath()));
