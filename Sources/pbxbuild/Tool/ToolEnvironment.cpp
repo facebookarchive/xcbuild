@@ -44,7 +44,7 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
         pbxsetting::Setting::Parse("OutputPath", output),
         pbxsetting::Setting::Parse("OutputFileName", FSUtil::GetBaseName(output)),
         pbxsetting::Setting::Parse("OutputFileBase", FSUtil::GetBaseNameWithoutExtension(output)),
-        pbxsetting::Setting::Create("ProductResourcesDir", pbxsetting::Value::Variable("UNLOCALIZED_RESOURCES_FOLDER_PATH")),
+        pbxsetting::Setting::Create("ProductResourcesDir", pbxsetting::Value::Parse("$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)")),
         pbxsetting::Setting::Create("DerivedFilesDir", pbxsetting::Value::Variable("DERIVED_FILES_DIR")),
         // TODO(grp): AdditionalContentFilePaths
         // TODO(grp): AdditionalFlags
