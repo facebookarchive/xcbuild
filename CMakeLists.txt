@@ -87,6 +87,11 @@ set(libplist_SOURCES
     Sources/plist/Format/Any.cpp
     )
 
+set(libninja_SOURCES
+    Sources/ninja/Writer.cpp
+    Sources/ninja/Value.cpp
+    )
+
 set(libbuiltin_SOURCES
     Sources/builtin/Driver.cpp
     Sources/builtin/Registry.cpp
@@ -285,6 +290,9 @@ target_link_libraries(util)
 add_library(plist SHARED ${libplist_SOURCES})
 target_link_libraries(plist util expat)
 
+add_library(ninja SHARED ${libninja_SOURCES})
+target_link_libraries(ninja util)
+
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting util plist)
 
@@ -307,7 +315,7 @@ add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxsetting util plist)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec builtin)
+target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec ninja builtin)
 
 add_library(xcdriver SHARED ${libxcdriver_SOURCES})
 target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
@@ -373,6 +381,12 @@ target_link_libraries(test_ASCII plist)
 
 ADD_UNIT_GTEST(test_XML Tests/plist/Format/test_XML.cpp)
 target_link_libraries(test_XML plist)
+
+ADD_UNIT_GTEST(test_NinjaValue Tests/ninja/test_NinjaValue.cpp)
+target_link_libraries(test_NinjaValue ninja)
+
+ADD_UNIT_GTEST(test_Writer Tests/ninja/test_Writer.cpp)
+target_link_libraries(test_Writer ninja)
 
 ADD_UNIT_GTEST(test_Condition Tests/pbxsetting/test_Condition.cpp)
 target_link_libraries(test_Condition pbxsetting)

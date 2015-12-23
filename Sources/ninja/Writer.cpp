@@ -1,0 +1,142 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+#include <ninja/Writer.h>
+#include <ninja/Value.h>
+
+using ninja::Writer;
+
+Writer::
+Writer()
+{
+}
+
+Writer::
+~Writer()
+{
+}
+
+void Writer::
+newline()
+{
+    _buffer << std::endl;
+}
+
+void Writer::
+binding(Binding const &binding, int indent)
+{
+    for (int i = 0; i < indent; i++) {
+        _buffer << "  ";
+    }
+
+    _buffer << binding.first << " = " << binding.second.resolve(Value::EscapeMode::Value) << std::endl;
+}
+
+void Writer::
+command(std::string const &command, std::string const &remaining, std::vector<Binding> const &bindings)
+{
+    _buffer << command;
+    if (!remaining.empty()) {
+        _buffer << " " << remaining;
+    }
+    _buffer << std::endl;
+
+    for (Binding const &binding : bindings) {
+        this->binding(binding, 1);
+    }
+
+    _buffer << std::endl;
+}
+
+void Writer::
+comment(std::string const &text)
+{
+    _buffer << "#" << " " << text << std::endl;
+}
+
+void Writer::
+subninja(std::string const &path)
+{
+    /* No need to escape, must be a real path. */
+    command("subninja", path);
+}
+
+void Writer::
+include(std::string const &path)
+{
+    /* No need to escape, must be a real path. */
+    command("include", path);
+}
+
+void Writer::
+default_(std::vector<Value> const &paths)
+{
+    std::string remaining;
+    for (Value const &path : paths) {
+        if (&path != &paths[0]) {
+            remaining += " ";
+        }
+        remaining += path.resolve(Value::EscapeMode::PathList);
+    }
+
+    command("default", remaining);
+}
+
+void Writer::
+pool(std::string const &name, int depth)
+{
+    command("pool", name, {
+        { "depth", Value::String(std::to_string(depth)) },
+    });
+}
+
+void Writer::
+rule(std::string const &name, Value const &command, std::vector<Binding> const &bindings)
+{
+    std::vector<Binding> bindingList = bindings;
+    bindingList.insert(bindingList.begin(), { "command", command });
+
+    this->command("rule", name, bindingList);
+}
+
+void Writer::
+build(Value const &path, std::string const &rule, std::vector<Value> const &inputs, std::vector<Binding> const &bindings, std::vector<Value> const &dependencies, std::vector<Value> const &orders)
+{
+    std::ostringstream remaining;
+    remaining << path.resolve(Value::EscapeMode::BuildPathList);
+    remaining << ":" << " ";
+    remaining << rule;
+
+    for (Value const &input : inputs) {
+        remaining << " " << input.resolve(Value::EscapeMode::BuildPathList);
+    }
+
+    if (!dependencies.empty()) {
+        remaining << " " << "|";
+        for (Value const &dependency : dependencies) {
+            remaining << " " << dependency.resolve(Value::EscapeMode::BuildPathList);
+        }
+    }
+
+    if (!orders.empty()) {
+        remaining << " " << "||";
+        for (Value const &order : orders) {
+            remaining << " " << order.resolve(Value::EscapeMode::BuildPathList);
+        }
+    }
+
+    command("build", remaining.str(), bindings);
+}
+
+std::string Writer::
+serialize() const
+{
+    return _buffer.str();
+}
+
