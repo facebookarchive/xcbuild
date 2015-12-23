@@ -24,18 +24,6 @@ class ToolResult {
 public:
     static std::string
     LogMessage(ToolEnvironment const &toolEnvironment);
-
-public:
-    static ToolInvocation
-    CreateInvocation(
-        ToolEnvironment const &toolEnvironment,
-        OptionsResult const &options,
-        CommandLineResult const &commandLine,
-        std::string const &logMessage,
-        std::string const &workingDirectory,
-        std::string const &dependencyInfo = "",
-        std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaryFiles = { }
-    );
 };
 
 }

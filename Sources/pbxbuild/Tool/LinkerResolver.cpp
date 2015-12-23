@@ -113,7 +113,16 @@ resolve(
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
     std::string logMessage = ToolResult::LogMessage(toolEnvironment);
 
-    ToolInvocation invocation = ToolResult::CreateInvocation(toolEnvironment, options, commandLine, logMessage, toolContext->workingDirectory(), dependencyInfo, auxiliaries);
+    ToolInvocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = commandLine.arguments();
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = toolEnvironment.inputs();
+    invocation.outputs() = toolEnvironment.outputs();
+    invocation.auxiliaryFiles() = auxiliaries;
+    invocation.dependencyInfo() = dependencyInfo;
+    invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
 }
 

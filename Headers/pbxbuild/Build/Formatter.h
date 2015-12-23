@@ -27,7 +27,7 @@ protected:
 public:
     virtual std::string begin(BuildContext const &buildContext) = 0;
     virtual std::string success(BuildContext const &buildContext) = 0;
-    virtual std::string failure(BuildContext const &buildContext, std::vector<ToolInvocation> const &failingInvocations) = 0;
+    virtual std::string failure(BuildContext const &buildContext, std::vector<ToolInvocation const> const &failingInvocations) = 0;
 
 public:
     virtual std::string beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target) = 0;

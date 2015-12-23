@@ -192,14 +192,17 @@ resolve(
     std::string headermapFileForGeneratedFiles               = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES");
     std::string headermapFileForProjectFiles                 = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES");
 
-    ToolInvocation invocation = ToolInvocation({ }, { }, {
+    std::vector<AuxiliaryFile> auxiliaryFiles = {
         AuxiliaryFile(headermapFile, targetName.write(), false),
         AuxiliaryFile(headermapFileForOwnTargetHeaders, ownTargetHeaders.write(), false),
         AuxiliaryFile(headermapFileForAllTargetHeaders, allTargetHeaders.write(), false),
         AuxiliaryFile(headermapFileForAllNonFrameworkTargetHeaders, allNonFrameworkTargetHeaders.write(), false),
         AuxiliaryFile(headermapFileForGeneratedFiles, generatedFiles.write(), false),
         AuxiliaryFile(headermapFileForProjectFiles, projectHeaders.write(), false),
-    });
+    };
+
+    ToolInvocation invocation;
+    invocation.auxiliaryFiles().insert(invocation.auxiliaryFiles().end(), auxiliaryFiles.begin(), auxiliaryFiles.end());
 
     std::vector<std::string> systemHeadermapFiles;
     std::vector<std::string> userHeadermapFiles;

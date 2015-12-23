@@ -35,41 +35,8 @@ AuxiliaryFile::
 }
 
 ToolInvocation::
-ToolInvocation(
-    std::string const                                  &executable,
-    std::vector<std::string> const                     &arguments,
-    std::unordered_map<std::string, std::string> const &environment,
-    std::string const                                  &workingDirectory,
-    std::vector<std::string> const                     &inputs,
-    std::vector<std::string> const                     &outputs,
-    std::string const                                  &dependencyInfo,
-    std::vector<AuxiliaryFile> const                   &auxiliaryFiles,
-    std::string const                                  &logMessage,
-    bool                                               showEnvironmentInLog
-) :
-    _executable          (executable),
-    _arguments           (arguments),
-    _environment         (environment),
-    _workingDirectory    (workingDirectory),
-    _inputs              (inputs),
-    _outputs             (outputs),
-    _dependencyInfo      (dependencyInfo),
-    _auxiliaryFiles      (auxiliaryFiles),
-    _logMessage          (logMessage),
-    _showEnvironmentInLog(showEnvironmentInLog)
-{
-}
-
-ToolInvocation::
-ToolInvocation(
-    std::vector<std::string> const                     &inputs,
-    std::vector<std::string> const                     &outputs,
-    std::vector<AuxiliaryFile> const                   &auxiliaryFiles
-) :
-    _executable    (""),
-    _inputs        (inputs),
-    _outputs       (outputs),
-    _auxiliaryFiles(auxiliaryFiles)
+ToolInvocation() :
+    _showEnvironmentInLog(true)
 {
 }
 

@@ -31,7 +31,7 @@ public:
 public:
     virtual std::string begin(BuildContext const &buildContext);
     virtual std::string success(BuildContext const &buildContext);
-    virtual std::string failure(BuildContext const &buildContext, std::vector<ToolInvocation> const &failingInvocations);
+    virtual std::string failure(BuildContext const &buildContext, std::vector<ToolInvocation const> const &failingInvocations);
 
 public:
     virtual std::string beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);

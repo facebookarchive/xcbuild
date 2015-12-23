@@ -74,25 +74,18 @@ resolve(
     std::unordered_map<std::string, std::string> buildSettingValues = environment.computeValues(pbxsetting::Condition::Empty());
     environmentVariables.insert(buildSettingValues.begin(), buildSettingValues.end());
 
-    /* Hide build settings from log. */
     bool showEnvironmentInLog = false;
 
-    /* Add a dependency on the additional content inputs. */
-    std::vector<std::string> allInputs = toolEnvironment.inputs();
-    allInputs.insert(allInputs.end(), toolContext->additionalInfoPlistContents().begin(), toolContext->additionalInfoPlistContents().end());
-
-    ToolInvocation invocation = ToolInvocation(
-        commandLine.executable(),
-        commandLine.arguments(),
-        environmentVariables,
-        toolContext->workingDirectory(),
-        allInputs,
-        toolEnvironment.outputs(),
-        std::string(),
-        { },
-        logMessage,
-        showEnvironmentInLog
-    );
+    ToolInvocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = commandLine.arguments();
+    invocation.environment() = environmentVariables;
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = toolEnvironment.inputs();
+    invocation.outputs() = toolEnvironment.outputs();
+    invocation.inputDependencies() = toolContext->additionalInfoPlistContents();
+    invocation.logMessage() = logMessage;
+    invocation.showEnvironmentInLog() = false; /* Hide build settings from log. */
     toolContext->invocations().push_back(invocation);
 }
 

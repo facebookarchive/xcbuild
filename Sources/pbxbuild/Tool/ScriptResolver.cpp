@@ -58,39 +58,6 @@ void ScriptResolver::
 resolve(
     ToolContext *toolContext,
     pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
-    std::string const &shell,
-    std::vector<std::string> const &arguments,
-    std::unordered_map<std::string, std::string> const &environmentVariables,
-    std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaries,
-    std::vector<std::string> const &inputFiles,
-    std::vector<std::string> const &outputFiles,
-    std::string const &logMessage,
-    bool showEnvironmentInLog) const
-{
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, inputFiles, outputFiles);
-    OptionsResult options = OptionsResult::Create(toolEnvironment, workingDirectory, nullptr, environmentVariables);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, shell, arguments);
-
-    ToolInvocation invocation = ToolInvocation(
-        commandLine.executable(),
-        commandLine.arguments(),
-        options.environment(),
-        workingDirectory,
-        toolEnvironment.inputs(),
-        toolEnvironment.outputs(),
-        std::string(),
-        auxiliaries,
-        logMessage,
-        showEnvironmentInLog
-    );
-    toolContext->invocations().push_back(invocation);
-}
-
-void ScriptResolver::
-resolve(
-    ToolContext *toolContext,
-    pbxsetting::Environment const &environment,
     pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget) const
 {
     std::string logMessage = "ExternalBuildToolExecution " + legacyTarget->name();
@@ -104,19 +71,17 @@ resolve(
 
     std::string fullWorkingDirectory = toolContext->workingDirectory() + "/" + legacyTarget->buildWorkingDirectory();
 
-    resolve(
-        toolContext,
-        environment,
-        fullWorkingDirectory,
-        legacyTarget->buildToolPath(),
-        pbxsetting::Type::ParseList(script),
-        environmentVariables,
-        { },
-        { },
-        { },
-        logMessage,
-        true
-    );
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, { }, { });
+    OptionsResult options = OptionsResult::Create(toolEnvironment, fullWorkingDirectory, nullptr, environmentVariables);
+    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, legacyTarget->buildToolPath(), pbxsetting::Type::ParseList(script));
+
+    ToolInvocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = commandLine.arguments();
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = fullWorkingDirectory;
+    invocation.logMessage() = logMessage;
+    toolContext->invocations().push_back(invocation);
 }
 
 void ScriptResolver::
@@ -154,19 +119,22 @@ resolve(
     scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, true), false);
     std::unordered_map<std::string, std::string> environmentVariables = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
 
-    resolve(
-        toolContext,
-        scriptEnvironment,
-        toolContext->workingDirectory(),
-        "/bin/sh",
-        { "-c", scriptFilePath },
-        environmentVariables,
-        { scriptFile },
-        inputFiles,
-        outputFiles,
-        phaseEnvironment.expand(logMessage),
-        buildPhase->showEnvVarsInLog()
-    );
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, scriptEnvironment, inputFiles, outputFiles);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr, environmentVariables);
+    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", scriptFilePath });
+
+    ToolInvocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = commandLine.arguments();
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = toolEnvironment.inputs();
+    invocation.phonyInputs() = inputFiles; /* User-specified, may not exist. */
+    invocation.outputs() = toolEnvironment.outputs();
+    invocation.auxiliaryFiles() = { scriptFile };
+    invocation.logMessage() = phaseEnvironment.expand(logMessage);
+    invocation.showEnvironmentInLog() = buildPhase->showEnvVarsInLog();
+    toolContext->invocations().push_back(invocation);
 }
 
 void ScriptResolver::
@@ -200,19 +168,21 @@ resolve(
     ruleEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, false), false);
     std::unordered_map<std::string, std::string> environmentVariables = ruleEnvironment.computeValues(pbxsetting::Condition::Empty());
 
-    resolve(
-        toolContext,
-        ruleEnvironment,
-        toolContext->workingDirectory(),
-        "/bin/sh",
-        { "-c", buildRule->script() },
-        ruleEnvironment.computeValues(pbxsetting::Condition::Empty()),
-        { },
-        inputFiles,
-        outputFiles,
-        ruleEnvironment.expand(logMessage),
-        true
-    );
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, ruleEnvironment, inputFiles, outputFiles);
+    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr, environmentVariables);
+    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", buildRule->script() });
+
+    ToolInvocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = commandLine.arguments();
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = toolEnvironment.inputs();
+    invocation.phonyInputs() = inputFiles; /* User-specified, may not exist. */
+    invocation.outputs() = toolEnvironment.outputs();
+    invocation.logMessage() = ruleEnvironment.expand(logMessage);
+    invocation.showEnvironmentInLog() = true;
+    toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<ScriptResolver> ScriptResolver::

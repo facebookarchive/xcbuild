@@ -32,7 +32,7 @@ public:
     virtual bool buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
         TargetEnvironment const &targetEnvironment,
-        std::vector<ToolInvocation> const &invocations
+        std::vector<ToolInvocation const> const &invocations
     );
 
 public:

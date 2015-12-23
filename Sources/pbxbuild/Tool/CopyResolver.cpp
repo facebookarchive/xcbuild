@@ -45,7 +45,14 @@ resolve(
     OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "", { inputFile, outputDirectory });
 
-    ToolInvocation invocation = ToolResult::CreateInvocation(toolEnvironment, options, commandLine, logMessage, toolContext->workingDirectory());
+    ToolInvocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = commandLine.arguments();
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = toolEnvironment.inputs();
+    invocation.outputs() = toolEnvironment.outputs();
+    invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
 }
 

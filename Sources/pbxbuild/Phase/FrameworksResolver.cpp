@@ -135,8 +135,8 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext 
             std::vector<std::string> sourceOutputs;
             auto it = phaseContext->toolContext().variantArchitectureInvocations().find(std::make_pair(variant, arch));
             if (it != phaseContext->toolContext().variantArchitectureInvocations().end()) {
-                std::vector<pbxbuild::ToolInvocation> const &sourceInvocations = it->second;
-                for (pbxbuild::ToolInvocation const &invocation : sourceInvocations) {
+                std::vector<ToolInvocation const> const &sourceInvocations = it->second;
+                for (ToolInvocation const &invocation : sourceInvocations) {
                     for (std::string const &output : invocation.outputs()) {
                         // TODO(grp): Is this the right set of source outputs to link?
                         if (libutil::FSUtil::GetFileExtension(output) == "o") {

@@ -35,27 +35,3 @@ LogMessage(ToolEnvironment const &toolEnvironment)
     }
 }
 
-ToolInvocation ToolResult::
-CreateInvocation(
-    ToolEnvironment const &toolEnvironment,
-    OptionsResult const &options,
-    CommandLineResult const &commandLine,
-    std::string const &logMessage,
-    std::string const &workingDirectory,
-    std::string const &dependencyInfo,
-    std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaryFiles
-)
-{
-    return pbxbuild::ToolInvocation(
-        commandLine.executable(),
-        commandLine.arguments(),
-        options.environment(),
-        workingDirectory,
-        toolEnvironment.inputs(),
-        toolEnvironment.outputs(),
-        dependencyInfo,
-        auxiliaryFiles,
-        logMessage
-    );
-}
-

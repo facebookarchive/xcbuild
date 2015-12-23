@@ -214,17 +214,16 @@ resolvePrecompiledHeader(
         false
     );
 
-    ToolInvocation invocation = ToolInvocation(
-        commandLine.executable(),
-        arguments,
-        options.environment(),
-        toolContext->workingDirectory(),
-        { input },
-        { output },
-        env.expand(_compiler->dependencyInfoFile()),
-        { serializedFile },
-        logMessage
-    );
+    ToolInvocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = arguments;
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = { input };
+    invocation.outputs() = { output };
+    invocation.dependencyInfo() = env.expand(_compiler->dependencyInfoFile());
+    invocation.auxiliaryFiles().push_back(serializedFile);
+    invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
 }
 
@@ -262,10 +261,9 @@ resolveSource(
     OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
 
-    std::vector<std::string> inputFiles;
-    inputFiles.push_back(input);
-    inputFiles.insert(inputFiles.end(), headermapInfo.systemHeadermapFiles().begin(), headermapInfo.systemHeadermapFiles().end());
-    inputFiles.insert(inputFiles.end(), headermapInfo.userHeadermapFiles().begin(), headermapInfo.userHeadermapFiles().end());
+    std::vector<std::string> inputDependencies;
+    inputDependencies.insert(inputDependencies.end(), headermapInfo.systemHeadermapFiles().begin(), headermapInfo.systemHeadermapFiles().end());
+    inputDependencies.insert(inputDependencies.end(), headermapInfo.userHeadermapFiles().begin(), headermapInfo.userHeadermapFiles().end());
 
     std::vector<std::string> arguments;
     AppendDialectFlags(&arguments, fileType->GCCDialectName());
@@ -291,10 +289,10 @@ resolveSource(
 
             precompiledHeaderInfo = std::make_shared<PrecompiledHeaderInfo>(PrecompiledHeaderInfo::Create(_compiler, prefixHeaderFile, fileType, precompiledHeaderArguments));
             AppendPrefixHeaderFlags(&arguments, env.expand(precompiledHeaderInfo->logicalOutputPath()));
-            inputFiles.push_back(env.expand(precompiledHeaderInfo->compileOutputPath()));
+            inputDependencies.push_back(env.expand(precompiledHeaderInfo->compileOutputPath()));
         } else {
             AppendPrefixHeaderFlags(&arguments, prefixHeaderFile);
-            inputFiles.push_back(prefixHeaderFile);
+            inputDependencies.push_back(prefixHeaderFile);
         }
     }
 
@@ -306,17 +304,16 @@ resolveSource(
 
     std::string logMessage = CompileLogMessage(_compiler, "CompileC", input, fileType, output, env, toolContext->workingDirectory());
 
-    ToolInvocation invocation = pbxbuild::ToolInvocation(
-        commandLine.executable(),
-        arguments,
-        options.environment(),
-        toolContext->workingDirectory(),
-        inputFiles,
-        toolEnvironment.outputs(),
-        env.expand(_compiler->dependencyInfoFile()),
-        { },
-        logMessage
-    );
+    ToolInvocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = arguments;
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = toolEnvironment.inputs();
+    invocation.outputs() = toolEnvironment.outputs();
+    invocation.inputDependencies() = inputDependencies;
+    invocation.dependencyInfo() = env.expand(_compiler->dependencyInfoFile());
+    invocation.logMessage() = logMessage;
 
     /* Add the compilation invocation to the context. */
     toolContext->invocations().push_back(invocation);

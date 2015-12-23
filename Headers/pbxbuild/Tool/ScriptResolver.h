@@ -31,19 +31,6 @@ public:
     void resolve(
         ToolContext *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &workingDirectory,
-        std::string const &shell,
-        std::vector<std::string> const &arguments,
-        std::unordered_map<std::string, std::string> const &environmentVariables,
-        std::vector<ToolInvocation::AuxiliaryFile> const &auxiliaries,
-        std::vector<std::string> const &inputFiles,
-        std::vector<std::string> const &outputFiles,
-        std::string const &logMessage,
-        bool showEnvironmentInLog
-    ) const;
-    void resolve(
-        ToolContext *toolContext,
-        pbxsetting::Environment const &environment,
         pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget
     ) const;
     void resolve(

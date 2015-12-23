@@ -46,21 +46,15 @@ resolve(
     OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/usr/bin/touch", { "-c", input });
 
-    /* Add additional dependencies that are not direct inputs. */
-    std::vector<std::string> allInputs = toolEnvironment.inputs();
-    allInputs.insert(allInputs.end(), dependencies.begin(), dependencies.end());
-
-    ToolInvocation invocation = ToolInvocation(
-        commandLine.executable(),
-        commandLine.arguments(),
-        options.environment(),
-        toolContext->workingDirectory(),
-        allInputs,
-        toolEnvironment.outputs(),
-        std::string(),
-        { },
-        logMessage
-    );
+    ToolInvocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = commandLine.arguments();
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = toolEnvironment.inputs();
+    invocation.outputs() = toolEnvironment.outputs();
+    invocation.inputDependencies() = dependencies;
+    invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
 }
 

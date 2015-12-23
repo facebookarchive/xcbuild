@@ -91,7 +91,7 @@ success(BuildContext const &buildContext)
 }
 
 std::string DefaultFormatter::
-failure(BuildContext const &buildContext, std::vector<ToolInvocation> const &failingInvocations)
+failure(BuildContext const &buildContext, std::vector<ToolInvocation const> const &failingInvocations)
 {
     std::string result;
 

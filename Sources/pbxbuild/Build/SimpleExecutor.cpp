@@ -42,13 +42,16 @@ finish()
 {
 }
 
-static std::vector<ToolInvocation>
-SortInvocations(std::vector<ToolInvocation> invocations)
+static std::vector<ToolInvocation const>
+SortInvocations(std::vector<ToolInvocation const> const &invocations)
 {
     std::unordered_map<std::string, ToolInvocation const *> outputToInvocation;
     for (ToolInvocation const &invocation : invocations) {
         for (std::string const &output : invocation.outputs()) {
             outputToInvocation.insert({ output, &invocation });
+        }
+        for (std::string const &outputDependency : invocation.outputDependencies()) {
+            outputToInvocation.insert({ outputDependency, &invocation });
         }
     }
 
@@ -62,9 +65,15 @@ SortInvocations(std::vector<ToolInvocation> invocations)
                 graph.insert(&invocation, { it->second });
             }
         }
+        for (std::string const &inputDependency : invocation.inputDependencies()) {
+            auto it = outputToInvocation.find(inputDependency);
+            if (it != outputToInvocation.end()) {
+                graph.insert(&invocation, { it->second });
+            }
+        }
     }
 
-    std::vector<ToolInvocation> result;
+    std::vector<ToolInvocation const> result;
     for (ToolInvocation const *invocation : graph.ordered()) {
         result.push_back(*invocation);
     }
@@ -75,7 +84,7 @@ bool SimpleExecutor::
 buildTarget(
     pbxproj::PBX::Target::shared_ptr const &target,
     TargetEnvironment const &targetEnvironment,
-    std::vector<ToolInvocation> const &invocations
+    std::vector<ToolInvocation const> const &invocations
 )
 {
     Formatter::Print(_formatter->beginWriteAuxiliaryFiles(target));
@@ -132,7 +141,7 @@ buildTarget(
     // TODO(grp): Create product structure.
     Formatter::Print(_formatter->createProductStructure(target));
 
-    std::vector<ToolInvocation> orderedInvocations = SortInvocations(invocations);
+    std::vector<ToolInvocation const> orderedInvocations = SortInvocations(invocations);
     for (ToolInvocation const &invocation : orderedInvocations) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
         if (invocation.executable().empty()) {

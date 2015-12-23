@@ -28,7 +28,7 @@ using pbxbuild::ToolInvocation;
 using pbxbuild::Tool::ToolContext;
 
 PhaseInvocations::
-PhaseInvocations(std::vector<ToolInvocation> const &invocations) :
+PhaseInvocations(std::vector<ToolInvocation const> const &invocations) :
     _invocations(invocations)
 {
 }
