@@ -107,8 +107,15 @@ build(
      */
     ninja::Writer writer;
     writer.comment("xcbuild ninja");
-    // TODO(grp): Add some comments about the workspace here.
     writer.comment("Action: " + buildContext.action());
+    if (buildContext.workspaceContext()->workspace() != nullptr) {
+        writer.comment("Workspace: " + buildContext.workspaceContext()->workspace()->projectFile());
+    } else if (buildContext.workspaceContext()->project() != nullptr) {
+        writer.comment("Project: " + buildContext.workspaceContext()->project()->projectFile());
+    }
+    if (buildContext.scheme() != nullptr) {
+        writer.comment("Scheme: " + buildContext.scheme()->name());
+    }
     writer.comment("Configuation: " + buildContext.configuration());
     writer.newline();
 
