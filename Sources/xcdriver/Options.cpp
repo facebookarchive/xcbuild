@@ -129,6 +129,10 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::NextString(&_exportLanguage, args, it);
     } else if (arg == "-forceImport") {
         return libutil::Options::MarkBool(&_forceImport, arg);
+    } else if (arg == "-executor") {
+        return libutil::Options::NextString(&_executor, args, it);
+    } else if (arg == "-formatter") {
+        return libutil::Options::NextString(&_formatter, args, it);
     } else if (arg.find('=') != std::string::npos) {
         _settings.push_back(pbxsetting::Setting::Parse(arg));
         return std::make_pair(true, std::string());

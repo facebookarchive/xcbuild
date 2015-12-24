@@ -33,7 +33,9 @@ protected:
 
 protected:
     Executor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun);
-    ~Executor();
+
+public:
+    virtual ~Executor();
 
 public:
     virtual void prepare() = 0;

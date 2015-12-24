@@ -23,6 +23,7 @@
 
 #include <pbxbuild/Build/Executor.h>
 #include <pbxbuild/Build/SimpleExecutor.h>
+#include <pbxbuild/Build/NinjaExecutor.h>
 #include <pbxbuild/Build/Formatter.h>
 #include <pbxbuild/Build/DefaultFormatter.h>
 

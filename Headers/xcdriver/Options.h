@@ -37,6 +37,10 @@ private:
     std::string _destinationTimeout;
 
 private:
+    std::string _formatter;
+    std::string _executor;
+
+private:
     bool        _parallelizeTargets;
     int         _jobs;
     bool        _dryRun;
@@ -121,6 +125,14 @@ public:
     { return _destination; }
     std::string const &destinationTimeout() const
     { return _destinationTimeout; }
+
+public:
+    /* Extension. */
+    std::string const &formatter() const
+    { return _formatter; }
+    /* Extension. */
+    std::string const &executor() const
+    { return _executor; }
 
 public:
     bool parallelizeTargets() const

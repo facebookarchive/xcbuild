@@ -240,6 +240,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/TypeResolvedFile.cpp
     Sources/pbxbuild/Build/Executor.cpp
     Sources/pbxbuild/Build/SimpleExecutor.cpp
+    Sources/pbxbuild/Build/NinjaExecutor.cpp
     Sources/pbxbuild/Build/Formatter.cpp
     Sources/pbxbuild/Build/DefaultFormatter.cpp
     Sources/pbxbuild/ToolInvocation.cpp

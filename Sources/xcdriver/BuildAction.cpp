@@ -26,6 +26,50 @@ BuildAction::
 {
 }
 
+static std::shared_ptr<pbxbuild::Build::Formatter>
+CreateFormatter(std::string const &formatter)
+{
+    if (formatter == "default" || formatter.empty()) {
+        /* Only use color if attached to a terminal. */
+        bool color = isatty(fileno(stdout));
+
+        auto formatter = pbxbuild::Build::DefaultFormatter::Create(color);
+        return std::static_pointer_cast<pbxbuild::Build::Formatter>(formatter);
+    }
+
+    return nullptr;
+}
+
+static std::unique_ptr<pbxbuild::Build::Executor>
+CreateExecutor(
+    std::string const &executor,
+    pbxbuild::BuildEnvironment const &buildEnvironment,
+    pbxbuild::BuildContext const &buildContext,
+    std::shared_ptr<pbxbuild::Build::Formatter> const &formatter,
+    bool dryRun)
+{
+    if (executor == "simple" || executor.empty()) {
+        auto executor = pbxbuild::Build::SimpleExecutor::Create(
+            buildEnvironment,
+            buildContext,
+            formatter,
+            dryRun,
+            builtin::Registry::Default()
+        );
+        return libutil::static_unique_pointer_cast<pbxbuild::Build::Executor>(std::move(executor));
+    } else if (executor == "ninja") {
+        auto executor = pbxbuild::Build::NinjaExecutor::Create(
+            buildEnvironment,
+            buildContext,
+            formatter,
+            dryRun
+        );
+        return libutil::static_unique_pointer_cast<pbxbuild::Build::Executor>(std::move(executor));
+    }
+
+    return nullptr;
+}
+
 static bool
 VerifySupportedOptions(Options const &options)
 {
@@ -68,23 +112,35 @@ Run(Options const &options)
         return -1;
     }
 
+    /* Verify the build options are not conflicting or invalid. */
     if (!Action::VerifyBuildActions(options.actions())) {
         return -1;
     }
 
+    /*
+     * Use the default build environment. We don't need anything custom here.
+     */
     std::unique_ptr<pbxbuild::BuildEnvironment> buildEnvironment = pbxbuild::BuildEnvironment::Default();
     if (buildEnvironment == nullptr) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
     }
 
+    /*
+     * Load the workspace for the provided options. There may or may not be an actual workspace;
+     * the workspace context abstracts either a single project or a workspace.
+     */
     std::unique_ptr<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(options);
     if (workspaceContext == nullptr) {
         return -1;
     }
 
+    /* The build settings passed in on the command line override all others. */
     std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(options, buildEnvironment->baseEnvironment());
 
+    /*
+     * Create the build context for builing a specific scheme in the workspace.
+     */
     std::unique_ptr<pbxbuild::BuildContext> buildContext = Action::CreateBuildContext(options, *workspaceContext, overrideLevels);
     if (buildContext == nullptr) {
         return -1;
@@ -103,17 +159,25 @@ Run(Options const &options)
 
     std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
-    bool color = isatty(fileno(stdout));
-    std::shared_ptr<pbxbuild::Build::DefaultFormatter> formatter = pbxbuild::Build::DefaultFormatter::Create(color);
-    pbxbuild::Build::Formatter::Print(formatter->begin(*buildContext));
+    /*
+     * Create the formatter to format the build log.
+     */
+    std::shared_ptr<pbxbuild::Build::Formatter> formatter = CreateFormatter(options.formatter());
+    if (formatter == nullptr) {
+        fprintf(stderr, "error: unknown formatter %s\n", options.formatter().c_str());
+        return -1;
+    }
 
-    std::unique_ptr<pbxbuild::Build::SimpleExecutor> executor = pbxbuild::Build::SimpleExecutor::Create(
-        *buildEnvironment,
-        *buildContext,
-        std::static_pointer_cast<pbxbuild::Build::Formatter>(formatter),
-        options.dryRun(),
-        builtin::Registry::Default()
-    );
+    /*
+     * Create the executor used to perform the build.
+     */
+    std::unique_ptr<pbxbuild::Build::Executor> executor = CreateExecutor(options.executor(), *buildEnvironment, *buildContext, formatter, options.dryRun());
+    if (executor == nullptr) {
+        fprintf(stderr, "error: unknown executor %s\n", options.executor().c_str());
+        return -1;
+    }
+
+    pbxbuild::Build::Formatter::Print(formatter->begin(*buildContext));
 
     bool succeeded = true;
     for (pbxproj::PBX::Target::shared_ptr const &target : targets) {
