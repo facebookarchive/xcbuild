@@ -35,7 +35,11 @@ public:
 
 public:
     virtual std::string beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
-    virtual std::string checkDependencies(pbxproj::PBX::Target::shared_ptr const &target);
+    virtual std::string finishTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
+
+public:
+    virtual std::string beginCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target);
+    virtual std::string finishCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target);
 
 public:
     virtual std::string beginWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target);
@@ -45,10 +49,12 @@ public:
     virtual std::string finishWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target);
 
 public:
-    virtual std::string createProductStructure(pbxproj::PBX::Target::shared_ptr const &target);
+    virtual std::string beginCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target);
+    virtual std::string finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target);
 
 public:
-    virtual std::string invocation(ToolInvocation const &invocation, std::string const &executable);
+    virtual std::string beginInvocation(ToolInvocation const &invocation, std::string const &executable);
+    virtual std::string finishInvocation(ToolInvocation const &invocation, std::string const &executable);
 
 public:
     static std::shared_ptr<DefaultFormatter>

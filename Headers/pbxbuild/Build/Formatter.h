@@ -22,7 +22,9 @@ namespace Build {
 class Formatter {
 protected:
     Formatter();
-    ~Formatter();
+
+public:
+    virtual ~Formatter();
 
 public:
     virtual std::string begin(BuildContext const &buildContext) = 0;
@@ -31,7 +33,11 @@ public:
 
 public:
     virtual std::string beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target) = 0;
-    virtual std::string checkDependencies(pbxproj::PBX::Target::shared_ptr const &target) = 0;
+    virtual std::string finishTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target) = 0;
+
+public:
+    virtual std::string beginCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target) = 0;
+    virtual std::string finishCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target) = 0;
 
 public:
     virtual std::string beginWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target) = 0;
@@ -41,10 +47,12 @@ public:
     virtual std::string finishWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target) = 0;
 
 public:
-    virtual std::string createProductStructure(pbxproj::PBX::Target::shared_ptr const &target) = 0;
+    virtual std::string beginCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target) = 0;
+    virtual std::string finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target) = 0;
 
 public:
-    virtual std::string invocation(ToolInvocation const &invocation, std::string const &executable) = 0;
+    virtual std::string beginInvocation(ToolInvocation const &invocation, std::string const &executable) = 0;
+    virtual std::string finishInvocation(ToolInvocation const &invocation, std::string const &executable) = 0;
 
 public:
     static void Print(std::string const &output);

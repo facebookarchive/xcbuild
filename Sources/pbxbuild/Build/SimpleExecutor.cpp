@@ -138,8 +138,9 @@ buildTarget(
     }
     Formatter::Print(_formatter->finishWriteAuxiliaryFiles(target));
 
+    Formatter::Print(_formatter->beginCreateProductStructure(target));
     // TODO(grp): Create product structure.
-    Formatter::Print(_formatter->createProductStructure(target));
+    Formatter::Print(_formatter->finishCreateProductStructure(target));
 
     std::vector<ToolInvocation const> orderedInvocations = SortInvocations(invocations);
     for (ToolInvocation const &invocation : orderedInvocations) {
@@ -162,7 +163,7 @@ buildTarget(
             }
         }
 
-        Formatter::Print(_formatter->invocation(invocation, executable));
+        Formatter::Print(_formatter->beginInvocation(invocation, executable));
 
         if (!_dryRun) {
             for (std::string const &output : invocation.outputs()) {
@@ -171,6 +172,7 @@ buildTarget(
                 if (!FSUtil::TestForDirectory(directory)) {
                     Subprocess process;
                     if (!process.execute("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
+                        Formatter::Print(_formatter->finishInvocation(invocation, executable));
                         Formatter::Print(_formatter->failure(_buildContext, { invocation }));
                         return false;
                     }
@@ -180,22 +182,27 @@ buildTarget(
             if (builtin) {
                 std::shared_ptr<builtin::Driver> driver = _builtins.driver(executable);
                 if (driver == nullptr) {
+                    Formatter::Print(_formatter->finishInvocation(invocation, executable));
                     Formatter::Print(_formatter->failure(_buildContext, { invocation }));
                     return false;
                 }
 
                 if (driver->run(invocation.arguments(), invocation.environment(), invocation.workingDirectory()) != 0) {
+                    Formatter::Print(_formatter->finishInvocation(invocation, executable));
                     Formatter::Print(_formatter->failure(_buildContext, { invocation }));
                     return false;
                 }
             } else {
                 Subprocess process;
                 if (!process.execute(executable, invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
+                    Formatter::Print(_formatter->finishInvocation(invocation, executable));
                     Formatter::Print(_formatter->failure(_buildContext, { invocation }));
                     return false;
                 }
             }
         }
+
+        Formatter::Print(_formatter->finishInvocation(invocation, executable));
     }
 
     return true;

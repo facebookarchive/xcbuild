@@ -83,7 +83,7 @@ success(BuildContext const &buildContext)
 {
     std::string result;
 
-    result += "\n" + ANSI_STYLE_BOLD + ANSI_COLOR_GREEN;
+    result += ANSI_STYLE_BOLD + ANSI_COLOR_GREEN;
     result += "** " + FormatAction(buildContext.action()) + " SUCCEEDED **";
     result += ANSI_STYLE_NO_BOLD + ANSI_COLOR_RESET + "\n";
 
@@ -95,7 +95,7 @@ failure(BuildContext const &buildContext, std::vector<ToolInvocation const> cons
 {
     std::string result;
 
-    result += "\n" + ANSI_STYLE_BOLD + ANSI_COLOR_RED;
+    result += ANSI_STYLE_BOLD + ANSI_COLOR_RED;
     result += "** " + FormatAction(buildContext.action()) + " FAILED **";
     result += ANSI_STYLE_NO_BOLD + ANSI_COLOR_RESET + "\n";
 
@@ -112,7 +112,7 @@ std::string DefaultFormatter::
 beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
     std::string result;
-    result += "\n" + ANSI_STYLE_BOLD + ANSI_COLOR_CYAN;
+    result += ANSI_STYLE_BOLD + ANSI_COLOR_CYAN;
     result += "=== ";
 
     result += FormatAction(buildContext.action()) + " ";
@@ -127,14 +127,32 @@ beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr c
 
     result += " ===";
     result += ANSI_STYLE_NO_BOLD + ANSI_COLOR_RESET + "\n";
+
+    result += "\n";
     return result;
 }
 
 std::string DefaultFormatter::
-checkDependencies(pbxproj::PBX::Target::shared_ptr const &target)
+finishTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
+{
+    return std::string();
+}
+
+std::string DefaultFormatter::
+beginCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target)
 {
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
-        return "\nCheck dependencies\n";
+        return "Check dependencies\n";
+    } else {
+        return std::string();
+    }
+}
+
+std::string DefaultFormatter::
+finishCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target)
+{
+    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+        return "\n";
     } else {
         return std::string();
     }
@@ -144,7 +162,7 @@ std::string DefaultFormatter::
 beginWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target)
 {
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
-        return "\nWrite auxiliary files\n";
+        return "Write auxiliary files\n";
     } else {
         return std::string();
     }
@@ -171,25 +189,38 @@ setAuxiliaryExecutable(std::string const &file)
 std::string DefaultFormatter::
 finishWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    return "";
-}
-
-std::string DefaultFormatter::
-createProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
-{
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
-        // TODO(grp): Implement this fully.
-        return "\nCreate product structure\n";
+        return "\n";
     } else {
         return std::string();
     }
 }
 
 std::string DefaultFormatter::
-invocation(ToolInvocation const &invocation, std::string const &executable)
+beginCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
+{
+    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+        // TODO(grp): Implement this fully.
+        return "Create product structure\n";
+    } else {
+        return std::string();
+    }
+}
+
+std::string DefaultFormatter::
+finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
+{
+    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+        return "\n";
+    } else {
+        return std::string();
+    }
+}
+
+std::string DefaultFormatter::
+beginInvocation(ToolInvocation const &invocation, std::string const &executable)
 {
     std::string message;
-    message += "\n";
 
     message += FormatInvocation(invocation, _color) + "\n";
     message += INDENT + "cd " + invocation.workingDirectory() + "\n";
@@ -208,6 +239,12 @@ invocation(ToolInvocation const &invocation, std::string const &executable)
     message += "\n";
 
     return message;
+}
+
+std::string DefaultFormatter::
+finishInvocation(ToolInvocation const &invocation, std::string const &executable)
+{
+    return "\n";
 }
 
 std::shared_ptr<DefaultFormatter> DefaultFormatter::

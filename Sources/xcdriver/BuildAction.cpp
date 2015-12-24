@@ -118,19 +118,25 @@ Run(Options const &options)
     bool succeeded = true;
     for (pbxproj::PBX::Target::shared_ptr const &target : targets) {
         pbxbuild::Build::Formatter::Print(formatter->beginTarget(*buildContext, target));
+
         std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = buildContext->targetEnvironment(*buildEnvironment, target);
         if (targetEnvironment == nullptr) {
             fprintf(stderr, "error: couldn't create target environment\n");
+            pbxbuild::Build::Formatter::Print(formatter->finishTarget(*buildContext, target));
             continue;
         }
 
-        pbxbuild::Build::Formatter::Print(formatter->checkDependencies(target));
+        pbxbuild::Build::Formatter::Print(formatter->beginCheckDependencies(target));
         pbxbuild::Phase::PhaseEnvironment phaseEnvironment = pbxbuild::Phase::PhaseEnvironment(*buildEnvironment, *buildContext, target, *targetEnvironment);
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
+        pbxbuild::Build::Formatter::Print(formatter->finishCheckDependencies(target));
 
         if (!executor->buildTarget(target, *targetEnvironment, phaseInvocations.invocations())) {
+            pbxbuild::Build::Formatter::Print(formatter->finishTarget(*buildContext, target));
             return 1;
         }
+
+        pbxbuild::Build::Formatter::Print(formatter->finishTarget(*buildContext, target));
     }
 
     pbxbuild::Build::Formatter::Print(formatter->success(*buildContext));
