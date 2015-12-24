@@ -18,19 +18,18 @@ namespace pbxbuild {
 template<typename T>
 class BuildGraph {
 private:
-    std::unordered_map<T, std::vector<T>> _contents;
+    std::unordered_set<T>                        _nodes;
+    std::unordered_map<T, std::unordered_set<T>> _adjacency;
 
 public:
-    void
-    insert(T const &node, std::vector<T> const &children);
+    void insert(T const &node, std::unordered_set<T> const &adjacent);
 
 public:
-    std::vector<T>
-    children(T const &node) const;
+    std::unordered_set<T> const &nodes() const;
+    std::unordered_set<T> adjacent(T const &node) const;
 
 public:
-    std::vector<T>
-    ordered(void) const;
+    std::vector<T> ordered(void) const;
 };
 
 }

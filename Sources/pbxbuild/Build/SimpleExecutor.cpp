@@ -41,7 +41,6 @@ build(
 {
     Formatter::Print(_formatter->begin(buildContext));
 
-    bool succeeded = true;
     for (pbxproj::PBX::Target::shared_ptr const &target : targetGraph.ordered()) {
         Formatter::Print(_formatter->beginTarget(buildContext, target));
 

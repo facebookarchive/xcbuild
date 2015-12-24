@@ -14,26 +14,35 @@ using pbxbuild::BuildGraph;
 
 template<class T>
 void BuildGraph<T>::
-insert(T const &node, std::vector<T> const &children)
+insert(T const &node, std::unordered_set<T> const &adjacent)
 {
-    auto it = _contents.find(node);
-    if (it == _contents.end()) {
-        _contents.insert(std::make_pair(node, children));
+    _nodes.insert(node);
+    _nodes.insert(adjacent.begin(), adjacent.end());
+
+    auto it = _adjacency.find(node);
+    if (it == _adjacency.end()) {
+        _adjacency.insert(std::make_pair(node, adjacent));
     } else {
-        std::vector<T> &existing = it->second;
-        existing.insert(existing.end(), children.begin(), children.end());
+        it->second.insert(adjacent.begin(), adjacent.end());
     }
 }
 
 template<class T>
-std::vector<T> BuildGraph<T>::
-children(T const &node) const
+std::unordered_set<T> const &BuildGraph<T>::
+nodes() const
 {
-    auto it = _contents.find(node);
-    if (it != _contents.end()) {
+    return _nodes;
+}
+
+template<class T>
+std::unordered_set<T> BuildGraph<T>::
+adjacent(T const &node) const
+{
+    auto it = _adjacency.find(node);
+    if (it != _adjacency.end()) {
         return it->second;
     } else {
-        return std::vector<T>();
+        return std::unordered_set<T>();
     }
 }
 
@@ -44,7 +53,7 @@ ordered(void) const
     std::vector<T> result;
 
     std::list<T> toExplore;
-    std::transform(_contents.begin(), _contents.end(), std::back_inserter(toExplore), [](std::pair<T, std::vector<T>> const &pair) {
+    std::transform(_adjacency.begin(), _adjacency.end(), std::back_inserter(toExplore), [](std::pair<T, std::unordered_set<T>> const &pair) {
         return pair.first;
     });
 
@@ -58,18 +67,21 @@ ordered(void) const
             continue;
         }
 
+        size_t stack = toExplore.size();
         inProgress.insert(node);
 
-        size_t stack = toExplore.size();
-        for (T const &child : _contents.find(node)->second) {
-            if (inProgress.find(child) != inProgress.end()) {
-                fprintf(stderr, "error: dependency cycle detected!\n");
-                return std::vector<T>();
-            }
+        auto it = _adjacency.find(node);
+        if (it != _adjacency.end()) {
+            for (T const &child : it->second) {
+                if (inProgress.find(child) != inProgress.end()) {
+                    fprintf(stderr, "error: dependency cycle detected!\n");
+                    return std::vector<T>();
+                }
 
-            if (explored.find(child) == explored.end()) {
-                toExplore.push_front(child);
-                break;
+                if (explored.find(child) == explored.end()) {
+                    toExplore.push_front(child);
+                    break;
+                }
             }
         }
 
@@ -89,3 +101,4 @@ namespace pbxbuild { template class BuildGraph<pbxproj::PBX::Target::shared_ptr>
 namespace pbxbuild { template class BuildGraph<pbxproj::PBX::BuildPhase::shared_ptr>; }
 namespace pbxbuild { template class BuildGraph<pbxspec::PBX::FileType::shared_ptr>; }
 namespace pbxbuild { template class BuildGraph<pbxbuild::ToolInvocation const *>; }
+namespace pbxbuild { template class BuildGraph<int>; } /* For testing. */

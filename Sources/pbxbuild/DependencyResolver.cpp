@@ -70,7 +70,7 @@ struct DependenciesContext {
     BuildContext context;
     BuildGraph<pbxproj::PBX::Target::shared_ptr> *graph;
     BuildAction::shared_ptr buildAction;
-    std::vector<pbxproj::PBX::Target::shared_ptr> *positional;
+    std::unordered_set<pbxproj::PBX::Target::shared_ptr> *positional;
     std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> *productPathToTarget;
 };
 
@@ -80,7 +80,7 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
 static void
 AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared_ptr const &target)
 {
-    std::vector<pbxproj::PBX::Target::shared_ptr> dependencies;
+    std::unordered_set<pbxproj::PBX::Target::shared_ptr> dependencies;
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
         // TODO(grp): Only include appropriate build phases for this action.
@@ -97,7 +97,7 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
 
                     pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, proxy->remoteRef(), true);
                     if (proxiedTarget != nullptr) {
-                        dependencies.push_back(proxiedTarget);
+                        dependencies.insert(proxiedTarget);
 
 #if DEPENDENCY_RESOLVER_LOGGING
                         fprintf(stderr, "debug: implicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), proxiedTarget->blueprintIdentifier().c_str(), proxiedTarget->name().c_str());
@@ -118,7 +118,7 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
                     auto it = context.productPathToTarget->find(path.raw());
                     if (it != context.productPathToTarget->end()) {
                         pbxproj::PBX::Target::shared_ptr dependentTarget = it->second;
-                        dependencies.push_back(dependentTarget);
+                        dependencies.insert(dependentTarget);
 
 #if DEPENDENCY_RESOLVER_LOGGING
                         fprintf(stderr, "debug: implicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), dependentTarget->blueprintIdentifier().c_str(), dependentTarget->name().c_str());
@@ -147,12 +147,12 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
 static void
 AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared_ptr const &target)
 {
-    std::vector<pbxproj::PBX::Target::shared_ptr> dependencies;
+    std::unordered_set<pbxproj::PBX::Target::shared_ptr> dependencies;
 
     for (pbxproj::PBX::TargetDependency::shared_ptr const &dependency : target->dependencies()) {
         if (dependency->target() != nullptr) {
             /* A dependency for another target in the same project. */
-            dependencies.push_back(dependency->target());
+            dependencies.insert(dependency->target());
 
 #if DEPENDENCY_RESOLVER_LOGGING
             fprintf(stderr, "debug: explicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), dependency->blueprintIdentifier().c_str(), dependency->target()->name().c_str());
@@ -164,7 +164,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
             /* A dependency referencing a target in another project. Get that target. */
             pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, dependency->targetProxy(), false);
             if (proxiedTarget != nullptr) {
-                dependencies.push_back(proxiedTarget);
+                dependencies.insert(proxiedTarget);
 
 #if DEPENDENCY_RESOLVER_LOGGING
                 fprintf(stderr, "debug: explicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), proxiedTarget->blueprintIdentifier().c_str(), proxiedTarget->name().c_str());
@@ -202,7 +202,7 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
          * on all previous targets seen. This is inefficient: the space used in the graph is O(N^2).
          */
         context.graph->insert(target, *context.positional);
-        context.positional->push_back(target);
+        context.positional->insert(target);
     }
 }
 
@@ -262,7 +262,7 @@ resolveSchemeDependencies(BuildContext const &context) const
         productPathToTarget = BuildProductPathsToTargets(*context.workspaceContext());
     }
 
-    std::vector<pbxproj::PBX::Target::shared_ptr> positional;
+    std::unordered_set<pbxproj::PBX::Target::shared_ptr> positional;
     for (BuildActionEntry::shared_ptr const &entry : buildAction->buildActionEntries()) {
         // TODO(grp): Check the buildFor* flags against the BuildContext.
         if (!entry->buildForRunning()) {
@@ -322,7 +322,7 @@ resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::str
 
     auto productPathToTarget = BuildProductPathsToTargets(*context.workspaceContext());
 
-    std::vector<pbxproj::PBX::Target::shared_ptr> positional;
+    std::unordered_set<pbxproj::PBX::Target::shared_ptr> positional;
     for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
         if (!allTargets) {
             if (!targetName.empty() && target->name() != targetName) {

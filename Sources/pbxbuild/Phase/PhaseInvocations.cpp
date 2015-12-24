@@ -19,11 +19,9 @@
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/ShellScriptResolver.h>
 #include <pbxbuild/Tool/ToolContext.h>
-#include <pbxbuild/BuildGraph.h>
 
 using pbxbuild::Phase::PhaseInvocations;
 using pbxbuild::Phase::PhaseContext;
-using pbxbuild::BuildGraph;
 using pbxbuild::ToolInvocation;
 using pbxbuild::Tool::ToolContext;
 
