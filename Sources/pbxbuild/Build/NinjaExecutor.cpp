@@ -169,16 +169,20 @@ buildTarget(
         }
 #endif
 
-        // TODO(grp): Include all outputs.
-        if (!invocation.outputs().size()) { continue; }
-        ninja::Value output = invocation.outputs().size() ? ninja::Value::String(invocation.outputs().front()) : ninja::Value::Empty();
+        /*
+         * Build up outputs as literal Ninja values.
+         */
+        std::vector<ninja::Value> outputs;
+        for (std::string const &output : invocation.outputs()) {
+            outputs.push_back(ninja::Value::String(output));
+        }
 
         /*
          * Add phony rules for input dependencies that we don't know if they exist.
          * This can come up, for example, for user-specified custom script inputs.
          */
         for (std::string const &phonyInput : invocation.phonyInputs()) {
-            writer.build(ninja::Value::String(phonyInput), "phony", { });
+            writer.build({ ninja::Value::String(phonyInput) }, "phony", { });
         }
 
         /*
@@ -208,7 +212,7 @@ buildTarget(
         /*
          * Add the rule to build this invocation.
          */
-        writer.build(output, ruleName, inputs, bindings, inputDependencies, orderDependencies);
+        writer.build(outputs, ruleName, inputs, bindings, inputDependencies, orderDependencies);
     }
 
     /*

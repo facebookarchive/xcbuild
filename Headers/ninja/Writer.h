@@ -75,7 +75,7 @@ public:
     /*
      * Build a file with the specified rule, using the inputs and dependencies.
      */
-    void build(Value const &path, std::string const &rule, std::vector<Value> const &inputs, std::vector<Binding> const &bindings = { }, std::vector<Value> const &dependencies = { }, std::vector<Value> const &orders = { });
+    void build(std::vector<Value> const &outputs, std::string const &rule, std::vector<Value> const &inputs, std::vector<Binding> const &bindings = { }, std::vector<Value> const &dependencies = { }, std::vector<Value> const &orders = { });
 
     /*
      * Define a pool to limit the number of parallel invocations.

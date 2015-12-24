@@ -106,15 +106,24 @@ rule(std::string const &name, Value const &command, std::vector<Binding> const &
 }
 
 void Writer::
-build(Value const &path, std::string const &rule, std::vector<Value> const &inputs, std::vector<Binding> const &bindings, std::vector<Value> const &dependencies, std::vector<Value> const &orders)
+build(std::vector<Value> const &outputs, std::string const &rule, std::vector<Value> const &inputs, std::vector<Binding> const &bindings, std::vector<Value> const &dependencies, std::vector<Value> const &orders)
 {
     std::ostringstream remaining;
-    remaining << path.resolve(Value::EscapeMode::BuildPathList);
-    remaining << ":" << " ";
-    remaining << rule;
+
+    for (Value const &output : outputs) {
+        if (&output != &outputs[0]) {
+            remaining << " ";
+        }
+        remaining << output.resolve(Value::EscapeMode::BuildPathList);
+    }
+
+    remaining << ":" << " " << rule << " ";
 
     for (Value const &input : inputs) {
-        remaining << " " << input.resolve(Value::EscapeMode::BuildPathList);
+        if (&input != &inputs[0]) {
+            remaining << " ";
+        }
+        remaining << input.resolve(Value::EscapeMode::BuildPathList);
     }
 
     if (!dependencies.empty()) {

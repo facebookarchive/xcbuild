@@ -149,7 +149,7 @@ TEST(Writer, Build)
     };
 
     Writer writer;
-    writer.build(Value::String("file/pa$th.ext"), "rule", inputs, bindings, dependencies, orders);
+    writer.build({ Value::String("file/pa$th.ext") }, "rule", inputs, bindings, dependencies, orders);
     EXPECT_EQ(writer.serialize(), "build file/pa$$th.ext: rule in1.txt in2.txt | dep1.txt dep2.txt || order1.txt order2.txt\n  description = hello world\n\n");
 }
 
