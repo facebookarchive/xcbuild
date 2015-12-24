@@ -21,23 +21,24 @@ private:
     builtin::Registry _builtins;
 
 public:
-    SimpleExecutor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
+    SimpleExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
     ~SimpleExecutor();
 
 public:
-    virtual void prepare();
-    virtual void finish();
+    virtual bool build(
+        BuildEnvironment const &buildEnvironment,
+        BuildContext const &buildContext,
+        BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
 public:
-    virtual bool buildTarget(
+    virtual std::pair<bool, std::vector<ToolInvocation const>> buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
         TargetEnvironment const &targetEnvironment,
-        std::vector<ToolInvocation const> const &invocations
-    );
+        std::vector<ToolInvocation const> const &invocations);
 
 public:
     static std::unique_ptr<SimpleExecutor>
-    Create(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
+    Create(std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
 };
 
 }

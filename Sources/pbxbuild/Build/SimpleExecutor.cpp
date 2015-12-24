@@ -8,7 +8,8 @@
  */
 
 #include <pbxbuild/Build/SimpleExecutor.h>
-#include <pbxbuild/BuildGraph.h>
+#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/PhaseInvocations.h>
 
 #include <fstream>
 
@@ -21,8 +22,8 @@ using libutil::FSUtil;
 using libutil::Subprocess;
 
 SimpleExecutor::
-SimpleExecutor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins) :
-    Executor (buildEnvironment, buildContext, formatter, dryRun),
+SimpleExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins) :
+    Executor (formatter, dryRun),
     _builtins(builtins)
 {
 }
@@ -32,14 +33,42 @@ SimpleExecutor::
 {
 }
 
-void SimpleExecutor::
-prepare()
+bool SimpleExecutor::
+build(
+    BuildEnvironment const &buildEnvironment,
+    BuildContext const &buildContext,
+    BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
 {
-}
+    Formatter::Print(_formatter->begin(buildContext));
 
-void SimpleExecutor::
-finish()
-{
+    bool succeeded = true;
+    for (pbxproj::PBX::Target::shared_ptr const &target : targetGraph.ordered()) {
+        Formatter::Print(_formatter->beginTarget(buildContext, target));
+
+        std::unique_ptr<TargetEnvironment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        if (targetEnvironment == nullptr) {
+            fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
+            Formatter::Print(_formatter->finishTarget(buildContext, target));
+            continue;
+        }
+
+        Formatter::Print(_formatter->beginCheckDependencies(target));
+        Phase::PhaseEnvironment phaseEnvironment = Phase::PhaseEnvironment(buildEnvironment, buildContext, target, *targetEnvironment);
+        Phase::PhaseInvocations phaseInvocations = Phase::PhaseInvocations::Create(phaseEnvironment, target);
+        Formatter::Print(_formatter->finishCheckDependencies(target));
+
+        auto result = buildTarget(target, *targetEnvironment, phaseInvocations.invocations());
+        if (!result.first) {
+            Formatter::Print(_formatter->finishTarget(buildContext, target));
+            Formatter::Print(_formatter->failure(buildContext, result.second));
+            return false;
+        }
+
+        Formatter::Print(_formatter->finishTarget(buildContext, target));
+    }
+
+    Formatter::Print(_formatter->success(buildContext));
+    return true;
 }
 
 static std::vector<ToolInvocation const>
@@ -80,7 +109,7 @@ SortInvocations(std::vector<ToolInvocation const> const &invocations)
     return result;
 }
 
-bool SimpleExecutor::
+std::pair<bool, std::vector<ToolInvocation const>> SimpleExecutor::
 buildTarget(
     pbxproj::PBX::Target::shared_ptr const &target,
     TargetEnvironment const &targetEnvironment,
@@ -97,8 +126,7 @@ buildTarget(
                 if (!_dryRun) {
                     Subprocess process;
                     if (!process.execute("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
-                        Formatter::Print(_formatter->failure(_buildContext, { }));
-                        return false;
+                        return std::make_pair(false, std::vector<ToolInvocation const>());
                     }
                 }
             }
@@ -109,8 +137,7 @@ buildTarget(
             if (!FSUtil::TestForRead(auxiliaryFile.path())) {
                 Subprocess process;
                 if (!process.execute("/bin/mkdir", { "-p", FSUtil::GetDirectoryName(auxiliaryFile.path()) }) || process.exitcode() != 0) {
-                    Formatter::Print(_formatter->failure(_buildContext, { }));
-                    return false;
+                    return std::make_pair(false, std::vector<ToolInvocation const>());
                 }
 
                 Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
@@ -128,8 +155,7 @@ buildTarget(
                     if (!_dryRun) {
                         Subprocess process;
                         if (!process.execute("/bin/chmod", { "0755", auxiliaryFile.path() }) || process.exitcode() != 0) {
-                            Formatter::Print(_formatter->failure(_buildContext, { }));
-                            return false;
+                            return std::make_pair(false, std::vector<ToolInvocation const>());
                         }
                     }
                 }
@@ -173,8 +199,7 @@ buildTarget(
                     Subprocess process;
                     if (!process.execute("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
                         Formatter::Print(_formatter->finishInvocation(invocation, executable));
-                        Formatter::Print(_formatter->failure(_buildContext, { invocation }));
-                        return false;
+                        return std::make_pair(false, std::vector<ToolInvocation const>({ invocation }));
                     }
                 }
             }
@@ -183,21 +208,18 @@ buildTarget(
                 std::shared_ptr<builtin::Driver> driver = _builtins.driver(executable);
                 if (driver == nullptr) {
                     Formatter::Print(_formatter->finishInvocation(invocation, executable));
-                    Formatter::Print(_formatter->failure(_buildContext, { invocation }));
-                    return false;
+                    return std::make_pair(false, std::vector<ToolInvocation const>({ invocation }));
                 }
 
                 if (driver->run(invocation.arguments(), invocation.environment(), invocation.workingDirectory()) != 0) {
                     Formatter::Print(_formatter->finishInvocation(invocation, executable));
-                    Formatter::Print(_formatter->failure(_buildContext, { invocation }));
-                    return false;
+                    return std::make_pair(false, std::vector<ToolInvocation const>({ invocation }));
                 }
             } else {
                 Subprocess process;
                 if (!process.execute(executable, invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
                     Formatter::Print(_formatter->finishInvocation(invocation, executable));
-                    Formatter::Print(_formatter->failure(_buildContext, { invocation }));
-                    return false;
+                    return std::make_pair(false, std::vector<ToolInvocation const>({ invocation }));
                 }
             }
         }
@@ -205,15 +227,13 @@ buildTarget(
         Formatter::Print(_formatter->finishInvocation(invocation, executable));
     }
 
-    return true;
+    return std::make_pair(true, std::vector<ToolInvocation const>());
 }
 
 std::unique_ptr<SimpleExecutor> SimpleExecutor::
-Create(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins)
+Create(std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins)
 {
     return std::unique_ptr<SimpleExecutor>(new SimpleExecutor(
-        buildEnvironment,
-        buildContext,
         formatter,
         dryRun,
         builtins

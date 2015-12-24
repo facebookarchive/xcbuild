@@ -43,27 +43,15 @@ CreateFormatter(std::string const &formatter)
 static std::unique_ptr<pbxbuild::Build::Executor>
 CreateExecutor(
     std::string const &executor,
-    pbxbuild::BuildEnvironment const &buildEnvironment,
-    pbxbuild::BuildContext const &buildContext,
     std::shared_ptr<pbxbuild::Build::Formatter> const &formatter,
     bool dryRun)
 {
     if (executor == "simple" || executor.empty()) {
-        auto executor = pbxbuild::Build::SimpleExecutor::Create(
-            buildEnvironment,
-            buildContext,
-            formatter,
-            dryRun,
-            builtin::Registry::Default()
-        );
+        auto registry = builtin::Registry::Default();
+        auto executor = pbxbuild::Build::SimpleExecutor::Create(formatter, dryRun, registry);
         return libutil::static_unique_pointer_cast<pbxbuild::Build::Executor>(std::move(executor));
     } else if (executor == "ninja") {
-        auto executor = pbxbuild::Build::NinjaExecutor::Create(
-            buildEnvironment,
-            buildContext,
-            formatter,
-            dryRun
-        );
+        auto executor = pbxbuild::Build::NinjaExecutor::Create(formatter, dryRun);
         return libutil::static_unique_pointer_cast<pbxbuild::Build::Executor>(std::move(executor));
     }
 
@@ -146,6 +134,9 @@ Run(Options const &options)
         return -1;
     }
 
+    /*
+     * Build the target dependency graph. The executor uses this to know which targets to build.
+     */
     pbxbuild::DependencyResolver resolver = pbxbuild::DependencyResolver(*buildEnvironment);
     pbxbuild::BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
     if (buildContext->scheme() != nullptr) {
@@ -156,8 +147,6 @@ Run(Options const &options)
         fprintf(stderr, "error: scheme is required for workspace\n");
         return -1;
     }
-
-    std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
     /*
      * Create the formatter to format the build log.
@@ -171,38 +160,19 @@ Run(Options const &options)
     /*
      * Create the executor used to perform the build.
      */
-    std::unique_ptr<pbxbuild::Build::Executor> executor = CreateExecutor(options.executor(), *buildEnvironment, *buildContext, formatter, options.dryRun());
+    std::unique_ptr<pbxbuild::Build::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun());
     if (executor == nullptr) {
         fprintf(stderr, "error: unknown executor %s\n", options.executor().c_str());
         return -1;
     }
 
-    pbxbuild::Build::Formatter::Print(formatter->begin(*buildContext));
-
-    bool succeeded = true;
-    for (pbxproj::PBX::Target::shared_ptr const &target : targets) {
-        pbxbuild::Build::Formatter::Print(formatter->beginTarget(*buildContext, target));
-
-        std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = buildContext->targetEnvironment(*buildEnvironment, target);
-        if (targetEnvironment == nullptr) {
-            fprintf(stderr, "error: couldn't create target environment\n");
-            pbxbuild::Build::Formatter::Print(formatter->finishTarget(*buildContext, target));
-            continue;
-        }
-
-        pbxbuild::Build::Formatter::Print(formatter->beginCheckDependencies(target));
-        pbxbuild::Phase::PhaseEnvironment phaseEnvironment = pbxbuild::Phase::PhaseEnvironment(*buildEnvironment, *buildContext, target, *targetEnvironment);
-        pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
-        pbxbuild::Build::Formatter::Print(formatter->finishCheckDependencies(target));
-
-        if (!executor->buildTarget(target, *targetEnvironment, phaseInvocations.invocations())) {
-            pbxbuild::Build::Formatter::Print(formatter->finishTarget(*buildContext, target));
-            return 1;
-        }
-
-        pbxbuild::Build::Formatter::Print(formatter->finishTarget(*buildContext, target));
+    /*
+     * Perform the build!
+     */
+    bool success = executor->build(*buildEnvironment, *buildContext, graph);
+    if (!success) {
+        return 1;
     }
 
-    pbxbuild::Build::Formatter::Print(formatter->success(*buildContext));
     return 0;
 }

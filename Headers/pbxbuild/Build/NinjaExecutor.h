@@ -18,23 +18,24 @@ namespace Build {
 
 class NinjaExecutor : public Executor {
 public:
-    NinjaExecutor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun);
+    NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun);
     ~NinjaExecutor();
 
 public:
-    virtual void prepare();
-    virtual void finish();
+    virtual bool build(
+        BuildEnvironment const &buildEnvironment,
+        BuildContext const &buildContext,
+        BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
 public:
-    virtual bool buildTarget(
+    virtual std::pair<bool, std::vector<ToolInvocation const>> buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
         TargetEnvironment const &targetEnvironment,
-        std::vector<ToolInvocation const> const &invocations
-    );
+        std::vector<ToolInvocation const> const &invocations);
 
 public:
     static std::unique_ptr<NinjaExecutor>
-    Create(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun);
+    Create(std::shared_ptr<Formatter> const &formatter, bool dryRun);
 };
 
 }

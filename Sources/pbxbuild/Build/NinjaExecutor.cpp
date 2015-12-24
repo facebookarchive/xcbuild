@@ -8,8 +8,8 @@
  */
 
 #include <pbxbuild/Build/NinjaExecutor.h>
-#include <pbxbuild/BuildGraph.h>
-
+#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/PhaseInvocations.h>
 #include <ninja/Writer.h>
 #include <ninja/Value.h>
 
@@ -19,13 +19,11 @@ using pbxbuild::Build::NinjaExecutor;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
 using pbxbuild::ToolInvocation;
-using pbxbuild::BuildGraph;
 using libutil::FSUtil;
-using libutil::Subprocess;
 
 NinjaExecutor::
-NinjaExecutor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun) :
-    Executor(buildEnvironment, buildContext, formatter, dryRun)
+NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun) :
+    Executor(formatter, dryRun)
 {
 }
 
@@ -34,14 +32,30 @@ NinjaExecutor::
 {
 }
 
-void NinjaExecutor::
-prepare()
+bool NinjaExecutor::
+build(
+    BuildEnvironment const &buildEnvironment,
+    BuildContext const &buildContext,
+    BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
 {
-}
+    bool succeeded = true;
+    for (pbxproj::PBX::Target::shared_ptr const &target : targetGraph.ordered()) {
+        std::unique_ptr<TargetEnvironment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        if (targetEnvironment == nullptr) {
+            fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
+            continue;
+        }
 
-void NinjaExecutor::
-finish()
-{
+        Phase::PhaseEnvironment phaseEnvironment = Phase::PhaseEnvironment(buildEnvironment, buildContext, target, *targetEnvironment);
+        Phase::PhaseInvocations phaseInvocations = Phase::PhaseInvocations::Create(phaseEnvironment, target);
+
+        auto result = buildTarget(target, *targetEnvironment, phaseInvocations.invocations());
+        if (!result.first) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 static std::string
@@ -79,7 +93,7 @@ ResolveExecutable(std::string const &executable, std::vector<std::string> const 
     }
 }
 
-bool NinjaExecutor::
+std::pair<bool, std::vector<ToolInvocation const>> NinjaExecutor::
 buildTarget(
     pbxproj::PBX::Target::shared_ptr const &target,
     TargetEnvironment const &targetEnvironment,
@@ -229,17 +243,15 @@ buildTarget(
     /*
      * Note where the Ninja file is written.
      */
-    Formatter::Print("Wrote " + target->name() + " ninja: " + path + "\n");
+    fprintf(stderr, "Wrote %s ninja: %s\n", target->name().c_str(), path.c_str());
 
-    return true;
+    return std::make_pair(true, std::vector<ToolInvocation const>());
 }
 
 std::unique_ptr<NinjaExecutor> NinjaExecutor::
-Create(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun)
+Create(std::shared_ptr<Formatter> const &formatter, bool dryRun)
 {
     return std::unique_ptr<NinjaExecutor>(new NinjaExecutor(
-        buildEnvironment,
-        buildContext,
         formatter,
         dryRun
     ));

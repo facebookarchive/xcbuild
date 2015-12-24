@@ -14,6 +14,7 @@
 #include <pbxbuild/Build/Formatter.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
+#include <pbxbuild/BuildGraph.h>
 #include <pbxbuild/ToolInvocation.h>
 
 namespace pbxbuild {
@@ -24,29 +25,26 @@ namespace Build {
 
 class Executor {
 protected:
-    BuildEnvironment           _buildEnvironment;
-    BuildContext               _buildContext;
-
-protected:
     std::shared_ptr<Formatter> _formatter;
     bool                       _dryRun;
 
 protected:
-    Executor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun);
+    Executor(std::shared_ptr<Formatter> const &formatter, bool dryRun);
 
 public:
     virtual ~Executor();
 
 public:
-    virtual void prepare() = 0;
-    virtual void finish() = 0;
+    virtual bool build(
+        BuildEnvironment const &buildEnvironment,
+        BuildContext const &buildContext,
+        BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph) = 0;
 
 public:
-    virtual bool buildTarget(
+    virtual std::pair<bool, std::vector<ToolInvocation const>> buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
         TargetEnvironment const &targetEnvironment,
-        std::vector<ToolInvocation const> const &invocations
-    ) = 0;
+        std::vector<ToolInvocation const> const &invocations) = 0;
 };
 
 }

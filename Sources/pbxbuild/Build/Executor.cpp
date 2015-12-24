@@ -12,11 +12,9 @@
 using pbxbuild::Build::Executor;
 
 Executor::
-Executor(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, std::shared_ptr<Formatter> const &formatter, bool dryRun) :
-    _buildEnvironment(buildEnvironment),
-    _buildContext    (buildContext),
-    _formatter       (formatter),
-    _dryRun          (dryRun)
+Executor(std::shared_ptr<Formatter> const &formatter, bool dryRun) :
+    _formatter(formatter),
+    _dryRun   (dryRun)
 {
 }
 
