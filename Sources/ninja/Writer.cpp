@@ -117,13 +117,10 @@ build(std::vector<Value> const &outputs, std::string const &rule, std::vector<Va
         remaining << output.resolve(Value::EscapeMode::BuildPathList);
     }
 
-    remaining << ":" << " " << rule << " ";
+    remaining << ":" << " " << rule;
 
     for (Value const &input : inputs) {
-        if (&input != &inputs[0]) {
-            remaining << " ";
-        }
-        remaining << input.resolve(Value::EscapeMode::BuildPathList);
+        remaining << " " << input.resolve(Value::EscapeMode::BuildPathList);
     }
 
     if (!dependencies.empty()) {
