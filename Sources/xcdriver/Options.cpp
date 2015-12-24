@@ -133,12 +133,14 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::NextString(&_executor, args, it);
     } else if (arg == "-formatter") {
         return libutil::Options::NextString(&_formatter, args, it);
-    } else if (arg.find('=') != std::string::npos) {
-        _settings.push_back(pbxsetting::Setting::Parse(arg));
-        return std::make_pair(true, std::string());
     } else if (!arg.empty() && arg[0] != '-') {
-        _actions.push_back(arg);
-        return std::make_pair(true, std::string());
+        if (arg.find('=') != std::string::npos) {
+            _settings.push_back(pbxsetting::Setting::Parse(arg));
+            return std::make_pair(true, std::string());
+        } else {
+            _actions.push_back(arg);
+            return std::make_pair(true, std::string());
+        }
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }

@@ -22,6 +22,9 @@ private:
     ~Action();
 
 public:
+    /*
+     * The possible basic actions that the driver can take.
+     */
     enum Type {
         Build,
         ShowBuildSettings,
@@ -38,10 +41,17 @@ public:
     };
 
 public:
+    /*
+     * Determine the action from a raw set of options. Picks the right
+     * action even if multiple are specified or conflicting options are.
+     */
     static Type
     Determine(Options const &options);
 
 public:
+    /*
+     * Verifies that the passed in build actions are valid.
+     */
     static bool
     VerifyBuildActions(std::vector<std::string> const &actions);
 
