@@ -42,7 +42,8 @@ resolve(
 {
     std::string logMessage = "Touch " + input;
 
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, { input }, { });
+    /* Treat the input as an output since it's what gets modified by the touch. */
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, { }, { input });
     OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/usr/bin/touch", { "-c", input });
 
