@@ -359,47 +359,26 @@ enable_testing()
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/googletest/googletest/include)
 add_subdirectory(ThirdParty/googletest/googletest)
 
-function (ADD_UNIT_GTEST NAME SOURCES)
-    add_executable("${NAME}" ${SOURCES})
-    target_link_libraries("${NAME}" gtest gtest_main)
-    add_test("${NAME}" "${NAME}")
+function (ADD_UNIT_GTEST LIBRARY NAME SOURCES)
+    set(TARGET_NAME "test_${LIBRARY}_${NAME}")
+    add_executable("${TARGET_NAME}" ${SOURCES})
+    target_link_libraries("${TARGET_NAME}" "${LIBRARY}" gtest gtest_main)
+    add_test("${TARGET_NAME}" "${TARGET_NAME}")
 endfunction ()
 
-ADD_UNIT_GTEST(test_FSUtil Tests/libutil/test_FSUtil.cpp)
-target_link_libraries(test_FSUtil util)
+ADD_UNIT_GTEST(util FSUtil Tests/libutil/test_FSUtil.cpp)
+ADD_UNIT_GTEST(util Wildcard Tests/libutil/test_Wildcard.cpp)
 
-ADD_UNIT_GTEST(test_Wildcard Tests/libutil/test_Wildcard.cpp)
-target_link_libraries(test_Wildcard util)
+ADD_UNIT_GTEST(plist Boolean Tests/plist/test_Boolean.cpp)
+ADD_UNIT_GTEST(plist String Tests/plist/test_String.cpp)
+ADD_UNIT_GTEST(plist ASCII Tests/plist/Format/test_ASCII.cpp)
+ADD_UNIT_GTEST(plist XML Tests/plist/Format/test_XML.cpp)
 
-ADD_UNIT_GTEST(test_Boolean Tests/plist/test_Boolean.cpp)
-target_link_libraries(test_Boolean plist)
+ADD_UNIT_GTEST(ninja Value Tests/ninja/test_Value.cpp)
+ADD_UNIT_GTEST(ninja Writer Tests/ninja/test_Writer.cpp)
 
-ADD_UNIT_GTEST(test_String Tests/plist/test_String.cpp)
-target_link_libraries(test_String plist)
-
-ADD_UNIT_GTEST(test_ASCII Tests/plist/Format/test_ASCII.cpp)
-target_link_libraries(test_ASCII plist)
-
-ADD_UNIT_GTEST(test_XML Tests/plist/Format/test_XML.cpp)
-target_link_libraries(test_XML plist)
-
-ADD_UNIT_GTEST(test_NinjaValue Tests/ninja/test_NinjaValue.cpp)
-target_link_libraries(test_NinjaValue ninja)
-
-ADD_UNIT_GTEST(test_Writer Tests/ninja/test_Writer.cpp)
-target_link_libraries(test_Writer ninja)
-
-ADD_UNIT_GTEST(test_Condition Tests/pbxsetting/test_Condition.cpp)
-target_link_libraries(test_Condition pbxsetting)
-
-ADD_UNIT_GTEST(test_Environment Tests/pbxsetting/test_Environment.cpp)
-target_link_libraries(test_Environment pbxsetting)
-
-ADD_UNIT_GTEST(test_Setting Tests/pbxsetting/test_Setting.cpp)
-target_link_libraries(test_Setting pbxsetting)
-
-ADD_UNIT_GTEST(test_Type Tests/pbxsetting/test_Type.cpp)
-target_link_libraries(test_Type pbxsetting)
-
-ADD_UNIT_GTEST(test_Value Tests/pbxsetting/test_Value.cpp)
-target_link_libraries(test_Value pbxsetting)
+ADD_UNIT_GTEST(pbxsetting Condition Tests/pbxsetting/test_Condition.cpp)
+ADD_UNIT_GTEST(pbxsetting Environment Tests/pbxsetting/test_Environment.cpp)
+ADD_UNIT_GTEST(pbxsetting Setting Tests/pbxsetting/test_Setting.cpp)
+ADD_UNIT_GTEST(pbxsetting Type Tests/pbxsetting/test_Type.cpp)
+ADD_UNIT_GTEST(pbxsetting Value Tests/pbxsetting/test_Value.cpp)
