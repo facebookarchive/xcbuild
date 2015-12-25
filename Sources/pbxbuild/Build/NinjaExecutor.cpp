@@ -227,7 +227,7 @@ build(
          * Add the phony target for beginning this target's build.
          */
         std::string targetBegin = TargetNinjaBegin(target);
-        writer.build({ ninja::Value::String(targetBegin) }, "phony", { }, { }, dependenciesFinished);
+        writer.build({ ninja::Value::String(targetBegin) }, "phony", dependenciesFinished);
 
         /*
          * Resolve this target and generate its Ninja file.
@@ -498,11 +498,6 @@ buildTargetInvocations(
         }
 
         /*
-         * All invocations depend on the target containing them beginning.
-         */
-        inputDependencies.push_back(ninja::Value::String(targetBegin));
-
-        /*
          * Build up order dependencies as literal Ninja values.
          */
         std::vector<ninja::Value> orderDependencies;
@@ -525,6 +520,11 @@ buildTargetInvocations(
         for (std::string const &outputDirectory : outputDirectories) {
             orderDependencies.push_back(ninja::Value::String(outputDirectory));
         }
+
+        /*
+         * All invocations depend on the target containing them beginning.
+         */
+        orderDependencies.push_back(ninja::Value::String(targetBegin));
 
         /*
          * Add the rule to build this invocation.
