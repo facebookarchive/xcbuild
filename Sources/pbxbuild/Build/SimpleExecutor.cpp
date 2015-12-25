@@ -78,6 +78,9 @@ SortInvocations(std::vector<ToolInvocation const> const &invocations)
         for (std::string const &output : invocation.outputs()) {
             outputToInvocation.insert({ output, &invocation });
         }
+        for (std::string const &phonyOutput : invocation.phonyOutputs()) {
+            outputToInvocation.insert({ phonyOutput, &invocation });
+        }
         for (std::string const &outputDependency : invocation.outputDependencies()) {
             outputToInvocation.insert({ outputDependency, &invocation });
         }
@@ -89,6 +92,12 @@ SortInvocations(std::vector<ToolInvocation const> const &invocations)
 
         for (std::string const &input : invocation.inputs()) {
             auto it = outputToInvocation.find(input);
+            if (it != outputToInvocation.end()) {
+                graph.insert(&invocation, { it->second });
+            }
+        }
+        for (std::string const &phonyInputs : invocation.phonyInputs()) {
+            auto it = outputToInvocation.find(phonyInputs);
             if (it != outputToInvocation.end()) {
                 graph.insert(&invocation, { it->second });
             }

@@ -60,7 +60,7 @@ resolve(
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.outputs() = { outputPath };
+    invocation.phonyOutputs() = { outputPath }; /* Not created, just updated. */
     invocation.inputDependencies() = inputDependencies;
     invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);

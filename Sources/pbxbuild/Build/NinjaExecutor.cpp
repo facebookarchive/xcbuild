@@ -12,7 +12,10 @@
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <ninja/Writer.h>
 #include <ninja/Value.h>
+#include <libutil/md5.h>
 
+#include <sstream>
+#include <iomanip>
 #include <fstream>
 
 using pbxbuild::Build::NinjaExecutor;
@@ -63,6 +66,43 @@ static std::string
 NinjaRuleName()
 {
     return "do";
+}
+
+static std::string
+NinjaPhonyOutputTarget(std::string const &phonyOutput)
+{
+    /*
+     * This is a hack to support multiple rules generating the same output,
+     * for when a later invocation wants to modify the output of a previous
+     * invocation in-place.
+     *
+     * Ninja does not support multiple targets with the same output, even
+     * when the latter target depends on the former. However, since there is
+     * already a target to generate the output, it doesn't particularly
+     * matter *what* the latter command outputs: it just has to be something.
+     * As long as the "target finish" depends on that fake output, it will
+     * be run at the right time.
+     *
+     * To simulate this, we just need to pick a unique target name here,
+     * preferably through a stable algorithm. Unfortunately, since the
+     * post-processing invocations could be exactly identical, there's no
+     * good value to use as a stable key for the fake output.
+     */
+
+    // TODO(grp): Handle identical phony output targets in a build.
+    md5_state_t state;
+    md5_init(&state);
+    md5_append(&state, reinterpret_cast<const md5_byte_t *>(phonyOutput.data()), phonyOutput.size());
+    uint8_t digest[16];
+    md5_finish(&state, reinterpret_cast<md5_byte_t *>(&digest));
+
+    std::ostringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (uint8_t c : digest) {
+        ss << std::setw(2) << static_cast<int>(c);
+    }
+
+    return ".ninja-phony-output-" + ss.str();
 }
 
 static bool
@@ -197,9 +237,14 @@ build(
          * As described above, the target's finish depends on all of the invocation outputs.
          */
         std::vector<ninja::Value> invocationOutputs;
+        std::vector<ninja::Value> invocationOrderOnlyOutputs;
         for (ToolInvocation const &invocation : phaseInvocations.invocations()) {
             for (std::string const &output : invocation.outputs()) {
                 invocationOutputs.push_back(ninja::Value::String(output));
+            }
+            for (std::string const &phonyOutput : invocation.phonyOutputs()) {
+                std::string phonyOutputTarget = NinjaPhonyOutputTarget(phonyOutput);
+                invocationOrderOnlyOutputs.push_back(ninja::Value::String(phonyOutputTarget));
             }
         }
 
@@ -207,7 +252,7 @@ build(
          * Add the phony target for ending this target's build.
          */
         std::string targetFinish = TargetNinjaFinish(target);
-        writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputs);
+        writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputs, invocationOrderOnlyOutputs);
     }
 
     /*
@@ -338,6 +383,15 @@ buildTarget(
         std::vector<ninja::Value> outputs;
         for (std::string const &output : invocation.outputs()) {
             outputs.push_back(ninja::Value::String(output));
+        }
+
+        /*
+         * Add fake output paths for outputs that may already exist. Ninja can't have
+         * multiple build commands generating an output, so use fake paths for these.
+         */
+        for (std::string const &phonyOutput : invocation.phonyOutputs()) {
+            std::string phonyOutputTarget = NinjaPhonyOutputTarget(phonyOutput);
+            outputs.push_back(ninja::Value::String(phonyOutputTarget));
         }
 
         /*
