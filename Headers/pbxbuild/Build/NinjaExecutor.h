@@ -36,6 +36,11 @@ private:
         TargetEnvironment const &targetEnvironment,
         std::vector<ToolInvocation const> const &invocations,
         std::unordered_set<std::string> *seenDirectories);
+    bool buildTargetAuxiliaryFiles(
+        ninja::Writer *writer,
+        pbxproj::PBX::Target::shared_ptr const &target,
+        TargetEnvironment const &targetEnvironment,
+        std::vector<ToolInvocation const> const &invocations);
     bool buildTargetInvocations(
         pbxproj::PBX::Target::shared_ptr const &target,
         TargetEnvironment const &targetEnvironment,

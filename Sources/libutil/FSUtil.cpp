@@ -258,7 +258,7 @@ CreateDirectory(std::string const &path)
         }
         current += component;
 
-        if (::mkdir(current.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0 && errno != EEXIST) {
+        if (::mkdir(current.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0 && errno != EEXIST) {
             return false;
         }
     }

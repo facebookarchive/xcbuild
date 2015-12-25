@@ -18,6 +18,9 @@
 #include <iomanip>
 #include <fstream>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 using pbxbuild::Build::NinjaExecutor;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
@@ -388,13 +391,51 @@ buildTargetOutputDirectories(
 }
 
 bool NinjaExecutor::
+buildTargetAuxiliaryFiles(
+    ninja::Writer *writer,
+    pbxproj::PBX::Target::shared_ptr const &target,
+    TargetEnvironment const &targetEnvironment,
+    std::vector<ToolInvocation const> const &invocations)
+{
+    // TODO(grp): In a dry run, Ninja will still need these files to exist, but the whole
+    // point of a dry run is to avoid the filesystem. What's the best way to resolve this?
+    if (_dryRun) {
+        return true;
+    }
+
+    // TODO(grp): Could this defer writing auxiliary files and let Ninja do it?
+    for (ToolInvocation const &invocation : invocations) {
+        for (ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
+            if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(auxiliaryFile.path()))) {
+                return false;
+            }
+
+            std::ofstream out;
+            out.open(auxiliaryFile.path(), std::ios::out | std::ios::trunc | std::ios::binary);
+            if (out.fail()) {
+                return false;
+            }
+
+            out.write(auxiliaryFile.contents().data(), auxiliaryFile.contents().size() * sizeof(char));
+            out.close();
+
+            if (auxiliaryFile.executable() && !FSUtil::TestForExecute(auxiliaryFile.path())) {
+                if (::chmod(auxiliaryFile.path().c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+bool NinjaExecutor::
 buildTargetInvocations(
     pbxproj::PBX::Target::shared_ptr const &target,
     TargetEnvironment const &targetEnvironment,
     std::vector<ToolInvocation const> const &invocations)
 {
-    // TODO(grp): Handle auxiliary files.
-
     std::string targetBegin = TargetNinjaBegin(target);
 
     /*
@@ -404,6 +445,13 @@ buildTargetInvocations(
     writer.comment("xcbuild ninja");
     writer.comment("Target: " + target->name());
     writer.newline();
+
+    /*
+     * Write out auxiliary files used by the invocations.
+     */
+    if (!buildTargetAuxiliaryFiles(&writer, target, targetEnvironment, invocations)) {
+        return false;
+    }
 
     /*
      * Add the build command for each invocation.

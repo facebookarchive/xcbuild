@@ -13,6 +13,9 @@
 
 #include <fstream>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 using pbxbuild::Build::SimpleExecutor;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
@@ -162,8 +165,7 @@ buildTarget(
                     Formatter::Print(_formatter->setAuxiliaryExecutable(auxiliaryFile.path()));
 
                     if (!_dryRun) {
-                        Subprocess process;
-                        if (!process.execute("/bin/chmod", { "0755", auxiliaryFile.path() }) || process.exitcode() != 0) {
+                        if (::chmod(auxiliaryFile.path().c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
                             return std::make_pair(false, std::vector<ToolInvocation const>());
                         }
                     }
