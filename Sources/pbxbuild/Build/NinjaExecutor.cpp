@@ -65,7 +65,7 @@ TargetNinjaPath(pbxproj::PBX::Target::shared_ptr const &target, TargetEnvironmen
 static std::string
 NinjaRuleName()
 {
-    return "do";
+    return "invoke";
 }
 
 static std::string
@@ -170,7 +170,7 @@ build(
      * rules at the Ninja level. Instead, add a single rule that just passes through from
      * the build command that calls it.
      */
-    writer.rule(NinjaRuleName(), ninja::Value::Expression("$exec"));
+    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && $exec"));
 
     /*
      * Go over each target and write out Ninja targets for the start and end of each.
@@ -365,6 +365,7 @@ buildTarget(
          */
         std::vector<ninja::Binding> bindings = {
             { "description", ninja::Value::String(description) },
+            { "dir", ninja::Value::String(ShellEscape(invocation.workingDirectory())) },
             { "exec", ninja::Value::String(exec) },
         };
 
