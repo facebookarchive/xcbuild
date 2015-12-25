@@ -118,8 +118,8 @@ resolve(
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs();
-    invocation.outputs() = toolEnvironment.outputs();
+    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
+    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.auxiliaryFiles() = auxiliaries;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = logMessage;

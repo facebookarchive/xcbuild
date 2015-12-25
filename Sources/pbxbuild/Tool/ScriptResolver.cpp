@@ -128,9 +128,8 @@ resolve(
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs();
-    invocation.phonyInputs() = inputFiles; /* User-specified, may not exist. */
-    invocation.outputs() = toolEnvironment.outputs();
+    invocation.phonyInputs() = toolEnvironment.inputs(toolContext->workingDirectory()); /* User-specified, may not exist. */
+    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.auxiliaryFiles() = { scriptFile };
     invocation.logMessage() = phaseEnvironment.expand(logMessage);
     invocation.showEnvironmentInLog() = buildPhase->showEnvVarsInLog();
@@ -177,9 +176,8 @@ resolve(
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs();
-    invocation.phonyInputs() = inputFiles; /* User-specified, may not exist. */
-    invocation.outputs() = toolEnvironment.outputs();
+    invocation.phonyInputs() = toolEnvironment.inputs(toolContext->workingDirectory()); /* User-specified, may not exist. */
+    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.logMessage() = ruleEnvironment.expand(logMessage);
     invocation.showEnvironmentInLog() = true;
     toolContext->invocations().push_back(invocation);

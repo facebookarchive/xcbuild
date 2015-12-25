@@ -81,8 +81,8 @@ resolve(
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs();
-    invocation.outputs() = toolEnvironment.outputs();
+    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
+    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.inputDependencies() = toolContext->additionalInfoPlistContents();
     invocation.logMessage() = logMessage;
     invocation.showEnvironmentInLog() = false; /* Hide build settings from log. */

@@ -27,6 +27,26 @@ ToolEnvironment::
 {
 }
 
+std::vector<std::string> ToolEnvironment::
+inputs(std::string const &workingDirectory) const
+{
+    std::vector<std::string> inputs;
+    for (std::string const &input : _inputs) {
+        inputs.push_back(FSUtil::ResolveRelativePath(input, workingDirectory));
+    }
+    return inputs;
+}
+
+std::vector<std::string> ToolEnvironment::
+outputs(std::string const &workingDirectory) const
+{
+    std::vector<std::string> outputs;
+    for (std::string const &output : _outputs) {
+        outputs.push_back(FSUtil::ResolveRelativePath(output, workingDirectory));
+    }
+    return outputs;
+}
+
 ToolEnvironment ToolEnvironment::
 Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs)
 {

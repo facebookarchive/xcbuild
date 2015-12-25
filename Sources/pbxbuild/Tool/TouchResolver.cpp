@@ -21,6 +21,7 @@ using pbxbuild::Tool::OptionsResult;
 using pbxbuild::Tool::CommandLineResult;
 using pbxbuild::Tool::ToolResult;
 using pbxbuild::ToolInvocation;
+using libutil::FSUtil;
 
 TouchResolver::
 TouchResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
@@ -43,18 +44,24 @@ resolve(
     std::string logMessage = "Touch " + input;
 
     /* Treat the input as an output since it's what gets modified by the touch. */
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, { }, { input });
+    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, { }, { });
     OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/usr/bin/touch", { "-c", input });
+
+    std::vector<std::string> inputDependencies;
+    for (std::string const &dependency : dependencies) {
+        inputDependencies.push_back(FSUtil::ResolveRelativePath(dependency, toolContext->workingDirectory()));
+    }
+
+    std::string outputPath = FSUtil::ResolveRelativePath(input, toolContext->workingDirectory());
 
     ToolInvocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs();
-    invocation.outputs() = toolEnvironment.outputs();
-    invocation.inputDependencies() = dependencies;
+    invocation.outputs() = { outputPath };
+    invocation.inputDependencies() = inputDependencies;
     invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
 }

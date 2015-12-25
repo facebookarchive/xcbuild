@@ -219,8 +219,8 @@ resolvePrecompiledHeader(
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = { input };
-    invocation.outputs() = { output };
+    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
+    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.dependencyInfo() = env.expand(_compiler->dependencyInfoFile());
     invocation.auxiliaryFiles().push_back(serializedFile);
     invocation.logMessage() = logMessage;
@@ -309,8 +309,8 @@ resolveSource(
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs();
-    invocation.outputs() = toolEnvironment.outputs();
+    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
+    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.inputDependencies() = inputDependencies;
     invocation.dependencyInfo() = env.expand(_compiler->dependencyInfoFile());
     invocation.logMessage() = logMessage;

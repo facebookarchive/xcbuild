@@ -19,6 +19,8 @@ class ToolEnvironment {
 private:
     pbxspec::PBX::Tool::shared_ptr _tool;
     pbxsetting::Environment        _toolEnvironment;
+
+private:
     std::vector<std::string>       _inputs;
     std::vector<std::string>       _outputs;
 
@@ -31,10 +33,16 @@ public:
     { return _tool; }
     pbxsetting::Environment const &toolEnvironment() const
     { return _toolEnvironment; }
+
+public:
     std::vector<std::string> const &inputs() const
     { return _inputs; }
     std::vector<std::string> const &outputs() const
     { return _outputs; }
+
+public:
+    std::vector<std::string> inputs(std::string const &workingDirectory) const;
+    std::vector<std::string> outputs(std::string const &workingDirectory) const;
 
 public:
     static ToolEnvironment
