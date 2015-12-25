@@ -112,8 +112,7 @@ std::pair<bool, std::vector<ToolInvocation const>> SimpleExecutor::
 buildTarget(
     pbxproj::PBX::Target::shared_ptr const &target,
     TargetEnvironment const &targetEnvironment,
-    std::vector<ToolInvocation const> const &invocations
-)
+    std::vector<ToolInvocation const> const &invocations)
 {
     Formatter::Print(_formatter->beginWriteAuxiliaryFiles(target));
     for (ToolInvocation const &invocation : invocations) {
@@ -123,8 +122,7 @@ buildTarget(
                 Formatter::Print(_formatter->createAuxiliaryDirectory(directory));
 
                 if (!_dryRun) {
-                    Subprocess process;
-                    if (!process.execute("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
+                    if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(directory))) {
                         return std::make_pair(false, std::vector<ToolInvocation const>());
                     }
                 }
@@ -134,8 +132,7 @@ buildTarget(
         for (ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
             // TODO(grp): This is incorrect if the file is already written, need to check modification times.
             if (!FSUtil::TestForRead(auxiliaryFile.path())) {
-                Subprocess process;
-                if (!process.execute("/bin/mkdir", { "-p", FSUtil::GetDirectoryName(auxiliaryFile.path()) }) || process.exitcode() != 0) {
+                if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(auxiliaryFile.path()))) {
                     return std::make_pair(false, std::vector<ToolInvocation const>());
                 }
 
@@ -144,6 +141,10 @@ buildTarget(
                 if (!_dryRun) {
                     std::ofstream out;
                     out.open(auxiliaryFile.path(), std::ios::out | std::ios::trunc | std::ios::binary);
+                    if (out.fail()) {
+                        return std::make_pair(false, std::vector<ToolInvocation const>());
+                    }
+
                     out.write(auxiliaryFile.contents().data(), auxiliaryFile.contents().size() * sizeof(char));
                     out.close();
                 }
@@ -194,12 +195,8 @@ buildTarget(
             for (std::string const &output : invocation.outputs()) {
                 std::string directory = FSUtil::GetDirectoryName(output);
 
-                if (!FSUtil::TestForDirectory(directory)) {
-                    Subprocess process;
-                    if (!process.execute("/bin/mkdir", { "-p", directory }) || process.exitcode() != 0) {
-                        Formatter::Print(_formatter->finishInvocation(invocation, executable));
-                        return std::make_pair(false, std::vector<ToolInvocation const>({ invocation }));
-                    }
+                if (!FSUtil::CreateDirectory(directory)) {
+                    return std::make_pair(false, std::vector<ToolInvocation const>({ invocation }));
                 }
             }
 

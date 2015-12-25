@@ -34,8 +34,7 @@ name()
 static bool
 CopyFile(std::string const &inputPath, std::string const &outputPath)
 {
-    Subprocess mkdir;
-    if (!mkdir.execute("/bin/mkdir", { "-p", FSUtil::GetDirectoryName(outputPath) }) || mkdir.exitcode() != 0) {
+    if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(outputPath))) {
         return false;
     }
 

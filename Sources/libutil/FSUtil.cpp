@@ -238,6 +238,34 @@ Remove(std::string const &path)
     return true;
 }
 
+bool FSUtil::
+CreateDirectory(std::string const &path)
+{
+    std::vector<std::string> components;
+
+    std::string current = path;
+    while (current != GetDirectoryName(current)) {
+        std::string component = GetBaseName(current);
+        components.push_back(component);
+
+        current = GetDirectoryName(current);
+    }
+
+    for (auto it = components.rbegin(); it != components.rend(); ++it) {
+        std::string const &component = *it;
+        if (it != components.rbegin()) {
+            current += "/";
+        }
+        current += component;
+
+        if (::mkdir(current.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0 && errno != EEXIST) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 std::string FSUtil::
 GetCurrentDirectory()
 {
