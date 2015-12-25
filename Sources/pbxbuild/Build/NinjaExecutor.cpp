@@ -69,6 +69,18 @@ NinjaRuleName()
 }
 
 static std::string
+NinjaDescription(std::string const &description)
+{
+    /* Limit to the first line: Ninja can only handle a single line status. */
+    std::string::size_type newline = description.find('\n');
+    if (newline != std::string::npos) {
+        return description.substr(0, description.find('\n'));
+    } else {
+        return description;
+    }
+}
+
+static std::string
 NinjaPhonyOutputTarget(std::string const &phonyOutput)
 {
     /*
@@ -109,6 +121,10 @@ static bool
 WriteNinja(ninja::Writer const &writer, std::string const &path)
 {
     std::string contents = writer.serialize();
+
+    if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(path))) {
+        return false;
+    }
 
     std::ofstream out;
     out.open(path, std::ios::out | std::ios::trunc | std::ios::binary);
@@ -172,6 +188,9 @@ build(
      */
     writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && $exec"));
 
+    /* Stores seen output directories, since each can only have one target to build them. */
+    std::unordered_set<std::string> seenDirectories;
+
     /*
      * Go over each target and write out Ninja targets for the start and end of each.
      * Don't bother topologically sorting the targets now, since Ninja will do that for us.
@@ -222,8 +241,18 @@ build(
         Phase::PhaseEnvironment phaseEnvironment = Phase::PhaseEnvironment(buildEnvironment, buildContext, target, *targetEnvironment);
         Phase::PhaseInvocations phaseInvocations = Phase::PhaseInvocations::Create(phaseEnvironment, target);
 
-        auto result = buildTarget(target, *targetEnvironment, phaseInvocations.invocations());
-        if (!result.first) {
+        /*
+         * Each output directory can only have one rule to build it, so as directories are shared
+         * between targets, the rules to build them also need to go into the shared Ninja file.
+         */
+        if (!buildTargetOutputDirectories(&writer, target, *targetEnvironment, phaseInvocations.invocations(), &seenDirectories)) {
+            return false;
+        }
+
+        /*
+         * Write out the Ninja file to build this target.
+         */
+        if (!buildTargetInvocations(target, *targetEnvironment, phaseInvocations.invocations())) {
             return false;
         }
 
@@ -306,14 +335,66 @@ ResolveExecutable(std::string const &executable, std::vector<std::string> const 
     }
 }
 
-std::pair<bool, std::vector<ToolInvocation const>> NinjaExecutor::
-buildTarget(
+bool NinjaExecutor::
+buildTargetOutputDirectories(
+    ninja::Writer *writer,
     pbxproj::PBX::Target::shared_ptr const &target,
     TargetEnvironment const &targetEnvironment,
-    std::vector<ToolInvocation const> const &invocations
-)
+    std::vector<ToolInvocation const> const &invocations,
+    std::unordered_set<std::string> *seenDirectories)
 {
-    // TODO(grp): Handle auxiliary files and creating the directory structure.
+    std::string targetBegin = TargetNinjaBegin(target);
+
+    /*
+     * Add a build command to create each output directory. These are depended on by
+     * the build commands for invocations that have outputs inside each directory.
+     */
+    for (ToolInvocation const &invocation : invocations) {
+        for (std::string const &output : invocation.outputs()) {
+            std::string outputDirectory = FSUtil::GetDirectoryName(output);
+
+            /*
+             * Only create each directory once. If this directory already has a build
+             * target to create it, skip adding another one.
+             */
+            auto it = seenDirectories->find(outputDirectory);
+            if (it != seenDirectories->end()) {
+                continue;
+            }
+            seenDirectories->insert(outputDirectory);
+
+            /*
+             * Create the bindings for creating the directory.
+             */
+            std::string description = NinjaDescription(_formatter->createAuxiliaryDirectory(outputDirectory));
+            std::string command = "/bin/mkdir -p " + ShellEscape(outputDirectory);
+            std::vector<ninja::Binding> bindings = {
+                { "description", ninja::Value::String(description) },
+                { "dir", ninja::Value::String(ShellEscape(invocation.workingDirectory())) },
+                { "exec", ninja::Value::String(command) },
+            };
+
+            /*
+             * Add the rule to create the directory. It depends on the target build starting
+             * and outputs the directory being created. Note there are no inputs.
+             */
+            std::vector<ninja::Value> outputs = { ninja::Value::String(outputDirectory) };
+            std::vector<ninja::Value> orderDependencies = { ninja::Value::String(targetBegin) };
+            writer->build(outputs, NinjaRuleName(), { }, bindings, { }, orderDependencies);
+        }
+    }
+
+    return true;
+}
+
+bool NinjaExecutor::
+buildTargetInvocations(
+    pbxproj::PBX::Target::shared_ptr const &target,
+    TargetEnvironment const &targetEnvironment,
+    std::vector<ToolInvocation const> const &invocations)
+{
+    // TODO(grp): Handle auxiliary files.
+
     std::string targetBegin = TargetNinjaBegin(target);
 
     /*
@@ -324,6 +405,9 @@ buildTarget(
     writer.comment("Target: " + target->name());
     writer.newline();
 
+    /*
+     * Add the build command for each invocation.
+     */
     for (ToolInvocation const &invocation : invocations) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
         if (invocation.executable().empty()) {
@@ -352,13 +436,7 @@ buildTarget(
         /*
          * Determine the status message for Ninja to print for this invocation.
          */
-        std::string description = _formatter->beginInvocation(invocation, executable);
-
-        /* Limit to the first line: Ninja can only handle a single line status. */
-        std::string::size_type newline = description.find('\n');
-        if (newline != std::string::npos) {
-            description = description.substr(0, description.find('\n'));
-        }
+        std::string description = NinjaDescription(_formatter->beginInvocation(invocation, executable));
 
         /*
          * Build up the bindings for the invocation.
@@ -433,6 +511,22 @@ buildTarget(
         }
 
         /*
+         * Depend on creating the directories to hold the outputs. Note the target
+         * to create the directory will have been added above, before the invocations.
+         *
+         * These are order-only dependencies as the timestamp of the directory is not
+         * important, it just has to exist.
+         */
+        std::unordered_set<std::string> outputDirectories;
+        for (std::string const &output : invocation.outputs()) {
+            std::string outputDirectory = FSUtil::GetDirectoryName(output);
+            outputDirectories.insert(outputDirectory);
+        }
+        for (std::string const &outputDirectory : outputDirectories) {
+            orderDependencies.push_back(ninja::Value::String(outputDirectory));
+        }
+
+        /*
          * Add the rule to build this invocation.
          */
         writer.build(outputs, NinjaRuleName(), inputs, bindings, inputDependencies, orderDependencies);
@@ -443,7 +537,7 @@ buildTarget(
      */
     std::string path = TargetNinjaPath(target, targetEnvironment);
     if (!WriteNinja(writer, path)) {
-        return std::make_pair(false, std::vector<ToolInvocation const>());;
+        return false;
     }
 
     /*
@@ -451,7 +545,7 @@ buildTarget(
      */
     fprintf(stderr, "Wrote %s ninja: %s\n", target->name().c_str(), path.c_str());
 
-    return std::make_pair(true, std::vector<ToolInvocation const>());
+    return true;
 }
 
 std::unique_ptr<NinjaExecutor> NinjaExecutor::

@@ -13,6 +13,8 @@
 #include <pbxbuild/Build/Executor.h>
 #include <builtin/builtin.h>
 
+namespace ninja { class Writer; }
+
 namespace pbxbuild {
 namespace Build {
 
@@ -27,8 +29,14 @@ public:
         BuildContext const &buildContext,
         BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
-public:
-    virtual std::pair<bool, std::vector<ToolInvocation const>> buildTarget(
+private:
+    bool buildTargetOutputDirectories(
+        ninja::Writer *writer,
+        pbxproj::PBX::Target::shared_ptr const &target,
+        TargetEnvironment const &targetEnvironment,
+        std::vector<ToolInvocation const> const &invocations,
+        std::unordered_set<std::string> *seenDirectories);
+    bool buildTargetInvocations(
         pbxproj::PBX::Target::shared_ptr const &target,
         TargetEnvironment const &targetEnvironment,
         std::vector<ToolInvocation const> const &invocations);

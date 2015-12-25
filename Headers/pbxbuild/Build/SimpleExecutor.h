@@ -30,8 +30,8 @@ public:
         BuildContext const &buildContext,
         BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
-public:
-    virtual std::pair<bool, std::vector<ToolInvocation const>> buildTarget(
+private:
+    std::pair<bool, std::vector<ToolInvocation const>> buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
         TargetEnvironment const &targetEnvironment,
         std::vector<ToolInvocation const> const &invocations);
