@@ -11,7 +11,7 @@
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 #include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
-#include <pbxbuild/TargetEnvironment.h>
+#include <pbxbuild/Target/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/Tool/ClangResolver.h>
@@ -47,7 +47,7 @@ bool SourcesResolver::
 resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     ClangResolver const *clangResolver = phaseContext->clangResolver(phaseEnvironment);
     if (clangResolver == nullptr) {

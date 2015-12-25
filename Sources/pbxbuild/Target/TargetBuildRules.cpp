@@ -7,9 +7,9 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/TargetBuildRules.h>
+#include <pbxbuild/Target/TargetBuildRules.h>
 
-using pbxbuild::TargetBuildRules;
+using pbxbuild::Target::TargetBuildRules;
 using libutil::FSUtil;
 using libutil::Wildcard;
 

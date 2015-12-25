@@ -7,23 +7,26 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_TargetBuildRules_h
-#define __pbxbuild_TargetBuildRules_h
+#ifndef __pbxbuild_Target_TargetBuildRules_h
+#define __pbxbuild_Target_TargetBuildRules_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace pbxbuild {
+namespace Target {
 
 class TargetBuildRules {
 public:
     class BuildRule {
     public:
-        typedef std::shared_ptr <BuildRule> shared_ptr;
-        typedef std::vector <shared_ptr> vector;
+        typedef std::shared_ptr<BuildRule> shared_ptr;
+        typedef std::vector<shared_ptr> vector;
 
     private:
-        friend class pbxbuild::TargetBuildRules;
+        friend class pbxbuild::Target::TargetBuildRules;
+
+    private:
         std::string                    _filePatterns;
         pbxspec::PBX::FileType::vector _fileTypes;
         pbxspec::PBX::Tool::shared_ptr _tool;
@@ -66,5 +69,6 @@ public:
 };
 
 }
+}
 
-#endif // !__pbxbuild_DependencyResolver_h
+#endif // !__pbxbuild_Target_TargetBuildRules_h

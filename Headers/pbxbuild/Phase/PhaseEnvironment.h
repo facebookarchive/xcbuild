@@ -13,7 +13,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
-#include <pbxbuild/TargetEnvironment.h>
+#include <pbxbuild/Target/TargetEnvironment.h>
 
 namespace pbxbuild {
 
@@ -26,10 +26,10 @@ private:
     BuildEnvironment                 _buildEnvironment;
     BuildContext                     _buildContext;
     pbxproj::PBX::Target::shared_ptr _target;
-    TargetEnvironment                _targetEnvironment;
+    Target::TargetEnvironment        _targetEnvironment;
 
 public:
-    PhaseEnvironment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, TargetEnvironment const &targetEnvironment);
+    PhaseEnvironment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::TargetEnvironment const &targetEnvironment);
     ~PhaseEnvironment();
 
 public:
@@ -39,7 +39,7 @@ public:
     { return _buildContext; }
     pbxproj::PBX::Target::shared_ptr const &target() const
     { return _target; }
-    TargetEnvironment const &targetEnvironment() const
+    Target::TargetEnvironment const &targetEnvironment() const
     { return _targetEnvironment; }
 
 public:

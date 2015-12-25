@@ -33,7 +33,7 @@ public:
 private:
     std::pair<bool, std::vector<ToolInvocation const>> buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
-        TargetEnvironment const &targetEnvironment,
+        Target::TargetEnvironment const &targetEnvironment,
         std::vector<ToolInvocation const> const &invocations);
 
 public:

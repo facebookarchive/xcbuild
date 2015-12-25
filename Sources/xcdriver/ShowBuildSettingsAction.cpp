@@ -64,7 +64,7 @@ Run(Options const &options)
     std::vector<pbxproj::PBX::Target::shared_ptr> targets = graph.ordered();
 
     for (pbxproj::PBX::Target::shared_ptr const &target : targets) {
-        std::unique_ptr<pbxbuild::TargetEnvironment> targetEnvironment = buildContext->targetEnvironment(*buildEnvironment, target);
+        std::unique_ptr<pbxbuild::Target::TargetEnvironment> targetEnvironment = buildContext->targetEnvironment(*buildEnvironment, target);
         if (targetEnvironment == nullptr) {
             fprintf(stderr, "error: couldn't create target environment\n");
             continue;

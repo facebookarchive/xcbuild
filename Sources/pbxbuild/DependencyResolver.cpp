@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/DependencyResolver.h>
-#include <pbxbuild/TargetEnvironment.h>
+#include <pbxbuild/Target/TargetEnvironment.h>
 
 #define DEPENDENCY_RESOLVER_LOGGING 0
 
@@ -17,7 +17,7 @@ using pbxbuild::BuildContext;
 using pbxbuild::WorkspaceContext;
 using pbxbuild::BuildGraph;
 using pbxbuild::BuildEnvironment;
-using pbxbuild::TargetEnvironment;
+using pbxbuild::Target::TargetEnvironment;
 using xcscheme::XC::Scheme;
 using xcscheme::XC::BuildAction;
 using xcscheme::XC::BuildActionEntry;

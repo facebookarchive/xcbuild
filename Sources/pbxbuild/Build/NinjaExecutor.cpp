@@ -24,7 +24,7 @@
 using pbxbuild::Build::NinjaExecutor;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
-using pbxbuild::TargetEnvironment;
+using pbxbuild::Target::TargetEnvironment;
 using pbxbuild::ToolInvocation;
 using libutil::FSUtil;
 

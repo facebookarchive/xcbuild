@@ -7,10 +7,10 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/TargetEnvironment.h>
+#include <pbxbuild/Target/TargetEnvironment.h>
 #include <pbxbuild/BuildContext.h>
 
-using pbxbuild::TargetEnvironment;
+using pbxbuild::Target::TargetEnvironment;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
 using libutil::FSUtil;
@@ -368,7 +368,7 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         pbxsetting::Setting::Parse("SDKROOT", sdk->path()),
     }), false);
 
-    auto buildRules = std::make_shared <pbxbuild::TargetBuildRules> (pbxbuild::TargetBuildRules::Create(buildEnvironment.specManager(), specDomains, target));
+    auto buildRules = std::make_shared<Target::TargetBuildRules>(Target::TargetBuildRules::Create(buildEnvironment.specManager(), specDomains, target));
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
     std::string workingDirectory = target->project()->basePath();
 

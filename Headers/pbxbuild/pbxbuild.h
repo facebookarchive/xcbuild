@@ -17,8 +17,6 @@
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/WorkspaceContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
-#include <pbxbuild/TargetBuildRules.h>
-#include <pbxbuild/TargetEnvironment.h>
 #include <pbxbuild/ToolInvocation.h>
 
 #include <pbxbuild/Build/Executor.h>
@@ -43,5 +41,8 @@
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/ShellScriptResolver.h>
+
+#include <pbxbuild/Target/TargetBuildRules.h>
+#include <pbxbuild/Target/TargetEnvironment.h>
 
 #endif  // !__pbxbuild_pbxbuild_h

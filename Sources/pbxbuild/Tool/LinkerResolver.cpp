@@ -130,7 +130,7 @@ std::unique_ptr<LinkerResolver> LinkerResolver::
 Create(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &identifier)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     pbxspec::PBX::Linker::shared_ptr linker = buildEnvironment.specManager()->linker(identifier, targetEnvironment.specDomains());
     if (linker == nullptr) {

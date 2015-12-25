@@ -35,7 +35,7 @@ ProductTypeResolver::
 bool ProductTypeResolver::
 resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext) const
 {
-    TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
 
     pbxsetting::Environment const &environment = targetEnvironment.environment();

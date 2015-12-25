@@ -7,29 +7,31 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_TargetEnvironment_h
-#define __pbxbuild_TargetEnvironment_h
+#ifndef __pbxbuild_Target_TargetEnvironment_h
+#define __pbxbuild_Target_TargetEnvironment_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/BuildEnvironment.h>
-#include <pbxbuild/TargetBuildRules.h>
+#include <pbxbuild/Target/TargetBuildRules.h>
 
 namespace pbxbuild {
 
 class BuildContext;
 
+namespace Target {
+
 class TargetEnvironment {
 private:
-    std::shared_ptr<TargetBuildRules>        _buildRules;
-    xcsdk::SDK::Target::shared_ptr           _sdk;
-    std::vector<std::string>                 _specDomains;
-    pbxspec::PBX::BuildSystem::shared_ptr    _buildSystem;
-    pbxspec::PBX::ProductType::shared_ptr    _productType;
-    pbxspec::PBX::PackageType::shared_ptr    _packageType;
-    std::shared_ptr<pbxsetting::Environment> _environment;
-    std::vector<std::string>                 _variants;
-    std::vector<std::string>                 _architectures;
-    std::string                              _workingDirectory;
+    std::shared_ptr<Target::TargetBuildRules> _buildRules;
+    xcsdk::SDK::Target::shared_ptr            _sdk;
+    std::vector<std::string>                  _specDomains;
+    pbxspec::PBX::BuildSystem::shared_ptr     _buildSystem;
+    pbxspec::PBX::ProductType::shared_ptr     _productType;
+    pbxspec::PBX::PackageType::shared_ptr     _packageType;
+    std::shared_ptr<pbxsetting::Environment>  _environment;
+    std::vector<std::string>                  _variants;
+    std::vector<std::string>                  _architectures;
+    std::string                               _workingDirectory;
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> _buildFileDisambiguation;
 
 public:
@@ -70,5 +72,6 @@ public:
 };
 
 }
+}
 
-#endif // !__pbxbuild_DependencyResolver_h
+#endif // !__pbxbuild_Target_TargetEnvironment_h

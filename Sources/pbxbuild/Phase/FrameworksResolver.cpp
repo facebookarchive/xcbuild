@@ -12,7 +12,7 @@
 #include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/TypeResolvedFile.h>
-#include <pbxbuild/TargetEnvironment.h>
+#include <pbxbuild/Target/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/Tool/ToolResolver.h>
@@ -81,7 +81,7 @@ bool FrameworksResolver::
 resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     CompilationInfo const &compilationInfo = phaseContext->toolContext().compilationInfo();
 

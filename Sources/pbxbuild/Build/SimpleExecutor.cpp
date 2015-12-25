@@ -47,7 +47,7 @@ build(
     for (pbxproj::PBX::Target::shared_ptr const &target : targetGraph.ordered()) {
         Formatter::Print(_formatter->beginTarget(buildContext, target));
 
-        std::unique_ptr<TargetEnvironment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        std::unique_ptr<Target::TargetEnvironment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
         if (targetEnvironment == nullptr) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             Formatter::Print(_formatter->finishTarget(buildContext, target));
@@ -123,7 +123,7 @@ SortInvocations(std::vector<ToolInvocation const> const &invocations)
 std::pair<bool, std::vector<ToolInvocation const>> SimpleExecutor::
 buildTarget(
     pbxproj::PBX::Target::shared_ptr const &target,
-    TargetEnvironment const &targetEnvironment,
+    Target::TargetEnvironment const &targetEnvironment,
     std::vector<ToolInvocation const> const &invocations)
 {
     Formatter::Print(_formatter->beginWriteAuxiliaryFiles(target));

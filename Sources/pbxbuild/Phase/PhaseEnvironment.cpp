@@ -12,7 +12,7 @@
 using pbxbuild::Phase::PhaseEnvironment;
 
 PhaseEnvironment::
-PhaseEnvironment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, TargetEnvironment const &targetEnvironment) :
+PhaseEnvironment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::TargetEnvironment const &targetEnvironment) :
     _buildEnvironment (buildEnvironment),
     _buildContext     (buildContext),
     _target           (target),
@@ -38,7 +38,7 @@ resolveReferenceProxy(pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceP
         return nullptr;
     }
 
-    std::unique_ptr<pbxbuild::TargetEnvironment> remoteEnvironment = _buildContext.targetEnvironment(_buildEnvironment, remote->first);
+    std::unique_ptr<Target::TargetEnvironment> remoteEnvironment = _buildContext.targetEnvironment(_buildEnvironment, remote->first);
     if (remoteEnvironment == nullptr) {
         fprintf(stderr, "error: unable to create target environment for remote target\n");
         return nullptr;

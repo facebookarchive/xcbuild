@@ -235,8 +235,6 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/DependencyResolver.cpp
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/WorkspaceContext.cpp
-    Sources/pbxbuild/TargetBuildRules.cpp
-    Sources/pbxbuild/TargetEnvironment.cpp
     Sources/pbxbuild/TypeResolvedFile.cpp
     Sources/pbxbuild/Build/Executor.cpp
     Sources/pbxbuild/Build/SimpleExecutor.cpp
@@ -272,6 +270,8 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Phase/FrameworksResolver.cpp
     Sources/pbxbuild/Phase/SourcesResolver.cpp
     Sources/pbxbuild/Phase/ShellScriptResolver.cpp
+    Sources/pbxbuild/Target/TargetBuildRules.cpp
+    Sources/pbxbuild/Target/TargetEnvironment.cpp
     )
 
 set(libxcdriver_SOURCES

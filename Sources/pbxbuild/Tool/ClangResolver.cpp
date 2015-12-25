@@ -353,8 +353,8 @@ resolveSource(
 std::unique_ptr<ClangResolver> ClangResolver::
 Create(Phase::PhaseEnvironment const &phaseEnvironment)
 {
-    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     // TODO(grp): This should probably try a number of other compilers if it's not clang.
     std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");

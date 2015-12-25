@@ -62,7 +62,7 @@ std::unique_ptr<ToolResolver> ToolResolver::
 Create(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &identifier)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    pbxbuild::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     pbxspec::PBX::Tool::shared_ptr tool = nullptr;
     if (pbxspec::PBX::Tool::shared_ptr tool_ = buildEnvironment.specManager()->tool(identifier, targetEnvironment.specDomains())) {
