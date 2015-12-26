@@ -10,6 +10,7 @@
 #ifndef __ninja_Base_h
 #define __ninja_Base_h
 
-#include <libutil/libutil.h>
+#include <string>
+#include <vector>
 
 #endif  // !__ninja_Base_h

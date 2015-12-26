@@ -24,10 +24,15 @@ include_directories(${CMAKE_BINARY_DIR}/ThirdParty/expat/expat)
 add_subdirectory(ThirdParty/expat/expat)
 
 find_library(CORE_FOUNDATION CoreFoundation)
-find_library(CORE_SERVICES CoreSERVICES)
+find_library(CORE_SERVICES CoreServices)
 
 include_directories(Headers)
 include_directories(PrivateHeaders)
+
+set(libninja_SOURCES
+    Sources/ninja/Writer.cpp
+    Sources/ninja/Value.cpp
+    )
 
 set(libutil_SOURCES
     Sources/libutil/FSUtil.cpp
@@ -85,11 +90,6 @@ set(libplist_SOURCES
     Sources/plist/Format/ASCII.cpp
     #
     Sources/plist/Format/Any.cpp
-    )
-
-set(libninja_SOURCES
-    Sources/ninja/Writer.cpp
-    Sources/ninja/Value.cpp
     )
 
 set(libbuiltin_SOURCES
@@ -285,14 +285,14 @@ set(libxcdriver_SOURCES
     Sources/xcdriver/ShowSDKsAction.cpp
     Sources/xcdriver/VersionAction.cpp)
 
+add_library(ninja SHARED ${libninja_SOURCES})
+target_link_libraries(ninja)
+
 add_library(util SHARED ${libutil_SOURCES})
 target_link_libraries(util)
 
 add_library(plist SHARED ${libplist_SOURCES})
 target_link_libraries(plist util expat)
-
-add_library(ninja SHARED ${libninja_SOURCES})
-target_link_libraries(ninja util)
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting util plist)
