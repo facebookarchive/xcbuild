@@ -7,12 +7,12 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_Target_TargetEnvironment_h
-#define __pbxbuild_Target_TargetEnvironment_h
+#ifndef __pbxbuild_Target_Environment_h
+#define __pbxbuild_Target_Environment_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/BuildEnvironment.h>
-#include <pbxbuild/Target/TargetBuildRules.h>
+#include <pbxbuild/Target/BuildRules.h>
 
 namespace pbxbuild {
 
@@ -20,26 +20,26 @@ class BuildContext;
 
 namespace Target {
 
-class TargetEnvironment {
+class Environment {
 private:
-    std::shared_ptr<Target::TargetBuildRules> _buildRules;
-    xcsdk::SDK::Target::shared_ptr            _sdk;
-    std::vector<std::string>                  _specDomains;
-    pbxspec::PBX::BuildSystem::shared_ptr     _buildSystem;
-    pbxspec::PBX::ProductType::shared_ptr     _productType;
-    pbxspec::PBX::PackageType::shared_ptr     _packageType;
-    std::shared_ptr<pbxsetting::Environment>  _environment;
-    std::vector<std::string>                  _variants;
-    std::vector<std::string>                  _architectures;
-    std::string                               _workingDirectory;
+    std::shared_ptr<Target::BuildRules>      _buildRules;
+    xcsdk::SDK::Target::shared_ptr           _sdk;
+    std::vector<std::string>                 _specDomains;
+    pbxspec::PBX::BuildSystem::shared_ptr    _buildSystem;
+    pbxspec::PBX::ProductType::shared_ptr    _productType;
+    pbxspec::PBX::PackageType::shared_ptr    _packageType;
+    std::shared_ptr<pbxsetting::Environment> _environment;
+    std::vector<std::string>                 _variants;
+    std::vector<std::string>                 _architectures;
+    std::string                              _workingDirectory;
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> _buildFileDisambiguation;
 
 public:
-    TargetEnvironment();
-    ~TargetEnvironment();
+    Environment();
+    ~Environment();
 
 public:
-    TargetBuildRules const &buildRules() const
+    Target::BuildRules const &buildRules() const
     { return *_buildRules.get(); }
     xcsdk::SDK::Target::shared_ptr const &sdk() const
     { return _sdk; }
@@ -67,11 +67,11 @@ public:
     { return _buildFileDisambiguation; }
 
 public:
-    static std::unique_ptr<TargetEnvironment>
+    static std::unique_ptr<Environment>
     Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context);
 };
 
 }
 }
 
-#endif // !__pbxbuild_Target_TargetEnvironment_h
+#endif // !__pbxbuild_Target_Environment_h

@@ -15,8 +15,8 @@
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/TouchResolver.h>
 #include <pbxbuild/Tool/ToolResolver.h>
-#include <pbxbuild/Target/TargetEnvironment.h>
-#include <pbxbuild/Target/TargetBuildRules.h>
+#include <pbxbuild/Target/Environment.h>
+#include <pbxbuild/Target/BuildRules.h>
 #include <libutil/FSUtil.h>
 
 namespace Phase = pbxbuild::Phase;
@@ -110,9 +110,9 @@ resolveBuildFile(
     std::string const &outputDirectory,
     std::string const &fallbackToolIdentifier)
 {
-    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    Target::TargetBuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
+    Target::BuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
     if (buildRule == nullptr && fallbackToolIdentifier.empty()) {
         fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
         return true;

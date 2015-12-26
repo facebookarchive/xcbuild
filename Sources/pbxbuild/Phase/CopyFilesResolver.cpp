@@ -68,7 +68,7 @@ DestinationOutputPath(pbxproj::PBX::CopyFilesBuildPhase::Destination destination
 bool Phase::CopyFilesResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
-    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
     Tool::CopyResolver const *copyResolver = phaseContext->copyResolver(phaseEnvironment);

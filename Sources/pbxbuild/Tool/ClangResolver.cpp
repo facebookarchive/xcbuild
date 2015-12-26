@@ -354,7 +354,7 @@ std::unique_ptr<ClangResolver> ClangResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
     BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     // TODO(grp): This should probably try a number of other compilers if it's not clang.
     std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");

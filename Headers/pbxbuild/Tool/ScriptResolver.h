@@ -12,7 +12,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
-#include <pbxbuild/Target/TargetBuildRules.h>
+#include <pbxbuild/Target/BuildRules.h>
 #include <pbxbuild/Phase/Environment.h>
 
 namespace pbxbuild {
@@ -42,7 +42,7 @@ public:
         ToolContext *toolContext,
         pbxsetting::Environment const &environment,
         std::string const &inputFile,
-        Target::TargetBuildRules::BuildRule::shared_ptr const &buildRule
+        Target::BuildRules::BuildRule::shared_ptr const &buildRule
     ) const;
 
 public:

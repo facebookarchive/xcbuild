@@ -60,7 +60,7 @@ std::unique_ptr<CopyResolver> CopyResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     pbxspec::PBX::Tool::shared_ptr copyTool = buildEnvironment.specManager()->tool(CopyResolver::ToolIdentifier(), targetEnvironment.specDomains());
     if (copyTool == nullptr) {

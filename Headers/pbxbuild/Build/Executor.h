@@ -19,7 +19,7 @@
 
 namespace pbxbuild {
 
-namespace Target { class TargetEnvironment; }
+namespace Target { class Environment; }
 
 namespace Build {
 

@@ -270,8 +270,8 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Phase/FrameworksResolver.cpp
     Sources/pbxbuild/Phase/SourcesResolver.cpp
     Sources/pbxbuild/Phase/ShellScriptResolver.cpp
-    Sources/pbxbuild/Target/TargetBuildRules.cpp
-    Sources/pbxbuild/Target/TargetEnvironment.cpp
+    Sources/pbxbuild/Target/BuildRules.cpp
+    Sources/pbxbuild/Target/Environment.cpp
     )
 
 set(libxcdriver_SOURCES

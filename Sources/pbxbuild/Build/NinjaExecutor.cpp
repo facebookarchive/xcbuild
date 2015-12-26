@@ -24,7 +24,7 @@
 using pbxbuild::Build::NinjaExecutor;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
-using pbxbuild::Target::TargetEnvironment;
+namespace Target = pbxbuild::Target;
 using pbxbuild::ToolInvocation;
 using libutil::FSUtil;
 
@@ -52,7 +52,7 @@ TargetNinjaFinish(pbxproj::PBX::Target::shared_ptr const &target)
 }
 
 static std::string
-TargetNinjaPath(pbxproj::PBX::Target::shared_ptr const &target, TargetEnvironment const &targetEnvironment)
+TargetNinjaPath(pbxproj::PBX::Target::shared_ptr const &target, Target::Environment const &targetEnvironment)
 {
     /*
      * Determine where the Ninja file should go. We use the target's temp dir
@@ -235,7 +235,7 @@ build(
         /*
          * Resolve this target and generate its Ninja file.
          */
-        std::unique_ptr<TargetEnvironment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        std::unique_ptr<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
         if (targetEnvironment == nullptr) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             continue;
@@ -342,7 +342,7 @@ bool NinjaExecutor::
 buildTargetOutputDirectories(
     ninja::Writer *writer,
     pbxproj::PBX::Target::shared_ptr const &target,
-    TargetEnvironment const &targetEnvironment,
+    Target::Environment const &targetEnvironment,
     std::vector<ToolInvocation const> const &invocations,
     std::unordered_set<std::string> *seenDirectories)
 {
@@ -394,7 +394,7 @@ bool NinjaExecutor::
 buildTargetAuxiliaryFiles(
     ninja::Writer *writer,
     pbxproj::PBX::Target::shared_ptr const &target,
-    TargetEnvironment const &targetEnvironment,
+    Target::Environment const &targetEnvironment,
     std::vector<ToolInvocation const> const &invocations)
 {
     // TODO(grp): In a dry run, Ninja will still need these files to exist, but the whole
@@ -433,7 +433,7 @@ buildTargetAuxiliaryFiles(
 bool NinjaExecutor::
 buildTargetInvocations(
     pbxproj::PBX::Target::shared_ptr const &target,
-    TargetEnvironment const &targetEnvironment,
+    Target::Environment const &targetEnvironment,
     std::vector<ToolInvocation const> const &invocations)
 {
     std::string targetBegin = TargetNinjaBegin(target);

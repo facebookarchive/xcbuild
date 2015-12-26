@@ -26,18 +26,18 @@ BuildContext(
     _configuration       (configuration),
     _defaultConfiguration(defaultConfiguration),
     _overrideLevels      (overrideLevels),
-    _targetEnvironments  (std::make_shared<std::unordered_map<pbxproj::PBX::Target::shared_ptr, Target::TargetEnvironment>>())
+    _targetEnvironments  (std::make_shared<std::unordered_map<pbxproj::PBX::Target::shared_ptr, Target::Environment>>())
 {
 }
 
-std::unique_ptr<pbxbuild::Target::TargetEnvironment> BuildContext::
+std::unique_ptr<pbxbuild::Target::Environment> BuildContext::
 targetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const
 {
     auto TEI = _targetEnvironments->find(target);
     if (TEI != _targetEnvironments->end()) {
-        return std::unique_ptr<Target::TargetEnvironment>(new Target::TargetEnvironment(TEI->second));
+        return std::unique_ptr<Target::Environment>(new Target::Environment(TEI->second));
     } else {
-        std::unique_ptr<Target::TargetEnvironment> targetEnvironment = Target::TargetEnvironment::Create(buildEnvironment, target, this);
+        std::unique_ptr<Target::Environment> targetEnvironment = Target::Environment::Create(buildEnvironment, target, this);
         if (targetEnvironment != nullptr) {
             _targetEnvironments->insert(std::make_pair(target, *targetEnvironment));
         }

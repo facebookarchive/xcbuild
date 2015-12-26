@@ -70,7 +70,7 @@ std::unique_ptr<TouchResolver> TouchResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     pbxspec::PBX::Tool::shared_ptr touchTool = buildEnvironment.specManager()->tool(TouchResolver::ToolIdentifier(), targetEnvironment.specDomains());
     if (touchTool == nullptr) {

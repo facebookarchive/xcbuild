@@ -14,7 +14,6 @@
 
 namespace pbxbuild {
 
-class TargetEnvironment;
 class ToolInvocation;
 class BuildContext;
 

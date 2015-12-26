@@ -42,7 +42,7 @@
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/ShellScriptResolver.h>
 
-#include <pbxbuild/Target/TargetBuildRules.h>
-#include <pbxbuild/Target/TargetEnvironment.h>
+#include <pbxbuild/Target/BuildRules.h>
+#include <pbxbuild/Target/Environment.h>
 
 #endif  // !__pbxbuild_pbxbuild_h

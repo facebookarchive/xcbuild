@@ -7,21 +7,21 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Target/TargetEnvironment.h>
+#include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/BuildContext.h>
 
-using pbxbuild::Target::TargetEnvironment;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
+namespace Target = pbxbuild::Target;
 using libutil::FSUtil;
 
-TargetEnvironment::
-TargetEnvironment()
+Target::Environment::
+Environment()
 {
 }
 
-TargetEnvironment::
-~TargetEnvironment()
+Target::Environment::
+~Environment()
 {
 }
 
@@ -222,7 +222,7 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
     return pbxsetting::Level(settings);
 }
 
-std::unique_ptr<TargetEnvironment> TargetEnvironment::
+std::unique_ptr<Target::Environment> Target::Environment::
 Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context)
 {
     xcsdk::SDK::Target::shared_ptr sdk;
@@ -368,11 +368,11 @@ Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_pt
         pbxsetting::Setting::Parse("SDKROOT", sdk->path()),
     }), false);
 
-    auto buildRules = std::make_shared<Target::TargetBuildRules>(Target::TargetBuildRules::Create(buildEnvironment.specManager(), specDomains, target));
+    auto buildRules = std::make_shared<Target::BuildRules>(Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target));
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
     std::string workingDirectory = target->project()->basePath();
 
-    std::unique_ptr<TargetEnvironment> te = std::unique_ptr<TargetEnvironment>(new TargetEnvironment());
+    std::unique_ptr<Target::Environment> te = std::unique_ptr<Target::Environment>(new Target::Environment());
     te->_buildRules = buildRules;
     te->_environment = std::unique_ptr<pbxsetting::Environment>(new pbxsetting::Environment(environment));
     te->_variants = variants;

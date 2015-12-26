@@ -13,7 +13,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/WorkspaceContext.h>
 #include <pbxbuild/BuildEnvironment.h>
-#include <pbxbuild/Target/TargetEnvironment.h>
+#include <pbxbuild/Target/Environment.h>
 
 namespace pbxbuild {
 
@@ -27,7 +27,7 @@ private:
     std::vector<pbxsetting::Level>    _overrideLevels;
 
 private:
-    std::shared_ptr<std::unordered_map<pbxproj::PBX::Target::shared_ptr, Target::TargetEnvironment>> _targetEnvironments;
+    std::shared_ptr<std::unordered_map<pbxproj::PBX::Target::shared_ptr, Target::Environment>> _targetEnvironments;
 
 private:
     BuildContext(
@@ -62,7 +62,7 @@ public:
     pbxsetting::Level actionSettings(void) const;
 
 public:
-    std::unique_ptr<Target::TargetEnvironment>
+    std::unique_ptr<Target::Environment>
     targetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const;
 
 public:

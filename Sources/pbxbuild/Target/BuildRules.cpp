@@ -7,13 +7,13 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Target/TargetBuildRules.h>
+#include <pbxbuild/Target/BuildRules.h>
 
-using pbxbuild::Target::TargetBuildRules;
+namespace Target = pbxbuild::Target;
 using libutil::FSUtil;
 using libutil::Wildcard;
 
-TargetBuildRules::BuildRule::
+Target::BuildRules::BuildRule::
 BuildRule(std::string const &filePatterns, pbxspec::PBX::FileType::vector const &fileTypes, pbxspec::PBX::Tool::shared_ptr const &tool, std::string const &script, std::vector<pbxsetting::Value> const &outputFiles) :
     _filePatterns(filePatterns),
     _fileTypes   (fileTypes),
@@ -23,13 +23,13 @@ BuildRule(std::string const &filePatterns, pbxspec::PBX::FileType::vector const 
 {
 }
 
-TargetBuildRules::
-TargetBuildRules(TargetBuildRules::BuildRule::vector const &buildRules) :
+Target::BuildRules::
+BuildRules(Target::BuildRules::BuildRule::vector const &buildRules) :
     _buildRules(buildRules)
 {
 }
 
-TargetBuildRules::BuildRule::shared_ptr TargetBuildRules::
+Target::BuildRules::BuildRule::shared_ptr Target::BuildRules::
 resolve(pbxbuild::TypeResolvedFile const &file) const
 {
     for (BuildRule::shared_ptr const &buildRule : _buildRules) {
@@ -50,7 +50,7 @@ resolve(pbxbuild::TypeResolvedFile const &file) const
     return nullptr;
 }
 
-static TargetBuildRules::BuildRule::shared_ptr
+static Target::BuildRules::BuildRule::shared_ptr
 ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::BuildRule::shared_ptr const &projBuildRule)
 {
     pbxspec::PBX::Tool::shared_ptr tool = nullptr;
@@ -81,7 +81,7 @@ ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<st
         outputFiles.push_back(pbxsetting::Value::Parse(outputFile));
     }
 
-    return std::make_shared <TargetBuildRules::BuildRule> (TargetBuildRules::BuildRule(
+    return std::make_shared <Target::BuildRules::BuildRule> (Target::BuildRules::BuildRule(
         projBuildRule->filePatterns(),
         fileTypes,
         tool,
@@ -90,7 +90,7 @@ ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<st
     ));
 }
 
-static TargetBuildRules::BuildRule::shared_ptr
+static Target::BuildRules::BuildRule::shared_ptr
 SpecificationBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxspec::PBX::BuildRule::shared_ptr const &specBuildRule)
 {
     std::string TS = specBuildRule->compilerSpec();
@@ -110,7 +110,7 @@ SpecificationBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vec
         fileTypes.push_back(fileType);
     }
 
-    return std::make_shared <TargetBuildRules::BuildRule> (TargetBuildRules::BuildRule(
+    return std::make_shared <Target::BuildRules::BuildRule> (Target::BuildRules::BuildRule(
         std::string(),
         fileTypes,
         tool,
@@ -119,22 +119,22 @@ SpecificationBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vec
     ));
 }
 
-TargetBuildRules TargetBuildRules::
+Target::BuildRules Target::BuildRules::
 Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::Target::shared_ptr const &target)
 {
-    TargetBuildRules::BuildRule::vector buildRules;
+    Target::BuildRules::BuildRule::vector buildRules;
 
     if (target->type() == pbxproj::PBX::Target::kTypeNative) {
         pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast <pbxproj::PBX::NativeTarget> (target);
         for (pbxproj::PBX::BuildRule::shared_ptr const &projBuildRule : nativeTarget->buildRules()) {
-            if (TargetBuildRules::BuildRule::shared_ptr buildRule = ProjectBuildRule(specManager, domains, projBuildRule)) {
+            if (Target::BuildRules::BuildRule::shared_ptr buildRule = ProjectBuildRule(specManager, domains, projBuildRule)) {
                 buildRules.push_back(buildRule);
             }
         }
     }
 
     for (pbxspec::PBX::BuildRule::shared_ptr const &specBuildRule : specManager->buildRules()) {
-        if (TargetBuildRules::BuildRule::shared_ptr buildRule = SpecificationBuildRule(specManager, domains, specBuildRule)) {
+        if (Target::BuildRules::BuildRule::shared_ptr buildRule = SpecificationBuildRule(specManager, domains, specBuildRule)) {
             buildRules.push_back(buildRule);
         }
     }
@@ -145,5 +145,5 @@ Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string>
         }
     }
 
-    return TargetBuildRules(buildRules);
+    return Target::BuildRules(buildRules);
 }

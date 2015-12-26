@@ -141,7 +141,7 @@ resolve(
     ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &inputFile,
-    Target::TargetBuildRules::BuildRule::shared_ptr const &buildRule) const
+    Target::BuildRules::BuildRule::shared_ptr const &buildRule) const
 {
     pbxsetting::Level level = pbxsetting::Level({
         pbxsetting::Setting::Parse("INPUT_FILE_DIR", FSUtil::GetDirectoryName(inputFile)),
@@ -187,7 +187,7 @@ std::unique_ptr<ScriptResolver> ScriptResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool(ScriptResolver::ToolIdentifier(), targetEnvironment.specDomains());
     if (scriptTool == nullptr) {

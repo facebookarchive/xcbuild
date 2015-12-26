@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/DependencyResolver.h>
-#include <pbxbuild/Target/TargetEnvironment.h>
+#include <pbxbuild/Target/Environment.h>
 
 #define DEPENDENCY_RESOLVER_LOGGING 0
 
@@ -17,7 +17,7 @@ using pbxbuild::BuildContext;
 using pbxbuild::WorkspaceContext;
 using pbxbuild::BuildGraph;
 using pbxbuild::BuildEnvironment;
-using pbxbuild::Target::TargetEnvironment;
+namespace Target = pbxbuild::Target;
 using xcscheme::XC::Scheme;
 using xcscheme::XC::BuildAction;
 using xcscheme::XC::BuildActionEntry;
@@ -43,7 +43,7 @@ ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext
         return nullptr;
     }
 
-    std::unique_ptr<TargetEnvironment> targetEnvironment = context.targetEnvironment(buildEnvironment, target);
+    std::unique_ptr<Target::Environment> targetEnvironment = context.targetEnvironment(buildEnvironment, target);
     if (targetEnvironment == nullptr) {
         fprintf(stderr, "warning: not able to get target environment for target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
         return nullptr;
