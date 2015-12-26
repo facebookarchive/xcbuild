@@ -241,9 +241,9 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Build/NinjaExecutor.cpp
     Sources/pbxbuild/Build/Formatter.cpp
     Sources/pbxbuild/Build/DefaultFormatter.cpp
-    Sources/pbxbuild/ToolInvocation.cpp
     Sources/pbxbuild/Tool/Context.cpp
     Sources/pbxbuild/Tool/Environment.cpp
+    Sources/pbxbuild/Tool/Invocation.cpp
     Sources/pbxbuild/Tool/CommandLineResult.cpp
     Sources/pbxbuild/Tool/OptionsResult.cpp
     Sources/pbxbuild/Tool/ToolResult.cpp

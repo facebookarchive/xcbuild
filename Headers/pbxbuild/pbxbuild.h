@@ -17,7 +17,7 @@
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/WorkspaceContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
-#include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Tool/Invocation.h>
 
 #include <pbxbuild/Build/Executor.h>
 #include <pbxbuild/Build/SimpleExecutor.h>

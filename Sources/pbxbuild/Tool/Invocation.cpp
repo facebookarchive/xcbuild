@@ -7,11 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/BuildContext.h>
 
-using pbxbuild::ToolInvocation;
-using AuxiliaryFile = pbxbuild::ToolInvocation::AuxiliaryFile;
+namespace Tool = pbxbuild::Tool;
+using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
 
 AuxiliaryFile::
 AuxiliaryFile(std::string const &path, std::vector<char> const &contents, bool executable) :
@@ -34,14 +34,14 @@ AuxiliaryFile::
 {
 }
 
-ToolInvocation::
-ToolInvocation() :
+Tool::Invocation::
+Invocation() :
     _showEnvironmentInLog(true)
 {
 }
 
-ToolInvocation::
-~ToolInvocation()
+Tool::Invocation::
+~Invocation()
 {
 }
 

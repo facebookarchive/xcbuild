@@ -16,7 +16,6 @@
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
 
 Tool::InfoPlistResolver::
 InfoPlistResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
@@ -72,7 +71,7 @@ resolve(
 
     bool showEnvironmentInLog = false;
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = environmentVariables;

@@ -22,10 +22,9 @@
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
 
 Phase::PhaseInvocations::
-PhaseInvocations(std::vector<ToolInvocation const> const &invocations) :
+PhaseInvocations(std::vector<Tool::Invocation const> const &invocations) :
     _invocations(invocations)
 {
 }

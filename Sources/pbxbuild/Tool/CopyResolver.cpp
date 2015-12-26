@@ -16,7 +16,6 @@
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
 using libutil::FSUtil;
 
 Tool::CopyResolver::
@@ -41,7 +40,7 @@ resolve(
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "", { inputFile, outputDirectory });
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();

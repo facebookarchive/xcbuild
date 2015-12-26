@@ -8,11 +8,11 @@
  */
 
 #include <pbxbuild/Build/DefaultFormatter.h>
-#include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/BuildContext.h>
 
 using pbxbuild::Build::DefaultFormatter;
-using pbxbuild::ToolInvocation;
+namespace Tool = pbxbuild::Tool;
 
 DefaultFormatter::
 DefaultFormatter(bool color) :
@@ -36,7 +36,7 @@ DefaultFormatter::
 #define INDENT std::string("    ")
 
 static std::string
-FormatInvocation(ToolInvocation const &invocation, bool _color)
+FormatInvocation(Tool::Invocation const &invocation, bool _color)
 {
     std::string message = invocation.logMessage();
     std::string::size_type space = message.find(' ');
@@ -91,7 +91,7 @@ success(BuildContext const &buildContext)
 }
 
 std::string DefaultFormatter::
-failure(BuildContext const &buildContext, std::vector<ToolInvocation const> const &failingInvocations)
+failure(BuildContext const &buildContext, std::vector<Tool::Invocation const> const &failingInvocations)
 {
     std::string result;
 
@@ -100,7 +100,7 @@ failure(BuildContext const &buildContext, std::vector<ToolInvocation const> cons
     result += ANSI_STYLE_NO_BOLD + ANSI_COLOR_RESET + "\n";
 
     result += "\nThe following build commands failed:\n";
-    for (pbxbuild::ToolInvocation const &invocation : failingInvocations) {
+    for (Tool::Invocation const &invocation : failingInvocations) {
         result += INDENT + FormatInvocation(invocation, _color) + "\n";
     }
     result += "(" + std::to_string(failingInvocations.size()) + " failure" + (failingInvocations.size() != 1 ? "s" : "") + ")\n";
@@ -218,7 +218,7 @@ finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
 }
 
 std::string DefaultFormatter::
-beginInvocation(ToolInvocation const &invocation, std::string const &executable)
+beginInvocation(Tool::Invocation const &invocation, std::string const &executable)
 {
     std::string message;
 
@@ -242,7 +242,7 @@ beginInvocation(ToolInvocation const &invocation, std::string const &executable)
 }
 
 std::string DefaultFormatter::
-finishInvocation(ToolInvocation const &invocation, std::string const &executable)
+finishInvocation(Tool::Invocation const &invocation, std::string const &executable)
 {
     return "\n";
 }

@@ -7,14 +7,15 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_ToolInvocation_h
-#define __pbxbuild_ToolInvocation_h
+#ifndef __pbxbuild_Tool_Invocation_h
+#define __pbxbuild_Tool_Invocation_h
 
 #include <pbxbuild/Base.h>
 
 namespace pbxbuild {
+namespace Tool {
 
-class ToolInvocation {
+class Invocation {
 public:
     class AuxiliaryFile {
     private:
@@ -62,8 +63,8 @@ private:
     bool                                         _showEnvironmentInLog;
 
 public:
-    ToolInvocation();
-    ~ToolInvocation();
+    Invocation();
+    ~Invocation();
 
 public:
     std::string const &executable() const
@@ -153,5 +154,6 @@ public:
 };
 
 }
+}
 
-#endif // !__pbxbuild_ToolInvocation_h
+#endif // !__pbxbuild_Tool_Invocation_h

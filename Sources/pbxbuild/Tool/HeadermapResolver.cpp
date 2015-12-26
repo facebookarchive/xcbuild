@@ -15,8 +15,7 @@
 #include <pbxbuild/HeaderMap.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
-using AuxiliaryFile = pbxbuild::ToolInvocation::AuxiliaryFile;
+using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
 using pbxbuild::HeaderMap;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
@@ -198,7 +197,7 @@ resolve(
         AuxiliaryFile(headermapFileForProjectFiles, projectHeaders.write(), false),
     };
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.auxiliaryFiles().insert(invocation.auxiliaryFiles().end(), auxiliaryFiles.begin(), auxiliaryFiles.end());
 
     std::vector<std::string> systemHeadermapFiles;

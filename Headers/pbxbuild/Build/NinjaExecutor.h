@@ -34,17 +34,17 @@ private:
         ninja::Writer *writer,
         pbxproj::PBX::Target::shared_ptr const &target,
         Target::Environment const &targetEnvironment,
-        std::vector<ToolInvocation const> const &invocations,
+        std::vector<Tool::Invocation const> const &invocations,
         std::unordered_set<std::string> *seenDirectories);
     bool buildTargetAuxiliaryFiles(
         ninja::Writer *writer,
         pbxproj::PBX::Target::shared_ptr const &target,
         Target::Environment const &targetEnvironment,
-        std::vector<ToolInvocation const> const &invocations);
+        std::vector<Tool::Invocation const> const &invocations);
     bool buildTargetInvocations(
         pbxproj::PBX::Target::shared_ptr const &target,
         Target::Environment const &targetEnvironment,
-        std::vector<ToolInvocation const> const &invocations);
+        std::vector<Tool::Invocation const> const &invocations);
 
 public:
     static std::unique_ptr<NinjaExecutor>

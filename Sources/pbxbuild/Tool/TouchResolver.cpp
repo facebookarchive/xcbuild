@@ -16,7 +16,6 @@
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
 using libutil::FSUtil;
 
 Tool::TouchResolver::
@@ -51,7 +50,7 @@ resolve(
 
     std::string outputPath = FSUtil::ResolveRelativePath(input, toolContext->workingDirectory());
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();

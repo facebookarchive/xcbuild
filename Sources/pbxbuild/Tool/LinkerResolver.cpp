@@ -16,7 +16,6 @@
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
@@ -43,7 +42,7 @@ resolve(
 )
 {
     std::vector<std::string> special;
-    std::vector<ToolInvocation::AuxiliaryFile> auxiliaries;
+    std::vector<Tool::Invocation::AuxiliaryFile> auxiliaries;
 
     special.insert(special.end(), additionalArguments.begin(), additionalArguments.end());
 
@@ -53,7 +52,7 @@ resolve(
         for (std::string const &input : inputFiles) {
             contents += input + "\n";
         }
-        ToolInvocation::AuxiliaryFile fileList = ToolInvocation::AuxiliaryFile(path, contents, false);
+        Tool::Invocation::AuxiliaryFile fileList = Tool::Invocation::AuxiliaryFile(path, contents, false);
         auxiliaries.push_back(fileList);
     }
 
@@ -108,7 +107,7 @@ resolve(
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
     std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();

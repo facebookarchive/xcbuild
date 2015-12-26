@@ -16,7 +16,6 @@
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
@@ -71,7 +70,7 @@ resolve(
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, fullWorkingDirectory, nullptr, environmentVariables);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, legacyTarget->buildToolPath(), pbxsetting::Type::ParseList(script));
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();
@@ -109,7 +108,7 @@ resolve(
 
     std::string scriptFilePath = phaseEnvironment.expand(scriptPath);
     std::string contents = (!buildPhase->shellPath().empty() ? "#!" + buildPhase->shellPath() + "\n" : "") + buildPhase->shellScript();
-    ToolInvocation::AuxiliaryFile scriptFile = ToolInvocation::AuxiliaryFile(scriptFilePath, contents, true);
+    Tool::Invocation::AuxiliaryFile scriptFile = Tool::Invocation::AuxiliaryFile(scriptFilePath, contents, true);
 
     pbxsetting::Environment scriptEnvironment = environment;
     scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, true), false);
@@ -119,7 +118,7 @@ resolve(
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr, environmentVariables);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", scriptFilePath });
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();
@@ -167,7 +166,7 @@ resolve(
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr, environmentVariables);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", buildRule->script() });
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();

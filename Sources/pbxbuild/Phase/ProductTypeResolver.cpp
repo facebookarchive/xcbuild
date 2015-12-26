@@ -57,7 +57,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
      * Collect all existing tool outputs so the following tools can run last.
      */
     std::vector<std::string> outputs;
-    for (ToolInvocation const &invocation : phaseContext->toolContext().invocations()) {
+    for (Tool::Invocation const &invocation : phaseContext->toolContext().invocations()) {
         outputs.insert(outputs.end(), invocation.outputs().begin(), invocation.outputs().end());
     }
 

@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/BuildGraph.h>
-#include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Tool/Invocation.h>
 
 using pbxbuild::BuildGraph;
 
@@ -100,5 +100,5 @@ ordered(void) const
 namespace pbxbuild { template class BuildGraph<pbxproj::PBX::Target::shared_ptr>; }
 namespace pbxbuild { template class BuildGraph<pbxproj::PBX::BuildPhase::shared_ptr>; }
 namespace pbxbuild { template class BuildGraph<pbxspec::PBX::FileType::shared_ptr>; }
-namespace pbxbuild { template class BuildGraph<pbxbuild::ToolInvocation const *>; }
+namespace pbxbuild { template class BuildGraph<pbxbuild::Tool::Invocation const *>; }
 namespace pbxbuild { template class BuildGraph<int>; } /* For testing. */

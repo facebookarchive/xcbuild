@@ -31,10 +31,10 @@ public:
         BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
 private:
-    std::pair<bool, std::vector<ToolInvocation const>> buildTarget(
+    std::pair<bool, std::vector<Tool::Invocation const>> buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
         Target::Environment const &targetEnvironment,
-        std::vector<ToolInvocation const> const &invocations);
+        std::vector<Tool::Invocation const> const &invocations);
 
 public:
     static std::unique_ptr<SimpleExecutor>

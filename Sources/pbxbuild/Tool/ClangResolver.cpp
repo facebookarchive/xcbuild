@@ -20,7 +20,6 @@
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
@@ -200,13 +199,13 @@ resolvePrecompiledHeader(
     std::string logTitle = DialectIsCPlusPlus(dialect) ? "ProcessPCH++" : "ProcessPCH";
     std::string logMessage = CompileLogMessage(_compiler, logTitle, input, fileType, output, env, toolContext->workingDirectory());
 
-    ToolInvocation::AuxiliaryFile serializedFile = ToolInvocation::AuxiliaryFile(
+    Tool::Invocation::AuxiliaryFile serializedFile = Tool::Invocation::AuxiliaryFile(
         env.expand(precompiledHeaderInfo.serializedOutputPath()),
         precompiledHeaderInfo.serialize(),
         false
     );
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
@@ -296,7 +295,7 @@ resolveSource(
 
     std::string logMessage = CompileLogMessage(_compiler, "CompileC", input, fileType, output, env, toolContext->workingDirectory());
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();

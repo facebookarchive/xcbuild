@@ -11,7 +11,7 @@
 #define __pbxbuild_ToolResolver_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Phase/Environment.h>
 
 namespace pbxbuild {

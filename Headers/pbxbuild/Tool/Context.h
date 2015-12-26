@@ -11,7 +11,7 @@
 #define __pbxbuild_Tool_Context_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
@@ -31,8 +31,8 @@ private:
     std::vector<std::string>    _additionalInfoPlistContents;
 
 private:
-    std::vector<ToolInvocation const>                                                _invocations;
-    std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation const>> _variantArchitectureInvocations;
+    std::vector<Tool::Invocation const>                                                _invocations;
+    std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation const>> _variantArchitectureInvocations;
 
 public:
     Context(std::string const &workingDirectory);
@@ -63,15 +63,15 @@ public:
     { return _additionalInfoPlistContents; }
 
 public:
-    std::vector<ToolInvocation const> const &invocations() const
+    std::vector<Tool::Invocation const> const &invocations() const
     { return _invocations; }
-    std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation const>> const &variantArchitectureInvocations() const
+    std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation const>> const &variantArchitectureInvocations() const
     { return _variantArchitectureInvocations; }
 
 public:
-    std::vector<ToolInvocation const> &invocations()
+    std::vector<Tool::Invocation const> &invocations()
     { return _invocations; }
-    std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation const>> &variantArchitectureInvocations()
+    std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation const>> &variantArchitectureInvocations()
     { return _variantArchitectureInvocations; }
 };
 

@@ -15,7 +15,7 @@
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/BuildGraph.h>
-#include <pbxbuild/ToolInvocation.h>
+#include <pbxbuild/Tool/Invocation.h>
 
 namespace pbxbuild {
 

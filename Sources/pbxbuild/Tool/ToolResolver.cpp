@@ -16,7 +16,6 @@
 #include <pbxbuild/Tool/Context.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
 
 Tool::ToolResolver::
 ToolResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
@@ -42,7 +41,7 @@ resolve(
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
     std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));
 
-    ToolInvocation invocation;
+    Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();

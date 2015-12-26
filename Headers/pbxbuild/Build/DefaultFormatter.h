@@ -13,10 +13,6 @@
 #include <pbxbuild/Build/Formatter.h>
 
 namespace pbxbuild {
-
-class ToolInvocation;
-class BuildContext;
-
 namespace Build {
 
 class DefaultFormatter : public Formatter {
@@ -30,7 +26,7 @@ public:
 public:
     virtual std::string begin(BuildContext const &buildContext);
     virtual std::string success(BuildContext const &buildContext);
-    virtual std::string failure(BuildContext const &buildContext, std::vector<ToolInvocation const> const &failingInvocations);
+    virtual std::string failure(BuildContext const &buildContext, std::vector<Tool::Invocation const> const &failingInvocations);
 
 public:
     virtual std::string beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
@@ -52,8 +48,8 @@ public:
     virtual std::string finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target);
 
 public:
-    virtual std::string beginInvocation(ToolInvocation const &invocation, std::string const &executable);
-    virtual std::string finishInvocation(ToolInvocation const &invocation, std::string const &executable);
+    virtual std::string beginInvocation(Tool::Invocation const &invocation, std::string const &executable);
+    virtual std::string finishInvocation(Tool::Invocation const &invocation, std::string const &executable);
 
 public:
     static std::shared_ptr<DefaultFormatter>

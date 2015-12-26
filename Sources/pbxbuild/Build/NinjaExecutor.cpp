@@ -25,7 +25,7 @@ using pbxbuild::Build::NinjaExecutor;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
 namespace Target = pbxbuild::Target;
-using pbxbuild::ToolInvocation;
+namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 
 NinjaExecutor::
@@ -270,7 +270,7 @@ build(
          */
         std::vector<ninja::Value> invocationOutputs;
         std::vector<ninja::Value> invocationOrderOnlyOutputs;
-        for (ToolInvocation const &invocation : phaseInvocations.invocations()) {
+        for (Tool::Invocation const &invocation : phaseInvocations.invocations()) {
             for (std::string const &output : invocation.outputs()) {
                 invocationOutputs.push_back(ninja::Value::String(output));
             }
@@ -343,7 +343,7 @@ buildTargetOutputDirectories(
     ninja::Writer *writer,
     pbxproj::PBX::Target::shared_ptr const &target,
     Target::Environment const &targetEnvironment,
-    std::vector<ToolInvocation const> const &invocations,
+    std::vector<Tool::Invocation const> const &invocations,
     std::unordered_set<std::string> *seenDirectories)
 {
     std::string targetBegin = TargetNinjaBegin(target);
@@ -352,7 +352,7 @@ buildTargetOutputDirectories(
      * Add a build command to create each output directory. These are depended on by
      * the build commands for invocations that have outputs inside each directory.
      */
-    for (ToolInvocation const &invocation : invocations) {
+    for (Tool::Invocation const &invocation : invocations) {
         for (std::string const &output : invocation.outputs()) {
             std::string outputDirectory = FSUtil::GetDirectoryName(output);
 
@@ -395,7 +395,7 @@ buildTargetAuxiliaryFiles(
     ninja::Writer *writer,
     pbxproj::PBX::Target::shared_ptr const &target,
     Target::Environment const &targetEnvironment,
-    std::vector<ToolInvocation const> const &invocations)
+    std::vector<Tool::Invocation const> const &invocations)
 {
     // TODO(grp): In a dry run, Ninja will still need these files to exist, but the whole
     // point of a dry run is to avoid the filesystem. What's the best way to resolve this?
@@ -404,8 +404,8 @@ buildTargetAuxiliaryFiles(
     }
 
     // TODO(grp): Could this defer writing auxiliary files and let Ninja do it?
-    for (ToolInvocation const &invocation : invocations) {
-        for (ToolInvocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
+    for (Tool::Invocation const &invocation : invocations) {
+        for (Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
             if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(auxiliaryFile.path()))) {
                 return false;
             }
@@ -434,7 +434,7 @@ bool NinjaExecutor::
 buildTargetInvocations(
     pbxproj::PBX::Target::shared_ptr const &target,
     Target::Environment const &targetEnvironment,
-    std::vector<ToolInvocation const> const &invocations)
+    std::vector<Tool::Invocation const> const &invocations)
 {
     std::string targetBegin = TargetNinjaBegin(target);
 
@@ -456,7 +456,7 @@ buildTargetInvocations(
     /*
      * Add the build command for each invocation.
      */
-    for (ToolInvocation const &invocation : invocations) {
+    for (Tool::Invocation const &invocation : invocations) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
         if (invocation.executable().empty()) {
             continue;

@@ -14,7 +14,6 @@
 #include <sstream>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::ToolInvocation;
 
 std::string Tool::ToolResult::
 LogMessage(Tool::Environment const &toolEnvironment)
