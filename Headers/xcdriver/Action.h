@@ -64,7 +64,7 @@ public:
     CreateOverrideLevels(Options const &options, pbxsetting::Environment const &environment);
 
 public:
-    static std::unique_ptr<pbxbuild::BuildContext>
+    static std::unique_ptr<pbxbuild::Build::Context>
     CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &workspaceContext, std::vector<pbxsetting::Level> const &overrideLevels);
 };
 

@@ -12,19 +12,10 @@
 
 #include <pbxbuild/HeaderMap.h>
 
-#include <pbxbuild/BuildEnvironment.h>
-#include <pbxbuild/DependencyResolver.h>
-#include <pbxbuild/BuildContext.h>
 #include <pbxbuild/WorkspaceContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
+
 #include <pbxbuild/Tool/Invocation.h>
-
-#include <pbxbuild/Action/Executor.h>
-#include <pbxbuild/Action/SimpleExecutor.h>
-#include <pbxbuild/Action/NinjaExecutor.h>
-#include <pbxbuild/Action/Formatter.h>
-#include <pbxbuild/Action/DefaultFormatter.h>
-
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
@@ -44,5 +35,15 @@
 
 #include <pbxbuild/Target/BuildRules.h>
 #include <pbxbuild/Target/Environment.h>
+
+#include <pbxbuild/Build/DependencyResolver.h>
+#include <pbxbuild/Build/Environment.h>
+#include <pbxbuild/Build/Context.h>
+
+#include <pbxbuild/Action/Executor.h>
+#include <pbxbuild/Action/SimpleExecutor.h>
+#include <pbxbuild/Action/NinjaExecutor.h>
+#include <pbxbuild/Action/Formatter.h>
+#include <pbxbuild/Action/DefaultFormatter.h>
 
 #endif  // !__pbxbuild_pbxbuild_h

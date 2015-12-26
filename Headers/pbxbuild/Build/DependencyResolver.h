@@ -7,33 +7,35 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_DependencyResolver_h
-#define __pbxbuild_DependencyResolver_h
+#ifndef __pbxbuild_Build_DependencyResolver_h
+#define __pbxbuild_Build_DependencyResolver_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/BuildEnvironment.h>
+#include <pbxbuild/Build/Environment.h>
+#include <pbxbuild/Build/Context.h>
 #include <pbxbuild/BuildGraph.h>
-#include <pbxbuild/BuildContext.h>
 
 namespace pbxbuild {
+namespace Build {
 
 class DependencyResolver {
 private:
-    BuildEnvironment _buildEnvironment;
+    Build::Environment _buildEnvironment;
 
 public:
-    DependencyResolver(BuildEnvironment const &buildEnviroment);
+    DependencyResolver(Build::Environment const &buildEnviroment);
     ~DependencyResolver();
 
 public:
     BuildGraph<pbxproj::PBX::Target::shared_ptr>
-    resolveSchemeDependencies(BuildContext const &context) const;
+    resolveSchemeDependencies(Build::Context const &context) const;
 
 public:
     BuildGraph<pbxproj::PBX::Target::shared_ptr>
-    resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::string const &target) const;
+    resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::string const &target) const;
 };
 
 }
+}
 
-#endif // !__pbxbuild_DependencyResolver_h
+#endif // !__pbxbuild_Build_DependencyResolver_h

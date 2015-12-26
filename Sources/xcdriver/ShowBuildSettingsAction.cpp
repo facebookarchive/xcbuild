@@ -32,7 +32,7 @@ Run(Options const &options)
         return -1;
     }
 
-    std::unique_ptr<pbxbuild::BuildEnvironment> buildEnvironment = pbxbuild::BuildEnvironment::Default();
+    std::unique_ptr<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default();
     if (buildEnvironment == nullptr) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
@@ -45,12 +45,12 @@ Run(Options const &options)
 
     std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(options, buildEnvironment->baseEnvironment());
 
-    std::unique_ptr<pbxbuild::BuildContext> buildContext = Action::CreateBuildContext(options, *workspaceContext, overrideLevels);
+    std::unique_ptr<pbxbuild::Build::Context> buildContext = Action::CreateBuildContext(options, *workspaceContext, overrideLevels);
     if (buildContext == nullptr) {
         return -1;
     }
 
-    pbxbuild::DependencyResolver resolver = pbxbuild::DependencyResolver(*buildEnvironment);
+    pbxbuild::Build::DependencyResolver resolver = pbxbuild::Build::DependencyResolver(*buildEnvironment);
     pbxbuild::BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
     if (buildContext->scheme() != nullptr) {
         graph = resolver.resolveSchemeDependencies(*buildContext);

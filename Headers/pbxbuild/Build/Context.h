@@ -7,17 +7,18 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_BuildContext_h
-#define __pbxbuild_BuildContext_h
+#ifndef __pbxbuild_Build_Context_h
+#define __pbxbuild_Build_Context_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/WorkspaceContext.h>
-#include <pbxbuild/BuildEnvironment.h>
+#include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Target/Environment.h>
 
 namespace pbxbuild {
+namespace Build {
 
-class BuildContext {
+class Context {
 private:
     std::shared_ptr<WorkspaceContext> _workspaceContext;
     xcscheme::XC::Scheme::shared_ptr  _scheme;
@@ -30,7 +31,7 @@ private:
     std::shared_ptr<std::unordered_map<pbxproj::PBX::Target::shared_ptr, Target::Environment>> _targetEnvironments;
 
 private:
-    BuildContext(
+    Context(
         std::shared_ptr<WorkspaceContext> const &workspaceContext,
         xcscheme::XC::Scheme::shared_ptr const &scheme,
         std::string const &action,
@@ -63,7 +64,7 @@ public:
 
 public:
     std::unique_ptr<Target::Environment>
-    targetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const;
+    targetEnvironment(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const;
 
 public:
     pbxproj::PBX::Target::shared_ptr
@@ -72,7 +73,7 @@ public:
     resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const;
 
 public:
-    static BuildContext
+    static Context
     Create(
         WorkspaceContext const &workspaceContext,
         xcscheme::XC::Scheme::shared_ptr const &scheme,
@@ -84,5 +85,6 @@ public:
 };
 
 }
+}
 
-#endif // !__pbxbuild_BuildContext_h
+#endif // !__pbxbuild_Build_Context_h

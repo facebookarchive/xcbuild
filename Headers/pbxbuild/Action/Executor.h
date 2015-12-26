@@ -12,8 +12,8 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Action/Formatter.h>
-#include <pbxbuild/BuildEnvironment.h>
-#include <pbxbuild/BuildContext.h>
+#include <pbxbuild/Build/Environment.h>
+#include <pbxbuild/Build/Context.h>
 #include <pbxbuild/BuildGraph.h>
 #include <pbxbuild/Tool/Invocation.h>
 
@@ -36,8 +36,8 @@ public:
 
 public:
     virtual bool build(
-        BuildEnvironment const &buildEnvironment,
-        BuildContext const &buildContext,
+        Build::Environment const &buildEnvironment,
+        Build::Context const &buildContext,
         BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph) = 0;
 };
 

@@ -12,8 +12,8 @@
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/Target/Environment.h>
-#include <pbxbuild/BuildEnvironment.h>
-#include <pbxbuild/BuildContext.h>
+#include <pbxbuild/Build/Environment.h>
+#include <pbxbuild/Build/Context.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
@@ -39,7 +39,7 @@ Phase::SourcesResolver::
 bool Phase::SourcesResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
-    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     Tool::ClangResolver const *clangResolver = phaseContext->clangResolver(phaseEnvironment);

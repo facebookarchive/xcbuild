@@ -7,19 +7,19 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/BuildEnvironment.h>
+#include <pbxbuild/Build/Environment.h>
 
-using pbxbuild::BuildEnvironment;
+namespace Build = pbxbuild::Build;
 
-BuildEnvironment::
-BuildEnvironment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment) :
+Build::Environment::
+Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment) :
     _specManager(specManager),
     _sdkManager(sdkManager),
     _baseEnvironment(baseEnvironment)
 {
 }
 
-std::unique_ptr<BuildEnvironment> BuildEnvironment::
+std::unique_ptr<Build::Environment> Build::Environment::
 Default(void)
 {
     std::string developerRoot = xcsdk::Environment::DeveloperRoot();
@@ -60,5 +60,5 @@ Default(void)
         baseEnvironment.insertBack(level, false);
     }
 
-    return std::unique_ptr<BuildEnvironment>(new BuildEnvironment(BuildEnvironment(specManager, sdkManager, baseEnvironment)));
+    return std::unique_ptr<Build::Environment>(new Build::Environment(Build::Environment(specManager, sdkManager, baseEnvironment)));
 }

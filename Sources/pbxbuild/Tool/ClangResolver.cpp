@@ -344,7 +344,7 @@ resolveSource(
 std::unique_ptr<Tool::ClangResolver> Tool::ClangResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
-    BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     // TODO(grp): This should probably try a number of other compilers if it's not clang.

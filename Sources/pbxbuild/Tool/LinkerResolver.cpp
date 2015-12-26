@@ -123,7 +123,7 @@ resolve(
 std::unique_ptr<Tool::LinkerResolver> Tool::LinkerResolver::
 Create(Phase::Environment const &phaseEnvironment, std::string const &identifier)
 {
-    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     pbxspec::PBX::Linker::shared_ptr linker = buildEnvironment.specManager()->linker(identifier, targetEnvironment.specDomains());

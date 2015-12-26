@@ -17,9 +17,8 @@
 #include <sys/stat.h>
 
 using pbxbuild::Action::SimpleExecutor;
-using pbxbuild::BuildEnvironment;
-using pbxbuild::BuildContext;
 namespace Tool = pbxbuild::Tool;
+namespace Build = pbxbuild::Build;
 using pbxbuild::BuildGraph;
 using libutil::FSUtil;
 using libutil::Subprocess;
@@ -38,8 +37,8 @@ SimpleExecutor::
 
 bool SimpleExecutor::
 build(
-    BuildEnvironment const &buildEnvironment,
-    BuildContext const &buildContext,
+    Build::Environment const &buildEnvironment,
+    Build::Context const &buildContext,
     BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
 {
     Formatter::Print(_formatter->begin(buildContext));

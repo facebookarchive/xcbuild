@@ -11,12 +11,12 @@
 #define __pbxbuild_Target_Environment_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/BuildEnvironment.h>
+#include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Target/BuildRules.h>
 
 namespace pbxbuild {
 
-class BuildContext;
+namespace Build { class Context; }
 
 namespace Target {
 
@@ -68,7 +68,7 @@ public:
 
 public:
     static std::unique_ptr<Environment>
-    Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context);
+    Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, Build::Context const *context);
 };
 
 }

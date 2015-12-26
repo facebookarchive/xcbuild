@@ -87,7 +87,7 @@ resolve(
 std::unique_ptr<Tool::InfoPlistResolver> Tool::InfoPlistResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
-    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     pbxspec::PBX::Tool::shared_ptr infoPlistTool = buildEnvironment.specManager()->tool(Tool::InfoPlistResolver::ToolIdentifier(), targetEnvironment.specDomains());

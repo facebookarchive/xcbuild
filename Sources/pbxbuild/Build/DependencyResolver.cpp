@@ -7,35 +7,33 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/DependencyResolver.h>
+#include <pbxbuild/Build/DependencyResolver.h>
 #include <pbxbuild/Target/Environment.h>
 
 #define DEPENDENCY_RESOLVER_LOGGING 0
 
-using pbxbuild::DependencyResolver;
-using pbxbuild::BuildContext;
+namespace Build = pbxbuild::Build;
+namespace Target = pbxbuild::Target;
 using pbxbuild::WorkspaceContext;
 using pbxbuild::BuildGraph;
-using pbxbuild::BuildEnvironment;
-namespace Target = pbxbuild::Target;
 using xcscheme::XC::Scheme;
 using xcscheme::XC::BuildAction;
 using xcscheme::XC::BuildActionEntry;
 using libutil::FSUtil;
 
-DependencyResolver::
-DependencyResolver(BuildEnvironment const &buildEnvironment) :
+Build::DependencyResolver::
+DependencyResolver(Build::Environment const &buildEnvironment) :
     _buildEnvironment(buildEnvironment)
 {
 }
 
-DependencyResolver::
+Build::DependencyResolver::
 ~DependencyResolver()
 {
 }
 
 static pbxproj::PBX::Target::shared_ptr
-ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext const &context, pbxproj::PBX::Target::shared_ptr const &target, pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy, bool productReference)
+ResolveContainerItemProxy(Build::Environment const &buildEnvironment, Build::Context const &context, pbxproj::PBX::Target::shared_ptr const &target, pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy, bool productReference)
 {
     pbxproj::PBX::FileReference::shared_ptr fileReference = proxy->containerPortal();
     if (fileReference == nullptr) {
@@ -66,8 +64,8 @@ ResolveContainerItemProxy(BuildEnvironment const &buildEnvironment, BuildContext
 }
 
 struct DependenciesContext {
-    BuildEnvironment buildEnvironment;
-    BuildContext context;
+    Build::Environment buildEnvironment;
+    Build::Context context;
     BuildGraph<pbxproj::PBX::Target::shared_ptr> *graph;
     BuildAction::shared_ptr buildAction;
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> *positional;
@@ -239,8 +237,8 @@ BuildProductPathsToTargets(WorkspaceContext const &workspaceContext)
     return productPathToTarget;
 }
 
-BuildGraph<pbxproj::PBX::Target::shared_ptr> DependencyResolver::
-resolveSchemeDependencies(BuildContext const &context) const
+BuildGraph<pbxproj::PBX::Target::shared_ptr> Build::DependencyResolver::
+resolveSchemeDependencies(Build::Context const &context) const
 {
     BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
 
@@ -264,7 +262,7 @@ resolveSchemeDependencies(BuildContext const &context) const
 
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> positional;
     for (BuildActionEntry::shared_ptr const &entry : buildAction->buildActionEntries()) {
-        // TODO(grp): Check the buildFor* flags against the BuildContext.
+        // TODO(grp): Check the buildFor* flags against the Build::Context.
         if (!entry->buildForRunning()) {
             continue;
         }
@@ -309,8 +307,8 @@ resolveSchemeDependencies(BuildContext const &context) const
     return graph;
 }
 
-BuildGraph<pbxproj::PBX::Target::shared_ptr> DependencyResolver::
-resolveLegacyDependencies(BuildContext const &context, bool allTargets, std::string const &targetName) const
+BuildGraph<pbxproj::PBX::Target::shared_ptr> Build::DependencyResolver::
+resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::string const &targetName) const
 {
     BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
 

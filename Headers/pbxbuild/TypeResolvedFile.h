@@ -11,7 +11,7 @@
 #define __pbxbuild_TypeResolvedFile_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/BuildEnvironment.h>
+#include <pbxbuild/Build/Environment.h>
 
 namespace pbxbuild {
 

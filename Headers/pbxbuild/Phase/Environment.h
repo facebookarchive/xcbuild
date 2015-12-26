@@ -11,8 +11,8 @@
 #define __pbxbuild_Phase_Environment_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/BuildEnvironment.h>
-#include <pbxbuild/BuildContext.h>
+#include <pbxbuild/Build/Environment.h>
+#include <pbxbuild/Build/Context.h>
 #include <pbxbuild/Target/Environment.h>
 
 namespace pbxbuild {
@@ -23,19 +23,19 @@ namespace Phase {
 
 class Environment {
 private:
-    BuildEnvironment                 _buildEnvironment;
-    BuildContext                     _buildContext;
+    Build::Environment                 _buildEnvironment;
+    Build::Context                     _buildContext;
     pbxproj::PBX::Target::shared_ptr _target;
     Target::Environment        _targetEnvironment;
 
 public:
-    Environment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::Environment const &targetEnvironment);
+    Environment(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::Environment const &targetEnvironment);
     ~Environment();
 
 public:
-    BuildEnvironment const &buildEnvironment() const
+    Build::Environment const &buildEnvironment() const
     { return _buildEnvironment; }
-    BuildContext const &buildContext() const
+    Build::Context const &buildContext() const
     { return _buildContext; }
     pbxproj::PBX::Target::shared_ptr const &target() const
     { return _target; }

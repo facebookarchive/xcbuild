@@ -8,10 +8,9 @@
  */
 
 #include <pbxbuild/Target/Environment.h>
-#include <pbxbuild/BuildContext.h>
+#include <pbxbuild/Build/Context.h>
 
-using pbxbuild::BuildEnvironment;
-using pbxbuild::BuildContext;
+namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
 using libutil::FSUtil;
 
@@ -223,7 +222,7 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
 }
 
 std::unique_ptr<Target::Environment> Target::Environment::
-Create(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, BuildContext const *context)
+Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, Build::Context const *context)
 {
     xcsdk::SDK::Target::shared_ptr sdk;
     std::vector<std::string> specDomains;

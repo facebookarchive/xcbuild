@@ -181,7 +181,7 @@ resolve(
 std::unique_ptr<Tool::ScriptResolver> Tool::ScriptResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
-    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool(ScriptResolver::ToolIdentifier(), targetEnvironment.specDomains());

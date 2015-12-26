@@ -7,21 +7,22 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_BuildEnvironment_h
-#define __pbxbuild_BuildEnvironment_h
+#ifndef __pbxbuild_Build_Environment_h
+#define __pbxbuild_Build_Environment_h
 
 #include <pbxbuild/Base.h>
 
 namespace pbxbuild {
+namespace Build {
 
-class BuildEnvironment {
+class Environment {
 private:
     pbxspec::Manager::shared_ptr         _specManager;
     std::shared_ptr<xcsdk::SDK::Manager> _sdkManager;
     pbxsetting::Environment              _baseEnvironment;
 
 public:
-    BuildEnvironment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment);
+    Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment);
 
 public:
     pbxspec::Manager::shared_ptr const &specManager() const
@@ -34,10 +35,11 @@ public:
     { return _baseEnvironment; }
 
 public:
-    static std::unique_ptr<BuildEnvironment>
+    static std::unique_ptr<Environment>
     Default(void);
 };
 
 }
+}
 
-#endif // !__pbxbuild_BuildEnvironment_h
+#endif // !__pbxbuild_Build_Environment_h

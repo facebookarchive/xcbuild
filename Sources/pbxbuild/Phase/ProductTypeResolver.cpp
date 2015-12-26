@@ -32,7 +32,7 @@ bool Phase::ProductTypeResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext) const
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-    BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
 
     pbxsetting::Environment const &environment = targetEnvironment.environment();
     std::string productPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("FULL_PRODUCT_NAME");

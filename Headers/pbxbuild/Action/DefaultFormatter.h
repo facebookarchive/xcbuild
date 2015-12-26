@@ -24,13 +24,13 @@ public:
     ~DefaultFormatter();
 
 public:
-    virtual std::string begin(BuildContext const &buildContext);
-    virtual std::string success(BuildContext const &buildContext);
-    virtual std::string failure(BuildContext const &buildContext, std::vector<Tool::Invocation const> const &failingInvocations);
+    virtual std::string begin(Build::Context const &buildContext);
+    virtual std::string success(Build::Context const &buildContext);
+    virtual std::string failure(Build::Context const &buildContext, std::vector<Tool::Invocation const> const &failingInvocations);
 
 public:
-    virtual std::string beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
-    virtual std::string finishTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
+    virtual std::string beginTarget(Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
+    virtual std::string finishTarget(Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
 
 public:
     virtual std::string beginCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target);

@@ -120,7 +120,7 @@ CreateOverrideLevels(Options const &options, pbxsetting::Environment const &envi
     return levels;
 }
 
-std::unique_ptr<pbxbuild::BuildContext> Action::
+std::unique_ptr<pbxbuild::Build::Context> Action::
 CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &workspaceContext, std::vector<pbxsetting::Level> const &overrideLevels)
 {
     xcscheme::XC::Scheme::shared_ptr scheme = nullptr;
@@ -155,7 +155,7 @@ CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &wor
         }
     }
 
-    pbxbuild::BuildContext buildContext = pbxbuild::BuildContext::Create(
+    pbxbuild::Build::Context buildContext = pbxbuild::Build::Context::Create(
         workspaceContext,
         scheme,
         action,
@@ -164,7 +164,7 @@ CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &wor
         overrideLevels
     );
 
-    return std::unique_ptr<pbxbuild::BuildContext>(new pbxbuild::BuildContext(buildContext));
+    return std::unique_ptr<pbxbuild::Build::Context>(new pbxbuild::Build::Context(buildContext));
 }
 
 bool Action::

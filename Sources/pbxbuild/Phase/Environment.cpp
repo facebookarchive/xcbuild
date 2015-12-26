@@ -12,7 +12,7 @@
 namespace Phase = pbxbuild::Phase;
 
 Phase::Environment::
-Environment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::Environment const &targetEnvironment) :
+Environment(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::Environment const &targetEnvironment) :
     _buildEnvironment (buildEnvironment),
     _buildContext     (buildContext),
     _target           (target),

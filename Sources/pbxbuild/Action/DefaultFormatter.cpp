@@ -9,7 +9,7 @@
 
 #include <pbxbuild/Action/DefaultFormatter.h>
 #include <pbxbuild/Tool/Invocation.h>
-#include <pbxbuild/BuildContext.h>
+#include <pbxbuild/Build/Context.h>
 
 using pbxbuild::Action::DefaultFormatter;
 namespace Tool = pbxbuild::Tool;
@@ -55,7 +55,7 @@ FormatAction(std::string const &action)
 }
 
 std::string DefaultFormatter::
-begin(BuildContext const &buildContext)
+begin(Build::Context const &buildContext)
 {
     std::string result;
 
@@ -79,7 +79,7 @@ begin(BuildContext const &buildContext)
 }
 
 std::string DefaultFormatter::
-success(BuildContext const &buildContext)
+success(Build::Context const &buildContext)
 {
     std::string result;
 
@@ -91,7 +91,7 @@ success(BuildContext const &buildContext)
 }
 
 std::string DefaultFormatter::
-failure(BuildContext const &buildContext, std::vector<Tool::Invocation const> const &failingInvocations)
+failure(Build::Context const &buildContext, std::vector<Tool::Invocation const> const &failingInvocations)
 {
     std::string result;
 
@@ -109,7 +109,7 @@ failure(BuildContext const &buildContext, std::vector<Tool::Invocation const> co
 }
 
 std::string DefaultFormatter::
-beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
+beginTarget(Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
     std::string result;
     result += ANSI_STYLE_BOLD + ANSI_COLOR_CYAN;
@@ -133,7 +133,7 @@ beginTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr c
 }
 
 std::string DefaultFormatter::
-finishTarget(BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
+finishTarget(Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
     return std::string();
 }

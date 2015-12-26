@@ -22,8 +22,7 @@
 #include <sys/stat.h>
 
 using pbxbuild::Action::NinjaExecutor;
-using pbxbuild::BuildEnvironment;
-using pbxbuild::BuildContext;
+namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
@@ -143,8 +142,8 @@ WriteNinja(ninja::Writer const &writer, std::string const &path)
 
 bool NinjaExecutor::
 build(
-    BuildEnvironment const &buildEnvironment,
-    BuildContext const &buildContext,
+    Build::Environment const &buildEnvironment,
+    Build::Context const &buildContext,
     BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
 {
     /*

@@ -7,12 +7,13 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/BuildContext.h>
+#include <pbxbuild/Build/Context.h>
 
-using pbxbuild::BuildContext;
+namespace Build = pbxbuild::Build;
+namespace Target = pbxbuild::Target;
 
-BuildContext::
-BuildContext(
+Build::Context::
+Context(
     std::shared_ptr<WorkspaceContext> const &workspaceContext,
     xcscheme::XC::Scheme::shared_ptr const &scheme,
     std::string const &action,
@@ -30,8 +31,8 @@ BuildContext(
 {
 }
 
-std::unique_ptr<pbxbuild::Target::Environment> BuildContext::
-targetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const
+std::unique_ptr<pbxbuild::Target::Environment> Build::Context::
+targetEnvironment(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const
 {
     auto TEI = _targetEnvironments->find(target);
     if (TEI != _targetEnvironments->end()) {
@@ -45,7 +46,7 @@ targetEnvironment(BuildEnvironment const &buildEnvironment, pbxproj::PBX::Target
     }
 }
 
-pbxproj::PBX::Target::shared_ptr BuildContext::
+pbxproj::PBX::Target::shared_ptr Build::Context::
 resolveTargetIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const
 {
     if (project == nullptr) {
@@ -62,7 +63,7 @@ resolveTargetIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::s
     return nullptr;
 }
 
-std::unique_ptr<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>> BuildContext::
+std::unique_ptr<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>> Build::Context::
 resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const
 {
     if (project == nullptr) {
@@ -83,7 +84,7 @@ resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::
     return nullptr;
 }
 
-pbxsetting::Level BuildContext::
+pbxsetting::Level Build::Context::
 actionSettings(void) const
 {
     return pbxsetting::Level({
@@ -93,7 +94,7 @@ actionSettings(void) const
     });
 }
 
-pbxsetting::Level BuildContext::
+pbxsetting::Level Build::Context::
 baseSettings(void) const
 {
     std::string build = _workspaceContext->derivedDataName();
@@ -106,7 +107,7 @@ baseSettings(void) const
     });
 }
 
-BuildContext BuildContext::
+Build::Context Build::Context::
 Create(
     WorkspaceContext const &workspaceContext,
     xcscheme::XC::Scheme::shared_ptr const &scheme,
@@ -116,7 +117,7 @@ Create(
     std::vector<pbxsetting::Level> const &overrideLevels
 )
 {
-    return BuildContext(
+    return Build::Context(
         std::make_shared<WorkspaceContext>(workspaceContext),
         scheme,
         action,

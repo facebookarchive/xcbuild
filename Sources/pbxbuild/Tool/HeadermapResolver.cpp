@@ -231,7 +231,7 @@ resolve(
 std::unique_ptr<Tool::HeadermapResolver> Tool::HeadermapResolver::
 Create(Phase::Environment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler)
 {
-    pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool(Tool::HeadermapResolver::ToolIdentifier(), targetEnvironment.specDomains());

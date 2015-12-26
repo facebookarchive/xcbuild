@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/Tool/Invocation.h>
-#include <pbxbuild/BuildContext.h>
+#include <pbxbuild/Build/Context.h>
 
 namespace Tool = pbxbuild::Tool;
 using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
