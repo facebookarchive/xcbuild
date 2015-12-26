@@ -7,11 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Build/DefaultFormatter.h>
+#include <pbxbuild/Action/DefaultFormatter.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/BuildContext.h>
 
-using pbxbuild::Build::DefaultFormatter;
+using pbxbuild::Action::DefaultFormatter;
 namespace Tool = pbxbuild::Tool;
 
 DefaultFormatter::

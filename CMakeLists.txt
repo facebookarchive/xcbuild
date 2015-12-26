@@ -236,11 +236,6 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/WorkspaceContext.cpp
     Sources/pbxbuild/TypeResolvedFile.cpp
-    Sources/pbxbuild/Build/Executor.cpp
-    Sources/pbxbuild/Build/SimpleExecutor.cpp
-    Sources/pbxbuild/Build/NinjaExecutor.cpp
-    Sources/pbxbuild/Build/Formatter.cpp
-    Sources/pbxbuild/Build/DefaultFormatter.cpp
     Sources/pbxbuild/Tool/Context.cpp
     Sources/pbxbuild/Tool/Environment.cpp
     Sources/pbxbuild/Tool/Invocation.cpp
@@ -272,6 +267,11 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Phase/ShellScriptResolver.cpp
     Sources/pbxbuild/Target/BuildRules.cpp
     Sources/pbxbuild/Target/Environment.cpp
+    Sources/pbxbuild/Action/Executor.cpp
+    Sources/pbxbuild/Action/SimpleExecutor.cpp
+    Sources/pbxbuild/Action/NinjaExecutor.cpp
+    Sources/pbxbuild/Action/Formatter.cpp
+    Sources/pbxbuild/Action/DefaultFormatter.cpp
     )
 
 set(libxcdriver_SOURCES

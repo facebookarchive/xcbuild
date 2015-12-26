@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Build/NinjaExecutor.h>
+#include <pbxbuild/Action/NinjaExecutor.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <ninja/Writer.h>
@@ -21,7 +21,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-using pbxbuild::Build::NinjaExecutor;
+using pbxbuild::Action::NinjaExecutor;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
 namespace Target = pbxbuild::Target;

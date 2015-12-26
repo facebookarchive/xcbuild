@@ -7,9 +7,9 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Build/Formatter.h>
+#include <pbxbuild/Action/Formatter.h>
 
-using pbxbuild::Build::Formatter;
+using pbxbuild::Action::Formatter;
 
 Formatter::
 Formatter()

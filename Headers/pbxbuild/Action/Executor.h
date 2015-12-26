@@ -7,11 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_Executor_h
-#define __pbxbuild_Executor_h
+#ifndef __pbxbuild_Action_Executor_h
+#define __pbxbuild_Action_Executor_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/Build/Formatter.h>
+#include <pbxbuild/Action/Formatter.h>
 #include <pbxbuild/BuildEnvironment.h>
 #include <pbxbuild/BuildContext.h>
 #include <pbxbuild/BuildGraph.h>
@@ -21,7 +21,7 @@ namespace pbxbuild {
 
 namespace Target { class Environment; }
 
-namespace Build {
+namespace Action {
 
 class Executor {
 protected:
@@ -44,4 +44,4 @@ public:
 }
 }
 
-#endif // !__pbxbuild_Executor_h
+#endif // !__pbxbuild_Action_Executor_h

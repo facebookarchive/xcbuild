@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Build/SimpleExecutor.h>
+#include <pbxbuild/Action/SimpleExecutor.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
 
@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-using pbxbuild::Build::SimpleExecutor;
+using pbxbuild::Action::SimpleExecutor;
 using pbxbuild::BuildEnvironment;
 using pbxbuild::BuildContext;
 namespace Tool = pbxbuild::Tool;

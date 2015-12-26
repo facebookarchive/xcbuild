@@ -19,11 +19,11 @@
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/Tool/Invocation.h>
 
-#include <pbxbuild/Build/Executor.h>
-#include <pbxbuild/Build/SimpleExecutor.h>
-#include <pbxbuild/Build/NinjaExecutor.h>
-#include <pbxbuild/Build/Formatter.h>
-#include <pbxbuild/Build/DefaultFormatter.h>
+#include <pbxbuild/Action/Executor.h>
+#include <pbxbuild/Action/SimpleExecutor.h>
+#include <pbxbuild/Action/NinjaExecutor.h>
+#include <pbxbuild/Action/Formatter.h>
+#include <pbxbuild/Action/DefaultFormatter.h>
 
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>

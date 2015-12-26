@@ -7,16 +7,16 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_NinjaExecutor_h
-#define __pbxbuild_NinjaExecutor_h
+#ifndef __pbxbuild_Action_NinjaExecutor_h
+#define __pbxbuild_Action_NinjaExecutor_h
 
-#include <pbxbuild/Build/Executor.h>
+#include <pbxbuild/Action/Executor.h>
 #include <builtin/builtin.h>
 
 namespace ninja { class Writer; }
 
 namespace pbxbuild {
-namespace Build {
+namespace Action {
 
 class NinjaExecutor : public Executor {
 public:
@@ -54,4 +54,4 @@ public:
 }
 }
 
-#endif // !__pbxbuild_NinjaExecutor_h
+#endif // !__pbxbuild_Action_NinjaExecutor_h

@@ -26,33 +26,33 @@ BuildAction::
 {
 }
 
-static std::shared_ptr<pbxbuild::Build::Formatter>
+static std::shared_ptr<pbxbuild::Action::Formatter>
 CreateFormatter(std::string const &formatter)
 {
     if (formatter == "default" || formatter.empty()) {
         /* Only use color if attached to a terminal. */
         bool color = isatty(fileno(stdout));
 
-        auto formatter = pbxbuild::Build::DefaultFormatter::Create(color);
-        return std::static_pointer_cast<pbxbuild::Build::Formatter>(formatter);
+        auto formatter = pbxbuild::Action::DefaultFormatter::Create(color);
+        return std::static_pointer_cast<pbxbuild::Action::Formatter>(formatter);
     }
 
     return nullptr;
 }
 
-static std::unique_ptr<pbxbuild::Build::Executor>
+static std::unique_ptr<pbxbuild::Action::Executor>
 CreateExecutor(
     std::string const &executor,
-    std::shared_ptr<pbxbuild::Build::Formatter> const &formatter,
+    std::shared_ptr<pbxbuild::Action::Formatter> const &formatter,
     bool dryRun)
 {
     if (executor == "simple" || executor.empty()) {
         auto registry = builtin::Registry::Default();
-        auto executor = pbxbuild::Build::SimpleExecutor::Create(formatter, dryRun, registry);
-        return libutil::static_unique_pointer_cast<pbxbuild::Build::Executor>(std::move(executor));
+        auto executor = pbxbuild::Action::SimpleExecutor::Create(formatter, dryRun, registry);
+        return libutil::static_unique_pointer_cast<pbxbuild::Action::Executor>(std::move(executor));
     } else if (executor == "ninja") {
-        auto executor = pbxbuild::Build::NinjaExecutor::Create(formatter, dryRun);
-        return libutil::static_unique_pointer_cast<pbxbuild::Build::Executor>(std::move(executor));
+        auto executor = pbxbuild::Action::NinjaExecutor::Create(formatter, dryRun);
+        return libutil::static_unique_pointer_cast<pbxbuild::Action::Executor>(std::move(executor));
     }
 
     return nullptr;
@@ -151,7 +151,7 @@ Run(Options const &options)
     /*
      * Create the formatter to format the build log.
      */
-    std::shared_ptr<pbxbuild::Build::Formatter> formatter = CreateFormatter(options.formatter());
+    std::shared_ptr<pbxbuild::Action::Formatter> formatter = CreateFormatter(options.formatter());
     if (formatter == nullptr) {
         fprintf(stderr, "error: unknown formatter %s\n", options.formatter().c_str());
         return -1;
@@ -160,7 +160,7 @@ Run(Options const &options)
     /*
      * Create the executor used to perform the build.
      */
-    std::unique_ptr<pbxbuild::Build::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun());
+    std::unique_ptr<pbxbuild::Action::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun());
     if (executor == nullptr) {
         fprintf(stderr, "error: unknown executor %s\n", options.executor().c_str());
         return -1;

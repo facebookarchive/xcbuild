@@ -7,9 +7,9 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Build/Executor.h>
+#include <pbxbuild/Action/Executor.h>
 
-using pbxbuild::Build::Executor;
+using pbxbuild::Action::Executor;
 
 Executor::
 Executor(std::shared_ptr<Formatter> const &formatter, bool dryRun) :

@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_Formatter_h
-#define __pbxbuild_Formatter_h
+#ifndef __pbxbuild_Action_Formatter_h
+#define __pbxbuild_Action_Formatter_h
 
 #include <pbxbuild/Base.h>
 
@@ -17,7 +17,7 @@ namespace pbxbuild {
 class BuildContext;
 namespace Tool { class Invocation; }
 
-namespace Build {
+namespace Action {
 
 class Formatter {
 protected:
@@ -61,4 +61,4 @@ public:
 }
 }
 
-#endif // !__pbxbuild_Formatter_h
+#endif // !__pbxbuild_Action_Formatter_h

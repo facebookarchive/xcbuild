@@ -7,13 +7,13 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_DefaultFormatter_h
-#define __pbxbuild_DefaultFormatter_h
+#ifndef __pbxbuild_Action_DefaultFormatter_h
+#define __pbxbuild_Action_DefaultFormatter_h
 
-#include <pbxbuild/Build/Formatter.h>
+#include <pbxbuild/Action/Formatter.h>
 
 namespace pbxbuild {
-namespace Build {
+namespace Action {
 
 class DefaultFormatter : public Formatter {
 private:
@@ -59,4 +59,4 @@ public:
 }
 }
 
-#endif // !__pbxbuild_DefaultFormatter_h
+#endif // !__pbxbuild_Action_DefaultFormatter_h
