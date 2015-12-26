@@ -16,7 +16,7 @@
 namespace pbxbuild {
 namespace Phase {
 
-class PhaseEnvironment;
+class Environment;
 
 class PhaseInvocations {
 private:
@@ -32,7 +32,7 @@ public:
 
 public:
     static PhaseInvocations
-    Create(Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target);
+    Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target);
 };
 
 }

@@ -11,7 +11,7 @@
 #define __pbxbuild_CopyResolver_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/Environment.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -40,7 +40,7 @@ public:
 
 public:
     static std::unique_ptr<CopyResolver>
-    Create(Phase::PhaseEnvironment const &phaseEnvironment);
+    Create(Phase::Environment const &phaseEnvironment);
 };
 
 }

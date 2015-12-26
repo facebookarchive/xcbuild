@@ -12,7 +12,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/Environment.h>
 
 namespace pbxbuild {
 
@@ -57,7 +57,7 @@ public:
 
 public:
     static std::unique_ptr<ClangResolver>
-    Create(Phase::PhaseEnvironment const &phaseEnvironment);
+    Create(Phase::Environment const &phaseEnvironment);
 };
 
 }

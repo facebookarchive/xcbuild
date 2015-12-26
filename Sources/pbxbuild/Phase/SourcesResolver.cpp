@@ -8,8 +8,8 @@
  */
 
 #include <pbxbuild/Phase/SourcesResolver.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/Target/TargetEnvironment.h>
 #include <pbxbuild/BuildEnvironment.h>
@@ -38,7 +38,7 @@ Phase::SourcesResolver::
 }
 
 bool Phase::SourcesResolver::
-resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
+resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
@@ -75,8 +75,8 @@ resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *ph
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment currentEnvironment = targetEnvironment.environment();
-            currentEnvironment.insertFront(Phase::PhaseEnvironment::VariantLevel(variant), false);
-            currentEnvironment.insertFront(Phase::PhaseEnvironment::ArchitectureLevel(arch), false);
+            currentEnvironment.insertFront(Phase::Environment::VariantLevel(variant), false);
+            currentEnvironment.insertFront(Phase::Environment::ArchitectureLevel(arch), false);
 
             std::string outputDirectory = currentEnvironment.expand(pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)"));
 

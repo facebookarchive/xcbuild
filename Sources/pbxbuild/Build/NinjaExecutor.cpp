@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/Build/NinjaExecutor.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <ninja/Writer.h>
 #include <ninja/Value.h>
@@ -241,7 +241,7 @@ build(
             continue;
         }
 
-        Phase::PhaseEnvironment phaseEnvironment = Phase::PhaseEnvironment(buildEnvironment, buildContext, target, *targetEnvironment);
+        Phase::Environment phaseEnvironment = Phase::Environment(buildEnvironment, buildContext, target, *targetEnvironment);
         Phase::PhaseInvocations phaseInvocations = Phase::PhaseInvocations::Create(phaseEnvironment, target);
 
         /*

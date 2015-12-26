@@ -59,7 +59,7 @@ resolve(
 }
 
 std::unique_ptr<ToolResolver> ToolResolver::
-Create(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &identifier)
+Create(Phase::Environment const &phaseEnvironment, std::string const &identifier)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();

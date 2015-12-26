@@ -8,8 +8,8 @@
  */
 
 #include <pbxbuild/Phase/HeadersResolver.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
@@ -29,7 +29,7 @@ Phase::HeadersResolver::
 }
 
 bool Phase::HeadersResolver::
-resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
+resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();

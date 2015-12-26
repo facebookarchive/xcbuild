@@ -9,8 +9,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_Phase_PhaseContext_h
-#define __pbxbuild_Phase_PhaseContext_h
+#ifndef __pbxbuild_Phase_Context_h
+#define __pbxbuild_Phase_Context_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/ToolContext.h>
@@ -30,9 +30,9 @@ namespace Tool {
 
 namespace Phase {
 
-class PhaseEnvironment;
+class Environment;
 
-class PhaseContext {
+class Context {
 private:
     Tool::ToolContext                                   _toolContext;
 
@@ -45,8 +45,8 @@ private:
     std::unordered_map<std::string, Tool::ToolResolver> _toolResolvers;
 
 public:
-    explicit PhaseContext(Tool::ToolContext const &toolContext);
-    ~PhaseContext();
+    explicit Context(Tool::ToolContext const &toolContext);
+    ~Context();
 
 public:
     Tool::ToolContext const &toolContext() const
@@ -57,16 +57,16 @@ public:
     { return _toolContext; }
 
 public:
-    Tool::ClangResolver const     *clangResolver(Phase::PhaseEnvironment const &phaseEnvironment);
-    Tool::CopyResolver const      *copyResolver(Phase::PhaseEnvironment const &phaseEnvironment);
-    Tool::InfoPlistResolver const *infoPlistResolver(Phase::PhaseEnvironment const &phaseEnvironment);
-    Tool::ScriptResolver const    *scriptResolver(Phase::PhaseEnvironment const &phaseEnvironment);
-    Tool::TouchResolver const     *touchResolver(Phase::PhaseEnvironment const &phaseEnvironment);
-    Tool::ToolResolver const      *toolResolver(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &identifier);
+    Tool::ClangResolver const     *clangResolver(Phase::Environment const &phaseEnvironment);
+    Tool::CopyResolver const      *copyResolver(Phase::Environment const &phaseEnvironment);
+    Tool::InfoPlistResolver const *infoPlistResolver(Phase::Environment const &phaseEnvironment);
+    Tool::ScriptResolver const    *scriptResolver(Phase::Environment const &phaseEnvironment);
+    Tool::TouchResolver const     *touchResolver(Phase::Environment const &phaseEnvironment);
+    Tool::ToolResolver const      *toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier);
 
 public:
     bool resolveBuildFile(
-        Phase::PhaseEnvironment const &phaseEnvironment,
+        Phase::Environment const &phaseEnvironment,
         pbxsetting::Environment const &environment,
         pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
         pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
@@ -78,4 +78,4 @@ public:
 }
 }
 
-#endif // !__pbxbuild_Phase_PhaseContext_h
+#endif // !__pbxbuild_Phase_Context_h

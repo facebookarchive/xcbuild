@@ -13,7 +13,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
 #include <pbxbuild/Target/TargetBuildRules.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/Environment.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -55,7 +55,7 @@ public:
 
 public:
     static std::unique_ptr<ScriptResolver>
-    Create(Phase::PhaseEnvironment const &phaseEnvironment);
+    Create(Phase::Environment const &phaseEnvironment);
 };
 
 }

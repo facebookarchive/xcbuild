@@ -127,7 +127,7 @@ resolve(
 }
 
 std::unique_ptr<LinkerResolver> LinkerResolver::
-Create(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &identifier)
+Create(Phase::Environment const &phaseEnvironment, std::string const &identifier)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();

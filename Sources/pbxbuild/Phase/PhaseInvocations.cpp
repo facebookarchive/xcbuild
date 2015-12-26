@@ -8,8 +8,8 @@
  */
 
 #include <pbxbuild/Phase/PhaseInvocations.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/HeadersResolver.h>
 #include <pbxbuild/Phase/LegacyTargetResolver.h>
@@ -36,11 +36,11 @@ Phase::PhaseInvocations::
 }
 
 Phase::PhaseInvocations Phase::PhaseInvocations::
-Create(Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
+Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
 {
     /* Create the tool context for building. */
     std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
-    Phase::PhaseContext phaseContext{Tool::ToolContext(workingDirectory)};
+    Phase::Context phaseContext{Tool::ToolContext(workingDirectory)};
 
     /* Filter build phases to ones appropriate for this target. */
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;

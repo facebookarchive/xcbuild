@@ -15,8 +15,8 @@
 namespace pbxbuild {
 namespace Phase {
 
-class PhaseEnvironment;
-class PhaseContext;
+class Environment;
+class Context;
 
 class SourcesResolver {
 private:
@@ -31,7 +31,7 @@ public:
     { return _buildPhase; }
 
 public:
-    bool resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *Context);
+    bool resolve(Phase::Environment const &phaseEnvironment, Phase::Context *Context);
 };
 
 }

@@ -351,7 +351,7 @@ resolveSource(
 }
 
 std::unique_ptr<ClangResolver> ClangResolver::
-Create(Phase::PhaseEnvironment const &phaseEnvironment)
+Create(Phase::Environment const &phaseEnvironment)
 {
     BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();

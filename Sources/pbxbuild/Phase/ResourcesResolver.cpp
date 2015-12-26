@@ -8,8 +8,8 @@
  */
 
 #include <pbxbuild/Phase/ResourcesResolver.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 
 namespace Phase = pbxbuild::Phase;
@@ -28,7 +28,7 @@ Phase::ResourcesResolver::
 }
 
 bool Phase::ResourcesResolver::
-resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
+resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
     pbxspec::Manager::shared_ptr const &specManager = phaseEnvironment.buildEnvironment().specManager();

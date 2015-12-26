@@ -8,8 +8,8 @@
  */
 
 #include <pbxbuild/Phase/CopyFilesResolver.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 
 namespace Phase = pbxbuild::Phase;
@@ -66,7 +66,7 @@ DestinationOutputPath(pbxproj::PBX::CopyFilesBuildPhase::Destination destination
 }
 
 bool Phase::CopyFilesResolver::
-resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
+resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();

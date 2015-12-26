@@ -233,7 +233,7 @@ resolve(
 }
 
 std::unique_ptr<HeadermapResolver> HeadermapResolver::
-Create(Phase::PhaseEnvironment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler)
+Create(Phase::Environment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();

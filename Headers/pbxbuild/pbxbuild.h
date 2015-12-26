@@ -32,7 +32,7 @@
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/ToolResolver.h>
 
-#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/HeadersResolver.h>

@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
@@ -24,19 +24,19 @@ namespace Tool = pbxbuild::Tool;
 namespace Target = pbxbuild::Target;
 using libutil::FSUtil;
 
-Phase::PhaseContext::
-PhaseContext(Tool::ToolContext const &toolContext) :
+Phase::Context::
+Context(Tool::ToolContext const &toolContext) :
     _toolContext(toolContext)
 {
 }
 
-Phase::PhaseContext::
-~PhaseContext()
+Phase::Context::
+~Context()
 {
 }
 
-Tool::ClangResolver const *Phase::PhaseContext::
-clangResolver(Phase::PhaseEnvironment const &phaseEnvironment)
+Tool::ClangResolver const *Phase::Context::
+clangResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_clangResolver == nullptr) {
         _clangResolver = Tool::ClangResolver::Create(phaseEnvironment);
@@ -45,8 +45,8 @@ clangResolver(Phase::PhaseEnvironment const &phaseEnvironment)
     return _clangResolver.get();
 }
 
-Tool::CopyResolver const *Phase::PhaseContext::
-copyResolver(Phase::PhaseEnvironment const &phaseEnvironment)
+Tool::CopyResolver const *Phase::Context::
+copyResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_copyResolver == nullptr) {
         _copyResolver = Tool::CopyResolver::Create(phaseEnvironment);
@@ -55,8 +55,8 @@ copyResolver(Phase::PhaseEnvironment const &phaseEnvironment)
     return _copyResolver.get();
 }
 
-Tool::InfoPlistResolver const *Phase::PhaseContext::
-infoPlistResolver(Phase::PhaseEnvironment const &phaseEnvironment)
+Tool::InfoPlistResolver const *Phase::Context::
+infoPlistResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_infoPlistResolver == nullptr) {
         _infoPlistResolver = Tool::InfoPlistResolver::Create(phaseEnvironment);
@@ -65,8 +65,8 @@ infoPlistResolver(Phase::PhaseEnvironment const &phaseEnvironment)
     return _infoPlistResolver.get();
 }
 
-Tool::ScriptResolver const *Phase::PhaseContext::
-scriptResolver(Phase::PhaseEnvironment const &phaseEnvironment)
+Tool::ScriptResolver const *Phase::Context::
+scriptResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_scriptResolver == nullptr) {
         _scriptResolver = Tool::ScriptResolver::Create(phaseEnvironment);
@@ -75,8 +75,8 @@ scriptResolver(Phase::PhaseEnvironment const &phaseEnvironment)
     return _scriptResolver.get();
 }
 
-Tool::TouchResolver const *Phase::PhaseContext::
-touchResolver(Phase::PhaseEnvironment const &phaseEnvironment)
+Tool::TouchResolver const *Phase::Context::
+touchResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_touchResolver == nullptr) {
         _touchResolver = Tool::TouchResolver::Create(phaseEnvironment);
@@ -85,8 +85,8 @@ touchResolver(Phase::PhaseEnvironment const &phaseEnvironment)
     return _touchResolver.get();
 }
 
-Tool::ToolResolver const *Phase::PhaseContext::
-toolResolver(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &identifier)
+Tool::ToolResolver const *Phase::Context::
+toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier)
 {
     if (_toolResolvers.find(identifier) == _toolResolvers.end()) {
         std::unique_ptr<Tool::ToolResolver> toolResolver = Tool::ToolResolver::Create(phaseEnvironment, identifier);
@@ -100,9 +100,9 @@ toolResolver(Phase::PhaseEnvironment const &phaseEnvironment, std::string const 
     return &_toolResolvers.at(identifier);
 }
 
-bool Phase::PhaseContext::
+bool Phase::Context::
 resolveBuildFile(
-    Phase::PhaseEnvironment const &phaseEnvironment,
+    Phase::Environment const &phaseEnvironment,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
     pbxproj::PBX::BuildFile::shared_ptr const &buildFile,

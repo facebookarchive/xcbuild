@@ -8,8 +8,8 @@
  */
 
 #include <pbxbuild/Phase/ProductTypeResolver.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Tool/InfoPlistResolver.h>
 #include <pbxbuild/Tool/TouchResolver.h>
 #include <pbxbuild/Tool/ToolResolver.h>
@@ -29,7 +29,7 @@ Phase::ProductTypeResolver::
 }
 
 bool Phase::ProductTypeResolver::
-resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext) const
+resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext) const
 {
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();

@@ -7,12 +7,12 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/Environment.h>
 
 namespace Phase = pbxbuild::Phase;
 
-Phase::PhaseEnvironment::
-PhaseEnvironment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::TargetEnvironment const &targetEnvironment) :
+Phase::Environment::
+Environment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::TargetEnvironment const &targetEnvironment) :
     _buildEnvironment (buildEnvironment),
     _buildContext     (buildContext),
     _target           (target),
@@ -20,12 +20,12 @@ PhaseEnvironment(BuildEnvironment const &buildEnvironment, BuildContext const &b
 {
 }
 
-Phase::PhaseEnvironment::
-~PhaseEnvironment()
+Phase::Environment::
+~Environment()
 {
 }
 
-std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::PhaseEnvironment::
+std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::Environment::
 resolveReferenceProxy(pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy, pbxsetting::Environment const &environment) const
 {
     pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy = referenceProxy->remoteRef();
@@ -47,13 +47,13 @@ resolveReferenceProxy(pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceP
     return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, remote->second, remoteEnvironment->environment());
 }
 
-std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::PhaseEnvironment::
+std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::Environment::
 resolveFileReference(pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment) const
 {
     return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, environment);
 }
 
-pbxsetting::Level Phase::PhaseEnvironment::
+pbxsetting::Level Phase::Environment::
 VariantLevel(std::string const &variant)
 {
     return pbxsetting::Level({
@@ -63,7 +63,7 @@ VariantLevel(std::string const &variant)
     });
 }
 
-pbxsetting::Level Phase::PhaseEnvironment::
+pbxsetting::Level Phase::Environment::
 ArchitectureLevel(std::string const &arch)
 {
     return pbxsetting::Level({

@@ -90,7 +90,7 @@ resolve(
 }
 
 std::unique_ptr<InfoPlistResolver> InfoPlistResolver::
-Create(Phase::PhaseEnvironment const &phaseEnvironment)
+Create(Phase::Environment const &phaseEnvironment)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();

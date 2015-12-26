@@ -12,7 +12,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/Environment.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -46,7 +46,7 @@ public:
 
 public:
     static std::unique_ptr<HeadermapResolver>
-    Create(Phase::PhaseEnvironment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler);
+    Create(Phase::Environment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler);
 };
 
 }

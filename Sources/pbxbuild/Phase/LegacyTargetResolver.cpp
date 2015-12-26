@@ -8,8 +8,8 @@
  */
 
 #include <pbxbuild/Phase/LegacyTargetResolver.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
-#include <pbxbuild/Phase/PhaseContext.h>
+#include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
 
 namespace Phase = pbxbuild::Phase;
@@ -27,7 +27,7 @@ Phase::LegacyTargetResolver::
 }
 
 bool Phase::LegacyTargetResolver::
-resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
+resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
     Tool::ScriptResolver const *scriptResolver = phaseContext->scriptResolver(phaseEnvironment);
     if (scriptResolver == nullptr) {

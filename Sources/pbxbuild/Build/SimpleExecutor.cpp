@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/Build/SimpleExecutor.h>
-#include <pbxbuild/Phase/PhaseEnvironment.h>
+#include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
 
 #include <fstream>
@@ -55,7 +55,7 @@ build(
         }
 
         Formatter::Print(_formatter->beginCheckDependencies(target));
-        Phase::PhaseEnvironment phaseEnvironment = Phase::PhaseEnvironment(buildEnvironment, buildContext, target, *targetEnvironment);
+        Phase::Environment phaseEnvironment = Phase::Environment(buildEnvironment, buildContext, target, *targetEnvironment);
         Phase::PhaseInvocations phaseInvocations = Phase::PhaseInvocations::Create(phaseEnvironment, target);
         Formatter::Print(_formatter->finishCheckDependencies(target));
 
