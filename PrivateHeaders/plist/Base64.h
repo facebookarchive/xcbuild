@@ -7,20 +7,21 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __plist_Base_h
-#define __plist_Base_h
+#ifndef __plist_Base64_h
+#define __plist_Base64_h
 
-#include <memory>
+#include <plist/Base.h>
+
+#include <string>
+#include <vector>
 
 namespace plist {
 
-template<typename T, typename U>
-static inline std::unique_ptr<T>
-static_unique_pointer_cast(std::unique_ptr<U> &&p)
-{
-    return std::unique_ptr<T>(static_cast<T *>(p.release()));
-}
+struct Base64 {
+    static void Decode(std::string const &in, std::vector<uint8_t> &out);
+    static std::string Encode(std::vector<uint8_t> const &in);
+};
 
 }
 
-#endif  // !__plist_Base_h
+#endif  // !__plist_Base64_h

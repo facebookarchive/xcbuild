@@ -14,8 +14,10 @@
 
 #include <plist/Objects.h>
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static inline ABPRecordType
 __ABPByteToRecordType(uint8_t byte)

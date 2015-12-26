@@ -29,30 +29,6 @@ find_library(CORE_SERVICES CoreServices)
 include_directories(Headers)
 include_directories(PrivateHeaders)
 
-set(libninja_SOURCES
-    Sources/ninja/Writer.cpp
-    Sources/ninja/Value.cpp
-    )
-
-set(libutil_SOURCES
-    Sources/libutil/FSUtil.cpp
-    Sources/libutil/SysUtil.cpp
-    Sources/libutil/Crypto.cpp
-    Sources/libutil/Options.cpp
-    #
-    Sources/libutil/Subprocess.cpp
-    #
-    Sources/libutil/Base64.cpp
-    Sources/libutil/ISODate.cpp
-    Sources/libutil/Wildcard.cpp
-    Sources/libutil/UnixTime.cpp
-    #
-    Sources/libutil/bsd_glob.c
-    Sources/libutil/rfc4648.c
-    #
-    Sources/libutil/md5.c
-    )
-
 set(libplist_SOURCES
     Sources/plist/Array.cpp
     Sources/plist/Boolean.cpp
@@ -64,6 +40,11 @@ set(libplist_SOURCES
     Sources/plist/Object.cpp
     Sources/plist/Real.cpp
     Sources/plist/String.cpp
+    #
+    Sources/plist/Base64.cpp
+    Sources/plist/rfc4648.c
+    Sources/plist/ISODate.cpp
+    Sources/plist/UnixTime.cpp
     #
     Sources/plist/Keys/Unpack.cpp
     #
@@ -90,6 +71,25 @@ set(libplist_SOURCES
     Sources/plist/Format/ASCII.cpp
     #
     Sources/plist/Format/Any.cpp
+    )
+
+set(libninja_SOURCES
+    Sources/ninja/Writer.cpp
+    Sources/ninja/Value.cpp
+    )
+
+set(libutil_SOURCES
+    Sources/libutil/FSUtil.cpp
+    Sources/libutil/SysUtil.cpp
+    Sources/libutil/Options.cpp
+    #
+    Sources/libutil/Subprocess.cpp
+    #
+    Sources/libutil/Wildcard.cpp
+    #
+    Sources/libutil/bsd_glob.c
+    #
+    Sources/libutil/md5.c
     )
 
 set(libbuiltin_SOURCES
@@ -288,11 +288,11 @@ set(libxcdriver_SOURCES
 add_library(ninja SHARED ${libninja_SOURCES})
 target_link_libraries(ninja)
 
+add_library(plist SHARED ${libplist_SOURCES})
+target_link_libraries(plist expat)
+
 add_library(util SHARED ${libutil_SOURCES})
 target_link_libraries(util)
-
-add_library(plist SHARED ${libplist_SOURCES})
-target_link_libraries(plist util expat)
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting util plist)
@@ -322,7 +322,7 @@ add_library(xcdriver SHARED ${libxcdriver_SOURCES})
 target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
 
 add_executable(plutil Tools/plutil.cpp)
-target_link_libraries(plutil plist)
+target_link_libraries(plutil plist util)
 add_executable(xcbuild Tools/xcbuild.cpp)
 target_link_libraries(xcbuild xcdriver)
 

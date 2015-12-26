@@ -8,9 +8,18 @@
  */
 
 #include <plist/Data.h>
+#include <plist/Base64.h>
 
 using plist::Object;
 using plist::Data;
+
+using plist::Base64;
+
+Data::
+Data(std::string const &value)
+{
+    Base64::Decode(value, _value);
+}
 
 std::unique_ptr<Data> Data::
 New(std::vector<uint8_t> const &value)
@@ -36,10 +45,22 @@ New(void const *bytes, size_t length)
     return std::unique_ptr<Data>(new Data(bytes, length));
 }
 
+void Data::
+setBase64Value(std::string const &value)
+{
+    Base64::Decode(value, _value);
+}
+
+std::string Data::
+base64Value() const
+{
+    return Base64::Encode(_value);
+}
+
 std::unique_ptr<Object> Data::
 _copy() const
 {
-    return libutil::static_unique_pointer_cast<Object>(Data::New(_value));
+    return plist::static_unique_pointer_cast<Object>(Data::New(_value));
 }
 
 std::unique_ptr<Data> Data::

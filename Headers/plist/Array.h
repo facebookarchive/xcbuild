@@ -13,6 +13,8 @@
 #include <plist/Base.h>
 #include <plist/Object.h>
 
+#include <vector>
+
 namespace plist {
 
 class Array : public Object {
@@ -127,7 +129,7 @@ protected:
 
 public:
     std::unique_ptr<Array> copy() const
-    { return libutil::static_unique_pointer_cast<Array>(_copy()); }
+    { return plist::static_unique_pointer_cast<Array>(_copy()); }
 
 public:
     virtual bool equals(Object const *obj) const

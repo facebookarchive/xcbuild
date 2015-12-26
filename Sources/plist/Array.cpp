@@ -25,7 +25,7 @@ _copy() const
     for (size_t n = 0; n < count(); n++) {
         result->append(value(n)->copy());
     }
-    return libutil::static_unique_pointer_cast<Object>(std::move(result));
+    return plist::static_unique_pointer_cast<Object>(std::move(result));
 }
 
 void Array::

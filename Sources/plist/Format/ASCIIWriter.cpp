@@ -10,6 +10,8 @@
 #include <plist/Format/ASCIIWriter.h>
 #include <plist/Objects.h>
 
+#include <cassert>
+
 using plist::Format::ASCIIWriter;
 using plist::Object;
 using plist::String;

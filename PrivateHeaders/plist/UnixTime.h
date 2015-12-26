@@ -7,18 +7,18 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __libutil_Crypto_h
-#define __libutil_Crypto_h
+#ifndef __plist_UnixTime_h
+#define __plist_UnixTime_h
 
-#include <libutil/Base.h>
+#include <plist/Base.h>
 
-namespace libutil {
+namespace plist {
 
-class Crypto {
-public:
-    static bool GetRandom(size_t count, void *buffer);
+struct UnixTime {
+    static void Decode(uint64_t in, struct tm &out);
+    static uint64_t Encode(struct tm const &in);
 };
 
 }
 
-#endif  // !__libutil_Crypto_h
+#endif  // !__plist_UnixTime_h

@@ -13,6 +13,10 @@
 #include <plist/Base.h>
 #include <expat.h>
 
+#include <vector>
+#include <string>
+#include <unordered_map>
+
 namespace plist {
 namespace Format {
 

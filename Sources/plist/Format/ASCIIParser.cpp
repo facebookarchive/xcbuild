@@ -10,6 +10,8 @@
 #include <plist/Format/ASCIIParser.h>
 #include <plist/Objects.h>
 
+#include <cstdlib>
+
 using plist::Format::ASCIIParser;
 using plist::Object;
 using plist::String;

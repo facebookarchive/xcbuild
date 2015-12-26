@@ -61,7 +61,7 @@ protected:
 
 public:
     std::unique_ptr<Null> copy() const
-    { return libutil::static_unique_pointer_cast<Null>(_copy()); }
+    { return plist::static_unique_pointer_cast<Null>(_copy()); }
 
 public:
     virtual bool equals(Object const *obj) const

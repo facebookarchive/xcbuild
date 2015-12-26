@@ -13,6 +13,8 @@
 #include <plist/Base.h>
 #include <plist/Object.h>
 
+#include <ctime>
+
 namespace plist {
 
 class Date : public Object {
@@ -25,15 +27,8 @@ public:
     {
     }
 
-    Date(std::string const &value)
-    {
-        libutil::ISODate::Decode(value, _value);
-    }
-
-    Date(uint64_t value = 0)
-    {
-        libutil::UnixTime::Decode(value, _value);
-    }
+    Date(std::string const &value);
+    Date(uint64_t value = 0);
 
 public:
     inline struct tm const &value() const
@@ -47,26 +42,12 @@ public:
     }
 
 public:
-    inline void setStringValue(std::string const &value)
-    {
-        libutil::ISODate::Decode(value, _value);
-    }
-
-    inline std::string stringValue() const
-    {
-        return libutil::ISODate::Encode(_value);
-    }
+    void setStringValue(std::string const &value);
+    std::string stringValue() const;
 
 public:
-    inline void setUnixTimeValue(uint64_t value)
-    {
-        libutil::UnixTime::Decode(value, _value);
-    }
-
-    inline uint64_t unixTimeValue() const
-    {
-        return libutil::UnixTime::Encode(_value);
-    }
+    void setUnixTimeValue(uint64_t value);
+    uint64_t unixTimeValue() const;
 
 public:
     static std::unique_ptr<Date> New(struct tm const &value = tm());
@@ -92,7 +73,7 @@ protected:
 
 public:
     std::unique_ptr<Date> copy() const
-    { return libutil::static_unique_pointer_cast<Date>(_copy()); }
+    { return plist::static_unique_pointer_cast<Date>(_copy()); }
 
 public:
     virtual bool equals(Object const *obj) const

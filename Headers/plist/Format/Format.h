@@ -13,6 +13,7 @@
 #include <plist/Base.h>
 #include <plist/Object.h>
 
+#include <vector>
 #include <fstream>
 
 namespace plist {

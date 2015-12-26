@@ -14,6 +14,10 @@
 #include <plist/Object.h>
 #include <plist/Dictionary.h>
 
+#include <string>
+#include <vector>
+#include <unordered_set>
+
 namespace plist {
 namespace Keys {
 

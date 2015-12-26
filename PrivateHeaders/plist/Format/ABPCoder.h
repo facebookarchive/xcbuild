@@ -15,6 +15,9 @@
 #include <plist/Dictionary.h>
 #include <plist/Format/abplist-format.h>
 
+#include <unordered_map>
+#include <unordered_set>
+
 typedef struct _ABPContext ABPContext;
 
 typedef enum _ABPRecordType {

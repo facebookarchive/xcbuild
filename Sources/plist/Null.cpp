@@ -23,7 +23,7 @@ New()
 std::unique_ptr<Object> Null::
 _copy() const
 {
-    return libutil::static_unique_pointer_cast<Object>(Null::New());
+    return plist::static_unique_pointer_cast<Object>(Null::New());
 }
 
 std::unique_ptr<Null> Null::

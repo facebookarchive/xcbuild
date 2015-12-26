@@ -12,6 +12,8 @@
 
 #include <plist/Base.h>
 
+#include <vector>
+
 namespace plist {
 namespace Format {
 

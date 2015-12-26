@@ -40,7 +40,7 @@ equals(Object const *obj) const
 std::unique_ptr<Object> Boolean::
 _copy() const
 {
-    return libutil::static_unique_pointer_cast<Object>(Boolean::New(value()));
+    return plist::static_unique_pointer_cast<Object>(Boolean::New(value()));
 }
 
 std::unique_ptr<Boolean> Boolean::

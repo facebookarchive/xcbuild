@@ -7,18 +7,22 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __libutil_ISODate_h
-#define __libutil_ISODate_h
+#include <plist/UnixTime.h>
 
-#include <libutil/Base.h>
+#include <ctime>
 
-namespace libutil {
+using plist::UnixTime;
 
-struct ISODate {
-    static void Decode(std::string const &in, struct tm &out);
-    static std::string Encode(struct tm const &in);
-};
-
+void UnixTime::
+Decode(uint64_t in, struct tm &out)
+{
+    time_t t = in;
+    ::gmtime_r(&t, &out);
 }
 
-#endif  // !__libutil_ISODate_h
+uint64_t UnixTime::
+Encode(struct tm const &in)
+{
+    struct tm copy = in;
+    return ::mktime(&copy);
+}

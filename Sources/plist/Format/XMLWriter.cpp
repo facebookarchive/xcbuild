@@ -10,6 +10,8 @@
 #include <plist/Format/XMLWriter.h>
 #include <plist/Objects.h>
 
+#include <cassert>
+
 using plist::Format::XMLWriter;
 using plist::Object;
 using plist::String;

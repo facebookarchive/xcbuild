@@ -10,6 +10,8 @@
 #include <plist/Real.h>
 #include <plist/String.h>
 
+#include <cstdlib>
+
 using plist::Object;
 using plist::Real;
 using plist::String;
@@ -23,7 +25,7 @@ New(double value)
 std::unique_ptr<Object> Real::
 _copy() const
 {
-    return libutil::static_unique_pointer_cast<Object>(Real::New(value()));
+    return plist::static_unique_pointer_cast<Object>(Real::New(value()));
 }
 
 std::unique_ptr<Real> Real::

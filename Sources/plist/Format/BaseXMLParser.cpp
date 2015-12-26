@@ -10,6 +10,7 @@
 #include <plist/Format/BaseXMLParser.h>
 
 #include <cerrno>
+#include <cstdlib>
 
 using plist::Format::BaseXMLParser;
 
@@ -99,7 +100,7 @@ error(std::string const &format, ...)
     _error = std::string(buf);
 
     if (buf != sErrorMessage) {
-        std::free(buf);
+        ::free(buf);
     }
 
     stop();

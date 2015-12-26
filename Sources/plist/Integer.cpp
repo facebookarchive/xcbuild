@@ -10,6 +10,8 @@
 #include <plist/Integer.h>
 #include <plist/String.h>
 
+#include <cstdlib>
+
 using plist::Object;
 using plist::Integer;
 using plist::String;
@@ -23,7 +25,7 @@ New(int64_t value)
 std::unique_ptr<Object> Integer::
 _copy() const
 {
-    return libutil::static_unique_pointer_cast<Object>(Integer::New(value()));
+    return plist::static_unique_pointer_cast<Object>(Integer::New(value()));
 }
 
 std::unique_ptr<Integer> Integer::

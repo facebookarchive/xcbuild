@@ -13,6 +13,8 @@
 #include <plist/Base.h>
 #include <plist/Object.h>
 
+#include <vector>
+
 namespace plist {
 
 class Data : public Object {
@@ -30,10 +32,7 @@ public:
     {
     }
 
-    Data(std::string const &value)
-    {
-        libutil::Base64::Decode(value, _value);
-    }
+    Data(std::string const &value);
 
     Data(void const *bytes, size_t length)
     {
@@ -63,17 +62,9 @@ public:
         std::memcpy(&_value[0], bytes, length);
     }
 
-
 public:
-    inline void setBase64Value(std::string const &value)
-    {
-        libutil::Base64::Decode(value, _value);
-    }
-
-    inline std::string base64Value() const
-    {
-        return libutil::Base64::Encode(_value);
-    }
+    void setBase64Value(std::string const &value);
+    std::string base64Value() const;
 
 public:
     static std::unique_ptr<Data> New(std::vector<uint8_t> const &value = std::vector<uint8_t>());
@@ -100,7 +91,7 @@ protected:
 
 public:
     std::unique_ptr<Data> copy() const
-    { return libutil::static_unique_pointer_cast<Data>(_copy()); }
+    { return plist::static_unique_pointer_cast<Data>(_copy()); }
 
 public:
     virtual bool equals(Object const *obj) const

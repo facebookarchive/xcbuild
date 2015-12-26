@@ -36,7 +36,7 @@ New(std::string &&value)
 std::unique_ptr<Object> String::
 _copy() const
 {
-    return libutil::static_unique_pointer_cast<Object>(String::New(value()));
+    return plist::static_unique_pointer_cast<Object>(String::New(value()));
 }
 
 std::unique_ptr<String> String::

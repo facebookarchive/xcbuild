@@ -13,6 +13,9 @@
 #include <plist/Base.h>
 #include <plist/Object.h>
 
+#include <vector>
+#include <map>
+
 namespace plist {
 
 class Dictionary : public Object {
@@ -154,7 +157,7 @@ protected:
 
 public:
     std::unique_ptr<Dictionary> copy() const
-    { return libutil::static_unique_pointer_cast<Dictionary>(_copy()); }
+    { return plist::static_unique_pointer_cast<Dictionary>(_copy()); }
 
 public:
     virtual bool equals(Object const *obj) const

@@ -12,8 +12,8 @@
 
 #include <plist/Base.h>
 
-#include <cstring>
-#include <ctime>
+#include <memory>
+#include <string>
 
 namespace plist {
 
