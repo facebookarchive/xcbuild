@@ -25,8 +25,8 @@ private:
     };
 
 private:
-    string_set                 _included;
-    std::vector <File>         _files;
+    libutil::string_set        _included;
+    std::vector<File>          _files;
     File                       _current;
     std::stringstream          _processed;
     bool                       _stop;

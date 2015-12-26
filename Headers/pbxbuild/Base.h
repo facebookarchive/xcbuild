@@ -16,12 +16,4 @@
 #include <xcscheme/xcscheme.h>
 #include <xcworkspace/xcworkspace.h>
 
-namespace pbxbuild {
-
-using string_vector = libutil::string_vector;
-using string_set = libutil::string_set;
-using string_map = libutil::string_map;
-
-}
-
 #endif  // !__pbxbuild_Base_h

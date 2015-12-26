@@ -16,9 +16,6 @@
 using pbxsetting::ConfigFile;
 using pbxsetting::Level;
 using pbxsetting::Setting;
-using libutil::string_set;
-using libutil::string_map;
-using libutil::string_vector;
 using libutil::trim;
 using libutil::FSUtil;
 
