@@ -19,6 +19,7 @@ ProductType::ProductType() :
     _hasInfoPlist                          (false),
     _hasInfoPlistStrings                   (false),
     _isWrapper                             (false),
+    _isJava                                (false),
     _supportsZeroLink                      (false),
     _alwaysPerformSeparateStrip            (false),
     _wantsSimpleTargetEditing              (false),
@@ -58,7 +59,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     if (!Specification::parse(context, dict, seen, false))
         return false;
 
-    auto unpack = plist::Keys::Unpack("BuildPhase", dict, seen);
+    auto unpack = plist::Keys::Unpack("ProductType", dict, seen);
 
     auto DTN  = unpack.cast <plist::String> ("DefaultTargetName");
     auto DBP  = unpack.cast <plist::Dictionary> ("DefaultBuildProperties");
@@ -68,6 +69,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto HIP  = unpack.coerce <plist::Boolean> ("HasInfoPlist");
     auto HIPS = unpack.coerce <plist::Boolean> ("HasInfoPlistStrings");
     auto IW   = unpack.coerce <plist::Boolean> ("IsWrapper");
+    auto IJ   = unpack.coerce <plist::Boolean> ("IsJava");
     auto SZL  = unpack.coerce <plist::Boolean> ("SupportsZeroLink");
     auto APSS = unpack.coerce <plist::Boolean> ("AlwaysPerformSeparateStrip");
     auto WSTE = unpack.coerce <plist::Boolean> ("WantsSimpleTargetEditing");
@@ -129,6 +131,10 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
 
     if (IW != nullptr) {
         _isWrapper = IW->value();
+    }
+
+    if (IJ != nullptr) {
+        _isJava = IJ->value();
     }
 
     if (SZL != nullptr) {
@@ -199,6 +205,7 @@ inherit(ProductType::shared_ptr const &b)
     _hasInfoPlist                           = base->hasInfoPlist();
     _hasInfoPlistStrings                    = base->hasInfoPlistStrings();
     _isWrapper                              = base->isWrapper();
+    _isJava                                 = base->isJava();
     _supportsZeroLink                       = base->supportsZeroLink();
     _alwaysPerformSeparateStrip             = base->alwaysPerformSeparateStrip();
     _wantsSimpleTargetEditing               = base->wantsSimpleTargetEditing();

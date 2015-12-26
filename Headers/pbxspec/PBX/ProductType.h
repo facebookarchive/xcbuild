@@ -74,6 +74,7 @@ protected:
     bool                    _hasInfoPlist;
     bool                    _hasInfoPlistStrings;
     bool                    _isWrapper;
+    bool                    _isJava;
     bool                    _supportsZeroLink;
     bool                    _alwaysPerformSeparateStrip;
     bool                    _wantsSimpleTargetEditing;
@@ -128,6 +129,10 @@ public:
 public:
     inline bool isWrapper() const
     { return _isWrapper; }
+
+public:
+    inline bool isJava() const
+    { return _isJava; }
 
 public:
     inline bool supportsZeroLink() const
