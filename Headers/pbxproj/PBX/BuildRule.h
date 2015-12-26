@@ -20,12 +20,12 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    std::string   _compilerSpec;
-    std::string   _filePatterns;
-    std::string   _fileType;
-    std::string   _script;
-    string_vector _outputFiles;
-    bool          _isEditable;
+    std::string            _compilerSpec;
+    std::string            _filePatterns;
+    std::string            _fileType;
+    std::string            _script;
+    libutil::string_vector _outputFiles;
+    bool                   _isEditable;
 
 public:
     BuildRule();
@@ -46,9 +46,7 @@ public:
     { return _script; }
 
 public:
-    inline string_vector const &outputFiles() const
-    { return _outputFiles; }
-    inline string_vector &outputFiles()
+    inline libutil::string_vector const &outputFiles() const
     { return _outputFiles; }
 
 public:
