@@ -12,16 +12,15 @@
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/HeaderMap.h>
 
-using pbxbuild::Tool::SearchPaths;
-using pbxbuild::Tool::ToolContext;
+namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 
-SearchPaths::
+Tool::SearchPaths::
 SearchPaths()
 {
 }
 
-SearchPaths::
+Tool::SearchPaths::
 ~SearchPaths()
 {
 }
@@ -49,7 +48,7 @@ AppendPaths(std::vector<std::string> *args, std::string const &working, std::vec
     }
 }
 
-std::vector<std::string> SearchPaths::
+std::vector<std::string> Tool::SearchPaths::
 ExpandRecursive(pbxsetting::Environment const &environment, std::vector<std::string> const &paths, std::string const &workingDirectory)
 {
     std::vector<std::string> result;
@@ -57,10 +56,10 @@ ExpandRecursive(pbxsetting::Environment const &environment, std::vector<std::str
     return result;
 }
 
-void SearchPaths::
-Resolve(ToolContext *toolContext, pbxsetting::Environment const &environment)
+void Tool::SearchPaths::
+Resolve(Tool::ToolContext *toolContext, pbxsetting::Environment const &environment)
 {
-    SearchPaths *searchPaths = &toolContext->searchPaths();
+    Tool::SearchPaths *searchPaths = &toolContext->searchPaths();
     std::string const &workingDirectory = toolContext->workingDirectory();
 
     std::vector<std::string> *headerSearchPaths = &searchPaths->headerSearchPaths();

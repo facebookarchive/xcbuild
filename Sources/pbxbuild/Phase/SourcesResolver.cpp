@@ -23,7 +23,6 @@
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
-namespace Tool = pbxbuild::Tool;
 using pbxbuild::TypeResolvedFile;
 
 Phase::SourcesResolver::

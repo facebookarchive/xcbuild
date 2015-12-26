@@ -9,15 +9,15 @@
 
 #include <pbxbuild/Tool/ToolContext.h>
 
-using pbxbuild::Tool::ToolContext;
+namespace Tool = pbxbuild::Tool;
 
-ToolContext::
+Tool::ToolContext::
 ToolContext(std::string const &workingDirectory) :
     _workingDirectory(workingDirectory)
 {
 }
 
-ToolContext::
+Tool::ToolContext::
 ~ToolContext()
 {
 }

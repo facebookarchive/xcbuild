@@ -11,12 +11,10 @@
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 
-using pbxbuild::Tool::OptionsResult;
-using pbxbuild::Tool::ToolEnvironment;
-using pbxbuild::Tool::SearchPaths;
+namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 
-OptionsResult::
+Tool::OptionsResult::
 OptionsResult(std::vector<std::string> const &arguments, std::unordered_map<std::string, std::string> const &environment, std::vector<std::string> const &linkerArgs) :
     _arguments  (arguments),
     _environment(environment),
@@ -24,7 +22,7 @@ OptionsResult(std::vector<std::string> const &arguments, std::unordered_map<std:
 {
 }
 
-OptionsResult::
+Tool::OptionsResult::
 ~OptionsResult()
 {
 }
@@ -88,7 +86,7 @@ AddOptionArgumentValues(std::vector<std::string> *arguments, pbxsetting::Environ
         (option->type() == "PathList" || option->type() == "pathlist")) {
         std::vector<std::string> values = pbxsetting::Type::ParseList(environment.resolve(option->name()));
         if (option->flattenRecursiveSearchPathsInValue()) {
-            values = SearchPaths::ExpandRecursive(environment, values, workingDirectory);
+            values = Tool::SearchPaths::ExpandRecursive(environment, values, workingDirectory);
         }
 
         for (std::string const &value : values) {
@@ -135,8 +133,8 @@ AddOptionValuesArguments(std::vector<std::string> *arguments, pbxsetting::Enviro
     }
 }
 
-OptionsResult OptionsResult::
-Create(ToolEnvironment const &toolEnvironment, std::string const &workingDirectory, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environmentVariables)
+Tool::OptionsResult Tool::OptionsResult::
+Create(Tool::ToolEnvironment const &toolEnvironment, std::string const &workingDirectory, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environmentVariables)
 {
     pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
     std::unordered_set<std::string> const &deletedProperties = toolEnvironment.tool()->deletedProperties();
@@ -237,6 +235,6 @@ Create(ToolEnvironment const &toolEnvironment, std::string const &workingDirecto
         // TODO(grp): Use PropertyOption::isInputDependency(), PropertyOption::outputDependencies(), etc..
     }
 
-    return OptionsResult(arguments, toolEnvironmentVariables, linkerArgs);
+    return Tool::OptionsResult(arguments, toolEnvironmentVariables, linkerArgs);
 }
 

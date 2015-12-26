@@ -10,10 +10,10 @@
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <sstream>
 
-using pbxbuild::Tool::ToolEnvironment;
+namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 
-ToolEnvironment::
+Tool::ToolEnvironment::
 ToolEnvironment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &toolEnvironment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs) :
     _tool           (tool),
     _toolEnvironment(toolEnvironment),
@@ -22,12 +22,12 @@ ToolEnvironment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environm
 {
 }
 
-ToolEnvironment::
+Tool::ToolEnvironment::
 ~ToolEnvironment()
 {
 }
 
-std::vector<std::string> ToolEnvironment::
+std::vector<std::string> Tool::ToolEnvironment::
 inputs(std::string const &workingDirectory) const
 {
     std::vector<std::string> inputs;
@@ -37,7 +37,7 @@ inputs(std::string const &workingDirectory) const
     return inputs;
 }
 
-std::vector<std::string> ToolEnvironment::
+std::vector<std::string> Tool::ToolEnvironment::
 outputs(std::string const &workingDirectory) const
 {
     std::vector<std::string> outputs;
@@ -47,7 +47,7 @@ outputs(std::string const &workingDirectory) const
     return outputs;
 }
 
-ToolEnvironment ToolEnvironment::
+Tool::ToolEnvironment Tool::ToolEnvironment::
 Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs)
 {
     // TODO(grp); Match inputs with allowed tool input file types.
@@ -87,6 +87,6 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
     toolEnvironment.insertFront(tool->defaultSettings(), true);
     toolEnvironment.insertFront(pbxsetting::Level(toolSettings), false);
 
-    return ToolEnvironment(tool, toolEnvironment, inputs, outputs);
+    return Tool::ToolEnvironment(tool, toolEnvironment, inputs, outputs);
 }
 

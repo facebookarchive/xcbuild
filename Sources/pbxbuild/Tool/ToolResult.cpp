@@ -13,14 +13,11 @@
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <sstream>
 
-using pbxbuild::Tool::ToolResult;
-using pbxbuild::Tool::ToolEnvironment;
-using pbxbuild::Tool::OptionsResult;
-using pbxbuild::Tool::CommandLineResult;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
 
-std::string ToolResult::
-LogMessage(ToolEnvironment const &toolEnvironment)
+std::string Tool::ToolResult::
+LogMessage(Tool::ToolEnvironment const &toolEnvironment)
 {
     pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
     std::string ruleName = environment.expand(toolEnvironment.tool()->ruleName());

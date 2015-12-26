@@ -15,23 +15,19 @@
 #include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::Tool::CopyResolver;
-using pbxbuild::Tool::ToolResult;
-using pbxbuild::Tool::ToolEnvironment;
-using pbxbuild::Tool::OptionsResult;
-using pbxbuild::Tool::CommandLineResult;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
 using libutil::FSUtil;
 
-CopyResolver::
+Tool::CopyResolver::
 CopyResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
     _tool(tool)
 {
 }
 
-void CopyResolver::
+void Tool::CopyResolver::
 resolve(
-    ToolContext *toolContext,
+    Tool::ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &inputFile,
     std::string const &outputDirectory,
@@ -41,9 +37,9 @@ resolve(
     std::string outputFile = outputDirectory + "/" + FSUtil::GetBaseName(inputFile);
     std::string logMessage = logMessageTitle + " " + FSUtil::GetRelativePath(inputFile, toolContext->workingDirectory()) + " " + outputFile;
 
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, { inputFile }, { outputFile });
-    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "", { inputFile, outputDirectory });
+    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, environment, { inputFile }, { outputFile });
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
+    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "", { inputFile, outputDirectory });
 
     ToolInvocation invocation;
     invocation.executable() = commandLine.executable();
@@ -56,18 +52,18 @@ resolve(
     toolContext->invocations().push_back(invocation);
 }
 
-std::unique_ptr<CopyResolver> CopyResolver::
+std::unique_ptr<Tool::CopyResolver> Tool::CopyResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    pbxspec::PBX::Tool::shared_ptr copyTool = buildEnvironment.specManager()->tool(CopyResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr copyTool = buildEnvironment.specManager()->tool(Tool::CopyResolver::ToolIdentifier(), targetEnvironment.specDomains());
     if (copyTool == nullptr) {
         fprintf(stderr, "warning: could not find copy tool\n");
         return nullptr;
     }
 
-    return std::unique_ptr<CopyResolver>(new CopyResolver(copyTool));
+    return std::unique_ptr<Tool::CopyResolver>(new Tool::CopyResolver(copyTool));
 }
 

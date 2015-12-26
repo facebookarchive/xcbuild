@@ -15,11 +15,11 @@
 #include <sstream>
 #include <iomanip>
 
-using pbxbuild::Tool::PrecompiledHeaderInfo;
+namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 using libutil::Wildcard;
 
-PrecompiledHeaderInfo::
+Tool::PrecompiledHeaderInfo::
 PrecompiledHeaderInfo(std::string const &prefixHeader, pbxspec::PBX::FileType::shared_ptr const &fileType, std::vector<std::string> const &arguments, std::vector<std::string> const &relevantArguments) :
     _prefixHeader     (prefixHeader),
     _fileType         (fileType),
@@ -28,31 +28,31 @@ PrecompiledHeaderInfo(std::string const &prefixHeader, pbxspec::PBX::FileType::s
 {
 }
 
-PrecompiledHeaderInfo::
+Tool::PrecompiledHeaderInfo::
 ~PrecompiledHeaderInfo()
 {
 }
 
-pbxsetting::Value PrecompiledHeaderInfo::
+pbxsetting::Value Tool::PrecompiledHeaderInfo::
 logicalOutputPath() const
 {
     pbxsetting::Value outputDirectory = pbxsetting::Value::Parse("$(PRECOMP_DESTINATION_DIR)/$(PRODUCT_NAME)-") + pbxsetting::Value::String(hash());
     return outputDirectory + pbxsetting::Value::String("/" + FSUtil::GetBaseName(_prefixHeader));
 }
 
-pbxsetting::Value PrecompiledHeaderInfo::
+pbxsetting::Value Tool::PrecompiledHeaderInfo::
 compileOutputPath() const
 {
     return logicalOutputPath() + pbxsetting::Value::String(".pch");
 }
 
-pbxsetting::Value PrecompiledHeaderInfo::
+pbxsetting::Value Tool::PrecompiledHeaderInfo::
 serializedOutputPath() const
 {
     return logicalOutputPath() + pbxsetting::Value::String(".hash-criteria");
 }
 
-std::string PrecompiledHeaderInfo::
+std::string Tool::PrecompiledHeaderInfo::
 hash() const
 {
     // TODO(grp): Generate this hash properly.
@@ -72,7 +72,7 @@ hash() const
     return ss.str();
 }
 
-std::string PrecompiledHeaderInfo::
+std::string Tool::PrecompiledHeaderInfo::
 serialize() const
 {
     std::string result;
@@ -89,7 +89,7 @@ serialize() const
     return result;
 }
 
-PrecompiledHeaderInfo PrecompiledHeaderInfo::
+Tool::PrecompiledHeaderInfo Tool::PrecompiledHeaderInfo::
 Create(pbxspec::PBX::Compiler::shared_ptr const &compiler, std::string const &prefixHeader, pbxspec::PBX::FileType::shared_ptr const &fileType, std::vector<std::string> const &arguments)
 {
     std::vector<std::string> relevantArguments;
@@ -107,5 +107,5 @@ Create(pbxspec::PBX::Compiler::shared_ptr const &compiler, std::string const &pr
         }
     }
 
-    return PrecompiledHeaderInfo(prefixHeader, fileType, arguments, relevantArguments);
+    return Tool::PrecompiledHeaderInfo(prefixHeader, fileType, arguments, relevantArguments);
 }

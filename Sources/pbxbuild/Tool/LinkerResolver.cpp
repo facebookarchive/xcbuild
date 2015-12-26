@@ -15,30 +15,25 @@
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::Tool::LinkerResolver;
-using pbxbuild::Tool::ToolResult;
-using pbxbuild::Tool::ToolEnvironment;
-using pbxbuild::Tool::ToolContext;
-using pbxbuild::Tool::OptionsResult;
-using pbxbuild::Tool::CommandLineResult;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
-LinkerResolver::
+Tool::LinkerResolver::
 LinkerResolver(pbxspec::PBX::Linker::shared_ptr const &linker) :
     _linker(linker)
 {
 }
 
-LinkerResolver::
+Tool::LinkerResolver::
 ~LinkerResolver()
 {
 }
 
-void LinkerResolver::
+void Tool::LinkerResolver::
 resolve(
-    ToolContext *toolContext,
+    Tool::ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     std::vector<std::string> const &inputFiles,
     std::vector<TypeResolvedFile> const &inputLibraries,
@@ -52,7 +47,7 @@ resolve(
 
     special.insert(special.end(), additionalArguments.begin(), additionalArguments.end());
 
-    if (_linker->supportsInputFileList() || _linker->identifier() == LinkerResolver::LibtoolToolIdentifier()) {
+    if (_linker->supportsInputFileList() || _linker->identifier() == Tool::LinkerResolver::LibtoolToolIdentifier()) {
         std::string path = environment.expand(pbxsetting::Value::Parse("$(LINK_FILE_LIST_$(variant)_$(arch))"));
         std::string contents;
         for (std::string const &input : inputFiles) {
@@ -92,13 +87,13 @@ resolve(
     }
 
     std::unordered_set<std::string> removed;
-    if (_linker->identifier() == LinkerResolver::LipoToolIdentifier()) {
+    if (_linker->identifier() == Tool::LinkerResolver::LipoToolIdentifier()) {
         // This is weird, but this flag is invalid yet is in the specification.
         removed.insert("-arch_only");
     }
 
     std::string dependencyInfo;
-    if (_linker->identifier() == LinkerResolver::LinkerToolIdentifier()) {
+    if (_linker->identifier() == Tool::LinkerResolver::LinkerToolIdentifier()) {
         dependencyInfo = environment.expand(_linker->dependencyInfoFile());
 
         special.push_back("-Xlinker");
@@ -108,10 +103,10 @@ resolve(
     }
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_linker);
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, inputFiles, { output });
-    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
-    std::string logMessage = ToolResult::LogMessage(toolEnvironment);
+    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(tool, environment, inputFiles, { output });
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
+    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
+    std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);
 
     ToolInvocation invocation;
     invocation.executable() = commandLine.executable();
@@ -126,7 +121,7 @@ resolve(
     toolContext->invocations().push_back(invocation);
 }
 
-std::unique_ptr<LinkerResolver> LinkerResolver::
+std::unique_ptr<Tool::LinkerResolver> Tool::LinkerResolver::
 Create(Phase::Environment const &phaseEnvironment, std::string const &identifier)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
@@ -138,6 +133,6 @@ Create(Phase::Environment const &phaseEnvironment, std::string const &identifier
         return nullptr;
     }
 
-    return std::unique_ptr<LinkerResolver>(new LinkerResolver(linker));
+    return std::unique_ptr<Tool::LinkerResolver>(new Tool::LinkerResolver(linker));
 }
 

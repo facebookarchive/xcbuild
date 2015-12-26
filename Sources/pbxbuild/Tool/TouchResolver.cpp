@@ -15,28 +15,24 @@
 #include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::Tool::TouchResolver;
-using pbxbuild::Tool::ToolEnvironment;
-using pbxbuild::Tool::OptionsResult;
-using pbxbuild::Tool::CommandLineResult;
-using pbxbuild::Tool::ToolResult;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
 using libutil::FSUtil;
 
-TouchResolver::
+Tool::TouchResolver::
 TouchResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
     _tool(tool)
 {
 }
 
-TouchResolver::
+Tool::TouchResolver::
 ~TouchResolver()
 {
 }
 
-void TouchResolver::
+void Tool::TouchResolver::
 resolve(
-    ToolContext *toolContext,
+    Tool::ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &input,
     std::vector<std::string> const &dependencies) const
@@ -44,9 +40,9 @@ resolve(
     std::string logMessage = "Touch " + input;
 
     /* Treat the input as an output since it's what gets modified by the touch. */
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, { }, { });
-    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, "/usr/bin/touch", { "-c", input });
+    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, environment, { }, { });
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
+    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/usr/bin/touch", { "-c", input });
 
     std::vector<std::string> inputDependencies;
     for (std::string const &dependency : dependencies) {
@@ -66,17 +62,17 @@ resolve(
     toolContext->invocations().push_back(invocation);
 }
 
-std::unique_ptr<TouchResolver> TouchResolver::
+std::unique_ptr<Tool::TouchResolver> Tool::TouchResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    pbxspec::PBX::Tool::shared_ptr touchTool = buildEnvironment.specManager()->tool(TouchResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr touchTool = buildEnvironment.specManager()->tool(Tool::TouchResolver::ToolIdentifier(), targetEnvironment.specDomains());
     if (touchTool == nullptr) {
         fprintf(stderr, "warning: could not find touch tool\n");
         return nullptr;
     }
 
-    return std::unique_ptr<TouchResolver>(new TouchResolver(touchTool));
+    return std::unique_ptr<Tool::TouchResolver>(new Tool::TouchResolver(touchTool));
 }

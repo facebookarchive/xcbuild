@@ -9,14 +9,14 @@
 
 #include <pbxbuild/Tool/HeadermapInfo.h>
 
-using pbxbuild::Tool::HeadermapInfo;
+namespace Tool = pbxbuild::Tool;
 
-HeadermapInfo::
+Tool::HeadermapInfo::
 HeadermapInfo()
 {
 }
 
-HeadermapInfo::
+Tool::HeadermapInfo::
 ~HeadermapInfo()
 {
 }

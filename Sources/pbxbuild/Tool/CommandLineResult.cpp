@@ -12,25 +12,23 @@
 #include <pbxbuild/Tool/ToolEnvironment.h>
 #include <sstream>
 
-using pbxbuild::Tool::CommandLineResult;
-using pbxbuild::Tool::OptionsResult;
-using pbxbuild::Tool::ToolEnvironment;
+namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 
-CommandLineResult::
+Tool::CommandLineResult::
 CommandLineResult(std::string const &executable, std::vector<std::string> const &arguments) :
     _executable(executable),
     _arguments (arguments)
 {
 }
 
-CommandLineResult::
+Tool::CommandLineResult::
 ~CommandLineResult()
 {
 }
 
-CommandLineResult CommandLineResult::
-Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::string const &executable, std::vector<std::string> const &specialArguments, std::unordered_set<std::string> const &removed)
+Tool::CommandLineResult Tool::CommandLineResult::
+Create(Tool::ToolEnvironment const &toolEnvironment, Tool::OptionsResult options, std::string const &executable, std::vector<std::string> const &specialArguments, std::unordered_set<std::string> const &removed)
 {
     pbxspec::PBX::Tool::shared_ptr tool = toolEnvironment.tool();
 
@@ -76,5 +74,5 @@ Create(ToolEnvironment const &toolEnvironment, OptionsResult options, std::strin
     std::string invocationExecutable = (!arguments.empty() ? arguments.front() : "");
     std::vector<std::string> invocationArguments = std::vector<std::string>(arguments.begin() + (!arguments.empty() ? 1 : 0), arguments.end());
 
-    return CommandLineResult(invocationExecutable, invocationArguments);
+    return Tool::CommandLineResult(invocationExecutable, invocationArguments);
 }

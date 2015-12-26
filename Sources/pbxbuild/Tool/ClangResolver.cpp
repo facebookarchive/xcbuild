@@ -19,26 +19,18 @@
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::Tool::ClangResolver;
-using pbxbuild::Tool::ToolEnvironment;
-using pbxbuild::Tool::OptionsResult;
-using pbxbuild::Tool::CommandLineResult;
-using pbxbuild::Tool::CompilationInfo;
-using pbxbuild::Tool::HeadermapInfo;
-using pbxbuild::Tool::PrecompiledHeaderInfo;
-using pbxbuild::Tool::SearchPaths;
-using pbxbuild::Tool::ToolContext;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
-ClangResolver::
+Tool::ClangResolver::
 ClangResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler) :
     _compiler(compiler)
 {
 }
 
-ClangResolver::
+Tool::ClangResolver::
 ~ClangResolver()
 {
 }
@@ -76,7 +68,7 @@ AppendCompoundFlags(std::vector<std::string> *args, std::vector<std::string> con
 }
 
 static void
-AppendPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, SearchPaths const &searchPaths, HeadermapInfo const &headermapInfo)
+AppendPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, Tool::SearchPaths const &searchPaths, Tool::HeadermapInfo const &headermapInfo)
 {
     AppendCompoundFlags(args, headermapInfo.systemHeadermapFiles(), "-I", true);
     AppendCompoundFlags(args, headermapInfo.userHeadermapFiles(), "-iquote", false);
@@ -183,11 +175,11 @@ CompileLogMessage(
     return logMessage;
 }
 
-void ClangResolver::
+void Tool::ClangResolver::
 resolvePrecompiledHeader(
-    ToolContext *toolContext,
+    Tool::ToolContext *toolContext,
     pbxsetting::Environment const &environment,
-    PrecompiledHeaderInfo const &precompiledHeaderInfo
+    Tool::PrecompiledHeaderInfo const &precompiledHeaderInfo
 ) const
 {
     std::string const &input = precompiledHeaderInfo.prefixHeader();
@@ -195,10 +187,10 @@ resolvePrecompiledHeader(
     std::string output = environment.expand(precompiledHeaderInfo.compileOutputPath());
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, { input }, { output });
+    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(tool, environment, { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
-    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
+    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
 
     std::vector<std::string> arguments = precompiledHeaderInfo.arguments();
     AppendDependencyInfoFlags(&arguments, _compiler, env);
@@ -227,9 +219,9 @@ resolvePrecompiledHeader(
     toolContext->invocations().push_back(invocation);
 }
 
-void ClangResolver::
+void Tool::ClangResolver::
 resolveSource(
-    ToolContext *toolContext,
+    Tool::ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     TypeResolvedFile const &inputFile,
     std::vector<std::string> const &inputArguments,
@@ -237,7 +229,7 @@ resolveSource(
     std::string const &outputBaseName
 ) const
 {
-    HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
+    Tool::HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
 
     std::string resolvedOutputDirectory = environment.expand(_compiler->outputDir());
     if (resolvedOutputDirectory.empty()) {
@@ -255,11 +247,11 @@ resolveSource(
     pbxspec::PBX::FileType::shared_ptr const &fileType = inputFile.fileType();
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(tool, environment, { input }, { output });
+    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(tool, environment, { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
 
-    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
+    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
 
     std::vector<std::string> inputDependencies;
     inputDependencies.insert(inputDependencies.end(), headermapInfo.systemHeadermapFiles().begin(), headermapInfo.systemHeadermapFiles().end());
@@ -275,7 +267,7 @@ resolveSource(
 
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(env.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
     std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");
-    std::shared_ptr<PrecompiledHeaderInfo> precompiledHeaderInfo = nullptr;
+    std::shared_ptr<Tool::PrecompiledHeaderInfo> precompiledHeaderInfo = nullptr;
 
     if (!prefixHeader.empty()) {
         std::string prefixHeaderFile = toolContext->workingDirectory() + "/" + prefixHeader;
@@ -287,7 +279,7 @@ resolveSource(
             // Added below, but need to have here in case it affects the precompiled header (as it often does).
             precompiledHeaderArguments.insert(precompiledHeaderArguments.end(), inputArguments.begin(), inputArguments.end());
 
-            precompiledHeaderInfo = std::make_shared<PrecompiledHeaderInfo>(PrecompiledHeaderInfo::Create(_compiler, prefixHeaderFile, fileType, precompiledHeaderArguments));
+            precompiledHeaderInfo = std::make_shared<Tool::PrecompiledHeaderInfo>(PrecompiledHeaderInfo::Create(_compiler, prefixHeaderFile, fileType, precompiledHeaderArguments));
             AppendPrefixHeaderFlags(&arguments, env.expand(precompiledHeaderInfo->logicalOutputPath()));
             inputDependencies.push_back(env.expand(precompiledHeaderInfo->compileOutputPath()));
         } else {
@@ -320,7 +312,7 @@ resolveSource(
     auto variantArchitectureKey = std::make_pair(environment.resolve("variant"), environment.resolve("arch"));
     toolContext->variantArchitectureInvocations()[variantArchitectureKey].push_back(invocation);
 
-    CompilationInfo *compilationInfo = &toolContext->compilationInfo();
+    Tool::CompilationInfo *compilationInfo = &toolContext->compilationInfo();
 
     /* If we have precompiled header info, create an invocation for the precompiled header. */
     if (precompiledHeaderInfo != nullptr) {
@@ -350,7 +342,7 @@ resolveSource(
     compilationInfo->linkerArguments().insert(options.linkerArgs().begin(), options.linkerArgs().end());
 }
 
-std::unique_ptr<ClangResolver> ClangResolver::
+std::unique_ptr<Tool::ClangResolver> Tool::ClangResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
     BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
@@ -366,5 +358,5 @@ Create(Phase::Environment const &phaseEnvironment)
         return nullptr;
     }
 
-    return std::unique_ptr<ClangResolver>(new ClangResolver(defaultCompiler));
+    return std::unique_ptr<Tool::ClangResolver>(new Tool::ClangResolver(defaultCompiler));
 }

@@ -15,36 +15,31 @@
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/ToolContext.h>
 
-using pbxbuild::Tool::ToolResolver;
-using pbxbuild::Tool::ToolEnvironment;
-using pbxbuild::Tool::CommandLineResult;
-using pbxbuild::Tool::OptionsResult;
-using pbxbuild::Tool::ToolResult;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
-using pbxbuild::Tool::SearchPaths;
 
-ToolResolver::
+Tool::ToolResolver::
 ToolResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
     _tool(tool)
 {
 }
 
-ToolResolver::
+Tool::ToolResolver::
 ~ToolResolver()
 {
 }
 
-void ToolResolver::
+void Tool::ToolResolver::
 resolve(
-    ToolContext *toolContext,
+    Tool::ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     std::vector<std::string> const &inputs,
     std::vector<std::string> const &outputs,
     std::string const &logMessage) const
 {
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, environment, inputs, outputs);
-    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options);
+    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, environment, inputs, outputs);
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
+    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
     std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));
 
     ToolInvocation invocation;
@@ -58,7 +53,7 @@ resolve(
     toolContext->invocations().push_back(invocation);
 }
 
-std::unique_ptr<ToolResolver> ToolResolver::
+std::unique_ptr<Tool::ToolResolver> Tool::ToolResolver::
 Create(Phase::Environment const &phaseEnvironment, std::string const &identifier)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
@@ -76,5 +71,5 @@ Create(Phase::Environment const &phaseEnvironment, std::string const &identifier
         return nullptr;
     }
 
-    return std::unique_ptr<ToolResolver>(new ToolResolver(tool));
+    return std::unique_ptr<Tool::ToolResolver>(new Tool::ToolResolver(tool));
 }

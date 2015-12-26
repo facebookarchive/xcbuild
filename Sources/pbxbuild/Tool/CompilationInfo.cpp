@@ -9,14 +9,14 @@
 
 #include <pbxbuild/Tool/CompilationInfo.h>
 
-using pbxbuild::Tool::CompilationInfo;
+namespace Tool = pbxbuild::Tool;
 
-CompilationInfo::
+Tool::CompilationInfo::
 CompilationInfo()
 {
 }
 
-CompilationInfo::
+Tool::CompilationInfo::
 ~CompilationInfo()
 {
 }

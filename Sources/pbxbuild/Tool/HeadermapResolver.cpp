@@ -14,17 +14,14 @@
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/HeaderMap.h>
 
-using pbxbuild::Tool::HeadermapResolver;
-using pbxbuild::Tool::HeadermapInfo;
-using pbxbuild::Tool::SearchPaths;
-using pbxbuild::Tool::ToolContext;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
 using AuxiliaryFile = pbxbuild::ToolInvocation::AuxiliaryFile;
 using pbxbuild::HeaderMap;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
-HeadermapResolver::
+Tool::HeadermapResolver::
 HeadermapResolver(pbxspec::PBX::Tool::shared_ptr const &tool, pbxspec::PBX::Compiler::shared_ptr const &compiler, pbxspec::Manager::shared_ptr const &specManager) :
     _tool       (tool),
     _compiler   (compiler),
@@ -33,7 +30,7 @@ HeadermapResolver(pbxspec::PBX::Tool::shared_ptr const &tool, pbxspec::PBX::Comp
 }
 
 static std::vector<std::string>
-HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting::Environment const &environment, pbxproj::PBX::Target::shared_ptr const &target, SearchPaths const &searchPaths, std::string const &workingDirectory)
+HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting::Environment const &environment, pbxproj::PBX::Target::shared_ptr const &target, Tool::SearchPaths const &searchPaths, std::string const &workingDirectory)
 {
     std::unordered_set<std::string> allHeaderSearchPaths;
     std::vector<std::string> orderedHeaderSearchPaths;
@@ -68,9 +65,9 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
     return orderedHeaderSearchPaths;
 }
 
-void HeadermapResolver::
+void Tool::HeadermapResolver::
 resolve(
-    ToolContext *toolContext,
+    Tool::ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::Target::shared_ptr const &target
 ) const
@@ -227,22 +224,22 @@ resolve(
 
     toolContext->invocations().push_back(invocation);
 
-    HeadermapInfo *headermapInfo = &toolContext->headermapInfo();
+    Tool::HeadermapInfo *headermapInfo = &toolContext->headermapInfo();
     headermapInfo->systemHeadermapFiles().insert(headermapInfo->systemHeadermapFiles().end(), systemHeadermapFiles.begin(), systemHeadermapFiles.end());
     headermapInfo->userHeadermapFiles().insert(headermapInfo->userHeadermapFiles().end(), userHeadermapFiles.begin(), userHeadermapFiles.end());
 }
 
-std::unique_ptr<HeadermapResolver> HeadermapResolver::
+std::unique_ptr<Tool::HeadermapResolver> Tool::HeadermapResolver::
 Create(Phase::Environment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool(HeadermapResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool(Tool::HeadermapResolver::ToolIdentifier(), targetEnvironment.specDomains());
     if (headermapTool == nullptr) {
         fprintf(stderr, "warning: could not find headermap tool\n");
         return nullptr;
     }
 
-    return std::unique_ptr<HeadermapResolver>(new HeadermapResolver(headermapTool, compiler, buildEnvironment.specManager()));
+    return std::unique_ptr<Tool::HeadermapResolver>(new Tool::HeadermapResolver(headermapTool, compiler, buildEnvironment.specManager()));
 }

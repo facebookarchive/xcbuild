@@ -15,27 +15,23 @@
 #include <pbxbuild/Tool/ToolContext.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::Tool::InfoPlistResolver;
-using pbxbuild::Tool::ToolEnvironment;
-using pbxbuild::Tool::OptionsResult;
-using pbxbuild::Tool::CommandLineResult;
-using pbxbuild::Tool::ToolResult;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
 
-InfoPlistResolver::
+Tool::InfoPlistResolver::
 InfoPlistResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
     _tool(tool)
 {
 }
 
-InfoPlistResolver::
+Tool::InfoPlistResolver::
 ~InfoPlistResolver()
 {
 }
 
-void InfoPlistResolver::
+void Tool::InfoPlistResolver::
 resolve(
-    ToolContext *toolContext,
+    Tool::ToolContext *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &input) const
 {
@@ -64,10 +60,10 @@ resolve(
 
     std::string infoPlistPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("INFOPLIST_PATH");
 
-    ToolEnvironment toolEnvironment = ToolEnvironment::Create(_tool, env, { toolContext->workingDirectory() + "/" + input }, { infoPlistPath });
-    OptionsResult options = OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    CommandLineResult commandLine = CommandLineResult::Create(toolEnvironment, options, std::string());
-    std::string logMessage = ToolResult::LogMessage(toolEnvironment);
+    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, env, { toolContext->workingDirectory() + "/" + input }, { infoPlistPath });
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
+    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, std::string());
+    std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);
 
     /* Pass all build settings for expansion. */
     std::unordered_map<std::string, std::string> environmentVariables = options.environment();
@@ -89,17 +85,17 @@ resolve(
     toolContext->invocations().push_back(invocation);
 }
 
-std::unique_ptr<InfoPlistResolver> InfoPlistResolver::
+std::unique_ptr<Tool::InfoPlistResolver> Tool::InfoPlistResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    pbxspec::PBX::Tool::shared_ptr infoPlistTool = buildEnvironment.specManager()->tool(InfoPlistResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr infoPlistTool = buildEnvironment.specManager()->tool(Tool::InfoPlistResolver::ToolIdentifier(), targetEnvironment.specDomains());
     if (infoPlistTool == nullptr) {
         fprintf(stderr, "warning: could not find info plist tool\n");
         return nullptr;
     }
 
-    return std::unique_ptr<InfoPlistResolver>(new InfoPlistResolver(infoPlistTool));
+    return std::unique_ptr<Tool::InfoPlistResolver>(new Tool::InfoPlistResolver(infoPlistTool));
 }
