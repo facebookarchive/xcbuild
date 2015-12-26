@@ -29,7 +29,7 @@ public:
     std::unordered_set<T> adjacent(T const &node) const;
 
 public:
-    std::vector<T> ordered(void) const;
+    std::pair<bool, std::vector<T>> ordered(void) const;
 };
 
 }

@@ -43,7 +43,13 @@ build(
 {
     Formatter::Print(_formatter->begin(buildContext));
 
-    for (pbxproj::PBX::Target::shared_ptr const &target : targetGraph.ordered()) {
+    std::pair<bool, std::vector<pbxproj::PBX::Target::shared_ptr>> orderedTargets = targetGraph.ordered();
+    if (!orderedTargets.first) {
+        fprintf(stderr, "error: cycle detected in target dependencies\n");
+        return false;
+    }
+
+    for (pbxproj::PBX::Target::shared_ptr const &target : orderedTargets.second) {
         Formatter::Print(_formatter->beginTarget(buildContext, target));
 
         std::unique_ptr<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
@@ -72,7 +78,7 @@ build(
     return true;
 }
 
-static std::vector<Tool::Invocation const>
+static std::pair<bool, std::vector<Tool::Invocation const>>
 SortInvocations(std::vector<Tool::Invocation const> const &invocations)
 {
     std::unordered_map<std::string, Tool::Invocation const *> outputToInvocation;
@@ -113,10 +119,16 @@ SortInvocations(std::vector<Tool::Invocation const> const &invocations)
     }
 
     std::vector<Tool::Invocation const> result;
-    for (Tool::Invocation const *invocation : graph.ordered()) {
+
+    std::pair<bool, std::vector<Tool::Invocation const *>> orderedInvocations = graph.ordered();
+    if (!orderedInvocations.first) {
+        return std::make_pair(false, result);
+    }
+
+    for (Tool::Invocation const *invocation : orderedInvocations.second) {
         result.push_back(*invocation);
     }
-    return result;
+    return std::make_pair(true, result);
 }
 
 std::pair<bool, std::vector<Tool::Invocation const>> SimpleExecutor::
@@ -178,8 +190,13 @@ buildTarget(
     // TODO(grp): Create product structure.
     Formatter::Print(_formatter->finishCreateProductStructure(target));
 
-    std::vector<Tool::Invocation const> orderedInvocations = SortInvocations(invocations);
-    for (Tool::Invocation const &invocation : orderedInvocations) {
+    std::pair<bool, std::vector<Tool::Invocation const>> orderedInvocations = SortInvocations(invocations);
+    if (!orderedInvocations.first) {
+        fprintf(stderr, "error: cycle detected building invocation graph\n");
+        return std::make_pair(false, std::vector<Tool::Invocation const>());
+    }
+
+    for (Tool::Invocation const &invocation : orderedInvocations.second) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
         if (invocation.executable().empty()) {
             continue;
