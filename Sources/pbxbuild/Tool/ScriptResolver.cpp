@@ -64,7 +64,7 @@ resolve(
         environmentVariables = environment.computeValues(pbxsetting::Condition::Empty());
     }
 
-    std::string fullWorkingDirectory = toolContext->workingDirectory() + "/" + legacyTarget->buildWorkingDirectory();
+    std::string fullWorkingDirectory = FSUtil::ResolveRelativePath(legacyTarget->buildWorkingDirectory(), toolContext->workingDirectory());
 
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { }, { });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, fullWorkingDirectory, nullptr, environmentVariables);

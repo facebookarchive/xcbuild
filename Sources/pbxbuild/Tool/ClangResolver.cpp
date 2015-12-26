@@ -269,7 +269,7 @@ resolveSource(
     std::shared_ptr<Tool::PrecompiledHeaderInfo> precompiledHeaderInfo = nullptr;
 
     if (!prefixHeader.empty()) {
-        std::string prefixHeaderFile = toolContext->workingDirectory() + "/" + prefixHeader;
+        std::string prefixHeaderFile = FSUtil::ResolveRelativePath(prefixHeader, toolContext->workingDirectory());
 
         if (precompilePrefixHeader) {
             std::vector<std::string> precompiledHeaderArguments;

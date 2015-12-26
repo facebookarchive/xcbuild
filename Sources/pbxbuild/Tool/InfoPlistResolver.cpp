@@ -16,6 +16,7 @@
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
+using libutil::FSUtil;
 
 Tool::InfoPlistResolver::
 InfoPlistResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
@@ -59,7 +60,7 @@ resolve(
 
     std::string infoPlistPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("INFOPLIST_PATH");
 
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, env, { toolContext->workingDirectory() + "/" + input }, { infoPlistPath });
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, env, { FSUtil::ResolveRelativePath(input, toolContext->workingDirectory()) }, { infoPlistPath });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, std::string());
     std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);

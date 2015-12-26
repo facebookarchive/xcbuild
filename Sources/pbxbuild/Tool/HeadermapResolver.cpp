@@ -49,13 +49,13 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
     }
 
     for (std::string const &path : searchPaths.userHeaderSearchPaths()) {
-        std::string fullPath = workingDirectory + "/" + path;
+        std::string fullPath = FSUtil::ResolveRelativePath(path, workingDirectory);
         if (allHeaderSearchPaths.insert(fullPath).second) {
             orderedHeaderSearchPaths.push_back(fullPath);
         }
     }
     for (std::string const &path : searchPaths.headerSearchPaths()) {
-        std::string fullPath = workingDirectory + "/" + path;
+        std::string fullPath = FSUtil::ResolveRelativePath(path, workingDirectory);
         if (allHeaderSearchPaths.insert(fullPath).second) {
             orderedHeaderSearchPaths.push_back(fullPath);
         }
