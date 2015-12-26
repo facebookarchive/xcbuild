@@ -31,7 +31,7 @@ public:
     { return _productType; }
 
 public:
-    bool resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext) const;
+    bool resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext) const;
 };
 
 }

@@ -12,25 +12,24 @@
 #include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
 
-using pbxbuild::Phase::ShellScriptResolver;
-using pbxbuild::Phase::PhaseContext;
-using pbxbuild::Tool::ScriptResolver;
+namespace Phase = pbxbuild::Phase;
+namespace Tool = pbxbuild::Tool;
 
-ShellScriptResolver::
+Phase::ShellScriptResolver::
 ShellScriptResolver(pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase) :
     _buildPhase(buildPhase)
 {
 }
 
-ShellScriptResolver::
+Phase::ShellScriptResolver::
 ~ShellScriptResolver()
 {
 }
 
-bool ShellScriptResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
+bool Phase::ShellScriptResolver::
+resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
 {
-    ScriptResolver const *scriptResolver = phaseContext->scriptResolver(phaseEnvironment);
+    Tool::ScriptResolver const *scriptResolver = phaseContext->scriptResolver(phaseEnvironment);
     if (scriptResolver == nullptr) {
         return false;
     }

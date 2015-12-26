@@ -13,29 +13,28 @@
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
-using pbxbuild::Phase::HeadersResolver;
-using pbxbuild::Phase::PhaseContext;
-using pbxbuild::Tool::CopyResolver;
+namespace Phase = pbxbuild::Phase;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::TypeResolvedFile;
 
-HeadersResolver::
+Phase::HeadersResolver::
 HeadersResolver(pbxproj::PBX::HeadersBuildPhase::shared_ptr const &buildPhase) :
     _buildPhase(buildPhase)
 {
 }
 
-HeadersResolver::
+Phase::HeadersResolver::
 ~HeadersResolver()
 {
 }
 
-bool HeadersResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
+bool Phase::HeadersResolver::
+resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
 {
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
-    CopyResolver const *copyResolver = phaseContext->copyResolver(phaseEnvironment);
+    Tool::CopyResolver const *copyResolver = phaseContext->copyResolver(phaseEnvironment);
     if (copyResolver == nullptr) {
         return false;
     }

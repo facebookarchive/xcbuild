@@ -14,26 +14,22 @@
 #include <pbxbuild/Tool/TouchResolver.h>
 #include <pbxbuild/Tool/ToolResolver.h>
 
-using pbxbuild::Phase::ProductTypeResolver;
-using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::Phase::PhaseContext;
-using pbxbuild::Tool::InfoPlistResolver;
-using pbxbuild::Tool::TouchResolver;
-using pbxbuild::Tool::ToolResolver;
+namespace Phase = pbxbuild::Phase;
+namespace Tool = pbxbuild::Tool;
 
-ProductTypeResolver::
+Phase::ProductTypeResolver::
 ProductTypeResolver(pbxspec::PBX::ProductType::shared_ptr const &productType) :
     _productType(productType)
 {
 }
 
-ProductTypeResolver::
+Phase::ProductTypeResolver::
 ~ProductTypeResolver()
 {
 }
 
-bool ProductTypeResolver::
-resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext) const
+bool Phase::ProductTypeResolver::
+resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext) const
 {
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
@@ -49,7 +45,7 @@ resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext) co
             // TODO(grp): Preprocess Info.plist using configuration from other build settings.
         }
 
-        if (InfoPlistResolver const *infoPlistResolver = phaseContext->infoPlistResolver(phaseEnvironment)) {
+        if (Tool::InfoPlistResolver const *infoPlistResolver = phaseContext->infoPlistResolver(phaseEnvironment)) {
             /* Create the Info.plist. Note that INFOPLIST_FILE is the input, and INFOPLIST_PATH is the output. */
             infoPlistResolver->resolve(&phaseContext->toolContext(), environment, environment.resolve("INFOPLIST_FILE"));
         } else {
@@ -71,7 +67,7 @@ resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext) co
     if (pbxsetting::Type::ParseBoolean(environment.resolve("VALIDATE_PRODUCT"))) {
         if (!_productType->validation().validationToolSpec().empty()) {
             std::string const &validationToolIdentifier = _productType->validation().validationToolSpec();
-            if (ToolResolver const *toolResolver = phaseContext->toolResolver(phaseEnvironment, validationToolIdentifier)) {
+            if (Tool::ToolResolver const *toolResolver = phaseContext->toolResolver(phaseEnvironment, validationToolIdentifier)) {
                 // TODO(grp): Run validation tool.
             } else {
                 fprintf(stderr, "warning: could not find validation tool %s\n", validationToolIdentifier.c_str());
@@ -83,7 +79,7 @@ resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext) co
      * Touch the final product to note the build's ultimate creation time.
      */
     if (_productType->isWrapper()) {
-        if (TouchResolver const *touchResolver = phaseContext->touchResolver(phaseEnvironment)) {
+        if (Tool::TouchResolver const *touchResolver = phaseContext->touchResolver(phaseEnvironment)) {
             touchResolver->resolve(&phaseContext->toolContext(), environment, productPath, outputs);
         } else {
             fprintf(stderr, "warning: could not find touch tool\n");
@@ -94,7 +90,7 @@ resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext) co
      * Register with launch services. This is only relevant for OS X.
      */
     if (_productType->identifier() == "com.apple.product-type.application" && targetEnvironment.sdk()->platform()->name() == "macosx") {
-        if (ToolResolver const *launchServicesResolver = phaseContext->toolResolver(phaseEnvironment, "com.apple.build-tasks.ls-register-url")) {
+        if (Tool::ToolResolver const *launchServicesResolver = phaseContext->toolResolver(phaseEnvironment, "com.apple.build-tasks.ls-register-url")) {
             // TODO(grp): Register with launch services. Note this needs the same dependencies as touch.
         } else {
             fprintf(stderr, "warning: could not find register tool\n");

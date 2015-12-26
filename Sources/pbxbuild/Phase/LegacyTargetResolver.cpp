@@ -12,25 +12,24 @@
 #include <pbxbuild/Phase/PhaseContext.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
 
-using pbxbuild::Phase::LegacyTargetResolver;
-using pbxbuild::Phase::PhaseContext;
-using pbxbuild::Tool::ScriptResolver;
+namespace Phase = pbxbuild::Phase;
+namespace Tool = pbxbuild::Tool;
 
-LegacyTargetResolver::
+Phase::LegacyTargetResolver::
 LegacyTargetResolver(pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget) :
     _legacyTarget(legacyTarget)
 {
 }
 
-LegacyTargetResolver::
+Phase::LegacyTargetResolver::
 ~LegacyTargetResolver()
 {
 }
 
-bool LegacyTargetResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
+bool Phase::LegacyTargetResolver::
+resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
 {
-    ScriptResolver const *scriptResolver = phaseContext->scriptResolver(phaseEnvironment);
+    Tool::ScriptResolver const *scriptResolver = phaseContext->scriptResolver(phaseEnvironment);
     if (scriptResolver == nullptr) {
         return false;
     }

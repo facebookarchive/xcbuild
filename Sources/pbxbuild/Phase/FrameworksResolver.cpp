@@ -19,29 +19,24 @@
 #include <pbxbuild/Tool/LinkerResolver.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 
-using pbxbuild::Phase::FrameworksResolver;
-using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::Phase::SourcesResolver;
-using pbxbuild::Phase::PhaseContext;
-using pbxbuild::Tool::LinkerResolver;
-using pbxbuild::Tool::ToolResolver;
-using pbxbuild::Tool::CompilationInfo;
+namespace Phase = pbxbuild::Phase;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
-FrameworksResolver::
+Phase::FrameworksResolver::
 FrameworksResolver(pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase) :
     _buildPhase(buildPhase)
 {
 }
 
-FrameworksResolver::
+Phase::FrameworksResolver::
 ~FrameworksResolver()
 {
 }
 
 static std::vector<pbxbuild::TypeResolvedFile>
-InputFiles(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase, pbxsetting::Environment const &environment)
+InputFiles(Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::FrameworksBuildPhase::shared_ptr const &buildPhase, pbxsetting::Environment const &environment)
 {
     std::vector<pbxbuild::TypeResolvedFile> files;
 
@@ -77,20 +72,20 @@ InputFiles(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::P
     return files;
 }
 
-bool FrameworksResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
+bool Phase::FrameworksResolver::
+resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    CompilationInfo const &compilationInfo = phaseContext->toolContext().compilationInfo();
+    Tool::CompilationInfo const &compilationInfo = phaseContext->toolContext().compilationInfo();
 
     std::vector<pbxbuild::ToolInvocation> invocations;
 
-    std::unique_ptr<LinkerResolver> ldResolver = LinkerResolver::Create(phaseEnvironment, LinkerResolver::LinkerToolIdentifier());
-    std::unique_ptr<LinkerResolver> libtoolResolver = LinkerResolver::Create(phaseEnvironment, LinkerResolver::LibtoolToolIdentifier());
-    std::unique_ptr<LinkerResolver> lipoResolver = LinkerResolver::Create(phaseEnvironment, LinkerResolver::LipoToolIdentifier());
-    std::unique_ptr<ToolResolver> dsymutil = ToolResolver::Create(phaseEnvironment, "com.apple.tools.dsymutil");
+    std::unique_ptr<Tool::LinkerResolver> ldResolver = Tool::LinkerResolver::Create(phaseEnvironment, Tool::LinkerResolver::LinkerToolIdentifier());
+    std::unique_ptr<Tool::LinkerResolver> libtoolResolver = Tool::LinkerResolver::Create(phaseEnvironment, Tool::LinkerResolver::LibtoolToolIdentifier());
+    std::unique_ptr<Tool::LinkerResolver> lipoResolver = Tool::LinkerResolver::Create(phaseEnvironment, Tool::LinkerResolver::LipoToolIdentifier());
+    std::unique_ptr<Tool::ToolResolver> dsymutil = Tool::ToolResolver::Create(phaseEnvironment, "com.apple.tools.dsymutil");
     if (ldResolver == nullptr || libtoolResolver == nullptr || lipoResolver == nullptr || dsymutil == nullptr) {
         fprintf(stderr, "error: couldn't get linker tools\n");
         return false;
@@ -98,7 +93,7 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext 
 
     std::string binaryType = targetEnvironment.environment().resolve("MACH_O_TYPE");
 
-    LinkerResolver *linkerResolver = nullptr;
+    Tool::LinkerResolver *linkerResolver = nullptr;
     std::string linkerExecutable;
     std::vector<std::string> linkerArguments;
 
@@ -117,7 +112,7 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext 
 
     for (std::string const &variant : targetEnvironment.variants()) {
         pbxsetting::Environment variantEnvironment = targetEnvironment.environment();
-        variantEnvironment.insertFront(PhaseEnvironment::VariantLevel(variant), false);
+        variantEnvironment.insertFront(Phase::PhaseEnvironment::VariantLevel(variant), false);
 
         std::string variantIntermediatesName = variantEnvironment.resolve("EXECUTABLE_NAME") + variantEnvironment.resolve("EXECUTABLE_VARIANT_SUFFIX");
         std::string variantIntermediatesDirectory = variantEnvironment.resolve("OBJECT_FILE_DIR_" + variant);
@@ -130,7 +125,7 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext 
 
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment archEnvironment = variantEnvironment;
-            archEnvironment.insertFront(PhaseEnvironment::ArchitectureLevel(arch), false);
+            archEnvironment.insertFront(Phase::PhaseEnvironment::ArchitectureLevel(arch), false);
 
             std::vector<std::string> sourceOutputs;
             auto it = phaseContext->toolContext().variantArchitectureInvocations().find(std::make_pair(variant, arch));

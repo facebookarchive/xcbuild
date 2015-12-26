@@ -21,46 +21,40 @@
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 
-using pbxbuild::Phase::SourcesResolver;
-using pbxbuild::Phase::PhaseEnvironment;
-using pbxbuild::Phase::PhaseContext;
-using pbxbuild::Tool::ClangResolver;
-using pbxbuild::Tool::HeadermapResolver;
-using pbxbuild::Tool::CompilationInfo;
-using pbxbuild::Tool::HeadermapInfo;
-using pbxbuild::Tool::PrecompiledHeaderInfo;
-using pbxbuild::Tool::SearchPaths;
+namespace Phase = pbxbuild::Phase;
+namespace Tool = pbxbuild::Tool;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::TypeResolvedFile;
 
-SourcesResolver::
+Phase::SourcesResolver::
 SourcesResolver(pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase) :
     _buildPhase(buildPhase)
 {
 }
 
-SourcesResolver::
+Phase::SourcesResolver::
 ~SourcesResolver()
 {
 }
 
-bool SourcesResolver::
-resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext *phaseContext)
+bool Phase::SourcesResolver::
+resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *phaseContext)
 {
     pbxbuild::BuildEnvironment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::TargetEnvironment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    ClangResolver const *clangResolver = phaseContext->clangResolver(phaseEnvironment);
+    Tool::ClangResolver const *clangResolver = phaseContext->clangResolver(phaseEnvironment);
     if (clangResolver == nullptr) {
         return false;
     }
 
-    std::unique_ptr<HeadermapResolver> headermapResolver = HeadermapResolver::Create(phaseEnvironment, clangResolver->compiler());
+    std::unique_ptr<Tool::HeadermapResolver> headermapResolver = Tool::HeadermapResolver::Create(phaseEnvironment, clangResolver->compiler());
     if (headermapResolver == nullptr) {
         return false;
     }
 
     /* Populate the tool context with what's needed for compilation. */
-    SearchPaths::Resolve(&phaseContext->toolContext(), targetEnvironment.environment());
+    Tool::SearchPaths::Resolve(&phaseContext->toolContext(), targetEnvironment.environment());
     headermapResolver->resolve(&phaseContext->toolContext(), targetEnvironment.environment(), phaseEnvironment.target());
 
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, TypeResolvedFile> files;
@@ -81,8 +75,8 @@ resolve(pbxbuild::Phase::PhaseEnvironment const &phaseEnvironment, PhaseContext 
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment currentEnvironment = targetEnvironment.environment();
-            currentEnvironment.insertFront(PhaseEnvironment::VariantLevel(variant), false);
-            currentEnvironment.insertFront(PhaseEnvironment::ArchitectureLevel(arch), false);
+            currentEnvironment.insertFront(Phase::PhaseEnvironment::VariantLevel(variant), false);
+            currentEnvironment.insertFront(Phase::PhaseEnvironment::ArchitectureLevel(arch), false);
 
             std::string outputDirectory = currentEnvironment.expand(pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)"));
 

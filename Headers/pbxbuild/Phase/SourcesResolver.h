@@ -31,7 +31,7 @@ public:
     { return _buildPhase; }
 
 public:
-    bool resolve(PhaseEnvironment const &phaseEnvironment, PhaseContext *Context);
+    bool resolve(Phase::PhaseEnvironment const &phaseEnvironment, Phase::PhaseContext *Context);
 };
 
 }

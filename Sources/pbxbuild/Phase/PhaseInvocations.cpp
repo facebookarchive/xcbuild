@@ -20,28 +20,27 @@
 #include <pbxbuild/Phase/ShellScriptResolver.h>
 #include <pbxbuild/Tool/ToolContext.h>
 
-using pbxbuild::Phase::PhaseInvocations;
-using pbxbuild::Phase::PhaseContext;
+namespace Phase = pbxbuild::Phase;
+namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
-using pbxbuild::Tool::ToolContext;
 
-PhaseInvocations::
+Phase::PhaseInvocations::
 PhaseInvocations(std::vector<ToolInvocation const> const &invocations) :
     _invocations(invocations)
 {
 }
 
-PhaseInvocations::
+Phase::PhaseInvocations::
 ~PhaseInvocations()
 {
 }
 
-PhaseInvocations PhaseInvocations::
-Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
+Phase::PhaseInvocations Phase::PhaseInvocations::
+Create(Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
 {
     /* Create the tool context for building. */
     std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
-    PhaseContext phaseContext{ToolContext(workingDirectory)};
+    Phase::PhaseContext phaseContext{Tool::ToolContext(workingDirectory)};
 
     /* Filter build phases to ones appropriate for this target. */
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
@@ -172,6 +171,6 @@ Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_pt
             break;
     }
 
-    return PhaseInvocations(phaseContext.toolContext().invocations());
+    return Phase::PhaseInvocations(phaseContext.toolContext().invocations());
 }
 

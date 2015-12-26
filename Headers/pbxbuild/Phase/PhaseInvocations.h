@@ -32,7 +32,7 @@ public:
 
 public:
     static PhaseInvocations
-    Create(PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target);
+    Create(Phase::PhaseEnvironment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target);
 };
 
 }

@@ -19,82 +19,77 @@
 #include <pbxbuild/Target/TargetBuildRules.h>
 #include <libutil/FSUtil.h>
 
-using pbxbuild::Phase::PhaseContext;
-using pbxbuild::Tool::ToolContext;
-using pbxbuild::Tool::ClangResolver;
-using pbxbuild::Tool::CopyResolver;
-using pbxbuild::Tool::InfoPlistResolver;
-using pbxbuild::Tool::ScriptResolver;
-using pbxbuild::Tool::TouchResolver;
-using pbxbuild::Tool::ToolResolver;
+namespace Phase = pbxbuild::Phase;
+namespace Tool = pbxbuild::Tool;
+namespace Target = pbxbuild::Target;
 using libutil::FSUtil;
 
-PhaseContext::
-PhaseContext(ToolContext const &toolContext) :
+Phase::PhaseContext::
+PhaseContext(Tool::ToolContext const &toolContext) :
     _toolContext(toolContext)
 {
 }
 
-PhaseContext::
+Phase::PhaseContext::
 ~PhaseContext()
 {
 }
 
-ClangResolver const *PhaseContext::
-clangResolver(PhaseEnvironment const &phaseEnvironment)
+Tool::ClangResolver const *Phase::PhaseContext::
+clangResolver(Phase::PhaseEnvironment const &phaseEnvironment)
 {
     if (_clangResolver == nullptr) {
-        _clangResolver = ClangResolver::Create(phaseEnvironment);
+        _clangResolver = Tool::ClangResolver::Create(phaseEnvironment);
     }
 
     return _clangResolver.get();
 }
 
-CopyResolver const *PhaseContext::
-copyResolver(PhaseEnvironment const &phaseEnvironment)
+Tool::CopyResolver const *Phase::PhaseContext::
+copyResolver(Phase::PhaseEnvironment const &phaseEnvironment)
 {
     if (_copyResolver == nullptr) {
-        _copyResolver = CopyResolver::Create(phaseEnvironment);
+        _copyResolver = Tool::CopyResolver::Create(phaseEnvironment);
     }
 
     return _copyResolver.get();
 }
 
-InfoPlistResolver const *PhaseContext::
-infoPlistResolver(PhaseEnvironment const &phaseEnvironment)
+Tool::InfoPlistResolver const *Phase::PhaseContext::
+infoPlistResolver(Phase::PhaseEnvironment const &phaseEnvironment)
 {
     if (_infoPlistResolver == nullptr) {
-        _infoPlistResolver = InfoPlistResolver::Create(phaseEnvironment);
+        _infoPlistResolver = Tool::InfoPlistResolver::Create(phaseEnvironment);
     }
 
     return _infoPlistResolver.get();
 }
 
-ScriptResolver const *PhaseContext::
-scriptResolver(PhaseEnvironment const &phaseEnvironment)
+Tool::ScriptResolver const *Phase::PhaseContext::
+scriptResolver(Phase::PhaseEnvironment const &phaseEnvironment)
 {
     if (_scriptResolver == nullptr) {
-        _scriptResolver = ScriptResolver::Create(phaseEnvironment);
+        _scriptResolver = Tool::ScriptResolver::Create(phaseEnvironment);
     }
 
     return _scriptResolver.get();
 }
 
-TouchResolver const *PhaseContext::
-touchResolver(PhaseEnvironment const &phaseEnvironment)
+Tool::TouchResolver const *Phase::PhaseContext::
+touchResolver(Phase::PhaseEnvironment const &phaseEnvironment)
 {
     if (_touchResolver == nullptr) {
-        _touchResolver = TouchResolver::Create(phaseEnvironment);
+        _touchResolver = Tool::TouchResolver::Create(phaseEnvironment);
     }
 
     return _touchResolver.get();
 }
 
-ToolResolver const *PhaseContext::
-toolResolver(PhaseEnvironment const &phaseEnvironment, std::string const &identifier)
+Tool::ToolResolver const *Phase::PhaseContext::
+toolResolver(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &identifier)
 {
     if (_toolResolvers.find(identifier) == _toolResolvers.end()) {
-        std::unique_ptr<ToolResolver> toolResolver = ToolResolver::Create(phaseEnvironment, identifier);
+        std::unique_ptr<Tool::ToolResolver> toolResolver = Tool::ToolResolver::Create(phaseEnvironment, identifier);
         if (toolResolver == nullptr) {
             return nullptr;
         }
@@ -105,9 +100,9 @@ toolResolver(PhaseEnvironment const &phaseEnvironment, std::string const &identi
     return &_toolResolvers.at(identifier);
 }
 
-bool PhaseContext::
+bool Phase::PhaseContext::
 resolveBuildFile(
-    PhaseEnvironment const &phaseEnvironment,
+    Phase::PhaseEnvironment const &phaseEnvironment,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
     pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
@@ -124,7 +119,7 @@ resolveBuildFile(
     }
 
     if (buildRule != nullptr && !buildRule->script().empty()) {
-        if (ScriptResolver const *scriptResolver = this->scriptResolver(phaseEnvironment)) {
+        if (Tool::ScriptResolver const *scriptResolver = this->scriptResolver(phaseEnvironment)) {
             _scriptResolver->resolve(&_toolContext, environment, file.filePath(), buildRule);
             return true;
         } else {
@@ -144,7 +139,7 @@ resolveBuildFile(
             return false;
         }
 
-        if (toolIdentifier == ClangResolver::ToolIdentifier()) {
+        if (toolIdentifier == Tool::ClangResolver::ToolIdentifier()) {
             std::string outputBaseName;
             auto it = targetEnvironment.buildFileDisambiguation().find(buildFile);
             if (it != targetEnvironment.buildFileDisambiguation().end()) {
@@ -153,13 +148,13 @@ resolveBuildFile(
                 outputBaseName = FSUtil::GetBaseNameWithoutExtension(file.filePath());
             }
 
-            if (ClangResolver const *clangResolver = this->clangResolver(phaseEnvironment)) {
+            if (Tool::ClangResolver const *clangResolver = this->clangResolver(phaseEnvironment)) {
                 _clangResolver->resolveSource(&_toolContext, environment, file, buildFile->compilerFlags(), outputDirectory, outputBaseName);
                 return true;
             } else {
                 return false;
             }
-        } else if (toolIdentifier == CopyResolver::ToolIdentifier()) {
+        } else if (toolIdentifier == Tool::CopyResolver::ToolIdentifier()) {
             std::string logMessageTitle;
             switch (buildPhase->type()) {
                 case pbxproj::PBX::BuildPhase::kTypeHeaders:
@@ -170,7 +165,7 @@ resolveBuildFile(
                     logMessageTitle = "PBXCp";
             }
 
-            if (CopyResolver const *copyResolver = this->copyResolver(phaseEnvironment)) {
+            if (Tool::CopyResolver const *copyResolver = this->copyResolver(phaseEnvironment)) {
                 _copyResolver->resolve(&_toolContext, environment, file.filePath(), outputDirectory, logMessageTitle);
                 return true;
             } else {
@@ -179,7 +174,7 @@ resolveBuildFile(
         } else {
             std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(file.filePath());
 
-            if (ToolResolver const *toolResolver = this->toolResolver(phaseEnvironment, toolIdentifier)) {
+            if (Tool::ToolResolver const *toolResolver = this->toolResolver(phaseEnvironment, toolIdentifier)) {
                 toolResolver->resolve(&_toolContext, environment, { file.filePath() }, { outputPath });
                 return true;
             } else {

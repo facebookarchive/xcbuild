@@ -57,16 +57,16 @@ public:
     { return _toolContext; }
 
 public:
-    Tool::ClangResolver const     *clangResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::CopyResolver const      *copyResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::InfoPlistResolver const *infoPlistResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::ScriptResolver const    *scriptResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::TouchResolver const     *touchResolver(PhaseEnvironment const &phaseEnvironment);
-    Tool::ToolResolver const      *toolResolver(PhaseEnvironment const &phaseEnvironment, std::string const &identifier);
+    Tool::ClangResolver const     *clangResolver(Phase::PhaseEnvironment const &phaseEnvironment);
+    Tool::CopyResolver const      *copyResolver(Phase::PhaseEnvironment const &phaseEnvironment);
+    Tool::InfoPlistResolver const *infoPlistResolver(Phase::PhaseEnvironment const &phaseEnvironment);
+    Tool::ScriptResolver const    *scriptResolver(Phase::PhaseEnvironment const &phaseEnvironment);
+    Tool::TouchResolver const     *touchResolver(Phase::PhaseEnvironment const &phaseEnvironment);
+    Tool::ToolResolver const      *toolResolver(Phase::PhaseEnvironment const &phaseEnvironment, std::string const &identifier);
 
 public:
     bool resolveBuildFile(
-        PhaseEnvironment const &phaseEnvironment,
+        Phase::PhaseEnvironment const &phaseEnvironment,
         pbxsetting::Environment const &environment,
         pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
         pbxproj::PBX::BuildFile::shared_ptr const &buildFile,

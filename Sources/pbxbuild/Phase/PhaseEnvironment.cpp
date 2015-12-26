@@ -9,9 +9,9 @@
 
 #include <pbxbuild/Phase/PhaseEnvironment.h>
 
-using pbxbuild::Phase::PhaseEnvironment;
+namespace Phase = pbxbuild::Phase;
 
-PhaseEnvironment::
+Phase::PhaseEnvironment::
 PhaseEnvironment(BuildEnvironment const &buildEnvironment, BuildContext const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::TargetEnvironment const &targetEnvironment) :
     _buildEnvironment (buildEnvironment),
     _buildContext     (buildContext),
@@ -20,12 +20,12 @@ PhaseEnvironment(BuildEnvironment const &buildEnvironment, BuildContext const &b
 {
 }
 
-PhaseEnvironment::
+Phase::PhaseEnvironment::
 ~PhaseEnvironment()
 {
 }
 
-std::unique_ptr<pbxbuild::TypeResolvedFile> PhaseEnvironment::
+std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::PhaseEnvironment::
 resolveReferenceProxy(pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy, pbxsetting::Environment const &environment) const
 {
     pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy = referenceProxy->remoteRef();
@@ -47,13 +47,13 @@ resolveReferenceProxy(pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceP
     return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, remote->second, remoteEnvironment->environment());
 }
 
-std::unique_ptr<pbxbuild::TypeResolvedFile> PhaseEnvironment::
+std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::PhaseEnvironment::
 resolveFileReference(pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment) const
 {
     return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, environment);
 }
 
-pbxsetting::Level PhaseEnvironment::
+pbxsetting::Level Phase::PhaseEnvironment::
 VariantLevel(std::string const &variant)
 {
     return pbxsetting::Level({
@@ -63,7 +63,7 @@ VariantLevel(std::string const &variant)
     });
 }
 
-pbxsetting::Level PhaseEnvironment::
+pbxsetting::Level Phase::PhaseEnvironment::
 ArchitectureLevel(std::string const &arch)
 {
     return pbxsetting::Level({
