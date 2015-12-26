@@ -61,17 +61,15 @@ comment(std::string const &text)
 }
 
 void Writer::
-subninja(std::string const &path)
+subninja(ninja::Value const &path)
 {
-    /* No need to escape, must be a real path. */
-    command("subninja", path);
+    command("subninja", path.resolve(Value::EscapeMode::PathList));
 }
 
 void Writer::
-include(std::string const &path)
+include(ninja::Value const &path)
 {
-    /* No need to escape, must be a real path. */
-    command("include", path);
+    command("include", path.resolve(Value::EscapeMode::PathList));
 }
 
 void Writer::

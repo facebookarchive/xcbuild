@@ -54,12 +54,12 @@ public:
     /*
      * Write a subninja directive to load a scoped Ninja file.
      */
-    void subninja(std::string const &path);
+    void subninja(ninja::Value const &path);
 
     /*
      * Write an include directive to load an unscoped Ninja file.
      */
-    void include(std::string const &path);
+    void include(ninja::Value const &path);
 
     /*
      * Define the concatenative list of default Ninja targets.

@@ -262,7 +262,7 @@ build(
          * Load the Ninja file generated for this target.
          */
         std::string targetPath = TargetNinjaPath(target, *targetEnvironment);
-        writer.subninja(targetPath);
+        writer.subninja(ninja::Value::String(targetPath));
 
         /*
          * As described above, the target's finish depends on all of the invocation outputs.

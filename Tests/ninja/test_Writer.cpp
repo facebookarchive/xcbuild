@@ -79,23 +79,23 @@ TEST(Writer, Command)
 TEST(Writer, Subninja)
 {
     Writer subninja;
-    subninja.subninja("simple/path");
+    subninja.subninja(Value::String("simple/path"));
     EXPECT_EQ(subninja.serialize(), "subninja simple/path\n\n");
 
     Writer subninja2;
-    subninja2.subninja("e$caped/pa:th");
-    EXPECT_EQ(subninja2.serialize(), "subninja e$caped/pa:th\n\n");
+    subninja2.subninja(Value::Expression("e$ca ped/pa:th"));
+    EXPECT_EQ(subninja2.serialize(), "subninja e$ca$ ped/pa:th\n\n");
 }
 
 TEST(Writer, Include)
 {
     Writer include;
-    include.include("simple/path");
+    include.include(Value::String("simple/path"));
     EXPECT_EQ(include.serialize(), "include simple/path\n\n");
 
     Writer include2;
-    include2.include("e$caped/pa:th");
-    EXPECT_EQ(include2.serialize(), "include e$caped/pa:th\n\n");
+    include2.include(Value::Expression("e$ca ped/pa:th"));
+    EXPECT_EQ(include2.serialize(), "include e$ca$ ped/pa:th\n\n");
 }
 
 TEST(Writer, Default)
