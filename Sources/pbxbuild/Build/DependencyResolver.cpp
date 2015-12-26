@@ -15,7 +15,7 @@
 namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
 using pbxbuild::WorkspaceContext;
-using pbxbuild::BuildGraph;
+using pbxbuild::DirectedGraph;
 using xcscheme::XC::Scheme;
 using xcscheme::XC::BuildAction;
 using xcscheme::XC::BuildActionEntry;
@@ -66,7 +66,7 @@ ResolveContainerItemProxy(Build::Environment const &buildEnvironment, Build::Con
 struct DependenciesContext {
     Build::Environment buildEnvironment;
     Build::Context context;
-    BuildGraph<pbxproj::PBX::Target::shared_ptr> *graph;
+    DirectedGraph<pbxproj::PBX::Target::shared_ptr> *graph;
     BuildAction::shared_ptr buildAction;
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> *positional;
     std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> *productPathToTarget;
@@ -237,10 +237,10 @@ BuildProductPathsToTargets(WorkspaceContext const &workspaceContext)
     return productPathToTarget;
 }
 
-BuildGraph<pbxproj::PBX::Target::shared_ptr> Build::DependencyResolver::
+DirectedGraph<pbxproj::PBX::Target::shared_ptr> Build::DependencyResolver::
 resolveSchemeDependencies(Build::Context const &context) const
 {
-    BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
+    DirectedGraph<pbxproj::PBX::Target::shared_ptr> graph;
 
     xcscheme::XC::Scheme::shared_ptr const &scheme = context.scheme();
     if (scheme == nullptr) {
@@ -307,10 +307,10 @@ resolveSchemeDependencies(Build::Context const &context) const
     return graph;
 }
 
-BuildGraph<pbxproj::PBX::Target::shared_ptr> Build::DependencyResolver::
+DirectedGraph<pbxproj::PBX::Target::shared_ptr> Build::DependencyResolver::
 resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::string const &targetName) const
 {
-    BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
+    DirectedGraph<pbxproj::PBX::Target::shared_ptr> graph;
 
     pbxproj::PBX::Project::shared_ptr const &project = context.workspaceContext()->project();
     if (project == nullptr) {

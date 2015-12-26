@@ -229,7 +229,7 @@ set(libpbxspec_SOURCES
     )
 
 set(libpbxbuild_SOURCES
-    Sources/pbxbuild/BuildGraph.cpp
+    Sources/pbxbuild/DirectedGraph.cpp
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/WorkspaceContext.cpp
     Sources/pbxbuild/TypeResolvedFile.cpp
@@ -383,7 +383,7 @@ ADD_UNIT_GTEST(pbxsetting Setting Tests/pbxsetting/test_Setting.cpp)
 ADD_UNIT_GTEST(pbxsetting Type Tests/pbxsetting/test_Type.cpp)
 ADD_UNIT_GTEST(pbxsetting Value Tests/pbxsetting/test_Value.cpp)
 
-ADD_UNIT_GTEST(pbxbuild BuildGraph Tests/pbxbuild/test_BuildGraph.cpp)
+ADD_UNIT_GTEST(pbxbuild DirectedGraph Tests/pbxbuild/test_DirectedGraph.cpp)
 
 ADD_UNIT_GTEST(xcdriver Options Tests/xcdriver/test_Options.cpp)
 ADD_UNIT_GTEST(xcdriver Action Tests/xcdriver/test_Action.cpp)

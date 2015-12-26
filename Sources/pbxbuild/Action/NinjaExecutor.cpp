@@ -144,7 +144,7 @@ bool NinjaExecutor::
 build(
     Build::Environment const &buildEnvironment,
     Build::Context const &buildContext,
-    BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
+    DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
 {
     /*
      * This environment contains only settings shared for the entire build.

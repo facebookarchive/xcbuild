@@ -51,7 +51,7 @@ Run(Options const &options)
     }
 
     pbxbuild::Build::DependencyResolver resolver = pbxbuild::Build::DependencyResolver(*buildEnvironment);
-    pbxbuild::BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
+    pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> graph;
     if (buildContext->scheme() != nullptr) {
         graph = resolver.resolveSchemeDependencies(*buildContext);
     } else if (workspaceContext->project() != nullptr) {

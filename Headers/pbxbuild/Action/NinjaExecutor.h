@@ -27,7 +27,7 @@ public:
     virtual bool build(
         Build::Environment const &buildEnvironment,
         Build::Context const &buildContext,
-        BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
+        DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
 private:
     bool buildTargetOutputDirectories(

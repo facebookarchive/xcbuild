@@ -19,7 +19,7 @@
 using pbxbuild::Action::SimpleExecutor;
 namespace Tool = pbxbuild::Tool;
 namespace Build = pbxbuild::Build;
-using pbxbuild::BuildGraph;
+using pbxbuild::DirectedGraph;
 using libutil::FSUtil;
 using libutil::Subprocess;
 
@@ -39,7 +39,7 @@ bool SimpleExecutor::
 build(
     Build::Environment const &buildEnvironment,
     Build::Context const &buildContext,
-    BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
+    DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
 {
     Formatter::Print(_formatter->begin(buildContext));
 
@@ -88,7 +88,7 @@ SortInvocations(std::vector<Tool::Invocation const> const &invocations)
         }
     }
 
-    BuildGraph<Tool::Invocation const *> graph;
+    DirectedGraph<Tool::Invocation const *> graph;
     for (Tool::Invocation const &invocation : invocations) {
         graph.insert(&invocation, { });
 

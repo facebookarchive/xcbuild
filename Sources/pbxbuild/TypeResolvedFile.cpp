@@ -8,11 +8,11 @@
  */
 
 #include <pbxbuild/TypeResolvedFile.h>
-#include <pbxbuild/BuildGraph.h>
+#include <pbxbuild/DirectedGraph.h>
 #include <fstream>
 
 using pbxbuild::TypeResolvedFile;
-using pbxbuild::BuildGraph;
+using pbxbuild::DirectedGraph;
 using libutil::FSUtil;
 using libutil::Wildcard;
 
@@ -31,7 +31,7 @@ TypeResolvedFile::
 static std::vector<pbxspec::PBX::FileType::shared_ptr>
 SortedFileTypes(std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes)
 {
-    BuildGraph<pbxspec::PBX::FileType::shared_ptr> graph;
+    DirectedGraph<pbxspec::PBX::FileType::shared_ptr> graph;
 
     for (pbxspec::PBX::FileType::shared_ptr const &fileType : fileTypes) {
         if (fileType->base() != nullptr) {

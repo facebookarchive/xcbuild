@@ -7,13 +7,13 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/BuildGraph.h>
+#include <pbxbuild/DirectedGraph.h>
 #include <pbxbuild/Tool/Invocation.h>
 
-using pbxbuild::BuildGraph;
+using pbxbuild::DirectedGraph;
 
 template<class T>
-void BuildGraph<T>::
+void DirectedGraph<T>::
 insert(T const &node, std::unordered_set<T> const &adjacent)
 {
     _nodes.insert(node);
@@ -28,14 +28,14 @@ insert(T const &node, std::unordered_set<T> const &adjacent)
 }
 
 template<class T>
-std::unordered_set<T> const &BuildGraph<T>::
+std::unordered_set<T> const &DirectedGraph<T>::
 nodes() const
 {
     return _nodes;
 }
 
 template<class T>
-std::unordered_set<T> BuildGraph<T>::
+std::unordered_set<T> DirectedGraph<T>::
 adjacent(T const &node) const
 {
     auto it = _adjacency.find(node);
@@ -47,7 +47,7 @@ adjacent(T const &node) const
 }
 
 template<class T>
-std::vector<T> BuildGraph<T>::
+std::vector<T> DirectedGraph<T>::
 ordered(void) const
 {
     std::vector<T> result;
@@ -97,8 +97,8 @@ ordered(void) const
     return result;
 }
 
-namespace pbxbuild { template class BuildGraph<pbxproj::PBX::Target::shared_ptr>; }
-namespace pbxbuild { template class BuildGraph<pbxproj::PBX::BuildPhase::shared_ptr>; }
-namespace pbxbuild { template class BuildGraph<pbxspec::PBX::FileType::shared_ptr>; }
-namespace pbxbuild { template class BuildGraph<pbxbuild::Tool::Invocation const *>; }
-namespace pbxbuild { template class BuildGraph<int>; } /* For testing. */
+namespace pbxbuild { template class DirectedGraph<pbxproj::PBX::Target::shared_ptr>; }
+namespace pbxbuild { template class DirectedGraph<pbxproj::PBX::BuildPhase::shared_ptr>; }
+namespace pbxbuild { template class DirectedGraph<pbxspec::PBX::FileType::shared_ptr>; }
+namespace pbxbuild { template class DirectedGraph<pbxbuild::Tool::Invocation const *>; }
+namespace pbxbuild { template class DirectedGraph<int>; } /* For testing. */

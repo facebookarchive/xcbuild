@@ -14,7 +14,7 @@
 #include <pbxbuild/Action/Formatter.h>
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Build/Context.h>
-#include <pbxbuild/BuildGraph.h>
+#include <pbxbuild/DirectedGraph.h>
 #include <pbxbuild/Tool/Invocation.h>
 
 namespace pbxbuild {
@@ -38,7 +38,7 @@ public:
     virtual bool build(
         Build::Environment const &buildEnvironment,
         Build::Context const &buildContext,
-        BuildGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph) = 0;
+        DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph) = 0;
 };
 
 }

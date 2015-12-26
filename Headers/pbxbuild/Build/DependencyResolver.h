@@ -13,7 +13,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Build/Context.h>
-#include <pbxbuild/BuildGraph.h>
+#include <pbxbuild/DirectedGraph.h>
 
 namespace pbxbuild {
 namespace Build {
@@ -27,11 +27,11 @@ public:
     ~DependencyResolver();
 
 public:
-    BuildGraph<pbxproj::PBX::Target::shared_ptr>
+    DirectedGraph<pbxproj::PBX::Target::shared_ptr>
     resolveSchemeDependencies(Build::Context const &context) const;
 
 public:
-    BuildGraph<pbxproj::PBX::Target::shared_ptr>
+    DirectedGraph<pbxproj::PBX::Target::shared_ptr>
     resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::string const &target) const;
 };
 

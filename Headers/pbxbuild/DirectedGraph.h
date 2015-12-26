@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_BuildGraph_h
-#define __pbxbuild_BuildGraph_h
+#ifndef __pbxbuild_DirectedGraph_h
+#define __pbxbuild_DirectedGraph_h
 
 #include <pbxbuild/Base.h>
 #include <list>
@@ -16,7 +16,7 @@
 namespace pbxbuild {
 
 template<typename T>
-class BuildGraph {
+class DirectedGraph {
 private:
     std::unordered_set<T>                        _nodes;
     std::unordered_map<T, std::unordered_set<T>> _adjacency;
@@ -34,4 +34,4 @@ public:
 
 }
 
-#endif // !__pbxbuild_BuildGraph_h
+#endif // !__pbxbuild_DirectedGraph_h

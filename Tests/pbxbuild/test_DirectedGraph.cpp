@@ -8,13 +8,13 @@
  */
 
 #include <gtest/gtest.h>
-#include <pbxbuild/BuildGraph.h>
+#include <pbxbuild/DirectedGraph.h>
 
-using pbxbuild::BuildGraph;
+using pbxbuild::DirectedGraph;
 
-TEST(BuildGraph, Nodes)
+TEST(DirectedGraph, Nodes)
 {
-    BuildGraph<int> graph;
+    DirectedGraph<int> graph;
     graph.insert(4, std::unordered_set<int>({ 2, 3, 5 }));
     graph.insert(2, std::unordered_set<int>({ 5, 6, 1 }));
     graph.insert(7, std::unordered_set<int>({ }));
@@ -22,9 +22,9 @@ TEST(BuildGraph, Nodes)
     EXPECT_EQ(graph.nodes(), std::unordered_set<int>({ 1, 2, 3, 4, 5, 6, 7 }));
 }
 
-TEST(BuildGraph, Adjacent)
+TEST(DirectedGraph, Adjacent)
 {
-    BuildGraph<int> graph;
+    DirectedGraph<int> graph;
     graph.insert(4, std::unordered_set<int>({ 2, 3, 5 }));
     graph.insert(2, std::unordered_set<int>({ 5, 6, 1 }));
     graph.insert(7, std::unordered_set<int>({ }));
@@ -35,9 +35,9 @@ TEST(BuildGraph, Adjacent)
     EXPECT_EQ(graph.adjacent(8), std::unordered_set<int>({ }));
 }
 
-TEST(BuildGraph, Ordered)
+TEST(DirectedGraph, Ordered)
 {
-    BuildGraph<int> graph;
+    DirectedGraph<int> graph;
     graph.insert(4, std::unordered_set<int>({ 2, 3, 5 }));
     graph.insert(2, std::unordered_set<int>({ 5, 1 }));
     graph.insert(5, std::unordered_set<int>({ 1 }));

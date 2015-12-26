@@ -138,7 +138,7 @@ Run(Options const &options)
      * Build the target dependency graph. The executor uses this to know which targets to build.
      */
     pbxbuild::Build::DependencyResolver resolver = pbxbuild::Build::DependencyResolver(*buildEnvironment);
-    pbxbuild::BuildGraph<pbxproj::PBX::Target::shared_ptr> graph;
+    pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> graph;
     if (buildContext->scheme() != nullptr) {
         graph = resolver.resolveSchemeDependencies(*buildContext);
     } else if (workspaceContext->project() != nullptr) {
