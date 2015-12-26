@@ -9,12 +9,12 @@
 
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
-#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
@@ -177,7 +177,7 @@ CompileLogMessage(
 
 void Tool::ClangResolver::
 resolvePrecompiledHeader(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     Tool::PrecompiledHeaderInfo const &precompiledHeaderInfo
 ) const
@@ -187,7 +187,7 @@ resolvePrecompiledHeader(
     std::string output = environment.expand(precompiledHeaderInfo.compileOutputPath());
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
-    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(tool, environment, { input }, { output });
+    Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
@@ -221,7 +221,7 @@ resolvePrecompiledHeader(
 
 void Tool::ClangResolver::
 resolveSource(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     TypeResolvedFile const &inputFile,
     std::vector<std::string> const &inputArguments,
@@ -247,7 +247,7 @@ resolveSource(
     pbxspec::PBX::FileType::shared_ptr const &fileType = inputFile.fileType();
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
-    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(tool, environment, { input }, { output });
+    Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
 
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);

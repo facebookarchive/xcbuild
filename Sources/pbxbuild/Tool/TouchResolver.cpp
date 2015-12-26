@@ -9,10 +9,10 @@
 
 #include <pbxbuild/Tool/TouchResolver.h>
 #include <pbxbuild/Tool/ToolResult.h>
-#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
@@ -32,7 +32,7 @@ Tool::TouchResolver::
 
 void Tool::TouchResolver::
 resolve(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &input,
     std::vector<std::string> const &dependencies) const
@@ -40,7 +40,7 @@ resolve(
     std::string logMessage = "Touch " + input;
 
     /* Treat the input as an output since it's what gets modified by the touch. */
-    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, environment, { }, { });
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { }, { });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/usr/bin/touch", { "-c", input });
 

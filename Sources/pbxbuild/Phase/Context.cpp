@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/Phase/Context.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/InfoPlistResolver.h>
@@ -25,7 +25,7 @@ namespace Target = pbxbuild::Target;
 using libutil::FSUtil;
 
 Phase::Context::
-Context(Tool::ToolContext const &toolContext) :
+Context(Tool::Context const &toolContext) :
     _toolContext(toolContext)
 {
 }

@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/Tool/OptionsResult.h>
-#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 
 namespace Tool = pbxbuild::Tool;
@@ -134,7 +134,7 @@ AddOptionValuesArguments(std::vector<std::string> *arguments, pbxsetting::Enviro
 }
 
 Tool::OptionsResult Tool::OptionsResult::
-Create(Tool::ToolEnvironment const &toolEnvironment, std::string const &workingDirectory, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environmentVariables)
+Create(Tool::Environment const &toolEnvironment, std::string const &workingDirectory, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environmentVariables)
 {
     pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
     std::unordered_set<std::string> const &deletedProperties = toolEnvironment.tool()->deletedProperties();

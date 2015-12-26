@@ -15,7 +15,7 @@
 namespace pbxbuild {
 namespace Tool {
 
-class ToolContext;
+class Context;
 
 class SearchPaths {
 private:
@@ -50,7 +50,7 @@ public:
 
 public:
     static void
-    Resolve(ToolContext *toolContext, pbxsetting::Environment const &environment);
+    Resolve(Tool::Context *toolContext, pbxsetting::Environment const &environment);
 
 public:
     static std::vector<std::string>

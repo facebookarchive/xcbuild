@@ -9,10 +9,10 @@
 
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/ToolResult.h>
-#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
@@ -52,7 +52,7 @@ ScriptInputOutputLevel(std::vector<std::string> const &inputFiles, std::vector<s
 
 void Tool::ScriptResolver::
 resolve(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget) const
 {
@@ -67,7 +67,7 @@ resolve(
 
     std::string fullWorkingDirectory = toolContext->workingDirectory() + "/" + legacyTarget->buildWorkingDirectory();
 
-    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, environment, { }, { });
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { }, { });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, fullWorkingDirectory, nullptr, environmentVariables);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, legacyTarget->buildToolPath(), pbxsetting::Type::ParseList(script));
 
@@ -82,7 +82,7 @@ resolve(
 
 void Tool::ScriptResolver::
 resolve(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase) const
 {
@@ -115,7 +115,7 @@ resolve(
     scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, true), false);
     std::unordered_map<std::string, std::string> environmentVariables = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
 
-    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, scriptEnvironment, inputFiles, outputFiles);
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, scriptEnvironment, inputFiles, outputFiles);
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr, environmentVariables);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", scriptFilePath });
 
@@ -134,7 +134,7 @@ resolve(
 
 void Tool::ScriptResolver::
 resolve(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &inputFile,
     Target::BuildRules::BuildRule::shared_ptr const &buildRule) const
@@ -163,7 +163,7 @@ resolve(
     ruleEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, false), false);
     std::unordered_map<std::string, std::string> environmentVariables = ruleEnvironment.computeValues(pbxsetting::Condition::Empty());
 
-    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, ruleEnvironment, inputFiles, outputFiles);
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, ruleEnvironment, inputFiles, outputFiles);
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr, environmentVariables);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", buildRule->script() });
 

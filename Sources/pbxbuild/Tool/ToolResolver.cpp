@@ -8,12 +8,12 @@
  */
 
 #include <pbxbuild/Tool/ToolResolver.h>
-#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/SearchPaths.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 
 namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
@@ -31,13 +31,13 @@ Tool::ToolResolver::
 
 void Tool::ToolResolver::
 resolve(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     std::vector<std::string> const &inputs,
     std::vector<std::string> const &outputs,
     std::string const &logMessage) const
 {
-    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, environment, inputs, outputs);
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, inputs, outputs);
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
     std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));

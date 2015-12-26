@@ -7,17 +7,17 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 
 namespace Tool = pbxbuild::Tool;
 
-Tool::ToolContext::
-ToolContext(std::string const &workingDirectory) :
+Tool::Context::
+Context(std::string const &workingDirectory) :
     _workingDirectory(workingDirectory)
 {
 }
 
-Tool::ToolContext::
-~ToolContext()
+Tool::Context::
+~Context()
 {
 }

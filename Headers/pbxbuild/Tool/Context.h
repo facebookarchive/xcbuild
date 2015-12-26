@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_ToolContext_h
-#define __pbxbuild_ToolContext_h
+#ifndef __pbxbuild_Tool_Context_h
+#define __pbxbuild_Tool_Context_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/ToolInvocation.h>
@@ -20,7 +20,7 @@
 namespace pbxbuild {
 namespace Tool {
 
-class ToolContext {
+class Context {
 private:
     std::string                 _workingDirectory;
 
@@ -35,8 +35,8 @@ private:
     std::map<std::pair<std::string, std::string>, std::vector<ToolInvocation const>> _variantArchitectureInvocations;
 
 public:
-    ToolContext(std::string const &workingDirectory);
-    ~ToolContext();
+    Context(std::string const &workingDirectory);
+    ~Context();
 
 public:
     std::string const &workingDirectory() const
@@ -78,4 +78,4 @@ public:
 }
 }
 
-#endif // !__pbxbuild_ToolContext_h
+#endif // !__pbxbuild_Tool_Context_h

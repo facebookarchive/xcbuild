@@ -18,7 +18,7 @@
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/ShellScriptResolver.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
@@ -40,7 +40,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
 {
     /* Create the tool context for building. */
     std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
-    Phase::Context phaseContext{Tool::ToolContext(workingDirectory)};
+    Phase::Context phaseContext{Tool::Context(workingDirectory)};
 
     /* Filter build phases to ones appropriate for this target. */
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;

@@ -21,7 +21,7 @@ class TypeResolvedFile;
 namespace Tool {
 
 class SearchPaths;
-class ToolContext;
+class Context;
 class PrecompiledHeaderInfo;
 
 class ClangResolver {
@@ -34,7 +34,7 @@ public:
 
 public:
     void resolveSource(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         TypeResolvedFile const &input,
         std::vector<std::string> const &inputArguments,
@@ -42,7 +42,7 @@ public:
         std::string const &outputBaseName
     ) const;
     void resolvePrecompiledHeader(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         PrecompiledHeaderInfo const &precompiledHeaderInfo
     ) const;

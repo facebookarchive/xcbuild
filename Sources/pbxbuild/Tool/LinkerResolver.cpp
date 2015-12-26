@@ -9,8 +9,8 @@
 
 #include <pbxbuild/Tool/LinkerResolver.h>
 #include <pbxbuild/Tool/ToolResult.h>
-#include <pbxbuild/Tool/ToolEnvironment.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Environment.h>
+#include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/TypeResolvedFile.h>
@@ -33,7 +33,7 @@ Tool::LinkerResolver::
 
 void Tool::LinkerResolver::
 resolve(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     std::vector<std::string> const &inputFiles,
     std::vector<TypeResolvedFile> const &inputLibraries,
@@ -103,7 +103,7 @@ resolve(
     }
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_linker);
-    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(tool, environment, inputFiles, { output });
+    Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, inputFiles, { output });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
     std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);

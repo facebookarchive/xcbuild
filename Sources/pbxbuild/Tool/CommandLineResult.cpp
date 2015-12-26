@@ -9,7 +9,7 @@
 
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/Tool/OptionsResult.h>
-#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/Environment.h>
 #include <sstream>
 
 namespace Tool = pbxbuild::Tool;
@@ -28,7 +28,7 @@ Tool::CommandLineResult::
 }
 
 Tool::CommandLineResult Tool::CommandLineResult::
-Create(Tool::ToolEnvironment const &toolEnvironment, Tool::OptionsResult options, std::string const &executable, std::vector<std::string> const &specialArguments, std::unordered_set<std::string> const &removed)
+Create(Tool::Environment const &toolEnvironment, Tool::OptionsResult options, std::string const &executable, std::vector<std::string> const &specialArguments, std::unordered_set<std::string> const &removed)
 {
     pbxspec::PBX::Tool::shared_ptr tool = toolEnvironment.tool();
 

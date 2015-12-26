@@ -16,14 +16,14 @@
 namespace pbxbuild {
 namespace Tool {
 
-class ToolEnvironment;
+class Environment;
 class OptionsResult;
 class CommandLineResult;
 
 class ToolResult {
 public:
     static std::string
-    LogMessage(ToolEnvironment const &toolEnvironment);
+    LogMessage(Tool::Environment const &toolEnvironment);
 };
 
 }

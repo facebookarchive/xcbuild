@@ -7,14 +7,14 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/Environment.h>
 #include <sstream>
 
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 
-Tool::ToolEnvironment::
-ToolEnvironment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &toolEnvironment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs) :
+Tool::Environment::
+Environment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &toolEnvironment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs) :
     _tool           (tool),
     _toolEnvironment(toolEnvironment),
     _inputs         (inputs),
@@ -22,12 +22,12 @@ ToolEnvironment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environm
 {
 }
 
-Tool::ToolEnvironment::
-~ToolEnvironment()
+Tool::Environment::
+~Environment()
 {
 }
 
-std::vector<std::string> Tool::ToolEnvironment::
+std::vector<std::string> Tool::Environment::
 inputs(std::string const &workingDirectory) const
 {
     std::vector<std::string> inputs;
@@ -37,7 +37,7 @@ inputs(std::string const &workingDirectory) const
     return inputs;
 }
 
-std::vector<std::string> Tool::ToolEnvironment::
+std::vector<std::string> Tool::Environment::
 outputs(std::string const &workingDirectory) const
 {
     std::vector<std::string> outputs;
@@ -47,7 +47,7 @@ outputs(std::string const &workingDirectory) const
     return outputs;
 }
 
-Tool::ToolEnvironment Tool::ToolEnvironment::
+Tool::Environment Tool::Environment::
 Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs)
 {
     // TODO(grp); Match inputs with allowed tool input file types.
@@ -87,6 +87,6 @@ Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const
     toolEnvironment.insertFront(tool->defaultSettings(), true);
     toolEnvironment.insertFront(pbxsetting::Level(toolSettings), false);
 
-    return Tool::ToolEnvironment(tool, toolEnvironment, inputs, outputs);
+    return Tool::Environment(tool, toolEnvironment, inputs, outputs);
 }
 

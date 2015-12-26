@@ -16,7 +16,7 @@
 namespace pbxbuild {
 namespace Tool {
 
-class ToolContext;
+class Context;
 
 class CopyResolver {
 private:
@@ -27,7 +27,7 @@ private:
 
 public:
     void resolve(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         std::string const &inputFile,
         std::string const &outputDirectory,

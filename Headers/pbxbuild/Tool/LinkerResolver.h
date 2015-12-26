@@ -20,7 +20,7 @@ class TypeResolvedFile;
 
 namespace Tool {
 
-class ToolContext;
+class Context;
 
 class LinkerResolver {
 private:
@@ -32,7 +32,7 @@ public:
 
 public:
     void resolve(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         std::vector<std::string> const &inputFiles,
         std::vector<TypeResolvedFile> const &inputLibraries,

@@ -17,7 +17,7 @@
 namespace pbxbuild {
 namespace Tool {
 
-class ToolContext;
+class Context;
 
 class ToolResolver {
 private:
@@ -33,7 +33,7 @@ public:
 
 public:
     void resolve(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         std::vector<std::string> const &inputs,
         std::vector<std::string> const &outputs,

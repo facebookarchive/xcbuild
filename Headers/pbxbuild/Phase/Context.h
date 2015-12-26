@@ -13,7 +13,7 @@
 #define __pbxbuild_Phase_Context_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 
 namespace pbxbuild {
 
@@ -34,7 +34,7 @@ class Environment;
 
 class Context {
 private:
-    Tool::ToolContext                                   _toolContext;
+    Tool::Context                                       _toolContext;
 
 private:
     std::unique_ptr<Tool::ClangResolver>                _clangResolver;
@@ -45,15 +45,15 @@ private:
     std::unordered_map<std::string, Tool::ToolResolver> _toolResolvers;
 
 public:
-    explicit Context(Tool::ToolContext const &toolContext);
+    explicit Context(Tool::Context const &toolContext);
     ~Context();
 
 public:
-    Tool::ToolContext const &toolContext() const
+    Tool::Context const &toolContext() const
     { return _toolContext; }
 
 public:
-    Tool::ToolContext &toolContext()
+    Tool::Context &toolContext()
     { return _toolContext; }
 
 public:

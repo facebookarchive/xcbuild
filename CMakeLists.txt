@@ -242,11 +242,11 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Build/Formatter.cpp
     Sources/pbxbuild/Build/DefaultFormatter.cpp
     Sources/pbxbuild/ToolInvocation.cpp
+    Sources/pbxbuild/Tool/Context.cpp
+    Sources/pbxbuild/Tool/Environment.cpp
     Sources/pbxbuild/Tool/CommandLineResult.cpp
     Sources/pbxbuild/Tool/OptionsResult.cpp
-    Sources/pbxbuild/Tool/ToolEnvironment.cpp
     Sources/pbxbuild/Tool/ToolResult.cpp
-    Sources/pbxbuild/Tool/ToolContext.cpp
     Sources/pbxbuild/Tool/CompilationInfo.cpp
     Sources/pbxbuild/Tool/HeadermapInfo.cpp
     Sources/pbxbuild/Tool/PrecompiledHeaderInfo.cpp

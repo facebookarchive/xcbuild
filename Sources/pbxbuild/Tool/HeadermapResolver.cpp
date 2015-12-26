@@ -10,7 +10,7 @@
 #include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/HeaderMap.h>
 
@@ -67,7 +67,7 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
 
 void Tool::HeadermapResolver::
 resolve(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::Target::shared_ptr const &target
 ) const

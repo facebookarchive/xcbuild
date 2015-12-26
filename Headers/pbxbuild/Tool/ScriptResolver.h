@@ -18,7 +18,7 @@
 namespace pbxbuild {
 namespace Tool {
 
-class ToolContext;
+class Context;
 
 class ScriptResolver {
 private:
@@ -29,17 +29,17 @@ private:
 
 public:
     void resolve(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget
     ) const;
     void resolve(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase
     ) const;
     void resolve(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         std::string const &inputFile,
         Target::BuildRules::BuildRule::shared_ptr const &buildRule

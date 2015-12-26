@@ -18,7 +18,7 @@ namespace pbxbuild {
 namespace Tool {
 
 class SearchPaths;
-class ToolContext;
+class Context;
 
 class HeadermapResolver {
 private:
@@ -31,7 +31,7 @@ public:
 
 public:
     void resolve(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         pbxproj::PBX::Target::shared_ptr const &target
     ) const;

@@ -8,7 +8,7 @@
  */
 
 #include <pbxbuild/Tool/SearchPaths.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/HeaderMap.h>
 
@@ -57,7 +57,7 @@ ExpandRecursive(pbxsetting::Environment const &environment, std::vector<std::str
 }
 
 void Tool::SearchPaths::
-Resolve(Tool::ToolContext *toolContext, pbxsetting::Environment const &environment)
+Resolve(Tool::Context *toolContext, pbxsetting::Environment const &environment)
 {
     Tool::SearchPaths *searchPaths = &toolContext->searchPaths();
     std::string const &workingDirectory = toolContext->workingDirectory();

@@ -9,10 +9,10 @@
 
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/ToolResult.h>
-#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
-#include <pbxbuild/Tool/ToolContext.h>
+#include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
@@ -27,7 +27,7 @@ CopyResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
 
 void Tool::CopyResolver::
 resolve(
-    Tool::ToolContext *toolContext,
+    Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &inputFile,
     std::string const &outputDirectory,
@@ -37,7 +37,7 @@ resolve(
     std::string outputFile = outputDirectory + "/" + FSUtil::GetBaseName(inputFile);
     std::string logMessage = logMessageTitle + " " + FSUtil::GetRelativePath(inputFile, toolContext->workingDirectory()) + " " + outputFile;
 
-    Tool::ToolEnvironment toolEnvironment = Tool::ToolEnvironment::Create(_tool, environment, { inputFile }, { outputFile });
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { inputFile }, { outputFile });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "", { inputFile, outputDirectory });
 

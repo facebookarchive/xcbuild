@@ -7,15 +7,15 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_ToolEnvironment_h
-#define __pbxbuild_ToolEnvironment_h
+#ifndef __pbxbuild_Tool_Environment_h
+#define __pbxbuild_Tool_Environment_h
 
 #include <pbxbuild/Base.h>
 
 namespace pbxbuild {
 namespace Tool {
 
-class ToolEnvironment {
+class Environment {
 private:
     pbxspec::PBX::Tool::shared_ptr _tool;
     pbxsetting::Environment        _toolEnvironment;
@@ -25,8 +25,8 @@ private:
     std::vector<std::string>       _outputs;
 
 public:
-    ToolEnvironment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &toolEnvironment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs);
-    ~ToolEnvironment();
+    Environment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &toolEnvironment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs);
+    ~Environment();
 
 public:
     pbxspec::PBX::Tool::shared_ptr const &tool() const
@@ -45,11 +45,11 @@ public:
     std::vector<std::string> outputs(std::string const &workingDirectory) const;
 
 public:
-    static ToolEnvironment
+    static Tool::Environment
     Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs);
 };
 
 }
 }
 
-#endif // !__pbxbuild_ToolEnvironment_h
+#endif // !__pbxbuild_Tool_Environment_h

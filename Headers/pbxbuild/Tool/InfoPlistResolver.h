@@ -16,7 +16,7 @@
 namespace pbxbuild {
 namespace Tool {
 
-class ToolContext;
+class Context;
 
 class InfoPlistResolver {
 private:
@@ -32,7 +32,7 @@ public:
 
 public:
     void resolve(
-        ToolContext *toolContext,
+        Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         std::string const &input) const;
 

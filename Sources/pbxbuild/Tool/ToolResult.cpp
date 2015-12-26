@@ -9,7 +9,7 @@
 
 #include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/OptionsResult.h>
-#include <pbxbuild/Tool/ToolEnvironment.h>
+#include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <sstream>
 
@@ -17,7 +17,7 @@ namespace Tool = pbxbuild::Tool;
 using pbxbuild::ToolInvocation;
 
 std::string Tool::ToolResult::
-LogMessage(Tool::ToolEnvironment const &toolEnvironment)
+LogMessage(Tool::Environment const &toolEnvironment)
 {
     pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
     std::string ruleName = environment.expand(toolEnvironment.tool()->ruleName());
