@@ -12,7 +12,7 @@ build := build
 cmake := cmake
 cmake_flags := -G Ninja
 
-ninja := ninja
+ninja := $(if $(shell which llbuild),llbuild ninja build,ninja)
 ninja_flags :=
 
 all:

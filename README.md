@@ -8,9 +8,11 @@ In its current state, xcbuild can build many Xcode projects completely.
 
 xcbuild uses [git submodules](https://www.kernel.org/pub/software/scm/git/docs/git-submodule.html) for dependencies, so be sure to run `git submodule update --init` after cloning the repository.
 
-[CMake](http://www.cmake.org) and [Ninja](https://martine.github.io/ninja/) are used to build. You'll need to install both, then type `make` to build. Output is put into the `build` directory.
+[CMake](http://www.cmake.org) and [Ninja](https://martine.github.io/ninja/) (or [llbuild](https://github.com/apple/swift-llbuild)) are used to build. You'll need to install both, then type `make` to build. Output is put into the `build` directory.
 
-Run xcbuild directly out of the build directory: `./build/xcbuild`. The command line options are identical to those for `xcodebuild`. You'll need a copy of Xcode installed to build apps sucessfully.
+Run xcbuild directly out of the build directory: `./build/xcbuild`. The command line options are identical to those for `xcodebuild`. You'll need a copy of Xcode installed to build sucessfully.
+
+To use the (much faster) Ninja (or llbuild) executor, pass the extension option `-executor ninja` to `xcbuild`. Then, run `ninja -f` (or `llbuild ninja build -f`) with the path printed.
 
 ## Overview
 
