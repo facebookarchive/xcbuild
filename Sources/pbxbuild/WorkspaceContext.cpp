@@ -21,8 +21,7 @@ WorkspaceContext(
     xcworkspace::XC::Workspace::shared_ptr const &workspace,
     pbxproj::PBX::Project::shared_ptr const &project,
     std::vector<xcscheme::XC::Scheme::shared_ptr> const &schemes,
-    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects
-) :
+    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects) :
     _basePath       (basePath),
     _derivedDataName(derivedDataName),
     _workspace      (workspace),
@@ -89,6 +88,11 @@ hton64(uint64_t v)
 static std::string
 DerivedDataHash(std::string const &path)
 {
+    /*
+     * This algorithm is documented here:
+     * https://samdmarshall.com/blog/xcode_deriveddata_hashes.html
+     */
+
     md5_state_t state;
     md5_init(&state);
     md5_append(&state, reinterpret_cast<const md5_byte_t *>(path.data()), path.size());
@@ -123,14 +127,14 @@ IterateWorkspaceItem(xcworkspace::XC::GroupItem::shared_ptr const &item, std::fu
 {
     switch (item->type()) {
         case xcworkspace::XC::GroupItem::kTypeGroup: {
-            xcworkspace::XC::Group::shared_ptr group = std::static_pointer_cast <xcworkspace::XC::Group> (item);
+            xcworkspace::XC::Group::shared_ptr group = std::static_pointer_cast<xcworkspace::XC::Group>(item);
             for (xcworkspace::XC::GroupItem::shared_ptr const &child : group->items()) {
                 IterateWorkspaceItem(child, cb);
             }
             break;
         }
         case xcworkspace::XC::GroupItem::kTypeFileRef: {
-            xcworkspace::XC::FileRef::shared_ptr fileRef = std::static_pointer_cast <xcworkspace::XC::FileRef> (item);
+            xcworkspace::XC::FileRef::shared_ptr fileRef = std::static_pointer_cast<xcworkspace::XC::FileRef>(item);
             cb(fileRef);
             break;
         }
@@ -151,23 +155,34 @@ Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace)
     std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> projects;
     xcscheme::XC::Scheme::vector schemes;
 
+    /*
+     * Add the schemes from the workspace itself.
+     */
     xcscheme::SchemeGroup::shared_ptr workspaceGroup = xcscheme::SchemeGroup::Open(workspace->projectFile(), workspace->name());
     if (workspaceGroup) {
         schemes.insert(schemes.end(), workspaceGroup->schemes().begin(), workspaceGroup->schemes().end());
     }
 
+    /*
+     * Load all the projects in the workspace (and schemes inside those projects).
+     */
     IterateWorkspaceFiles(workspace, [&](xcworkspace::XC::FileRef::shared_ptr const &ref) {
         std::string path = ref->resolve(workspace);
         pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(path);
         if (project != nullptr) {
             projects.insert({ project->projectFile(), project });
 
+            /*
+             * Load the schemes inside this project.
+             */
             xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(project->projectFile(), project->name());
             if (projectGroup != nullptr) {
                 schemes.insert(schemes.end(), projectGroup->schemes().begin(), projectGroup->schemes().end());
             }
         }
     });
+
+    // TODO(grp): Load nested projects here.
 
     std::string derivedDataName = workspace->name() + "-" + DerivedDataHash(workspace->projectFile());
 
@@ -179,14 +194,22 @@ Project(pbxproj::PBX::Project::shared_ptr const &project)
 {
     xcscheme::XC::Scheme::vector schemes;
 
+    /*
+     * Add the schemes from the project itself.
+     */
     xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->projectFile(), project->name());
     if (group) {
         schemes.insert(schemes.end(), group->schemes().begin(), group->schemes().end());
     }
 
+    /*
+     * The root is a project, so add it to the projects map so it can be found in project lookups later.
+     */
     std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> projects = {
         { project->projectFile(), project },
     };
+
+    // TODO(grp): Load nested projects here.
 
     std::string derivedDataName = project->name() + "-" + DerivedDataHash(project->projectFile());
 
