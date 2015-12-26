@@ -29,11 +29,13 @@ High level overview of each component library:
  - `xcworkspace`: Parses workspaces into strongly-typed structures.
  - `xcscheme`: Parses schemes into strongly-typed structures.
  - `builtin`: Built-in tools used for building, like file copying and validation.
- - `xcbuild`: Performs the build. Made up of a number of subcomponents:
-   - Top-level context for the scheme, targets, and action for a build.
-   - Implementations for the various build phases (compile, link, copy, etc).
-   - Tool implementations for generating command line invocations.
-   - Build execution engine and log formatting.
+ - `ninja`: Standalone generator for Ninja build files.
+ - `pbxbuild`: Performs the build. Made up of a number of subcomponents:
+   - `Build`: Top-level context for the scheme, targets, and action for a build.
+   - `Target`: Creates the build environment and settings for each target.
+   - `Phase`: Implementations for the various build phases (compile, link, copy, etc).
+   - `Tool`: Tool implementations for generating command line invocations.
+   - `Action`: Build execution engines and log formatting.
  - `xcdriver`: Parses command line options and drives the build.
 
 ## Contributing
@@ -42,13 +44,13 @@ xcbuild actively welcomes contributions from the community. If you run into prob
 
 ### Getting Started
 
-To learn about xcbuild, start with the techincal overview above. Each of the components of xcbulid is documented in the `Headers` directory, with both module and API documentation available.
+To learn about xcbuild, start with the techincal overview above. Each of the components of xcbuild is documented in the `Headers` directory, with both module and API documentation available.
 
 If you're new to xcbuild, we have a [list of issues](https://github.com/facebook/xcbuild/labels/starter) designed for new contributors to get started in the codebase. We're always happy to help people working on these issues and learning about xcbuild.
 
 ### Style
 
-C++ can be complex, so xcbuild tries to stick with a reasonable subset modeled after Swift, Rust, and other better langages. Prefer immutable structures and classes. Prefer passing by const reference, and avoid non-const references. Exceptions and RTTI are not used.
+C++ can be complex, so xcbuild tries to stick with a reasonable subset modeled after Swift, Rust, and other modern langages. Prefer immutable structures and classes. Prefer passing by const reference, and avoid non-const references. Templates are avoided when possible. Exceptions and RTTI are not used.
 
 ### Contributor License Agreement ("CLA")
 
