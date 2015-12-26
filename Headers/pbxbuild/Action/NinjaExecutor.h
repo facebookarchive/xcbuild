@@ -30,10 +30,8 @@ public:
         DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
 private:
-    bool buildTargetOutputDirectories(
+    bool buildOutputDirectories(
         ninja::Writer *writer,
-        pbxproj::PBX::Target::shared_ptr const &target,
-        Target::Environment const &targetEnvironment,
         std::vector<Tool::Invocation const> const &invocations,
         std::unordered_set<std::string> *seenDirectories);
     bool buildTargetAuxiliaryFiles(

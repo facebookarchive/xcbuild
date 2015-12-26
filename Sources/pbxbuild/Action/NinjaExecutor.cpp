@@ -217,6 +217,18 @@ build(
          */
 
         /*
+         * Resolve this target and generate its invocations.
+         */
+        std::unique_ptr<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        if (targetEnvironment == nullptr) {
+            fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
+            continue;
+        }
+
+        Phase::Environment phaseEnvironment = Phase::Environment(buildEnvironment, buildContext, target, *targetEnvironment);
+        Phase::PhaseInvocations phaseInvocations = Phase::PhaseInvocations::Create(phaseEnvironment, target);
+
+        /*
          * As described above, the target's begin depends on all of the target dependencies.
          */
         std::vector<ninja::Value> dependenciesFinished;
@@ -232,22 +244,10 @@ build(
         writer.build({ ninja::Value::String(targetBegin) }, "phony", dependenciesFinished);
 
         /*
-         * Resolve this target and generate its Ninja file.
-         */
-        std::unique_ptr<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
-        if (targetEnvironment == nullptr) {
-            fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
-            continue;
-        }
-
-        Phase::Environment phaseEnvironment = Phase::Environment(buildEnvironment, buildContext, target, *targetEnvironment);
-        Phase::PhaseInvocations phaseInvocations = Phase::PhaseInvocations::Create(phaseEnvironment, target);
-
-        /*
          * Each output directory can only have one rule to build it, so as directories are shared
          * between targets, the rules to build them also need to go into the shared Ninja file.
          */
-        if (!buildTargetOutputDirectories(&writer, target, *targetEnvironment, phaseInvocations.invocations(), &seenDirectories)) {
+        if (!buildOutputDirectories(&writer, phaseInvocations.invocations(), &seenDirectories)) {
             return false;
         }
 
@@ -338,15 +338,11 @@ ResolveExecutable(std::string const &executable, std::vector<std::string> const 
 }
 
 bool NinjaExecutor::
-buildTargetOutputDirectories(
+buildOutputDirectories(
     ninja::Writer *writer,
-    pbxproj::PBX::Target::shared_ptr const &target,
-    Target::Environment const &targetEnvironment,
     std::vector<Tool::Invocation const> const &invocations,
     std::unordered_set<std::string> *seenDirectories)
 {
-    std::string targetBegin = TargetNinjaBegin(target);
-
     /*
      * Add a build command to create each output directory. These are depended on by
      * the build commands for invocations that have outputs inside each directory.
@@ -377,12 +373,10 @@ buildTargetOutputDirectories(
             };
 
             /*
-             * Add the rule to create the directory. It depends on the target build starting
-             * and outputs the directory being created. Note there are no inputs.
+             * Add the rule to create the directory.
              */
             std::vector<ninja::Value> outputs = { ninja::Value::String(outputDirectory) };
-            std::vector<ninja::Value> orderDependencies = { ninja::Value::String(targetBegin) };
-            writer->build(outputs, NinjaRuleName(), { }, bindings, { }, orderDependencies);
+            writer->build(outputs, NinjaRuleName(), { }, bindings);
         }
     }
 
