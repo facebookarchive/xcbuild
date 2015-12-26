@@ -20,8 +20,9 @@ To make xcbuild useful as more than just a build tool, it's built as a collectio
 
 High level overview of each component library:
 
+ - `plist`: *Standalone.* Reader, writer, and model for ASCII, binary, and XML property lists.
+ - `ninja`: *Standalone.* Generator for Ninja build files.
  - `libutil`: Common utilities and platform abstractions.
- - `plist`: Read property list files. All formats (text, binary, and XML) are supported.
  - `pbxsetting`: Build setting parsing, levels, and resolution.
  - `xcsdk`: Loads the available platforms, SDKs, and toolchains in a developer root.
  - `pbxspec`: Parses available build settings, tools, and file types into strongly-typed structures.
@@ -29,7 +30,6 @@ High level overview of each component library:
  - `xcworkspace`: Parses workspaces into strongly-typed structures.
  - `xcscheme`: Parses schemes into strongly-typed structures.
  - `builtin`: Built-in tools used for building, like file copying and validation.
- - `ninja`: Standalone generator for Ninja build files.
  - `pbxbuild`: Performs the build. Made up of a number of subcomponents:
    - `Build`: Top-level context for the scheme, targets, and action for a build.
    - `Target`: Creates the build environment and settings for each target.
