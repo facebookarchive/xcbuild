@@ -188,7 +188,7 @@ build(
      * rules at the Ninja level. Instead, add a single rule that just passes through from
      * the build command that calls it.
      */
-    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && $exec"));
+    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && $env $exec"));
 
     /* Stores seen output directories, since each can only have one target to build them. */
     std::unordered_set<std::string> seenDirectories;
@@ -475,6 +475,17 @@ buildTargetInvocations(
         }
 
         /*
+         * Build the invocation environment. To set the environment, we use standard shell syntax.
+         */
+        std::string environment;
+        for (auto it = invocation.environment().begin(); it != invocation.environment().end(); ++it) {
+            if (it != invocation.environment().begin()) {
+                environment += " ";
+            }
+            environment += it->first + "=" + ShellEscape(it->second);
+        }
+
+        /*
          * Determine the status message for Ninja to print for this invocation.
          */
         std::string description = NinjaDescription(_formatter->beginInvocation(invocation, executable));
@@ -487,6 +498,9 @@ buildTargetInvocations(
             { "dir", ninja::Value::String(ShellEscape(invocation.workingDirectory())) },
             { "exec", ninja::Value::String(exec) },
         };
+        if (!environment.empty()) {
+            bindings.push_back({ "env", ninja::Value::String(environment) });
+        }
 
 #if 0
         // TODO(grp): Two issues here.
