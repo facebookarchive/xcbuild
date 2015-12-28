@@ -19,6 +19,9 @@ public:
     static std::unordered_map<std::string, std::string> EnvironmentVariables();
 
 public:
+    static std::string GetExecutablePath();
+
+public:
     static std::string GetUserName();
     static std::string GetGroupName();
 

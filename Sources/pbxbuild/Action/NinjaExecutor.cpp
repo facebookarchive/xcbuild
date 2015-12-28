@@ -12,6 +12,8 @@
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <ninja/Writer.h>
 #include <ninja/Value.h>
+#include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
 #include <libutil/md5.h>
 
 #include <sstream>
@@ -26,6 +28,7 @@ namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
+using libutil::SysUtil;
 
 NinjaExecutor::
 NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun) :
@@ -328,8 +331,8 @@ ResolveExecutable(std::string const &executable, std::vector<std::string> const 
     bool builtin = executable.compare(0, builtinPrefix.size(), builtinPrefix) == 0;
 
     if (builtin) {
-        // TODO(grp): Find the path to the builtin tool.
-        return std::string();
+        std::string executableRoot = FSUtil::GetDirectoryName(SysUtil::GetExecutablePath());
+        return executableRoot + "/" + executable;
     } else if (!FSUtil::IsAbsolutePath(executable)) {
         return FSUtil::FindExecutable(executable, searchPaths);
     } else {

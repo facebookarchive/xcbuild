@@ -8,6 +8,7 @@
  */
 
 #include <libutil/SysUtil.h>
+#include <libutil/FSUtil.h>
 
 #include <sstream>
 
@@ -17,9 +18,16 @@
 #include <sys/select.h>
 #include <errno.h>
 
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#elif defined(__GLIBC__)
+#include <sys/auxv.h>
+#endif
+
 extern char **environ;
 
 using libutil::SysUtil;
+using libutil::FSUtil;
 
 std::unordered_map<std::string, std::string> SysUtil::
 EnvironmentVariables()
@@ -36,6 +44,45 @@ EnvironmentVariables()
     }
 
     return environment;
+}
+
+#if defined(__GLIBC__)
+char initialWorkingDirectory[PATH_MAX] = { 0 };
+
+__attribute__((constructor))
+static void GetExecutablePathInitialize()
+{
+    strncpy(initialWorkingDirectory, getcwd(), sizeof(initialWorkingDirectory));
+}
+#endif
+
+std::string SysUtil::
+GetExecutablePath()
+{
+#if defined(__APPLE__)
+    uint32_t size = 0;
+    if (_NSGetExecutablePath(NULL, &size) != -1) {
+        abort();
+    }
+
+    std::string buffer;
+    buffer.resize(size);
+    if (_NSGetExecutablePath(&buffer[0], &size) != 0) {
+        abort();
+    }
+
+    return buffer;
+#elif defined(__GLIBC__)
+    char const *path = getauxval(AT_EXECFN);
+    if (path == NULL) {
+        assert(false);
+        abort();
+    }
+
+    return FSUtil::ResolveRelativePath(std::string(path), std::string(initialWorkingDirectory));
+#else
+#error Unsupported platform.
+#endif
 }
 
 std::string SysUtil::
