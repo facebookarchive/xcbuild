@@ -323,6 +323,8 @@ target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting util plist 
 
 add_executable(plutil Tools/plutil.cpp)
 target_link_libraries(plutil plist util)
+add_executable(xcrun Tools/xcrun.cpp)
+target_link_libraries(xcrun xcsdk util)
 add_executable(xcbuild Tools/xcbuild.cpp)
 target_link_libraries(xcbuild xcdriver)
 
