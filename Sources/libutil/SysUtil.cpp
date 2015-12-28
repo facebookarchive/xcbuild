@@ -17,7 +17,26 @@
 #include <sys/select.h>
 #include <errno.h>
 
+extern char **environ;
+
 using libutil::SysUtil;
+
+std::unordered_map<std::string, std::string> SysUtil::
+EnvironmentVariables()
+{
+    std::unordered_map<std::string, std::string> environment;
+
+    for (char **current = environ; *current; current++) {
+        std::string variable = *current;
+        std::string::size_type offset = variable.find('=');
+
+        std::string name = variable.substr(0, offset);
+        std::string value = variable.substr(offset + 1);
+        environment.insert(std::make_pair(name, value));
+    }
+
+    return environment;
+}
 
 std::string SysUtil::
 GetUserName()

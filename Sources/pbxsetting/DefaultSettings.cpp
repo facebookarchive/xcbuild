@@ -8,41 +8,22 @@
  */
 
 #include <pbxsetting/DefaultSettings.h>
+#include <libutil/SysUtil.h>
 
-// TODO(grp): How portable is this file?
 #include <unistd.h>
-#include <pwd.h>
-#include <grp.h>
-extern char **environ;
 
 using pbxsetting::DefaultSettings;
 using pbxsetting::Level;
 using pbxsetting::Setting;
 using libutil::FSUtil;
-
-static std::map<std::string, std::string>
-environmentVariables(void)
-{
-    std::map<std::string, std::string> environment;
-
-    for (char **current = environ; *current; current++) {
-        std::string variable = *current;
-        std::string::size_type offset = variable.find('=');
-
-        std::string name = variable.substr(0, offset);
-        std::string value = variable.substr(offset + 1);
-        environment.insert(std::make_pair(name, value));
-    }
-
-    return environment;
-}
+using libutil::SysUtil;
 
 Level DefaultSettings::
 Environment(void)
 {
     std::vector<Setting> settings;
 
-    for (std::pair<std::string, std::string> const &variable : environmentVariables()) {
+    for (auto const &variable : SysUtil::EnvironmentVariables()) {
         // TODO(grp): Is this right? Should this be filtered at another level?
         if (variable.first.front() != '_') {
             Setting setting = Setting::Parse(variable.first, variable.second);
@@ -50,21 +31,10 @@ Environment(void)
         }
     }
 
-    uid_t uid = geteuid();
-    settings.push_back(Setting::Parse("UID", std::to_string(uid)));
-
-    struct passwd *passwd = getpwuid(uid);
-    if (passwd != nullptr) {
-        settings.push_back(Setting::Parse("USER", passwd->pw_name));
-    }
-
-    gid_t gid = getegid();
-    settings.push_back(Setting::Parse("GID", std::to_string(gid)));
-
-    struct group *group = getgrgid(gid);
-    if (group != nullptr) {
-        settings.push_back(Setting::Parse("GROUP", group->gr_name));
-    }
+    settings.push_back(Setting::Parse("UID", std::to_string(SysUtil::GetUserID())));
+    settings.push_back(Setting::Parse("USER", SysUtil::GetUserName()));
+    settings.push_back(Setting::Parse("GID", std::to_string(SysUtil::GetGroupID())));
+    settings.push_back(Setting::Parse("GROUP", SysUtil::GetGroupName()));
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));
