@@ -479,12 +479,12 @@ buildTargetInvocations(
 
         /*
          * Build the invocation environment. To set the environment, we use standard shell syntax.
+         * Use `env` to avoid Bash-specific limitations on environment variables. Specifically, some
+         * versions of Bash don't allow setting "UID". Pass -i to clear out the environment.
          */
-        std::string environment;
+        std::string environment = "env -i";
         for (auto it = invocation.environment().begin(); it != invocation.environment().end(); ++it) {
-            if (it != invocation.environment().begin()) {
-                environment += " ";
-            }
+            environment += " ";
             environment += it->first + "=" + ShellEscape(it->second);
         }
 
