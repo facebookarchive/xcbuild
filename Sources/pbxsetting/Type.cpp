@@ -8,6 +8,7 @@
  */
 
 #include <pbxsetting/Type.h>
+#include <libutil/Wildcard.h>
 
 using pbxsetting::Type;
 using libutil::Wildcard;

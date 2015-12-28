@@ -11,6 +11,7 @@
 #define __pbxproj_PBX_BuildRule_h
 
 #include <pbxproj/PBX/Object.h>
+#include <libutil/Base.h>
 
 namespace pbxproj { namespace PBX {
 

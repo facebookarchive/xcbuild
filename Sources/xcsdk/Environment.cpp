@@ -8,6 +8,9 @@
  */
 
 #include <xcsdk/Environment.h>
+#include <libutil/FSUtil.h>
+#include <libutil/Subprocess.h>
+
 #include <sstream>
 
 using xcsdk::Environment;

@@ -10,6 +10,4 @@
 #ifndef __pbxsetting_Base_h
 #define __pbxsetting_Base_h
 
-#include <libutil/libutil.h>
-
 #endif  // !__pbxsetting_Base_h

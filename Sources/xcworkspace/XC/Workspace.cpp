@@ -9,6 +9,8 @@
 
 #include <xcworkspace/XC/Workspace.h>
 #include <xcworkspace/XC/Group.h>
+#include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
 
 using xcworkspace::XC::Workspace;
 using libutil::FSUtil;

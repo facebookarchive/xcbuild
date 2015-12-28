@@ -8,6 +8,7 @@
  */
 
 #include <xcsdk/SDK/Toolchain.h>
+#include <libutil/FSUtil.h>
 
 using xcsdk::SDK::Toolchain;
 using libutil::FSUtil;

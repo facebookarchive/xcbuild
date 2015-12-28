@@ -8,6 +8,7 @@
  */
 
 #include <pbxsetting/Condition.h>
+#include <libutil/Wildcard.h>
 
 using pbxsetting::Condition;
 using libutil::Wildcard;

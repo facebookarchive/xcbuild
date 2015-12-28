@@ -10,6 +10,7 @@
 #include <xcscheme/xcscheme.h>
 #include <pbxproj/pbxproj.h>
 #include <xcworkspace/xcworkspace.h>
+#include <libutil/FSUtil.h>
 
 #include <cstring>
 #include <cerrno>

@@ -8,6 +8,8 @@
  */
 
 #include <pbxsetting/Environment.h>
+#include <libutil/FSUtil.h>
+
 #include <sstream>
 
 using pbxsetting::Environment;

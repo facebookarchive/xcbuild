@@ -7,7 +7,10 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxsetting/pbxsetting.h>
+#include <pbxsetting/XC/Config.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Setting.h>
+#include <libutil/FSUtil.h>
 
 #include <cstdio>
 

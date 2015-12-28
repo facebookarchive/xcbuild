@@ -14,8 +14,14 @@
 #include <pbxsetting/Level.h>
 #include <pbxsetting/Setting.h>
 
+#include <vector>
+
 namespace pbxsetting {
 
+/*
+ * Environment-specific default settings. These levels are generally assumed
+ * to be at the far back of an `Environment` for setting resolution.
+ */
 class DefaultSettings {
 private:
     DefaultSettings();
@@ -36,6 +42,9 @@ public:
     Build(void);
 
 public:
+    /*
+     * All of the default setting levels, in order.
+     */
     static std::vector<Level>
     Levels(void);
 };

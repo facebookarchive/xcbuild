@@ -11,6 +11,8 @@
 #include <pbxproj/PBX/AggregateTarget.h>
 #include <pbxproj/PBX/LegacyTarget.h>
 #include <pbxproj/PBX/NativeTarget.h>
+#include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
 
 using pbxproj::PBX::Project;
 using pbxsetting::Level;

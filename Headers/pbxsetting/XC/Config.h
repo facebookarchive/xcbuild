@@ -14,6 +14,10 @@
 #include <pbxsetting/Level.h>
 #include <pbxsetting/Environment.h>
 
+#include <memory>
+#include <string>
+#include <vector>
+
 namespace pbxsetting { namespace XC {
 
 class Config {

@@ -9,6 +9,8 @@
 
 #include <pbxproj/XC/ConfigurationList.h>
 
+#include <cassert>
+
 using pbxproj::XC::ConfigurationList;
 
 ConfigurationList::ConfigurationList() :

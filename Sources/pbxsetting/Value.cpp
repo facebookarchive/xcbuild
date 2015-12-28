@@ -8,9 +8,12 @@
  */
 
 #include <pbxsetting/Value.h>
+#include <plist/plist.h>
 
 #include <iomanip>
 #include <sstream>
+
+#include <cassert>
 
 using pbxsetting::Value;
 

@@ -8,6 +8,7 @@
  */
 
 #include <pbxsetting/DefaultSettings.h>
+#include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 
 #include <unistd.h>

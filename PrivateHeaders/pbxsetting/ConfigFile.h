@@ -13,7 +13,11 @@
 #include <pbxsetting/XC/Config.h>
 #include <pbxsetting/Level.h>
 #include <pbxsetting/Environment.h>
+
+#include <string>
 #include <sstream>
+#include <vector>
+#include <unordered_set>
 
 namespace pbxsetting {
 
@@ -25,12 +29,12 @@ private:
     };
 
 private:
-    libutil::string_set        _included;
-    std::vector<File>          _files;
-    File                       _current;
-    std::stringstream          _processed;
-    bool                       _stop;
-    XC::Config::error_function _error;
+    std::unordered_set<std::string> _included;
+    std::vector<File>               _files;
+    File                            _current;
+    std::stringstream               _processed;
+    bool                            _stop;
+    XC::Config::error_function      _error;
 
 public:
     ConfigFile();

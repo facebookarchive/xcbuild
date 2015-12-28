@@ -9,6 +9,9 @@
 
 #include <xcscheme/SchemeGroup.h>
 
+#include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
+
 using xcscheme::SchemeGroup;
 using xcscheme::XC::Scheme;
 using libutil::FSUtil;

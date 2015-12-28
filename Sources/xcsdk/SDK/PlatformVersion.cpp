@@ -8,6 +8,7 @@
  */
 
 #include <xcsdk/SDK/PlatformVersion.h>
+#include <libutil/FSUtil.h>
 
 using xcsdk::SDK::PlatformVersion;
 using libutil::FSUtil;

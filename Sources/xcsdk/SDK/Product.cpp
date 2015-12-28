@@ -8,6 +8,7 @@
  */
 
 #include <xcsdk/SDK/Product.h>
+#include <libutil/FSUtil.h>
 
 using xcsdk::SDK::Product;
 using libutil::FSUtil;

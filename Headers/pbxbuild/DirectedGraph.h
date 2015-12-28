@@ -15,6 +15,13 @@
 
 namespace pbxbuild {
 
+/*
+ * A generic directed graph as an external adjacency list. Generally
+ * intended for topological sorting (see `ordered()`) but can also be
+ * used to just pass graphs of objects around.
+ *
+ * Note: Specializations are realized in the implementation file.
+ */
 template<typename T>
 class DirectedGraph {
 private:
@@ -25,11 +32,23 @@ public:
     void insert(T const &node, std::unordered_set<T> const &adjacent);
 
 public:
+    /*
+     * Returns all of the nodes in the graph.
+     */
     std::unordered_set<T> const &nodes() const;
+
+    /*
+     * Returns the nodes adjacent to a node. Empty if node is not
+     * present in the graph or has no adjacent nodes.
+     */
     std::unordered_set<T> adjacent(T const &node) const;
 
 public:
-    std::pair<bool, std::vector<T>> ordered(void) const;
+    /*
+     * Performs a toplogical sort of the graph. Fails if the graph
+     * has a cycle.
+     */
+    std::pair<bool, std::vector<T>> ordered() const;
 };
 
 }

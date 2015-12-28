@@ -12,6 +12,9 @@
 
 #include <pbxsetting/Base.h>
 
+#include <string>
+#include <unordered_map>
+
 namespace pbxsetting {
 
 class Condition {

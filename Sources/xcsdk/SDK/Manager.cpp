@@ -8,6 +8,7 @@
  */
 
 #include <xcsdk/SDK/Manager.h>
+#include <libutil/FSUtil.h>
 
 using xcsdk::SDK::Manager;
 using xcsdk::SDK::Target;

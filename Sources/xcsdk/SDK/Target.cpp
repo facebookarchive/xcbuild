@@ -9,6 +9,7 @@
 
 #include <xcsdk/SDK/Target.h>
 #include <xcsdk/SDK/Manager.h>
+#include <libutil/FSUtil.h>
 
 using xcsdk::SDK::Target;
 using pbxsetting::Level;

@@ -9,6 +9,7 @@
 
 #include <xcscheme/XC/Scheme.h>
 #include <xcscheme/XC/Actions.h>
+#include <libutil/FSUtil.h>
 
 using xcscheme::XC::Scheme;
 using libutil::FSUtil;

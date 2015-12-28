@@ -5,6 +5,7 @@
 #include <pbxproj/PBX/Group.h>
 #include <pbxproj/PBX/Target.h>
 #include <pbxproj/XC/ConfigurationList.h>
+#include <libutil/Base.h>
 
 namespace pbxproj { namespace PBX {
 

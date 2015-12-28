@@ -11,6 +11,8 @@
 #define __pbxspec_PBX_PropertyOption_h
 
 #include <pbxsetting/pbxsetting.h>
+#include <libutil/Base.h>
+#include <plist/plist.h>
 
 namespace pbxspec { namespace PBX {
 

@@ -9,10 +9,10 @@
 
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/Condition.h>
+#include <libutil/base.h>
 
 using pbxsetting::Setting;
 using pbxsetting::Condition;
-using libutil::trim;
 
 Setting::
 Setting(std::string const &name, Condition const &condition, Value const &value) :
@@ -72,8 +72,8 @@ Parse(std::string const &string)
     std::string key = string.substr(0, sqbo != std::string::npos ? sqbo : equal);
     std::string value = string.substr(equal + 1);
 
-    trim(key);
-    trim(value);
+    libutil::trim(key);
+    libutil::trim(value);
 
     return Setting(key, Condition(conditions), Value::Parse(value));
 }
