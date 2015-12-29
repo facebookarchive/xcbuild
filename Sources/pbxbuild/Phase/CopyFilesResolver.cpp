@@ -80,7 +80,8 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string path = environment.expand(_buildPhase->dstPath());
     std::string outputDirectory = root + "/" + path;
 
-    // TODO(grp): There are subtleties here involving encodings, stripping, deleting headers, etc.
+    bool rules = pbxsetting::Type::ParseBoolean(environment.resolve("APPLY_RULES_IN_COPY_FILES"));
+
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
         if (buildFile->fileRef() == nullptr) {
             continue;
@@ -109,7 +110,13 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
             continue;
         }
 
-        copyResolver->resolve(&phaseContext->toolContext(), environment, file->filePath(), outputDirectory, "PBXCp");
+        if (rules) {
+            if (!phaseContext->resolveBuildFile(phaseEnvironment, environment, _buildPhase, buildFile, *file, outputDirectory, Tool::CopyResolver::ToolIdentifier())) {
+                return false;
+            }
+        } else {
+            copyResolver->resolve(&phaseContext->toolContext(), environment, file->filePath(), outputDirectory, "PBXCp");
+        }
     }
 
     return true;
