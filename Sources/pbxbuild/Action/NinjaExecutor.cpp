@@ -259,15 +259,29 @@ build(
         /*
          * As described above, the target's finish depends on all of the invocation outputs.
          */
-        std::vector<ninja::Value> invocationOutputs;
-        std::vector<ninja::Value> invocationOrderOnlyOutputs;
+        std::unordered_set<std::string> invocationOutputs;
+        std::unordered_set<std::string> invocationOrderOnlyOutputs;
         for (Tool::Invocation const &invocation : phaseInvocations.invocations()) {
             for (std::string const &output : invocation.outputs()) {
-                invocationOutputs.push_back(ninja::Value::String(output));
+                invocationOutputs.insert(output);
             }
             for (std::string const &phonyOutput : invocation.phonyOutputs()) {
                 std::string phonyOutputTarget = NinjaPhonyOutputTarget(phonyOutput);
-                invocationOrderOnlyOutputs.push_back(ninja::Value::String(phonyOutputTarget));
+                invocationOrderOnlyOutputs.insert(phonyOutputTarget);
+            }
+        }
+
+        /*
+         * Add phony rules for input dependencies that we don't know if they exist.
+         * This can come up, for example, for user-specified custom script inputs.
+         * However, avoid adding the phony invocation if a real output *does* include
+         * the phony input, to avoid Ninja complaining about duplicate rules.
+         */
+        for (Tool::Invocation const &invocation : phaseInvocations.invocations()) {
+            for (std::string const &phonyInput : invocation.phonyInputs()) {
+                if (invocationOutputs.find(phonyInput) == invocationOutputs.end()) {
+                    writer.build({ ninja::Value::String(phonyInput) }, "phony", { });
+                }
             }
         }
 
@@ -275,7 +289,15 @@ build(
          * Add the phony target for ending this target's build.
          */
         std::string targetFinish = TargetNinjaFinish(target);
-        writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputs, invocationOrderOnlyOutputs);
+        std::vector<ninja::Value> invocationOutputsValues;
+        for (std::string const &output : invocationOutputs) {
+            invocationOutputsValues.push_back(ninja::Value::String(output));
+        }
+        std::vector<ninja::Value> invocationOrderOnlyOutputsValues;
+        for (std::string const &output : invocationOrderOnlyOutputs) {
+            invocationOrderOnlyOutputsValues.push_back(ninja::Value::String(output));
+        }
+        writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputsValues, invocationOrderOnlyOutputsValues);
     }
 
     /*
@@ -472,14 +494,6 @@ buildTargetInvocations(
         for (std::string const &phonyOutput : invocation.phonyOutputs()) {
             std::string phonyOutputTarget = NinjaPhonyOutputTarget(phonyOutput);
             outputs.push_back(ninja::Value::String(phonyOutputTarget));
-        }
-
-        /*
-         * Add phony rules for input dependencies that we don't know if they exist.
-         * This can come up, for example, for user-specified custom script inputs.
-         */
-        for (std::string const &phonyInput : invocation.phonyInputs()) {
-            writer.build({ ninja::Value::String(phonyInput) }, "phony", { });
         }
 
         /*
