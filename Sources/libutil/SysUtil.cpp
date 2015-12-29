@@ -71,7 +71,7 @@ GetExecutablePath()
         abort();
     }
 
-    return buffer;
+    return FSUtil::NormalizePath(buffer);
 #elif defined(__GLIBC__)
     char const *path = getauxval(AT_EXECFN);
     if (path == NULL) {
@@ -79,7 +79,8 @@ GetExecutablePath()
         abort();
     }
 
-    return FSUtil::ResolveRelativePath(std::string(path), std::string(initialWorkingDirectory));
+    std::string absolutePath = FSUtil::ResolveRelativePath(std::string(path), std::string(initialWorkingDirectory));
+    return FSUtil::NormalizePath(absolutePath);
 #else
 #error Unsupported platform.
 #endif
