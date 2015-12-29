@@ -12,7 +12,9 @@
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/InfoPlistResolver.h>
+#include <pbxbuild/Tool/MakeDirectoryResolver.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
+#include <pbxbuild/Tool/SymlinkResolver.h>
 #include <pbxbuild/Tool/TouchResolver.h>
 #include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/Target/Environment.h>
@@ -65,6 +67,16 @@ infoPlistResolver(Phase::Environment const &phaseEnvironment)
     return _infoPlistResolver.get();
 }
 
+Tool::MakeDirectoryResolver const *Phase::Context::
+makeDirectoryResolver(Phase::Environment const &phaseEnvironment)
+{
+    if (_makeDirectoryResolver == nullptr) {
+        _makeDirectoryResolver = Tool::MakeDirectoryResolver::Create(phaseEnvironment);
+    }
+
+    return _makeDirectoryResolver.get();
+}
+
 Tool::ScriptResolver const *Phase::Context::
 scriptResolver(Phase::Environment const &phaseEnvironment)
 {
@@ -73,6 +85,16 @@ scriptResolver(Phase::Environment const &phaseEnvironment)
     }
 
     return _scriptResolver.get();
+}
+
+Tool::SymlinkResolver const *Phase::Context::
+symlinkResolver(Phase::Environment const &phaseEnvironment)
+{
+    if (_symlinkResolver == nullptr) {
+        _symlinkResolver = Tool::SymlinkResolver::Create(phaseEnvironment);
+    }
+
+    return _symlinkResolver.get();
 }
 
 Tool::TouchResolver const *Phase::Context::

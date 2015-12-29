@@ -23,7 +23,9 @@ namespace Tool {
     class ClangResolver;
     class CopyResolver;
     class InfoPlistResolver;
+    class MakeDirectoryResolver;
     class ScriptResolver;
+    class SymlinkResolver;
     class TouchResolver;
     class ToolResolver;
 }
@@ -40,7 +42,9 @@ private:
     std::unique_ptr<Tool::ClangResolver>                _clangResolver;
     std::unique_ptr<Tool::CopyResolver>                 _copyResolver;
     std::unique_ptr<Tool::InfoPlistResolver>            _infoPlistResolver;
+    std::unique_ptr<Tool::MakeDirectoryResolver>        _makeDirectoryResolver;
     std::unique_ptr<Tool::ScriptResolver>               _scriptResolver;
+    std::unique_ptr<Tool::SymlinkResolver>              _symlinkResolver;
     std::unique_ptr<Tool::TouchResolver>                _touchResolver;
     std::unordered_map<std::string, Tool::ToolResolver> _toolResolvers;
 
@@ -57,12 +61,14 @@ public:
     { return _toolContext; }
 
 public:
-    Tool::ClangResolver const     *clangResolver(Phase::Environment const &phaseEnvironment);
-    Tool::CopyResolver const      *copyResolver(Phase::Environment const &phaseEnvironment);
-    Tool::InfoPlistResolver const *infoPlistResolver(Phase::Environment const &phaseEnvironment);
-    Tool::ScriptResolver const    *scriptResolver(Phase::Environment const &phaseEnvironment);
-    Tool::TouchResolver const     *touchResolver(Phase::Environment const &phaseEnvironment);
-    Tool::ToolResolver const      *toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier);
+    Tool::ClangResolver const         *clangResolver(Phase::Environment const &phaseEnvironment);
+    Tool::CopyResolver const          *copyResolver(Phase::Environment const &phaseEnvironment);
+    Tool::InfoPlistResolver const     *infoPlistResolver(Phase::Environment const &phaseEnvironment);
+    Tool::MakeDirectoryResolver const *makeDirectoryResolver(Phase::Environment const &phaseEnvironment);
+    Tool::ScriptResolver const        *scriptResolver(Phase::Environment const &phaseEnvironment);
+    Tool::SymlinkResolver const       *symlinkResolver(Phase::Environment const &phaseEnvironment);
+    Tool::TouchResolver const         *touchResolver(Phase::Environment const &phaseEnvironment);
+    Tool::ToolResolver const          *toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier);
 
 public:
     bool resolveBuildFile(
