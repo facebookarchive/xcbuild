@@ -31,8 +31,6 @@ public:
 public:
     inline PBX::FileReference::shared_ptr const &baseConfigurationReference() const
     { return _baseConfigurationReference; }
-    inline PBX::FileReference::shared_ptr &baseConfigurationReference()
-    { return _baseConfigurationReference; }
 
 public:
     inline pbxsetting::Level const &buildSettings() const

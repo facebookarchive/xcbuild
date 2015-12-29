@@ -31,8 +31,6 @@ public:
 public:
     inline GroupItem::shared_ptr const &fileRef() const
     { return _fileRef; }
-    inline GroupItem::shared_ptr &fileRef()
-    { return _fileRef; }
 
 public:
     inline std::vector<std::string> const &compilerFlags() const

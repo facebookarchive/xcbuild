@@ -27,6 +27,7 @@ private:
     bool                               _hasScannedForEncodings;
     libutil::string_vector             _knownRegions;
     Group::shared_ptr                  _mainGroup;
+    Group::shared_ptr                  _productRefGroup;
     std::string                        _projectDirPath;
     std::string                        _projectRoot;
     Target::vector                     _targets;
@@ -40,8 +41,6 @@ public:
 
 public:
     inline XC::ConfigurationList::shared_ptr const &buildConfigurationList() const
-    { return _buildConfigurationList; }
-    inline XC::ConfigurationList::shared_ptr &buildConfigurationList()
     { return _buildConfigurationList; }
 
 public:
@@ -63,8 +62,10 @@ public:
 public:
     inline Group::shared_ptr const &mainGroup() const
     { return _mainGroup; }
-    inline Group::shared_ptr &mainGroup()
-    { return _mainGroup; }
+
+public:
+    inline Group::shared_ptr const &productRefGroup() const
+    { return _productRefGroup; }
 
 public:
     inline std::string const &projectDirPath() const
@@ -94,13 +95,9 @@ protected:
 public:
     inline Object::map const &blueprints() const
     { return _blueprints; }
-    inline Object::map &blueprints()
-    { return _blueprints; }
 
 public:
     inline FileReference::vector const &fileReferences() const
-    { return _fileReferences; }
-    inline FileReference::vector &fileReferences()
     { return _fileReferences; }
 
 public:

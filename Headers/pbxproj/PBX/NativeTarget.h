@@ -33,13 +33,9 @@ public:
 public:
     inline PBX::FileReference::shared_ptr const &productReference() const
     { return _productReference; }
-    inline PBX::FileReference::shared_ptr &productReference()
-    { return _productReference; }
 
 public:
     inline BuildRule::vector const &buildRules() const
-    { return _buildRules; }
-    inline BuildRule::vector &buildRules()
     { return _buildRules; }
 
 protected:

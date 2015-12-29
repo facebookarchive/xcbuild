@@ -14,7 +14,8 @@ using pbxproj::PBX::FileReference;
 FileReference::FileReference() :
     GroupItem      (Isa(), GroupItem::kTypeFileReference),
     _includeInIndex(false),
-    _fileEncoding  (0)
+    _fileEncoding  (FileEncoding::Default),
+    _lineEnding    (LineEnding::Unix)
 {
 }
 
@@ -28,8 +29,10 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
 
     auto LKFT = unpack.cast <plist::String> ("lastKnownFileType");
     auto EFT  = unpack.cast <plist::String> ("explicitFileType");
+    auto XLSI = unpack.cast <plist::String> ("xcLanguageSpecificationIdentifier");
     auto III  = unpack.coerce <plist::Boolean> ("includeInIndex");
     auto FE   = unpack.coerce <plist::Integer> ("fileEncoding");
+    auto LE   = unpack.coerce <plist::Integer> ("lineEnding");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errors().c_str());
@@ -43,12 +46,20 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
         _explicitFileType = EFT->value();
     }
 
+    if (XLSI != nullptr) {
+        _xcLanguageSpecificationIdentifier = XLSI->value();
+    }
+
     if (III != nullptr) {
         _includeInIndex = III->value();
     }
 
     if (FE != nullptr) {
-        _fileEncoding = FE->value();
+        _fileEncoding = static_cast<FileEncoding>(FE->value());
+    }
+
+    if (LE != nullptr) {
+        _lineEnding = static_cast<LineEnding>(LE->value());
     }
 
     return true;

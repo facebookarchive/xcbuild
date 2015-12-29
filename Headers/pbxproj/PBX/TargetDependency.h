@@ -31,15 +31,11 @@ public:
     TargetDependency();
 
 public:
-    inline std::shared_ptr <Target> const &target() const
-    { return _target; }
-    inline std::shared_ptr <Target> &target()
+    inline std::shared_ptr<Target> const &target() const
     { return _target; }
 
 public:
-    inline std::shared_ptr <ContainerItemProxy> const &targetProxy() const
-    { return _targetProxy; }
-    inline std::shared_ptr <ContainerItemProxy> &targetProxy()
+    inline std::shared_ptr<ContainerItemProxy> const &targetProxy() const
     { return _targetProxy; }
 
 protected:

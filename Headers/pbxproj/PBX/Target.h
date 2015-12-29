@@ -64,19 +64,13 @@ public:
 public:
     inline XC::ConfigurationList::shared_ptr const &buildConfigurationList() const
     { return _buildConfigurationList; }
-    inline XC::ConfigurationList::shared_ptr &buildConfigurationList()
-    { return _buildConfigurationList; }
 
 public:
     inline BuildPhase::vector const &buildPhases() const
     { return _buildPhases; }
-    inline BuildPhase::vector &buildPhases()
-    { return _buildPhases; }
 
 public:
     inline TargetDependency::vector const &dependencies() const
-    { return _dependencies; }
-    inline TargetDependency::vector &dependencies()
     { return _dependencies; }
 
 public:

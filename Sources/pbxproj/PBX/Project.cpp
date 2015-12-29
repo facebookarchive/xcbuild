@@ -51,14 +51,16 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
 
     std::string BCLID;
     std::string MGID;
+    std::string PRGID;
 
     auto BCL  = context.indirect <XC::ConfigurationList> (&unpack, "buildConfigurationList", &BCLID);
-    auto A    = unpack.cast <plist::Array> ("attributes");
+    auto A    = unpack.cast <plist::Dictionary> ("attributes");
     auto CV   = unpack.cast <plist::String> ("compatibilityVersion");
     auto DR   = unpack.cast <plist::String> ("developmentRegion");
     auto HSFE = unpack.coerce <plist::Boolean> ("hasScannedForEncodings");
     auto KR   = unpack.cast <plist::Array> ("knownRegions");
     auto MG   = context.indirect <Group> (&unpack, "mainGroup", &MGID);
+    auto PRG  = context.indirect <Group> (&unpack, "productRefGroup", &PRGID);
     auto PDP  = unpack.cast <plist::String> ("projectDirPath");
     auto PR   = unpack.cast <plist::String> ("projectRoot");
     auto Ts   = unpack.cast <plist::Array> ("targets");
@@ -103,6 +105,10 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             abort();
             return false;
         }
+    }
+
+    if (PRG != nullptr) {
+        _productRefGroup = context.parseObject(context.groups, PRGID, PRG);
     }
 
     if (PDP != nullptr) {
@@ -192,10 +198,7 @@ Open(std::string const &path)
     auto AV = unpack.coerce <plist::Integer> ("archiveVersion");
     auto OV = unpack.coerce <plist::Integer> ("objectVersion");
     auto Os = unpack.cast <plist::Dictionary> ("objects");
-
-    if (!unpack.complete(true)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
-    }
+    auto Cs = unpack.cast <plist::Dictionary> ("classes");
 
     //
     // Handle basic objects
@@ -220,6 +223,10 @@ Open(std::string const &path)
         return nullptr;
     }
 
+    if (Cs != nullptr && Cs->count() != 0) {
+        fprintf(stderr, "warning: non-empty classes may be unsupported\n");
+    }
+
     if (Os == nullptr) {
         return nullptr;
     }
@@ -240,6 +247,13 @@ Open(std::string const &path)
     if (P == nullptr) {
         fprintf(stderr, "error: unable to parse project\n");
         return nullptr;
+    }
+
+    //
+    // Verify that all keys are parsed.
+    //
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
     }
 
     //

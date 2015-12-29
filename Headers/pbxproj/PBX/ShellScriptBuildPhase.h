@@ -36,20 +36,13 @@ public:
 public:
     inline std::string const &shellPath() const
     { return _shellPath; }
-
     inline std::string const &shellScript() const
     { return _shellScript; }
 
 public:
     inline std::vector<pbxsetting::Value> const &inputPaths() const
     { return _inputPaths; }
-    inline std::vector<pbxsetting::Value> &inputPaths()
-    { return _inputPaths; }
-
-public:
     inline std::vector<pbxsetting::Value> const &outputPaths() const
-    { return _outputPaths; }
-    inline std::vector<pbxsetting::Value> &outputPaths()
     { return _outputPaths; }
 
 public:

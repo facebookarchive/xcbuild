@@ -29,8 +29,6 @@ public:
 public:
     inline PBX::GroupItem::shared_ptr const &currentVersion() const
     { return _currentVersion; }
-    inline PBX::GroupItem::shared_ptr &currentVersion()
-    { return _currentVersion; }
 
 public:
     inline std::string const &versionGroupType() const

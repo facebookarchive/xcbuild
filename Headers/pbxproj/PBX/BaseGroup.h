@@ -28,8 +28,6 @@ protected:
 public:
     inline GroupItem::vector const &children() const
     { return _children; }
-    inline GroupItem::vector &children()
-    { return _children; }
 
 protected:
     bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
