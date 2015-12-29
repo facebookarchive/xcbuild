@@ -35,7 +35,7 @@ settings(void) const
         Setting::Parse("PROJECT_DIR", _basePath),
         Setting::Parse("PROJECT_FILE_PATH", _projectFile),
         Setting::Parse("SRCROOT", _basePath),
-        Setting::Parse("DEVELOPMENT_LANGUAGE", _developmentRegion),
+        Setting::Parse("DEVELOPMENT_LANGUAGE", (!_developmentRegion.empty() ? _developmentRegion : "English")),
     };
 
     return Level(settings);
