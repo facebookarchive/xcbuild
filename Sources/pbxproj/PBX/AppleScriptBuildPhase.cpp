@@ -17,20 +17,26 @@ AppleScriptBuildPhase::AppleScriptBuildPhase() :
 }
 
 bool AppleScriptBuildPhase::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!BuildPhase::parse(context, dict))
+    if (!BuildPhase::parse(context, dict, seen, false))
         return false;
 
-    auto CN = dict->value <plist::String> ("contextName");
-    auto SC = dict->value <plist::String> ("isSharedContext");
+    auto unpack = plist::Keys::Unpack("AppleScriptBuildPhase", dict, seen);
+
+    auto CN = unpack.cast <plist::String> ("contextName");
+    auto SC = unpack.coerce <plist::Boolean> ("isSharedContext");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (CN != nullptr) {
         _contextName = CN->value();
     }
 
     if (SC != nullptr) {
-        _isSharedContext = (pbxsetting::Type::ParseInteger(SC->value()) != 0);
+        _isSharedContext = SC->value();
     }
 
     return true;

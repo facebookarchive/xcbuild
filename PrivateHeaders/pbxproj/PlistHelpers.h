@@ -21,7 +21,7 @@ PlistDictionaryGetPBXObject(plist::Dictionary const *dict,
 
 plist::Dictionary const *
 PlistDictionaryGetIndirectPBXObject(plist::Dictionary const *objects,
-                                    plist::Dictionary const *dict,
+                                    plist::Keys::Unpack *unpack,
                                     std::string const &key,
                                     std::string const &isa,
                                     std::string *id);

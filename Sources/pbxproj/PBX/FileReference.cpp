@@ -19,15 +19,21 @@ FileReference::FileReference() :
 }
 
 bool FileReference::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!GroupItem::parse(context, dict))
+    if (!GroupItem::parse(context, dict, seen, false))
         return false;
 
-    auto LKFT = dict->value <plist::String> ("lastKnownFileType");
-    auto EFT  = dict->value <plist::String> ("explicitFileType");
-    auto III  = dict->value <plist::String> ("includeInIndex");
-    auto FE   = dict->value <plist::String> ("fileEncoding");
+    auto unpack = plist::Keys::Unpack("FileReference", dict, seen);
+
+    auto LKFT = unpack.cast <plist::String> ("lastKnownFileType");
+    auto EFT  = unpack.cast <plist::String> ("explicitFileType");
+    auto III  = unpack.coerce <plist::Boolean> ("includeInIndex");
+    auto FE   = unpack.coerce <plist::Integer> ("fileEncoding");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (LKFT != nullptr) {
         _lastKnownFileType = LKFT->value();
@@ -38,11 +44,11 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (III != nullptr) {
-        _includeInIndex = (pbxsetting::Type::ParseInteger(III->value()) != 0);
+        _includeInIndex = III->value();
     }
 
     if (FE != nullptr) {
-        _fileEncoding = pbxsetting::Type::ParseInteger(FE->value());
+        _fileEncoding = FE->value();
     }
 
     return true;

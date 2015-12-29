@@ -18,15 +18,21 @@ VersionGroup::VersionGroup() :
 }
 
 bool VersionGroup::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!BaseGroup::parse(context, dict))
+    if (!BaseGroup::parse(context, dict, seen, false))
         return false;
+
+    auto unpack = plist::Keys::Unpack("VersionGroup", dict, seen);
 
     std::string CVID;
 
-    auto CV  = context.indirect <PBX::FileReference> (dict, "currentVersion", &CVID);
-    auto VGT = dict->value <plist::String> ("versionGroupType");
+    auto CV  = context.indirect <PBX::FileReference> (&unpack, "currentVersion", &CVID);
+    auto VGT = unpack.cast <plist::String> ("versionGroupType");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (CV != nullptr) {
         _currentVersion = context.parseObject(context.fileReferences, CVID, CV);

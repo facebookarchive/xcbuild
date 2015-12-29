@@ -26,20 +26,29 @@ BuildFile::~BuildFile()
 }
 
 bool BuildFile::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
+    if (!Object::parse(context, dict, seen, false))
+        return false;
+
+    auto unpack = plist::Keys::Unpack("BuildFile", dict, seen);
+
     std::string FRID;
     std::string RPID;
     std::string GID;
     std::string VaGID;
     std::string VrGID;
 
-    auto FR  = context.indirect <FileReference> (dict, "fileRef", &FRID);
-    auto RP  = context.indirect <ReferenceProxy> (dict, "fileRef", &RPID);
-    auto G   = context.indirect <Group> (dict, "fileRef", &GID);
-    auto VaG = context.indirect <VariantGroup> (dict, "fileRef", &VaGID);
-    auto VrG = context.indirect <XC::VersionGroup> (dict, "fileRef", &VrGID);
-    auto S   = dict->value <plist::Dictionary> ("settings");
+    auto FR  = context.indirect <FileReference> (&unpack, "fileRef", &FRID);
+    auto RP  = context.indirect <ReferenceProxy> (&unpack, "fileRef", &RPID);
+    auto G   = context.indirect <Group> (&unpack, "fileRef", &GID);
+    auto VaG = context.indirect <VariantGroup> (&unpack, "fileRef", &VaGID);
+    auto VrG = context.indirect <XC::VersionGroup> (&unpack, "fileRef", &VrGID);
+    auto S   = unpack.cast <plist::Dictionary> ("settings");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (FR != nullptr) {
         FileReference::shared_ptr fileReference = context.parseObject(context.fileReferences, FRID, FR);

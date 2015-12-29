@@ -22,12 +22,18 @@ BaseGroup::BaseGroup(std::string const &isa, GroupItem::Type type) :
 }
 
 bool BaseGroup::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!GroupItem::parse(context, dict))
+    if (!GroupItem::parse(context, dict, seen, false))
         return false;
 
-    auto Cs = dict->value <plist::Array> ("children");
+    auto unpack = plist::Keys::Unpack("BaseGroup", dict, seen);
+
+    auto Cs = unpack.cast <plist::Array> ("children");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (Cs != nullptr) {
         for (size_t n = 0; n < Cs->count(); n++) {

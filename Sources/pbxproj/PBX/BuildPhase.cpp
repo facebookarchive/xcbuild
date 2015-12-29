@@ -20,12 +20,21 @@ BuildPhase::BuildPhase(std::string const &isa, Type type) :
 }
 
 bool BuildPhase::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    auto N     = dict->value <plist::String> ("name");
-    auto Fs    = dict->value <plist::Array> ("files");
-    auto ROFDP = dict->value <plist::String> ("runOnlyForDeploymentPostprocessing");
-    auto BAM   = dict->value <plist::String> ("buildActionMask");
+    if (!Object::parse(context, dict, seen, false))
+        return false;
+
+    auto unpack = plist::Keys::Unpack("BuildPhase", dict, seen);
+
+    auto N     = unpack.cast <plist::String> ("name");
+    auto Fs    = unpack.cast <plist::Array> ("files");
+    auto ROFDP = unpack.coerce <plist::Boolean> ("runOnlyForDeploymentPostprocessing");
+    auto BAM   = unpack.coerce <plist::Integer> ("buildActionMask");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (N != nullptr) {
         _name = N->value();
@@ -46,11 +55,11 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (ROFDP != nullptr) {
-        _runOnlyForDeploymentPostprocessing = (pbxsetting::Type::ParseInteger(ROFDP->value()) != 0);
+        _runOnlyForDeploymentPostprocessing = ROFDP->value();
     }
 
     if (BAM != nullptr) {
-        _buildActionMask = pbxsetting::Type::ParseInteger(BAM->value());
+        _buildActionMask = BAM->value();
     }
 
     return true;

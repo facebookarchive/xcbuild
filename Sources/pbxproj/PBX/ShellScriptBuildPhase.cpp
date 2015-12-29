@@ -18,17 +18,23 @@ ShellScriptBuildPhase::ShellScriptBuildPhase() :
 }
 
 bool ShellScriptBuildPhase::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!BuildPhase::parse(context, dict))
+    if (!BuildPhase::parse(context, dict, seen, false))
         return false;
 
-    auto N  = dict->value <plist::String> ("name");
-    auto SP = dict->value <plist::String> ("shellPath");
-    auto SS = dict->value <plist::String> ("shellScript");
-    auto IP = dict->value <plist::Array> ("inputPaths");
-    auto OP = dict->value <plist::Array> ("outputPaths");
-    auto SE = dict->value <plist::String> ("showEnvVarsInLog");
+    auto unpack = plist::Keys::Unpack("ShellScriptBuildPhase", dict, seen);
+
+    auto N  = unpack.cast <plist::String> ("name");
+    auto SP = unpack.cast <plist::String> ("shellPath");
+    auto SS = unpack.cast <plist::String> ("shellScript");
+    auto IP = unpack.cast <plist::Array> ("inputPaths");
+    auto OP = unpack.cast <plist::Array> ("outputPaths");
+    auto SE = unpack.coerce <plist::Boolean> ("showEnvVarsInLog");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (N != nullptr) {
         _name = N->value();
@@ -63,7 +69,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (SE != nullptr) {
-        _showEnvVarsInLog = pbxsetting::Type::ParseInteger(SE->value());
+        _showEnvVarsInLog = SE->value();
     }
 
     return true;

@@ -19,20 +19,26 @@ CopyFilesBuildPhase::CopyFilesBuildPhase() :
 }
 
 bool CopyFilesBuildPhase::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!BuildPhase::parse(context, dict))
+    if (!BuildPhase::parse(context, dict, seen, false))
         return false;
 
-    auto DP  = dict->value <plist::String> ("dstPath");
-    auto DSS = dict->value <plist::String> ("dstSubfolderSpec");
+    auto unpack = plist::Keys::Unpack("CopyFilesBuildPhase", dict, seen);
+
+    auto DP  = unpack.cast <plist::String> ("dstPath");
+    auto DSS = unpack.coerce <plist::Integer> ("dstSubfolderSpec");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (DP != nullptr) {
         _dstPath = pbxsetting::Value::Parse(DP->value());
     }
 
     if (DSS != nullptr) {
-        _dstSubfolderSpec = static_cast <Destination> (pbxsetting::Type::ParseInteger(DSS->value()));
+        _dstSubfolderSpec = static_cast<Destination>(DSS->value());
     }
 
     return true;

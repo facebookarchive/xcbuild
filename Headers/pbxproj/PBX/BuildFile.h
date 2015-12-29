@@ -40,8 +40,8 @@ public:
     inline std::vector<std::string> const &attributes() const
     { return _attributes; }
 
-public:
-    bool parse(Context &context, plist::Dictionary const *dict);
+protected:
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 public:
     static inline char const *Isa()

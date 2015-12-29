@@ -44,8 +44,8 @@ public:
     inline uint32_t fileEncoding() const
     { return _fileEncoding; }
 
-public:
-    bool parse(Context &context, plist::Dictionary const *dict);
+protected:
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 public:
     static inline char const *Isa()

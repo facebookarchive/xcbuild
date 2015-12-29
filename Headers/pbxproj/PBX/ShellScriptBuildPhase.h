@@ -56,8 +56,8 @@ public:
     inline bool showEnvVarsInLog() const
     { return _showEnvVarsInLog; }
 
-public:
-    virtual bool parse(Context &context, plist::Dictionary const *dict);
+protected:
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 public:
     static inline char const *Isa()

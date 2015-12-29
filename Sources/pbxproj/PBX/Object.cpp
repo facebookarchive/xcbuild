@@ -15,3 +15,25 @@ Object::Object(std::string const &isa) :
     _isa(isa)
 {
 }
+
+bool Object::
+parseObject(Context &context, plist::Dictionary const *dict)
+{
+    std::unordered_set<std::string> seen;
+    return parse(context, dict, &seen, true);
+}
+
+bool Object::
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
+{
+    auto unpack = plist::Keys::Unpack("Object", dict, seen);
+
+    auto N = unpack.cast <plist::String> ("isa");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
+
+    return true;
+}
+

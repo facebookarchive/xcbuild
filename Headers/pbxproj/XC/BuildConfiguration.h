@@ -42,8 +42,8 @@ public:
     inline std::string const &name() const
     { return _name; }
 
-public:
-    bool parse(Context &context, plist::Dictionary const *dict);
+protected:
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 public:
     static inline char const *Isa()

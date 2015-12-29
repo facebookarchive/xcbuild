@@ -61,7 +61,7 @@ public:
     pbxsetting::Value resolve(void) const;
 
 protected:
-    virtual bool parse(Context &context, plist::Dictionary const *dict);
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 };
 
 } }

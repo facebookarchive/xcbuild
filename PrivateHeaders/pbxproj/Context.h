@@ -164,25 +164,25 @@ public:
     { return get(objectKey, T::Isa(), id); }
 
 private:
-    inline plist::Dictionary const *indirect(plist::Dictionary const *dict,
+    inline plist::Dictionary const *indirect(plist::Keys::Unpack *unpack,
                                              std::string const &key,
                                              std::string const &isa,
                                             std::string *id = nullptr) const
     {
-        return PlistDictionaryGetIndirectPBXObject(objects, dict, key, isa, id);
+        return PlistDictionaryGetIndirectPBXObject(objects, unpack, key, isa, id);
     }
 
 public:
     template <typename T>
-    inline plist::Dictionary const *indirect(plist::Dictionary const *dict,
+    inline plist::Dictionary const *indirect(plist::Keys::Unpack *unpack,
                                              std::string const &key,
                                              std::string *id = nullptr) const
     {
-        return indirect(dict, key, T::Isa(), id);
+        return indirect(unpack, key, T::Isa(), id);
     }
 
 private:
-    inline plist::Dictionary const *indirect(plist::Dictionary const *dict,
+    inline plist::Dictionary const *indirect(plist::Keys::Unpack *unpack,
                                              plist::Object const *objectKey,
                                              std::string const &isa,
                                              std::string *id = nullptr) const
@@ -191,17 +191,17 @@ private:
         if (key == nullptr)
             return nullptr;
         else
-            return PlistDictionaryGetIndirectPBXObject(objects, dict,
+            return PlistDictionaryGetIndirectPBXObject(objects, unpack,
                     key->value(), isa, id);
     }
 
 public:
     template <typename T>
-    inline plist::Dictionary const *indirect(plist::Dictionary const *dict,
+    inline plist::Dictionary const *indirect(plist::Keys::Unpack *unpack,
                                              plist::Object const *objectKey,
                                              std::string *id = nullptr) const
     {
-        return indirect(dict, objectKey, T::Isa(), id);
+        return indirect(unpack, objectKey, T::Isa(), id);
     }
 
 public:
@@ -217,7 +217,8 @@ public:
         auto O = std::make_shared <T> ();
         cacheObject(O, id); // cache inside the project
         cache[id] = O; // cache local to the context
-        if (!O->parse(*this, dict)) {
+
+        if (!O->parseObject(*this, dict)) {
             cache.erase(id);
             return std::shared_ptr <T> ();
         }

@@ -41,22 +41,31 @@ settings(void) const
     return Level(settings);
 }
 
-bool
-Project::parse(Context &context, plist::Dictionary const *dict)
+bool Project::
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
+    if (!Object::parse(context, dict, seen, false))
+        return false;
+
+    auto unpack = plist::Keys::Unpack("Project", dict, seen);
+
     std::string BCLID;
     std::string MGID;
 
-    auto BCL  = context.indirect <XC::ConfigurationList> (dict, "buildConfigurationList", &BCLID);
-    auto A    = dict->value <plist::Array> ("attributes");
-    auto CV   = dict->value <plist::String> ("compatibilityVersion");
-    auto DR   = dict->value <plist::String> ("developmentRegion");
-    auto HSFE = dict->value <plist::String> ("hasScannedForEncodings");
-    auto KR   = dict->value <plist::Array> ("knownRegions");
-    auto MG   = context.indirect <Group> (dict, "mainGroup", &MGID);
-    auto PDP  = dict->value <plist::String> ("projectDirPath");
-    auto PR   = dict->value <plist::String> ("projectRoot");
-    auto Ts   = dict->value <plist::Array> ("targets");
+    auto BCL  = context.indirect <XC::ConfigurationList> (&unpack, "buildConfigurationList", &BCLID);
+    auto A    = unpack.cast <plist::Array> ("attributes");
+    auto CV   = unpack.cast <plist::String> ("compatibilityVersion");
+    auto DR   = unpack.cast <plist::String> ("developmentRegion");
+    auto HSFE = unpack.coerce <plist::Boolean> ("hasScannedForEncodings");
+    auto KR   = unpack.cast <plist::Array> ("knownRegions");
+    auto MG   = context.indirect <Group> (&unpack, "mainGroup", &MGID);
+    auto PDP  = unpack.cast <plist::String> ("projectDirPath");
+    auto PR   = unpack.cast <plist::String> ("projectRoot");
+    auto Ts   = unpack.cast <plist::Array> ("targets");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (BCL != nullptr) {
         _buildConfigurationList =
@@ -76,7 +85,7 @@ Project::parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (HSFE != nullptr) {
-        _hasScannedForEncodings = (pbxsetting::Type::ParseInteger(HSFE->value()) != 0);
+        _hasScannedForEncodings = HSFE->value();
     }
 
     if (KR != nullptr) {
@@ -177,42 +186,41 @@ Open(std::string const &path)
     //
     // Fetch basic objects
     //
-    auto archiveVersion = plist->value("archiveVersion");
-    if (archiveVersion == nullptr) {
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("Root", plist, &seen);
+
+    auto AV = unpack.coerce <plist::Integer> ("archiveVersion");
+    auto OV = unpack.coerce <plist::Integer> ("objectVersion");
+    auto Os = unpack.cast <plist::Dictionary> ("objects");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
+
+    //
+    // Handle basic objects
+    //
+    if (AV != nullptr) {
+        if (AV->value() > 1) {
+            fprintf(stderr, "warning: archive version %u may be unsupported\n",
+                    static_cast <unsigned> (AV->value()));
+        }
+    } else {
         fprintf(stderr, "error: project file %s is not parseable (no archive version)\n", projectFileName.c_str());
         return nullptr;
-    } else {
-        auto archiveVersionInteger = plist::Integer::Coerce(archiveVersion);
-        if (archiveVersionInteger == nullptr) {
-            fprintf(stderr, "error: project file %s is not parseable (unknown archive version)\n", projectFileName.c_str());
-            return nullptr;
-        }
-
-        if (archiveVersionInteger->value() > 1) {
-            fprintf(stderr, "warning: archive version %u may be unsupported\n",
-                    static_cast <unsigned> (archiveVersionInteger->value()));
-        }
     }
 
-    auto objectVersion = plist->value("objectVersion");
-    if (objectVersion == nullptr) {
+    if (OV != nullptr) {
+        if (OV->value() > 46) {
+            fprintf(stderr, "warning: object version %u may be unsupported\n",
+                    static_cast <unsigned> (OV->value()));
+        }
+    } else {
         fprintf(stderr, "error: project file %s is not parseable (no object version)\n", projectFileName.c_str());
         return nullptr;
-    } else {
-        auto objectVersionInteger = plist::Integer::Coerce(objectVersion);
-        if (objectVersionInteger == nullptr) {
-            fprintf(stderr, "error: project file %s is not parseable (unknown object version)\n", projectFileName.c_str());
-            return nullptr;
-        }
-
-        if (objectVersionInteger->value() > 46) {
-            fprintf(stderr, "warning: object version %u may be unsupported\n",
-                    static_cast <unsigned> (objectVersionInteger->value()));
-        }
     }
 
-    auto objects = plist->value <plist::Dictionary> ("objects");
-    if (objects == nullptr) {
+    if (Os == nullptr) {
         return nullptr;
     }
 
@@ -222,13 +230,13 @@ Open(std::string const &path)
     // Initialize context
     //
     Context context;
-    context.objects = objects;
+    context.objects = Os;
 
     //
     // Fetch the project dictionary (root object)
     //
     std::string PID;
-    auto P = context.indirect <Project> (plist, "rootObject", &PID);
+    auto P = context.indirect <Project> (&unpack, "rootObject", &PID);
     if (P == nullptr) {
         fprintf(stderr, "error: unable to parse project\n");
         return nullptr;

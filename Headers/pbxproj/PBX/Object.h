@@ -41,6 +41,13 @@ public:
     virtual inline bool isa(std::string const &isa) const
     { return (_isa == isa); }
 
+private:
+    friend class pbxproj::Context;
+    bool parseObject(Context &context, plist::Dictionary const *dict);
+
+protected:
+    virtual bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
+
 public:
     template <typename T>
     inline bool isa() const

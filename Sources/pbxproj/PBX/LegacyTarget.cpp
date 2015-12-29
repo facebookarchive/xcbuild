@@ -20,15 +20,21 @@ LegacyTarget::LegacyTarget() :
 }
 
 bool LegacyTarget::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Target::parse(context, dict))
+    if (!Target::parse(context, dict, seen, false))
         return false;
 
-    auto BWD   = dict->value <plist::String> ("buildWorkingDirectory");
-    auto BTP   = dict->value <plist::String> ("buildToolPath");
-    auto BAS   = dict->value <plist::String> ("buildArgumentsString");
-    auto PBSIE = dict->value <plist::String> ("passBuildSettingsInEnvironment");
+    auto unpack = plist::Keys::Unpack("LegacyTarget", dict, seen);
+
+    auto BWD   = unpack.cast <plist::String> ("buildWorkingDirectory");
+    auto BTP   = unpack.cast <plist::String> ("buildToolPath");
+    auto BAS   = unpack.cast <plist::String> ("buildArgumentsString");
+    auto PBSIE = unpack.coerce <plist::Integer> ("passBuildSettingsInEnvironment");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (BWD != nullptr) {
         _buildWorkingDirectory = BWD->value();
@@ -43,7 +49,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (PBSIE != nullptr) {
-        _passBuildSettingsInEnvironment = (pbxsetting::Type::ParseInteger(PBSIE->value()) != 0);
+        _passBuildSettingsInEnvironment = PBSIE->value();
     }
 
     return true;

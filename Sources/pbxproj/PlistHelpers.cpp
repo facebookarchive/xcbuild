@@ -32,12 +32,12 @@ PlistDictionaryGetPBXObject(plist::Dictionary const *dict,
 
 plist::Dictionary const *
 PlistDictionaryGetIndirectPBXObject(plist::Dictionary const *objects,
-                                    plist::Dictionary const *dict,
+                                    plist::Keys::Unpack *unpack,
                                     std::string const &key,
                                     std::string const &isa,
                                     std::string *id)
 {
-    auto ID = dict->value <plist::String> (key);
+    auto ID = unpack->cast <plist::String> (key);
     if (ID == nullptr)
         return nullptr;
 

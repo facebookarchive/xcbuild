@@ -33,8 +33,8 @@ public:
     inline ContainerItemProxy::shared_ptr const &remoteRef() const
     { return _remoteRef; }
 
-public:
-    bool parse(Context &context, plist::Dictionary const *dict);
+protected:
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 public:
     static inline char const *Isa()

@@ -68,8 +68,8 @@ public:
     inline uint32_t buildActionMask() const
     { return _buildActionMask; }
 
-public:
-    virtual bool parse(Context &context, plist::Dictionary const *dict);
+protected:
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 };
 
 } }

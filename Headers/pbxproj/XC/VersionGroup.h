@@ -36,8 +36,8 @@ public:
     inline std::string const &versionGroupType() const
     { return _versionGroupType; }
 
-public:
-    bool parse(Context &context, plist::Dictionary const *dict) override;
+protected:
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 public:
     static inline char const *Isa()

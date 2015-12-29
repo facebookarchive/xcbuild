@@ -38,7 +38,7 @@ DestinationOutputPath(pbxproj::PBX::CopyFilesBuildPhase::Destination destination
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationWrapper:
             return products + pbxsetting::Value::Variable("CONTENTS_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationExecutables:
-            return products + pbxsetting::Value::Variable("EXECUTABLE_FOLDER_PATH");
+            return products + pbxsetting::Value::Variable("EXECUTABLES_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationResources:
             return products + pbxsetting::Value::Variable("UNLOCALIZED_RESOURCES_FOLDER_PATH");
         case pbxproj::PBX::CopyFilesBuildPhase::kDestinationPublicHeaders:

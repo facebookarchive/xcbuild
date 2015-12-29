@@ -31,8 +31,8 @@ public:
     inline GroupItem::vector &children()
     { return _children; }
 
-public:
-    virtual bool parse(Context &context, plist::Dictionary const *dict);
+protected:
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 };
 
 } }

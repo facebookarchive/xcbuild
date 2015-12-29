@@ -20,18 +20,27 @@ ConfigurationList::ConfigurationList() :
 }
 
 bool ConfigurationList::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    auto DCN  = dict->value <plist::String> ("defaultConfigurationName");
-    auto DCIV = dict->value <plist::String> ("defaultConfigurationIsVisible");
-    auto BCs  = dict->value <plist::Array> ("buildConfigurations");
+    if (!Object::parse(context, dict, seen, false))
+        return false;
+
+    auto unpack = plist::Keys::Unpack("ConfigurationList", dict, seen);
+
+    auto DCN  = unpack.cast <plist::String> ("defaultConfigurationName");
+    auto DCIV = unpack.coerce <plist::Boolean> ("defaultConfigurationIsVisible");
+    auto BCs  = unpack.cast <plist::Array> ("buildConfigurations");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (DCN != nullptr) {
         _defaultConfigurationName = DCN->value();
     }
 
     if (DCIV != nullptr) {
-        _defaultConfigurationIsVisible = (pbxsetting::Type::ParseInteger(DCIV->value()) != 0);
+        _defaultConfigurationIsVisible = DCIV->value();
     }
 
     if (BCs != nullptr) {

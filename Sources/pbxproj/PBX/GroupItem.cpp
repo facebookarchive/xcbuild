@@ -42,11 +42,20 @@ resolve(void) const
 }
 
 bool GroupItem::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    auto N  = dict->value <plist::String> ("name");
-    auto ST = dict->value <plist::String> ("sourceTree");
-    auto P  = dict->value <plist::String> ("path");
+    if (!Object::parse(context, dict, seen, false))
+        return false;
+
+    auto unpack = plist::Keys::Unpack("GroupItem", dict, seen);
+
+    auto N  = unpack.cast <plist::String> ("name");
+    auto ST = unpack.cast <plist::String> ("sourceTree");
+    auto P  = unpack.cast <plist::String> ("path");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (N != nullptr) {
         _name = N->value();

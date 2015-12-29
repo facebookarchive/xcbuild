@@ -44,17 +44,26 @@ settings(void) const
 }
 
 bool Target::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
+    if (!Object::parse(context, dict, seen, false))
+        return false;
+
     _project = context.project;
+
+    auto unpack = plist::Keys::Unpack("Target", dict, seen);
 
     std::string BCLID;
 
-    auto N   = dict->value <plist::String> ("name");
-    auto PN  = dict->value <plist::String> ("productName");
-    auto BCL = context.indirect <XC::ConfigurationList> (dict, "buildConfigurationList", &BCLID);
-    auto BPs = dict->value <plist::Array> ("buildPhases");
-    auto Ds  = dict->value <plist::Array> ("dependencies");
+    auto N   = unpack.cast <plist::String> ("name");
+    auto PN  = unpack.cast <plist::String> ("productName");
+    auto BCL = context.indirect <XC::ConfigurationList> (&unpack, "buildConfigurationList", &BCLID);
+    auto BPs = unpack.cast <plist::Array> ("buildPhases");
+    auto Ds  = unpack.cast <plist::Array> ("dependencies");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (N != nullptr) {
         _name = N->value();

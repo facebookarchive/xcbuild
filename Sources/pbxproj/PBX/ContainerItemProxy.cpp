@@ -18,14 +18,23 @@ ContainerItemProxy::ContainerItemProxy() :
 }
 
 bool ContainerItemProxy::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
+    if (!Object::parse(context, dict, seen, false))
+        return false;
+
     std::string CPID;
 
-    auto CP   = context.indirect <FileReference> (dict, "containerPortal", &CPID);
-    auto PT   = dict->value <plist::String> ("proxyType");
-    auto RGIS = dict->value <plist::String> ("remoteGlobalIDString");
-    auto RI   = dict->value <plist::String> ("remoteInfo");
+    auto unpack = plist::Keys::Unpack("ContainerItemProxy", dict, seen);
+
+    auto CP   = context.indirect <FileReference> (&unpack, "containerPortal", &CPID);
+    auto PT   = unpack.coerce <plist::Integer> ("proxyType");
+    auto RGIS = unpack.cast <plist::String> ("remoteGlobalIDString");
+    auto RI   = unpack.cast <plist::String> ("remoteInfo");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (CP != nullptr) {
         auto portal = context.parseObject(context.fileReferences, CPID, CP);
@@ -38,7 +47,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (PT != nullptr) {
-        _proxyType = pbxsetting::Type::ParseInteger(PT->value());
+        _proxyType = PT->value();
     }
 
     if (RGIS != nullptr) {

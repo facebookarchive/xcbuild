@@ -18,12 +18,18 @@ AggregateTarget::AggregateTarget() :
 }
 
 bool AggregateTarget::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Target::parse(context, dict))
+    if (!Target::parse(context, dict, seen, false))
         return false;
 
-    auto PN  = dict->value <plist::String> ("productName");
+    auto unpack = plist::Keys::Unpack("AggregateTarget", dict, seen);
+
+    auto PN  = unpack.cast <plist::String> ("productName");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (PN != nullptr) {
         _productName = PN->value();

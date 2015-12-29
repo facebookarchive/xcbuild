@@ -24,13 +24,22 @@ BuildConfiguration::~BuildConfiguration()
 }
 
 bool BuildConfiguration::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
+    if (!Object::parse(context, dict, seen, false))
+        return false;
+
+    auto unpack = plist::Keys::Unpack("BuildConfiguration", dict, seen);
+
     std::string BCRID;
 
-    auto BCR = context.indirect <PBX::FileReference> (dict, "baseConfigurationReference", &BCRID);
-    auto BS  = dict->value <plist::Dictionary> ("buildSettings");
-    auto N   = dict->value <plist::String> ("name");
+    auto BCR = context.indirect <PBX::FileReference> (&unpack, "baseConfigurationReference", &BCRID);
+    auto BS  = unpack.cast <plist::Dictionary> ("buildSettings");
+    auto N   = unpack.cast <plist::String> ("name");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (BCR != nullptr) {
         _baseConfigurationReference =

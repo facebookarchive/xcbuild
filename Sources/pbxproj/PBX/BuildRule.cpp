@@ -17,14 +17,23 @@ BuildRule::BuildRule() :
 }
 
 bool BuildRule::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    auto CS = dict->value <plist::String> ("compilerSpec");
-    auto FP = dict->value <plist::String> ("filePatterns");
-    auto FT = dict->value <plist::String> ("fileType");
-    auto IE = dict->value <plist::String> ("isEditable");
-    auto OF = dict->value <plist::Array> ("outputFiles");
-    auto S  = dict->value <plist::String> ("script");
+    if (!Object::parse(context, dict, seen, false))
+        return false;
+
+    auto unpack = plist::Keys::Unpack("BuildRule", dict, seen);
+
+    auto CS = unpack.cast <plist::String> ("compilerSpec");
+    auto FP = unpack.cast <plist::String> ("filePatterns");
+    auto FT = unpack.cast <plist::String> ("fileType");
+    auto IE = unpack.coerce <plist::Boolean> ("isEditable");
+    auto OF = unpack.cast <plist::Array> ("outputFiles");
+    auto S  = unpack.cast <plist::String> ("script");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (CS != nullptr) {
         _compilerSpec = CS->value();
@@ -39,7 +48,7 @@ parse(Context &context, plist::Dictionary const *dict)
     }
 
     if (IE != nullptr) {
-        _isEditable = (pbxsetting::Type::ParseInteger(IE->value()) != 0);
+        _isEditable = IE->value();
     }
 
     if (OF != nullptr) {

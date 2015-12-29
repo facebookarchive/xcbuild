@@ -19,20 +19,26 @@ Group::Group() :
 }
 
 bool Group::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!BaseGroup::parse(context, dict))
+    if (!BaseGroup::parse(context, dict, seen, false))
         return false;
 
-    auto IW = dict->value <plist::String> ("indentWidth");
-    auto TW = dict->value <plist::String> ("tabWidth");
+    auto unpack = plist::Keys::Unpack("Group", dict, seen);
+
+    auto IW = unpack.coerce <plist::Integer> ("indentWidth");
+    auto TW = unpack.coerce <plist::Integer> ("tabWidth");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (IW != nullptr) {
-        _indentWidth = pbxsetting::Type::ParseInteger(IW->value());
+        _indentWidth = IW->value();
     }
 
     if (TW != nullptr) {
-        _tabWidth = pbxsetting::Type::ParseInteger(TW->value());
+        _tabWidth = TW->value();
     }
 
     return true;

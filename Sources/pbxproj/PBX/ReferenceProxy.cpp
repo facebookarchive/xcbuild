@@ -18,15 +18,21 @@ ReferenceProxy::ReferenceProxy() :
 }
 
 bool ReferenceProxy::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!GroupItem::parse(context, dict))
+    if (!GroupItem::parse(context, dict, seen, false))
         return false;
+
+    auto unpack = plist::Keys::Unpack("ReferenceProxy", dict, seen);
 
     std::string RRID;
 
-    auto RR = context.indirect <ContainerItemProxy> (dict, "remoteRef", &RRID);
-    auto FT = dict->value <plist::String> ("fileType");
+    auto RR = context.indirect <ContainerItemProxy> (&unpack, "remoteRef", &RRID);
+    auto FT = unpack.cast <plist::String> ("fileType");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (RR != nullptr) {
         _remoteRef = context.parseObject(context.containerItemProxies, RRID, RR);

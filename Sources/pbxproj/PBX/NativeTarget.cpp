@@ -18,16 +18,22 @@ NativeTarget::NativeTarget() :
 }
 
 bool NativeTarget::
-parse(Context &context, plist::Dictionary const *dict)
+parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Target::parse(context, dict))
+    if (!Target::parse(context, dict, seen, false))
         return false;
+
+    auto unpack = plist::Keys::Unpack("NativeTarget", dict, seen);
 
     std::string PRID;
 
-    auto PR  = context.indirect <FileReference> (dict, "productReference", &PRID);
-    auto PT  = dict->value <plist::String> ("productType");
-    auto BRs = dict->value <plist::Array> ("buildRules");
+    auto PR  = context.indirect <FileReference> (&unpack, "productReference", &PRID);
+    auto PT  = unpack.cast <plist::String> ("productType");
+    auto BRs = unpack.cast <plist::Array> ("buildRules");
+
+    if (!unpack.complete(check)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
 
     if (PT != nullptr) {
         _productType = PT->value();

@@ -28,8 +28,8 @@ public:
     inline std::string const &productName() const
     { return _productName; }
 
-public:
-    bool parse(Context &context, plist::Dictionary const *dict);
+protected:
+    bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;
 
 public:
     static inline char const *Isa()
