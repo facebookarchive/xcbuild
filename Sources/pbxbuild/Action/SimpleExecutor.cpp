@@ -86,12 +86,6 @@ SortInvocations(std::vector<Tool::Invocation const> const &invocations)
         for (std::string const &output : invocation.outputs()) {
             outputToInvocation.insert({ output, &invocation });
         }
-        for (std::string const &phonyOutput : invocation.phonyOutputs()) {
-            outputToInvocation.insert({ phonyOutput, &invocation });
-        }
-        for (std::string const &outputDependency : invocation.outputDependencies()) {
-            outputToInvocation.insert({ outputDependency, &invocation });
-        }
     }
 
     DirectedGraph<Tool::Invocation const *> graph;

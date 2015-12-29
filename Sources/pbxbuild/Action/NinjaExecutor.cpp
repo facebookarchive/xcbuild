@@ -86,30 +86,24 @@ NinjaDescription(std::string const &description)
 }
 
 static std::string
-NinjaPhonyOutputTarget(std::string const &phonyOutput)
+NinjaPhonyOutputTarget(Tool::Invocation const &invocation)
 {
     /*
-     * This is a hack to support multiple rules generating the same output,
-     * for when a later invocation wants to modify the output of a previous
-     * invocation in-place.
+     * This is a hack to support invocations that have no outputs. Ninja requires
+     * all targets to have an output, but in some cases (usually with build script
+     * invocations), the invocation has no outputs.
      *
-     * Ninja does not support multiple targets with the same output, even
-     * when the latter target depends on the former. However, since there is
-     * already a target to generate the output, it doesn't particularly
-     * matter *what* the latter command outputs: it just has to be something.
-     * As long as the "target finish" depends on that fake output, it will
-     * be run at the right time.
-     *
-     * To simulate this, we just need to pick a unique target name here,
-     * preferably through a stable algorithm. Unfortunately, since the
-     * post-processing invocations could be exactly identical, there's no
-     * good value to use as a stable key for the fake output.
+     * In that case, generate a phony output name that will never exist, so the
+     * target will always be out of date. This is expected, since with no outputs
+     * there's no way to tell if the invocation needs to run.
      */
 
-    // TODO(grp): Handle identical phony output targets in a build.
+    // TODO(grp): Handle identical phony output invocations in a build.
+    std::string key = invocation.executable();
+
     md5_state_t state;
     md5_init(&state);
-    md5_append(&state, reinterpret_cast<const md5_byte_t *>(phonyOutput.data()), phonyOutput.size());
+    md5_append(&state, reinterpret_cast<const md5_byte_t *>(key.data()), key.size());
     uint8_t digest[16];
     md5_finish(&state, reinterpret_cast<md5_byte_t *>(&digest));
 
@@ -260,14 +254,14 @@ build(
          * As described above, the target's finish depends on all of the invocation outputs.
          */
         std::unordered_set<std::string> invocationOutputs;
-        std::unordered_set<std::string> invocationOrderOnlyOutputs;
         for (Tool::Invocation const &invocation : phaseInvocations.invocations()) {
-            for (std::string const &output : invocation.outputs()) {
-                invocationOutputs.insert(output);
-            }
-            for (std::string const &phonyOutput : invocation.phonyOutputs()) {
-                std::string phonyOutputTarget = NinjaPhonyOutputTarget(phonyOutput);
-                invocationOrderOnlyOutputs.insert(phonyOutputTarget);
+            if (!invocation.outputs().empty()) {
+                for (std::string const &output : invocation.outputs()) {
+                    invocationOutputs.insert(output);
+                }
+            } else if (!invocation.executable().empty()) {
+                std::string phonyOutputName = NinjaPhonyOutputTarget(invocation);
+                invocationOutputs.insert(phonyOutputName);
             }
         }
 
@@ -293,11 +287,7 @@ build(
         for (std::string const &output : invocationOutputs) {
             invocationOutputsValues.push_back(ninja::Value::String(output));
         }
-        std::vector<ninja::Value> invocationOrderOnlyOutputsValues;
-        for (std::string const &output : invocationOrderOnlyOutputs) {
-            invocationOrderOnlyOutputsValues.push_back(ninja::Value::String(output));
-        }
-        writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputsValues, invocationOrderOnlyOutputsValues);
+        writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputsValues);
     }
 
     /*
@@ -483,17 +473,14 @@ buildTargetInvocations(
          * Build up outputs as literal Ninja values.
          */
         std::vector<ninja::Value> outputs;
-        for (std::string const &output : invocation.outputs()) {
-            outputs.push_back(ninja::Value::String(output));
-        }
-
-        /*
-         * Add fake output paths for outputs that may already exist. Ninja can't have
-         * multiple build commands generating an output, so use fake paths for these.
-         */
-        for (std::string const &phonyOutput : invocation.phonyOutputs()) {
-            std::string phonyOutputTarget = NinjaPhonyOutputTarget(phonyOutput);
-            outputs.push_back(ninja::Value::String(phonyOutputTarget));
+        if (!invocation.outputs().empty()) {
+            for (std::string const &output : invocation.outputs()) {
+                outputs.push_back(ninja::Value::String(output));
+            }
+        } else {
+            /* All Ninja targets must have an output. */
+            std::string phonyOutputName = NinjaPhonyOutputTarget(invocation);
+            outputs.push_back(ninja::Value::String(phonyOutputName));
         }
 
         /*
