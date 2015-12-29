@@ -193,9 +193,6 @@ build(
      */
     writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && $env $exec"));
 
-    /* Stores seen output directories, since each can only have one target to build them. */
-    std::unordered_set<std::string> seenDirectories;
-
     /*
      * Go over each target and write out Ninja targets for the start and end of each.
      * Don't bother topologically sorting the targets now, since Ninja will do that for us.
@@ -245,14 +242,6 @@ build(
          */
         std::string targetBegin = TargetNinjaBegin(target);
         writer.build({ ninja::Value::String(targetBegin) }, "phony", dependenciesFinished);
-
-        /*
-         * Each output directory can only have one rule to build it, so as directories are shared
-         * between targets, the rules to build them also need to go into the shared Ninja file.
-         */
-        if (!buildOutputDirectories(&writer, phaseInvocations.invocations(), &seenDirectories)) {
-            return false;
-        }
 
         /*
          * Write out the Ninja file to build this target.
@@ -338,52 +327,6 @@ ResolveExecutable(std::string const &executable, std::vector<std::string> const 
     } else {
         return executable;
     }
-}
-
-bool NinjaExecutor::
-buildOutputDirectories(
-    ninja::Writer *writer,
-    std::vector<Tool::Invocation const> const &invocations,
-    std::unordered_set<std::string> *seenDirectories)
-{
-    /*
-     * Add a build command to create each output directory. These are depended on by
-     * the build commands for invocations that have outputs inside each directory.
-     */
-    for (Tool::Invocation const &invocation : invocations) {
-        for (std::string const &output : invocation.outputs()) {
-            std::string outputDirectory = FSUtil::GetDirectoryName(output);
-
-            /*
-             * Only create each directory once. If this directory already has a build
-             * target to create it, skip adding another one.
-             */
-            auto it = seenDirectories->find(outputDirectory);
-            if (it != seenDirectories->end()) {
-                continue;
-            }
-            seenDirectories->insert(outputDirectory);
-
-            /*
-             * Create the bindings for creating the directory.
-             */
-            std::string description = NinjaDescription(_formatter->createAuxiliaryDirectory(outputDirectory));
-            std::string command = "/bin/mkdir -p " + ShellEscape(outputDirectory);
-            std::vector<ninja::Binding> bindings = {
-                { "description", ninja::Value::String(description) },
-                { "dir", ninja::Value::String(ShellEscape(invocation.workingDirectory())) },
-                { "exec", ninja::Value::String(command) },
-            };
-
-            /*
-             * Add the rule to create the directory.
-             */
-            std::vector<ninja::Value> outputs = { ninja::Value::String(outputDirectory) };
-            writer->build(outputs, NinjaRuleName(), { }, bindings);
-        }
-    }
-
-    return true;
 }
 
 bool NinjaExecutor::
@@ -561,22 +504,6 @@ buildTargetInvocations(
         std::vector<ninja::Value> orderDependencies;
         for (std::string const &orderDependency : invocation.orderDependencies()) {
             orderDependencies.push_back(ninja::Value::String(orderDependency));
-        }
-
-        /*
-         * Depend on creating the directories to hold the outputs. Note the target
-         * to create the directory will have been added above, before the invocations.
-         *
-         * These are order-only dependencies as the timestamp of the directory is not
-         * important, it just has to exist.
-         */
-        std::unordered_set<std::string> outputDirectories;
-        for (std::string const &output : invocation.outputs()) {
-            std::string outputDirectory = FSUtil::GetDirectoryName(output);
-            outputDirectories.insert(outputDirectory);
-        }
-        for (std::string const &outputDirectory : outputDirectories) {
-            orderDependencies.push_back(ninja::Value::String(outputDirectory));
         }
 
         /*

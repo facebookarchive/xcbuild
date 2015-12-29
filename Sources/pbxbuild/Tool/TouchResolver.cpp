@@ -39,7 +39,7 @@ resolve(
     std::string logMessage = "Touch " + input;
 
     /* Treat the input as an output since it's what gets modified by the touch. */
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { }, { });
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { }, { input });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/usr/bin/touch", { "-c", input });
 
@@ -48,14 +48,12 @@ resolve(
         inputDependencies.push_back(FSUtil::ResolveRelativePath(dependency, toolContext->workingDirectory()));
     }
 
-    std::string outputPath = FSUtil::ResolveRelativePath(input, toolContext->workingDirectory());
-
     Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.phonyOutputs() = { outputPath }; /* Not created, just updated. */
+    invocation.outputs() = toolEnvironment.outputs();
     invocation.inputDependencies() = inputDependencies;
     invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
