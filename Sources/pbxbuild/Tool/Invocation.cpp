@@ -36,7 +36,8 @@ AuxiliaryFile::
 
 Tool::Invocation::
 Invocation() :
-    _showEnvironmentInLog(true)
+    _showEnvironmentInLog   (true),
+    _createsProductStructure(false)
 {
 }
 

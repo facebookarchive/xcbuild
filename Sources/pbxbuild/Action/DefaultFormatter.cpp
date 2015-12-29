@@ -218,33 +218,46 @@ finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
 }
 
 std::string DefaultFormatter::
-beginInvocation(Tool::Invocation const &invocation, std::string const &executable)
+beginInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple)
 {
-    std::string message;
-
-    message += FormatInvocation(invocation, _color) + "\n";
-    message += INDENT + "cd " + invocation.workingDirectory() + "\n";
-
-    if (invocation.showEnvironmentInLog()) {
-        std::map<std::string, std::string> sortedEnvironment = std::map<std::string, std::string>(invocation.environment().begin(), invocation.environment().end());
-        for (std::pair<std::string, std::string> const &entry : sortedEnvironment) {
-            message += INDENT + "export " + entry.first + "=" + entry.second + "\n";
+    if (simple) {
+        std::string message = executable;
+        for (std::string const &arg : invocation.arguments()) {
+            message += " " + arg;
         }
-    }
+        message += "\n";
+        return message;
+    } else {
+        std::string message;
 
-    message += INDENT + executable;
-    for (std::string const &arg : invocation.arguments()) {
-        message += " " + arg;
-    }
-    message += "\n";
+        message += FormatInvocation(invocation, _color) + "\n";
+        message += INDENT + "cd " + invocation.workingDirectory() + "\n";
 
-    return message;
+        if (invocation.showEnvironmentInLog()) {
+            std::map<std::string, std::string> sortedEnvironment = std::map<std::string, std::string>(invocation.environment().begin(), invocation.environment().end());
+            for (std::pair<std::string, std::string> const &entry : sortedEnvironment) {
+                message += INDENT + "export " + entry.first + "=" + entry.second + "\n";
+            }
+        }
+
+        message += INDENT + executable;
+        for (std::string const &arg : invocation.arguments()) {
+            message += " " + arg;
+        }
+        message += "\n";
+
+        return message;
+    }
 }
 
 std::string DefaultFormatter::
-finishInvocation(Tool::Invocation const &invocation, std::string const &executable)
+finishInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple)
 {
-    return "\n";
+    if (simple) {
+        return std::string();
+    } else {
+        return "\n";
+    }
 }
 
 std::shared_ptr<DefaultFormatter> DefaultFormatter::

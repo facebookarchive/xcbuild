@@ -51,8 +51,8 @@ public:
     virtual std::string finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target) = 0;
 
 public:
-    virtual std::string beginInvocation(Tool::Invocation const &invocation, std::string const &executable) = 0;
-    virtual std::string finishInvocation(Tool::Invocation const &invocation, std::string const &executable) = 0;
+    virtual std::string beginInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple) = 0;
+    virtual std::string finishInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple) = 0;
 
 public:
     static void Print(std::string const &output);

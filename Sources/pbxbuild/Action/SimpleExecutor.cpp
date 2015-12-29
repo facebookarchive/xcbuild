@@ -131,54 +131,45 @@ SortInvocations(std::vector<Tool::Invocation const> const &invocations)
     return std::make_pair(true, result);
 }
 
-std::pair<bool, std::vector<Tool::Invocation const>> SimpleExecutor::
-buildTarget(
+bool SimpleExecutor::
+writeAuxiliaryFiles(
     pbxproj::PBX::Target::shared_ptr const &target,
     Target::Environment const &targetEnvironment,
     std::vector<Tool::Invocation const> const &invocations)
 {
     Formatter::Print(_formatter->beginWriteAuxiliaryFiles(target));
     for (Tool::Invocation const &invocation : invocations) {
-        for (std::string const &output : invocation.outputs()) {
-            std::string directory = FSUtil::GetDirectoryName(output);
+        for (Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
+            std::string directory = FSUtil::GetDirectoryName(auxiliaryFile.path());
             if (!FSUtil::TestForDirectory(directory)) {
                 Formatter::Print(_formatter->createAuxiliaryDirectory(directory));
 
                 if (!_dryRun) {
-                    if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(directory))) {
-                        return std::make_pair(false, std::vector<Tool::Invocation const>());
+                    if (!FSUtil::CreateDirectory(directory)) {
+                        return false;
                     }
                 }
             }
-        }
 
-        for (Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-            // TODO(grp): This is incorrect if the file is already written, need to check modification times.
-            if (!FSUtil::TestForRead(auxiliaryFile.path())) {
-                if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(auxiliaryFile.path()))) {
-                    return std::make_pair(false, std::vector<Tool::Invocation const>());
+            Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
+
+            if (!_dryRun) {
+                std::ofstream out;
+                out.open(auxiliaryFile.path(), std::ios::out | std::ios::trunc | std::ios::binary);
+                if (out.fail()) {
+                    return false;
                 }
 
-                Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
+                out.write(auxiliaryFile.contents().data(), auxiliaryFile.contents().size() * sizeof(char));
+                out.close();
+            }
+
+            if (auxiliaryFile.executable() && !FSUtil::TestForExecute(auxiliaryFile.path())) {
+                Formatter::Print(_formatter->setAuxiliaryExecutable(auxiliaryFile.path()));
 
                 if (!_dryRun) {
-                    std::ofstream out;
-                    out.open(auxiliaryFile.path(), std::ios::out | std::ios::trunc | std::ios::binary);
-                    if (out.fail()) {
-                        return std::make_pair(false, std::vector<Tool::Invocation const>());
-                    }
-
-                    out.write(auxiliaryFile.contents().data(), auxiliaryFile.contents().size() * sizeof(char));
-                    out.close();
-                }
-
-                if (auxiliaryFile.executable() && !FSUtil::TestForExecute(auxiliaryFile.path())) {
-                    Formatter::Print(_formatter->setAuxiliaryExecutable(auxiliaryFile.path()));
-
-                    if (!_dryRun) {
-                        if (::chmod(auxiliaryFile.path().c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
-                            return std::make_pair(false, std::vector<Tool::Invocation const>());
-                        }
+                    if (::chmod(auxiliaryFile.path().c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
+                        return false;
                     }
                 }
             }
@@ -186,19 +177,23 @@ buildTarget(
     }
     Formatter::Print(_formatter->finishWriteAuxiliaryFiles(target));
 
-    Formatter::Print(_formatter->beginCreateProductStructure(target));
-    // TODO(grp): Create product structure.
-    Formatter::Print(_formatter->finishCreateProductStructure(target));
+    return true;
+}
 
-    std::pair<bool, std::vector<Tool::Invocation const>> orderedInvocations = SortInvocations(invocations);
-    if (!orderedInvocations.first) {
-        fprintf(stderr, "error: cycle detected building invocation graph\n");
-        return std::make_pair(false, std::vector<Tool::Invocation const>());
-    }
-
-    for (Tool::Invocation const &invocation : orderedInvocations.second) {
+std::pair<bool, std::vector<Tool::Invocation const>> SimpleExecutor::
+performInvocations(
+    pbxproj::PBX::Target::shared_ptr const &target,
+    Target::Environment const &targetEnvironment,
+    std::vector<Tool::Invocation const> const &orderedInvocations,
+    bool createProductStructure)
+{
+    for (Tool::Invocation const &invocation : orderedInvocations) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
         if (invocation.executable().empty()) {
+            continue;
+        }
+
+        if (invocation.createsProductStructure() != createProductStructure) {
             continue;
         }
 
@@ -216,7 +211,7 @@ buildTarget(
             }
         }
 
-        Formatter::Print(_formatter->beginInvocation(invocation, executable));
+        Formatter::Print(_formatter->beginInvocation(invocation, executable, createProductStructure));
 
         if (!_dryRun) {
             for (std::string const &output : invocation.outputs()) {
@@ -230,24 +225,55 @@ buildTarget(
             if (builtin) {
                 std::shared_ptr<builtin::Driver> driver = _builtins.driver(executable);
                 if (driver == nullptr) {
-                    Formatter::Print(_formatter->finishInvocation(invocation, executable));
+                    Formatter::Print(_formatter->finishInvocation(invocation, executable, createProductStructure));
                     return std::make_pair(false, std::vector<Tool::Invocation const>({ invocation }));
                 }
 
                 if (driver->run(invocation.arguments(), invocation.environment(), invocation.workingDirectory()) != 0) {
-                    Formatter::Print(_formatter->finishInvocation(invocation, executable));
+                    Formatter::Print(_formatter->finishInvocation(invocation, executable, createProductStructure));
                     return std::make_pair(false, std::vector<Tool::Invocation const>({ invocation }));
                 }
             } else {
                 Subprocess process;
                 if (!process.execute(executable, invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
-                    Formatter::Print(_formatter->finishInvocation(invocation, executable));
+                    Formatter::Print(_formatter->finishInvocation(invocation, executable, createProductStructure));
                     return std::make_pair(false, std::vector<Tool::Invocation const>({ invocation }));
                 }
             }
         }
 
-        Formatter::Print(_formatter->finishInvocation(invocation, executable));
+        Formatter::Print(_formatter->finishInvocation(invocation, executable, createProductStructure));
+    }
+
+    return std::make_pair(true, std::vector<Tool::Invocation const>());
+}
+
+std::pair<bool, std::vector<Tool::Invocation const>> SimpleExecutor::
+buildTarget(
+    pbxproj::PBX::Target::shared_ptr const &target,
+    Target::Environment const &targetEnvironment,
+    std::vector<Tool::Invocation const> const &invocations)
+{
+    if (!writeAuxiliaryFiles(target, targetEnvironment, invocations)) {
+        return std::make_pair(false, std::vector<Tool::Invocation const>());
+    }
+
+    std::pair<bool, std::vector<Tool::Invocation const>> orderedInvocations = SortInvocations(invocations);
+    if (!orderedInvocations.first) {
+        fprintf(stderr, "error: cycle detected building invocation graph\n");
+        return std::make_pair(false, std::vector<Tool::Invocation const>());
+    }
+
+    Formatter::Print(_formatter->beginCreateProductStructure(target));
+    std::pair<bool, std::vector<Tool::Invocation const>> structureResult = performInvocations(target, targetEnvironment, orderedInvocations.second, true);
+    Formatter::Print(_formatter->finishCreateProductStructure(target));
+    if (!structureResult.first) {
+        return structureResult;
+    }
+
+    std::pair<bool, std::vector<Tool::Invocation const>> invocationsResult = performInvocations(target, targetEnvironment, orderedInvocations.second, false);
+    if (!invocationsResult.first) {
+        return invocationsResult;
     }
 
     return std::make_pair(true, std::vector<Tool::Invocation const>());

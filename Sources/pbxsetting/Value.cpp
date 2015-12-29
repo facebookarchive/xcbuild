@@ -22,7 +22,7 @@ operator==(Entry const &rhs) const
 {
     if (type != rhs.type) {
         return false;
-    } else if (type == String) {
+    } else if (type == Value::Entry::String) {
         return string == rhs.string;
     } else if (type == Value::Entry::Value) {
         return *value == *rhs.value;

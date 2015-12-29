@@ -31,6 +31,15 @@ public:
         DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
 private:
+    bool writeAuxiliaryFiles(
+        pbxproj::PBX::Target::shared_ptr const &target,
+        Target::Environment const &targetEnvironment,
+        std::vector<Tool::Invocation const> const &invocations);
+    std::pair<bool, std::vector<Tool::Invocation const>> performInvocations(
+        pbxproj::PBX::Target::shared_ptr const &target,
+        Target::Environment const &targetEnvironment,
+        std::vector<Tool::Invocation const> const &orderedInvocations,
+        bool createProductStructure);
     std::pair<bool, std::vector<Tool::Invocation const>> buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
         Target::Environment const &targetEnvironment,

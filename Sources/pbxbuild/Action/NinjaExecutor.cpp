@@ -434,7 +434,7 @@ buildTargetInvocations(
         /*
          * Determine the status message for Ninja to print for this invocation.
          */
-        std::string description = NinjaDescription(_formatter->beginInvocation(invocation, executable));
+        std::string description = NinjaDescription(_formatter->beginInvocation(invocation, executable, false));
 
         /*
          * Build up the bindings for the invocation.

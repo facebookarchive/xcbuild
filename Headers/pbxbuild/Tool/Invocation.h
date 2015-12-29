@@ -62,6 +62,9 @@ private:
     std::string                                  _logMessage;
     bool                                         _showEnvironmentInLog;
 
+private:
+    bool                                         _createsProductStructure;
+
 public:
     Invocation();
     ~Invocation();
@@ -151,6 +154,14 @@ public:
     { return _logMessage; }
     bool &showEnvironmentInLog()
     { return _showEnvironmentInLog; }
+
+public:
+    bool createsProductStructure() const
+    { return _createsProductStructure; }
+
+public:
+    bool &createsProductStructure()
+    { return _createsProductStructure; }
 };
 
 }
