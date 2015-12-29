@@ -32,14 +32,14 @@ name()
 }
 
 static bool
-CopyFile(std::string const &inputPath, std::string const &outputPath)
+CopyPath(std::string const &inputPath, std::string const &outputPath)
 {
     if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(outputPath))) {
         return false;
     }
 
     Subprocess cp;
-    if (!cp.execute("/bin/cp", { inputPath, outputPath }) || cp.exitcode() != 0) {
+    if (!cp.execute("/bin/cp", { "-R", inputPath, outputPath }) || cp.exitcode() != 0) {
         return false;
     }
 
@@ -68,9 +68,7 @@ Run(Options const &options, std::string const &workingDirectory)
             input = FSUtil::ResolvePath(input);
         }
 
-        bool isDirectory = FSUtil::TestForDirectory(input);
-
-        if (!isDirectory && !FSUtil::TestForRead(input)) {
+        if (!FSUtil::TestForDirectory(input) && !FSUtil::TestForRead(input)) {
             if (options.ignoreMissingInputs()) {
                 continue;
             } else {
@@ -83,32 +81,9 @@ Run(Options const &options, std::string const &workingDirectory)
             printf("verbose: copying %s -> %s\n", input.c_str(), output.c_str());
         }
 
-        if (isDirectory) {
-            std::string inputName = FSUtil::GetBaseName(input);
-
-            bool succeeded = true;
-            FSUtil::EnumerateRecursive(input, [&](std::string const &path) -> bool {
-                if (excludes.find(FSUtil::GetBaseName(path)) != excludes.end()) {
-                    if (options.verbose()) {
-                        printf("verbose: skipping excluded path %s\n", path.c_str());
-                    }
-                    return true;
-                }
-
-                std::string relative = FSUtil::GetRelativePath(path, input);
-                std::string outputFile = output + "/" + inputName + "/" + relative;
-
-                succeeded = CopyFile(path, outputFile);
-                return succeeded;
-            });
-            if (!succeeded) {
-                return 1;
-            }
-        } else {
-            std::string outputFile = output + "/" + FSUtil::GetBaseName(input);
-            if (!CopyFile(input, outputFile)) {
-                return 1;
-            }
+        std::string outputPath = output + "/" + FSUtil::GetBaseName(input);
+        if (!CopyPath(input, outputPath)) {
+            return 1;
         }
     }
 
