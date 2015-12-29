@@ -83,6 +83,7 @@ ResolveBundleStructure(Phase::Environment const &phaseEnvironment, Phase::Contex
     };
 
     std::string targetBuildDirectory = environment.resolve("TARGET_BUILD_DIR");
+    std::string wrapperName = environment.resolve("WRAPPER_NAME");
 
     /*
      * Resolve the real path for each of the subdirectories.
@@ -103,6 +104,11 @@ ResolveBundleStructure(Phase::Environment const &phaseEnvironment, Phase::Contex
      * Create the directories that have contents.
      */
     for (std::string const &directory : populatedDirectories) {
+        if (directory == targetBuildDirectory + "/" + wrapperName) {
+            // TODO(grp): This output will conflict with the 'Touch', since it's just creating the bundle root.
+            continue;
+        }
+
         if (Tool::MakeDirectoryResolver const *mkdirResolver = phaseContext->makeDirectoryResolver(phaseEnvironment)) {
             mkdirResolver->resolve(&phaseContext->toolContext(), environment, directory, true);
         }
