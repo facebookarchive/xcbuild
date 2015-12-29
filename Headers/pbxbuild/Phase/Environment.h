@@ -23,10 +23,10 @@ namespace Phase {
 
 class Environment {
 private:
-    Build::Environment                 _buildEnvironment;
-    Build::Context                     _buildContext;
+    Build::Environment               _buildEnvironment;
+    Build::Context                   _buildContext;
     pbxproj::PBX::Target::shared_ptr _target;
-    Target::Environment        _targetEnvironment;
+    Target::Environment              _targetEnvironment;
 
 public:
     Environment(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::Environment const &targetEnvironment);
