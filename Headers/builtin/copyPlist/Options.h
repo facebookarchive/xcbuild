@@ -27,6 +27,9 @@ public:
     std::string              _convertFormat;
 
 public:
+    bool                     _separator;
+
+public:
     Options();
     ~Options();
 

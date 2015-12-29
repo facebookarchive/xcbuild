@@ -169,8 +169,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         } else if (arg == "--toolchain") {
             return libutil::Options::NextString(&_toolchain, args, it);
         } else if (arg == "--") {
-            _separator = true;
-            return std::make_pair(true, std::string());
+            return libutil::Options::MarkBool(&_separator, arg, it);
         }
     }
 

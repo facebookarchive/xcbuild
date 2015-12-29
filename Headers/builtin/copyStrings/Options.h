@@ -28,6 +28,9 @@ public:
     std::string              _outputEncoding;
 
 public:
+    bool                     _separator;
+
+public:
     Options();
     ~Options();
 

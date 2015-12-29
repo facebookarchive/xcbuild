@@ -56,7 +56,7 @@ private:
     std::vector<std::string> _inputs;
     std::string              _output;
     std::string              _extension;
-    bool                     _filesMarker;
+    bool                     _separator;
 
 private:
     bool                     _silent;
@@ -107,7 +107,7 @@ Options() :
     _help         (false),
     _print        (false),
     _lint         (false),
-    _filesMarker  (false),
+    _separator    (false),
     _silent       (false),
     _humanReadable(false)
 {
@@ -283,7 +283,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 {
     std::string const &arg = **it;
 
-    if (_filesMarker) {
+    if (_separator) {
         _inputs.push_back(arg);
         return std::make_pair(true, std::string());
     }
@@ -350,7 +350,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     } else if (arg == "-r") {
         return libutil::Options::MarkBool(&_humanReadable, arg, it);
     } else if (arg == "--") {
-        return libutil::Options::MarkBool(&_filesMarker, arg, it);
+        return libutil::Options::MarkBool(&_separator, arg, it);
     } else if (!arg.empty() && arg[0] != '-') {
         _inputs.push_back(arg);
         return std::make_pair(true, std::string());

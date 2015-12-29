@@ -13,7 +13,8 @@ using builtin::copyStrings::Options;
 
 Options::
 Options() :
-    _validate(false)
+    _validate (false),
+    _separator(false)
 {
 }
 
@@ -27,18 +28,21 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 {
     std::string const &arg = **it;
 
-    if (arg == "--validate") {
-        return libutil::Options::MarkBool(&_validate, arg, it);
-    } else if (arg == "--inputencoding") {
-        return libutil::Options::NextString(&_inputEncoding, args, it);
-    } else if (arg == "--outputencoding") {
-        return libutil::Options::NextString(&_outputEncoding, args, it);
-    } else if (arg == "--outdir") {
-        return libutil::Options::NextString(&_outputDirectory, args, it);
-    } else if (arg == "--") {
-        // TODO(grp): Set a flag to avoid parsing later arguments as options.
-        return std::make_pair(true, std::string());
-    } else if (!arg.empty() && arg[0] != '-') {
+    if (!_separator) {
+        if (arg == "--validate") {
+            return libutil::Options::MarkBool(&_validate, arg, it);
+        } else if (arg == "--inputencoding") {
+            return libutil::Options::NextString(&_inputEncoding, args, it);
+        } else if (arg == "--outputencoding") {
+            return libutil::Options::NextString(&_outputEncoding, args, it);
+        } else if (arg == "--outdir") {
+            return libutil::Options::NextString(&_outputDirectory, args, it);
+        } else if (arg == "--") {
+            return libutil::Options::MarkBool(&_separator, arg, it);
+        }
+    }
+
+    if (_separator || (!arg.empty() && arg[0] != '-')) {
         _inputs.push_back(arg);
         return std::make_pair(true, std::string());
     } else {

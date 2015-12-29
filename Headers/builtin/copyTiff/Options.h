@@ -27,6 +27,9 @@ public:
     std::string              _compressionFormat;
 
 public:
+    bool                     _separator;
+
+public:
     Options();
     ~Options();
 
