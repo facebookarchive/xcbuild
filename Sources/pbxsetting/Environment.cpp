@@ -103,8 +103,7 @@ ProcessOperation(std::string const &value, std::string const &operation)
         std::transform(result.begin(), result.end(), result.begin(), ::toupper);
         return result;
     } else if (operation == "standardizepath") {
-        // FIXME(grp): How should this handle invalid / nonexistent paths?
-        return FSUtil::ResolvePath(value);
+        return FSUtil::NormalizePath(value);
     } else if (operation == "base") {
         std::string file = FSUtil::GetBaseName(value);
         return file.substr(0, file.rfind('.'));
