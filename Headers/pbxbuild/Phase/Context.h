@@ -13,11 +13,10 @@
 #define __pbxbuild_Phase_Context_h
 
 #include <pbxbuild/Base.h>
+#include <pbxbuild/Phase/File.h>
 #include <pbxbuild/Tool/Context.h>
 
 namespace pbxbuild {
-
-class TypeResolvedFile;
 
 namespace Tool {
     class ClangResolver;
@@ -71,14 +70,22 @@ public:
     Tool::ToolResolver const          *toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier);
 
 public:
+    bool resolveBuildFiles(
+        Phase::Environment const &phaseEnvironment,
+        pbxsetting::Environment const &environment,
+        pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
+        std::string const &outputDirectory,
+        std::vector<Phase::File> const &files,
+        std::string const &fallbackToolIdentifier = std::string());
+
+private:
     bool resolveBuildFile(
         Phase::Environment const &phaseEnvironment,
         pbxsetting::Environment const &environment,
         pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
-        pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
-        TypeResolvedFile const &file,
         std::string const &outputDirectory,
-        std::string const &fallbackToolIdentifier = std::string());
+        Phase::File const &file,
+        std::string const &fallbackToolIdentifier);
 };
 
 }

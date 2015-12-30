@@ -123,26 +123,55 @@ toolResolver(Phase::Environment const &phaseEnvironment, std::string const &iden
 }
 
 bool Phase::Context::
+resolveBuildFiles(
+    Phase::Environment const &phaseEnvironment,
+    pbxsetting::Environment const &environment,
+    pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
+    std::string const &outputDirectory,
+    std::vector<Phase::File> const &files,
+    std::string const &fallbackToolIdentifier)
+{
+    for (Phase::File const &file : files) {
+        std::string fileOutputDirectory = outputDirectory;
+        if (!file.outputSubdirectory().empty()) {
+            fileOutputDirectory += "/" + file.outputSubdirectory();
+        }
+
+        bool result = resolveBuildFile(
+            phaseEnvironment,
+            environment,
+            buildPhase,
+            fileOutputDirectory,
+            file,
+            fallbackToolIdentifier);
+        if (!result) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Phase::Context::
 resolveBuildFile(
     Phase::Environment const &phaseEnvironment,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
-    pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
-    TypeResolvedFile const &file,
     std::string const &outputDirectory,
+    Phase::File const &file,
     std::string const &fallbackToolIdentifier)
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    Target::BuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file);
+    Target::BuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file.file());
     if (buildRule == nullptr && fallbackToolIdentifier.empty()) {
-        fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.filePath().c_str(), file.fileType()->identifier().c_str());
+        fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.file().filePath().c_str(), file.file().fileType()->identifier().c_str());
         return true;
     }
 
     if (buildRule != nullptr && !buildRule->script().empty()) {
         if (Tool::ScriptResolver const *scriptResolver = this->scriptResolver(phaseEnvironment)) {
-            _scriptResolver->resolve(&_toolContext, environment, file.filePath(), buildRule);
+            scriptResolver->resolve(&_toolContext, environment, file.file().filePath(), buildRule);
             return true;
         } else {
             return false;
@@ -162,16 +191,13 @@ resolveBuildFile(
         }
 
         if (toolIdentifier == Tool::ClangResolver::ToolIdentifier()) {
-            std::string outputBaseName;
-            auto it = targetEnvironment.buildFileDisambiguation().find(buildFile);
-            if (it != targetEnvironment.buildFileDisambiguation().end()) {
-                outputBaseName = it->second;
-            } else {
-                outputBaseName = FSUtil::GetBaseNameWithoutExtension(file.filePath());
-            }
-
             if (Tool::ClangResolver const *clangResolver = this->clangResolver(phaseEnvironment)) {
-                _clangResolver->resolveSource(&_toolContext, environment, file, buildFile->compilerFlags(), outputDirectory, outputBaseName);
+                std::string outputBaseName = FSUtil::GetBaseNameWithoutExtension(file.file().filePath());
+                if (!file.fileNameDisambiguator().empty()) {
+                    outputBaseName = file.fileNameDisambiguator();
+                }
+
+                clangResolver->resolveSource(&_toolContext, environment, file.file(), file.buildFile()->compilerFlags(), outputDirectory, outputBaseName);
                 return true;
             } else {
                 return false;
@@ -188,16 +214,16 @@ resolveBuildFile(
             }
 
             if (Tool::CopyResolver const *copyResolver = this->copyResolver(phaseEnvironment)) {
-                _copyResolver->resolve(&_toolContext, environment, file.filePath(), outputDirectory, logMessageTitle);
+                copyResolver->resolve(&_toolContext, environment, file.file().filePath(), outputDirectory, logMessageTitle);
                 return true;
             } else {
                 return false;
             }
         } else {
-            std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(file.filePath());
+            std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(file.file().filePath());
 
             if (Tool::ToolResolver const *toolResolver = this->toolResolver(phaseEnvironment, toolIdentifier)) {
-                toolResolver->resolve(&_toolContext, environment, { file.filePath() }, { outputPath });
+                toolResolver->resolve(&_toolContext, environment, { file.file().filePath() }, { outputPath });
                 return true;
             } else {
                 return false;

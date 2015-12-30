@@ -56,20 +56,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     Tool::SearchPaths::Resolve(&phaseContext->toolContext(), targetEnvironment.environment());
     headermapResolver->resolve(&phaseContext->toolContext(), targetEnvironment.environment(), phaseEnvironment.target());
 
-    std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, TypeResolvedFile> files;
-    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
-        if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeFileReference) {
-            continue;
-        }
-
-        pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-        std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, targetEnvironment.environment());
-        if (file == nullptr) {
-            continue;
-        }
-
-        files.insert({ buildFile, *file });
-    }
+    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
 
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
@@ -79,16 +66,8 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
 
             std::string outputDirectory = currentEnvironment.expand(pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)"));
 
-            for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
-                auto it = files.find(buildFile);
-                if (it == files.end()) {
-                    continue;
-                }
-                TypeResolvedFile const &file = it->second;
-
-                if (!phaseContext->resolveBuildFile(phaseEnvironment, currentEnvironment, _buildPhase, buildFile, file, outputDirectory)) {
-                    return false;
-                }
+            if (!phaseContext->resolveBuildFiles(phaseEnvironment, currentEnvironment, _buildPhase, outputDirectory, files)) {
+                return false;
             }
         }
     }

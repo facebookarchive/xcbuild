@@ -8,8 +8,9 @@
  */
 
 #include <pbxbuild/Phase/CopyFilesResolver.h>
-#include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/Context.h>
+#include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/File.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 
 namespace Phase = pbxbuild::Phase;
@@ -80,42 +81,15 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string path = environment.expand(_buildPhase->dstPath());
     std::string outputDirectory = root + "/" + path;
 
-    bool rules = pbxsetting::Type::ParseBoolean(environment.resolve("APPLY_RULES_IN_COPY_FILES"));
+    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, environment, _buildPhase->files());
 
-    for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : _buildPhase->files()) {
-        if (buildFile->fileRef() == nullptr) {
-            continue;
+    if (pbxsetting::Type::ParseBoolean(environment.resolve("APPLY_RULES_IN_COPY_FILES"))) {
+        if (!phaseContext->resolveBuildFiles(phaseEnvironment, environment, _buildPhase, outputDirectory, files, Tool::CopyResolver::ToolIdentifier())) {
+            return false;
         }
-
-        std::unique_ptr<TypeResolvedFile> file = nullptr;
-
-        switch (buildFile->fileRef()->type()) {
-            case pbxproj::PBX::GroupItem::kTypeFileReference: {
-                pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-                file = phaseEnvironment.resolveFileReference(fileReference, environment);
-                break;
-            }
-            case pbxproj::PBX::GroupItem::kTypeReferenceProxy: {
-                pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (buildFile->fileRef());
-                file = phaseEnvironment.resolveReferenceProxy(referenceProxy, environment);
-                break;
-            }
-            default: {
-                fprintf(stderr, "warning: unsupported build file for copy files build phase\n");
-                break;
-            }
-        }
-
-        if (file == nullptr) {
-            continue;
-        }
-
-        if (rules) {
-            if (!phaseContext->resolveBuildFile(phaseEnvironment, environment, _buildPhase, buildFile, *file, outputDirectory, Tool::CopyResolver::ToolIdentifier())) {
-                return false;
-            }
-        } else {
-            copyResolver->resolve(&phaseContext->toolContext(), environment, file->filePath(), outputDirectory, "PBXCp");
+    } else {
+        for (Phase::File const &file : files) {
+            copyResolver->resolve(&phaseContext->toolContext(), environment, file.file().filePath(), outputDirectory, "PBXCp");
         }
     }
 

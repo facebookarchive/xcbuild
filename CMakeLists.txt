@@ -254,6 +254,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/ToolResolver.cpp
     Sources/pbxbuild/Phase/Context.cpp
     Sources/pbxbuild/Phase/Environment.cpp
+    Sources/pbxbuild/Phase/File.cpp
     Sources/pbxbuild/Phase/PhaseInvocations.cpp
     Sources/pbxbuild/Phase/CopyFilesResolver.cpp
     Sources/pbxbuild/Phase/HeadersResolver.cpp

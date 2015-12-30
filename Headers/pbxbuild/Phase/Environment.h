@@ -43,10 +43,6 @@ public:
     { return _targetEnvironment; }
 
 public:
-    std::unique_ptr<pbxbuild::TypeResolvedFile> resolveReferenceProxy(pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy, pbxsetting::Environment const &environment) const;
-    std::unique_ptr<pbxbuild::TypeResolvedFile> resolveFileReference(pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment) const;
-
-public:
     static pbxsetting::Level
     VariantLevel(std::string const &variant);
     static pbxsetting::Level

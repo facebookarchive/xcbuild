@@ -10,6 +10,7 @@
 #include <pbxbuild/Phase/HeadersResolver.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/Context.h>
+#include <pbxbuild/Phase/File.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/TypeResolvedFile.h>
 
@@ -49,7 +50,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         }
 
         pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-        std::unique_ptr<TypeResolvedFile> file = phaseEnvironment.resolveFileReference(fileReference, environment);
+        std::unique_ptr<TypeResolvedFile> file = Phase::File::ResolveFileReference(phaseEnvironment, environment, fileReference);
         if (file == nullptr) {
             continue;
         }

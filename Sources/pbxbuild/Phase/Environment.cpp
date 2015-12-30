@@ -25,34 +25,6 @@ Phase::Environment::
 {
 }
 
-std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::Environment::
-resolveReferenceProxy(pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy, pbxsetting::Environment const &environment) const
-{
-    pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy = referenceProxy->remoteRef();
-    pbxproj::PBX::FileReference::shared_ptr const &containerReference = proxy->containerPortal();
-    std::string containerPath = environment.expand(containerReference->resolve());
-
-    auto remote = _buildContext.resolveProductIdentifier(_buildContext.workspaceContext()->project(containerPath), proxy->remoteGlobalIDString());
-    if (remote == nullptr) {
-        fprintf(stderr, "error: unable to find remote target product from proxied reference\n");
-        return nullptr;
-    }
-
-    std::unique_ptr<Target::Environment> remoteEnvironment = _buildContext.targetEnvironment(_buildEnvironment, remote->first);
-    if (remoteEnvironment == nullptr) {
-        fprintf(stderr, "error: unable to create target environment for remote target\n");
-        return nullptr;
-    }
-
-    return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, remote->second, remoteEnvironment->environment());
-}
-
-std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::Environment::
-resolveFileReference(pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment) const
-{
-    return pbxbuild::TypeResolvedFile::Resolve(_buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, environment);
-}
-
 pbxsetting::Level Phase::Environment::
 VariantLevel(std::string const &variant)
 {
