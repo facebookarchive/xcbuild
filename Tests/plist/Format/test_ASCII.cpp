@@ -124,10 +124,25 @@ TEST(ASCII, Empty)
     EXPECT_TRUE(format->strings());
 
     auto deserialize = ASCII::Deserialize(contents, ASCII::Create(true, Encoding::UTF8));
-    fprintf(stderr, "%s\n", deserialize.second.c_str());
     ASSERT_NE(deserialize.first, nullptr);
 
     ASSERT_TRUE(deserialize.first->type() == Dictionary::Type());
     auto dictionary = plist::CastTo<Dictionary>(deserialize.first.get());
     EXPECT_EQ(dictionary->count(), 0);
+}
+
+TEST(ASCII, CommentWithStarAndSlash)
+{
+    auto contents = Contents("/* some * text / here */{ key = value; }");
+
+    std::unique_ptr<ASCII> format = ASCII::Identify(contents);
+    ASSERT_NE(format, nullptr);
+    EXPECT_FALSE(format->strings());
+
+    auto deserialize = ASCII::Deserialize(contents, ASCII::Create(false, Encoding::UTF8));
+    ASSERT_NE(deserialize.first, nullptr);
+
+    auto dictionary = Dictionary::New();
+    dictionary->set("key", String::New("value"));
+    EXPECT_TRUE(deserialize.first->equals(dictionary.get()));
 }

@@ -84,6 +84,7 @@ Identify(std::vector<uint8_t> const &contents)
                     last = *bp;
                     break;
                 default:
+                    last = 0;
                     break;
             }
             bp++;
