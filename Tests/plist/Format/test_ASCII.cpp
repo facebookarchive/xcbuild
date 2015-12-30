@@ -29,15 +29,18 @@ Contents(std::string const &string)
 TEST(ASCII, QuotedString)
 {
     auto contents = Contents("\"str*ng\"\n");
-    EXPECT_NE(ASCII::Identify(contents), nullptr);
 
-    auto deserialize = ASCII::Deserialize(contents, ASCII::Create(Encoding::UTF8));
+    std::unique_ptr<ASCII> format = ASCII::Identify(contents);
+    ASSERT_NE(format, nullptr);
+    EXPECT_FALSE(format->strings());
+
+    auto deserialize = ASCII::Deserialize(contents, ASCII::Create(false, Encoding::UTF8));
     ASSERT_NE(deserialize.first, nullptr);
 
     auto string = String::New("str*ng");
     EXPECT_TRUE(deserialize.first->equals(string.get()));
 
-    auto serialize = ASCII::Serialize(deserialize.first.get(), ASCII::Create(Encoding::UTF8));
+    auto serialize = ASCII::Serialize(deserialize.first.get(), ASCII::Create(false, Encoding::UTF8));
     ASSERT_NE(serialize.first, nullptr);
     EXPECT_EQ(*serialize.first, contents);
 }
@@ -45,15 +48,18 @@ TEST(ASCII, QuotedString)
 TEST(ASCII, UnquotedString)
 {
     auto contents = Contents("string\n");
-    EXPECT_NE(ASCII::Identify(contents), nullptr);
 
-    auto deserialize = ASCII::Deserialize(contents, ASCII::Create(Encoding::UTF8));
+    std::unique_ptr<ASCII> format = ASCII::Identify(contents);
+    ASSERT_NE(format, nullptr);
+    EXPECT_FALSE(format->strings());
+
+    auto deserialize = ASCII::Deserialize(contents, ASCII::Create(false, Encoding::UTF8));
     ASSERT_NE(deserialize.first, nullptr);
 
     auto string = String::New("string");
     EXPECT_TRUE(deserialize.first->equals(string.get()));
 
-    auto serialize = ASCII::Serialize(deserialize.first.get(), ASCII::Create(Encoding::UTF8));
+    auto serialize = ASCII::Serialize(deserialize.first.get(), ASCII::Create(false, Encoding::UTF8));
     ASSERT_NE(serialize.first, nullptr);
     EXPECT_EQ(*serialize.first, contents);
 }
@@ -61,9 +67,12 @@ TEST(ASCII, UnquotedString)
 TEST(ASCII, BooleanNumberAreStrings)
 {
     auto contents = Contents("{\n\tboolean = YES;\n\tinteger = 42;\n\treal = 3.14;\n}\n");
-    EXPECT_NE(ASCII::Identify(contents), nullptr);
 
-    auto deserialize = ASCII::Deserialize(contents, ASCII::Create(Encoding::UTF8));
+    std::unique_ptr<ASCII> format = ASCII::Identify(contents);
+    ASSERT_NE(format, nullptr);
+    EXPECT_FALSE(format->strings());
+
+    auto deserialize = ASCII::Deserialize(contents, ASCII::Create(false, Encoding::UTF8));
     ASSERT_NE(deserialize.first, nullptr);
 
     /* Integers, reals, and booleans should always be parsed as strings. */
@@ -79,7 +88,30 @@ TEST(ASCII, BooleanNumberAreStrings)
     typed->set("integer", Integer::New(42));
     typed->set("real", Real::New(3.14));
 
-    auto serialize2 = ASCII::Serialize(typed.get(), ASCII::Create(Encoding::UTF8));
+    auto serialize2 = ASCII::Serialize(typed.get(), ASCII::Create(false, Encoding::UTF8));
     ASSERT_NE(serialize2.first, nullptr);
     EXPECT_EQ(*serialize2.first, contents);
 }
+
+TEST(ASCII, StringsFormat)
+{
+    auto contents = Contents("\"strings format\" = \"no braces\";\n\"a key\" = \"a value\";\n");
+
+    std::unique_ptr<ASCII> format = ASCII::Identify(contents);
+    ASSERT_NE(format, nullptr);
+    EXPECT_TRUE(format->strings());
+
+    auto deserialize = ASCII::Deserialize(contents, ASCII::Create(true, Encoding::UTF8));
+    ASSERT_NE(deserialize.first, nullptr);
+
+    ASSERT_TRUE(deserialize.first->type() == Dictionary::Type());
+    auto dictionary = plist::CastTo<Dictionary>(deserialize.first.get());
+
+    auto string = String::New("no braces");
+    EXPECT_TRUE(dictionary->value("strings format")->equals(string.get()));
+
+    auto serialize = ASCII::Serialize(dictionary, ASCII::Create(true, Encoding::UTF8));
+    ASSERT_NE(serialize.first, nullptr);
+    EXPECT_EQ(*serialize.first, contents);
+}
+

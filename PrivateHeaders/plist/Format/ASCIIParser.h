@@ -39,6 +39,7 @@ private:
 private:
     plist::Object              *_root;
     int                         _level;
+    bool                        _strings;
 
 private:
     ValueState                  _state;
@@ -68,6 +69,8 @@ public:
     { return _root; }
     std::string error() const
     { return _error; }
+    bool strings() const
+    { return _strings; }
 
 private:
     bool isAborted() const;

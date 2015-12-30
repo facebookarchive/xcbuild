@@ -14,7 +14,6 @@
 #include <plist/Format/Binary.h>
 #include <plist/Format/XML.h>
 #include <plist/Format/ASCII.h>
-#include <plist/Format/Strings.h>
 
 namespace plist {
 namespace Format {
@@ -28,7 +27,6 @@ private:
         Binary    binary;
         XML       xml;
         ASCII     ascii;
-        Strings   strings;
     };
 
 private:

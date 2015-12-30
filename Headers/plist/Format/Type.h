@@ -17,7 +17,6 @@ enum class Type {
     Binary,
     XML,
     ASCII,
-    Strings,
 };
 
 }

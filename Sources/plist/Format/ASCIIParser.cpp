@@ -22,6 +22,7 @@ using plist::Dictionary;
 ASCIIParser::
 ASCIIParser() :
     _root(nullptr),
+    _strings(false),
     _level(0),
     _state(ValueState::Init),
     _container(nullptr),
@@ -451,6 +452,23 @@ parse(ASCIIPListLexer *lexer)
             if (token == kASCIIPListLexerEndOfFile && isDone()) {
                 /* success */
                 return true;
+            } else if (token == kASCIIPListLexerEndOfFile && state == kASCIIParsePList && _strings) {
+                if (!endDictionary()) {
+                    return false;
+                }
+                decrementLevel();
+
+                if (getLevel()) {
+                    abort("Encountered premature EOF");
+                    return false;
+                } else {
+                    if (!finish()) {
+                        return false;
+                    }
+
+                    /* success */
+                    return true;
+                }
             } else if (token == kASCIIPListLexerEndOfFile) {
                 abort("Encountered premature EOF");
                 return false;
@@ -479,6 +497,31 @@ parse(ASCIIPListLexer *lexer)
         if (token == kASCIIPListLexerTokenInlineComment ||
             token == kASCIIPListLexerTokenLongComment)
             continue;
+
+        /* Re-start parsing for strings format. */
+        if (isDone() && token == kASCIIPListLexerTokenDictionaryKeyValSeparator && _root != nullptr && _root->type() == plist::String::Type()) {
+            /* Found an = after a top-level string. Mark as strings and restart parsing. */
+            _strings = true;
+            _contextState = ContextState::Parsing;
+
+            /* Save the previous root string, it's now a dictionary key. */
+            plist::String *key = static_cast<plist::String *>(_root);
+            _root = nullptr;
+
+            /* Begin the root dictionary. */
+            if (!beginDictionary()) {
+                return false;
+            }
+            incrementLevel();
+
+            /* Store the key from the root. */
+            if (!storeKey(key)) {
+                return false;
+            }
+
+            /* Parse the value. */
+            state = kASCIIParseKeyValSeparator;
+        }
 
         switch (state) {
             case kASCIIParsePList:

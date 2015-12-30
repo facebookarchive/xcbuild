@@ -455,7 +455,7 @@ static bool
 Print(Options const &options, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
 {
     /* Convert to ASCII. */
-    plist::Format::ASCII out = plist::Format::ASCII::Create(plist::Format::Encoding::UTF8);
+    plist::Format::ASCII out = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
     auto serialize = plist::Format::ASCII::Serialize(object.get(), out);
     if (serialize.first == nullptr) {
         fprintf(stderr, "error: %s\n", serialize.second.c_str());
@@ -600,7 +600,7 @@ Modify(Options const &options, std::string const &file, std::unique_ptr<plist::O
                 break;
             }
             case plist::Format::Type::ASCII: {
-                plist::Format::ASCII ascii = plist::Format::ASCII::Create(plist::Format::Encoding::UTF8);
+                plist::Format::ASCII ascii = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
                 out = plist::Format::Any::Create<plist::Format::ASCII>(ascii);
                 break;
             }

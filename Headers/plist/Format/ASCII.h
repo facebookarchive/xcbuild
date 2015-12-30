@@ -19,20 +19,23 @@ namespace Format {
 
 class ASCII : public Format<ASCII> {
 private:
+    bool     _strings;
     Encoding _encoding;
 
 private:
-    ASCII(Encoding encoding);
+    ASCII(bool strings, Encoding encoding);
 
 public:
     static Type Type();
 
 public:
+    inline bool strings() const
+    { return _strings; }
     inline Encoding encoding() const
     { return _encoding; }
 
 public:
-    static ASCII Create(Encoding encoding);
+    static ASCII Create(bool strings, Encoding encoding);
 };
 
 }

@@ -271,7 +271,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         } else if (options.format() == "xml") {
             outputFormat = plist::Format::Any::Create(plist::Format::XML::Create(plist::Format::Encoding::UTF8));
         } else if (options.format() == "ascii" || options.format() == "openstep") {
-            outputFormat = plist::Format::Any::Create(plist::Format::ASCII::Create(plist::Format::Encoding::UTF8));
+            outputFormat = plist::Format::Any::Create(plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8));
         } else {
             fprintf(stderr, "error: unknown output format %s\n", options.format().c_str());
             return 1;

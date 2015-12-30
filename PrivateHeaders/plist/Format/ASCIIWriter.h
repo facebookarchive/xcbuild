@@ -18,12 +18,13 @@ namespace Format {
 class ASCIIWriter {
 private:
     Object const         *_root;
+    bool                  _strings;
     std::vector<uint8_t>  _contents;
     int                   _indent;
     bool                  _lastKey;
 
 public:
-    ASCIIWriter(Object const *root);
+    ASCIIWriter(Object const *root, bool strings);
     ~ASCIIWriter();
 
 public:
@@ -42,15 +43,15 @@ private:
     bool writeEscapedString(std::string const &string, bool final);
 
 private:
-    bool handleObject(Object const *object);
-    bool handleArray(Array const *array);
-    bool handleDictionary(Dictionary const *dictionary);
-    bool handleBoolean(Boolean const *boolean);
-    bool handleReal(Real const *real);
-    bool handleInteger(Integer const *integer);
-    bool handleString(String const *string);
-    bool handleDate(Date const *date);
-    bool handleData(Data const *data);
+    bool handleObject(Object const *object, bool root);
+    bool handleArray(Array const *array, bool root);
+    bool handleDictionary(Dictionary const *dictionary, bool root);
+    bool handleBoolean(Boolean const *boolean, bool root);
+    bool handleReal(Real const *real, bool root);
+    bool handleInteger(Integer const *integer, bool root);
+    bool handleString(String const *string, bool root);
+    bool handleDate(Date const *date, bool root);
+    bool handleData(Data const *data, bool root);
 };
 
 }

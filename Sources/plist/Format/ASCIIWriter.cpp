@@ -24,8 +24,9 @@ using plist::Dictionary;
 using plist::CastTo;
 
 ASCIIWriter::
-ASCIIWriter(Object const *root) :
+ASCIIWriter(Object const *root, bool strings) :
     _root   (root),
+    _strings(strings),
     _indent (0),
     _lastKey(false)
 {
@@ -51,12 +52,18 @@ NeedsQuoting(std::string const &string)
 bool ASCIIWriter::
 write()
 {
-    if (!handleObject(_root)) {
+    if (_strings && _root->type() != Dictionary::Type()) {
         return false;
     }
 
-    if (!writeString("\n", false)) {
+    if (!handleObject(_root, true)) {
         return false;
+    }
+
+    if (!_strings) {
+        if (!writeString("\n", false)) {
+            return false;
+        }
     }
 
     return true;
@@ -179,38 +186,38 @@ writeEscapedString(std::string const &string, bool final)
  */
 
 bool ASCIIWriter::
-handleObject(Object const *object)
+handleObject(Object const *object, bool root)
 {
     if (Dictionary const *dictionary = CastTo<Dictionary>(object)) {
-        if (!handleDictionary(dictionary)) {
+        if (!handleDictionary(dictionary, root)) {
             return false;
         }
     } else if (Array const *array = CastTo<Array>(object)) {
-        if (!handleArray(array)) {
+        if (!handleArray(array, root)) {
             return false;
         }
     } else if (Boolean const *boolean = CastTo<Boolean>(object)) {
-        if (!handleBoolean(boolean)) {
+        if (!handleBoolean(boolean, root)) {
             return false;
         }
     } else if (Integer const *integer = CastTo<Integer>(object)) {
-        if (!handleInteger(integer)) {
+        if (!handleInteger(integer, root)) {
             return false;
         }
     } else if (Real const *real = CastTo<Real>(object)) {
-        if (!handleReal(real)) {
+        if (!handleReal(real, root)) {
             return false;
         }
     } else if (String const *string = CastTo<String>(object)) {
-        if (!handleString(string)) {
+        if (!handleString(string, root)) {
             return false;
         }
     } else if (Data const *data = CastTo<Data>(object)) {
-        if (!handleData(data)) {
+        if (!handleData(data, root)) {
             return false;
         }
     } else if (Date const *date = CastTo<Date>(object)) {
-        if (!handleDate(date)) {
+        if (!handleDate(date, root)) {
             return false;
         }
     } else {
@@ -221,16 +228,18 @@ handleObject(Object const *object)
 }
 
 bool ASCIIWriter::
-handleDictionary(Dictionary const *dictionary)
+handleDictionary(Dictionary const *dictionary, bool root)
 {
-    /* Write '{'. */
-    if (!writeString("{\n", !_lastKey)) {
-        return false;
+    if (!_strings || !root) {
+        /* Write '{'. */
+        if (!writeString("{\n", !_lastKey)) {
+            return false;
+        }
+
+        _indent++;
     }
 
     _lastKey = false;
-
-    _indent++;
 
     for (int i = 0; i < dictionary->count(); ++i) {
         _lastKey = false;
@@ -242,10 +251,10 @@ handleDictionary(Dictionary const *dictionary)
         if (!writeString(" = ", false)) {
             return false;
         }
-        
+
         _lastKey = true;
 
-        if (!handleObject(dictionary->value(i))) {
+        if (!handleObject(dictionary->value(i), false)) {
             return false;
         }
 
@@ -254,12 +263,18 @@ handleDictionary(Dictionary const *dictionary)
         }
     }
 
-    _indent--;
-    return writeString("}", true);
+    if (!_strings || !root) {
+        _indent--;
+        if (!writeString("}", true)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool ASCIIWriter::
-handleArray(Array const *array)
+handleArray(Array const *array, bool root)
 {
     /* Write '('. */
     if (!writeString("(\n", !_lastKey)) {
@@ -278,7 +293,7 @@ handleArray(Array const *array)
             }
         }
 
-        if (!handleObject(array->value(i))) {
+        if (!handleObject(array->value(i), false)) {
             return false;
         }
     }
@@ -293,7 +308,7 @@ handleArray(Array const *array)
 }
 
 bool ASCIIWriter::
-handleBoolean(Boolean const *boolean)
+handleBoolean(Boolean const *boolean, bool root)
 {
     if (!writeString(boolean->value() ? "YES" : "NO", !_lastKey)) {
         return false;
@@ -304,7 +319,7 @@ handleBoolean(Boolean const *boolean)
 }
 
 bool ASCIIWriter::
-handleString(String const *string)
+handleString(String const *string, bool root)
 {
     if (!writeEscapedString(string->value(), !_lastKey)) {
         return false;
@@ -315,7 +330,7 @@ handleString(String const *string)
 }
 
 bool ASCIIWriter::
-handleData(Data const *data)
+handleData(Data const *data, bool root)
 {
     if (!writeString("<", !_lastKey)) {
         return false;
@@ -338,7 +353,7 @@ handleData(Data const *data)
 }
 
 bool ASCIIWriter::
-handleReal(Real const *real)
+handleReal(Real const *real, bool root)
 {
     char buf[64];
     int rc = snprintf(buf, sizeof(buf), "%g", real->value());
@@ -354,7 +369,7 @@ handleReal(Real const *real)
 }
 
 bool ASCIIWriter::
-handleInteger(Integer const *integer)
+handleInteger(Integer const *integer, bool root)
 {
     int               rc;
     char              buf[32];
@@ -372,7 +387,7 @@ handleInteger(Integer const *integer)
 }
 
 bool ASCIIWriter::
-handleDate(Date const *date)
+handleDate(Date const *date, bool root)
 {
     if (!writeEscapedString(date->stringValue(), !_lastKey)) {
         return false;

@@ -74,7 +74,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
             )));
         } else if (options.convertFormat() == "ascii1" || options.convertFormat() == "openstep1") {
             convertFormat = std::unique_ptr<plist::Format::Any>(new plist::Format::Any(plist::Format::Any::Create(
-                plist::Format::ASCII::Create(plist::Format::Encoding::UTF8)
+                plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8)
             )));
         } else {
             fprintf(stderr, "error: unknown output format %s\n", options.convertFormat().c_str());

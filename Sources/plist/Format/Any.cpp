@@ -34,9 +34,6 @@ Any::
         case Type::ASCII:
             _contents.ascii.~ASCII();
             break;
-        case Type::Strings:
-            _contents.strings.~Strings();
-            break;
     }
 }
 
@@ -67,7 +64,6 @@ Identify(std::vector<uint8_t> const &contents)
     FORMAT(Binary);
     FORMAT(XML);
     FORMAT(ASCII);
-    FORMAT(Strings);
 
 #undef FORMAT
 
@@ -92,8 +88,6 @@ Deserialize(std::vector<uint8_t> const &contents, Any const &format)
             return DeserializeImpl<XML>(contents, format);
         case Type::ASCII:
             return DeserializeImpl<ASCII>(contents, format);
-        case Type::Strings:
-            return DeserializeImpl<Strings>(contents, format);
     }
 }
 
@@ -119,7 +113,5 @@ Serialize(Object const *object, Any const &format)
             return SerializeImpl<XML>(object, format);
         case Type::ASCII:
             return SerializeImpl<ASCII>(object, format);
-        case Type::Strings:
-            return SerializeImpl<Strings>(object, format);
     }
 }

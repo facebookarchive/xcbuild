@@ -19,7 +19,8 @@ using plist::Format::ASCII;
 using plist::Object;
 
 ASCII::
-ASCII(Encoding encoding) :
+ASCII(bool strings, Encoding encoding) :
+    _strings (strings),
     _encoding(encoding)
 {
 }
@@ -34,6 +35,8 @@ template<>
 std::unique_ptr<ASCII> Format<ASCII>::
 Identify(std::vector<uint8_t> const &contents)
 {
+    Encoding encoding = Encodings::Detect(contents);
+
     /*
      * Identification of ASCII is as follows:
      *
@@ -57,6 +60,7 @@ Identify(std::vector<uint8_t> const &contents)
 
     uint8_t last = '\0';
     enum State state = kStateBegin, pstate = state;
+    bool identifier = false;
 
     for (std::vector<uint8_t>::const_iterator bp = contents.begin(); bp != contents.end();) {
         /* Conceal zeroes for UTF-16/32 encodings. */
@@ -141,10 +145,8 @@ Identify(std::vector<uint8_t> const &contents)
                 case '/': /* Comments */
                 case '*':
                     break;
-                case '\"':
                 case '(': {
-                    Encoding encoding = Encodings::Detect(contents);
-                    return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(encoding)));
+                    return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(false, encoding)));
                 }
                 case '{':
                     state = kStateIdentifier;
@@ -152,14 +154,18 @@ Identify(std::vector<uint8_t> const &contents)
                     break;
                 case '<':
                     if (bp[1] != '?' && bp[1] != '!') {
-                        Encoding encoding = Encodings::Detect(contents);
-                        return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(encoding)));
+                        return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(false, encoding)));
                     }
                     return nullptr;
+                case '\"':
+                    identifier = true;
+                    state = kStateIdentifier;
+                    break;
                 default:
                     if (isalnum(*bp) || *bp == '_' || *bp == '.' || *bp == '$') {
-                        Encoding encoding = Encodings::Detect(contents);
-                        return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(encoding)));
+                        identifier = true;
+                        state = kStateIdentifier;
+                        break;
                     }
                     return nullptr;
             }
@@ -190,11 +196,15 @@ Identify(std::vector<uint8_t> const &contents)
                 return nullptr;
             }
 
-            Encoding encoding = Encodings::Detect(contents);
-            return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(encoding)));
+            return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(identifier, encoding)));
         } else {
             return nullptr;
         }
+    }
+
+    if (state == kStateEqual && identifier) {
+        /* ASCII raw string. */
+        return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(false, encoding)));
     }
 
     return nullptr;
@@ -232,7 +242,7 @@ Serialize(Object const *object, ASCII const &format)
         return std::make_pair(nullptr, "object was null");
     }
 
-    ASCIIWriter writer = ASCIIWriter(object);
+    ASCIIWriter writer = ASCIIWriter(object, format.strings());
     if (!writer.write()) {
         return std::make_pair(nullptr, "serialization failed");
     }
@@ -243,7 +253,7 @@ Serialize(Object const *object, ASCII const &format)
 }
 
 ASCII ASCII::
-Create(Encoding encoding)
+Create(bool strings, Encoding encoding)
 {
-    return ASCII(encoding);
+    return ASCII(strings, encoding);
 }
