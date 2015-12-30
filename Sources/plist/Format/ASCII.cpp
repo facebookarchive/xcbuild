@@ -203,8 +203,13 @@ Identify(std::vector<uint8_t> const &contents)
     }
 
     if (state == kStateEqual && identifier) {
-        /* ASCII raw string. */
+        /* ASCII standalone string. */
         return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(false, encoding)));
+    }
+
+    if (state == kStateBegin) {
+        /* Empty document. Assume strings format. */
+        return std::unique_ptr<ASCII>(new ASCII(ASCII::Create(true, encoding)));
     }
 
     return nullptr;
@@ -225,7 +230,7 @@ Deserialize(std::vector<uint8_t> const &contents, ASCII const &format)
 
     /* Parse contents. */
     ASCIIParser parser;
-    if (parser.parse(&lexer)) {
+    if (parser.parse(&lexer, format.strings())) {
         root = parser.root()->copy();
     } else {
         error = parser.error();

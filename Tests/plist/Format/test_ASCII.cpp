@@ -115,3 +115,19 @@ TEST(ASCII, StringsFormat)
     EXPECT_EQ(*serialize.first, contents);
 }
 
+TEST(ASCII, Empty)
+{
+    auto contents = Contents("/* just a comment */\n\n");
+
+    std::unique_ptr<ASCII> format = ASCII::Identify(contents);
+    ASSERT_NE(format, nullptr);
+    EXPECT_TRUE(format->strings());
+
+    auto deserialize = ASCII::Deserialize(contents, ASCII::Create(true, Encoding::UTF8));
+    fprintf(stderr, "%s\n", deserialize.second.c_str());
+    ASSERT_NE(deserialize.first, nullptr);
+
+    ASSERT_TRUE(deserialize.first->type() == Dictionary::Type());
+    auto dictionary = plist::CastTo<Dictionary>(deserialize.first.get());
+    EXPECT_EQ(dictionary->count(), 0);
+}

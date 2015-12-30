@@ -39,7 +39,6 @@ private:
 private:
     plist::Object              *_root;
     int                         _level;
-    bool                        _strings;
 
 private:
     ValueState                  _state;
@@ -62,15 +61,13 @@ public:
     ~ASCIIParser();
 
 public:
-    bool parse(ASCIIPListLexer *lexer);
+    bool parse(ASCIIPListLexer *lexer, bool strings);
 
 public:
     plist::Object *root() const
     { return _root; }
     std::string error() const
     { return _error; }
-    bool strings() const
-    { return _strings; }
 
 private:
     bool isAborted() const;

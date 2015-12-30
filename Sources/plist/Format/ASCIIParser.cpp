@@ -22,7 +22,6 @@ using plist::Dictionary;
 ASCIIParser::
 ASCIIParser() :
     _root(nullptr),
-    _strings(false),
     _level(0),
     _state(ValueState::Init),
     _container(nullptr),
@@ -433,7 +432,7 @@ hex_to_bin(char const *ascii)
 }
 
 bool ASCIIParser::
-parse(ASCIIPListLexer *lexer)
+parse(ASCIIPListLexer *lexer, bool strings)
 {
     typedef enum _ASCIIParseState {
         kASCIIParsePList = 0,
@@ -442,6 +441,14 @@ parse(ASCIIPListLexer *lexer)
 
         kASCIIInvalid = -1
     } ASCIIParseState;
+
+    if (strings) {
+        /* Begin the root dictionary. */
+        if (!beginDictionary()) {
+            return false;
+        }
+        incrementLevel();
+    }
 
     int token;
     ASCIIParseState state = kASCIIParsePList;
@@ -452,7 +459,7 @@ parse(ASCIIPListLexer *lexer)
             if (token == kASCIIPListLexerEndOfFile && isDone()) {
                 /* success */
                 return true;
-            } else if (token == kASCIIPListLexerEndOfFile && state == kASCIIParsePList && _strings) {
+            } else if (token == kASCIIPListLexerEndOfFile && state == kASCIIParsePList && strings) {
                 if (!endDictionary()) {
                     return false;
                 }
@@ -497,31 +504,6 @@ parse(ASCIIPListLexer *lexer)
         if (token == kASCIIPListLexerTokenInlineComment ||
             token == kASCIIPListLexerTokenLongComment)
             continue;
-
-        /* Re-start parsing for strings format. */
-        if (isDone() && token == kASCIIPListLexerTokenDictionaryKeyValSeparator && _root != nullptr && _root->type() == plist::String::Type()) {
-            /* Found an = after a top-level string. Mark as strings and restart parsing. */
-            _strings = true;
-            _contextState = ContextState::Parsing;
-
-            /* Save the previous root string, it's now a dictionary key. */
-            plist::String *key = static_cast<plist::String *>(_root);
-            _root = nullptr;
-
-            /* Begin the root dictionary. */
-            if (!beginDictionary()) {
-                return false;
-            }
-            incrementLevel();
-
-            /* Store the key from the root. */
-            if (!storeKey(key)) {
-                return false;
-            }
-
-            /* Parse the value. */
-            state = kASCIIParseKeyValSeparator;
-        }
 
         switch (state) {
             case kASCIIParsePList:
