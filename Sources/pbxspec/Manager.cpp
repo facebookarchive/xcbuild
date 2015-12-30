@@ -312,7 +312,12 @@ registerDomain(std::pair<std::string, std::string> const &domain)
         };
 
         if (FSUtil::TestForDirectory(domain.second)) {
-            FSUtil::EnumerateRecursive(domain.second, "*.xcspec", [&](std::string const &filename) -> bool {
+            FSUtil::EnumerateRecursive(domain.second, [&](std::string const &filename) -> bool {
+                /* Support both *.xcspec and *.pbfilespec as a few of the latter remain in use. */
+                if (FSUtil::GetFileExtension(filename) != "xcspec" && FSUtil::GetFileExtension(filename) != "pbfilespec") {
+                    return true;
+                }
+
                 if (!FSUtil::TestForDirectory(filename)) {
 #if 0
                     fprintf(stderr, "importing specification '%s'\n", filename.c_str());
