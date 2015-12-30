@@ -215,7 +215,9 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      */
     if (!options.platform().empty() || !options.requiredArchitectures().empty()) {
         // TODO(grp): Handle platform and required architectures.
+#if 0
         fprintf(stderr, "warning: platform and required architectures are not yet implemented\n");
+#endif
     }
 
     /*

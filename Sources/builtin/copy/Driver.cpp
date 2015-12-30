@@ -51,7 +51,9 @@ Run(Options const &options, std::string const &workingDirectory)
 {
     if (options.stripDebugSymbols() || options.bitcodeStrip() != Options::BitcodeStripMode::None) {
         // TODO(grp): Implement strip support when copying.
+#if 0
         fprintf(stderr, "warning: strip on copy is not supported\n");
+#endif
     }
 
     if (options.preserveHFSData()) {
