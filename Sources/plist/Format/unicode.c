@@ -91,7 +91,7 @@ utf8_to_utf16(uint16_t *dst, size_t dst_len, char const *src, size_t src_len,
             c = ((s[spos] & 0x0f) << 12) | ((s[spos+1] & 0x3f) << 6) |
                 (s[spos+2] & 0x3f);
             spos += 3;
-            if (c < 0x800 || (c & 0xdf00) == 0xd800 ) {
+            if (c < 0x800 || (c & 0xdf00) == 0xd800) {
                 /* overlong encoding or encoded surrogate */
                 error++;
                 continue;
@@ -119,7 +119,7 @@ utf8_to_utf16(uint16_t *dst, size_t dst_len, char const *src, size_t src_len,
                 dst[dpos] = (0xd800 | ((cc-0x10000)>>10));
             }
             dpos++;
-            c = 0xdc00 | ((cc-0x10000) & 0x3ffff);
+            c = 0xdc00 | ((cc-0x10000) & 0x3ff);
         }
 
         if (dst && dpos < dst_len) {
@@ -194,6 +194,7 @@ utf8_to_utf32(uint32_t *dst, size_t dst_len, char const *src, size_t src_len,
             }
             c = ((s[spos] & 0x03) << 18) | ((s[spos+1] & 0x3f) << 12) |
                 ((s[spos+2] & 0x3f) << 6) | (s[spos+3] & 0x3f);
+            spos += 4;
         }
 
         if (dst && dpos < dst_len) {
@@ -234,15 +235,15 @@ utf16_to_utf8(char *dst, size_t dst_len, uint16_t const *src, size_t src_len,
         } else if ((src[spos] & 0xdc00) == 0xd800) {
             uint32_t c;
             /* first surrogate */
-            if (spos == src_len - 1 || (src[spos] & 0xdc00) != 0xdc00) {
+            if (spos == src_len - 1 || (src[spos+1] & 0xdc00) != 0xdc00) {
                 /* no second surrogate present */
                 error++;
                 continue;
             }
-            spos++;
             CHECK_LENGTH(4);
             c = (((src[spos]&0x3ff) << 10) | (src[spos+1]&0x3ff)) + 0x10000;
-            ADD_BYTE(0xf0 | (c>>18));
+            spos++;
+            ADD_BYTE(0xf0 | (c>>18) & 0x7);
             ADD_BYTE(0x80 | ((c>>12) & 0x3f));
             ADD_BYTE(0x80 | ((c>>6) & 0x3f));
             ADD_BYTE(0x80 | (c & 0x3f));
@@ -288,7 +289,7 @@ utf32_to_utf8(char *dst, size_t dst_len, uint32_t const *src, size_t src_len,
             ADD_BYTE(0x80 | (src[spos] & 0x3f));
         } else if (src[spos] < 0x200000) {
             CHECK_LENGTH(4);
-            ADD_BYTE(0xf0 | (src[spos]>>18));
+            ADD_BYTE(0xf0 | (src[spos]>>18) & 0x7);
             ADD_BYTE(0x80 | ((src[spos]>>12) & 0x3f));
             ADD_BYTE(0x80 | ((src[spos]>>6) & 0x3f));
             ADD_BYTE(0x80 | (src[spos] & 0x3f));

@@ -74,7 +74,7 @@ template<>
 std::pair<std::unique_ptr<Object>, std::string> Format<SimpleXML>::
 Deserialize(std::vector<uint8_t> const &contents, SimpleXML const &format)
 {
-    const std::vector<uint8_t> data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
+    std::vector<uint8_t> const data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
 
     SimpleXMLParser parser;
     std::unique_ptr<Object> root = std::unique_ptr<Object>(parser.parse(data));

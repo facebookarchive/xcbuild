@@ -376,6 +376,7 @@ ADD_UNIT_GTEST(util Wildcard Tests/libutil/test_Wildcard.cpp)
 
 ADD_UNIT_GTEST(plist Boolean Tests/plist/test_Boolean.cpp)
 ADD_UNIT_GTEST(plist String Tests/plist/test_String.cpp)
+ADD_UNIT_GTEST(plist Encoding Tests/plist/Format/test_Encoding.cpp)
 ADD_UNIT_GTEST(plist ASCII Tests/plist/Format/test_ASCII.cpp)
 ADD_UNIT_GTEST(plist XML Tests/plist/Format/test_XML.cpp)
 

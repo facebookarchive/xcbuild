@@ -37,6 +37,10 @@ public:
 public:
     static std::vector<uint8_t>
     Convert(std::vector<uint8_t> const &contents, Encoding from, Encoding to);
+
+public:
+    static std::vector<uint8_t>
+    BOM(Encoding encoding);
 };
 
 }

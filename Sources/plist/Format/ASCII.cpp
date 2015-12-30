@@ -207,7 +207,7 @@ Deserialize(std::vector<uint8_t> const &contents, ASCII const &format)
     std::unique_ptr<Object> root = nullptr;
     std::string             error;
 
-    const std::vector<uint8_t> data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
+    std::vector<uint8_t> const data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
 
     /* Create lexer. */
     ASCIIPListLexer lexer;
@@ -237,7 +237,7 @@ Serialize(Object const *object, ASCII const &format)
         return std::make_pair(nullptr, "serialization failed");
     }
 
-    const std::vector<uint8_t> data = Encodings::Convert(writer.contents(), Encoding::UTF8, format.encoding());
+    std::vector<uint8_t> const data = Encodings::Convert(writer.contents(), Encoding::UTF8, format.encoding());
 
     return std::make_pair(std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>(data.begin(), data.end())), std::string());
 }

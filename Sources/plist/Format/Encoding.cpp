@@ -8,8 +8,9 @@
  */
 
 #include <plist/Format/Encoding.h>
+#include <plist/Format/unicode.h>
 
-#include <codecvt>
+#include <cassert>
 
 using plist::Format::Encoding;
 using plist::Format::Encodings;
@@ -50,30 +51,157 @@ Detect(std::vector<uint8_t> const &contents)
 }
 
 std::vector<uint8_t> Encodings::
+BOM(Encoding encoding)
+{
+    switch (encoding) {
+        case Encoding::UTF8:
+            return { 0xEF, 0xBB, 0xBF };
+        case Encoding::UTF16BE:
+            return { 0xFE, 0xFF };
+        case Encoding::UTF16LE:
+            return { 0xFF, 0xFE };
+        case Encoding::UTF32BE:
+            return { 0x00, 0x00, 0xFE, 0xFF };
+        case Encoding::UTF32LE:
+            return { 0xFF, 0xFE, 0x00, 0x00 };
+    }
+}
+
+enum class Endian {
+    Big,
+    Little,
+};
+
+#if defined(__BIG_ENDIAN__)
+static Endian const HostEndian = Endian::Big;
+#elif defined(__LITTLE_ENDIAN__)
+static Endian const HostEndian = Endian::Little;
+#else
+#error Unknown endianness.
+#endif
+
+static Endian
+EncodingEndian(Encoding encoding)
+{
+    switch (encoding) {
+        case Encoding::UTF8:
+            return HostEndian;
+        case Encoding::UTF32LE:
+        case Encoding::UTF16LE:
+            return Endian::Little;
+        case Encoding::UTF32BE:
+        case Encoding::UTF16BE:
+            return Endian::Big;
+    }
+}
+
+template<typename T>
+static T EndianSwap(T value);
+
+template<>
+uint16_t EndianSwap<uint16_t>(uint16_t value)
+{
+    return (value >> 8) | (value << 8);
+}
+
+template<>
+uint32_t EndianSwap<uint32_t>(uint32_t value)
+{
+    return static_cast<uint32_t>(EndianSwap<uint16_t>(value) << 16) | EndianSwap<uint16_t>(value >> 16);
+}
+
+template<typename T>
+static void
+EndianSwapBuffer(std::vector<uint8_t> *buffer, Endian src, Endian dest)
+{
+    if (src != dest) {
+        for (size_t i = 0; i < buffer->size(); i += sizeof(T)) {
+            T *value = reinterpret_cast<T *>(&(*buffer)[i]);
+            *value = EndianSwap<T>(*value);
+        }
+    }
+}
+
+std::vector<uint8_t> Encodings::
 Convert(std::vector<uint8_t> const &contents, Encoding from, Encoding to)
 {
-    /* No conversion needed. */
+    /* No conversion needed, just byte swap if necessary. */
     if (from == to) {
         return contents;
+    } else if ((from == Encoding::UTF16LE && to == Encoding::UTF16BE) ||
+               (from == Encoding::UTF16BE && to == Encoding::UTF16LE)) {
+        std::vector<uint8_t> buffer = contents;
+        EndianSwapBuffer<uint16_t>(&buffer, EncodingEndian(from), EncodingEndian(to));
+        return buffer;
+    } else if ((from == Encoding::UTF32LE && to == Encoding::UTF32BE) ||
+               (from == Encoding::UTF32BE && to == Encoding::UTF32LE)) {
+        std::vector<uint8_t> buffer = contents;
+        EndianSwapBuffer<uint32_t>(&buffer, EncodingEndian(from), EncodingEndian(to));
+        return buffer;
     }
 
-    std::vector<uint8_t> result;
+    /*
+     * Convert to UTF-8 as an intermediate format.
+     */
+    std::vector<uint8_t> intermediate;
+    if (from == Encoding::UTF8) {
+        intermediate = contents;
+    } else {
+        std::vector<uint8_t> input = contents;
 
-    if (from != Encoding::UTF8) {
-        if (from == Encoding::UTF32LE || from == Encoding::UTF32BE) {
-            // TODO(grp): Convert from UTF-32 to UTF-8.
-        } else if (from == Encoding::UTF16LE || from == Encoding::UTF16BE) {
-            // TODO(grp): Convert from UTF-16 to UTF-8.
+        if (from == Encoding::UTF16LE || from == Encoding::UTF16BE) {
+            EndianSwapBuffer<uint16_t>(&input, EncodingEndian(from), HostEndian);
+
+            intermediate.resize(input.size() * sizeof(uint8_t) * 2);
+            size_t length = ::utf16_to_utf8(
+                reinterpret_cast<char *>(intermediate.data()), intermediate.size() / sizeof(char),
+                reinterpret_cast<uint16_t *>(input.data()), input.size() / sizeof(uint16_t),
+                0, nullptr);
+            intermediate.resize(length);
+        } else if (from == Encoding::UTF32LE || from == Encoding::UTF32BE) {
+            EndianSwapBuffer<uint32_t>(&input, EncodingEndian(from), HostEndian);
+
+            intermediate.resize(input.size() * sizeof(uint8_t));
+            size_t length = ::utf32_to_utf8(
+                reinterpret_cast<char *>(intermediate.data()), intermediate.size() / sizeof(char),
+                reinterpret_cast<uint32_t *>(input.data()), input.size() / sizeof(uint32_t),
+                0, nullptr);
+            intermediate.resize(length);
+        } else {
+            assert(false && "unknown encoding");
         }
     }
 
-    if (to != Encoding::UTF8) {
-        if (to == Encoding::UTF32LE || to == Encoding::UTF32BE) {
-            // TODO(grp): Convert from UTF-8 to UTF-32.
-        } else if (to == Encoding::UTF16LE || to == Encoding::UTF16BE) {
-            // TODO(grp): Convert from UTF-8 to UTF-16.
-        }
-    }
+    /*
+     * Convert to the resulting format.
+     */
+    if (to == Encoding::UTF8) {
+        return intermediate;
+    } else {
+        std::vector<uint8_t> result;
 
-    return result;
+        if (to == Encoding::UTF16LE || to == Encoding::UTF16BE) {
+            result.resize(contents.size() * sizeof(uint16_t) * 3);
+            size_t length = ::utf8_to_utf16(
+                reinterpret_cast<uint16_t *>(result.data()), result.size() / sizeof(uint16_t),
+                reinterpret_cast<char *>(intermediate.data()), intermediate.size() / sizeof(char),
+                0, nullptr);
+            result.resize(length * sizeof(uint16_t));
+
+            EndianSwapBuffer<uint16_t>(&result, HostEndian, EncodingEndian(to));
+        } else if (to == Encoding::UTF32LE || to == Encoding::UTF32BE) {
+            result.resize(intermediate.size() * sizeof(uint32_t));
+            size_t length = ::utf8_to_utf32(
+                reinterpret_cast<uint32_t *>(result.data()), result.size() / sizeof(uint32_t),
+                reinterpret_cast<char *>(intermediate.data()), intermediate.size() / sizeof(char),
+                0, nullptr);
+            result.resize(length * sizeof(uint32_t));
+
+            EndianSwapBuffer<uint32_t>(&result, HostEndian, EncodingEndian(to));
+        } else {
+            assert(false && "unknown encoding");
+        }
+
+        return result;
+    }
 }

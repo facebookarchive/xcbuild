@@ -8,9 +8,11 @@
  */
 
 #include <plist/Format/ABPWriterPrivate.h>
-#include <plist/Format/unicode.h>
+#include <plist/Format/Encoding.h>
 #include <plist/Objects.h>
 
+using plist::Format::Encoding;
+using plist::Format::Encodings;
 using plist::Object;
 using plist::Boolean;
 using plist::Real;
@@ -162,8 +164,7 @@ __ABPWriteData(ABPContext *context, Data *data)
 }
 
 static bool
-__ABPWriteStringASCII(ABPContext *context, char const *chars,
-        size_t nchars)
+__ABPWriteStringASCII(ABPContext *context, char const *chars, size_t nchars)
 {
     /* Write the object type and the length. */
     if (!__ABPWriteTypeAndLength(context, kABPRecordTypeStringASCII, nchars))
@@ -173,8 +174,7 @@ __ABPWriteStringASCII(ABPContext *context, char const *chars,
 }
 
 static bool
-__ABPWriteStringUnicode(ABPContext *context, char16_t const *chars,
-        size_t nchars)
+__ABPWriteStringUnicode(ABPContext *context, uint16_t const *chars, size_t nchars)
 {
     /* Write the object type and the length. */
     if (!__ABPWriteTypeAndLength(context, kABPRecordTypeStringUnicode, nchars))
@@ -183,16 +183,7 @@ __ABPWriteStringUnicode(ABPContext *context, char16_t const *chars,
     if (nchars == 0)
         return true;
 
-#if defined(__BIG_ENDIAN__)
-    return (__ABPWriteBytes(context, chars, nchars * sizeof(char16_t)) ==
-            (size_t)(nchars * sizeof(char16_t)));
-#else
-    for (int n = 0; n < nchars; n++) {
-        if (!__ABPWriteWord(context, 2, chars[n]))
-            return false;
-    }
-    return true;
-#endif
+    return (__ABPWriteBytes(context, chars, nchars * sizeof(uint16_t)) == (size_t)(nchars * sizeof(uint16_t)));
 }
 
 static bool
@@ -211,12 +202,9 @@ __ABPWriteString(ABPContext *context, String *string)
     if (ascii) {
         success = __ABPWriteStringASCII(context, string->value().c_str(), string->value().size());
     } else {
-        std::u16string u16string;
-        u16string.resize(string->value().size() * 2);
-        size_t length = ::utf8_to_utf16(reinterpret_cast<uint16_t *>(&u16string[0]), u16string.size(), string->value().data(), string->value().size(), 0, nullptr);
-        u16string.resize(length);
-
-        success = __ABPWriteStringUnicode(context, u16string.data(), length);
+        std::vector<uint8_t> buffer = std::vector<uint8_t>(string->value().begin(), string->value().end());
+        buffer = Encodings::Convert(buffer, Encoding::UTF8, Encoding::UTF16BE);
+        success = __ABPWriteStringUnicode(context, reinterpret_cast<uint16_t *>(buffer.data()), buffer.size() / sizeof(uint16_t));
     }
 
     return success;

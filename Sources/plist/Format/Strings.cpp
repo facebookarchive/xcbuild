@@ -156,7 +156,7 @@ Deserialize(std::vector<uint8_t> const &contents, Strings const &format)
     std::string                 error;
     ASCIIPListLexer             lexer;
 
-    const std::vector<uint8_t> data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
+    std::vector<uint8_t> const data = Encodings::Convert(contents, format.encoding(), Encoding::UTF8);
 
     root = Dictionary::New();
     if (root == NULL) {

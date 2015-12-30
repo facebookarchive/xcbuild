@@ -9,20 +9,17 @@
 
 #include <plist/Format/Binary.h>
 #include <plist/Format/ABPCoder.h>
+#include <plist/Format/Encoding.h>
 #include <plist/Objects.h>
 
 #include <cerrno>
 #include <cstring>
-#if notyet
-#include <codecvt>
-#else
-#include <plist/Format/unicode.h>
-#define char16_t uint16_t
-#endif
 
 using plist::Format::Type;
 using plist::Format::Format;
 using plist::Format::Binary;
+using plist::Format::Encoding;
+using plist::Format::Encodings;
 using plist::Object;
 using plist::String;
 using plist::Integer;
@@ -189,32 +186,22 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             off_t  offset = *reinterpret_cast <off_t *> (arg1);
             size_t nchars = *reinterpret_cast <size_t *> (arg2);
 
-#if notyet
-            std::u16string string;
-#else
-            std::vector <char16_t> string;
-#endif
+            std::vector<uint8_t> buffer;
 
             if (nchars > 0) {
                 if (ReadSeek(opaque, offset, SEEK_SET) < 0)
                     return nullptr;
 
-                string.resize(nchars);
-                size_t nread = ReadData(opaque, &string[0], sizeof(char16_t) * nchars);
+                buffer.resize(nchars);
+                size_t nread = ReadData(opaque, buffer.data(), sizeof(uint16_t) * nchars);
                 if (nread < nchars)
                     return nullptr;
             }
 
-#if notyet
-            return String::New(std::move(std::codecvt_utf8_utf16 <char16_t> ().to_bytes(string))).release();
-#else
-            std::string u8string;
-            u8string.resize(string.size() * 6);
-            size_t length = ::utf16_to_utf8(&u8string[0], u8string.size(),
-                                            &string[0], string.size(), 0, nullptr);
-            u8string.resize(length);
-            return String::New(std::move(u8string)).release();
-#endif
+            buffer = Encodings::Convert(buffer, Encoding::UTF16BE, Encoding::UTF8);
+
+            std::string string = std::string(buffer.begin(), buffer.end());
+            return String::New(std::move(string)).release();
         }
         case kABPRecordTypeArray:
         {
