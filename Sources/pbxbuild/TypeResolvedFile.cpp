@@ -76,7 +76,8 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
             bool matched = false;
 
             for (std::string const &extension : fileType->extensions()) {
-                if (extension == fileExtension) {
+                // TODO(grp): Is this correct? Needed for handling ".S" as ".s", but might be over-broad.
+                if (strcasecmp(extension.c_str(), fileExtension.c_str()) == 0) {
                     matched = true;
                 }
             }
