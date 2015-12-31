@@ -192,11 +192,6 @@ resolveBuildFile(
 
         if (toolIdentifier == Tool::ClangResolver::ToolIdentifier()) {
             if (Tool::ClangResolver const *clangResolver = this->clangResolver(phaseEnvironment)) {
-                std::string outputBaseName = FSUtil::GetBaseNameWithoutExtension(file.path());
-                if (!file.fileNameDisambiguator().empty()) {
-                    outputBaseName = file.fileNameDisambiguator();
-                }
-
                 clangResolver->resolveSource(&_toolContext, environment, file, outputDirectory);
                 return true;
             } else {

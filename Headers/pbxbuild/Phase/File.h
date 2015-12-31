@@ -18,7 +18,7 @@ namespace Phase {
 class Environment;
 
 /*
- * Represents a file to build as part of a phase.
+ * Represents a resolved file to build as part of a phase.
  */
 class File {
 private:
@@ -35,16 +35,38 @@ public:
     ~File();
 
 public:
+    /*
+     * The build file entry saying to build this file.
+     */
     pbxproj::PBX::BuildFile::shared_ptr const &buildFile() const
     { return _buildFile; }
+
+    /*
+     * The type of this file.
+     */
     pbxspec::PBX::FileType::shared_ptr const &fileType() const
     { return _fileType; }
 
 public:
+    /*
+     * The resolved path to the file.
+     */
     std::string const &path() const
     { return _path; }
+
+    /*
+     * The subdirectory within the output directory this file should be
+     * output in. This is relevant for variant groups, which contain many
+     * versions of the same file that should be output in lproj directories.
+     */
     std::string const &outputSubdirectory() const
     { return _outputSubdirectory; }
+
+    /*
+     * A disambiguation identifier for files that have multiple with the
+     * same base name within a target. This should be used for the output
+     * path in order to avoid overwriting outputs.
+     */
     std::string const &fileNameDisambiguator() const
     { return _fileNameDisambiguator; }
 
