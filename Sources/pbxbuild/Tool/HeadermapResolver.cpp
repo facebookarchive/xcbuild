@@ -11,13 +11,13 @@
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/Context.h>
-#include <pbxbuild/TypeResolvedFile.h>
+#include <pbxbuild/FileTypeResolver.h>
 #include <pbxbuild/HeaderMap.h>
 
 namespace Tool = pbxbuild::Tool;
 using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
 using pbxbuild::HeaderMap;
-using pbxbuild::TypeResolvedFile;
+using pbxbuild::FileTypeResolver;
 using libutil::FSUtil;
 
 Tool::HeadermapResolver::
@@ -101,7 +101,7 @@ resolve(
     std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, compilerEnvironment, target, toolContext->searchPaths(), toolContext->workingDirectory());
     for (std::string const &path : headermapSearchPaths) {
         FSUtil::EnumerateDirectory(path, [&](std::string const &fileName) -> bool {
-            // TODO(grp): Use TypeResolvedFile when reliable.
+            // TODO(grp): Use FileTypeResolver when reliable.
             std::string extension = FSUtil::GetFileExtension(fileName);
             if (extension != "h" && extension != "hpp") {
                 return true;
@@ -113,17 +113,18 @@ resolve(
     }
 
     for (pbxproj::PBX::FileReference::shared_ptr const &fileReference : project->fileReferences()) {
-        auto file = pbxbuild::TypeResolvedFile::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, compilerEnvironment);
-        if (file == nullptr || (file->fileType()->identifier() != "sourcecode.c.h" && file->fileType()->identifier() != "sourcecode.cpp.h")) {
+        std::string filePath = compilerEnvironment.expand(fileReference->resolve());
+        pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, filePath);
+        if (fileType == nullptr || (fileType->identifier() != "sourcecode.c.h" && fileType->identifier() != "sourcecode.cpp.h")) {
             continue;
         }
 
-        std::string fileName = FSUtil::GetBaseName(file->filePath());
-        std::string filePath = FSUtil::GetDirectoryName(file->filePath()) + "/";
+        std::string fileName = FSUtil::GetBaseName(filePath);
+        std::string fileDirectory = FSUtil::GetDirectoryName(filePath) + "/";
 
-        projectHeaders.add(fileName, filePath, fileName);
+        projectHeaders.add(fileName, fileDirectory, fileName);
         if (includeProjectHeaders) {
-            targetName.add(fileName, filePath, fileName);
+            targetName.add(fileName, fileDirectory, fileName);
         }
     }
 
@@ -139,13 +140,14 @@ resolve(
                 }
 
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-                std::unique_ptr<TypeResolvedFile> file = pbxbuild::TypeResolvedFile::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, compilerEnvironment);
-                if (file == nullptr || (file->fileType()->identifier() != "sourcecode.c.h" && file->fileType()->identifier() != "sourcecode.cpp.h")) {
+                std::string filePath = compilerEnvironment.expand(fileReference->resolve());
+                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, filePath);
+                if (fileType == nullptr || (fileType->identifier() != "sourcecode.c.h" && fileType->identifier() != "sourcecode.cpp.h")) {
                     continue;
                 }
 
-                std::string fileName = FSUtil::GetBaseName(file->filePath());
-                std::string filePath = FSUtil::GetDirectoryName(file->filePath()) + "/";
+                std::string fileName = FSUtil::GetBaseName(filePath);
+                std::string fileDirectory = FSUtil::GetDirectoryName(filePath) + "/";
                 std::string frameworkName = projectTarget->productName() + "/" + fileName;
 
                 std::vector<std::string> const &attributes = buildFile->attributes();
@@ -153,27 +155,27 @@ resolve(
                 bool isPrivate = std::find(attributes.begin(), attributes.end(), "Private") != attributes.end();
 
                 if (projectTarget == target) {
-                    ownTargetHeaders.add(fileName, filePath, fileName);
+                    ownTargetHeaders.add(fileName, fileDirectory, fileName);
 
                     if (!isPublic && !isPrivate) {
-                        ownTargetHeaders.add(frameworkName, filePath, fileName);
+                        ownTargetHeaders.add(frameworkName, fileDirectory, fileName);
                         if (includeFlatEntriesForTargetBeingBuilt) {
-                            targetName.add(frameworkName, filePath, fileName);
+                            targetName.add(frameworkName, fileDirectory, fileName);
                         }
                     }
                 }
 
                 if (isPublic || isPrivate) {
-                    allTargetHeaders.add(frameworkName, filePath, fileName);
+                    allTargetHeaders.add(frameworkName, fileDirectory, fileName);
                     if (includeFrameworkEntriesForAllProductTypes) {
-                        targetName.add(frameworkName, filePath, fileName);
+                        targetName.add(frameworkName, fileDirectory, fileName);
                     }
 
                     // TODO(grp): This is a little messy. Maybe check the product type specification, or the product reference's file type?
                     if (projectTarget->type() == pbxproj::PBX::Target::kTypeNative && std::static_pointer_cast<pbxproj::PBX::NativeTarget>(projectTarget)->productType().find("framework") == std::string::npos) {
-                        allNonFrameworkTargetHeaders.add(frameworkName, filePath, fileName);
+                        allNonFrameworkTargetHeaders.add(frameworkName, fileDirectory, fileName);
                         if (!includeFrameworkEntriesForAllProductTypes) {
-                            targetName.add(frameworkName, filePath, fileName);
+                            targetName.add(frameworkName, fileDirectory, fileName);
                         }
                     }
                 }

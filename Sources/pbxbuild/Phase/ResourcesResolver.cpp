@@ -14,7 +14,6 @@
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::TypeResolvedFile;
 
 Phase::ResourcesResolver::
 ResourcesResolver(pbxproj::PBX::ResourcesBuildPhase::shared_ptr const &buildPhase) :

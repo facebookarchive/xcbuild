@@ -17,10 +17,8 @@
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
-#include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 Tool::ClangResolver::
@@ -222,11 +220,8 @@ void Tool::ClangResolver::
 resolveSource(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    TypeResolvedFile const &inputFile,
-    std::vector<std::string> const &inputArguments,
-    std::string const &outputDirectory,
-    std::string const &outputBaseName
-) const
+    Phase::File const &inputFile,
+    std::string const &outputDirectory) const
 {
     Tool::HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
 
@@ -240,10 +235,15 @@ resolveSource(
         outputExtension = "o";
     }
 
+    std::string outputBaseName = FSUtil::GetBaseNameWithoutExtension(inputFile.path());
+    if (!inputFile.fileNameDisambiguator().empty()) {
+        outputBaseName = inputFile.fileNameDisambiguator();
+    }
     std::string output = resolvedOutputDirectory + "/" + outputBaseName + "." + outputExtension;
 
-    std::string const &input = inputFile.filePath();
+    std::string const &input = inputFile.path();
     pbxspec::PBX::FileType::shared_ptr const &fileType = inputFile.fileType();
+    std::vector<std::string> const &inputArguments = inputFile.buildFile()->compilerFlags();
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
     Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, { input }, { output });

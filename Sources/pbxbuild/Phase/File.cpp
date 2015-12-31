@@ -12,17 +12,18 @@
 #include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/Build/Context.h>
 #include <pbxbuild/Build/Environment.h>
-#include <pbxbuild/TypeResolvedFile.h>
+#include <pbxbuild/FileTypeResolver.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Target = pbxbuild::Target;
 namespace Build = pbxbuild::Build;
-using pbxbuild::TypeResolvedFile;
+using pbxbuild::FileTypeResolver;
 
 Phase::File::
-File(pbxproj::PBX::BuildFile::shared_ptr const &buildFile, TypeResolvedFile const &file, std::string const &outputSubdirectory, std::string const &fileNameDisambiguator) :
+File(pbxproj::PBX::BuildFile::shared_ptr const &buildFile, pbxspec::PBX::FileType::shared_ptr const &fileType, std::string const &path, std::string const &outputSubdirectory, std::string const &fileNameDisambiguator) :
     _buildFile            (buildFile),
-    _file                 (file),
+    _fileType             (fileType),
+    _path                 (path),
     _outputSubdirectory   (outputSubdirectory),
     _fileNameDisambiguator(fileNameDisambiguator)
 {
@@ -33,8 +34,12 @@ Phase::File::
 {
 }
 
-std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::File::
-ResolveReferenceProxy(Phase::Environment const &phaseEnvironment, pbxsetting::Environment const &environment, pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy)
+std::unique_ptr<Phase::File> Phase::File::
+ResolveReferenceProxy(
+    Phase::Environment const &phaseEnvironment,
+    pbxsetting::Environment const &environment,
+    pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
+    pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy)
 {
     Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Build::Context const &buildContext = phaseEnvironment.buildContext();
@@ -55,14 +60,28 @@ ResolveReferenceProxy(Phase::Environment const &phaseEnvironment, pbxsetting::En
         return nullptr;
     }
 
-    return TypeResolvedFile::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, remote->second, remoteEnvironment->environment());
+    pbxproj::PBX::FileReference::shared_ptr const &fileReference = remote->second;
+    std::string path = remoteEnvironment->environment().expand(fileReference->resolve());
+    pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, path);
+
+    return std::unique_ptr<Phase::File>(new Phase::File(buildFile, fileType, path, std::string(), std::string()));
 }
 
-std::unique_ptr<pbxbuild::TypeResolvedFile> Phase::File::
-ResolveFileReference(Phase::Environment const &phaseEnvironment, pbxsetting::Environment const &environment, pbxproj::PBX::FileReference::shared_ptr const &fileReference)
+Phase::File Phase::File::
+ResolveFileReference(
+    Phase::Environment const &phaseEnvironment,
+    pbxsetting::Environment const &environment,
+    pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
+    pbxproj::PBX::FileReference::shared_ptr const &fileReference,
+    std::string const &outputSubdirectory,
+    std::string const &fileNameDisambiguator)
 {
     Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    return TypeResolvedFile::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, environment);
+
+    std::string path = environment.expand(fileReference->resolve());
+    pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, path);
+
+    return Phase::File(buildFile, fileType, path, outputSubdirectory, fileNameDisambiguator);
 }
 
 std::vector<Phase::File> Phase::File::
@@ -86,17 +105,17 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
         switch (buildFile->fileRef()->type()) {
             case pbxproj::PBX::GroupItem::kTypeFileReference: {
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-                std::unique_ptr<TypeResolvedFile> file = ResolveFileReference(phaseEnvironment, environment, fileReference);
-                if (file != nullptr) {
-                    result.push_back(Phase::File(buildFile, *file, std::string(), fileNameDisambiguator));
-                }
+
+                Phase::File file = ResolveFileReference(phaseEnvironment, environment, buildFile, fileReference, std::string(), fileNameDisambiguator);
+                result.push_back(file);
                 break;
             }
             case pbxproj::PBX::GroupItem::kTypeReferenceProxy: {
                 pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (buildFile->fileRef());
-                std::unique_ptr<TypeResolvedFile> file = ResolveReferenceProxy(phaseEnvironment, environment, referenceProxy);
+
+                std::unique_ptr<Phase::File> file = ResolveReferenceProxy(phaseEnvironment, environment, buildFile, referenceProxy);
                 if (file != nullptr) {
-                    result.push_back(Phase::File(buildFile, *file, std::string(), fileNameDisambiguator));
+                    result.push_back(*file);
                 }
                 break;
             }
@@ -108,12 +127,10 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                     }
 
                     pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (child);
-                    std::string outputDirectory = fileReference->name() + ".lproj";
 
-                    std::unique_ptr<TypeResolvedFile> file = ResolveFileReference(phaseEnvironment, environment, fileReference);
-                    if (file != nullptr) {
-                        result.push_back(Phase::File(buildFile, *file, outputDirectory, fileNameDisambiguator));
-                    }
+                    std::string outputSubdirectory = fileReference->name() + ".lproj";
+                    Phase::File file = ResolveFileReference(phaseEnvironment, environment, buildFile, fileReference, outputSubdirectory, fileNameDisambiguator);
+                    result.push_back(file);
                 }
                 break;
             }

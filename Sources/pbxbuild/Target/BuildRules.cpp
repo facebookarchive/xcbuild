@@ -30,17 +30,17 @@ BuildRules(Target::BuildRules::BuildRule::vector const &buildRules) :
 }
 
 Target::BuildRules::BuildRule::shared_ptr Target::BuildRules::
-resolve(pbxbuild::TypeResolvedFile const &file) const
+resolve(pbxspec::PBX::FileType::shared_ptr const &fileType, std::string const &filePath) const
 {
     for (BuildRule::shared_ptr const &buildRule : _buildRules) {
         if (!buildRule->filePatterns().empty()) {
-            if (Wildcard::Match(buildRule->filePatterns(), FSUtil::GetBaseName(file.filePath()))) {
+            if (Wildcard::Match(buildRule->filePatterns(), FSUtil::GetBaseName(filePath))) {
                 return buildRule;
             }
         } else {
             pbxspec::PBX::FileType::vector fileTypes = buildRule->fileTypes();
-            for (pbxspec::PBX::FileType::shared_ptr fileType = file.fileType(); fileType != nullptr; fileType = fileType->base()) {
-                if (std::find(fileTypes.begin(), fileTypes.end(), fileType) != fileTypes.end()) {
+            for (pbxspec::PBX::FileType::shared_ptr FT = fileType; FT != nullptr; FT = FT->base()) {
+                if (std::find(fileTypes.begin(), fileTypes.end(), FT) != fileTypes.end()) {
                     return buildRule;
                 }
             }

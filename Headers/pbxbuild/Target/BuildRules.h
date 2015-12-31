@@ -11,7 +11,6 @@
 #define __pbxbuild_Target_BuildRules_h
 
 #include <pbxbuild/Base.h>
-#include <pbxbuild/TypeResolvedFile.h>
 
 namespace pbxbuild {
 namespace Target {
@@ -61,7 +60,7 @@ private:
 
 public:
     BuildRule::shared_ptr
-    resolve(TypeResolvedFile const &file) const;
+    resolve(pbxspec::PBX::FileType::shared_ptr const &fileType, std::string const &filePath) const;
 
 public:
     static BuildRules

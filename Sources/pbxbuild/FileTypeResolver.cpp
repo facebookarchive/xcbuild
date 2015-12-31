@@ -7,26 +7,14 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/TypeResolvedFile.h>
+#include <pbxbuild/FileTypeResolver.h>
 #include <pbxbuild/DirectedGraph.h>
 #include <fstream>
 
-using pbxbuild::TypeResolvedFile;
+using pbxbuild::FileTypeResolver;
 using pbxbuild::DirectedGraph;
 using libutil::FSUtil;
 using libutil::Wildcard;
-
-TypeResolvedFile::
-TypeResolvedFile(std::string const &filePath, pbxspec::PBX::FileType::shared_ptr const &fileType) :
-    _filePath(filePath),
-    _fileType(fileType)
-{
-}
-
-TypeResolvedFile::
-~TypeResolvedFile()
-{
-}
 
 static std::pair<bool, std::vector<pbxspec::PBX::FileType::shared_ptr>>
 SortedFileTypes(std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes)
@@ -43,7 +31,7 @@ SortedFileTypes(std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes
     return graph.ordered();
 }
 
-std::unique_ptr<TypeResolvedFile> TypeResolvedFile::
+pbxspec::PBX::FileType::shared_ptr FileTypeResolver::
 Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, std::string const &filePath)
 {
     bool isReadable = FSUtil::TestForRead(filePath);
@@ -182,31 +170,25 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
         //
         // Matched all checks.
         //
-        return std::unique_ptr<TypeResolvedFile>(new TypeResolvedFile(TypeResolvedFile(filePath, fileType)));
+        return fileType;
     }
 
     pbxspec::PBX::FileType::shared_ptr fileType = (isFolder ? specManager->fileType("folder", domains) : specManager->fileType("file", domains));
-    return std::unique_ptr<TypeResolvedFile>(new TypeResolvedFile(TypeResolvedFile(filePath, fileType)));
+    return fileType;
 }
 
-std::unique_ptr<TypeResolvedFile> TypeResolvedFile::
-Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::FileReference::shared_ptr const &fileReference, pbxsetting::Environment const &environment)
+pbxspec::PBX::FileType::shared_ptr FileTypeResolver::
+Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::FileReference::shared_ptr const &fileReference, std::string const &filePath)
 {
-    if (fileReference == nullptr) {
-        return nullptr;
-    }
-
-    std::string filePath = environment.expand(fileReference->resolve());
-
     if (!fileReference->explicitFileType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(fileReference->explicitFileType(), domains)) {
-            return std::unique_ptr<TypeResolvedFile>(new TypeResolvedFile(TypeResolvedFile(filePath, fileType)));
+            return fileType;
         }
     }
 
     if (!fileReference->lastKnownFileType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(fileReference->lastKnownFileType(), domains)) {
-            return std::unique_ptr<TypeResolvedFile>(new TypeResolvedFile(TypeResolvedFile(filePath, fileType)));
+            return fileType;
         }
     }
 

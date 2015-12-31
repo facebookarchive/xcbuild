@@ -13,10 +13,8 @@
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
-#include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 Tool::LinkerResolver::
@@ -35,7 +33,7 @@ resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     std::vector<std::string> const &inputFiles,
-    std::vector<TypeResolvedFile> const &inputLibraries,
+    std::vector<Phase::File> const &inputLibraries,
     std::string const &output,
     std::vector<std::string> const &additionalArguments,
     std::string const &executable
@@ -58,11 +56,11 @@ resolve(
 
     std::unordered_set<std::string> libraryPaths;
     std::unordered_set<std::string> frameworkPaths;
-    for (TypeResolvedFile const &library : inputLibraries) {
+    for (Phase::File const &library : inputLibraries) {
         if (library.fileType()->isFrameworkWrapper()) {
-            frameworkPaths.insert(FSUtil::GetDirectoryName(library.filePath()));
+            frameworkPaths.insert(FSUtil::GetDirectoryName(library.path()));
         } else {
-            libraryPaths.insert(FSUtil::GetDirectoryName(library.filePath()));
+            libraryPaths.insert(FSUtil::GetDirectoryName(library.path()));
         }
     }
     for (std::string const &libraryPath : libraryPaths) {
@@ -72,8 +70,8 @@ resolve(
         special.push_back("-F" + libraryPath);
     }
 
-    for (TypeResolvedFile const &library : inputLibraries) {
-        std::string base = FSUtil::GetBaseNameWithoutExtension(library.filePath());
+    for (Phase::File const &library : inputLibraries) {
+        std::string base = FSUtil::GetBaseNameWithoutExtension(library.path());
         if (library.fileType()->isFrameworkWrapper()) {
             special.push_back("-framework");
             special.push_back(base);

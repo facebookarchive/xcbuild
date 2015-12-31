@@ -13,11 +13,9 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/File.h>
 
 namespace pbxbuild {
-
-class TypeResolvedFile;
-
 namespace Tool {
 
 class SearchPaths;
@@ -36,16 +34,12 @@ public:
     void resolveSource(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        TypeResolvedFile const &input,
-        std::vector<std::string> const &inputArguments,
-        std::string const &outputDirectory,
-        std::string const &outputBaseName
-    ) const;
+        Phase::File const &input,
+        std::string const &outputDirectory) const;
     void resolvePrecompiledHeader(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        PrecompiledHeaderInfo const &precompiledHeaderInfo
-    ) const;
+        PrecompiledHeaderInfo const &precompiledHeaderInfo) const;
 
 public:
     pbxspec::PBX::Compiler::shared_ptr const &compiler() const

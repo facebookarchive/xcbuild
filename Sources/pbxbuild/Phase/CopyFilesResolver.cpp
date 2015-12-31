@@ -89,7 +89,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         }
     } else {
         for (Phase::File const &file : files) {
-            copyResolver->resolve(&phaseContext->toolContext(), environment, file.file().filePath(), outputDirectory, "PBXCp");
+            copyResolver->resolve(&phaseContext->toolContext(), environment, file.path(), outputDirectory, "PBXCp");
         }
     }
 

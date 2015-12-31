@@ -13,7 +13,7 @@
 #include <pbxbuild/HeaderMap.h>
 
 #include <pbxbuild/WorkspaceContext.h>
-#include <pbxbuild/TypeResolvedFile.h>
+#include <pbxbuild/FileTypeResolver.h>
 
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Tool/ClangResolver.h>

@@ -13,11 +13,9 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/File.h>
 
 namespace pbxbuild {
-
-class TypeResolvedFile;
-
 namespace Tool {
 
 class Context;
@@ -35,7 +33,7 @@ public:
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         std::vector<std::string> const &inputFiles,
-        std::vector<TypeResolvedFile> const &inputLibraries,
+        std::vector<Phase::File> const &inputLibraries,
         std::string const &output,
         std::vector<std::string> const &additionalArguments,
         std::string const &executable = ""

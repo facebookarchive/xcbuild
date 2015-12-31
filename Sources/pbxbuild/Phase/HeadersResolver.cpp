@@ -12,11 +12,9 @@
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Phase/File.h>
 #include <pbxbuild/Tool/CopyResolver.h>
-#include <pbxbuild/TypeResolvedFile.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::TypeResolvedFile;
 
 Phase::HeadersResolver::
 HeadersResolver(pbxproj::PBX::HeadersBuildPhase::shared_ptr const &buildPhase) :
@@ -50,10 +48,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         }
 
         pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
-        std::unique_ptr<TypeResolvedFile> file = Phase::File::ResolveFileReference(phaseEnvironment, environment, fileReference);
-        if (file == nullptr) {
-            continue;
-        }
+        Phase::File file = Phase::File::ResolveFileReference(phaseEnvironment, environment, buildFile, fileReference);
 
         std::vector<std::string> const &attributes = buildFile->attributes();
         bool isPublic  = std::find(attributes.begin(), attributes.end(), "Public") != attributes.end();
@@ -62,7 +57,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         std::string const &outputDirectory = (isPublic ? publicOutputDirectory : privateOutputDirectory);
 
         if (isPublic || isPrivate) {
-            copyResolver->resolve(&phaseContext->toolContext(), environment, file->filePath(), outputDirectory, "CpHeader");
+            copyResolver->resolve(&phaseContext->toolContext(), environment, file.path(), outputDirectory, "CpHeader");
         }
     }
 

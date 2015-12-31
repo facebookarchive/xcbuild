@@ -10,7 +10,6 @@
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/Context.h>
-#include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Build/Context.h>
@@ -23,7 +22,6 @@
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::TypeResolvedFile;
 
 Phase::SourcesResolver::
 SourcesResolver(pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase) :

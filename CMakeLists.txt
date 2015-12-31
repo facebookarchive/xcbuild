@@ -231,7 +231,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/DirectedGraph.cpp
     Sources/pbxbuild/HeaderMap.cpp
     Sources/pbxbuild/WorkspaceContext.cpp
-    Sources/pbxbuild/TypeResolvedFile.cpp
+    Sources/pbxbuild/FileTypeResolver.cpp
     Sources/pbxbuild/Tool/Context.cpp
     Sources/pbxbuild/Tool/Environment.cpp
     Sources/pbxbuild/Tool/Invocation.cpp

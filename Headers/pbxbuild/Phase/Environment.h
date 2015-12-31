@@ -16,9 +16,6 @@
 #include <pbxbuild/Target/Environment.h>
 
 namespace pbxbuild {
-
-class TypeResolvedFile;
-
 namespace Phase {
 
 class Environment {

@@ -12,7 +12,6 @@
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Phase/File.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
-#include <pbxbuild/TypeResolvedFile.h>
 #include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Build/Context.h>
@@ -22,7 +21,6 @@
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 Phase::FrameworksResolver::
@@ -72,11 +70,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string workingDirectory = targetEnvironment.workingDirectory();
     std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
 
-    std::vector<Phase::File> phaseFiles = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
-    std::vector<TypeResolvedFile> files;
-    for (Phase::File const &file : phaseFiles) {
-        files.push_back(file.file());
-    }
+    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
 
     for (std::string const &variant : targetEnvironment.variants()) {
         pbxsetting::Environment variantEnvironment = targetEnvironment.environment();

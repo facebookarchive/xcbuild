@@ -13,10 +13,8 @@
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/Tool/Context.h>
-#include <pbxbuild/TypeResolvedFile.h>
 
 namespace Tool = pbxbuild::Tool;
-using pbxbuild::TypeResolvedFile;
 using libutil::FSUtil;
 
 Tool::ScriptResolver::
