@@ -21,28 +21,28 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    std::string                     _execPath;
-    std::string                     _execDescription;
-    std::string                     _execDescriptionForPrecompile;
-    std::string                     _execDescriptionForCompile;
-    std::string                     _execDescriptionForCreateBitcode;
-    std::string                     _progressDescription;
-    std::string                     _progressDescriptionForPrecompile;
-    std::string                     _progressDescriptionForCompile;
-    std::string                     _progressDescriptionForCreateBitcode;
-    std::string                     _commandLine;
+    pbxsetting::Value               _execPath;
+    pbxsetting::Value               _execDescription;
+    pbxsetting::Value               _execDescriptionForPrecompile;
+    pbxsetting::Value               _execDescriptionForCompile;
+    pbxsetting::Value               _execDescriptionForCreateBitcode;
+    pbxsetting::Value               _progressDescription;
+    pbxsetting::Value               _progressDescriptionForPrecompile;
+    pbxsetting::Value               _progressDescriptionForCompile;
+    pbxsetting::Value               _progressDescriptionForCreateBitcode;
+    pbxsetting::Value               _commandLine;
     std::string                     _commandInvocationClass;
-    std::string                     _commandIdentifier;
+    pbxsetting::Value               _commandIdentifier;
     pbxsetting::Value               _ruleName;
     pbxsetting::Value               _ruleFormat;
-    std::string                     _additionalInputFiles;
+    pbxsetting::Value               _additionalInputFiles;
     std::string                     _builtinJambaseRuleName;
-    libutil::string_vector          _fileTypes;
-    libutil::string_vector          _inputFileTypes;
-    libutil::string_vector          _architectures;
-    libutil::string_vector          _outputs;
+    std::vector<std::string>        _fileTypes;
+    std::vector<std::string>        _inputFileTypes;
+    std::vector<std::string>        _architectures;
+    std::vector<pbxsetting::Value>  _outputs;
     std::unordered_set<std::string> _deletedProperties;
-    libutil::string_map             _environmentVariables;
+    std::unordered_map<std::string, pbxsetting::Value> _environmentVariables;
     std::vector<int>                _successExitCodes;
     plist::Object                  *_commandOutputParser;
     bool                            _isAbstract;
@@ -71,37 +71,37 @@ public:
     { return reinterpret_cast <Tool::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline std::string const &execPath() const
+    inline pbxsetting::Value const &execPath() const
     { return _execPath; }
 
 public:
-    inline std::string const &execDescription() const
+    inline pbxsetting::Value const &execDescription() const
     { return _execDescription; }
-    inline std::string const &execDescriptionForPrecompile() const
+    inline pbxsetting::Value const &execDescriptionForPrecompile() const
     { return _execDescriptionForPrecompile; }
-    inline std::string const &execDescriptionForCompile() const
+    inline pbxsetting::Value const &execDescriptionForCompile() const
     { return _execDescriptionForCompile; }
-    inline std::string const &execDescriptionForCreateBitcode() const
+    inline pbxsetting::Value const &execDescriptionForCreateBitcode() const
     { return _execDescriptionForCreateBitcode; }
 
 public:
-    inline std::string const &progressDescription() const
+    inline pbxsetting::Value const &progressDescription() const
     { return _progressDescription; }
-    inline std::string const &progressDescriptionForPrecompile() const
+    inline pbxsetting::Value const &progressDescriptionForPrecompile() const
     { return _progressDescriptionForPrecompile; }
-    inline std::string const &progressDescriptionForCompile() const
+    inline pbxsetting::Value const &progressDescriptionForCompile() const
     { return _progressDescriptionForCompile; }
-    inline std::string const &progressDescriptionForCreateBitcode() const
+    inline pbxsetting::Value const &progressDescriptionForCreateBitcode() const
     { return _progressDescriptionForCreateBitcode; }
 
 public:
-    inline std::string const &commandLine() const
+    inline pbxsetting::Value const &commandLine() const
     { return _commandLine; }
 
 public:
     inline std::string const &commandInvocationClass() const
     { return _commandInvocationClass; }
-    inline std::string const &commandIdentifier() const
+    inline pbxsetting::Value const &commandIdentifier() const
     { return _commandIdentifier; }
 
 public:
@@ -113,25 +113,25 @@ public:
     { return _builtinJambaseRuleName; }
 
 public:
-    inline std::string const &additionalInputFiles() const
+    inline pbxsetting::Value const &additionalInputFiles() const
     { return _additionalInputFiles; }
 
 public:
-    inline libutil::string_vector const &fileTypes() const
+    inline std::vector<std::string> const &fileTypes() const
     { return _fileTypes; }
-    inline libutil::string_vector const &inputFileTypes() const
+    inline std::vector<std::string> const &inputFileTypes() const
     { return _inputFileTypes; }
 
 public:
-    inline libutil::string_vector const &architectures() const
+    inline std::vector<std::string> const &architectures() const
     { return _architectures; }
 
 public:
-    inline libutil::string_vector const &outputs() const
+    inline std::vector<pbxsetting::Value> const &outputs() const
     { return _outputs; }
 
 public:
-    inline libutil::string_map const &environmentVariables() const
+    inline std::unordered_map<std::string, pbxsetting::Value> const &environmentVariables() const
     { return _environmentVariables; }
 
 public:

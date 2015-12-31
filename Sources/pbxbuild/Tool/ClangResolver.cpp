@@ -335,7 +335,7 @@ resolveSource(
         compilationInfo->linkerDriver() = _compiler->execCPlusPlusLinkerPath();
     } else if (compilationInfo->linkerDriver().empty()) {
         /* If a C file is seen after a C++ file, don't reset back to the C driver. */
-        compilationInfo->linkerDriver() = _compiler->execPath();
+        compilationInfo->linkerDriver() = _compiler->execPath().raw();
     }
 
     compilationInfo->linkerArguments().insert(options.linkerArgs().begin(), options.linkerArgs().end());

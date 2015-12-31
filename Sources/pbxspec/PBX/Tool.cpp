@@ -12,18 +12,30 @@
 using pbxspec::PBX::Tool;
 
 Tool::Tool() :
-    Specification                   (),
-    _ruleName                       (pbxsetting::Value::Empty()),
-    _ruleFormat                     (pbxsetting::Value::Empty()),
-    _commandOutputParser            (nullptr),
-    _isAbstract                     (false),
-    _isArchitectureNeutral          (false),
-    _caresAboutInclusionDependencies(false),
-    _synthesizeBuildRule            (false),
-    _shouldRerunOnError             (false),
-    _deeplyStatInputDirectories     (false),
-    _isUnsafeToInterrupt            (false),
-    _messageLimit                   (0)
+    Specification                       (),
+    _execPath                           (pbxsetting::Value::Empty()),
+    _execDescription                    (pbxsetting::Value::Empty()),
+    _execDescriptionForPrecompile       (pbxsetting::Value::Empty()),
+    _execDescriptionForCompile          (pbxsetting::Value::Empty()),
+    _execDescriptionForCreateBitcode    (pbxsetting::Value::Empty()),
+    _ruleName                           (pbxsetting::Value::Empty()),
+    _ruleFormat                         (pbxsetting::Value::Empty()),
+    _commandIdentifier                  (pbxsetting::Value::Empty()),
+    _progressDescription                (pbxsetting::Value::Empty()),
+    _progressDescriptionForPrecompile   (pbxsetting::Value::Empty()),
+    _progressDescriptionForCompile      (pbxsetting::Value::Empty()),
+    _progressDescriptionForCreateBitcode(pbxsetting::Value::Empty()),
+    _commandLine                        (pbxsetting::Value::Empty()),
+    _additionalInputFiles               (pbxsetting::Value::Empty()),
+    _commandOutputParser                (nullptr),
+    _isAbstract                         (false),
+    _isArchitectureNeutral              (false),
+    _caresAboutInclusionDependencies    (false),
+    _synthesizeBuildRule                (false),
+    _shouldRerunOnError                 (false),
+    _deeplyStatInputDirectories         (false),
+    _isUnsafeToInterrupt                (false),
+    _messageLimit                       (0)
 {
 }
 
@@ -108,43 +120,43 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (EP != nullptr) {
-        _execPath = EP->value();
+        _execPath = pbxsetting::Value::Parse(EP->value());
     }
 
     if (ED != nullptr) {
-        _execDescription = ED->value();
+        _execDescription = pbxsetting::Value::Parse(ED->value());
     }
 
     if (EDPC != nullptr) {
-        _execDescriptionForPrecompile = EDPC->value();
+        _execDescriptionForPrecompile = pbxsetting::Value::Parse(EDPC->value());
     }
 
     if (EDC != nullptr) {
-        _execDescriptionForCompile = EDC->value();
+        _execDescriptionForCompile = pbxsetting::Value::Parse(EDC->value());
     }
 
     if (EDCB != nullptr) {
-        _execDescriptionForCreateBitcode = EDCB->value();
+        _execDescriptionForCreateBitcode = pbxsetting::Value::Parse(EDCB->value());
     }
 
     if (PD != nullptr) {
-        _progressDescription = PD->value();
+        _progressDescription = pbxsetting::Value::Parse(PD->value());
     }
 
     if (PDPC != nullptr) {
-        _progressDescriptionForPrecompile = PDPC->value();
+        _progressDescriptionForPrecompile = pbxsetting::Value::Parse(PDPC->value());
     }
 
     if (PDC != nullptr) {
-        _progressDescriptionForCompile = PDC->value();
+        _progressDescriptionForCompile = pbxsetting::Value::Parse(PDC->value());
     }
 
     if (PDCB != nullptr) {
-        _progressDescriptionForCreateBitcode = PDCB->value();
+        _progressDescriptionForCreateBitcode = pbxsetting::Value::Parse(PDCB->value());
     }
 
     if (CL != nullptr) {
-        _commandLine = CL->value();
+        _commandLine = pbxsetting::Value::Parse(CL->value());
     }
 
     if (CIC != nullptr) {
@@ -152,7 +164,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (CI != nullptr) {
-        _commandIdentifier = CI->value();
+        _commandIdentifier = pbxsetting::Value::Parse(CI->value());
     }
 
     if (auto RNS = plist::CastTo<plist::String>(RN)) {
@@ -178,7 +190,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (AIF != nullptr) {
-        _additionalInputFiles = AIF->value();
+        _additionalInputFiles = pbxsetting::Value::Parse(AIF->value());
     }
 
     if (BJRN != nullptr) {
@@ -215,7 +227,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     if (Os != nullptr) {
         for (size_t n = 0; n < Os->count(); n++) {
             if (auto O = Os->value <plist::String> (n)) {
-                _outputs.push_back(O->value());
+                _outputs.push_back(pbxsetting::Value::Parse(O->value()));
             }
         }
     }
@@ -224,7 +236,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
         for (size_t n = 0; n < EVs->count(); n++) {
             auto EVk = EVs->key(n);
             if (auto EVv = EVs->value <plist::String> (EVk)) {
-                _environmentVariables[EVk] = EVv->value();
+                _environmentVariables.insert({ EVk, pbxsetting::Value::Parse(EVv->value()) });
             }
         }
     }

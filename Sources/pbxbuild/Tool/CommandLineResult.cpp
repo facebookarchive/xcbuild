@@ -32,7 +32,7 @@ Create(Tool::Environment const &toolEnvironment, Tool::OptionsResult options, st
 {
     pbxspec::PBX::Tool::shared_ptr tool = toolEnvironment.tool();
 
-    std::string commandLineString = (!tool->commandLine().empty() ? tool->commandLine() : "[exec-path] [options] [special-args]");
+    std::string commandLineString = (!tool->commandLine().raw().empty() ? tool->commandLine().raw() : "[exec-path] [options] [special-args]");
 
     std::vector<std::string> commandLine;
     std::stringstream sstream = std::stringstream(commandLineString);
@@ -49,7 +49,7 @@ Create(Tool::Environment const &toolEnvironment, Tool::OptionsResult options, st
         { "inputs", inputs },
         { "outputs", outputs },
         { "options", options.arguments() },
-        { "exec-path", { !executable.empty() ? executable : tool->execPath() } },
+        { "exec-path", { !executable.empty() ? executable : tool->execPath().raw() } },
         { "special-args", specialArguments },
     };
 
