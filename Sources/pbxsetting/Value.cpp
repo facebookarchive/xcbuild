@@ -31,6 +31,12 @@ operator==(Entry const &rhs) const
     }
 }
 
+bool Value::Entry::
+operator!=(Entry const &entry) const
+{
+    return !(*this == entry);
+}
+
 Value::
 Value(std::vector<Entry> const &entries) :
     _entries(entries)
@@ -65,6 +71,12 @@ bool Value::
 operator==(Value const &rhs) const
 {
     return _entries == rhs._entries;
+}
+
+bool Value::
+operator!=(Value const &rhs) const
+{
+    return !(*this == rhs);
 }
 
 Value Value::

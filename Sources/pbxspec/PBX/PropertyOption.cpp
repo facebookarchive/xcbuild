@@ -15,6 +15,9 @@ PropertyOption::PropertyOption() :
     _basic                             (false),
     _commonOption                      (false),
     _avoidEmptyValues                  (false),
+    _commandLineFlag                   (pbxsetting::Value::Empty()),
+    _commandLineFlagIfFalse            (pbxsetting::Value::Empty()),
+    _commandLinePrefixFlag             (pbxsetting::Value::Empty()),
     _hasCommandLinePrefixFlag          (false),
     _commandLineArgs                   (nullptr),
     _additionalLinkerArgs              (nullptr),
@@ -163,15 +166,15 @@ parse(plist::Dictionary const *dict)
     }
 
     if (CLF != nullptr) {
-        _commandLineFlag = CLF->value();
+        _commandLineFlag = pbxsetting::Value::Parse(CLF->value());
     }
 
     if (CLFIF != nullptr) {
-        _commandLineFlagIfFalse = CLFIF->value();
+        _commandLineFlagIfFalse = pbxsetting::Value::Parse(CLFIF->value());
     }
 
     if (CLPF != nullptr) {
-        _commandLinePrefixFlag = CLPF->value();
+        _commandLinePrefixFlag = pbxsetting::Value::Parse(CLPF->value());
     }
     _hasCommandLinePrefixFlag = (CLPF != nullptr);
 
@@ -260,4 +263,15 @@ parse(plist::Dictionary const *dict)
     }
 
     return true;
+}
+
+PropertyOption::shared_ptr PropertyOption::
+Create(plist::Dictionary const *dict)
+{
+    auto option = std::shared_ptr<PropertyOption>(new PropertyOption());
+    if (!option->parse(dict)) {
+        return nullptr;
+    }
+
+    return option;
 }

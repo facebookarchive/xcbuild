@@ -65,13 +65,15 @@ resolve(
     std::string fullWorkingDirectory = FSUtil::ResolveRelativePath(legacyTarget->buildWorkingDirectory(), toolContext->workingDirectory());
 
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { }, { });
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, fullWorkingDirectory, nullptr, environmentVariables);
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, fullWorkingDirectory, nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, legacyTarget->buildToolPath(), pbxsetting::Type::ParseList(script));
+
+    environmentVariables.insert(options.environment().begin(), options.environment().end());
 
     Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
-    invocation.environment() = options.environment();
+    invocation.environment() = environmentVariables;
     invocation.workingDirectory() = fullWorkingDirectory;
     invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
@@ -113,13 +115,15 @@ resolve(
     std::unordered_map<std::string, std::string> environmentVariables = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
 
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, scriptEnvironment, inputFiles, outputFiles);
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr, environmentVariables);
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", scriptFilePath });
+
+    environmentVariables.insert(options.environment().begin(), options.environment().end());
 
     Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
-    invocation.environment() = options.environment();
+    invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.phonyInputs() = toolEnvironment.inputs(toolContext->workingDirectory()); /* User-specified, may not exist. */
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
@@ -161,13 +165,15 @@ resolve(
     std::unordered_map<std::string, std::string> environmentVariables = ruleEnvironment.computeValues(pbxsetting::Condition::Empty());
 
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, ruleEnvironment, inputFiles, outputFiles);
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr, environmentVariables);
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", buildRule->script() });
+
+    environmentVariables.insert(options.environment().begin(), options.environment().end());
 
     Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();
     invocation.arguments() = commandLine.arguments();
-    invocation.environment() = options.environment();
+    invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.phonyInputs() = toolEnvironment.inputs(toolContext->workingDirectory()); /* User-specified, may not exist. */
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());

@@ -36,8 +36,17 @@ public:
     { return _linkerArgs; }
 
 public:
-    static OptionsResult
-    Create(Tool::Environment const &toolEnvironment, std::string const &workingDirectory, pbxspec::PBX::FileType::shared_ptr fileType, std::unordered_map<std::string, std::string> const &environment = { });
+    static OptionsResult Create(
+        pbxsetting::Environment const &environment,
+        std::string const &workingDirectory,
+        std::vector<pbxspec::PBX::PropertyOption::shared_ptr> const &options,
+        pbxspec::PBX::FileType::shared_ptr const &fileType,
+        std::unordered_set<std::string> const &deletedSettings = { });
+
+    static OptionsResult Create(
+        Tool::Environment const &toolEnvironment,
+        std::string const &workingDirectory,
+        pbxspec::PBX::FileType::shared_ptr const &fileType);
 };
 
 }

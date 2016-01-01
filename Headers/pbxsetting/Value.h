@@ -44,6 +44,7 @@ public:
         };
 
         bool operator==(Entry const &rhs) const;
+        bool operator!=(Entry const &rhs) const;
 
         Type type;
         std::string string;
@@ -58,6 +59,7 @@ public:
 
 public:
     bool operator==(Value const &rhs) const;
+    bool operator!=(Value const &rhs) const;
     Value operator+(Value const &rhs) const;
 
 public:

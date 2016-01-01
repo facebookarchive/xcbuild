@@ -51,9 +51,9 @@ protected:
     bool                    _commonOption;
     bool                    _avoidEmptyValues;
     std::string             _commandLineCondition;
-    std::string             _commandLineFlag;
-    std::string             _commandLineFlagIfFalse;
-    std::string             _commandLinePrefixFlag;
+    pbxsetting::Value       _commandLineFlag;
+    pbxsetting::Value       _commandLineFlagIfFalse;
+    pbxsetting::Value       _commandLinePrefixFlag;
     bool                    _hasCommandLinePrefixFlag;
     plist::Object          *_commandLineArgs;
     plist::Object          *_additionalLinkerArgs;
@@ -128,11 +128,11 @@ public:
     { return _commandLineCondition; }
     inline plist::Object const *commandLineArgs() const
     { return _commandLineArgs; }
-    inline std::string const &commandLineFlag() const
+    inline pbxsetting::Value const &commandLineFlag() const
     { return _commandLineFlag; }
-    inline std::string const &commandLineFlagIfFalse() const
+    inline pbxsetting::Value const &commandLineFlagIfFalse() const
     { return _commandLineFlagIfFalse; }
-    inline std::string const &commandLinePrefixFlag() const
+    inline pbxsetting::Value const &commandLinePrefixFlag() const
     { return _commandLinePrefixFlag; }
     inline bool hasCommandLinePrefixFlag() const
     { return _hasCommandLinePrefixFlag; }
@@ -191,6 +191,9 @@ public:
 
 protected:
     bool parse(plist::Dictionary const *dict);
+
+public:
+    static PropertyOption::shared_ptr Create(plist::Dictionary const *dict);
 };
 
 } }
