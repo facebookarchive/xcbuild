@@ -64,15 +64,9 @@ resolve(
 
     std::string fullWorkingDirectory = FSUtil::ResolveRelativePath(legacyTarget->buildWorkingDirectory(), toolContext->workingDirectory());
 
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { }, { });
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, fullWorkingDirectory, nullptr);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, legacyTarget->buildToolPath(), pbxsetting::Type::ParseList(script));
-
-    environmentVariables.insert(options.environment().begin(), options.environment().end());
-
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
-    invocation.arguments() = commandLine.arguments();
+    invocation.executable() = legacyTarget->buildToolPath();
+    invocation.arguments() = pbxsetting::Type::ParseList(script);
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = fullWorkingDirectory;
     invocation.logMessage() = logMessage;
@@ -98,12 +92,14 @@ resolve(
 
     std::vector<std::string> inputFiles;
     std::transform(buildPhase->inputPaths().begin(), buildPhase->inputPaths().end(), std::back_inserter(inputFiles), [&](pbxsetting::Value const &input) -> std::string {
-        return environment.expand(input);
+        std::string path = environment.expand(input);
+        return FSUtil::ResolveRelativePath(path, toolContext->workingDirectory());
     });
 
     std::vector<std::string> outputFiles;
     std::transform(buildPhase->outputPaths().begin(), buildPhase->outputPaths().end(), std::back_inserter(outputFiles), [&](pbxsetting::Value const &output) -> std::string {
-        return environment.expand(output);
+        std::string path = environment.expand(output);
+        return FSUtil::ResolveRelativePath(path, toolContext->workingDirectory());
     });
 
     std::string scriptFilePath = phaseEnvironment.expand(scriptPath);
@@ -114,19 +110,13 @@ resolve(
     scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, true), false);
     std::unordered_map<std::string, std::string> environmentVariables = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
 
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, scriptEnvironment, inputFiles, outputFiles);
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", scriptFilePath });
-
-    environmentVariables.insert(options.environment().begin(), options.environment().end());
-
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
-    invocation.arguments() = commandLine.arguments();
+    invocation.executable() = "/bin/sh";
+    invocation.arguments() = { "-c", scriptFilePath };
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.phonyInputs() = toolEnvironment.inputs(toolContext->workingDirectory()); /* User-specified, may not exist. */
-    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
+    invocation.phonyInputs() = inputFiles; /* User-specified, may not exist. */
+    invocation.outputs() = outputFiles;
     invocation.auxiliaryFiles() = { scriptFile };
     invocation.logMessage() = phaseEnvironment.expand(logMessage);
     invocation.showEnvironmentInLog() = buildPhase->showEnvVarsInLog();
@@ -137,46 +127,58 @@ void Tool::ScriptResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    std::string const &inputFile,
-    Target::BuildRules::BuildRule::shared_ptr const &buildRule) const
+    Phase::File const &input) const
 {
+    Target::BuildRules::BuildRule::shared_ptr const &buildRule = input.buildRule();
+    if (buildRule == nullptr || buildRule->script().empty()) {
+        fprintf(stderr, "warning: invalid or missing build rule for script\n");
+        return;
+    }
+
+    std::string inputAbsolutePath = FSUtil::ResolveRelativePath(input.path(), toolContext->workingDirectory());
+    std::string inputRelativePath = FSUtil::GetRelativePath(inputAbsolutePath, toolContext->workingDirectory());
+
+    pbxsetting::Value logMessage = pbxsetting::Value::Parse("RuleScriptExecution " + inputRelativePath + " $(variant) $(arch)");
+
+    /*
+     * Add the public input file build settings. These can be used within the
+     * script or inside the list of output paths.
+     */
     pbxsetting::Level level = pbxsetting::Level({
-        pbxsetting::Setting::Parse("INPUT_FILE_DIR", FSUtil::GetDirectoryName(inputFile)),
-        pbxsetting::Setting::Parse("INPUT_FILE_BASE", FSUtil::GetBaseNameWithoutExtension(inputFile)),
-        pbxsetting::Setting::Parse("INPUT_FILE_NAME", FSUtil::GetBaseName(inputFile)),
-        pbxsetting::Setting::Parse("INPUT_FILE_PATH", inputFile),
-        pbxsetting::Setting::Parse("INPUT_FILE_SUFFIX", (!FSUtil::GetFileExtension(inputFile).empty() ? "." + FSUtil::GetFileExtension(inputFile) : "")),
-        // TODO(grp): INPUT_FILE_REGION_PATH_COMPONENT
+        pbxsetting::Setting::Create("INPUT_FILE_PATH", pbxsetting::Value::String(inputAbsolutePath)),
+        pbxsetting::Setting::Create("INPUT_FILE_DIR", pbxsetting::Value::Parse("$(INPUT_FILE_PATH:dir)")),
+        pbxsetting::Setting::Create("INPUT_FILE_NAME", pbxsetting::Value::Parse("$(INPUT_FILE_PATH:file)")),
+        pbxsetting::Setting::Create("INPUT_FILE_BASE", pbxsetting::Value::Parse("$(INPUT_FILE_PATH:base)")),
+        pbxsetting::Setting::Create("INPUT_FILE_SUFFIX", pbxsetting::Value::Parse("$(INPUT_FILE_PATH:suffix)")),
+        pbxsetting::Setting::Create("INPUT_FILE_REGION_PATH_COMPONENT", pbxsetting::Value::String(input.localization())), // TODO(grp): Verify format of this.
     });
 
     pbxsetting::Environment ruleEnvironment = environment;
     ruleEnvironment.insertFront(level, false);
 
-    pbxsetting::Value logMessage = pbxsetting::Value::Parse("RuleScriptExecution " + FSUtil::GetRelativePath(inputFile, toolContext->workingDirectory()) + " $(variant) $(arch)");
-
+    /*
+     * Only resolve the output paths once the input paths settings are in the
+     * environment. The output paths can use the input path settings.
+     */
     std::vector<std::string> outputFiles;
     std::transform(buildRule->outputFiles().begin(), buildRule->outputFiles().end(), std::back_inserter(outputFiles), [&](pbxsetting::Value const &output) -> std::string {
-        return ruleEnvironment.expand(output);
+        std::string path = ruleEnvironment.expand(output);
+        return FSUtil::ResolveRelativePath(path, toolContext->workingDirectory());
     });
 
-    std::vector<std::string> inputFiles = { inputFile };
-
-    ruleEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, false), false);
+    /*
+     * Compute the final environment by adding the standard script levels.
+     */
+    ruleEnvironment.insertFront(ScriptInputOutputLevel({ inputAbsolutePath }, outputFiles, false), false);
     std::unordered_map<std::string, std::string> environmentVariables = ruleEnvironment.computeValues(pbxsetting::Condition::Empty());
 
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, ruleEnvironment, inputFiles, outputFiles);
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/sh", { "-c", buildRule->script() });
-
-    environmentVariables.insert(options.environment().begin(), options.environment().end());
-
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
-    invocation.arguments() = commandLine.arguments();
+    invocation.executable() = "/bin/sh";
+    invocation.arguments() = { "-c", buildRule->script() };
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.phonyInputs() = toolEnvironment.inputs(toolContext->workingDirectory()); /* User-specified, may not exist. */
-    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
+    invocation.inputs() = { inputAbsolutePath };
+    invocation.outputs() = outputFiles;
     invocation.logMessage() = ruleEnvironment.expand(logMessage);
     invocation.showEnvironmentInLog() = true;
     toolContext->invocations().push_back(invocation);

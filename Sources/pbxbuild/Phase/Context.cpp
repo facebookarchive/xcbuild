@@ -262,7 +262,7 @@ resolveBuildFiles(
         if (buildRule != nullptr && !buildRule->script().empty()) {
             if (Tool::ScriptResolver const *scriptResolver = this->scriptResolver(phaseEnvironment)) {
                 assert(files.size() == 1); // TODO(grp): Is this a valid assertion?
-                scriptResolver->resolve(&_toolContext, environment, first.path(), buildRule);
+                scriptResolver->resolve(&_toolContext, environment, first);
             } else {
                 return false;
             }

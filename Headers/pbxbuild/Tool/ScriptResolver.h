@@ -14,6 +14,7 @@
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Target/BuildRules.h>
 #include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/File.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -31,19 +32,15 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget
-    ) const;
+        pbxproj::PBX::LegacyTarget::shared_ptr const &legacyTarget) const;
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase
-    ) const;
+        pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase) const;
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &inputFile,
-        Target::BuildRules::BuildRule::shared_ptr const &buildRule
-    ) const;
+        Phase::File const &file) const;
 
 public:
     pbxspec::PBX::Tool::shared_ptr const &tool() const
