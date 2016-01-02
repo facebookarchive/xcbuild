@@ -163,7 +163,7 @@ resolveBuildFile(
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    Target::BuildRules::BuildRule::shared_ptr buildRule = targetEnvironment.buildRules().resolve(file.fileType(), file.path());
+    Target::BuildRules::BuildRule::shared_ptr const &buildRule = file.buildRule();
     if (buildRule == nullptr && fallbackToolIdentifier.empty()) {
         fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.path().c_str(), file.fileType()->identifier().c_str());
         return true;

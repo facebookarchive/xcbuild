@@ -70,6 +70,11 @@ public:
     Tool::ToolResolver const          *toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier);
 
 public:
+    std::vector<std::pair<Target::BuildRules::BuildRule::shared_ptr, Phase::File>> evaulateBuildRules(
+        Phase::Environment const &phaseEnvironment,
+        std::vector<Phase::File> const &files);
+
+public:
     bool resolveBuildFiles(
         Phase::Environment const &phaseEnvironment,
         pbxsetting::Environment const &environment,

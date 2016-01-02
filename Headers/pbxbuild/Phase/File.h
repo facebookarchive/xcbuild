@@ -11,6 +11,7 @@
 #define __pbxbuild_Phase_File_h
 
 #include <pbxbuild/Base.h>
+#include <pbxbuild/Target/BuildRules.h>
 
 namespace pbxbuild {
 namespace Phase {
@@ -22,24 +23,37 @@ class Environment;
  */
 class File {
 private:
-    pbxproj::PBX::BuildFile::shared_ptr _buildFile;
-    pbxspec::PBX::FileType::shared_ptr  _fileType;
+    pbxproj::PBX::BuildFile::shared_ptr       _buildFile;
+    Target::BuildRules::BuildRule::shared_ptr _buildRule;
+    pbxspec::PBX::FileType::shared_ptr        _fileType;
 
 private:
-    std::string                         _path;
-    std::string                         _outputSubdirectory;
-    std::string                         _fileNameDisambiguator;
+    std::string                               _path;
+    std::string                               _outputSubdirectory;
+    std::string                               _fileNameDisambiguator;
 
 public:
-    File(pbxproj::PBX::BuildFile::shared_ptr const &buildFile, pbxspec::PBX::FileType::shared_ptr const &fileType, std::string const &path, std::string const &outputSubdirectory, std::string const &fileNameDisambiguator);
+    File(
+        pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
+        Target::BuildRules::BuildRule::shared_ptr const &buildRule,
+        pbxspec::PBX::FileType::shared_ptr const &fileType,
+        std::string const &path,
+        std::string const &outputSubdirectory,
+        std::string const &fileNameDisambiguator);
     ~File();
 
 public:
     /*
-     * The build file entry saying to build this file.
+     * The build file entry saying *to* build this file.
      */
     pbxproj::PBX::BuildFile::shared_ptr const &buildFile() const
     { return _buildFile; }
+
+    /*
+     * The build file entry saying *how* to build this file.
+     */
+    Target::BuildRules::BuildRule::shared_ptr const &buildRule() const
+    { return _buildRule; }
 
     /*
      * The type of this file.
@@ -49,7 +63,7 @@ public:
 
 public:
     /*
-     * The resolved path to the file.
+     * The resolved absolute path to the file.
      */
     std::string const &path() const
     { return _path; }
@@ -69,20 +83,6 @@ public:
      */
     std::string const &fileNameDisambiguator() const
     { return _fileNameDisambiguator; }
-
-public:
-    static std::unique_ptr<Phase::File> ResolveReferenceProxy(
-        Phase::Environment const &phaseEnvironment,
-        pbxsetting::Environment const &environment,
-        pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
-        pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy);
-    static Phase::File ResolveFileReference(
-        Phase::Environment const &phaseEnvironment,
-        pbxsetting::Environment const &environment,
-        pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
-        pbxproj::PBX::FileReference::shared_ptr const &fileReference,
-        std::string const &outputSubdirectory = std::string(),
-        std::string const &fileNameDisambiguator = std::string());
 
 public:
     /*
