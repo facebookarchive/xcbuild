@@ -21,6 +21,8 @@
 #include <pbxbuild/Target/BuildRules.h>
 #include <libutil/FSUtil.h>
 
+#include <cassert>
+
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
 namespace Target = pbxbuild::Target;
@@ -122,108 +124,203 @@ toolResolver(Phase::Environment const &phaseEnvironment, std::string const &iden
     return &_toolResolvers.at(identifier);
 }
 
+std::vector<std::vector<Phase::File>> Phase::Context::
+Group(std::vector<Phase::File> const &files)
+{
+    std::vector<Phase::File> ungrouped;
+    std::unordered_map<std::string, std::vector<Phase::File>> groupedTool;
+    std::unordered_map<std::string, std::unordered_map<std::string, std::vector<Phase::File>>> groupedCommonBase;
+    std::vector<Phase::File> groupedBaseRegion;
+
+    /*
+     * Determine which grouping method to use for each file.
+     */
+    for (Phase::File const &file : files) {
+        /* Get the tool used for the file. If null, then no grouping possible. */
+        Target::BuildRules::BuildRule::shared_ptr const &buildRule = file.buildRule();
+        if (buildRule == nullptr || buildRule->tool() == nullptr || buildRule->tool()->type() != pbxspec::PBX::Compiler::Type()) {
+            ungrouped.push_back(file);
+            continue;
+        }
+        pbxspec::PBX::Compiler::shared_ptr const &compiler = std::static_pointer_cast<pbxspec::PBX::Compiler>(buildRule->tool());
+
+        /* Determine the grouping. Only a single grouping per file is supported. */
+        std::vector<std::string> const &groupings = compiler->inputFileGroupings();
+        if (groupings.size() != 1) {
+            if (!groupings.empty()) {
+                fprintf(stderr, "error: more than one input file grouping is not supported\n");
+            }
+            ungrouped.push_back(file);
+            continue;
+        }
+
+        std::string const &grouping = groupings.front();
+
+        if (grouping == "tool") {
+            /* Tool groupings are keyed on just the tool. */
+            groupedTool[compiler->identifier()].push_back(file);
+        } else if (grouping == "common-file-base") {
+            /* Keyed on both the file name and tool. */
+            std::string base = FSUtil::GetBaseNameWithoutExtension(file.path());
+            groupedCommonBase[compiler->identifier()][base].push_back(file);
+        } else if (grouping == "ib-base-region-and-strings") {
+            /* Only "Base" region files. See below for finding additional grouped files. */
+            if (file.localization() == "Base") {
+                groupedBaseRegion.push_back(file);
+            } else {
+                ungrouped.push_back(file);
+            }
+        } else {
+            fprintf(stderr, "error: unknown grouping '%s'\n", grouping.c_str());
+            ungrouped.push_back(file);
+        }
+    }
+
+    /*
+     * Build up the result, a list of each set of grouped inputs.
+     */
+    std::vector<std::vector<Phase::File>> result;
+
+    /*
+     * Add tool groupings to the result.
+     */
+    for (auto const &entry : groupedTool) {
+        result.push_back(entry.second);
+    }
+
+    /*
+     * Add common base name groupings to the result.
+     */
+    for (auto const &entry1 : groupedCommonBase) {
+        for (auto const &entry2 : entry1.second) {
+            result.push_back(entry2.second);
+        }
+    }
+
+    /*
+     * Add base region groupings to the result.
+     */
+    for (Phase::File const &file : groupedBaseRegion) {
+        std::vector<Phase::File> inputs = { file };
+
+        /*
+         * Find all .strings files from the same build file (i.e. same variant group)
+         * as the base. Add them to the inputs for this group, and remove them from
+         * the ungrouped  inputs so they don't get added again to the result.
+         */
+        ungrouped.erase(std::remove_if(ungrouped.begin(), ungrouped.end(), [&](Phase::File const &ungroupedFile) {
+            if (ungroupedFile.fileType()->identifier() == "text.plist.strings") {
+                if (ungroupedFile.buildFile() == file.buildFile()) {
+                    inputs.push_back(ungroupedFile);
+                    return true;
+                }
+            }
+
+            return false;
+        }), ungrouped.end());
+
+        result.push_back(inputs);
+    }
+
+    /*
+     * Add ungrouped files to the result, one grouping per file. Note this must come
+     * after the base region grouping above as the base region modifies the ungrouped.
+     */
+    for (Phase::File const &file : ungrouped) {
+        result.push_back({ file });
+    }
+
+    return result;
+}
+
 bool Phase::Context::
 resolveBuildFiles(
     Phase::Environment const &phaseEnvironment,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
+    std::vector<std::vector<Phase::File>> const &groups,
     std::string const &outputDirectory,
-    std::vector<Phase::File> const &files,
-    std::string const &fallbackToolIdentifier)
-{
-    for (Phase::File const &file : files) {
-        std::string fileOutputDirectory = outputDirectory;
-        if (!file.outputSubdirectory().empty()) {
-            fileOutputDirectory += "/" + file.outputSubdirectory();
-        }
-
-        bool result = resolveBuildFile(
-            phaseEnvironment,
-            environment,
-            buildPhase,
-            fileOutputDirectory,
-            file,
-            fallbackToolIdentifier);
-        if (!result) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool Phase::Context::
-resolveBuildFile(
-    Phase::Environment const &phaseEnvironment,
-    pbxsetting::Environment const &environment,
-    pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
-    std::string const &outputDirectory,
-    Phase::File const &file,
     std::string const &fallbackToolIdentifier)
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    Target::BuildRules::BuildRule::shared_ptr const &buildRule = file.buildRule();
-    if (buildRule == nullptr && fallbackToolIdentifier.empty()) {
-        fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", file.path().c_str(), file.fileType()->identifier().c_str());
-        return true;
-    }
+    for (std::vector<Phase::File> const &files : groups) {
+        assert(!files.empty());
+        Phase::File const &first = files.front();
 
-    if (buildRule != nullptr && !buildRule->script().empty()) {
-        if (Tool::ScriptResolver const *scriptResolver = this->scriptResolver(phaseEnvironment)) {
-            scriptResolver->resolve(&_toolContext, environment, file.path(), buildRule);
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        std::string toolIdentifier = fallbackToolIdentifier;
-
-        if (buildRule != nullptr) {
-            if (pbxspec::PBX::Tool::shared_ptr const &tool = buildRule->tool()) {
-                toolIdentifier = tool->identifier();
-            }
+        std::string fileOutputDirectory = outputDirectory;
+        if (!first.localization().empty()) {
+            fileOutputDirectory += "/" + first.localization() + ".lproj";
         }
 
-        if (toolIdentifier.empty()) {
-            fprintf(stderr, "warning: no tool available for build rule\n");
-            return false;
+        Target::BuildRules::BuildRule::shared_ptr const &buildRule = first.buildRule();
+        if (buildRule == nullptr && fallbackToolIdentifier.empty()) {
+            fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", first.path().c_str(), first.fileType()->identifier().c_str());
+            continue;
         }
 
-        if (toolIdentifier == Tool::ClangResolver::ToolIdentifier()) {
-            if (Tool::ClangResolver const *clangResolver = this->clangResolver(phaseEnvironment)) {
-                clangResolver->resolveSource(&_toolContext, environment, file, outputDirectory);
-                return true;
-            } else {
-                return false;
-            }
-        } else if (toolIdentifier == Tool::CopyResolver::ToolIdentifier()) {
-            std::string logMessageTitle;
-            switch (buildPhase->type()) {
-                case pbxproj::PBX::BuildPhase::kTypeHeaders:
-                    logMessageTitle = "CpHeader";
-                case pbxproj::PBX::BuildPhase::kTypeResources:
-                    logMessageTitle = "CpResource";
-                default:
-                    logMessageTitle = "PBXCp";
-            }
-
-            if (Tool::CopyResolver const *copyResolver = this->copyResolver(phaseEnvironment)) {
-                copyResolver->resolve(&_toolContext, environment, file.path(), outputDirectory, logMessageTitle);
-                return true;
+        if (buildRule != nullptr && !buildRule->script().empty()) {
+            if (Tool::ScriptResolver const *scriptResolver = this->scriptResolver(phaseEnvironment)) {
+                assert(files.size() == 1); // TODO(grp): Is this a valid assertion?
+                scriptResolver->resolve(&_toolContext, environment, first.path(), buildRule);
             } else {
                 return false;
             }
         } else {
-            std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(file.path());
+            std::string toolIdentifier = fallbackToolIdentifier;
 
-            if (Tool::ToolResolver const *toolResolver = this->toolResolver(phaseEnvironment, toolIdentifier)) {
-                toolResolver->resolve(&_toolContext, environment, { file.path() }, { outputPath });
-                return true;
-            } else {
+            if (buildRule != nullptr) {
+                if (pbxspec::PBX::Tool::shared_ptr const &tool = buildRule->tool()) {
+                    toolIdentifier = tool->identifier();
+                }
+            }
+
+            if (toolIdentifier.empty()) {
+                fprintf(stderr, "warning: no tool available for build rule\n");
                 return false;
+            }
+
+            if (toolIdentifier == Tool::ClangResolver::ToolIdentifier()) {
+                if (Tool::ClangResolver const *clangResolver = this->clangResolver(phaseEnvironment)) {
+                    assert(files.size() == 1); // TODO(grp): Is this a valid assertion?
+                    clangResolver->resolveSource(&_toolContext, environment, first, fileOutputDirectory);
+                } else {
+                    return false;
+                }
+            } else if (toolIdentifier == Tool::CopyResolver::ToolIdentifier()) {
+                std::string logMessageTitle;
+                switch (buildPhase->type()) {
+                    case pbxproj::PBX::BuildPhase::kTypeHeaders:
+                        logMessageTitle = "CpHeader";
+                    case pbxproj::PBX::BuildPhase::kTypeResources:
+                        logMessageTitle = "CpResource";
+                    default:
+                        logMessageTitle = "PBXCp";
+                }
+
+                if (Tool::CopyResolver const *copyResolver = this->copyResolver(phaseEnvironment)) {
+                    assert(files.size() == 1); // TODO(grp): Is this a valid assertion?
+                    copyResolver->resolve(&_toolContext, environment, first.path(), fileOutputDirectory, logMessageTitle);
+                } else {
+                    return false;
+                }
+            } else {
+                std::vector<std::string> inputs;
+                std::vector<std::string> outputs;
+                for (Phase::File const &file : files) {
+                    inputs.push_back(file.path());
+                    outputs.push_back(fileOutputDirectory + "/" + FSUtil::GetBaseName(file.path()));
+                }
+
+                if (Tool::ToolResolver const *toolResolver = this->toolResolver(phaseEnvironment, toolIdentifier)) {
+                    toolResolver->resolve(&_toolContext, environment, inputs, outputs);
+                } else {
+                    return false;
+                }
             }
         }
     }
+
+    return true;
 }
 

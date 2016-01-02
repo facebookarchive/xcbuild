@@ -82,9 +82,10 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string outputDirectory = root + "/" + path;
 
     std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, environment, _buildPhase->files());
+    std::vector<std::vector<Phase::File>> groups = Phase::Context::Group(files);
 
     if (pbxsetting::Type::ParseBoolean(environment.resolve("APPLY_RULES_IN_COPY_FILES"))) {
-        if (!phaseContext->resolveBuildFiles(phaseEnvironment, environment, _buildPhase, outputDirectory, files, Tool::CopyResolver::ToolIdentifier())) {
+        if (!phaseContext->resolveBuildFiles(phaseEnvironment, environment, _buildPhase, groups, outputDirectory, Tool::CopyResolver::ToolIdentifier())) {
             return false;
         }
     } else {

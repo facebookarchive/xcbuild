@@ -70,27 +70,19 @@ public:
     Tool::ToolResolver const          *toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier);
 
 public:
-    std::vector<std::pair<Target::BuildRules::BuildRule::shared_ptr, Phase::File>> evaulateBuildRules(
-        Phase::Environment const &phaseEnvironment,
-        std::vector<Phase::File> const &files);
+    /*
+     * Groups the files according to the tools used to build them.
+     */
+    static std::vector<std::vector<Phase::File>> Group(std::vector<Phase::File> const &files);
 
 public:
     bool resolveBuildFiles(
         Phase::Environment const &phaseEnvironment,
         pbxsetting::Environment const &environment,
         pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
+        std::vector<std::vector<Phase::File>> const &groups,
         std::string const &outputDirectory,
-        std::vector<Phase::File> const &files,
         std::string const &fallbackToolIdentifier = std::string());
-
-private:
-    bool resolveBuildFile(
-        Phase::Environment const &phaseEnvironment,
-        pbxsetting::Environment const &environment,
-        pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
-        std::string const &outputDirectory,
-        Phase::File const &file,
-        std::string const &fallbackToolIdentifier);
 };
 
 }

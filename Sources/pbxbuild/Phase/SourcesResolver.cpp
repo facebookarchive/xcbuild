@@ -55,6 +55,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     headermapResolver->resolve(&phaseContext->toolContext(), targetEnvironment.environment(), phaseEnvironment.target());
 
     std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
+    std::vector<std::vector<Phase::File>> groups = Phase::Context::Group(files);
 
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
@@ -64,7 +65,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
 
             std::string outputDirectory = currentEnvironment.expand(pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)"));
 
-            if (!phaseContext->resolveBuildFiles(phaseEnvironment, currentEnvironment, _buildPhase, outputDirectory, files)) {
+            if (!phaseContext->resolveBuildFiles(phaseEnvironment, currentEnvironment, _buildPhase, groups, outputDirectory)) {
                 return false;
             }
         }

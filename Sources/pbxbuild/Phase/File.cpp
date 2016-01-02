@@ -25,13 +25,13 @@ File(
     Target::BuildRules::BuildRule::shared_ptr const &buildRule,
     pbxspec::PBX::FileType::shared_ptr const &fileType,
     std::string const &path,
-    std::string const &outputSubdirectory,
+    std::string const &localization,
     std::string const &fileNameDisambiguator) :
     _buildFile            (buildFile),
     _buildRule            (buildRule),
     _fileType             (fileType),
     _path                 (path),
-    _outputSubdirectory   (outputSubdirectory),
+    _localization         (localization),
     _fileNameDisambiguator(fileNameDisambiguator)
 {
 }
@@ -111,13 +111,13 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                     }
 
                     pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (child);
-                    std::string outputSubdirectory = fileReference->name() + ".lproj";
+                    std::string const &localization = fileReference->name();
 
                     std::string path = environment.expand(fileReference->resolve());
                     pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, path);
 
                     Target::BuildRules::BuildRule::shared_ptr buildRule = buildRules.resolve(fileType, path);
-                    Phase::File file = Phase::File(buildFile, buildRule, fileType, path, outputSubdirectory, fileNameDisambiguator);
+                    Phase::File file = Phase::File(buildFile, buildRule, fileType, path, localization, fileNameDisambiguator);
                     result.push_back(file);
                 }
                 break;

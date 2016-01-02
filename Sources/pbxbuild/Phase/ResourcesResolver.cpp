@@ -34,7 +34,8 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string resourcesDirectory = environment.resolve("BUILT_PRODUCTS_DIR") + "/" + environment.resolve("UNLOCALIZED_RESOURCES_FOLDER_PATH");
 
     std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, environment, _buildPhase->files());
-    if (!phaseContext->resolveBuildFiles(phaseEnvironment, environment, _buildPhase, resourcesDirectory, files, Tool::CopyResolver::ToolIdentifier())) {
+    std::vector<std::vector<Phase::File>> groups = Phase::Context::Group(files);
+    if (!phaseContext->resolveBuildFiles(phaseEnvironment, environment, _buildPhase, groups, resourcesDirectory, Tool::CopyResolver::ToolIdentifier())) {
         return false;
     }
 

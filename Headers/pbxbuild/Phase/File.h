@@ -29,7 +29,7 @@ private:
 
 private:
     std::string                               _path;
-    std::string                               _outputSubdirectory;
+    std::string                               _localization;
     std::string                               _fileNameDisambiguator;
 
 public:
@@ -38,7 +38,7 @@ public:
         Target::BuildRules::BuildRule::shared_ptr const &buildRule,
         pbxspec::PBX::FileType::shared_ptr const &fileType,
         std::string const &path,
-        std::string const &outputSubdirectory,
+        std::string const &localization,
         std::string const &fileNameDisambiguator);
     ~File();
 
@@ -69,12 +69,11 @@ public:
     { return _path; }
 
     /*
-     * The subdirectory within the output directory this file should be
-     * output in. This is relevant for variant groups, which contain many
-     * versions of the same file that should be output in lproj directories.
+     * The localization this file is for.  This is relevant for variant groups,
+     * which contain many versions of the same file for different lproj outputs.
      */
-    std::string const &outputSubdirectory() const
-    { return _outputSubdirectory; }
+    std::string const &localization() const
+    { return _localization; }
 
     /*
      * A disambiguation identifier for files that have multiple with the
