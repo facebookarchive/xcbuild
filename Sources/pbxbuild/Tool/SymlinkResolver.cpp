@@ -26,7 +26,6 @@ SymlinkResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
 void Tool::SymlinkResolver::
 resolve(
     Tool::Context *toolContext,
-    pbxsetting::Environment const &environment,
     std::string const &workingDirectory,
     std::string const &symlinkPath,
     std::string const &targetPath,
@@ -34,17 +33,12 @@ resolve(
 {
     std::string logMessage = "SymLink " + targetPath + " " + symlinkPath;
 
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { targetPath }, { symlinkPath });
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, workingDirectory, nullptr);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/ln", { "-sfh", targetPath, symlinkPath });
-
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
-    invocation.arguments() = commandLine.arguments();
-    invocation.environment() = options.environment();
+    invocation.executable() = "/bin/ln";
+    invocation.arguments() = { "-sfh", targetPath, symlinkPath };
     invocation.workingDirectory() = workingDirectory;
-    invocation.phonyInputs() = toolEnvironment.inputs(workingDirectory);
-    invocation.outputs() = toolEnvironment.outputs(workingDirectory);
+    invocation.phonyInputs() = { FSUtil::ResolveRelativePath(targetPath, workingDirectory) };
+    invocation.outputs() = { FSUtil::ResolveRelativePath(symlinkPath, workingDirectory) };
     invocation.logMessage() = logMessage;
     invocation.createsProductStructure() = productStructure;
     toolContext->invocations().push_back(invocation);

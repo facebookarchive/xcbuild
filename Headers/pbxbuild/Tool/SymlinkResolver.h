@@ -28,7 +28,6 @@ private:
 public:
     void resolve(
         Tool::Context *toolContext,
-        pbxsetting::Environment const &environment,
         std::string const &workingDirectory,
         std::string const &symlinkPath,
         std::string const &targetPath,

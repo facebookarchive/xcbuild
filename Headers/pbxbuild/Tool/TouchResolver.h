@@ -33,7 +33,6 @@ public:
 public:
     void resolve(
         Tool::Context *toolContext,
-        pbxsetting::Environment const &environment,
         std::string const &input,
         std::vector<std::string> const &dependencies) const;
 

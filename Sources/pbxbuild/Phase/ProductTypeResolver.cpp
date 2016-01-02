@@ -110,7 +110,7 @@ ResolveBundleStructure(Phase::Environment const &phaseEnvironment, Phase::Contex
         }
 
         if (Tool::MakeDirectoryResolver const *mkdirResolver = phaseContext->makeDirectoryResolver(phaseEnvironment)) {
-            mkdirResolver->resolve(&phaseContext->toolContext(), environment, directory, true);
+            mkdirResolver->resolve(&phaseContext->toolContext(), directory, true);
         }
     }
 
@@ -247,7 +247,7 @@ ResolveFrameworkStructure(Phase::Environment const &phaseEnvironment, Phase::Con
 
             /* Symlink /path/to.framework/Resources -> Versions/Current/Resources. */
             std::string relativeCurrentDirectory = FSUtil::GetRelativePath(currentDirectory, frameworkDirectory);
-            symlinkResolver->resolve(&phaseContext->toolContext(), environment, frameworkDirectory, rootDirectory, relativeCurrentDirectory, true);
+            symlinkResolver->resolve(&phaseContext->toolContext(), frameworkDirectory, rootDirectory, relativeCurrentDirectory, true);
         }
 
         /*
@@ -256,7 +256,7 @@ ResolveFrameworkStructure(Phase::Environment const &phaseEnvironment, Phase::Con
         if (Tool::SymlinkResolver const *symlinkResolver = phaseContext->symlinkResolver(phaseEnvironment)) {
             /* Symlink Versions/Current -> Versions/A. */
             std::string relativeFrameworkVersionDirectory = FSUtil::GetRelativePath(frameworkVersionDirectory, versionsDirectory);
-            symlinkResolver->resolve(&phaseContext->toolContext(), environment, versionsDirectory, currentVersionDirectory, relativeFrameworkVersionDirectory, true);
+            symlinkResolver->resolve(&phaseContext->toolContext(), versionsDirectory, currentVersionDirectory, relativeFrameworkVersionDirectory, true);
         }
     } else {
         return false;
@@ -340,7 +340,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     if (_productType->isWrapper()) {
         std::string wrapperPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("WRAPPER_NAME");
         if (Tool::TouchResolver const *touchResolver = phaseContext->touchResolver(phaseEnvironment)) {
-            touchResolver->resolve(&phaseContext->toolContext(), environment, wrapperPath, outputs);
+            touchResolver->resolve(&phaseContext->toolContext(), wrapperPath, outputs);
         } else {
             fprintf(stderr, "warning: could not find touch tool\n");
         }

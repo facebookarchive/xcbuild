@@ -26,24 +26,17 @@ MakeDirectoryResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
 void Tool::MakeDirectoryResolver::
 resolve(
     Tool::Context *toolContext,
-    pbxsetting::Environment const &environment,
     std::string const &directory,
     bool productStructure) const
 {
     std::string logMessage = "MkDir " + directory;
 
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, { }, { directory });
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, "/bin/mkdir", { "-p", directory });
-
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
-    invocation.arguments() = commandLine.arguments();
-    invocation.environment() = options.environment();
+    invocation.executable() = "/bin/mkdir";
+    invocation.arguments() = { "-p", directory };
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
-    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
-    invocation.logMessage() = logMessage;
+    invocation.outputs() = { FSUtil::ResolveRelativePath(directory, toolContext->workingDirectory()) };
+    invocation.logMessage() = "MkDir " + directory;
     invocation.createsProductStructure() = productStructure;
     toolContext->invocations().push_back(invocation);
 }
