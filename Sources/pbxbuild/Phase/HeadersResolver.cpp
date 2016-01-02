@@ -52,7 +52,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         std::string const &outputDirectory = (isPublic ? publicOutputDirectory : privateOutputDirectory);
 
         if (isPublic || isPrivate) {
-            copyResolver->resolve(&phaseContext->toolContext(), environment, file.path(), outputDirectory, "CpHeader");
+            copyResolver->resolve(&phaseContext->toolContext(), environment, { file }, outputDirectory, "CpHeader");
         }
     }
 

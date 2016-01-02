@@ -184,8 +184,8 @@ resolvePrecompiledHeader(
     std::string output = environment.expand(precompiledHeaderInfo.compileOutputPath());
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
-    Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, { input }, { output });
-    pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
+    Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), { input }, { output });
+    pbxsetting::Environment const &env = toolEnvironment.environment();
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
 
@@ -220,7 +220,7 @@ void Tool::ClangResolver::
 resolveSource(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    Phase::File const &inputFile,
+    Phase::File const &input,
     std::string const &outputDirectory) const
 {
     Tool::HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
@@ -235,19 +235,18 @@ resolveSource(
         outputExtension = "o";
     }
 
-    std::string outputBaseName = FSUtil::GetBaseNameWithoutExtension(inputFile.path());
-    if (!inputFile.fileNameDisambiguator().empty()) {
-        outputBaseName = inputFile.fileNameDisambiguator();
+    std::string outputBaseName = FSUtil::GetBaseNameWithoutExtension(input.path());
+    if (!input.fileNameDisambiguator().empty()) {
+        outputBaseName = input.fileNameDisambiguator();
     }
     std::string output = resolvedOutputDirectory + "/" + outputBaseName + "." + outputExtension;
 
-    std::string const &input = inputFile.path();
-    pbxspec::PBX::FileType::shared_ptr const &fileType = inputFile.fileType();
-    std::vector<std::string> const &inputArguments = inputFile.buildFile()->compilerFlags();
+    pbxspec::PBX::FileType::shared_ptr const &fileType = input.fileType();
+    std::vector<std::string> const &inputArguments = input.buildFile()->compilerFlags();
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
-    Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, { input }, { output });
-    pbxsetting::Environment const &env = toolEnvironment.toolEnvironment();
+    Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), { input }, { output });
+    pbxsetting::Environment const &env = toolEnvironment.environment();
 
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
@@ -291,9 +290,9 @@ resolveSource(
     // After all of the configurable settings, so they can override.
     arguments.insert(arguments.end(), inputArguments.begin(), inputArguments.end());
     AppendDependencyInfoFlags(&arguments, _compiler, env);
-    AppendInputOutputFlags(&arguments, _compiler, input, output);
+    AppendInputOutputFlags(&arguments, _compiler, input.path(), output);
 
-    std::string logMessage = CompileLogMessage(_compiler, "CompileC", input, fileType, output, env, toolContext->workingDirectory());
+    std::string logMessage = CompileLogMessage(_compiler, "CompileC", input.path(), fileType, output, env, toolContext->workingDirectory());
 
     Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();

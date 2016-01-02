@@ -18,7 +18,7 @@ namespace Tool = pbxbuild::Tool;
 std::string Tool::ToolResult::
 LogMessage(Tool::Environment const &toolEnvironment)
 {
-    pbxsetting::Environment const &environment = toolEnvironment.toolEnvironment();
+    pbxsetting::Environment const &environment = toolEnvironment.environment();
     std::string ruleName = environment.expand(toolEnvironment.tool()->ruleName());
     std::string ruleFormat = environment.expand(toolEnvironment.tool()->ruleFormat());
 

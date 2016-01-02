@@ -13,6 +13,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Phase/File.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -35,10 +36,15 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
+        std::vector<Phase::File> const &inputs,
+        std::string const &outputDirectory,
+        std::string const &logMessage = "") const;
+    void resolve(
+        Tool::Context *toolContext,
+        pbxsetting::Environment const &environment,
         std::vector<std::string> const &inputs,
         std::vector<std::string> const &outputs,
-        std::string const &logMessage = ""
-    ) const;
+        std::string const &logMessage = "") const;
 
 public:
     static std::unique_ptr<ToolResolver>

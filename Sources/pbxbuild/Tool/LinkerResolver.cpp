@@ -100,7 +100,7 @@ resolve(
     }
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_linker);
-    Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, inputFiles, { output });
+    Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), inputFiles, { output });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
     std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);

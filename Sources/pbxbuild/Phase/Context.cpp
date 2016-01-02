@@ -299,21 +299,13 @@ resolveBuildFiles(
                 }
 
                 if (Tool::CopyResolver const *copyResolver = this->copyResolver(phaseEnvironment)) {
-                    assert(files.size() == 1); // TODO(grp): Is this a valid assertion?
-                    copyResolver->resolve(&_toolContext, environment, first.path(), fileOutputDirectory, logMessageTitle);
+                    copyResolver->resolve(&_toolContext, environment, files, fileOutputDirectory, logMessageTitle);
                 } else {
                     return false;
                 }
             } else {
-                std::vector<std::string> inputs;
-                std::vector<std::string> outputs;
-                for (Phase::File const &file : files) {
-                    inputs.push_back(file.path());
-                    outputs.push_back(fileOutputDirectory + "/" + FSUtil::GetBaseName(file.path()));
-                }
-
                 if (Tool::ToolResolver const *toolResolver = this->toolResolver(phaseEnvironment, toolIdentifier)) {
-                    toolResolver->resolve(&_toolContext, environment, inputs, outputs);
+                    toolResolver->resolve(&_toolContext, environment, files, fileOutputDirectory);
                 } else {
                     return false;
                 }

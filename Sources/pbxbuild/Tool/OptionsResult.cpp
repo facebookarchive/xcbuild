@@ -252,7 +252,7 @@ Create(
     pbxspec::PBX::FileType::shared_ptr const &fileType)
 {
     return Create(
-        toolEnvironment.toolEnvironment(),
+        toolEnvironment.environment(),
         workingDirectory,
         toolEnvironment.tool()->options(),
         fileType,

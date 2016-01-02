@@ -11,6 +11,7 @@
 #define __pbxbuild_Tool_Environment_h
 
 #include <pbxbuild/Base.h>
+#include <pbxbuild/Phase/File.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -18,21 +19,25 @@ namespace Tool {
 class Environment {
 private:
     pbxspec::PBX::Tool::shared_ptr _tool;
-    pbxsetting::Environment        _toolEnvironment;
+    pbxsetting::Environment        _environment;
 
 private:
     std::vector<std::string>       _inputs;
     std::vector<std::string>       _outputs;
 
 public:
-    Environment(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &toolEnvironment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs);
+    Environment(
+        pbxspec::PBX::Tool::shared_ptr const &tool,
+        pbxsetting::Environment const &environment,
+        std::vector<std::string> const &inputs,
+        std::vector<std::string> const &outputs);
     ~Environment();
 
 public:
     pbxspec::PBX::Tool::shared_ptr const &tool() const
     { return _tool; }
-    pbxsetting::Environment const &toolEnvironment() const
-    { return _toolEnvironment; }
+    pbxsetting::Environment const &environment() const
+    { return _environment; }
 
 public:
     std::vector<std::string> const &inputs() const
@@ -46,7 +51,19 @@ public:
 
 public:
     static Tool::Environment
-    Create(pbxspec::PBX::Tool::shared_ptr const &tool, pbxsetting::Environment const &environment, std::vector<std::string> const &inputs, std::vector<std::string> const &outputs);
+    Create(
+        pbxspec::PBX::Tool::shared_ptr const &tool,
+        pbxsetting::Environment const &environment,
+        std::string const &workingDirectory,
+        std::vector<Phase::File> const &inputs,
+        std::vector<std::string> const &outputs = { });
+    static Tool::Environment
+    Create(
+        pbxspec::PBX::Tool::shared_ptr const &tool,
+        pbxsetting::Environment const &environment,
+        std::string const &workingDirectory,
+        std::vector<std::string> const &inputs,
+        std::vector<std::string> const &outputs = { });
 };
 
 }

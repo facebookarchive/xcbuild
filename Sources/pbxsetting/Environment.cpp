@@ -105,8 +105,7 @@ ProcessOperation(std::string const &value, std::string const &operation)
     } else if (operation == "standardizepath") {
         return FSUtil::NormalizePath(value);
     } else if (operation == "base") {
-        std::string file = FSUtil::GetBaseName(value);
-        return file.substr(0, file.rfind('.'));
+        return FSUtil::GetBaseNameWithoutExtension(value);
     } else if (operation == "dir") {
         return FSUtil::GetDirectoryName(value);
     } else if (operation == "file") {
@@ -114,7 +113,7 @@ ProcessOperation(std::string const &value, std::string const &operation)
     } else if (operation == "suffix") {
         return "." + FSUtil::GetFileExtension(value);
     } else {
-        fprintf(stderr, "warning: unknown build setting operation %s\n", operation.c_str());
+        fprintf(stderr, "warning: unknown build setting operation '%s'\n", operation.c_str());
         return value;
     }
 }

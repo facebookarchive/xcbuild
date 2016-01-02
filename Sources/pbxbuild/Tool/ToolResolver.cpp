@@ -12,10 +12,11 @@
 #include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/ToolResult.h>
-#include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/Context.h>
+#include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
+using libutil::FSUtil;
 
 Tool::ToolResolver::
 ToolResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
@@ -32,11 +33,35 @@ void Tool::ToolResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
+    std::vector<Phase::File> const &inputs,
+    std::string const &outputDirectory,
+    std::string const &logMessage) const
+{
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, toolContext->workingDirectory(), inputs);
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
+    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
+    std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));
+
+    Tool::Invocation invocation;
+    invocation.executable() = commandLine.executable();
+    invocation.arguments() = commandLine.arguments();
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
+    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
+    invocation.logMessage() = resolvedLogMessage;
+    toolContext->invocations().push_back(invocation);
+}
+
+void Tool::ToolResolver::
+resolve(
+    Tool::Context *toolContext,
+    pbxsetting::Environment const &environment,
     std::vector<std::string> const &inputs,
     std::vector<std::string> const &outputs,
     std::string const &logMessage) const
 {
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, inputs, outputs);
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, toolContext->workingDirectory(), inputs, outputs);
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
     std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));

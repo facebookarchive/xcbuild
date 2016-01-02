@@ -30,7 +30,8 @@ Tool::CommandLineResult::
 Tool::CommandLineResult Tool::CommandLineResult::
 Create(Tool::Environment const &toolEnvironment, Tool::OptionsResult options, std::string const &executable, std::vector<std::string> const &specialArguments, std::unordered_set<std::string> const &removed)
 {
-    pbxspec::PBX::Tool::shared_ptr tool = toolEnvironment.tool();
+    pbxspec::PBX::Tool::shared_ptr const &tool = toolEnvironment.tool();
+    pbxsetting::Environment const &environment = toolEnvironment.environment();
 
     std::string commandLineString = (!tool->commandLine().raw().empty() ? tool->commandLine().raw() : "[exec-path] [options] [special-args]");
 
@@ -65,7 +66,7 @@ Create(Tool::Environment const &toolEnvironment, Tool::OptionsResult options, st
         }
 
         pbxsetting::Value value = pbxsetting::Value::Parse(entry);
-        std::string resolved = toolEnvironment.toolEnvironment().expand(value);
+        std::string resolved = environment.expand(value);
         if (removed.find(resolved) == removed.end()) {
             arguments.push_back(resolved);
         }
