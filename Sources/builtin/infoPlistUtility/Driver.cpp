@@ -96,7 +96,7 @@ AddBuildEnvironment(plist::Dictionary *root, pbxsetting::Environment const &envi
     root->set("DTSDKName", plist::String::New(environment.resolve("SDK_NAME")));
     root->set("DTSDKBuild", plist::String::New(environment.resolve("SDK_PRODUCT_BUILD_VERSION")));
 
-    root->set("MinimumOSVersion", plist::String::New(environment.expand(pbxsetting::Value::Parse("$($(DEPLOYMENT_TARGET_SETTING_NAME))"))));
+    root->set("MinimumOSVersion", plist::String::New(environment.resolve(environment.resolve("DEPLOYMENT_TARGET_SETTING_NAME"))));
 
     std::string targetedDeviceFamily = environment.resolve("TARGETED_DEVICE_FAMILY");
     if (!targetedDeviceFamily.empty()) {
