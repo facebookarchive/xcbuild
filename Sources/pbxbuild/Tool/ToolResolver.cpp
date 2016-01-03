@@ -11,7 +11,6 @@
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/OptionsResult.h>
-#include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/Context.h>
 #include <libutil/FSUtil.h>
 
@@ -39,12 +38,12 @@ resolve(
 {
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, toolContext->workingDirectory(), inputs);
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
-    std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));
+    Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
+    std::string const &resolvedLogMessage = (!logMessage.empty() ? logMessage : tokens.logMessage());
 
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
-    invocation.arguments() = commandLine.arguments();
+    invocation.executable() = tokens.executable();
+    invocation.arguments() = tokens.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
@@ -63,12 +62,12 @@ resolve(
 {
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, toolContext->workingDirectory(), inputs, outputs);
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
-    std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));
+    Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
+    std::string const &resolvedLogMessage = (!logMessage.empty() ? logMessage : tokens.logMessage());
 
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
-    invocation.arguments() = commandLine.arguments();
+    invocation.executable() = tokens.executable();
+    invocation.arguments() = tokens.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());

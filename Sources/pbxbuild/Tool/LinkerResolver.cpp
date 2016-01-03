@@ -8,7 +8,6 @@
  */
 
 #include <pbxbuild/Tool/LinkerResolver.h>
-#include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/OptionsResult.h>
@@ -98,25 +97,24 @@ resolve(
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_linker);
     Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), inputFiles, { output });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options, executable, special);
-    std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);
+    Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options, executable, special);
 
-    std::vector<std::string> arguments = commandLine.arguments();
+    std::vector<std::string> arguments = tokens.arguments();
     if (_linker->identifier() == Tool::LinkerResolver::LipoToolIdentifier()) {
         // This is weird, but this flag is invalid yet is in the specification.
         arguments.erase(std::remove(arguments.begin(), arguments.end(), "-arch_only"), arguments.end());
     }
 
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
-    invocation.arguments() = commandLine.arguments();
+    invocation.executable() = tokens.executable();
+    invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.auxiliaryFiles() = auxiliaries;
     invocation.dependencyInfo() = dependencyInfo;
-    invocation.logMessage() = logMessage;
+    invocation.logMessage() = tokens.logMessage();
     toolContext->invocations().push_back(invocation);
 }
 

@@ -187,7 +187,7 @@ resolvePrecompiledHeader(
     Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.environment();
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
-    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
+    Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
     std::vector<std::string> arguments = precompiledHeaderInfo.arguments();
     AppendDependencyInfoFlags(&arguments, _compiler, env);
@@ -204,7 +204,7 @@ resolvePrecompiledHeader(
     );
 
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
+    invocation.executable() = tokens.executable();
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
@@ -249,7 +249,7 @@ resolveSource(
     pbxsetting::Environment const &env = toolEnvironment.environment();
 
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
-    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
+    Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
     std::vector<std::string> inputDependencies;
     inputDependencies.insert(inputDependencies.end(), headermapInfo.systemHeadermapFiles().begin(), headermapInfo.systemHeadermapFiles().end());
@@ -259,7 +259,7 @@ resolveSource(
     AppendDialectFlags(&arguments, fileType->GCCDialectName());
     size_t dialectOffset = arguments.size();
 
-    arguments.insert(arguments.end(), commandLine.arguments().begin(), commandLine.arguments().end());
+    arguments.insert(arguments.end(), tokens.arguments().begin(), tokens.arguments().end());
     AppendCustomFlags(&arguments, env, fileType->GCCDialectName());
     AppendPathFlags(&arguments, env, toolContext->searchPaths(), headermapInfo);
 
@@ -295,7 +295,7 @@ resolveSource(
     std::string logMessage = CompileLogMessage(_compiler, "CompileC", input.path(), fileType, output, env, toolContext->workingDirectory());
 
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
+    invocation.executable() = tokens.executable();
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();

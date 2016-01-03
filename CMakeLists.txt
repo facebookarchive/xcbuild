@@ -237,7 +237,6 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/Invocation.cpp
     Sources/pbxbuild/Tool/Tokens.cpp
     Sources/pbxbuild/Tool/OptionsResult.cpp
-    Sources/pbxbuild/Tool/ToolResult.cpp
     Sources/pbxbuild/Tool/CompilationInfo.cpp
     Sources/pbxbuild/Tool/HeadermapInfo.cpp
     Sources/pbxbuild/Tool/PrecompiledHeaderInfo.cpp

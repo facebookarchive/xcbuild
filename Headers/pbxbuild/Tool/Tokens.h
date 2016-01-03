@@ -23,32 +23,15 @@ class OptionsResult;
  */
 class Tokens {
 private:
-    std::string              _executable;
-    std::vector<std::string> _arguments;
-
-public:
-    Tokens(std::string const &executable, std::vector<std::string> const &arguments);
+    Tokens();
     ~Tokens();
-
-public:
-    /*
-     * The first argument.
-     */
-    std::string const &executable() const
-    { return _executable; }
-
-    /*
-     * The remaining arguments after the first.
-     */
-    std::vector<std::string> const &arguments() const
-    { return _arguments; }
 
 public:
     /*
      * Evaluate tokens with the provided inputs.
      */
-    static Tool::Tokens
-    Create(
+    static std::vector<std::string>
+    Expand(
         std::string const &tokenized,
         std::string const &executable,
         std::vector<std::string> const &arguments,
@@ -56,11 +39,51 @@ public:
         std::vector<std::string> const &inputs,
         std::vector<std::string> const &outputs);
 
+public:
     /*
-     * Evaluate tokens for a tool's command line.
+     * Expansions from a tool environment.
      */
-    static Tool::Tokens
-    CommandLine(
+    class ToolExpansions {
+    private:
+        std::string              _executable;
+        std::vector<std::string> _arguments;
+
+    private:
+        std::string              _logMessage;
+
+    public:
+        ToolExpansions(
+            std::string const &executable,
+            std::vector<std::string> const &arguments,
+            std::string const &logMessage);
+        ~ToolExpansions();
+
+    public:
+        /*
+         * The first argument.
+         */
+        std::string const &executable() const
+        { return _executable; }
+
+        /*
+         * The remaining arguments after the first.
+         */
+        std::vector<std::string> const &arguments() const
+        { return _arguments; }
+
+    public:
+        /*
+         * The command's log message.
+         */
+        std::string const &logMessage() const
+        { return _logMessage; }
+    };
+
+    /*
+     * Evaluate tokens for a tool's command line and log message.
+     */
+    static Tool::Tokens::ToolExpansions
+    ExpandTool(
         Tool::Environment const &toolEnvironment,
         Tool::OptionsResult options,
         std::string const &executable = "",

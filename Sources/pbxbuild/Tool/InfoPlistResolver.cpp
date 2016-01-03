@@ -8,7 +8,6 @@
  */
 
 #include <pbxbuild/Tool/InfoPlistResolver.h>
-#include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Tokens.h>
@@ -61,8 +60,7 @@ resolve(
 
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, env, toolContext->workingDirectory(), { input }, { infoPlistPath });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
-    std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);
+    Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
     /* Pass all build settings for expansion. */
     std::unordered_map<std::string, std::string> environmentVariables = options.environment();
@@ -72,14 +70,14 @@ resolve(
     bool showEnvironmentInLog = false;
 
     Tool::Invocation invocation;
-    invocation.executable() = commandLine.executable();
-    invocation.arguments() = commandLine.arguments();
+    invocation.executable() = tokens.executable();
+    invocation.arguments() = tokens.arguments();
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.inputDependencies() = toolContext->additionalInfoPlistContents();
-    invocation.logMessage() = logMessage;
+    invocation.logMessage() = tokens.logMessage();
     invocation.showEnvironmentInLog() = false; /* Hide build settings from log. */
     toolContext->invocations().push_back(invocation);
 }

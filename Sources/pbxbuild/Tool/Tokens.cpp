@@ -15,20 +15,8 @@
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 
-Tool::Tokens::
-Tokens(std::string const &executable, std::vector<std::string> const &arguments) :
-    _executable(executable),
-    _arguments (arguments)
-{
-}
-
-Tool::Tokens::
-~Tokens()
-{
-}
-
-Tool::Tokens Tool::Tokens::
-Create(
+std::vector<std::string> Tool::Tokens::
+Expand(
     std::string const &tokenized,
     std::string const &executable,
     std::vector<std::string> const &options,
@@ -36,13 +24,18 @@ Create(
     std::vector<std::string> const &inputs,
     std::vector<std::string> const &outputs)
 {
+    /*
+     * Split the tokens on spaces.
+     */
     std::vector<std::string> tokens;
     std::stringstream sstream = std::stringstream(tokenized);
     std::copy(std::istream_iterator<std::string>(sstream), std::istream_iterator<std::string>(), std::back_inserter(tokens));
 
-    std::string input = (!inputs.empty() ? inputs.front() : "");
-    std::string output = (!outputs.empty() ? outputs.front() : "");
-
+    /*
+     * The tokens that are supported for expansion.
+     */
+    std::string const &input = (!inputs.empty() ? inputs.front() : "");
+    std::string const &output = (!outputs.empty() ? outputs.front() : "");
     std::unordered_map<std::string, std::vector<std::string>> tokenValues = {
         { "input", { input } },
         { "output", { output } },
@@ -53,38 +46,92 @@ Create(
         { "special-args", specialArgs },
     };
 
-    std::vector<std::string> arguments;
+    std::vector<std::string> result;
     for (std::string const &entry : tokens) {
+        /* If the entry is a token, replace it with the token's value. */
         if (entry.find('[') == 0 && entry.find(']') == entry.size() - 1) {
             std::string token = entry.substr(1, entry.size() - 2);
             auto it = tokenValues.find(token);
             if (it != tokenValues.end()) {
-                arguments.insert(arguments.end(), it->second.begin(), it->second.end());
+                /* A token can have multiple values; append them all. */
+                result.insert(result.end(), it->second.begin(), it->second.end());
                 continue;
             }
         }
 
-        arguments.push_back(entry);
+        /* If not, just add the value literally. */
+        result.push_back(entry);
     }
 
-    std::string const &invocationExecutable = (!arguments.empty() ? arguments.front() : "");
-    std::vector<std::string> invocationArguments = std::vector<std::string>(arguments.begin() + (!arguments.empty() ? 1 : 0), arguments.end());
-
-    return Tool::Tokens(invocationExecutable, invocationArguments);
+    return result;
 }
 
-Tool::Tokens Tool::Tokens::
-CommandLine(Tool::Environment const &toolEnvironment, Tool::OptionsResult options, std::string const &executable, std::vector<std::string> const &specialArguments)
+Tool::Tokens::ToolExpansions::
+ToolExpansions(std::string const &executable, std::vector<std::string> const &arguments, std::string const &logMessage) :
+    _executable(executable),
+    _arguments (arguments),
+    _logMessage(logMessage)
+{
+}
+
+Tool::Tokens::ToolExpansions::
+~ToolExpansions()
+{
+}
+
+
+Tool::Tokens::ToolExpansions Tool::Tokens::
+ExpandTool(
+    Tool::Environment const &toolEnvironment,
+    Tool::OptionsResult options,
+    std::string const &executable,
+    std::vector<std::string> const &specialArguments)
 {
     pbxspec::PBX::Tool::shared_ptr const &tool = toolEnvironment.tool();
     pbxsetting::Environment const &environment = toolEnvironment.environment();
 
+    std::vector<std::string> const &arguments = options.arguments();
+    std::vector<std::string> const &inputs = toolEnvironment.inputs();
+    std::vector<std::string> const &outputs = toolEnvironment.outputs();
+
+    /*
+     * Determine the command line template to use. Default to one that covers most cases.
+     */
     std::string toolCommandLine = environment.expand(tool->commandLine());
     std::string const &resolvedCommandLine = (!toolCommandLine.empty() ? toolCommandLine : "[exec-path] [options] [special-args]");
 
+    /*
+     * Determine the executable to use. Use the override if available, otherwise the tool.
+     */
     std::string toolExecutable = environment.expand(tool->execPath());
     std::string const &resolvedExecutable = (!executable.empty() ? executable : toolExecutable);
 
-    return Create(resolvedCommandLine, resolvedExecutable, options.arguments(), specialArguments, toolEnvironment.inputs(), toolEnvironment.outputs());
+    /*
+     * Expand the command line and extract the executable / arguments.
+     */
+    std::vector<std::string> expandedCommandLine = Expand(resolvedCommandLine, resolvedExecutable, arguments, specialArguments, inputs, outputs);
+    std::string const &expandedExecutable = (!expandedCommandLine.empty() ? expandedCommandLine.front() : "");
+    std::vector<std::string> expandedArguments = std::vector<std::string>(expandedCommandLine.begin() + (!expandedCommandLine.empty() ? 1 : 0), expandedCommandLine.end());
+
+    /*
+     * Determine the input for the log message.
+     */
+    std::string ruleName = environment.expand(toolEnvironment.tool()->ruleName());
+    std::string ruleFormat = environment.expand(toolEnvironment.tool()->ruleFormat());
+    std::string const &resolvedName = (!ruleName.empty() ? ruleName : ruleFormat);
+
+    /*
+     * Expand the log message and re-combine the result.
+     */
+    std::vector<std::string> expandedName = Expand(resolvedName, resolvedExecutable, arguments, specialArguments, inputs, outputs);
+    std::string expandedLogMessage;
+    for (std::string const &component : expandedName) {
+        if (&component != &expandedName.front()) {
+            expandedLogMessage += " ";
+        }
+        expandedLogMessage += component;
+    }
+
+    return Tool::Tokens::ToolExpansions(expandedExecutable, expandedArguments, expandedLogMessage);
 }
 
