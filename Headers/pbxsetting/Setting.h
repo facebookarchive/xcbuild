@@ -66,6 +66,13 @@ public:
     static Setting
     Create(std::string const &key, Value const &value);
 
+    /*
+     * Creates a build setting binding. The value is converted
+     * to a value as a string literal, not as an expression.
+     */
+    static Setting
+    Create(std::string const &key, std::string const &value);
+
 public:
     /*
      * Parses xcconfig-style syntax for a build setting:

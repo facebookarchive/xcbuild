@@ -88,9 +88,9 @@ pbxsetting::Level Build::Context::
 actionSettings(void) const
 {
     return pbxsetting::Level({
-        pbxsetting::Setting::Parse("ACTION", _action),
-        pbxsetting::Setting::Parse("BUILD_COMPONENTS", "headers build"), // TODO(grp): Should depend on action.
-        pbxsetting::Setting::Parse("CONFIGURATION", _configuration),
+        pbxsetting::Setting::Create("ACTION", _action),
+        pbxsetting::Setting::Create("BUILD_COMPONENTS", "headers build"), // TODO(grp): Should depend on action.
+        pbxsetting::Setting::Create("CONFIGURATION", _configuration),
     });
 }
 

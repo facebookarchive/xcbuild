@@ -70,7 +70,7 @@ AddOptionArgumentValue(std::vector<std::string> *arguments, pbxsetting::Environm
 {
     pbxsetting::Environment argEnvironment = environment;
     argEnvironment.insertFront(pbxsetting::Level({
-        pbxsetting::Setting::Parse("value", value),
+        pbxsetting::Setting::Create("value", value),
     }), false);
 
     for (pbxsetting::Value const &arg : args) {

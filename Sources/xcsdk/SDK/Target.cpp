@@ -30,16 +30,16 @@ Level Target::
 settings(void) const
 {
     std::vector<Setting> settings = {
-        Setting::Create("SDK_NAME", pbxsetting::Value::String(_canonicalName)),
-        Setting::Create("SDK_DIR", pbxsetting::Value::String(_path)),
-        Setting::Create("SDK_PRODUCT_BUILD_VERSION", pbxsetting::Value::String(_product ? _product->buildVersion() : "")),
+        Setting::Create("SDK_NAME", _canonicalName),
+        Setting::Create("SDK_DIR", _path),
+        Setting::Create("SDK_PRODUCT_BUILD_VERSION", (_product ? _product->buildVersion() : "")),
     };
 
     std::vector<std::string> toolchainIdentifiers;
     for (Toolchain::shared_ptr const &toolchain : _toolchains) {
         toolchainIdentifiers.push_back(toolchain->identifier());
     }
-    settings.push_back(Setting::Create("TOOLCHAINS", pbxsetting::Value::String(pbxsetting::Type::FormatList(toolchainIdentifiers))));
+    settings.push_back(Setting::Create("TOOLCHAINS", pbxsetting::Type::FormatList(toolchainIdentifiers)));
 
     return Level(settings);
 }

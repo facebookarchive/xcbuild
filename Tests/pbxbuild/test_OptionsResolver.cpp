@@ -93,13 +93,13 @@ TEST(OptionsResolver, Boolean)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("BOOL_TRUE", "YES"),
-        pbxsetting::Setting::Parse("BOOL_FALSE", "NO"),
-        pbxsetting::Setting::Parse("BOOL_LOWER", "YES"),
-        pbxsetting::Setting::Parse("BOOL_EXPAND", "YES"),
-        pbxsetting::Setting::Parse("BOOL_EMPTY", ""),
+        pbxsetting::Setting::Create("BOOL_TRUE", "YES"),
+        pbxsetting::Setting::Create("BOOL_FALSE", "NO"),
+        pbxsetting::Setting::Create("BOOL_LOWER", "YES"),
+        pbxsetting::Setting::Create("BOOL_EXPAND", "YES"),
+        pbxsetting::Setting::Create("BOOL_EMPTY", ""),
 
-        pbxsetting::Setting::Parse("FLAG", "flag"),
+        pbxsetting::Setting::Create("FLAG", "flag"),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -159,16 +159,16 @@ TEST(OptionsResolver, String)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("STRING_NORMAL", "string-normal"),
-        pbxsetting::Setting::Parse("STRING_LOWER", "string-lower"),
-        pbxsetting::Setting::Parse("ENUM_NORMAL", "enum-normal"),
-        pbxsetting::Setting::Parse("ENUM_LOWER", "enum-lower"),
-        pbxsetting::Setting::Parse("PATH_NORMAL", "path-normal"),
-        pbxsetting::Setting::Parse("PATH_LOWER", "path-lower"),
-        pbxsetting::Setting::Parse("STRING_EXPAND", "expand"),
-        pbxsetting::Setting::Parse("STRING_EMPTY", ""),
+        pbxsetting::Setting::Create("STRING_NORMAL", "string-normal"),
+        pbxsetting::Setting::Create("STRING_LOWER", "string-lower"),
+        pbxsetting::Setting::Create("ENUM_NORMAL", "enum-normal"),
+        pbxsetting::Setting::Create("ENUM_LOWER", "enum-lower"),
+        pbxsetting::Setting::Create("PATH_NORMAL", "path-normal"),
+        pbxsetting::Setting::Create("PATH_LOWER", "path-lower"),
+        pbxsetting::Setting::Create("STRING_EXPAND", "expand"),
+        pbxsetting::Setting::Create("STRING_EMPTY", ""),
 
-        pbxsetting::Setting::Parse("FLAG", "flag"),
+        pbxsetting::Setting::Create("FLAG", "flag"),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -217,11 +217,11 @@ TEST(OptionsResolver, StringList)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("STRINGLIST_NORMAL", "stringlist-normal1 stringlist-normal2"),
-        pbxsetting::Setting::Parse("STRINGLIST_LOWER", "stringlist-lower1 stringlist-lower2"),
-        pbxsetting::Setting::Parse("PATHLIST_NORMAL", "pathlist-normal1 pathlist-normal2"),
-        pbxsetting::Setting::Parse("PATHLIST_LOWER", "pathlist-lower1 pathlist-lower2"),
-        pbxsetting::Setting::Parse("STRINGLIST_EMPTY", ""),
+        pbxsetting::Setting::Create("STRINGLIST_NORMAL", "stringlist-normal1 stringlist-normal2"),
+        pbxsetting::Setting::Create("STRINGLIST_LOWER", "stringlist-lower1 stringlist-lower2"),
+        pbxsetting::Setting::Create("PATHLIST_NORMAL", "pathlist-normal1 pathlist-normal2"),
+        pbxsetting::Setting::Create("PATHLIST_LOWER", "pathlist-lower1 pathlist-lower2"),
+        pbxsetting::Setting::Create("STRINGLIST_EMPTY", ""),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -267,12 +267,12 @@ TEST(OptionsResolver, FlagIfFalse)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("IFFALSE_TRUE", "YES"),
-        pbxsetting::Setting::Parse("IFFALSE_FALSE", "NO"),
-        pbxsetting::Setting::Parse("IFFALSE_STRING_VALUE", "string"),
-        pbxsetting::Setting::Parse("IFFALSE_STRING_EMPTY", ""),
-        pbxsetting::Setting::Parse("IFFALSE_EXPAND", "NO"),
-        pbxsetting::Setting::Parse("FLAG", "flag"),
+        pbxsetting::Setting::Create("IFFALSE_TRUE", "YES"),
+        pbxsetting::Setting::Create("IFFALSE_FALSE", "NO"),
+        pbxsetting::Setting::Create("IFFALSE_STRING_VALUE", "string"),
+        pbxsetting::Setting::Create("IFFALSE_STRING_EMPTY", ""),
+        pbxsetting::Setting::Create("IFFALSE_EXPAND", "NO"),
+        pbxsetting::Setting::Create("FLAG", "flag"),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -322,14 +322,14 @@ TEST(OptionsResolver, PrefixFlag)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("STRING_PREFIX", "prefix"),
-        pbxsetting::Setting::Parse("STRING_PREFIX_EMPTY", ""),
-        pbxsetting::Setting::Parse("STRING_EMPTY_PREFIX", "empty-prefix"),
-        pbxsetting::Setting::Parse("STRINGLIST_PREFIX", "one two"),
-        pbxsetting::Setting::Parse("STRING_PREFIX_EXPAND", "expand"),
-        pbxsetting::Setting::Parse("BOOL_PREFIX", "YES"),
+        pbxsetting::Setting::Create("STRING_PREFIX", "prefix"),
+        pbxsetting::Setting::Create("STRING_PREFIX_EMPTY", ""),
+        pbxsetting::Setting::Create("STRING_EMPTY_PREFIX", "empty-prefix"),
+        pbxsetting::Setting::Create("STRINGLIST_PREFIX", "one two"),
+        pbxsetting::Setting::Create("STRING_PREFIX_EXPAND", "expand"),
+        pbxsetting::Setting::Create("BOOL_PREFIX", "YES"),
 
-        pbxsetting::Setting::Parse("FLAG", "flag"),
+        pbxsetting::Setting::Create("FLAG", "flag"),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -376,13 +376,13 @@ TEST(OptionsResolver, CommandLineArgsArray)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("ARGS_LIST_TRUE", "YES"),
-        pbxsetting::Setting::Parse("ARGS_LIST_FALSE", "NO"),
-        pbxsetting::Setting::Parse("ARGS_LIST_STRING", "value"),
-        pbxsetting::Setting::Parse("ARGS_LIST_EMPTY", ""),
-        pbxsetting::Setting::Parse("ARGS_LIST_STRINGLIST", "one two"),
+        pbxsetting::Setting::Create("ARGS_LIST_TRUE", "YES"),
+        pbxsetting::Setting::Create("ARGS_LIST_FALSE", "NO"),
+        pbxsetting::Setting::Create("ARGS_LIST_STRING", "value"),
+        pbxsetting::Setting::Create("ARGS_LIST_EMPTY", ""),
+        pbxsetting::Setting::Create("ARGS_LIST_STRINGLIST", "one two"),
 
-        pbxsetting::Setting::Parse("FLAG", "flag"),
+        pbxsetting::Setting::Create("FLAG", "flag"),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -436,12 +436,12 @@ TEST(OptionsResolver, CommandLineArgsDictionary)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("ARGS_DICT_BOOLEAN", "YES"),
-        pbxsetting::Setting::Parse("ARGS_DICT_VALUE", "value"),
-        pbxsetting::Setting::Parse("ARGS_DICT_INVALID", "other-value"),
-        pbxsetting::Setting::Parse("ARGS_DICT_EMPTY", ""),
+        pbxsetting::Setting::Create("ARGS_DICT_BOOLEAN", "YES"),
+        pbxsetting::Setting::Create("ARGS_DICT_VALUE", "value"),
+        pbxsetting::Setting::Create("ARGS_DICT_INVALID", "other-value"),
+        pbxsetting::Setting::Create("ARGS_DICT_EMPTY", ""),
 
-        pbxsetting::Setting::Parse("FLAG", "flag"),
+        pbxsetting::Setting::Create("FLAG", "flag"),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -494,10 +494,10 @@ TEST(OptionsResolver, ValuesArguments)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("VALUES_ARRAY", "array"),
-        pbxsetting::Setting::Parse("VALUES_FLAG", "flag"),
-        pbxsetting::Setting::Parse("ALLOWED_VALUES_ARRAY", "array"),
-        pbxsetting::Setting::Parse("ALLOWED_VALUES_FLAG", "flag"),
+        pbxsetting::Setting::Create("VALUES_ARRAY", "array"),
+        pbxsetting::Setting::Create("VALUES_FLAG", "flag"),
+        pbxsetting::Setting::Create("ALLOWED_VALUES_ARRAY", "array"),
+        pbxsetting::Setting::Create("ALLOWED_VALUES_FLAG", "flag"),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -539,9 +539,9 @@ TEST(OptionsResolver, AdditionalLinkerArgs)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("LINKER_ARGS_ARRAY", "YES"),
-        pbxsetting::Setting::Parse("LINKER_ARGS_DICT_VALID", "value"),
-        pbxsetting::Setting::Parse("ARGS_DICT_DICT_INVALID", "other"),
+        pbxsetting::Setting::Create("LINKER_ARGS_ARRAY", "YES"),
+        pbxsetting::Setting::Create("LINKER_ARGS_DICT_VALID", "value"),
+        pbxsetting::Setting::Create("ARGS_DICT_DICT_INVALID", "other"),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -577,10 +577,10 @@ TEST(OptionsResolver, EnvironmentVariables)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("ENVIRONMENT_VARIABLE_DIRECT", "direct"),
-        pbxsetting::Setting::Parse("ENVIRONMENT_VARIABLE_INDIRECT", "indirect"),
-        pbxsetting::Setting::Parse("ENVIRONMENT_VARIABLE_INDIRECT_NAME", "INDIRECT"),
-        pbxsetting::Setting::Parse("ENVIRONMENT_VARIABLE_EMPTY", ""),
+        pbxsetting::Setting::Create("ENVIRONMENT_VARIABLE_DIRECT", "direct"),
+        pbxsetting::Setting::Create("ENVIRONMENT_VARIABLE_INDIRECT", "indirect"),
+        pbxsetting::Setting::Create("ENVIRONMENT_VARIABLE_INDIRECT_NAME", "INDIRECT"),
+        pbxsetting::Setting::Create("ENVIRONMENT_VARIABLE_EMPTY", ""),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);
@@ -614,11 +614,11 @@ TEST(OptionsResolver, Architectures)
     };
 
     auto environment = Environment({
-        pbxsetting::Setting::Parse("ARCHS_ARM", "YES"),
-        pbxsetting::Setting::Parse("ARCHS_x86", "YES"),
+        pbxsetting::Setting::Create("ARCHS_ARM", "YES"),
+        pbxsetting::Setting::Create("ARCHS_x86", "YES"),
 
-        pbxsetting::Setting::Parse("CURRENT_ARCH", "armv7"),
-        pbxsetting::Setting::Parse("arch", "armv7"),
+        pbxsetting::Setting::Create("CURRENT_ARCH", "armv7"),
+        pbxsetting::Setting::Create("arch", "armv7"),
     });
 
     auto result = Tool::OptionsResult::Create(environment, WorkingDirectory, options, FileType);

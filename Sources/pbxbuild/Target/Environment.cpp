@@ -119,7 +119,7 @@ PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, std:
         }
     }
 
-    architectureSettings.push_back(pbxsetting::Setting::Create("VALID_ARCHS", pbxsetting::Value::String(pbxsetting::Type::FormatList(platformArchitectures))));
+    architectureSettings.push_back(pbxsetting::Setting::Create("VALID_ARCHS", pbxsetting::Type::FormatList(platformArchitectures)));
 
     return pbxsetting::Level(architectureSettings);
 }
@@ -128,7 +128,7 @@ static pbxsetting::Level
 PackageTypeLevel(pbxspec::PBX::PackageType::shared_ptr const &packageType)
 {
     std::vector<pbxsetting::Setting> settings = {
-        pbxsetting::Setting::Parse("PACKAGE_TYPE", packageType->identifier()),
+        pbxsetting::Setting::Create("PACKAGE_TYPE", packageType->identifier()),
     };
 
     pbxsetting::Level packageTypeLevel = packageType->defaultBuildSettings();
@@ -142,7 +142,7 @@ static pbxsetting::Level
 ProductTypeLevel(pbxspec::PBX::ProductType::shared_ptr const &productType)
 {
     std::vector<pbxsetting::Setting> settings = {
-        pbxsetting::Setting::Parse("PRODUCT_TYPE", productType->identifier()),
+        pbxsetting::Setting::Create("PRODUCT_TYPE", productType->identifier()),
     };
 
     pbxsetting::Level productTypeLevel = productType->defaultBuildProperties();
@@ -191,13 +191,13 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
     std::vector<pbxsetting::Setting> settings;
 
     if (!variants.empty()) {
-        settings.push_back(pbxsetting::Setting::Parse("CURRENT_VARIANT", variants.front()));
-        settings.push_back(pbxsetting::Setting::Parse("variant", variants.front()));
+        settings.push_back(pbxsetting::Setting::Create("CURRENT_VARIANT", variants.front()));
+        settings.push_back(pbxsetting::Setting::Create("variant", variants.front()));
     }
 
     if (!architectures.empty()) {
-        settings.push_back(pbxsetting::Setting::Parse("CURRENT_ARCH", architectures.front()));
-        settings.push_back(pbxsetting::Setting::Parse("arch", architectures.front()));
+        settings.push_back(pbxsetting::Setting::Create("CURRENT_ARCH", architectures.front()));
+        settings.push_back(pbxsetting::Setting::Create("arch", architectures.front()));
     }
 
     for (std::string const &variant : variants) {
@@ -357,7 +357,7 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
     environment.insertFront(ArchitecturesVariantsLevel(architectures, variants), false);
 
     environment.insertFront(pbxsetting::Level({
-        pbxsetting::Setting::Parse("SDKROOT", sdk->path()),
+        pbxsetting::Setting::Create("SDKROOT", sdk->path()),
     }), false);
 
     auto buildRules = std::make_shared<Target::BuildRules>(Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target));

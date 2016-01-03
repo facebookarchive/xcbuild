@@ -14,8 +14,6 @@
 using pbxproj::PBX::Target;
 using pbxproj::PBX::NativeTarget;
 using pbxproj::PBX::FileReference;
-using pbxsetting::Level;
-using pbxsetting::Setting;
 
 Target::Target(std::string const &isa, Type type) :
     Object(isa),
@@ -23,24 +21,24 @@ Target::Target(std::string const &isa, Type type) :
 {
 }
 
-Level Target::
+pbxsetting::Level Target::
 settings(void) const
 {
-    std::vector<Setting> settings = {
-        Setting::Parse("TARGETNAME", _name),
-        Setting::Parse("TARGET_NAME", _name),
-        Setting::Parse("PRODUCT_NAME", _productName),
+    std::vector<pbxsetting::Setting> settings = {
+        pbxsetting::Setting::Create("TARGETNAME", _name),
+        pbxsetting::Setting::Create("TARGET_NAME", _name),
+        pbxsetting::Setting::Create("PRODUCT_NAME", _productName),
     };
 
     if (_type == kTypeNative) {
         NativeTarget const *nativeTarget = static_cast <NativeTarget const *> (this);
         if (FileReference::shared_ptr const &productReference = nativeTarget->productReference()) {
-            Setting setting = Setting::Parse("FULL_PRODUCT_NAME", productReference->name());
+            pbxsetting::Setting setting = pbxsetting::Setting::Create("FULL_PRODUCT_NAME", productReference->name());
             settings.push_back(setting);
         }
     }
 
-    return Level(settings);
+    return pbxsetting::Level(settings);
 }
 
 bool Target::

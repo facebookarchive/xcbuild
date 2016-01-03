@@ -25,7 +25,7 @@ Architecture::~Architecture()
 pbxsetting::Setting Architecture::
 defaultSetting(void) const
 {
-    return pbxsetting::Setting::Create(_architectureSetting, pbxsetting::Value::String(pbxsetting::Type::FormatList(_realArchitectures)));
+    return pbxsetting::Setting::Create(_architectureSetting, pbxsetting::Type::FormatList(_realArchitectures));
 }
 
 Architecture::shared_ptr Architecture::

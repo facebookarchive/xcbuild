@@ -29,9 +29,9 @@ pbxsetting::Level Phase::Environment::
 VariantLevel(std::string const &variant)
 {
     return pbxsetting::Level({
-        pbxsetting::Setting::Parse("CURRENT_VARIANT", variant),
-        pbxsetting::Setting::Parse("variant", variant),
-        pbxsetting::Setting::Parse("EXECUTABLE_VARIANT_SUFFIX", variant != "normal" ? "_" + variant : ""),
+        pbxsetting::Setting::Create("CURRENT_VARIANT", variant),
+        pbxsetting::Setting::Create("variant", variant),
+        pbxsetting::Setting::Create("EXECUTABLE_VARIANT_SUFFIX", variant != "normal" ? "_" + variant : ""),
     });
 }
 
@@ -39,8 +39,8 @@ pbxsetting::Level Phase::Environment::
 ArchitectureLevel(std::string const &arch)
 {
     return pbxsetting::Level({
-        pbxsetting::Setting::Parse("CURRENT_ARCH", arch),
-        pbxsetting::Setting::Parse("arch", arch),
+        pbxsetting::Setting::Create("CURRENT_ARCH", arch),
+        pbxsetting::Setting::Create("arch", arch),
     });
 }
 

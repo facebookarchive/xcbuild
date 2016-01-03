@@ -60,7 +60,7 @@ PropertyOption::~PropertyOption()
 pbxsetting::Setting PropertyOption::
 defaultSetting(void) const
 {
-    return pbxsetting::Setting::Parse(_name, defaultPropertyValue().raw());
+    return pbxsetting::Setting::Create(_name, defaultPropertyValue());
 }
 
 pbxsetting::Value PropertyOption::

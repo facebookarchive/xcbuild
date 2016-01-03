@@ -86,15 +86,15 @@ InputLevel(Tool::Input const &input, std::string const &workingDirectory)
     std::string relativeInputPath = FSUtil::GetRelativePath(absoluteInputPath, workingDirectory);
 
     return pbxsetting::Level({
-        pbxsetting::Setting::Create("Input", pbxsetting::Value::String(input.path())),
-        pbxsetting::Setting::Create("InputPath", pbxsetting::Value::String(input.path())),
-        pbxsetting::Setting::Create("InputFile", pbxsetting::Value::String(input.path())),
-        pbxsetting::Setting::Create("InputFileName", pbxsetting::Value::Parse("$(InputFile:file)")),
-        pbxsetting::Setting::Create("InputFileBase", pbxsetting::Value::Parse("$(InputFile:base)")),
-        pbxsetting::Setting::Create("InputFileSuffix", pbxsetting::Value::Parse("$(InputFile:suffix)")),
-        pbxsetting::Setting::Create("InputFileRelativePath", pbxsetting::Value::String(relativeInputPath)),
-        pbxsetting::Setting::Create("InputFileBaseUniquefier", pbxsetting::Value::String(input.uniquefier())),
-        pbxsetting::Setting::Create("InputFileTextEncoding", pbxsetting::Value::String("")), // TODO(grp): Text encoding.
+        pbxsetting::Setting::Create("Input", input.path()),
+        pbxsetting::Setting::Create("InputPath", input.path()),
+        pbxsetting::Setting::Create("InputFile", input.path()),
+        pbxsetting::Setting::Parse("InputFileName", "$(InputFile:file)"),
+        pbxsetting::Setting::Parse("InputFileBase", "$(InputFile:base)"),
+        pbxsetting::Setting::Parse("InputFileSuffix", "$(InputFile:suffix)"),
+        pbxsetting::Setting::Create("InputFileRelativePath", relativeInputPath),
+        pbxsetting::Setting::Create("InputFileBaseUniquefier", input.uniquefier()),
+        pbxsetting::Setting::Create("InputFileTextEncoding", ""), // TODO(grp): Text encoding.
     });
 }
 
@@ -102,12 +102,12 @@ static pbxsetting::Level
 OutputLevel(std::string const &output)
 {
     return pbxsetting::Level({
-        pbxsetting::Setting::Create("Output", pbxsetting::Value::String(output)),
-        pbxsetting::Setting::Create("OutputPath", pbxsetting::Value::String(output)),
-        pbxsetting::Setting::Create("OutputFile", pbxsetting::Value::String(output)),
-        pbxsetting::Setting::Create("OutputDir", pbxsetting::Value::Parse("$(OutputFile:dir)")),
-        pbxsetting::Setting::Create("OutputFileName", pbxsetting::Value::Parse("$(OutputFile:file)")),
-        pbxsetting::Setting::Create("OutputFileBase", pbxsetting::Value::Parse("$(OutputFile:base)")),
+        pbxsetting::Setting::Create("Output", output),
+        pbxsetting::Setting::Create("OutputPath", output),
+        pbxsetting::Setting::Create("OutputFile", output),
+        pbxsetting::Setting::Parse("OutputDir", "$(OutputFile:dir)"),
+        pbxsetting::Setting::Parse("OutputFileName", "$(OutputFile:file)"),
+        pbxsetting::Setting::Parse("OutputFileBase", "$(OutputFile:base)"),
     });
 }
 
@@ -147,9 +147,9 @@ CreateInternal(
      * Tool-level settings applicable to any tool.
      */
     pbxsetting::Level toolLevel = pbxsetting::Level({
-        pbxsetting::Setting::Create("DerivedFilesDir", pbxsetting::Value::Variable("DERIVED_FILES_DIR")),
-        pbxsetting::Setting::Create("ObjectsDir", pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)")),
-        pbxsetting::Setting::Create("ProductResourcesDir", pbxsetting::Value::String(productResourcesDirectory)),
+        pbxsetting::Setting::Parse("DerivedFilesDir", "DERIVED_FILES_DIR"),
+        pbxsetting::Setting::Parse("ObjectsDir", "$(OBJECT_FILE_DIR_$(variant))/$(arch)"),
+        pbxsetting::Setting::Create("ProductResourcesDir", productResourcesDirectory),
         // TODO(grp): AdditionalFlags
         // TODO(grp): BitcodeArch
         // TODO(grp): BuiltBinaryPath

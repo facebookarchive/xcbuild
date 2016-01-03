@@ -29,15 +29,15 @@ Environment(void)
     for (auto const &variable : SysUtil::EnvironmentVariables()) {
         // TODO(grp): Is this right? Should this be filtered at another level?
         if (variable.first.front() != '_') {
-            Setting setting = Setting::Parse(variable.first, variable.second);
+            Setting setting = Setting::Create(variable.first, variable.second);
             settings.push_back(setting);
         }
     }
 
-    settings.push_back(Setting::Parse("UID", Type::FormatInteger(SysUtil::GetUserID())));
-    settings.push_back(Setting::Parse("USER", SysUtil::GetUserName()));
-    settings.push_back(Setting::Parse("GID", Type::FormatInteger(SysUtil::GetGroupID())));
-    settings.push_back(Setting::Parse("GROUP", SysUtil::GetGroupName()));
+    settings.push_back(Setting::Create("UID", Type::FormatInteger(SysUtil::GetUserID())));
+    settings.push_back(Setting::Create("USER", SysUtil::GetUserName()));
+    settings.push_back(Setting::Create("GID", Type::FormatInteger(SysUtil::GetGroupID())));
+    settings.push_back(Setting::Create("GROUP", SysUtil::GetGroupName()));
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));
@@ -47,7 +47,7 @@ Environment(void)
     char *cache = (char *)malloc(len);
     confstr(_CS_DARWIN_USER_CACHE_DIR, cache, len);
     std::string cache_root = FSUtil::NormalizePath(std::string(cache) + "/com.apple.DeveloperTools/6.4-$(XCODE_PRODUCT_BUILD_VERSION)/Xcode");
-    settings.push_back(Setting::Parse("CACHE_ROOT", cache_root));
+    settings.push_back(Setting::Create("CACHE_ROOT", cache_root));
     free(cache);
 
     // Seems identical to TEMP_FILE_DIR but with an 'S'.
@@ -74,10 +74,10 @@ Level DefaultSettings::
 Local(void)
 {
     std::vector<Setting> settings = {
-        Setting::Parse("LOCAL_ADMIN_APPS_DIR", "/Applications/Utilities"),
-        Setting::Parse("LOCAL_APPS_DIR", "/Applications"),
-        Setting::Parse("LOCAL_DEVELOPER_DIR", "/Library/Developer"),
-        Setting::Parse("LOCAL_LIBRARY_DIR", "/Library"),
+        Setting::Create("LOCAL_ADMIN_APPS_DIR", "/Applications/Utilities"),
+        Setting::Create("LOCAL_APPS_DIR", "/Applications"),
+        Setting::Create("LOCAL_DEVELOPER_DIR", "/Library/Developer"),
+        Setting::Create("LOCAL_LIBRARY_DIR", "/Library"),
     };
 
     return Level(settings);
@@ -109,11 +109,11 @@ System(void)
         Setting::Parse("SYSTEM_KEXT_INSTALL_PATH", "/System/Library/Extensions"),
         Setting::Parse("SYSTEM_LIBRARY_DIR", "/System/Library"),
 
-        Setting::Parse("OS", "MACOS"),
-        Setting::Parse("MAC_OS_X_PRODUCT_BUILD_VERSION", "14E46"),
-        Setting::Parse("MAC_OS_X_VERSION_ACTUAL", "101101"),
-        Setting::Parse("MAC_OS_X_VERSION_MAJOR", "101100"),
-        Setting::Parse("MAC_OS_X_VERSION_MINOR", "1001"),
+        Setting::Create("OS", "MACOS"),
+        Setting::Create("MAC_OS_X_PRODUCT_BUILD_VERSION", "14E46"),
+        Setting::Create("MAC_OS_X_VERSION_ACTUAL", "101101"),
+        Setting::Create("MAC_OS_X_VERSION_MAJOR", "101100"),
+        Setting::Create("MAC_OS_X_VERSION_MINOR", "1001"),
     };
 
     return Level(settings);
@@ -124,25 +124,25 @@ Architecture(void)
 {
     std::vector<Setting> settings = {
 #if defined(__i386__) || defined(__x86_64__)
-        Setting::Parse("NATIVE_ARCH_32_BIT", "i386"),
-        Setting::Parse("NATIVE_ARCH_64_BIT", "x86_64"),
+        Setting::Create("NATIVE_ARCH_32_BIT", "i386"),
+        Setting::Create("NATIVE_ARCH_64_BIT", "x86_64"),
   #if defined(__x86_64__)
-        Setting::Parse("NATIVE_ARCH_ACTUAL", "x86_64"),
+        Setting::Create("NATIVE_ARCH_ACTUAL", "x86_64"),
   #else
-        Setting::Parse("NATIVE_ARCH_ACTUAL", "i386"),
+        Setting::Create("NATIVE_ARCH_ACTUAL", "i386"),
   #endif
 #elif defined(__arm__) || defined(__arm64__)
-        Setting::Parse("NATIVE_ARCH_32_BIT", "armv7"),
-        Setting::Parse("NATIVE_ARCH_64_BIT", "arm64"),
+        Setting::Create("NATIVE_ARCH_32_BIT", "armv7"),
+        Setting::Create("NATIVE_ARCH_64_BIT", "arm64"),
   #if defined(__arm64__)
-        Setting::Parse("NATIVE_ARCH_ACTUAL", "arm64"),
+        Setting::Create("NATIVE_ARCH_ACTUAL", "arm64"),
   #else
-        Setting::Parse("NATIVE_ARCH_ACTUAL", "armv7"),
+        Setting::Create("NATIVE_ARCH_ACTUAL", "armv7"),
   #endif
 #else
-        Setting::Parse("NATIVE_ARCH_32_BIT", "UNKNOWN"),
-        Setting::Parse("NATIVE_ARCH_64_BIT", "UNKNOWN"),
-        Setting::Parse("NATIVE_ARCH_ACTUAL", "UNKNOWN"),
+        Setting::Create("NATIVE_ARCH_32_BIT", "UNKNOWN"),
+        Setting::Create("NATIVE_ARCH_64_BIT", "UNKNOWN"),
+        Setting::Create("NATIVE_ARCH_ACTUAL", "UNKNOWN"),
 #endif
     };
 
@@ -153,10 +153,10 @@ Level DefaultSettings::
 Build(void)
 {
     std::vector<Setting> settings = {
-        Setting::Parse("XCODE_PRODUCT_BUILD_VERSION", "6E35b"),
-        Setting::Parse("XCODE_VERSION_ACTUAL", "0710"),
-        Setting::Parse("XCODE_VERSION_MAJOR", "0700"),
-        Setting::Parse("XCODE_VERSION_MINOR", "0710"),
+        Setting::Create("XCODE_PRODUCT_BUILD_VERSION", "6E35b"),
+        Setting::Create("XCODE_VERSION_ACTUAL", "0710"),
+        Setting::Create("XCODE_VERSION_MAJOR", "0700"),
+        Setting::Create("XCODE_VERSION_MINOR", "0710"),
         Setting::Parse("XCODE_APP_SUPPORT_DIR", "$(DEVELOPER_LIBRARY_DIR)/Xcode"),
     };
 

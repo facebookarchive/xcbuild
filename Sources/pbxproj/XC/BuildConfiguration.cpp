@@ -10,12 +10,10 @@
 #include <pbxproj/XC/BuildConfiguration.h>
 
 using pbxproj::XC::BuildConfiguration;
-using pbxsetting::Level;
-using pbxsetting::Setting;
 
 BuildConfiguration::BuildConfiguration() :
     Object        (Isa()),
-    _buildSettings(Level({ }))
+    _buildSettings(pbxsetting::Level({ }))
 {
 }
 
@@ -49,14 +47,14 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (BS != nullptr) {
-        std::vector<Setting> settings;
+        std::vector<pbxsetting::Setting> settings;
         for (size_t n = 0; n < BS->count(); n++) {
             auto BSk = BS->key(n);
             auto BSv = BS->value (BSk);
-            Setting setting = Setting::Parse(BSk, pbxsetting::Value::FromObject(BSv).raw());
+            pbxsetting::Setting setting = pbxsetting::Setting::Create(BSk, pbxsetting::Value::FromObject(BSv));
             settings.push_back(setting);
         }
-        _buildSettings = Level(settings);
+        _buildSettings = pbxsetting::Level(settings);
     }
 
     if (N != nullptr) {

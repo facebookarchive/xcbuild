@@ -54,9 +54,9 @@ Level Platform::
 settings() const
 {
     std::vector<Setting> settings = {
-        Setting::Parse("PLATFORM_NAME", _name),
-        Setting::Parse("PLATFORM_DISPLAY_NAME", _description),
-        Setting::Parse("PLATFORM_DIR", _path),
+        Setting::Create("PLATFORM_NAME", _name),
+        Setting::Create("PLATFORM_DISPLAY_NAME", _description),
+        Setting::Create("PLATFORM_DIR", _path),
 
         Setting::Parse("PLATFORM_DEVELOPER_USR_DIR", "$(PLATFORM_DIR)/Developer/usr"),
         Setting::Parse("PLATFORM_DEVELOPER_BIN_DIR", "$(PLATFORM_DIR)/Developer/usr/bin"),
@@ -64,8 +64,8 @@ settings() const
         Setting::Parse("PLATFORM_DEVELOPER_LIBRARY_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer/Library"), // TODO(grp): Verify.
         Setting::Parse("PLATFORM_DEVELOPER_SDK_DIR", "$(PLATFORM_DIR)/Developer/SDKs"),
         Setting::Parse("PLATFORM_DEVELOPER_TOOLS_DIR", "$(PLATFORM_DIR)/Developer/Tools"),
-        Setting::Parse("PLATFORM_PRODUCT_BUILD_VERSION", _platformVersion ? _platformVersion->buildVersion() : ""),
 
+        Setting::Create("PLATFORM_PRODUCT_BUILD_VERSION", _platformVersion ? _platformVersion->buildVersion() : ""),
         // TODO(grp): PLATFORM_PREFERRED_ARCH
 
         // TODO(grp): CORRESPONDING_DEVICE_PLATFORM_NAME
@@ -109,13 +109,13 @@ settings() const
         flagName += "-simulator";
     }
 
-    settings.push_back(Setting::Parse("DEPLOYMENT_TARGET_SETTING_NAME", settingName + "_DEPLOYMENT_TARGET"));
-    settings.push_back(Setting::Parse("DEPLOYMENT_TARGET_CLANG_FLAG_NAME", "m" + flagName + "-version-min"));
-    settings.push_back(Setting::Parse("DEPLOYMENT_TARGET_CLANG_FLAG_PREFIX", "-m" + flagName + "-version-min="));
-    settings.push_back(Setting::Parse("DEPLOYMENT_TARGET_CLANG_FLAG_ENV", envName + "_DEPLOYMENT_TARGET"));
-    settings.push_back(Setting::Parse("SWIFT_PLATFORM_TARGET_PREFIX", flagName));
+    settings.push_back(Setting::Create("DEPLOYMENT_TARGET_SETTING_NAME", settingName + "_DEPLOYMENT_TARGET"));
+    settings.push_back(Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_NAME", "m" + flagName + "-version-min"));
+    settings.push_back(Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_PREFIX", "-m" + flagName + "-version-min="));
+    settings.push_back(Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_ENV", envName + "_DEPLOYMENT_TARGET"));
+    settings.push_back(Setting::Create("SWIFT_PLATFORM_TARGET_PREFIX", flagName));
 
-    settings.push_back(Setting::Create("EFFECTIVE_PLATFORM_NAME", pbxsetting::Value::String(_name == "macosx" ? "" : "-$(PLATFORM_NAME)")));
+    settings.push_back(Setting::Parse("EFFECTIVE_PLATFORM_NAME", (_name == "macosx" ? "" : "-$(PLATFORM_NAME)")));
 
     std::vector<std::string> supportedPlatformNames;
     std::shared_ptr<Manager> manager = _manager.lock();
@@ -128,7 +128,7 @@ settings() const
     } else {
         supportedPlatformNames.push_back(_name);
     }
-    settings.push_back(Setting::Create("SUPPORTED_PLATFORMS", pbxsetting::Value::String(pbxsetting::Type::FormatList(supportedPlatformNames))));
+    settings.push_back(Setting::Create("SUPPORTED_PLATFORMS", pbxsetting::Type::FormatList(supportedPlatformNames)));
 
     return Level(settings);
 }

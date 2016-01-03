@@ -34,9 +34,9 @@ resolve(
      * Add the copy-specific build settings.
      */
     pbxsetting::Level copyLevel = pbxsetting::Level({
-        pbxsetting::Setting::Create("PBXCP_STRIP_TOOL", pbxsetting::Value::String("")), // TODO(grp): Get path to strip.
-        pbxsetting::Setting::Create("PBXCP_BITCODE_STRIP_TOOL", pbxsetting::Value::String("")), // TODO(grp): Get path to bitcode_strip.
-        pbxsetting::Setting::Create("pbxcp_rule_name", pbxsetting::Value::String(logMessageTitle)),
+        pbxsetting::Setting::Create("PBXCP_STRIP_TOOL", ""), // TODO(grp): Get path to strip.
+        pbxsetting::Setting::Create("PBXCP_BITCODE_STRIP_TOOL", ""), // TODO(grp): Get path to bitcode_strip.
+        pbxsetting::Setting::Create("pbxcp_rule_name", logMessageTitle),
     });
 
     pbxsetting::Environment environment = baseEnvironment;

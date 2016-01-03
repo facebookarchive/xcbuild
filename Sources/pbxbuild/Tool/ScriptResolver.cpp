@@ -24,20 +24,20 @@ ScriptInputOutputLevel(std::vector<std::string> const &inputFiles, std::vector<s
 {
     std::vector<pbxsetting::Setting> settings;
 
-    settings.push_back(pbxsetting::Setting::Parse("SCRIPT_OUTPUT_FILE_COUNT", pbxsetting::Type::FormatInteger(outputFiles.size())));
+    settings.push_back(pbxsetting::Setting::Create("SCRIPT_OUTPUT_FILE_COUNT", pbxsetting::Type::FormatInteger(outputFiles.size())));
     for (auto it = outputFiles.begin(); it < outputFiles.end(); ++it) {
         size_t index = (it - outputFiles.begin());
-        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_OUTPUT_FILE_" + pbxsetting::Type::FormatInteger(index), *it));
+        settings.push_back(pbxsetting::Setting::Create("SCRIPT_OUTPUT_FILE_" + pbxsetting::Type::FormatInteger(index), *it));
     }
 
     if (multipleInputs) {
-        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE_COUNT", pbxsetting::Type::FormatInteger(inputFiles.size())));
+        settings.push_back(pbxsetting::Setting::Create("SCRIPT_INPUT_FILE_COUNT", pbxsetting::Type::FormatInteger(inputFiles.size())));
         for (auto it = inputFiles.begin(); it < inputFiles.end(); ++it) {
             size_t index = (it - inputFiles.begin());
-            settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE_" + pbxsetting::Type::FormatInteger(index), *it));
+            settings.push_back(pbxsetting::Setting::Create("SCRIPT_INPUT_FILE_" + pbxsetting::Type::FormatInteger(index), *it));
         }
     } else if (!inputFiles.empty()) {
-        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE", inputFiles.front()));
+        settings.push_back(pbxsetting::Setting::Create("SCRIPT_INPUT_FILE", inputFiles.front()));
     }
 
     return pbxsetting::Level(settings);
@@ -76,8 +76,8 @@ resolve(
     pbxproj::PBX::ShellScriptBuildPhase::shared_ptr const &buildPhase) const
 {
     pbxsetting::Level level = pbxsetting::Level({
-        pbxsetting::Setting::Parse("BuildPhaseName", (!buildPhase->name().empty() ? buildPhase->name() : "Run Script")),
-        pbxsetting::Setting::Parse("BuildPhaseIdentifier", buildPhase->blueprintIdentifier()),
+        pbxsetting::Setting::Create("BuildPhaseName", (!buildPhase->name().empty() ? buildPhase->name() : "Run Script")),
+        pbxsetting::Setting::Create("BuildPhaseIdentifier", buildPhase->blueprintIdentifier()),
     });
 
     pbxsetting::Environment phaseEnvironment = environment;
@@ -141,12 +141,12 @@ resolve(
      * script or inside the list of output paths.
      */
     pbxsetting::Level level = pbxsetting::Level({
-        pbxsetting::Setting::Create("INPUT_FILE_PATH", pbxsetting::Value::String(inputAbsolutePath)),
-        pbxsetting::Setting::Create("INPUT_FILE_DIR", pbxsetting::Value::Parse("$(INPUT_FILE_PATH:dir)")),
-        pbxsetting::Setting::Create("INPUT_FILE_NAME", pbxsetting::Value::Parse("$(INPUT_FILE_PATH:file)")),
-        pbxsetting::Setting::Create("INPUT_FILE_BASE", pbxsetting::Value::Parse("$(INPUT_FILE_PATH:base)")),
-        pbxsetting::Setting::Create("INPUT_FILE_SUFFIX", pbxsetting::Value::Parse("$(INPUT_FILE_PATH:suffix)")),
-        pbxsetting::Setting::Create("INPUT_FILE_REGION_PATH_COMPONENT", pbxsetting::Value::String(input.localization())), // TODO(grp): Verify format of this.
+        pbxsetting::Setting::Create("INPUT_FILE_PATH", inputAbsolutePath),
+        pbxsetting::Setting::Parse("INPUT_FILE_DIR", "$(INPUT_FILE_PATH:dir)"),
+        pbxsetting::Setting::Parse("INPUT_FILE_NAME", "$(INPUT_FILE_PATH:file)"),
+        pbxsetting::Setting::Parse("INPUT_FILE_BASE", "$(INPUT_FILE_PATH:base)"),
+        pbxsetting::Setting::Parse("INPUT_FILE_SUFFIX", "$(INPUT_FILE_PATH:suffix)"),
+        pbxsetting::Setting::Create("INPUT_FILE_REGION_PATH_COMPONENT", input.localization()), // TODO(grp): Verify format of this.
     });
 
     pbxsetting::Environment ruleEnvironment = environment;

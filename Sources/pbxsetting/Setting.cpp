@@ -40,6 +40,12 @@ Create(std::string const &key, Value const &value)
 }
 
 Setting Setting::
+Create(std::string const &key, std::string const &value)
+{
+    return Setting(key, Condition::Empty(), Value::String(value));
+}
+
+Setting Setting::
 Parse(std::string const &string)
 {
     size_t equal = 0;

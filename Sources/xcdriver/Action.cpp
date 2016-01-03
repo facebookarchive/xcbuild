@@ -88,10 +88,10 @@ CreateOverrideLevels(Options const &options, pbxsetting::Environment const &envi
 
     std::vector<pbxsetting::Setting> settings;
     if (!options.sdk().empty()) {
-        settings.push_back(pbxsetting::Setting::Parse("SDKROOT", options.sdk()));
+        settings.push_back(pbxsetting::Setting::Create("SDKROOT", options.sdk()));
     }
     if (!options.arch().empty()) {
-        settings.push_back(pbxsetting::Setting::Parse("ARCHS", options.arch()));
+        settings.push_back(pbxsetting::Setting::Create("ARCHS", options.arch()));
     }
     levels.push_back(pbxsetting::Level(settings));
 

@@ -125,7 +125,7 @@ CreateBuildEnvironment(std::unordered_map<std::string, std::string> const &envir
 {
     std::vector<pbxsetting::Setting> settings;
     for (auto const &pair : environment) {
-        pbxsetting::Setting setting = pbxsetting::Setting::Create(pair.first, pbxsetting::Value::String(pair.second));
+        pbxsetting::Setting setting = pbxsetting::Setting::Create(pair.first, pair.second);
         settings.push_back(setting);
     }
 

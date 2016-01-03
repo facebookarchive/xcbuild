@@ -46,7 +46,7 @@ pbxsetting::Level Manager::
 computedSettings(void) const
 {
     std::vector<Setting> settings = {
-        Setting::Parse("DEVELOPER_DIR", _path),
+        Setting::Create("DEVELOPER_DIR", _path),
         Setting::Parse("DEVELOPER_USR_DIR", "$(DEVELOPER_DIR)/usr"),
         Setting::Parse("DEVELOPER_BIN_DIR", "$(DEVELOPER_DIR)/usr/bin"),
         Setting::Parse("DEVELOPER_APPLICATIONS_DIR", "$(DEVELOPER_DIR)/Applications"),
@@ -61,16 +61,16 @@ computedSettings(void) const
 
     auto tcit = _toolchains.find(Toolchain::DefaultIdentifier());
     if (tcit != _toolchains.end()) {
-        settings.push_back(Setting::Parse("DT_TOOLCHAIN_DIR", tcit->second->path()));
+        settings.push_back(Setting::Create("DT_TOOLCHAIN_DIR", tcit->second->path()));
     } else {
-        settings.push_back(Setting::Parse("DT_TOOLCHAIN_DIR", ""));
+        settings.push_back(Setting::Create("DT_TOOLCHAIN_DIR", ""));
     }
 
     std::vector<std::string> platformNames;
     for (Platform::shared_ptr const &platform : _platforms) {
         platformNames.push_back(platform->name());
     }
-    settings.push_back(Setting::Create("AVAILABLE_PLATFORMS", pbxsetting::Value::String(pbxsetting::Type::FormatList(platformNames))));
+    settings.push_back(Setting::Create("AVAILABLE_PLATFORMS", pbxsetting::Type::FormatList(platformNames)));
 
     return Level(settings);
 }

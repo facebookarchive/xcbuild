@@ -15,8 +15,6 @@
 #include <libutil/SysUtil.h>
 
 using pbxproj::PBX::Project;
-using pbxsetting::Level;
-using pbxsetting::Setting;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
@@ -26,19 +24,19 @@ Project::Project() :
 {
 }
 
-Level Project::
+pbxsetting::Level Project::
 settings(void) const
 {
-    std::vector<Setting> settings = {
-        Setting::Parse("PROJECT", _name),
-        Setting::Parse("PROJECT_NAME", _name),
-        Setting::Parse("PROJECT_DIR", _basePath),
-        Setting::Parse("PROJECT_FILE_PATH", _projectFile),
-        Setting::Parse("SRCROOT", _basePath),
-        Setting::Parse("DEVELOPMENT_LANGUAGE", (!_developmentRegion.empty() ? _developmentRegion : "English")),
+    std::vector<pbxsetting::Setting> settings = {
+        pbxsetting::Setting::Create("PROJECT", _name),
+        pbxsetting::Setting::Create("PROJECT_NAME", _name),
+        pbxsetting::Setting::Create("PROJECT_DIR", _basePath),
+        pbxsetting::Setting::Create("PROJECT_FILE_PATH", _projectFile),
+        pbxsetting::Setting::Create("SRCROOT", _basePath),
+        pbxsetting::Setting::Create("DEVELOPMENT_LANGUAGE", (!_developmentRegion.empty() ? _developmentRegion : "English")),
     };
 
-    return Level(settings);
+    return pbxsetting::Level(settings);
 }
 
 bool Project::
