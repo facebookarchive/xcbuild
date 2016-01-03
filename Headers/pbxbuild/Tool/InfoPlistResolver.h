@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_InfoPlistResolver_h
-#define __pbxbuild_InfoPlistResolver_h
+#ifndef __pbxbuild_Tool_InfoPlistResolver_h
+#define __pbxbuild_Tool_InfoPlistResolver_h
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Phase/Environment.h>
@@ -48,4 +48,4 @@ public:
 }
 }
 
-#endif // !__pbxbuild_InfoPlistResolver_h
+#endif // !__pbxbuild_Tool_InfoPlistResolver_h

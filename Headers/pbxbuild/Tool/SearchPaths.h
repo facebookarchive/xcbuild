@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_SearchPaths_h
-#define __pbxbuild_SearchPaths_h
+#ifndef __pbxbuild_Tool_SearchPaths_h
+#define __pbxbuild_Tool_SearchPaths_h
 
 #include <pbxbuild/Base.h>
 
@@ -60,4 +60,4 @@ public:
 }
 }
 
-#endif // !__pbxbuild_SearchPaths_h
+#endif // !__pbxbuild_Tool_SearchPaths_h
