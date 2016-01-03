@@ -35,19 +35,11 @@ resolve(
 {
     bool pkginfoFile = pbxsetting::Type::ParseBoolean(environment.resolve("GENERATE_PKGINFO_FILE"));
 
-    std::string additionalContentPaths;
-    for (std::string const &additionalContentPath : toolContext->additionalInfoPlistContents()) {
-        if (&additionalContentPath != &toolContext->additionalInfoPlistContents()[0]) {
-            additionalContentPaths += " ";
-        }
-        additionalContentPaths += additionalContentPath;
-    }
-
     pbxsetting::Level level = pbxsetting::Level({
         pbxsetting::Setting::Parse("GeneratedPkgInfoFile", (pkginfoFile ? "$(TARGET_BUILD_DIR)/$(PKGINFO_PATH)" : "")),
         pbxsetting::Setting::Parse("ExpandBuildSettings", "$(INFOPLIST_EXPAND_BUILD_SETTINGS)"),
         pbxsetting::Setting::Parse("OutputFormat", "$(INFOPLIST_OUTPUT_FORMAT)"),
-        pbxsetting::Setting::Parse("AdditionalContentFilePaths", additionalContentPaths),
+        pbxsetting::Setting::Create("AdditionalContentFilePaths", pbxsetting::Value::String(pbxsetting::Type::FormatList(toolContext->additionalInfoPlistContents()))),
         pbxsetting::Setting::Parse("RequiredArchitectures", ""), // TODO(grp): Determine what this is for.
         pbxsetting::Setting::Parse("AdditionalInfoFileKeys", ""), // TODO(grp): Determine what these are for.
         pbxsetting::Setting::Parse("AdditionalInfoFileValues", ""), // TODO(grp): Determine what these are for.

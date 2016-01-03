@@ -66,14 +66,11 @@ computedSettings(void) const
         settings.push_back(Setting::Parse("DT_TOOLCHAIN_DIR", ""));
     }
 
-    std::string platforms;
+    std::vector<std::string> platformNames;
     for (Platform::shared_ptr const &platform : _platforms) {
-        if (&platform != &_platforms[0]) {
-            platforms += " ";
-        }
-        platforms += platform->name();
+        platformNames.push_back(platform->name());
     }
-    settings.push_back(Setting::Parse("AVAILABLE_PLATFORMS", platforms));
+    settings.push_back(Setting::Create("AVAILABLE_PLATFORMS", pbxsetting::Value::String(pbxsetting::Type::FormatList(platformNames))));
 
     return Level(settings);
 }

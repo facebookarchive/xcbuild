@@ -25,15 +25,7 @@ Architecture::~Architecture()
 pbxsetting::Setting Architecture::
 defaultSetting(void) const
 {
-    std::string value;
-    for (std::string const &arch : _realArchitectures) {
-        if (&arch != &_realArchitectures[0]) {
-            value += " ";
-        }
-        value += arch;
-    }
-
-    return pbxsetting::Setting::Parse(_architectureSetting, value);
+    return pbxsetting::Setting::Create(_architectureSetting, pbxsetting::Value::String(pbxsetting::Type::FormatList(_realArchitectures)));
 }
 
 Architecture::shared_ptr Architecture::

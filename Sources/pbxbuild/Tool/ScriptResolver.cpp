@@ -24,17 +24,17 @@ ScriptInputOutputLevel(std::vector<std::string> const &inputFiles, std::vector<s
 {
     std::vector<pbxsetting::Setting> settings;
 
-    settings.push_back(pbxsetting::Setting::Parse("SCRIPT_OUTPUT_FILE_COUNT", std::to_string(outputFiles.size())));
+    settings.push_back(pbxsetting::Setting::Parse("SCRIPT_OUTPUT_FILE_COUNT", pbxsetting::Type::FormatInteger(outputFiles.size())));
     for (auto it = outputFiles.begin(); it < outputFiles.end(); ++it) {
         size_t index = (it - outputFiles.begin());
-        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_OUTPUT_FILE_" + std::to_string(index), *it));
+        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_OUTPUT_FILE_" + pbxsetting::Type::FormatInteger(index), *it));
     }
 
     if (multipleInputs) {
-        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE_COUNT", std::to_string(inputFiles.size())));
+        settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE_COUNT", pbxsetting::Type::FormatInteger(inputFiles.size())));
         for (auto it = inputFiles.begin(); it < inputFiles.end(); ++it) {
             size_t index = (it - inputFiles.begin());
-            settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE_" + std::to_string(index), *it));
+            settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE_" + pbxsetting::Type::FormatInteger(index), *it));
         }
     } else if (!inputFiles.empty()) {
         settings.push_back(pbxsetting::Setting::Parse("SCRIPT_INPUT_FILE", inputFiles.front()));

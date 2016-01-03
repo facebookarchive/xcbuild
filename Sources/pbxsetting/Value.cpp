@@ -8,10 +8,8 @@
  */
 
 #include <pbxsetting/Value.h>
+#include <pbxsetting/Type.h>
 #include <plist/plist.h>
-
-#include <iomanip>
-#include <sstream>
 
 #include <cassert>
 
@@ -246,24 +244,19 @@ FromObject(plist::Object const *object)
     } else if (plist::String const *stringValue = plist::CastTo <plist::String> (object)) {
         return pbxsetting::Value::Parse(stringValue->value());
     } else if (plist::Boolean const *booleanValue = plist::CastTo <plist::Boolean> (object)) {
-        return pbxsetting::Value::Parse(booleanValue->value() ? "YES" : "NO");
+        return pbxsetting::Value::String(Type::FormatBoolean(booleanValue->value()));
     } else if (plist::Integer const *integerValue = plist::CastTo <plist::Integer> (object)) {
-        return pbxsetting::Value::Parse(std::to_string(integerValue->value()));
+        return pbxsetting::Value::String(Type::FormatInteger(integerValue->value()));
     } else if (plist::Real const *realValue = plist::CastTo <plist::Real> (object)) {
-        std::ostringstream out;
-        out << std::setprecision(1) << std::fixed << realValue->value();
-        return pbxsetting::Value::Parse(out.str());
+        return pbxsetting::Value::String(Type::FormatReal(realValue->value()));
     } else if (plist::Array const *arrayValue = plist::CastTo <plist::Array> (object)) {
-        std::string value;
+        std::vector<std::string> values;
         for (size_t n = 0; n < arrayValue->count(); n++) {
             if (auto arg = arrayValue->value <plist::String> (n)) {
-                if (n != 0) {
-                    value += " ";
-                }
-                value += arg->value();
+                values.push_back(arg->value());
             }
         }
-        return pbxsetting::Value::Parse(value);
+        return pbxsetting::Value::Parse(Type::FormatList(values));
     } else {
         // TODO(grp): Handle additional types?
         fprintf(stderr, "Warning: Unknown value type for object.\n");

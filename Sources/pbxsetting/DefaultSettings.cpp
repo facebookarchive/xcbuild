@@ -8,6 +8,7 @@
  */
 
 #include <pbxsetting/DefaultSettings.h>
+#include <pbxsetting/Type.h>
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 
@@ -16,6 +17,7 @@
 using pbxsetting::DefaultSettings;
 using pbxsetting::Level;
 using pbxsetting::Setting;
+using pbxsetting::Type;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
@@ -32,9 +34,9 @@ Environment(void)
         }
     }
 
-    settings.push_back(Setting::Parse("UID", std::to_string(SysUtil::GetUserID())));
+    settings.push_back(Setting::Parse("UID", Type::FormatInteger(SysUtil::GetUserID())));
     settings.push_back(Setting::Parse("USER", SysUtil::GetUserName()));
-    settings.push_back(Setting::Parse("GID", std::to_string(SysUtil::GetGroupID())));
+    settings.push_back(Setting::Parse("GID", Type::FormatInteger(SysUtil::GetGroupID())));
     settings.push_back(Setting::Parse("GROUP", SysUtil::GetGroupName()));
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));

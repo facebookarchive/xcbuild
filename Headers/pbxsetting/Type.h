@@ -48,6 +48,32 @@ public:
      */
     static std::vector<std::string>
     ParseList(std::string const &value);
+
+public:
+    /*
+     * Formats a boolean for use in a setting value.
+     */
+    static std::string
+    FormatBoolean(bool value);
+
+    /*
+     * Formats an integer for use in a setting value.
+     */
+    static std::string
+    FormatInteger(int64_t value);
+
+    /*
+     * Formats a floating point value for use in a setting value.
+     */
+    static std::string
+    FormatReal(double value);
+
+    /*
+     * Formats a space-separated list of strings (or path names) for a setting
+     * value. Quoting is used to escape strings to keep the list structure.
+     */
+    static std::string
+    FormatList(std::vector<std::string> const &value);
 };
 
 }

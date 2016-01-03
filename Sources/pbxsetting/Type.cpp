@@ -10,6 +10,9 @@
 #include <pbxsetting/Type.h>
 #include <libutil/Wildcard.h>
 
+#include <iomanip>
+#include <sstream>
+
 using pbxsetting::Type;
 using libutil::Wildcard;
 
@@ -79,4 +82,47 @@ ParseList(std::string const &value)
     }
 
     return entries;
+}
+
+std::string Type::
+FormatBoolean(bool value)
+{
+    return (value ? "YES" : "NO");
+}
+
+std::string Type::
+FormatInteger(int64_t value)
+{
+    return std::to_string(value);
+}
+
+std::string Type::
+FormatReal(double value)
+{
+    std::ostringstream result;
+    //result << std::setprecision(1) << std::fixed << value;
+    result << value;
+    return result.str();
+}
+
+std::string Type::
+FormatList(std::vector<std::string> const &value)
+{
+    std::ostringstream result;
+
+    for (std::string const &entry : value) {
+        if (&entry != &value.front()) {
+            result << " ";
+        }
+
+        for (char c : entry) {
+            if (c == '\\' || c == '\'' || c == '"' || isspace(c)) {
+                result << '\\' << c;
+            } else {
+                result << c;
+            }
+        }
+    }
+
+    return result.str();
 }

@@ -119,14 +119,7 @@ PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, std:
         }
     }
 
-    std::string platformArchitecturesValue;
-    for (std::string const &arch : platformArchitectures) {
-        if (&arch != &platformArchitectures[0]) {
-            platformArchitecturesValue += " ";
-        }
-        platformArchitecturesValue += arch;
-    }
-    architectureSettings.push_back(pbxsetting::Setting::Parse("VALID_ARCHS", platformArchitecturesValue));
+    architectureSettings.push_back(pbxsetting::Setting::Create("VALID_ARCHS", pbxsetting::Value::String(pbxsetting::Type::FormatList(platformArchitectures))));
 
     return pbxsetting::Level(architectureSettings);
 }

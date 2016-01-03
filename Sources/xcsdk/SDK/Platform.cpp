@@ -115,24 +115,20 @@ settings() const
     settings.push_back(Setting::Parse("DEPLOYMENT_TARGET_CLANG_FLAG_ENV", envName + "_DEPLOYMENT_TARGET"));
     settings.push_back(Setting::Parse("SWIFT_PLATFORM_TARGET_PREFIX", flagName));
 
-    settings.push_back(Setting::Parse("EFFECTIVE_PLATFORM_NAME", _identifier == "com.apple.platform.macosx" ? "" : "-$(PLATFORM_NAME)"));
+    settings.push_back(Setting::Create("EFFECTIVE_PLATFORM_NAME", pbxsetting::Value::String(_name == "macosx" ? "" : "-$(PLATFORM_NAME)")));
 
+    std::vector<std::string> supportedPlatformNames;
     std::shared_ptr<Manager> manager = _manager.lock();
     if (manager && !_familyIdentifier.empty()) {
-        std::string platforms;
         for (Platform::shared_ptr const &platform : manager->platforms()) {
             if (platform->familyIdentifier() == _familyIdentifier) {
-                if (&platform != &manager->platforms()[0]) {
-                    platforms += " ";
-                }
-                platforms += platform->name();
+                supportedPlatformNames.push_back(platform->name());
             }
         }
-
-        settings.push_back(Setting::Parse("SUPPORTED_PLATFORMS", platforms));
     } else {
-        settings.push_back(Setting::Parse("SUPPORTED_PLATFORMS", _name));
+        supportedPlatformNames.push_back(_name);
     }
+    settings.push_back(Setting::Create("SUPPORTED_PLATFORMS", pbxsetting::Value::String(pbxsetting::Type::FormatList(supportedPlatformNames))));
 
     return Level(settings);
 }
