@@ -9,6 +9,7 @@
 
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxbuild/Tool/AssetCatalogResolver.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/InfoPlistResolver.h>
@@ -37,6 +38,16 @@ Context(Tool::Context const &toolContext) :
 Phase::Context::
 ~Context()
 {
+}
+
+Tool::AssetCatalogResolver const *Phase::Context::
+assetCatalogResolver(Phase::Environment const &phaseEnvironment)
+{
+    if (_assetCatalogResolver == nullptr) {
+        _assetCatalogResolver = Tool::AssetCatalogResolver::Create(phaseEnvironment);
+    }
+
+    return _assetCatalogResolver.get();
 }
 
 Tool::ClangResolver const *Phase::Context::
@@ -280,7 +291,13 @@ resolveBuildFiles(
                 return false;
             }
 
-            if (toolIdentifier == Tool::ClangResolver::ToolIdentifier()) {
+            if (toolIdentifier == Tool::AssetCatalogResolver::ToolIdentifier()) {
+                if (Tool::AssetCatalogResolver const *assetCatalogResolver = this->assetCatalogResolver(phaseEnvironment)) {
+                    assetCatalogResolver->resolve(&_toolContext, environment, files);
+                } else {
+                    return false;
+                }
+            } else if (toolIdentifier == Tool::ClangResolver::ToolIdentifier()) {
                 if (Tool::ClangResolver const *clangResolver = this->clangResolver(phaseEnvironment)) {
                     assert(files.size() == 1); // TODO(grp): Is this a valid assertion?
                     clangResolver->resolveSource(&_toolContext, environment, first, fileOutputDirectory);

@@ -19,6 +19,7 @@
 namespace pbxbuild {
 
 namespace Tool {
+    class AssetCatalogResolver;
     class ClangResolver;
     class CopyResolver;
     class InfoPlistResolver;
@@ -38,6 +39,7 @@ private:
     Tool::Context                                       _toolContext;
 
 private:
+    std::unique_ptr<Tool::AssetCatalogResolver>         _assetCatalogResolver;
     std::unique_ptr<Tool::ClangResolver>                _clangResolver;
     std::unique_ptr<Tool::CopyResolver>                 _copyResolver;
     std::unique_ptr<Tool::InfoPlistResolver>            _infoPlistResolver;
@@ -60,6 +62,7 @@ public:
     { return _toolContext; }
 
 public:
+    Tool::AssetCatalogResolver const  *assetCatalogResolver(Phase::Environment const &phaseEnvironment);
     Tool::ClangResolver const         *clangResolver(Phase::Environment const &phaseEnvironment);
     Tool::CopyResolver const          *copyResolver(Phase::Environment const &phaseEnvironment);
     Tool::InfoPlistResolver const     *infoPlistResolver(Phase::Environment const &phaseEnvironment);

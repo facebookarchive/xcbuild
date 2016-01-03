@@ -1,0 +1,101 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+#include <pbxbuild/Tool/AssetCatalogResolver.h>
+#include <pbxbuild/Tool/Environment.h>
+#include <pbxbuild/Tool/OptionsResult.h>
+#include <pbxbuild/Tool/Tokens.h>
+#include <pbxbuild/Tool/Context.h>
+
+namespace Tool = pbxbuild::Tool;
+using libutil::FSUtil;
+
+Tool::AssetCatalogResolver::
+AssetCatalogResolver(pbxspec::PBX::Compiler::shared_ptr const &tool) :
+    _tool(tool)
+{
+}
+
+void Tool::AssetCatalogResolver::
+resolve(
+    Tool::Context *toolContext,
+    pbxsetting::Environment const &baseEnvironment,
+    std::vector<Phase::File> const &inputs) const
+{
+    /*
+     * Resolve the tool options.
+     */
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, baseEnvironment, toolContext->workingDirectory(), inputs, { });
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
+    Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
+
+    pbxsetting::Environment const &environment = toolEnvironment.environment();
+
+    /*
+     * Create tool outputs.
+     */
+    std::vector<std::string> outputs = {
+        /* Creates the asset catalog, always in the resources dir. */
+        environment.expand(pbxsetting::Value::Parse("$(ProductResourcesDir)/Assets.car")),
+    };
+
+    /*
+     * Add custom arguments to the end.
+     */
+    std::vector<std::string> arguments = tokens.arguments();
+    arguments.push_back("--platform");
+    arguments.push_back(environment.resolve("PLATFORM_NAME"));
+    arguments.push_back("--minimum-deployment-target");
+    arguments.push_back(environment.resolve(environment.resolve("DEPLOYMENT_TARGET_SETTING_NAME")));
+
+    // TODO(grp): This is a hack to work around missing `Condition` support in options.
+    arguments.erase(std::remove(arguments.begin(), arguments.end(), "--optimization"), arguments.end());
+
+    // TODO(grp): These should be handled generically for all tools.
+    std::unordered_map<std::string, std::string> environmentVariables = options.environment();
+    for (auto const &variable : _tool->environmentVariables()) {
+        environmentVariables.insert({ variable.first, environment.expand(variable.second) });
+    }
+
+    // TODO(grp): This should be handled generically for all tools.
+    std::string infoPlistContent = environment.expand(_tool->generatedInfoPlistContentFilePath());
+    if (!infoPlistContent.empty()) {
+        toolContext->additionalInfoPlistContents().push_back(infoPlistContent);
+    }
+
+    /*
+     * Create the asset catalog invocation.
+     */
+    Tool::Invocation invocation;
+    invocation.executable() = tokens.executable();
+    invocation.arguments() = arguments;
+    invocation.environment() = options.environment();
+    invocation.workingDirectory() = toolContext->workingDirectory();
+    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
+    invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
+    invocation.dependencyInfo() = environment.expand(_tool->dependencyInfoFile());
+    invocation.logMessage() = tokens.logMessage();
+    toolContext->invocations().push_back(invocation);
+}
+
+std::unique_ptr<Tool::AssetCatalogResolver> Tool::AssetCatalogResolver::
+Create(Phase::Environment const &phaseEnvironment)
+{
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+
+    pbxspec::PBX::Compiler::shared_ptr assetCatalogTool = buildEnvironment.specManager()->compiler(Tool::AssetCatalogResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    if (assetCatalogTool == nullptr) {
+        fprintf(stderr, "warning: could not find asset catalog compiler\n");
+        return nullptr;
+    }
+
+    return std::unique_ptr<Tool::AssetCatalogResolver>(new Tool::AssetCatalogResolver(assetCatalogTool));
+}
+
