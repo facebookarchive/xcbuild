@@ -8,10 +8,6 @@
  */
 
 #include <pbxbuild/Tool/SymlinkResolver.h>
-#include <pbxbuild/Tool/ToolResult.h>
-#include <pbxbuild/Tool/Environment.h>
-#include <pbxbuild/Tool/OptionsResult.h>
-#include <pbxbuild/Tool/CommandLineResult.h>
 #include <pbxbuild/Tool/Context.h>
 
 namespace Tool = pbxbuild::Tool;

@@ -235,7 +235,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/Context.cpp
     Sources/pbxbuild/Tool/Environment.cpp
     Sources/pbxbuild/Tool/Invocation.cpp
-    Sources/pbxbuild/Tool/CommandLineResult.cpp
+    Sources/pbxbuild/Tool/Tokens.cpp
     Sources/pbxbuild/Tool/OptionsResult.cpp
     Sources/pbxbuild/Tool/ToolResult.cpp
     Sources/pbxbuild/Tool/CompilationInfo.cpp

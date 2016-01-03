@@ -9,7 +9,7 @@
 
 #include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/Tool/Environment.h>
-#include <pbxbuild/Tool/CommandLineResult.h>
+#include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/Context.h>
@@ -39,7 +39,7 @@ resolve(
 {
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, toolContext->workingDirectory(), inputs);
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
+    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
     std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));
 
     Tool::Invocation invocation;
@@ -63,7 +63,7 @@ resolve(
 {
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, toolContext->workingDirectory(), inputs, outputs);
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
+    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
     std::string resolvedLogMessage = (!logMessage.empty() ? logMessage : ToolResult::LogMessage(toolEnvironment));
 
     Tool::Invocation invocation;

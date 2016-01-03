@@ -11,7 +11,7 @@
 #include <pbxbuild/Tool/ToolResult.h>
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
-#include <pbxbuild/Tool/CommandLineResult.h>
+#include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/Context.h>
 
 namespace Tool = pbxbuild::Tool;
@@ -61,7 +61,7 @@ resolve(
 
     Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, env, toolContext->workingDirectory(), { input }, { infoPlistPath });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, std::string());
+    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
     std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);
 
     /* Pass all build settings for expansion. */

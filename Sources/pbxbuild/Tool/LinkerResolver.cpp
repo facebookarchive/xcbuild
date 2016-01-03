@@ -12,7 +12,7 @@
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/OptionsResult.h>
-#include <pbxbuild/Tool/CommandLineResult.h>
+#include <pbxbuild/Tool/Tokens.h>
 
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
@@ -84,10 +84,6 @@ resolve(
     }
 
     std::unordered_set<std::string> removed;
-    if (_linker->identifier() == Tool::LinkerResolver::LipoToolIdentifier()) {
-        // This is weird, but this flag is invalid yet is in the specification.
-        removed.insert("-arch_only");
-    }
 
     std::string dependencyInfo;
     if (_linker->identifier() == Tool::LinkerResolver::LinkerToolIdentifier()) {
@@ -102,8 +98,14 @@ resolve(
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_linker);
     Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), inputFiles, { output });
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options, executable, special, removed);
+    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options, executable, special);
     std::string logMessage = Tool::ToolResult::LogMessage(toolEnvironment);
+
+    std::vector<std::string> arguments = commandLine.arguments();
+    if (_linker->identifier() == Tool::LinkerResolver::LipoToolIdentifier()) {
+        // This is weird, but this flag is invalid yet is in the specification.
+        arguments.erase(std::remove(arguments.begin(), arguments.end(), "-arch_only"), arguments.end());
+    }
 
     Tool::Invocation invocation;
     invocation.executable() = commandLine.executable();

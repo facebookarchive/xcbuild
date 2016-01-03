@@ -16,7 +16,7 @@
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
-#include <pbxbuild/Tool/CommandLineResult.h>
+#include <pbxbuild/Tool/Tokens.h>
 
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
@@ -187,7 +187,7 @@ resolvePrecompiledHeader(
     Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.environment();
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
+    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
 
     std::vector<std::string> arguments = precompiledHeaderInfo.arguments();
     AppendDependencyInfoFlags(&arguments, _compiler, env);
@@ -249,7 +249,7 @@ resolveSource(
     pbxsetting::Environment const &env = toolEnvironment.environment();
 
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
-    Tool::CommandLineResult commandLine = Tool::CommandLineResult::Create(toolEnvironment, options);
+    Tool::Tokens commandLine = Tool::Tokens::CommandLine(toolEnvironment, options);
 
     std::vector<std::string> inputDependencies;
     inputDependencies.insert(inputDependencies.end(), headermapInfo.systemHeadermapFiles().begin(), headermapInfo.systemHeadermapFiles().end());

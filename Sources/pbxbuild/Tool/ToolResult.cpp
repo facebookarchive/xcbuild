@@ -8,9 +8,7 @@
  */
 
 #include <pbxbuild/Tool/ToolResult.h>
-#include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Environment.h>
-#include <pbxbuild/Tool/CommandLineResult.h>
 #include <sstream>
 
 namespace Tool = pbxbuild::Tool;
