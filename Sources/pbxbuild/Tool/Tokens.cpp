@@ -96,8 +96,10 @@ ExpandTool(
 
     /*
      * Determine the command line template to use. Default to one that covers most cases.
+     * Don't expand the command-line here because then it would be split incorrectly (on
+     * spaces) when expanding the tokens. Instead, expand each token individually below.
      */
-    std::string toolCommandLine = environment.expand(tool->commandLine());
+    std::string toolCommandLine = tool->commandLine().raw();
     std::string const &resolvedCommandLine = (!toolCommandLine.empty() ? toolCommandLine : "[exec-path] [options] [special-args]");
 
     /*
@@ -107,9 +109,17 @@ ExpandTool(
     std::string const &resolvedExecutable = (!executable.empty() ? executable : toolExecutable);
 
     /*
-     * Expand the command line and extract the executable / arguments.
+     * Expand the command line, then expand the settings within it. Can't expand the command
+     * line's settings first or, if the values contain spaces, they would be split incorrectly.
      */
     std::vector<std::string> expandedCommandLine = Expand(resolvedCommandLine, resolvedExecutable, arguments, specialArguments, inputs, outputs);
+    for (auto it = expandedCommandLine.begin(); it != expandedCommandLine.end(); ++it) {
+        *it = environment.expand(pbxsetting::Value::Parse(*it));
+    }
+
+    /*
+     * Extract the executable / arguments.
+     */
     std::string const &expandedExecutable = (!expandedCommandLine.empty() ? expandedCommandLine.front() : "");
     std::vector<std::string> expandedArguments = std::vector<std::string>(expandedCommandLine.begin() + (!expandedCommandLine.empty() ? 1 : 0), expandedCommandLine.end());
 
@@ -121,9 +131,14 @@ ExpandTool(
     std::string const &resolvedName = (!ruleName.empty() ? ruleName : ruleFormat);
 
     /*
-     * Expand the log message and re-combine the result.
+     * Expand the log message. In this case the setting expansion is less important as the log
+     * message is recombined into a string below anyway.
      */
     std::vector<std::string> expandedName = Expand(resolvedName, resolvedExecutable, arguments, specialArguments, inputs, outputs);
+
+    /*
+     * Re-combine the result.
+     */
     std::string expandedLogMessage;
     for (std::string const &component : expandedName) {
         if (&component != &expandedName.front()) {
