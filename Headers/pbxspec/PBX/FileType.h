@@ -116,6 +116,7 @@ protected:
     bool                   _isTextFile;
     bool                   _isBuildPropertiesFile;
     bool                   _isSourceCode;
+    bool                   _isSwiftSourceCode;
     bool                   _isPreprocessed;
     bool                   _isTransparent;
     bool                   _isDocumentation;
@@ -260,6 +261,8 @@ public:
 public:
     inline bool isSourceCode() const
     { return _isSourceCode; }
+    inline bool isSwiftSourceCode() const
+    { return _isSwiftSourceCode; }
     inline bool isPreprocessed() const
     { return _isPreprocessed; }
     inline bool isScannedForIncludes() const

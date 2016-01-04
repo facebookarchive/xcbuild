@@ -16,6 +16,7 @@ FileType::FileType() :
     _isTextFile                             (false),
     _isBuildPropertiesFile                  (false),
     _isSourceCode                           (false),
+    _isSwiftSourceCode                      (false),
     _isPreprocessed                         (false),
     _isTransparent                          (false),
     _isDocumentation                        (false),
@@ -89,6 +90,7 @@ inherit(FileType::shared_ptr const &b)
     _isTextFile                              = base->isTextFile();
     _isBuildPropertiesFile                   = base->isBuildPropertiesFile();
     _isSourceCode                            = base->isSourceCode();
+    _isSwiftSourceCode                       = base->isSwiftSourceCode();
     _isDocumentation                         = base->isDocumentation();
     _isPreprocessed                          = base->isPreprocessed();
     _isTransparent                           = base->isTransparent();
@@ -164,6 +166,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto ITF   = unpack.coerce <plist::Boolean> ("IsTextFile");
     auto IBPF  = unpack.coerce <plist::Boolean> ("IsBuildPropertiesFile");
     auto ISC   = unpack.coerce <plist::Boolean> ("IsSourceCode");
+    auto ISSC  = unpack.coerce <plist::Boolean> ("IsSwiftSourceCode");
     auto IP    = unpack.coerce <plist::Boolean> ("IsPreprocessed");
     auto IT    = unpack.coerce <plist::Boolean> ("IsTransparent");
     auto ID    = unpack.coerce <plist::Boolean> ("IsDocumentation");
@@ -310,6 +313,10 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
 
     if (ISC != nullptr) {
         _isSourceCode = ISC->value();
+    }
+
+    if (ISSC != nullptr) {
+        _isSwiftSourceCode = ISSC->value();
     }
 
     if (IP != nullptr) {
