@@ -36,9 +36,9 @@ defaultSettings(void) const
 BuildSystem::shared_ptr BuildSystem::
 Parse(Context *context, plist::Dictionary const *dict)
 {
-    auto T = dict->value <plist::String> ("Type");
-    if (T == nullptr || T->value() != Type())
+    if (!ParseType(context, dict, Type())) {
         return nullptr;
+    }
 
     BuildSystem::shared_ptr result;
     result.reset(new BuildSystem());

@@ -71,6 +71,9 @@ protected:
 protected:
     virtual bool inherit(Specification::shared_ptr const &base);
 
+protected:
+    static bool ParseType(Context *context, plist::Dictionary const *dict, std::string const &expectedType, std::string *determinedType = nullptr);
+
 public:
     friend class pbxspec::Manager;
     static bool Open(Context *context, std::string const &filename);

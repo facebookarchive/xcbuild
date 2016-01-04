@@ -66,6 +66,10 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
         fprintf(stderr, "%s", unpack.errors().c_str());
     }
 
+    if (T != nullptr) {
+        /* Nothing to do. (If this is used, see `Context`'s `defaultType`. */
+    }
+
     if (C != nullptr) {
         _clazz = C->value();
     }
@@ -129,40 +133,65 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     return true;
 }
 
+bool Specification::
+ParseType(Context *context, plist::Dictionary const *dict, std::string const &expectedType, std::string *determinedType)
+{
+    std::string type;
+
+    auto T = dict->value <plist::String> ("Type");
+    if (T == nullptr) {
+        if (!context->defaultType.empty()) {
+            type = context->defaultType;
+        } else {
+            return false;
+        }
+    } else {
+        type = T->value();
+    }
+
+    if (determinedType != nullptr) {
+        *determinedType = type;
+    }
+
+    return (type == expectedType);
+}
+
 Specification::shared_ptr Specification::
 Parse(Context *context, plist::Dictionary const *dict)
 {
-    auto T = dict->value <plist::String> ("Type");
-    if (T == nullptr)
+    std::string type;
+    ParseType(context, dict, std::string(), &type);
+    if (type.empty()) {
+        fprintf(stderr, "error: specification missing type\n");
         return nullptr;
+    }
 
-    if (T->value() == Architecture::Type())
+    if (type == Architecture::Type())
         return Architecture::Parse(context, dict);
-    if (T->value() == BuildPhase::Type())
+    if (type == BuildPhase::Type())
         return BuildPhase::Parse(context, dict);
-    if (T->value() == BuildSettings::Type())
+    if (type == BuildSettings::Type())
         return BuildSettings::Parse(context, dict);
-    if (T->value() == BuildStep::Type())
+    if (type == BuildStep::Type())
         return BuildStep::Parse(context, dict);
-    if (T->value() == BuildSystem::Type())
+    if (type == BuildSystem::Type())
         return BuildSystem::Parse(context, dict);
-    if (T->value() == Compiler::Type())
+    if (type == Compiler::Type())
         return Compiler::Parse(context, dict);
-    if (T->value() == FileType::Type())
+    if (type == FileType::Type())
         return FileType::Parse(context, dict);
-    if (T->value() == Linker::Type())
+    if (type == Linker::Type())
         return Linker::Parse(context, dict);
-    if (T->value() == PackageType::Type())
+    if (type == PackageType::Type())
         return PackageType::Parse(context, dict);
-    if (T->value() == ProductType::Type())
+    if (type == ProductType::Type())
         return ProductType::Parse(context, dict);
-    if (T->value() == PropertyConditionFlavor::Type())
+    if (type == PropertyConditionFlavor::Type())
         return PropertyConditionFlavor::Parse(context, dict);
-    if (T->value() == Tool::Type())
+    if (type == Tool::Type())
         return Tool::Parse(context, dict);
 
-    fprintf(stderr, "error: specification type '%s' not supported\n",
-            T->value().c_str());
+    fprintf(stderr, "error: specification type '%s' not supported\n", type.c_str());
 
     return nullptr;
 }
@@ -215,14 +244,17 @@ Open(Context *context, std::string const &filename)
                 } else {
                     context->manager->addSpecification(spec);
                 }
+            } else {
+                fprintf(stderr, "error: specification entry was not a dictionary\n");
+                errors++;
             }
         }
+
 
         return (errors < count);
     }
 
-    fprintf(stderr, "error: specification file '%s' does not contain "
-            "a dictionary nor an array", filename.c_str());
+    fprintf(stderr, "error: specification file '%s' does not contain a dictionary nor an array", filename.c_str());
     return false;
 }
 

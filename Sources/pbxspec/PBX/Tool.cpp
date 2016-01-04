@@ -59,9 +59,9 @@ defaultSettings(void) const
 Tool::shared_ptr Tool::
 Parse(Context *context, plist::Dictionary const *dict)
 {
-    auto T = dict->value <plist::String> ("Type");
-    if (T == nullptr || T->value() != Type())
+    if (!ParseType(context, dict, Type())) {
         return nullptr;
+    }
 
     Tool::shared_ptr result;
     result.reset(new Tool());

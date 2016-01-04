@@ -31,9 +31,9 @@ defaultSetting(void) const
 Architecture::shared_ptr Architecture::
 Parse(Context *context, plist::Dictionary const *dict)
 {
-    auto T = dict->value <plist::String> ("Type");
-    if (T == nullptr || T->value() != Type())
+    if (!ParseType(context, dict, Type())) {
         return nullptr;
+    }
 
     Architecture::shared_ptr result;
     result.reset(new Architecture());

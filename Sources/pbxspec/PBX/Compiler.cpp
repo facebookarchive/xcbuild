@@ -120,9 +120,9 @@ inherit(Compiler::shared_ptr const &b)
 Compiler::shared_ptr Compiler::
 Parse(Context *context, plist::Dictionary const *dict)
 {
-    auto T = dict->value <plist::String> ("Type");
-    if (T == nullptr || T->value() != Type())
+    if (!ParseType(context, dict, Type())) {
         return nullptr;
+    }
 
     Compiler::shared_ptr result;
     result.reset(new Compiler());

@@ -318,6 +318,10 @@ registerDomain(std::pair<std::string, std::string> const &domain)
                     return true;
                 }
 
+                /* For *.pbfilespec files, default to FileType specifications. */
+                bool file = FSUtil::GetFileExtension(filename) == "pbfilespec";
+                context.defaultType = (file ? "FileType" : std::string());
+
                 if (!FSUtil::TestForDirectory(filename)) {
 #if 0
                     fprintf(stderr, "importing specification '%s'\n", filename.c_str());

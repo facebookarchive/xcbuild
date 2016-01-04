@@ -24,9 +24,9 @@ PropertyConditionFlavor::~PropertyConditionFlavor()
 PropertyConditionFlavor::shared_ptr PropertyConditionFlavor::
 Parse(Context *context, plist::Dictionary const *dict)
 {
-    auto T = dict->value <plist::String> ("Type");
-    if (T == nullptr || T->value() != Type())
+    if (!ParseType(context, dict, Type())) {
         return nullptr;
+    }
 
     PropertyConditionFlavor::shared_ptr result;
     result.reset(new PropertyConditionFlavor());
