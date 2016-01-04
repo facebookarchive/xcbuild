@@ -313,14 +313,6 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     }
 
     /*
-     * Collect all existing tool outputs so the following tools can run last.
-     */
-    std::vector<std::string> outputs;
-    for (Tool::Invocation const &invocation : phaseContext->toolContext().invocations()) {
-        outputs.insert(outputs.end(), invocation.outputs().begin(), invocation.outputs().end());
-    }
-
-    /*
      * Validate the product; specific checks are in the validation tool.
      */
     if (pbxsetting::Type::ParseBoolean(environment.resolve("VALIDATE_PRODUCT"))) {
@@ -339,6 +331,19 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
      */
     if (_productType->isWrapper()) {
         std::string wrapperPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("WRAPPER_NAME");
+
+        /*
+         * Collect all existing tool outputs that end up inside the bundle.
+         */
+        std::vector<std::string> outputs;
+        for (Tool::Invocation const &invocation : phaseContext->toolContext().invocations()) {
+            for (std::string const &output : invocation.outputs()) {
+                if (output.compare(0, wrapperPath.size(), wrapperPath) == 0) {
+                    outputs.push_back(output);
+                }
+            }
+        }
+
         if (Tool::TouchResolver const *touchResolver = phaseContext->touchResolver(phaseEnvironment)) {
             touchResolver->resolve(&phaseContext->toolContext(), wrapperPath, outputs);
         } else {
