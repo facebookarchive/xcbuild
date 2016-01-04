@@ -185,7 +185,7 @@ build(
      * rules at the Ninja level. Instead, add a single rule that just passes through from
      * the build command that calls it.
      */
-    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && $env $exec"));
+    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env -i $env $exec"));
 
     /*
      * Go over each target and write out Ninja targets for the start and end of each.
@@ -437,9 +437,11 @@ buildTargetInvocations(
          * Use `env` to avoid Bash-specific limitations on environment variables. Specifically, some
          * versions of Bash don't allow setting "UID". Pass -i to clear out the environment.
          */
-        std::string environment = "env -i";
+        std::string environment;
         for (auto it = invocation.environment().begin(); it != invocation.environment().end(); ++it) {
-            environment += " ";
+            if (it != invocation.environment().begin()) {
+                environment += " ";
+            }
             environment += it->first + "=" + ShellEscape(it->second);
         }
 
