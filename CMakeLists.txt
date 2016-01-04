@@ -247,6 +247,9 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/HeadermapResolver.cpp
     Sources/pbxbuild/Tool/InfoPlistResolver.cpp
     Sources/pbxbuild/Tool/AssetCatalogResolver.cpp
+    Sources/pbxbuild/Tool/InterfaceBuilderResolver.cpp
+    Sources/pbxbuild/Tool/InterfaceBuilderStoryboardLinkerResolver.cpp
+    Sources/pbxbuild/Tool/InterfaceBuilderCommon.cpp
     Sources/pbxbuild/Tool/ClangResolver.cpp
     Sources/pbxbuild/Tool/LinkerResolver.cpp
     Sources/pbxbuild/Tool/ScriptResolver.cpp

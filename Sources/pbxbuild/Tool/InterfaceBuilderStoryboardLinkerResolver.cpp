@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Tool/AssetCatalogResolver.h>
+#include <pbxbuild/Tool/InterfaceBuilderStoryboardLinkerResolver.h>
 #include <pbxbuild/Tool/InterfaceBuilderCommon.h>
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
@@ -17,17 +17,17 @@
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 
-Tool::AssetCatalogResolver::
-AssetCatalogResolver(pbxspec::PBX::Compiler::shared_ptr const &tool) :
+Tool::InterfaceBuilderStoryboardLinkerResolver::
+InterfaceBuilderStoryboardLinkerResolver(pbxspec::PBX::Compiler::shared_ptr const &tool) :
     _tool(tool)
 {
 }
 
-void Tool::AssetCatalogResolver::
+void Tool::InterfaceBuilderStoryboardLinkerResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::vector<Phase::File> const &inputs) const
+    std::vector<std::string> const &inputs) const
 {
     /*
      * Create the custom environment with the tool options.
@@ -35,37 +35,37 @@ resolve(
     pbxsetting::Level level = pbxsetting::Level({
         InterfaceBuilderCommon::TargetedDeviceSetting(baseEnvironment),
     });
-    pbxsetting::Environment assetCatalogEnvironment = baseEnvironment;
-    assetCatalogEnvironment.insertFront(level, false);
+    pbxsetting::Environment interfaceBuilderEnvironment = baseEnvironment;
+    interfaceBuilderEnvironment.insertFront(level, false);
 
     /*
      * Resolve the tool options.
      */
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, assetCatalogEnvironment, toolContext->workingDirectory(), inputs);
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, interfaceBuilderEnvironment, toolContext->workingDirectory(), inputs);
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
     pbxsetting::Environment const &environment = toolEnvironment.environment();
 
     /*
-     * Create tool outputs.
+     * Determine the output path for the inputs.
      */
-    std::vector<std::string> outputs = {
-        /* Creates the asset catalog, always in the resources dir. */
-        environment.expand(pbxsetting::Value::Parse("$(ProductResourcesDir)/Assets.car")),
-    };
+    std::string tempDirectory = environment.resolve("TempResourcesDir");
+    std::string resourcesDirectory = environment.resolve("ProductResourcesDir");
+    std::vector<std::string> outputs;
+    for (std::string const &input : inputs) {
+        /* This assumes the inputs all come from TempResourcesDir, which should be true. */
+        std::string relative = FSUtil::GetRelativePath(input, tempDirectory);
+        std::string output = resourcesDirectory + "/" + relative;
+        outputs.push_back(output);
+    }
 
     /*
      * Add custom arguments to the end.
      */
     std::vector<std::string> arguments = tokens.arguments();
-    arguments.push_back("--platform");
-    arguments.push_back(environment.resolve("PLATFORM_NAME"));
     std::vector<std::string> deploymentTargetArguments = InterfaceBuilderCommon::DeploymentTargetArguments(environment);
     arguments.insert(arguments.end(), deploymentTargetArguments.begin(), deploymentTargetArguments.end());
-
-    // TODO(grp): This is a hack to work around missing `Condition` support in options.
-    arguments.erase(std::remove(arguments.begin(), arguments.end(), "--optimization"), arguments.end());
 
     // TODO(grp): These should be handled generically for all tools.
     std::unordered_map<std::string, std::string> environmentVariables = options.environment();
@@ -73,15 +73,8 @@ resolve(
         environmentVariables.insert({ variable.first, environment.expand(variable.second) });
     }
 
-    // TODO(grp): This should be handled generically for all tools.
-    std::string infoPlistContent = environment.expand(_tool->generatedInfoPlistContentFilePath());
-    if (!infoPlistContent.empty()) {
-        toolContext->additionalInfoPlistContents().push_back(infoPlistContent);
-        outputs.push_back(infoPlistContent);
-    }
-
     /*
-     * Create the asset catalog invocation.
+     * Create the invocation.
      */
     Tool::Invocation invocation;
     invocation.executable() = tokens.executable();
@@ -90,23 +83,22 @@ resolve(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = outputs;
-    invocation.dependencyInfo() = environment.expand(_tool->dependencyInfoFile());
     invocation.logMessage() = tokens.logMessage();
     toolContext->invocations().push_back(invocation);
 }
 
-std::unique_ptr<Tool::AssetCatalogResolver> Tool::AssetCatalogResolver::
+std::unique_ptr<Tool::InterfaceBuilderStoryboardLinkerResolver> Tool::InterfaceBuilderStoryboardLinkerResolver::
 Create(Phase::Environment const &phaseEnvironment)
 {
     Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
-    pbxspec::PBX::Compiler::shared_ptr assetCatalogTool = buildEnvironment.specManager()->compiler(Tool::AssetCatalogResolver::ToolIdentifier(), targetEnvironment.specDomains());
-    if (assetCatalogTool == nullptr) {
-        fprintf(stderr, "warning: could not find asset catalog compiler\n");
+    pbxspec::PBX::Compiler::shared_ptr interfaceBuilderTool = buildEnvironment.specManager()->compiler(Tool::InterfaceBuilderStoryboardLinkerResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    if (interfaceBuilderTool == nullptr) {
+        fprintf(stderr, "warning: could not find interface builder storyboard linker tool\n");
         return nullptr;
     }
 
-    return std::unique_ptr<Tool::AssetCatalogResolver>(new Tool::AssetCatalogResolver(assetCatalogTool));
+    return std::unique_ptr<Tool::InterfaceBuilderStoryboardLinkerResolver>(new Tool::InterfaceBuilderStoryboardLinkerResolver(interfaceBuilderTool));
 }
 

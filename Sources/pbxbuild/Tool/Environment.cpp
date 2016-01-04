@@ -130,16 +130,18 @@ CreateInternal(
     environment.insertFront(tool->defaultSettings(), true);
 
     /*
-     * Determine product resources directory. This varies based on localization,
-     * but is *always* a subdirectory of the unlocalized resources folder. The
-     * point is so that "copy" type tools can go into the resources folder even
-     * when accidentally inserted into Sources build phases.
+     * Determine product & temp resources directories. This varies based on localization;
+     * the point is so that "copy" type tools can go into the resources folder even when
+     * accidentally inserted into Sources build phases.
      */
     std::string productResourcesDirectory = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("UNLOCALIZED_RESOURCES_FOLDER_PATH");
+    std::string tempResourcesDirectory = environment.resolve("TARGET_TEMP_DIR");
     if (!inputs.empty()) {
         Tool::Input const &input = inputs.front();
         if (!input.localization().empty()) {
-            productResourcesDirectory += "/" + input.localization() + ".lproj";
+            std::string localizationPath = input.localization() + ".lproj";
+            productResourcesDirectory += "/" + localizationPath;
+            tempResourcesDirectory += "/" + localizationPath;
         }
     }
 
@@ -150,13 +152,13 @@ CreateInternal(
         pbxsetting::Setting::Parse("DerivedFilesDir", "DERIVED_FILES_DIR"),
         pbxsetting::Setting::Parse("ObjectsDir", "$(OBJECT_FILE_DIR_$(variant))/$(arch)"),
         pbxsetting::Setting::Create("ProductResourcesDir", productResourcesDirectory),
+        pbxsetting::Setting::Create("TempResourcesDir", tempResourcesDirectory),
         // TODO(grp): AdditionalFlags
         // TODO(grp): BitcodeArch
         // TODO(grp): BuiltBinaryPath
         // TODO(grp): CommandProgressByType
         // TODO(grp): ShellScriptName
         // TODO(grp): StaticAnalyzerModeNameDescription
-        // TODO(grp): TempResourcesDir
     });
     environment.insertFront(toolLevel, false);
 

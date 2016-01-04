@@ -40,9 +40,11 @@ FormatInvocation(Tool::Invocation const &invocation, bool _color)
 {
     std::string message = invocation.logMessage();
     std::string::size_type space = message.find(' ');
-    if (space != std::string::npos) {
-        message = ANSI_STYLE_BOLD + message.substr(0, space) + ANSI_STYLE_NO_BOLD + message.substr(space);
+    if (space == std::string::npos) {
+        space = message.size();
     }
+
+    message = ANSI_STYLE_BOLD + message.substr(0, space) + ANSI_STYLE_NO_BOLD + message.substr(space);
     return message;
 }
 

@@ -13,6 +13,7 @@
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/InfoPlistResolver.h>
+#include <pbxbuild/Tool/InterfaceBuilderResolver.h>
 #include <pbxbuild/Tool/MakeDirectoryResolver.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/SymlinkResolver.h>
@@ -78,6 +79,26 @@ infoPlistResolver(Phase::Environment const &phaseEnvironment)
     }
 
     return _infoPlistResolver.get();
+}
+
+Tool::InterfaceBuilderResolver const *Phase::Context::
+interfaceBuilderCompilerResolver(Phase::Environment const &phaseEnvironment)
+{
+    if (_interfaceBuilderCompilerResolver == nullptr) {
+        _interfaceBuilderCompilerResolver = Tool::InterfaceBuilderResolver::Create(phaseEnvironment, Tool::InterfaceBuilderResolver::CompilerToolIdentifier());
+    }
+
+    return _interfaceBuilderCompilerResolver.get();
+}
+
+Tool::InterfaceBuilderResolver const *Phase::Context::
+interfaceBuilderStoryboardCompilerResolver(Phase::Environment const &phaseEnvironment)
+{
+    if (_interfaceBuilderStoryboardCompilerResolver == nullptr) {
+        _interfaceBuilderStoryboardCompilerResolver = Tool::InterfaceBuilderResolver::Create(phaseEnvironment, Tool::InterfaceBuilderResolver::StoryboardCompilerToolIdentifier());
+    }
+
+    return _interfaceBuilderStoryboardCompilerResolver.get();
 }
 
 Tool::MakeDirectoryResolver const *Phase::Context::
@@ -317,6 +338,18 @@ resolveBuildFiles(
 
                 if (Tool::CopyResolver const *copyResolver = this->copyResolver(phaseEnvironment)) {
                     copyResolver->resolve(&_toolContext, environment, files, fileOutputDirectory, logMessageTitle);
+                } else {
+                    return false;
+                }
+            } else if (toolIdentifier == Tool::InterfaceBuilderResolver::CompilerToolIdentifier()) {
+                if (Tool::InterfaceBuilderResolver const *interfaceBuilderCompilerResolver = this->interfaceBuilderCompilerResolver(phaseEnvironment)) {
+                    interfaceBuilderCompilerResolver->resolve(&_toolContext, environment, files);
+                } else {
+                    return false;
+                }
+            } else if (toolIdentifier == Tool::InterfaceBuilderResolver::StoryboardCompilerToolIdentifier()) {
+                if (Tool::InterfaceBuilderResolver const *interfaceBuilderStoryboardCompilerResolver = this->interfaceBuilderStoryboardCompilerResolver(phaseEnvironment)) {
+                    interfaceBuilderStoryboardCompilerResolver->resolve(&_toolContext, environment, files);
                 } else {
                     return false;
                 }

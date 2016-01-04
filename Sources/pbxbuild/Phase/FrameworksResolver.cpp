@@ -11,7 +11,6 @@
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Phase/File.h>
-#include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Build/Context.h>
@@ -20,6 +19,8 @@
 #include <pbxbuild/Tool/CompilationInfo.h>
 
 namespace Phase = pbxbuild::Phase;
+namespace Build = pbxbuild::Build;
+namespace Target = pbxbuild::Target;
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 
@@ -42,13 +43,11 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
 
     Tool::CompilationInfo const &compilationInfo = phaseContext->toolContext().compilationInfo();
 
-    std::vector<Tool::Invocation> invocations;
-
     std::unique_ptr<Tool::LinkerResolver> ldResolver = Tool::LinkerResolver::Create(phaseEnvironment, Tool::LinkerResolver::LinkerToolIdentifier());
     std::unique_ptr<Tool::LinkerResolver> libtoolResolver = Tool::LinkerResolver::Create(phaseEnvironment, Tool::LinkerResolver::LibtoolToolIdentifier());
     std::unique_ptr<Tool::LinkerResolver> lipoResolver = Tool::LinkerResolver::Create(phaseEnvironment, Tool::LinkerResolver::LipoToolIdentifier());
-    std::unique_ptr<Tool::ToolResolver> dsymutil = Tool::ToolResolver::Create(phaseEnvironment, "com.apple.tools.dsymutil");
-    if (ldResolver == nullptr || libtoolResolver == nullptr || lipoResolver == nullptr || dsymutil == nullptr) {
+    std::unique_ptr<Tool::ToolResolver> dsymutilResolver = Tool::ToolResolver::Create(phaseEnvironment, "com.apple.tools.dsymutil");
+    if (ldResolver == nullptr || libtoolResolver == nullptr || lipoResolver == nullptr || dsymutilResolver == nullptr) {
         fprintf(stderr, "error: couldn't get linker tools\n");
         return false;
     }
@@ -96,7 +95,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
                 for (Tool::Invocation const &invocation : sourceInvocations) {
                     for (std::string const &output : invocation.outputs()) {
                         // TODO(grp): Is this the right set of source outputs to link?
-                        if (libutil::FSUtil::GetFileExtension(output) == "o") {
+                        if (FSUtil::GetFileExtension(output) == "o") {
                             sourceOutputs.push_back(output);
                         }
                     }
@@ -120,7 +119,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
 
         if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {
             std::string dsymfile = variantEnvironment.resolve("DWARF_DSYM_FOLDER_PATH") + "/" + variantEnvironment.resolve("DWARF_DSYM_FILE_NAME");
-            dsymutil->resolve(&phaseContext->toolContext(), variantEnvironment, { variantProductsOutput }, { dsymfile });
+            dsymutilResolver->resolve(&phaseContext->toolContext(), variantEnvironment, { variantProductsOutput }, { dsymfile });
         }
     }
 
