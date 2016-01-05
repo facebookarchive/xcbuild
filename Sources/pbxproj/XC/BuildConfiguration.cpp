@@ -50,7 +50,7 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
         std::vector<pbxsetting::Setting> settings;
         for (size_t n = 0; n < BS->count(); n++) {
             auto BSk = BS->key(n);
-            auto BSv = BS->value (BSk);
+            auto BSv = BS->value(BSk);
             pbxsetting::Setting setting = pbxsetting::Setting::Create(BSk, pbxsetting::Value::FromObject(BSv));
             settings.push_back(setting);
         }

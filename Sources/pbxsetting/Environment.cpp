@@ -157,9 +157,6 @@ resolveValue(Condition const &condition, Value const &value, InheritanceContext 
             }
         }
     }
-    if (context.valid && result.empty()) {
-        result = resolveInheritance(condition, context);
-    }
     return result;
 }
 
