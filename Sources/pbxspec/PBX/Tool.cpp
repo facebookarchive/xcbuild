@@ -27,6 +27,7 @@ Tool::Tool() :
     _progressDescriptionForCreateBitcode(pbxsetting::Value::Empty()),
     _commandLine                        (pbxsetting::Value::Empty()),
     _additionalInputFiles               (pbxsetting::Value::Empty()),
+    _outputPath                         (pbxsetting::Value::Empty()),
     _commandOutputParser                (nullptr),
     _isAbstract                         (false),
     _isArchitectureNeutral              (false),
@@ -100,6 +101,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto FTs    = unpack.cast <plist::Array> ("FileTypes");
     auto IFTs   = unpack.cast <plist::Array> ("InputFileTypes");
     auto Os     = unpack.cast <plist::Array> ("Outputs");
+    auto OP     = unpack.cast <plist::String> ("OutputPath");
     auto As     = unpack.cast <plist::Object> ("Architectures");
     auto EVs    = unpack.cast <plist::Dictionary> ("EnvironmentVariables");
     auto SECs   = unpack.cast <plist::Array> ("SuccessExitCodes");
@@ -232,6 +234,10 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
         }
     }
 
+    if (OP != nullptr) {
+        _outputPath = pbxsetting::Value::Parse(OP->value());
+    }
+
     if (EVs != nullptr) {
         for (size_t n = 0; n < EVs->count(); n++) {
             auto EVk = EVs->key(n);
@@ -349,6 +355,7 @@ inherit(Tool::shared_ptr const &b)
     _inputFileTypes                      = base->inputFileTypes();
     _architectures                       = base->architectures();
     _outputs                             = base->outputs();
+    _outputPath                          = base->outputPath();
     _environmentVariables                = base->environmentVariables();
     _commandOutputParser                 = base->commandOutputParser()->copy().release();
     _isAbstract                          = base->isAbstract();

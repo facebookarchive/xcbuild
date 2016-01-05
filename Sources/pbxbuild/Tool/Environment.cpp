@@ -209,6 +209,11 @@ CreateInternal(
 
             outputPaths.push_back(outputPath);
         }
+    } else if (tool->outputPath() != pbxsetting::Value::Empty()) {
+        /* The tool specifies a single output. */
+        std::string const &output = environment.expand(tool->outputPath());
+        environment.insertFront(OutputLevel(output), false);
+        outputPaths.push_back(output);
     } else if (!outputs.empty()) {
         /* The tool doesn't specify outputs, just use the passed-in ones. */
         std::string const &output = outputs.front();

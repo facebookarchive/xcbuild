@@ -41,6 +41,7 @@ protected:
     std::vector<std::string>        _inputFileTypes;
     std::vector<std::string>        _architectures;
     std::vector<pbxsetting::Value>  _outputs;
+    pbxsetting::Value               _outputPath;
     std::unordered_set<std::string> _deletedProperties;
     std::unordered_map<std::string, pbxsetting::Value> _environmentVariables;
     std::vector<int>                _successExitCodes;
@@ -129,6 +130,8 @@ public:
 public:
     inline std::vector<pbxsetting::Value> const &outputs() const
     { return _outputs; }
+    inline pbxsetting::Value const &outputPath() const
+    { return _outputPath; }
 
 public:
     inline std::unordered_map<std::string, pbxsetting::Value> const &environmentVariables() const
