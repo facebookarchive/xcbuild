@@ -753,6 +753,7 @@ ASCIIPListCopyUnquotedString(ASCIIPListLexer const *lexer, int lossByte)
             size_t newlen = end - (p + eat);
             memmove(p, p + eat, newlen);
             end -= eat;
+            *end = '\0';
         }
     }
 
