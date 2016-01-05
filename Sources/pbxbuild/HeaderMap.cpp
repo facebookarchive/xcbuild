@@ -11,6 +11,17 @@
 
 using pbxbuild::HeaderMap;
 
+static std::string
+CanonicalizeKey(std::string const &key)
+{
+    //
+    // canonicalize key
+    //
+    std::string lower;
+    std::transform(key.begin(), key.end(), std::back_inserter(lower), ::tolower);
+    return lower;
+}
+
 HeaderMap::HeaderMap() :
     _modified(false)
 {
@@ -77,7 +88,8 @@ read(std::vector<char> const &buffer)
             _buckets[n].Prefix >= _strings.size())
             continue;
 
-        _keys.insert(&_strings[_buckets[n].Key]);
+        _keys.insert(CanonicalizeKey(&_strings[_buckets[n].Key]));
+
         _offsets.insert(std::make_pair(
                     &_strings[_buckets[n].Key],
                     _buckets[n].Key));
@@ -138,7 +150,7 @@ add(std::string const &key, std::string const &prefix, std::string const &suffix
         return false; // invalid argument
     }
 
-    if (_keys.find(key) != _keys.end()) {
+    if (_keys.find(CanonicalizeKey(key)) != _keys.end()) {
         // already exists
         return false;
     }
@@ -238,7 +250,10 @@ add(std::string const &string, bool key)
         I = _offsets.insert(std::make_pair(string, offset)).first;
 
         if (key) {
-            _keys.insert(string);
+            //
+            // store key
+            //
+            _keys.insert(CanonicalizeKey(string));
         }
     }
     return I;
