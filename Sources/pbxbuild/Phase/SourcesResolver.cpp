@@ -55,8 +55,27 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     headermapResolver->resolve(&phaseContext->toolContext(), targetEnvironment.environment(), phaseEnvironment.target());
 
     std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
-    std::vector<std::vector<Phase::File>> groups = Phase::Context::Group(files);
 
+    /* Split files based on whether their tool is architecture-neutral. */
+    std::vector<Phase::File> neutralFiles;
+    std::vector<Phase::File> architectureFiles;
+    for (Phase::File const &file : files) {
+        if (file.buildRule() != nullptr && file.buildRule()->tool() != nullptr && file.buildRule()->tool()->isArchitectureNeutral() == false) {
+            architectureFiles.push_back(file);
+        } else {
+            neutralFiles.push_back(file);
+        }
+    }
+
+    /* Resolve non-architecture-specific files. These are resolved just once. */
+    std::vector<std::vector<Phase::File>> neutralGroups = Phase::Context::Group(neutralFiles);
+    std::string neutralOutputDirectory = targetEnvironment.environment().resolve("OBJECT_FILE_DIR");
+    if (!phaseContext->resolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase, neutralGroups, neutralOutputDirectory)) {
+        return false;
+    }
+
+    /* Resolve architecture-specific files. */
+    std::vector<std::vector<Phase::File>> architectureGroups = Phase::Context::Group(architectureFiles);
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment currentEnvironment = targetEnvironment.environment();
@@ -65,7 +84,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
 
             std::string outputDirectory = currentEnvironment.expand(pbxsetting::Value::Parse("$(OBJECT_FILE_DIR_$(variant))/$(arch)"));
 
-            if (!phaseContext->resolveBuildFiles(phaseEnvironment, currentEnvironment, _buildPhase, groups, outputDirectory)) {
+            if (!phaseContext->resolveBuildFiles(phaseEnvironment, currentEnvironment, _buildPhase, architectureGroups, outputDirectory)) {
                 return false;
             }
         }

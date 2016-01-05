@@ -124,7 +124,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
             }
             case pbxproj::PBX::GroupItem::kTypeGroup:
             case pbxproj::PBX::GroupItem::kTypeVersionGroup: {
-                fprintf(stderr, "warning: unhandled group item type\n");
+                fprintf(stderr, "warning: unhandled group item type %lu\n", static_cast<unsigned long>(buildFile->fileRef()->type()));
                 break;
             }
         }

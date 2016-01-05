@@ -100,6 +100,9 @@ NinjaPhonyOutputTarget(Tool::Invocation const &invocation)
 
     // TODO(grp): Handle identical phony output invocations in a build.
     std::string key = invocation.executable();
+    for (std::string const &arg : invocation.arguments()) {
+        key += " " + arg;
+    }
 
     md5_state_t state;
     md5_init(&state);
