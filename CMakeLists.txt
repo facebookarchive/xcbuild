@@ -93,6 +93,7 @@ set(libutil_SOURCES
 
 set(libdependency_SOURCES
     Sources/dependency/DependencyInfo.cpp
+    Sources/dependency/DependencyInfoFormat.cpp
     Sources/dependency/BinaryDependencyInfo.cpp
     Sources/dependency/DirectoryDependencyInfo.cpp
     Sources/dependency/MakefileDependencyInfo.cpp

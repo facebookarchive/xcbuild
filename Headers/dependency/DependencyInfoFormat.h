@@ -10,6 +10,8 @@
 #ifndef __dependency_DependencyInfoFormat_h
 #define __dependency_DependencyInfoFormat_h
 
+#include <string>
+
 namespace dependency {
 
 /*
@@ -19,6 +21,23 @@ enum class DependencyInfoFormat {
     Binary,
     Directory,
     Makefile,
+};
+
+class DependencyInfoFormats {
+private:
+    DependencyInfoFormats();
+    ~DependencyInfoFormats();
+
+public:
+    /*
+     * The standard name of a dependency info format.
+     */
+    static bool Name(DependencyInfoFormat const format, std::string *name);
+
+    /*
+     * Convert an arbitrary string to a dependency info format.
+     */
+    static bool Parse(std::string const &name, DependencyInfoFormat *format);
 };
 
 }
