@@ -70,7 +70,7 @@ private:
     std::vector<std::string>                     _orderDependencies;
 
 private:
-    std::shared_ptr<DependencyInfo>              _dependencyInfo;
+    std::vector<DependencyInfo>                  _dependencyInfo;
     std::vector<AuxiliaryFile>                   _auxiliaryFiles;
 
 private:
@@ -138,13 +138,13 @@ public:
     { return _orderDependencies; }
 
 public:
-    std::shared_ptr<DependencyInfo> const &dependencyInfo() const
+    std::vector<DependencyInfo> const &dependencyInfo() const
     { return _dependencyInfo; }
     std::vector<AuxiliaryFile> const &auxiliaryFiles() const
     { return _auxiliaryFiles; }
 
 public:
-    std::shared_ptr<DependencyInfo> &dependencyInfo()
+    std::vector<DependencyInfo> &dependencyInfo()
     { return _dependencyInfo; }
     std::vector<AuxiliaryFile> &auxiliaryFiles()
     { return _auxiliaryFiles; }

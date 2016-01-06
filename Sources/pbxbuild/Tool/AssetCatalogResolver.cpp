@@ -80,6 +80,19 @@ resolve(
         outputs.push_back(infoPlistContent);
     }
 
+    // TODO(grp): This should be handled generically for all tools.
+    std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
+    dependencyInfo.push_back(Tool::Invocation::DependencyInfo(
+        dependency::DependencyInfoFormat::Binary,
+        environment.expand(_tool->dependencyInfoFile())));
+    if (_tool->deeplyStatInputDirectories()) {
+        for (Phase::File const &input : inputs) {
+            /* Create a dependency info file to track the input directory contents. */
+            auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, input.path());
+            dependencyInfo.push_back(info);
+        }
+    }
+
     /*
      * Create the asset catalog invocation.
      */
@@ -90,9 +103,7 @@ resolve(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = outputs;
-    invocation.dependencyInfo() = std::make_shared<Tool::Invocation::DependencyInfo>(
-        dependency::DependencyInfoFormat::Binary,
-        environment.expand(_tool->dependencyInfoFile()));
+    invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();
     toolContext->invocations().push_back(invocation);
 }

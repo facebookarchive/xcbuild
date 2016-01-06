@@ -86,6 +86,24 @@ NinjaDescription(std::string const &description)
 }
 
 static std::string
+NinjaHash(std::string const &input)
+{
+    md5_state_t state;
+    md5_init(&state);
+    md5_append(&state, reinterpret_cast<const md5_byte_t *>(input.data()), input.size());
+    uint8_t digest[16];
+    md5_finish(&state, reinterpret_cast<md5_byte_t *>(&digest));
+
+    std::ostringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (uint8_t c : digest) {
+        ss << std::setw(2) << static_cast<int>(c);
+    }
+
+    return ss.str();
+}
+
+static std::string
 NinjaInvocationPhonyOutput(Tool::Invocation const &invocation)
 {
     /*
@@ -104,19 +122,7 @@ NinjaInvocationPhonyOutput(Tool::Invocation const &invocation)
         key += " " + arg;
     }
 
-    md5_state_t state;
-    md5_init(&state);
-    md5_append(&state, reinterpret_cast<const md5_byte_t *>(key.data()), key.size());
-    uint8_t digest[16];
-    md5_finish(&state, reinterpret_cast<md5_byte_t *>(&digest));
-
-    std::ostringstream ss;
-    ss << std::hex << std::setfill('0');
-    for (uint8_t c : digest) {
-        ss << std::setw(2) << static_cast<int>(c);
-    }
-
-    return ".ninja-phony-output-" + ss.str();
+    return ".ninja-phony-output-" + NinjaHash(key);
 }
 
 static std::vector<std::string>
@@ -484,25 +490,34 @@ buildTargetInvocations(
         std::string dependencyInfoFile;
         std::string dependencyInfoExec;
 
-        if (invocation.dependencyInfo() != nullptr) {
+        if (!invocation.dependencyInfo().empty()) {
             /* Determine the first output; Ninja expects that as the Makefile rule. */
             std::string output = NinjaInvocationOutputs(invocation).front();
 
-            std::string formatName;
-            if (!dependency::DependencyInfoFormats::Name(invocation.dependencyInfo()->format(), &formatName)) {
-                return false;
-            }
+            /* Find where the generated dependency info should go. */
+            pbxsetting::Environment const &environment = targetEnvironment.environment();
+            std::string temporaryDirectory = environment.resolve("TARGET_TEMP_DIR");
+            dependencyInfoFile = temporaryDirectory + "/" + ".ninja-dependency-info-" + NinjaHash(output) + ".d";
 
-            /* Base this on the existing dependency info path since it should be valid. */
-            dependencyInfoFile = invocation.dependencyInfo()->path() + ".ninja.d";
-
+            /* Build the dependency info rewriter arguments. */
+            std::string dependencyInfoExecutable = NinjaDependencyInfoExecutable();
             std::vector<std::string> dependencyInfoArguments = {
-                formatName + ":" + invocation.dependencyInfo()->path(),
                 "--name", output,
                 "--output", dependencyInfoFile,
             };
 
-            dependencyInfoExec = ShellEscape(NinjaDependencyInfoExecutable());
+            /* Add the input for each dependency info. */
+            for (Tool::Invocation::DependencyInfo const &dependencyInfo : invocation.dependencyInfo()) {
+                std::string formatName;
+                if (!dependency::DependencyInfoFormats::Name(dependencyInfo.format(), &formatName)) {
+                    return false;
+                }
+
+                dependencyInfoArguments.push_back(formatName + ":" + dependencyInfo.path());
+            }
+
+            /* Create the command for converting the dependency info. */
+            dependencyInfoExec = ShellEscape(dependencyInfoExecutable);
             for (std::string const &arg : dependencyInfoArguments) {
                 dependencyInfoExec += " " + ShellEscape(arg);
             }

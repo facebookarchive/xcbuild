@@ -41,6 +41,15 @@ resolve(
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
     std::string const &resolvedLogMessage = (!logMessage.empty() ? logMessage : tokens.logMessage());
 
+    std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
+    if (_tool->deeplyStatInputDirectories()) {
+        for (Phase::File const &input : inputs) {
+            /* Create a dependency info file to track the input directory contents. */
+            auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, input.path());
+            dependencyInfo.push_back(info);
+        }
+    }
+
     Tool::Invocation invocation;
     invocation.executable() = tokens.executable();
     invocation.arguments() = tokens.arguments();
@@ -48,6 +57,7 @@ resolve(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
+    invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = resolvedLogMessage;
     toolContext->invocations().push_back(invocation);
 }

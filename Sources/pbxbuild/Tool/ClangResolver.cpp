@@ -197,11 +197,14 @@ resolvePrecompiledHeader(
     std::string logTitle = DialectIsCPlusPlus(dialect) ? "ProcessPCH++" : "ProcessPCH";
     std::string logMessage = CompileLogMessage(_compiler, logTitle, input, fileType, output, env, toolContext->workingDirectory());
 
-    Tool::Invocation::AuxiliaryFile serializedFile = Tool::Invocation::AuxiliaryFile(
+    auto serializedFile = Tool::Invocation::AuxiliaryFile(
         env.expand(precompiledHeaderInfo.serializedOutputPath()),
         precompiledHeaderInfo.serialize(),
-        false
-    );
+        false);
+
+    auto dependencyInfo = Tool::Invocation::DependencyInfo(
+        dependency::DependencyInfoFormat::Makefile,
+        env.expand(_compiler->dependencyInfoFile()));
 
     Tool::Invocation invocation;
     invocation.executable() = tokens.executable();
@@ -210,9 +213,7 @@ resolvePrecompiledHeader(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
-    invocation.dependencyInfo() = std::make_shared<Tool::Invocation::DependencyInfo>(
-        dependency::DependencyInfoFormat::Makefile,
-        env.expand(_compiler->dependencyInfoFile()));
+    invocation.dependencyInfo() = { dependencyInfo };
     invocation.auxiliaryFiles().push_back(serializedFile);
     invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
@@ -296,6 +297,10 @@ resolveSource(
 
     std::string logMessage = CompileLogMessage(_compiler, "CompileC", input.path(), fileType, output, env, toolContext->workingDirectory());
 
+    auto dependencyInfo = Tool::Invocation::DependencyInfo(
+        dependency::DependencyInfoFormat::Makefile,
+        env.expand(_compiler->dependencyInfoFile()));
+
     Tool::Invocation invocation;
     invocation.executable() = tokens.executable();
     invocation.arguments() = arguments;
@@ -304,9 +309,7 @@ resolveSource(
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.inputDependencies() = inputDependencies;
-    invocation.dependencyInfo() = std::make_shared<Tool::Invocation::DependencyInfo>(
-        dependency::DependencyInfoFormat::Makefile,
-        env.expand(_compiler->dependencyInfoFile()));
+    invocation.dependencyInfo() = { dependencyInfo };
     invocation.logMessage() = logMessage;
 
     /* Add the compilation invocation to the context. */

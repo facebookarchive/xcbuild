@@ -84,16 +84,17 @@ resolve(
 
     std::unordered_set<std::string> removed;
 
-    std::shared_ptr<Tool::Invocation::DependencyInfo> dependencyInfo = nullptr;
+    std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
     if (_linker->identifier() == Tool::LinkerResolver::LinkerToolIdentifier()) {
-        dependencyInfo = std::make_shared<Tool::Invocation::DependencyInfo>(
+        auto info = Tool::Invocation::DependencyInfo(
             dependency::DependencyInfoFormat::Binary,
             environment.expand(_linker->dependencyInfoFile()));
+        dependencyInfo.push_back(info);
 
         special.push_back("-Xlinker");
         special.push_back("-dependency_info");
         special.push_back("-Xlinker");
-        special.push_back(dependencyInfo->path());
+        special.push_back(info.path());
     }
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_linker);

@@ -67,6 +67,16 @@ resolve(
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options, std::string(), args);
 
+    // TODO(grp): This should be generic for all tools.
+    std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
+    if (_tool->deeplyStatInputDirectories()) {
+        for (Phase::File const &input : inputs) {
+            /* Create a dependency info file to track the input directory contents. */
+            auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, input.path());
+            dependencyInfo.push_back(info);
+        }
+    }
+
     /*
      * Create the copy invocation.
      */
@@ -77,6 +87,7 @@ resolve(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
+    invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();
     toolContext->invocations().push_back(invocation);
 }
