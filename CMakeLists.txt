@@ -91,6 +91,13 @@ set(libutil_SOURCES
     Sources/libutil/md5.c
     )
 
+set(libdependency_SOURCES
+    Sources/dependency/DependencyInfo.cpp
+    Sources/dependency/BinaryDependencyInfo.cpp
+    Sources/dependency/DirectoryDependencyInfo.cpp
+    Sources/dependency/MakefileDependencyInfo.cpp
+    )
+
 set(libbuiltin_SOURCES
     Sources/builtin/Driver.cpp
     Sources/builtin/Registry.cpp
@@ -299,6 +306,9 @@ target_link_libraries(plist expat)
 add_library(util SHARED ${libutil_SOURCES})
 target_link_libraries(util)
 
+add_library(dependency SHARED ${libdependency_SOURCES})
+target_link_libraries(dependency util)
+
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
 target_link_libraries(pbxsetting util plist)
 
@@ -385,6 +395,9 @@ ADD_UNIT_GTEST(plist XML Tests/plist/Format/test_XML.cpp)
 
 ADD_UNIT_GTEST(ninja Value Tests/ninja/test_Value.cpp)
 ADD_UNIT_GTEST(ninja Writer Tests/ninja/test_Writer.cpp)
+
+ADD_UNIT_GTEST(dependency BinaryDependencyInfo Tests/dependency/test_BinaryDependencyInfo.cpp)
+ADD_UNIT_GTEST(dependency MakefileDependencyInfo Tests/dependency/test_MakefileDependencyInfo.cpp)
 
 ADD_UNIT_GTEST(pbxsetting Condition Tests/pbxsetting/test_Condition.cpp)
 ADD_UNIT_GTEST(pbxsetting Environment Tests/pbxsetting/test_Environment.cpp)

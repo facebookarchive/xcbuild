@@ -1,0 +1,92 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+#include <gtest/gtest.h>
+#include <dependency/BinaryDependencyInfo.h>
+
+using dependency::BinaryDependencyInfo;
+using dependency::DependencyInfo;
+
+TEST(BinaryDependencyInfo, Empty)
+{
+    auto info = BinaryDependencyInfo::Create(std::vector<uint8_t>());
+    ASSERT_NE(info, nullptr);
+    EXPECT_TRUE(info->version().empty());
+    EXPECT_TRUE(info->missing().empty());
+    EXPECT_TRUE(info->dependencyInfo().inputs().empty());
+    EXPECT_TRUE(info->dependencyInfo().outputs().empty());
+}
+
+TEST(BinaryDependencyInfo, Malformed)
+{
+    /* Unknown command. */
+    auto info1 = BinaryDependencyInfo::Create({ 42, 'v', 0 });
+    EXPECT_EQ(info1, nullptr);
+
+    /* Missing null terminator. */
+    auto info2 = BinaryDependencyInfo::Create({ 0, 'v' });
+    EXPECT_EQ(info2, nullptr);
+}
+
+TEST(BinaryDependencyInfo, Version)
+{
+    auto info1 = BinaryDependencyInfo::Create({ 0, 'v', 'e', 'r', 's', 'i', 'o', 'n', '\0' });
+    ASSERT_NE(info1, nullptr);
+    EXPECT_EQ(info1->version(), "version");
+    EXPECT_TRUE(info1->missing().empty());
+    EXPECT_TRUE(info1->dependencyInfo().inputs().empty());
+    EXPECT_TRUE(info1->dependencyInfo().outputs().empty());
+
+    auto info2 = BinaryDependencyInfo::Create({ 0, 'v', '1', '\0', 0, 'v', '2', '\0' });
+    EXPECT_EQ(info2, nullptr);
+}
+
+TEST(BinaryDependencyInfo, Inputs)
+{
+    auto info1 = BinaryDependencyInfo::Create({ 0x10, 'i', 'n', '\0' });
+    ASSERT_NE(info1, nullptr);
+    EXPECT_TRUE(info1->version().empty());
+    EXPECT_TRUE(info1->missing().empty());
+    EXPECT_EQ(info1->dependencyInfo().inputs(), std::vector<std::string>({ "in" }));
+    EXPECT_TRUE(info1->dependencyInfo().outputs().empty());
+
+    auto info2 = BinaryDependencyInfo::Create({ 0x10, 'i', 'n', '1', '\0', 0x10, 'i', 'n', '2', '\0' });
+    ASSERT_NE(info2, nullptr);
+    EXPECT_TRUE(info2->version().empty());
+    EXPECT_TRUE(info2->missing().empty());
+    EXPECT_EQ(info2->dependencyInfo().inputs(), std::vector<std::string>({ "in1", "in2" }));
+    EXPECT_TRUE(info2->dependencyInfo().outputs().empty());
+}
+
+TEST(BinaryDependencyInfo, Outputs)
+{
+    auto info1 = BinaryDependencyInfo::Create({ 0x40, 'o', 'u', 't', '\0' });
+    ASSERT_NE(info1, nullptr);
+    EXPECT_TRUE(info1->version().empty());
+    EXPECT_TRUE(info1->missing().empty());
+    EXPECT_TRUE(info1->dependencyInfo().inputs().empty());
+    EXPECT_EQ(info1->dependencyInfo().outputs(), std::vector<std::string>({ "out" }));
+
+    auto info2 = BinaryDependencyInfo::Create({ 0x40, 'o', 'u', 't', '1', '\0', 0x40, 'o', 'u', 't', '2', '\0' });
+    ASSERT_NE(info2, nullptr);
+    EXPECT_TRUE(info2->version().empty());
+    EXPECT_TRUE(info2->missing().empty());
+    EXPECT_TRUE(info2->dependencyInfo().inputs().empty());
+    EXPECT_EQ(info2->dependencyInfo().outputs(), std::vector<std::string>({ "out1", "out2" }));
+}
+
+TEST(BinaryDependencyInfo, InputsOutputs)
+{
+    auto info1 = BinaryDependencyInfo::Create({ 0x40, 'o', 'u', 't', '\0', 0x10, 'i', 'n', '\0' });
+    ASSERT_NE(info1, nullptr);
+    EXPECT_TRUE(info1->version().empty());
+    EXPECT_TRUE(info1->missing().empty());
+    EXPECT_EQ(info1->dependencyInfo().inputs(), std::vector<std::string>({ "in" }));
+    EXPECT_EQ(info1->dependencyInfo().outputs(), std::vector<std::string>({ "out" }));
+}
