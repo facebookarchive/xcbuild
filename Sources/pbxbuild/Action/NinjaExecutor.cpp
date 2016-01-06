@@ -86,7 +86,7 @@ NinjaDescription(std::string const &description)
 }
 
 static std::string
-NinjaPhonyOutputTarget(Tool::Invocation const &invocation)
+NinjaInvocationPhonyOutput(Tool::Invocation const &invocation)
 {
     /*
      * This is a hack to support invocations that have no outputs. Ninja requires
@@ -117,6 +117,20 @@ NinjaPhonyOutputTarget(Tool::Invocation const &invocation)
     }
 
     return ".ninja-phony-output-" + ss.str();
+}
+
+static std::vector<std::string>
+NinjaInvocationOutputs(Tool::Invocation const &invocation)
+{
+    std::vector<std::string> outputs;
+
+    if (!invocation.outputs().empty()) {
+        outputs.insert(outputs.end(), invocation.outputs().begin(), invocation.outputs().end());
+    } else {
+        outputs.push_back(NinjaInvocationPhonyOutput(invocation));
+    }
+
+    return outputs;
 }
 
 static bool
@@ -258,14 +272,13 @@ build(
          */
         std::unordered_set<std::string> invocationOutputs;
         for (Tool::Invocation const &invocation : phaseInvocations.invocations()) {
-            if (!invocation.outputs().empty()) {
-                for (std::string const &output : invocation.outputs()) {
-                    invocationOutputs.insert(output);
-                }
-            } else if (!invocation.executable().empty()) {
-                std::string phonyOutputName = NinjaPhonyOutputTarget(invocation);
-                invocationOutputs.insert(phonyOutputName);
+            if (invocation.executable().empty()) {
+                /* No outputs. */
+                continue;
             }
+
+            std::vector<std::string> outputs = NinjaInvocationOutputs(invocation);
+            invocationOutputs.insert(outputs.begin(), outputs.end());
         }
 
         /*
@@ -473,7 +486,7 @@ buildTargetInvocations(
 
         if (invocation.dependencyInfo() != nullptr) {
             /* Determine the first output; Ninja expects that as the Makefile rule. */
-            std::string output = (!invocation.outputs().empty() ? invocation.outputs().front() : NinjaPhonyOutputTarget(invocation));
+            std::string output = NinjaInvocationOutputs(invocation).front();
 
             std::string formatName;
             if (!dependency::DependencyInfoFormats::Name(invocation.dependencyInfo()->format(), &formatName)) {
@@ -520,14 +533,8 @@ buildTargetInvocations(
          * Build up outputs as literal Ninja values.
          */
         std::vector<ninja::Value> outputs;
-        if (!invocation.outputs().empty()) {
-            for (std::string const &output : invocation.outputs()) {
-                outputs.push_back(ninja::Value::String(output));
-            }
-        } else {
-            /* All Ninja targets must have an output. */
-            std::string phonyOutputName = NinjaPhonyOutputTarget(invocation);
-            outputs.push_back(ninja::Value::String(phonyOutputName));
+        for (std::string const &output : NinjaInvocationOutputs(invocation)) {
+            outputs.push_back(ninja::Value::String(output));
         }
 
         /*
