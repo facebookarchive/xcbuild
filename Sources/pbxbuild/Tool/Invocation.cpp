@@ -12,6 +12,7 @@
 
 namespace Tool = pbxbuild::Tool;
 using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
+using DependencyInfo = pbxbuild::Tool::Invocation::DependencyInfo;
 
 AuxiliaryFile::
 AuxiliaryFile(std::string const &path, std::vector<char> const &contents, bool executable) :
@@ -31,6 +32,13 @@ AuxiliaryFile(std::string const &path, std::string const &contents, bool executa
 
 AuxiliaryFile::
 ~AuxiliaryFile()
+{
+}
+
+DependencyInfo::
+DependencyInfo(dependency::DependencyInfoFormat format, std::string const &path) :
+    _format(format),
+    _path  (path)
 {
 }
 

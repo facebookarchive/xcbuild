@@ -11,6 +11,7 @@
 #define __pbxbuild_Tool_Invocation_h
 
 #include <pbxbuild/Base.h>
+#include <dependency/DependencyInfoFormat.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -37,6 +38,22 @@ public:
         { return _executable; }
     };
 
+public:
+    class DependencyInfo {
+    private:
+        dependency::DependencyInfoFormat _format;
+        std::string                      _path;
+
+    public:
+        DependencyInfo(dependency::DependencyInfoFormat format, std::string const &path);
+
+    public:
+        dependency::DependencyInfoFormat format() const
+        { return _format; }
+        std::string const &path() const
+        { return _path; }
+    };
+
 private:
     std::string                                  _executable;
     std::vector<std::string>                     _arguments;
@@ -53,7 +70,7 @@ private:
     std::vector<std::string>                     _orderDependencies;
 
 private:
-    std::string                                  _dependencyInfo;
+    std::shared_ptr<DependencyInfo>              _dependencyInfo;
     std::vector<AuxiliaryFile>                   _auxiliaryFiles;
 
 private:
@@ -121,13 +138,13 @@ public:
     { return _orderDependencies; }
 
 public:
-    std::string const &dependencyInfo() const
+    std::shared_ptr<DependencyInfo> const &dependencyInfo() const
     { return _dependencyInfo; }
     std::vector<AuxiliaryFile> const &auxiliaryFiles() const
     { return _auxiliaryFiles; }
 
 public:
-    std::string &dependencyInfo()
+    std::shared_ptr<DependencyInfo> &dependencyInfo()
     { return _dependencyInfo; }
     std::vector<AuxiliaryFile> &auxiliaryFiles()
     { return _auxiliaryFiles; }

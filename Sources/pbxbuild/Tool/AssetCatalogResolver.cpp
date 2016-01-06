@@ -90,7 +90,9 @@ resolve(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = outputs;
-    invocation.dependencyInfo() = environment.expand(_tool->dependencyInfoFile());
+    invocation.dependencyInfo() = std::make_shared<Tool::Invocation::DependencyInfo>(
+        dependency::DependencyInfoFormat::Binary,
+        environment.expand(_tool->dependencyInfoFile()));
     invocation.logMessage() = tokens.logMessage();
     toolContext->invocations().push_back(invocation);
 }

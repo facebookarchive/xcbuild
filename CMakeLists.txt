@@ -332,7 +332,7 @@ add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxsetting util plist)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec ninja builtin)
+target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec dependency ninja builtin)
 
 add_library(xcdriver SHARED ${libxcdriver_SOURCES})
 target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
@@ -343,6 +343,8 @@ add_executable(xcrun Tools/xcrun.cpp)
 target_link_libraries(xcrun xcsdk util)
 add_executable(xcbuild Tools/xcbuild.cpp)
 target_link_libraries(xcbuild xcdriver)
+add_executable(ninja-dependency-info Tools/ninja-dependency-info.cpp)
+target_link_libraries(ninja-dependency-info dependency util)
 
 add_executable(builtin-copy Tools/builtin/copy.cpp)
 target_link_libraries(builtin-copy builtin)

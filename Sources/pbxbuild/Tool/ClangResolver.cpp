@@ -210,7 +210,9 @@ resolvePrecompiledHeader(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
-    invocation.dependencyInfo() = env.expand(_compiler->dependencyInfoFile());
+    invocation.dependencyInfo() = std::make_shared<Tool::Invocation::DependencyInfo>(
+        dependency::DependencyInfoFormat::Makefile,
+        env.expand(_compiler->dependencyInfoFile()));
     invocation.auxiliaryFiles().push_back(serializedFile);
     invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
@@ -302,7 +304,9 @@ resolveSource(
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.inputDependencies() = inputDependencies;
-    invocation.dependencyInfo() = env.expand(_compiler->dependencyInfoFile());
+    invocation.dependencyInfo() = std::make_shared<Tool::Invocation::DependencyInfo>(
+        dependency::DependencyInfoFormat::Makefile,
+        env.expand(_compiler->dependencyInfoFile()));
     invocation.logMessage() = logMessage;
 
     /* Add the compilation invocation to the context. */

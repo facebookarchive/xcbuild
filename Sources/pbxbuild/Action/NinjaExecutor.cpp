@@ -188,7 +188,7 @@ build(
      * rules at the Ninja level. Instead, add a single rule that just passes through from
      * the build command that calls it.
      */
-    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env -i $env $exec"));
+    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env -i $env $exec && $depexec"));
 
     /*
      * Go over each target and write out Ninja targets for the start and end of each.
@@ -329,14 +329,26 @@ ShellEscape(std::string const &value)
 }
 
 static std::string
+LocalExecutable(std::string const &executable)
+{
+    std::string executableRoot = FSUtil::GetDirectoryName(SysUtil::GetExecutablePath());
+    return executableRoot + "/" + executable;
+}
+
+static std::string
+NinjaDependencyInfoExecutable()
+{
+    return LocalExecutable("ninja-dependency-info");
+}
+
+static std::string
 ResolveExecutable(std::string const &executable, std::vector<std::string> const &searchPaths)
 {
     std::string builtinPrefix = "builtin-";
     bool builtin = executable.compare(0, builtinPrefix.size(), builtinPrefix) == 0;
 
     if (builtin) {
-        std::string executableRoot = FSUtil::GetDirectoryName(SysUtil::GetExecutablePath());
-        return executableRoot + "/" + executable;
+        return LocalExecutable(executable);
     } else if (!FSUtil::IsAbsolutePath(executable)) {
         return FSUtil::FindExecutable(executable, searchPaths);
     } else {
@@ -454,6 +466,39 @@ buildTargetInvocations(
         std::string description = NinjaDescription(_formatter->beginInvocation(invocation, executable, false));
 
         /*
+         * Add the dependency info converter & file.
+         */
+        std::string dependencyInfoFile;
+        std::string dependencyInfoExec;
+
+        if (invocation.dependencyInfo() != nullptr) {
+            /* Determine the first output; Ninja expects that as the Makefile rule. */
+            std::string output = (!invocation.outputs().empty() ? invocation.outputs().front() : NinjaPhonyOutputTarget(invocation));
+
+            std::string formatName;
+            if (!dependency::DependencyInfoFormats::Name(invocation.dependencyInfo()->format(), &formatName)) {
+                return false;
+            }
+
+            /* Base this on the existing dependency info path since it should be valid. */
+            dependencyInfoFile = invocation.dependencyInfo()->path() + ".ninja.d";
+
+            std::vector<std::string> dependencyInfoArguments = {
+                formatName + ":" + invocation.dependencyInfo()->path(),
+                "--name", output,
+                "--output", dependencyInfoFile,
+            };
+
+            dependencyInfoExec = ShellEscape(NinjaDependencyInfoExecutable());
+            for (std::string const &arg : dependencyInfoArguments) {
+                dependencyInfoExec += " " + ShellEscape(arg);
+            }
+        } else {
+            // TODO(grp): Avoid the need for an empty dependency info command if not used.
+            dependencyInfoExec = "true";
+        }
+
+        /*
          * Build up the bindings for the invocation.
          */
         std::vector<ninja::Binding> bindings = {
@@ -464,15 +509,12 @@ buildTargetInvocations(
         if (!environment.empty()) {
             bindings.push_back({ "env", ninja::Value::String(environment) });
         }
-
-#if 0
-        // TODO(grp): Two issues here.
-        //  1. "-MT dependencies" doesn't work with Ninja.
-        //  2. ld64 dependency files are some other format, not a Makefile.
-        if (!invocation.dependencyInfo().empty()) {
-            bindings.push_back({ "depfile", ninja::Value::String(invocation.dependencyInfo()) });
+        if (!dependencyInfoExec.empty()) {
+            bindings.push_back({ "depexec", ninja::Value::String(dependencyInfoExec) });
         }
-#endif
+        if (!dependencyInfoFile.empty()) {
+            bindings.push_back({ "depfile", ninja::Value::String(dependencyInfoFile) });
+        }
 
         /*
          * Build up outputs as literal Ninja values.
