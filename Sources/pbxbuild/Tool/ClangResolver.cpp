@@ -359,8 +359,12 @@ Create(Phase::Environment const &phaseEnvironment)
     // TODO(grp): Depending on the build action, add a different suffix than ".compiler".
     pbxspec::PBX::Compiler::shared_ptr defaultCompiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomains());
     if (defaultCompiler == nullptr) {
-        fprintf(stderr, "error: couldn't get default compiler\n");
-        return nullptr;
+        // TODO(grp): Should this fallback to a hardcoded default compiler here?
+        defaultCompiler = buildEnvironment.specManager()->compiler("com.apple.compilers.llvm.clang.1_0.compiler", targetEnvironment.specDomains());
+        if (defaultCompiler == nullptr) {
+            fprintf(stderr, "error: couldn't get default compiler\n");
+            return nullptr;
+        }
     }
 
     return std::unique_ptr<Tool::ClangResolver>(new Tool::ClangResolver(defaultCompiler));
