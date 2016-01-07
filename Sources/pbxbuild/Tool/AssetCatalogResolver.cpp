@@ -66,6 +66,7 @@ resolve(
 
     // TODO(grp): This is a hack to work around missing `Condition` support in options.
     arguments.erase(std::remove(arguments.begin(), arguments.end(), "--optimization"), arguments.end());
+    arguments.erase(std::remove(arguments.begin(), arguments.end(), ""), arguments.end());
 
     // TODO(grp): These should be handled generically for all tools.
     std::unordered_map<std::string, std::string> environmentVariables = options.environment();
