@@ -128,7 +128,6 @@ process(Environment const &environment)
 {
     enum {
         kNormal,
-        kCComment,
         kCPPComment
     };
 
@@ -157,28 +156,12 @@ process(Environment const &environment)
                     if (nc == '/') {
                         state = kCPPComment;
                         break;
-                    } if (nc == '*') {
-                        state = kCComment;
-                        break;
                     } else {
                         lost = nc;
                     }
                 }
                 // Otherwise push the character to the stream
                 cls << static_cast <char> (c);
-                break;
-
-            case kCComment:
-                if (c == '*') {
-                    char nc = std::fgetc(_current.fp);
-                    if (nc == '/') {
-                        state = kNormal;
-                    } else {
-                        lost = nc;
-                    }
-                } else if (c == '\n') {
-                    cls << static_cast <char> (c);
-                }
                 break;
 
             case kCPPComment:
