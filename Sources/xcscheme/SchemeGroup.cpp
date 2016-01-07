@@ -21,15 +21,27 @@ SchemeGroup::SchemeGroup()
 {
 }
 
-SchemeGroup::shared_ptr SchemeGroup::
-Open(std::string const &path, std::string const &name)
+Scheme::shared_ptr SchemeGroup::
+scheme(std::string const &name) const
 {
-    if (path.empty()) {
+    for (Scheme::shared_ptr const &scheme : _schemes) {
+        if (scheme->name() == name) {
+            return scheme;
+        }
+    }
+
+    return nullptr;
+}
+
+SchemeGroup::shared_ptr SchemeGroup::
+Open(std::string const &basePath, std::string const &path, std::string const &name)
+{
+    if (path.empty() || basePath.empty()) {
         errno = EINVAL;
         return nullptr;
     }
 
-    if (!FSUtil::TestForDirectory(path)) {
+    if (!FSUtil::TestForDirectory(basePath) || !FSUtil::TestForDirectory(path)) {
         return nullptr;
     }
 
@@ -39,6 +51,7 @@ Open(std::string const &path, std::string const &name)
     }
 
     SchemeGroup::shared_ptr group = std::make_shared <SchemeGroup> ();
+    group->_basePath = basePath;
     group->_path = path;
     group->_name = name;
 

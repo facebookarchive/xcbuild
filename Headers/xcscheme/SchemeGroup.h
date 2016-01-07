@@ -20,6 +20,7 @@ public:
     typedef std::shared_ptr <SchemeGroup> shared_ptr;
 
 private:
+    std::string                      _basePath;
     std::string                      _path;
     std::string                      _name;
     xcscheme::XC::Scheme::vector     _schemes;
@@ -29,6 +30,8 @@ public:
     SchemeGroup();
 
 public:
+    inline std::string const &basePath() const
+    { return _basePath; }
     inline std::string const &path() const
     { return _path; }
     inline std::string const &name() const
@@ -47,7 +50,11 @@ public:
     { return _defaultScheme; }
 
 public:
-    static SchemeGroup::shared_ptr Open(std::string const &path, std::string const &name);
+    /* Finds a scheme inside the group. */
+    xcscheme::XC::Scheme::shared_ptr scheme(std::string const &name) const;
+
+public:
+    static SchemeGroup::shared_ptr Open(std::string const &basePath, std::string const &path, std::string const &name);
 };
 
 }

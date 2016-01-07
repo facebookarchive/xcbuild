@@ -35,7 +35,12 @@ Run(Options const &options)
 
     if (context->workspace() != nullptr) {
         xcworkspace::XC::Workspace::shared_ptr const &workspace = context->workspace();
-        std::vector<xcscheme::XC::Scheme::shared_ptr> schemes = context->schemes();
+
+        /* Collect all schemes in the workspace. */
+        std::vector<xcscheme::XC::Scheme::shared_ptr> schemes;
+        for (xcscheme::SchemeGroup::shared_ptr const &schemeGroup : context->schemeGroups()) {
+            schemes.insert(schemes.end(), schemeGroup->schemes().begin(), schemeGroup->schemes().end());
+        }
 
         printf("Information about workspace \"%s\":\n", workspace->name().c_str());
 
@@ -84,7 +89,7 @@ Run(Options const &options)
         }
         printf("\n");
 
-        xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->projectFile(), project->name());
+        xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
         if (!group->schemes().empty()) {
             printf("%4sSchemes:\n", "");
 

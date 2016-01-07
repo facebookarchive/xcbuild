@@ -186,10 +186,10 @@ build(
     ninja::Writer writer;
     writer.comment("xcbuild ninja");
     writer.comment("Action: " + buildContext.action());
-    if (buildContext.workspaceContext()->workspace() != nullptr) {
-        writer.comment("Workspace: " + buildContext.workspaceContext()->workspace()->projectFile());
-    } else if (buildContext.workspaceContext()->project() != nullptr) {
-        writer.comment("Project: " + buildContext.workspaceContext()->project()->projectFile());
+    if (buildContext.workspaceContext().workspace() != nullptr) {
+        writer.comment("Workspace: " + buildContext.workspaceContext().workspace()->projectFile());
+    } else if (buildContext.workspaceContext().project() != nullptr) {
+        writer.comment("Project: " + buildContext.workspaceContext().project()->projectFile());
     }
     if (buildContext.scheme() != nullptr) {
         writer.comment("Scheme: " + buildContext.scheme()->name());

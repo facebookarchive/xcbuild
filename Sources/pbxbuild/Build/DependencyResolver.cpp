@@ -49,7 +49,7 @@ ResolveContainerItemProxy(Build::Environment const &buildEnvironment, Build::Con
 
     std::string path = targetEnvironment->environment().expand(fileReference->resolve());
 
-    pbxproj::PBX::Project::shared_ptr project = context.workspaceContext()->project(path);
+    pbxproj::PBX::Project::shared_ptr project = context.workspaceContext().project(path);
     if (productReference) {
         auto result = context.resolveProductIdentifier(project, proxy->remoteGlobalIDString());
         if (result == nullptr) {
@@ -257,7 +257,7 @@ resolveSchemeDependencies(Build::Context const &context) const
     /* Only create the product path mapping if we have implicit dependencies on to use it. */
     std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> productPathToTarget;
     if (buildAction->buildImplicitDependencies()) {
-        productPathToTarget = BuildProductPathsToTargets(*context.workspaceContext());
+        productPathToTarget = BuildProductPathsToTargets(context.workspaceContext());
     }
 
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> positional;
@@ -273,8 +273,8 @@ resolveSchemeDependencies(Build::Context const &context) const
             continue;
         }
 
-        std::string projectPath = reference->resolve(context.workspaceContext()->basePath());
-        pbxproj::PBX::Project::shared_ptr project = context.workspaceContext()->project(projectPath);
+        std::string projectPath = reference->resolve(context.schemeGroup());
+        pbxproj::PBX::Project::shared_ptr project = context.workspaceContext().project(projectPath);
         if (project == nullptr) {
             fprintf(stderr, "warning: couldn't find project in workspace for build action entry\n");
             continue;
@@ -312,13 +312,13 @@ resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::s
 {
     DirectedGraph<pbxproj::PBX::Target::shared_ptr> graph;
 
-    pbxproj::PBX::Project::shared_ptr const &project = context.workspaceContext()->project();
+    pbxproj::PBX::Project::shared_ptr const &project = context.workspaceContext().project();
     if (project == nullptr) {
         fprintf(stderr, "error: cannot resolve legacy dependencies for workspace\n");
         return graph;
     }
 
-    auto productPathToTarget = BuildProductPathsToTargets(*context.workspaceContext());
+    auto productPathToTarget = BuildProductPathsToTargets(context.workspaceContext());
 
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> positional;
     for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {

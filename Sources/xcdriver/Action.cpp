@@ -123,17 +123,23 @@ CreateOverrideLevels(Options const &options, pbxsetting::Environment const &envi
 std::unique_ptr<pbxbuild::Build::Context> Action::
 CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &workspaceContext, std::vector<pbxsetting::Level> const &overrideLevels)
 {
-    xcscheme::XC::Scheme::shared_ptr scheme = nullptr;
-    if (!options.scheme().empty()) {
-        scheme = workspaceContext.scheme(options.scheme());
-    }
-
     std::vector<std::string> actions = (!options.actions().empty() ? options.actions() : std::vector<std::string>({ "build" }));
     std::string action = actions.front(); // TODO(grp): Support multiple actions and skipUnavailableOptions.
-
     if (action != "build") {
         fprintf(stderr, "error: action '%s' is not implemented\n", action.c_str());
         return nullptr;
+    }
+
+    /* Find the scheme from the options. */
+    xcscheme::XC::Scheme::shared_ptr scheme = nullptr;
+    xcscheme::SchemeGroup::shared_ptr schemeGroup = nullptr;
+    if (!options.scheme().empty()) {
+        for (xcscheme::SchemeGroup::shared_ptr const &schemeGroup_ : workspaceContext.schemeGroups()) {
+            if (xcscheme::XC::Scheme::shared_ptr scheme_ = schemeGroup_->scheme(options.scheme())) {
+                scheme = scheme_;
+                schemeGroup = schemeGroup_;
+            }
+        }
     }
 
     std::string configuration = options.configuration();
@@ -155,16 +161,15 @@ CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &wor
         }
     }
 
-    pbxbuild::Build::Context buildContext = pbxbuild::Build::Context::Create(
+    return std::unique_ptr<pbxbuild::Build::Context>(new pbxbuild::Build::Context(
         workspaceContext,
         scheme,
+        schemeGroup,
         action,
         configuration,
         defaultConfiguration,
         overrideLevels
-    );
-
-    return std::unique_ptr<pbxbuild::Build::Context>(new pbxbuild::Build::Context(buildContext));
+    ));
 }
 
 bool Action::

@@ -12,6 +12,8 @@
 
 #include <xcscheme/Base.h>
 
+namespace xcscheme { class SchemeGroup; }
+
 namespace xcscheme { namespace XC {
 
 class BuildableReference {
@@ -52,7 +54,7 @@ public:
     { return _referencedContainerType; }
 
 public:
-    std::string resolve(std::string const &container) const;
+    std::string resolve(std::shared_ptr<SchemeGroup> const &container) const;
 
 public:
     bool parse(plist::Dictionary const *dict);

@@ -20,8 +20,9 @@ namespace Build {
 
 class Context {
 private:
-    std::shared_ptr<WorkspaceContext> _workspaceContext;
+    WorkspaceContext                  _workspaceContext;
     xcscheme::XC::Scheme::shared_ptr  _scheme;
+    xcscheme::SchemeGroup::shared_ptr _schemeGroup;
     std::string                       _action;
     std::string                       _configuration;
     bool                              _defaultConfiguration;
@@ -30,10 +31,11 @@ private:
 private:
     std::shared_ptr<std::unordered_map<pbxproj::PBX::Target::shared_ptr, Target::Environment>> _targetEnvironments;
 
-private:
+public:
     Context(
-        std::shared_ptr<WorkspaceContext> const &workspaceContext,
+        WorkspaceContext const &workspaceContext,
         xcscheme::XC::Scheme::shared_ptr const &scheme,
+        xcscheme::SchemeGroup::shared_ptr const &schemeGroup,
         std::string const &action,
         std::string const &configuration,
         bool defaultConfiguration,
@@ -41,10 +43,12 @@ private:
     );
 
 public:
-    std::shared_ptr<WorkspaceContext> const &workspaceContext() const
+    WorkspaceContext const &workspaceContext() const
     { return _workspaceContext; }
     xcscheme::XC::Scheme::shared_ptr const &scheme() const
     { return _scheme; }
+    xcscheme::SchemeGroup::shared_ptr const &schemeGroup() const
+    { return _schemeGroup; }
 
 public:
     std::string const &action() const
@@ -71,17 +75,6 @@ public:
     resolveTargetIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const;
     std::unique_ptr<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>>
     resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const;
-
-public:
-    static Context
-    Create(
-        WorkspaceContext const &workspaceContext,
-        xcscheme::XC::Scheme::shared_ptr const &scheme,
-        std::string const &action,
-        std::string const &configuration,
-        bool defaultConfiguration,
-        std::vector<pbxsetting::Level> const &overrideLevels
-    );
 };
 
 }

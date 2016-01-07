@@ -166,7 +166,7 @@ main(int argc, char **argv)
     printf("Base Path:      %s\n", workspace->basePath().c_str());
     printf("Name:           %s\n", workspace->name().c_str());
 
-    auto workspaceGroup = xcscheme::SchemeGroup::Open(workspace->projectFile(), workspace->name());
+    auto workspaceGroup = xcscheme::SchemeGroup::Open(workspace->basePath(), workspace->projectFile(), workspace->name());
 
     printf("Schemes:\n");
     if (workspaceGroup) {
@@ -211,7 +211,7 @@ main(int argc, char **argv)
                 std::string path = MakePath(*workspace, g, fref.location(), false);
                 auto project = PBX::Project::Open(path);
                 if (project) {
-                    auto projectGroup = xcscheme::SchemeGroup::Open(project->projectFile(), project->name());
+                    auto projectGroup = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
                     if (projectGroup) {
                         schemes.insert(schemes.end(),
                                        projectGroup->schemes().begin(),

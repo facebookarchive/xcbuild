@@ -14,8 +14,9 @@ namespace Target = pbxbuild::Target;
 
 Build::Context::
 Context(
-    std::shared_ptr<WorkspaceContext> const &workspaceContext,
+    WorkspaceContext const &workspaceContext,
     xcscheme::XC::Scheme::shared_ptr const &scheme,
+    xcscheme::SchemeGroup::shared_ptr const &schemeGroup,
     std::string const &action,
     std::string const &configuration,
     bool defaultConfiguration,
@@ -23,6 +24,7 @@ Context(
 ) :
     _workspaceContext    (workspaceContext),
     _scheme              (scheme),
+    _schemeGroup         (schemeGroup),
     _action              (action),
     _configuration       (configuration),
     _defaultConfiguration(defaultConfiguration),
@@ -97,7 +99,7 @@ actionSettings(void) const
 pbxsetting::Level Build::Context::
 baseSettings(void) const
 {
-    std::string build = _workspaceContext->derivedDataName();
+    std::string build = _workspaceContext.derivedDataName();
 
     return pbxsetting::Level({
         pbxsetting::Setting::Parse("CONFIGURATION_BUILD_DIR", "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)"),
@@ -105,25 +107,5 @@ baseSettings(void) const
         pbxsetting::Setting::Parse("SYMROOT", "$(DERIVED_DATA_DIR)/" + build + "/Build/Products"),
         pbxsetting::Setting::Parse("OBJROOT", "$(DERIVED_DATA_DIR)/" + build + "/Build/Intermediates"),
     });
-}
-
-Build::Context Build::Context::
-Create(
-    WorkspaceContext const &workspaceContext,
-    xcscheme::XC::Scheme::shared_ptr const &scheme,
-    std::string const &action,
-    std::string const &configuration,
-    bool defaultConfiguration,
-    std::vector<pbxsetting::Level> const &overrideLevels
-)
-{
-    return Build::Context(
-        std::make_shared<WorkspaceContext>(workspaceContext),
-        scheme,
-        action,
-        configuration,
-        defaultConfiguration,
-        overrideLevels
-    );
 }
 

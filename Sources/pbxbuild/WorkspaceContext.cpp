@@ -20,13 +20,13 @@ WorkspaceContext(
     std::string const &derivedDataName,
     xcworkspace::XC::Workspace::shared_ptr const &workspace,
     pbxproj::PBX::Project::shared_ptr const &project,
-    std::vector<xcscheme::XC::Scheme::shared_ptr> const &schemes,
+    std::vector<xcscheme::SchemeGroup::shared_ptr> const &schemeGroups,
     std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects) :
     _basePath       (basePath),
     _derivedDataName(derivedDataName),
     _workspace      (workspace),
     _project        (project),
-    _schemes        (schemes),
+    _schemeGroups   (schemeGroups),
     _projects       (projects)
 {
 }
@@ -60,8 +60,8 @@ project(std::string const &projectPath) const
 xcscheme::XC::Scheme::shared_ptr WorkspaceContext::
 scheme(std::string const &name) const
 {
-    for (xcscheme::XC::Scheme::shared_ptr const &scheme : _schemes) {
-        if (scheme->name() == name) {
+    for (xcscheme::SchemeGroup::shared_ptr const &schemeGroup : _schemeGroups) {
+        if (xcscheme::XC::Scheme::shared_ptr const &scheme = schemeGroup->scheme(name)) {
             return scheme;
         }
     }
@@ -153,14 +153,14 @@ WorkspaceContext WorkspaceContext::
 Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace)
 {
     std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> projects;
-    xcscheme::XC::Scheme::vector schemes;
+    std::vector<xcscheme::SchemeGroup::shared_ptr> schemeGroups;
 
     /*
      * Add the schemes from the workspace itself.
      */
-    xcscheme::SchemeGroup::shared_ptr workspaceGroup = xcscheme::SchemeGroup::Open(workspace->projectFile(), workspace->name());
-    if (workspaceGroup) {
-        schemes.insert(schemes.end(), workspaceGroup->schemes().begin(), workspaceGroup->schemes().end());
+    xcscheme::SchemeGroup::shared_ptr workspaceGroup = xcscheme::SchemeGroup::Open(workspace->basePath(), workspace->projectFile(), workspace->name());
+    if (workspaceGroup != nullptr) {
+        schemeGroups.push_back(workspaceGroup);
     }
 
     /*
@@ -175,9 +175,9 @@ Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace)
             /*
              * Load the schemes inside this project.
              */
-            xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(project->projectFile(), project->name());
+            xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
             if (projectGroup != nullptr) {
-                schemes.insert(schemes.end(), projectGroup->schemes().begin(), projectGroup->schemes().end());
+                schemeGroups.push_back(projectGroup);
             }
         }
     });
@@ -186,21 +186,16 @@ Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace)
 
     std::string derivedDataName = workspace->name() + "-" + DerivedDataHash(workspace->projectFile());
 
-    return WorkspaceContext(workspace->basePath(), derivedDataName, workspace, nullptr, schemes, projects);
+    return WorkspaceContext(workspace->basePath(), derivedDataName, workspace, nullptr, schemeGroups, projects);
 }
 
 WorkspaceContext WorkspaceContext::
 Project(pbxproj::PBX::Project::shared_ptr const &project)
 {
-    xcscheme::XC::Scheme::vector schemes;
-
     /*
      * Add the schemes from the project itself.
      */
-    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->projectFile(), project->name());
-    if (group) {
-        schemes.insert(schemes.end(), group->schemes().begin(), group->schemes().end());
-    }
+    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
 
     /*
      * The root is a project, so add it to the projects map so it can be found in project lookups later.
@@ -213,5 +208,5 @@ Project(pbxproj::PBX::Project::shared_ptr const &project)
 
     std::string derivedDataName = project->name() + "-" + DerivedDataHash(project->projectFile());
 
-    return WorkspaceContext(project->basePath(), derivedDataName, nullptr, project, schemes, projects);
+    return WorkspaceContext(project->basePath(), derivedDataName, nullptr, project, { group }, projects);
 }

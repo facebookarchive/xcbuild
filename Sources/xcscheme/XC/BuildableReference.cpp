@@ -8,20 +8,22 @@
  */
 
 #include <xcscheme/XC/BuildableReference.h>
+#include <xcscheme/SchemeGroup.h>
 
 using xcscheme::XC::BuildableReference;
+using xcscheme::SchemeGroup;
 
 BuildableReference::BuildableReference()
 {
 }
 
 std::string BuildableReference::
-resolve(std::string const &container) const
+resolve(std::shared_ptr<SchemeGroup> const &container) const
 {
     std::string referencedContainer = _referencedContainer.empty() ? "" : "/" + _referencedContainer;
 
     if (_referencedContainerType == "container") {
-        return container + referencedContainer;
+        return container->basePath() + referencedContainer;
     } else if (_referencedContainerType == "absolute") {
         return referencedContainer;
     } else if (_referencedContainerType == "developer") {

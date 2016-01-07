@@ -25,11 +25,11 @@ namespace pbxbuild {
  */
 class WorkspaceContext {
 private:
-    std::string                                   _basePath;
-    std::string                                   _derivedDataName;
-    xcworkspace::XC::Workspace::shared_ptr        _workspace;
-    pbxproj::PBX::Project::shared_ptr             _project;
-    std::vector<xcscheme::XC::Scheme::shared_ptr> _schemes;
+    std::string                                    _basePath;
+    std::string                                    _derivedDataName;
+    xcworkspace::XC::Workspace::shared_ptr         _workspace;
+    pbxproj::PBX::Project::shared_ptr              _project;
+    std::vector<xcscheme::SchemeGroup::shared_ptr> _schemeGroups;
     // TODO(grp): Mutable until nested projects are loaded when the workspace is created.
     mutable std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> _projects;
 
@@ -39,7 +39,7 @@ public:
         std::string const &derivedDataName,
         xcworkspace::XC::Workspace::shared_ptr const &workspace,
         pbxproj::PBX::Project::shared_ptr const &project,
-        std::vector<xcscheme::XC::Scheme::shared_ptr> const &schemes,
+        std::vector<xcscheme::SchemeGroup::shared_ptr> const &schemeGroups,
         std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects);
     ~WorkspaceContext();
 
@@ -71,10 +71,10 @@ public:
 
 public:
     /*
-     * All schemes from the workspace itself and any projects in the workspace.
+     * All scheme groups for the workspace itself and any projects in the workspace.
      */
-    std::vector<xcscheme::XC::Scheme::shared_ptr> const &schemes() const
-    { return _schemes; }
+    std::vector<xcscheme::SchemeGroup::shared_ptr> const &schemeGroups() const
+    { return _schemeGroups; }
 
     /*
      * All projects, including the root project, workspace projects, and nested projects.
