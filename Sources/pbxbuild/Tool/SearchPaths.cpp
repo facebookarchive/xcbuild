@@ -24,7 +24,7 @@ Tool::SearchPaths::
 }
 
 static void
-AppendPaths(std::vector<std::string> *args, std::string const &working, std::vector<std::string> const &paths)
+AppendPaths(std::vector<std::string> *args, std::string const &workingDirectory, std::vector<std::string> const &paths)
 {
     for (std::string const &path : paths) {
         std::string recursive = "**";
@@ -32,11 +32,13 @@ AppendPaths(std::vector<std::string> *args, std::string const &working, std::vec
             std::string root = path.substr(0, path.size() - recursive.size());
             args->push_back(root);
 
-            FSUtil::EnumerateRecursive(working + "/" + root, [&](std::string const &path) -> bool {
+            std::string absoluteRoot = FSUtil::ResolveRelativePath(root, workingDirectory);
+            FSUtil::EnumerateRecursive(absoluteRoot, [&](std::string const &path) -> bool {
                 // TODO(grp): Use build settings for included and excluded recursive paths.
 
                 if (FSUtil::TestForDirectory(path)) {
-                    args->push_back(path.substr(root.size()));
+                    std::string relativePath = root + "/" + path.substr(absoluteRoot.size() + 1);
+                    args->push_back(relativePath);
                 }
                 return true;
             });
