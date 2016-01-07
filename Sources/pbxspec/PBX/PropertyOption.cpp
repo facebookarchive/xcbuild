@@ -60,13 +60,7 @@ PropertyOption::~PropertyOption()
 pbxsetting::Setting PropertyOption::
 defaultSetting(void) const
 {
-    return pbxsetting::Setting::Create(_name, defaultPropertyValue());
-}
-
-pbxsetting::Value PropertyOption::
-defaultPropertyValue(void) const
-{
-    return pbxsetting::Value::FromObject(_defaultValue);
+    return pbxsetting::Setting::Create(_name, pbxsetting::Value::FromObject(_defaultValue));
 }
 
 bool PropertyOption::

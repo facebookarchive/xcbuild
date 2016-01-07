@@ -51,9 +51,11 @@ pbxsetting::Level Tool::
 defaultSettings(void) const
 {
     std::vector<pbxsetting::Setting> settings;
-    std::transform(_options.begin(), _options.end(), std::back_inserter(settings), [](PBX::PropertyOption::shared_ptr const &option) -> pbxsetting::Setting {
-        return option->defaultSetting();
-    });
+    for (PBX::PropertyOption::shared_ptr const &option : _options) {
+        if (option->defaultValue() != nullptr) {
+            settings.push_back(option->defaultSetting());
+        }
+    }
     return pbxsetting::Level(settings);
 }
 

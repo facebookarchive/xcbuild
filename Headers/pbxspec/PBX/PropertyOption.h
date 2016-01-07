@@ -187,7 +187,6 @@ public:
 
 public:
     pbxsetting::Setting defaultSetting(void) const;
-    pbxsetting::Value defaultPropertyValue(void) const;
 
 protected:
     bool parse(plist::Dictionary const *dict);
