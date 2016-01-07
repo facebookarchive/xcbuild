@@ -104,6 +104,14 @@ static std::vector<uint8_t> const Content_UTF32LE = {
     0x64, 0x00, 0x00, 0x00,
 };
 
+static std::vector<std::pair<Encoding, std::vector<uint8_t>>> AllContent = {
+    { Encoding::UTF8, Content_UTF8 },
+    { Encoding::UTF16BE, Content_UTF16BE },
+    { Encoding::UTF16LE, Content_UTF16LE },
+    { Encoding::UTF32BE, Content_UTF32BE },
+    { Encoding::UTF32LE, Content_UTF32LE },
+};
+
 
 TEST(Encoding, Detect)
 {
@@ -126,28 +134,37 @@ TEST(Encoding, Detect)
 
 TEST(Encoding, Convert)
 {
-    std::vector<std::pair<Encoding, std::vector<uint8_t>>> sources = {
-        { Encoding::UTF8, Content_UTF8 },
-        { Encoding::UTF16BE, Content_UTF16BE },
-        { Encoding::UTF16LE, Content_UTF16LE },
-        { Encoding::UTF32BE, Content_UTF32BE },
-        { Encoding::UTF32LE, Content_UTF32LE },
-    };
-
     /* Test converting each into each other. */
-    for (auto const &source : sources) {
-        for (auto const &dest : sources) {
+    for (auto const &source : AllContent) {
+        for (auto const &dest : AllContent) {
             EXPECT_EQ(Encodings::Convert(source.second, source.first, dest.first), dest.second);
         }
     }
 
     /* Test converting each into another and back. */
-    for (auto const &source : sources) {
+    for (auto const &source : AllContent) {
         for (Encoding test : AllEncodings) {
             std::vector<uint8_t> buffer = source.second;
             buffer = Encodings::Convert(buffer, source.first, test);
             buffer = Encodings::Convert(buffer, test, source.first);
             EXPECT_EQ(buffer, source.second);
         }
+    }
+}
+
+TEST(Encoding, ConvertStripBOM)
+{
+    for (auto const &source : AllContent) {
+        /* Insert BOM at the front. */
+        std::vector<uint8_t> content = source.second;
+        std::vector<uint8_t> BOM = Encodings::BOM(source.first);
+        content.insert(content.begin(), BOM.begin(), BOM.end());
+
+        /* Re-encode in the same encoding. */
+        std::vector<uint8_t> converted = Encodings::Convert(content, source.first, source.first);
+
+        /* Should not have BOM after conversion. */
+        ASSERT_TRUE(converted.size() >= BOM.size());
+        EXPECT_FALSE(std::equal(BOM.begin(), BOM.end(), converted.begin()));
     }
 }

@@ -22,13 +22,13 @@ Detect(std::vector<uint8_t> const &contents)
      * Check for a UTF-32 BOM. First as bytes overlap with UTF-16 LE.
      */
     if (contents.size() >= 4) {
-        if (contents[0] == 0x00 && contents[1] == 0x00 &&
-            contents[2] == 0xFE && contents[3] == 0xFF) {
+        std::vector<uint8_t> UTF32BE_BOM = Encodings::BOM(Encoding::UTF32BE);
+        if (std::equal(UTF32BE_BOM.begin(), UTF32BE_BOM.end(), contents.begin())) {
             return Encoding::UTF32BE;
         }
 
-        if (contents[0] == 0xFF && contents[1] == 0xFE &&
-            contents[2] == 0x00 && contents[3] == 0x00) {
+        std::vector<uint8_t> UTF32LE_BOM = Encodings::BOM(Encoding::UTF32LE);
+        if (std::equal(UTF32LE_BOM.begin(), UTF32LE_BOM.end(), contents.begin())) {
             return Encoding::UTF32LE;
         }
     }
@@ -37,11 +37,13 @@ Detect(std::vector<uint8_t> const &contents)
      * Check for a UTF-16 BOM.
      */
     if (contents.size() >= 2) {
-        if (contents[0] == 0xFE && contents[1] == 0xFF) {
+        std::vector<uint8_t> UTF16BE_BOM = Encodings::BOM(Encoding::UTF16BE);
+        if (std::equal(UTF16BE_BOM.begin(), UTF16BE_BOM.end(), contents.begin())) {
             return Encoding::UTF16BE;
         }
 
-        if (contents[0] == 0xFF && contents[1] == 0xFE) {
+        std::vector<uint8_t> UTF16LE_BOM = Encodings::BOM(Encoding::UTF16LE);
+        if (std::equal(UTF16LE_BOM.begin(), UTF16LE_BOM.end(), contents.begin())) {
             return Encoding::UTF16LE;
         }
     }
@@ -125,19 +127,25 @@ EndianSwapBuffer(std::vector<uint8_t> *buffer, Endian src, Endian dest)
 std::vector<uint8_t> Encodings::
 Convert(std::vector<uint8_t> const &contents, Encoding from, Encoding to)
 {
+    std::vector<uint8_t> input = contents;
+
+    /* Remove any BOM at the start. */
+    std::vector<uint8_t> BOM = Encodings::BOM(from);
+    if (input.size() >= BOM.size() && std::equal(BOM.begin(), BOM.end(), contents.begin())) {
+        input.erase(input.begin(), input.begin() + BOM.size());
+    }
+
     /* No conversion needed, just byte swap if necessary. */
     if (from == to) {
-        return contents;
+        return input;
     } else if ((from == Encoding::UTF16LE && to == Encoding::UTF16BE) ||
                (from == Encoding::UTF16BE && to == Encoding::UTF16LE)) {
-        std::vector<uint8_t> buffer = contents;
-        EndianSwapBuffer<uint16_t>(&buffer, EncodingEndian(from), EncodingEndian(to));
-        return buffer;
+        EndianSwapBuffer<uint16_t>(&input, EncodingEndian(from), EncodingEndian(to));
+        return input;
     } else if ((from == Encoding::UTF32LE && to == Encoding::UTF32BE) ||
                (from == Encoding::UTF32BE && to == Encoding::UTF32LE)) {
-        std::vector<uint8_t> buffer = contents;
-        EndianSwapBuffer<uint32_t>(&buffer, EncodingEndian(from), EncodingEndian(to));
-        return buffer;
+        EndianSwapBuffer<uint32_t>(&input, EncodingEndian(from), EncodingEndian(to));
+        return input;
     }
 
     /*
@@ -145,10 +153,8 @@ Convert(std::vector<uint8_t> const &contents, Encoding from, Encoding to)
      */
     std::vector<uint8_t> intermediate;
     if (from == Encoding::UTF8) {
-        intermediate = contents;
+        intermediate = input;
     } else {
-        std::vector<uint8_t> input = contents;
-
         if (from == Encoding::UTF16LE || from == Encoding::UTF16BE) {
             EndianSwapBuffer<uint16_t>(&input, EncodingEndian(from), HostEndian);
 
