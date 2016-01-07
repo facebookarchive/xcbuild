@@ -19,8 +19,9 @@ using plist::Real;
 using plist::Integer;
 using plist::String;
 using plist::Data;
-using plist::Null;
 using plist::Date;
+using plist::Null;
+using plist::UID;
 using plist::Array;
 using plist::Dictionary;
 
@@ -161,6 +162,27 @@ __ABPWriteData(ABPContext *context, Data *data)
 
     /* Write contents. */
     return (__ABPWriteBytes(context, data->value().data(), length) == length);
+}
+
+static bool
+__ABPWriteUID(ABPContext *context, plist::UID *uid)
+{
+    uint32_t value;
+    size_t   nbytes = sizeof(uint32_t);
+
+    value = uid->value();
+    if ((value & 0xFF) == value) {
+        nbytes = 1;
+    } else if ((value & 0xFFFF) == value) {
+        nbytes = 2;
+    }
+
+    /* Write the object type and the length. */
+    if (!__ABPWriteTypeAndLength(context, kABPRecordTypeUid, nbytes))
+        return false;
+
+    /* Write word. */
+    return __ABPWriteWord(context, nbytes, value);
 }
 
 static bool
@@ -510,7 +532,8 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
         { Boolean::Type(), (void *)__ABPWriteBool },
         { Null::Type(), (void *)__ABPWriteNullWithArg },
         { Data::Type(), (void *)__ABPWriteData },
-        { Date::Type(), (void *)__ABPWriteDate }
+        { Date::Type(), (void *)__ABPWriteDate },
+        { UID::Type(), (void *)__ABPWriteUID },
     };
 
     bool (*writer)(ABPContext *, Object const *) = nullptr;

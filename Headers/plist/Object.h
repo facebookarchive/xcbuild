@@ -32,7 +32,8 @@ public:
         kTypeArray,
         kTypeDictionary,
         kTypeData,
-        kTypeDate
+        kTypeDate,
+        kTypeUID,
     };
 
 protected:

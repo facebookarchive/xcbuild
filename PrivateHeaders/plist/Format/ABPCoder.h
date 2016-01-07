@@ -32,6 +32,7 @@ typedef enum _ABPRecordType {
     kABPRecordTypeData,
     kABPRecordTypeStringASCII,
     kABPRecordTypeStringUnicode,
+    kABPRecordTypeUid,
     kABPRecordTypeArray,
     kABPRecordTypeDictionary
 } ABPRecordType;

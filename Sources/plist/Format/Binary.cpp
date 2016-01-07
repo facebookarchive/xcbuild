@@ -28,6 +28,7 @@ using plist::Boolean;
 using plist::Null;
 using plist::Data;
 using plist::Date;
+using plist::UID;
 using plist::Array;
 using plist::Dictionary;
 using plist::CastTo;
@@ -203,6 +204,8 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             std::string string = std::string(buffer.begin(), buffer.end());
             return String::New(std::move(string)).release();
         }
+        case kABPRecordTypeUid:
+            return UID::New(*reinterpret_cast <uint32_t *> (arg1)).release();
         case kABPRecordTypeArray:
         {
             uint64_t *refs  = reinterpret_cast <uint64_t *> (arg1);

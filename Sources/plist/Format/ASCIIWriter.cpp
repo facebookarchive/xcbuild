@@ -19,6 +19,7 @@ using plist::Integer;
 using plist::Real;
 using plist::Boolean;
 using plist::Data;
+using plist::Date;
 using plist::Array;
 using plist::Dictionary;
 using plist::CastTo;
@@ -220,6 +221,10 @@ handleObject(Object const *object, bool root)
         if (!handleDate(date, root)) {
             return false;
         }
+    } else if (UID const *uid = CastTo<UID>(object)) {
+        if (!handleUID(uid, root)) {
+            return false;
+        }
     } else {
         return false;
     }
@@ -397,3 +402,11 @@ handleDate(Date const *date, bool root)
     return true;
 }
 
+bool ASCIIWriter::
+handleUID(UID const *uid, bool root)
+{
+    /* Write a CF$UID dictionary. */
+    std::unique_ptr<Dictionary> dictionary = Dictionary::New();
+    dictionary->set("CF$UID", Integer::New(uid->value()));
+    return handleDictionary(dictionary.get(), root);
+}

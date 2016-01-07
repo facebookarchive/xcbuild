@@ -52,6 +52,7 @@ private:
     bool handleString(String const *string, bool root);
     bool handleDate(Date const *date, bool root);
     bool handleData(Data const *data, bool root);
+    bool handleUID(UID const *uid, bool root);
 };
 
 }

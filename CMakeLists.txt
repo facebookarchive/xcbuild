@@ -40,6 +40,7 @@ set(libplist_SOURCES
     Sources/plist/Object.cpp
     Sources/plist/Real.cpp
     Sources/plist/String.cpp
+    Sources/plist/UID.cpp
     #
     Sources/plist/Base64.cpp
     Sources/plist/rfc4648.c

@@ -20,5 +20,6 @@
 #include <plist/Null.h>
 #include <plist/Real.h>
 #include <plist/String.h>
+#include <plist/UID.h>
 
 #endif  // !__plist_Objects_h

@@ -300,6 +300,21 @@ beginDictionary()
 bool XMLParser::
 endDictionary()
 {
+    if (auto dict = CastTo<Dictionary>(_state.current)) {
+        /* Convert CF$UID dictionaries into UID objects. */
+        if (dict->count() == 1) {
+            std::string const &key = dict->key(0);
+            Object const *value = dict->value(0);
+            if (key == "CF$UID" && value->type() == Integer::Type()) {
+                Integer const *integer = CastTo<Integer>(value);
+
+                uint32_t value = integer->value();
+                _state.current->release();
+                _state.current = UID::New(value).release();
+            }
+        }
+    }
+
     pop();
     return true;
 }

@@ -17,6 +17,7 @@ using plist::String;
 using plist::Boolean;
 using plist::Integer;
 using plist::Real;
+using plist::UID;
 using plist::Dictionary;
 using plist::Array;
 
@@ -45,10 +46,27 @@ TEST(XML, Boolean)
     auto dictionary = Dictionary::New();
     dictionary->set("true", Boolean::New(true));
     dictionary->set("false", Boolean::New(false));
-
     EXPECT_TRUE(deserialize.first->equals(dictionary.get()));
 
     auto serialize = XML::Serialize(dictionary.get(), XML::Create(Encoding::UTF8));
     ASSERT_NE(serialize.first, nullptr);
     EXPECT_EQ(*serialize.first, contents);
 }
+
+TEST(XML, UID)
+{
+    auto contents = Contents(std::string(XMLHeader) + "<dict>\n\t<key>object</key>\n\t<dict>\n\t\t<key>CF$UID</key>\n\t\t<integer>4</integer>\n\t</dict>\n</dict>\n" + std::string(XMLFooter));
+    EXPECT_NE(XML::Identify(contents), nullptr);
+
+    auto deserialize = XML::Deserialize(contents, XML::Create(Encoding::UTF8));
+    ASSERT_NE(deserialize.first, nullptr);
+
+    auto dictionary = Dictionary::New();
+    dictionary->set("object", UID::New(4));
+    EXPECT_TRUE(deserialize.first->equals(dictionary.get()));
+
+    auto serialize = XML::Serialize(dictionary.get(), XML::Create(Encoding::UTF8));
+    ASSERT_NE(serialize.first, nullptr);
+    EXPECT_EQ(*serialize.first, contents);
+}
+

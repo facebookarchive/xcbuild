@@ -51,6 +51,7 @@ private:
     bool handleString(String const *string);
     bool handleDate(Date const *date);
     bool handleData(Data const *data);
+    bool handleUID(UID const *uid);
 };
 
 }

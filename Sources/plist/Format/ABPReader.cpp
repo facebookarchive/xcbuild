@@ -102,7 +102,7 @@ static inline plist::Data *
 __ABPReadData(ABPContext *context, size_t nbytes)
 {
     plist::Data *data;
-    off_t     offset;
+    off_t        offset;
 
     if (!__ABPReadLength(context, &nbytes)) {
         __ABPError(context, "EOF reading data length value");
@@ -118,10 +118,33 @@ __ABPReadData(ABPContext *context, size_t nbytes)
     return data;
 }
 
+static inline plist::UID *
+__ABPReadUid(ABPContext *context, size_t nbytes)
+{
+    uint64_t value = 0;
+
+    if (!__ABPReadLength(context, &nbytes))
+        return NULL;
+
+    dprintf("uid - %lu bytes", nbytes);
+
+    if (nbytes > 4) {
+        __ABPError(context, "too many bytes in UID");
+        return NULL;
+    }
+
+    if (nbytes > 0 && !__ABPReadWord(context, nbytes, &value)) {
+        __ABPError(context, "error reading word for UID");
+        return NULL;
+    }
+
+    return __ABPCreateUid(context, value);
+}
+
 static inline plist::String *
 __ABPReadStringASCII(ABPContext *context, size_t nchars)
 {
-    off_t       offset;
+    off_t          offset;
     plist::String *string = NULL;
 
     if (!__ABPReadLength(context, &nchars)) {
@@ -279,12 +302,14 @@ _ABPReadObject(ABPContext *context)
                 return __ABPReadStringASCII(context, byte & 0x0f);
             case kABPRecordTypeStringUnicode:
                 return __ABPReadStringUnicode(context, byte & 0x0f);
+            case kABPRecordTypeUid:
+                return __ABPReadUid(context, (byte & 0x0f) + 1);
             case kABPRecordTypeArray:
                 return _ABPReadArray(context, byte & 0x0f);
             case kABPRecordTypeDictionary:
                 return _ABPReadDictionary(context, byte & 0x0f);
             default:
-                __ABPError(context, "unsupported type id");
+                __ABPError(context, "unsupported type id %x", byte);
                 return NULL;
         }
     }
@@ -388,8 +413,10 @@ ABPReadObject(ABPContext *context, uint64_t reference)
         }
 
         object = _ABPReadObject(context);
-        if (object == NULL)
+        if (object == NULL) {
+            __ABPError(context, "failed to create object");
             return NULL;
+        }
 
         context->objects[reference] = object;
     }

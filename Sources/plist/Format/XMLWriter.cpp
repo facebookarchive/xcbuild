@@ -19,6 +19,7 @@ using plist::Integer;
 using plist::Real;
 using plist::Boolean;
 using plist::Data;
+using plist::UID;
 using plist::Array;
 using plist::Dictionary;
 using plist::CastTo;
@@ -168,6 +169,10 @@ handleObject(Object const *object)
         }
     } else if (Date const *date = CastTo<Date>(object)) {
         if (!handleDate(date)) {
+            return false;
+        }
+    } else if (UID const *uid = CastTo<UID>(object)) {
+        if (!handleUID(uid)) {
             return false;
         }
     } else {
@@ -346,5 +351,14 @@ handleDate(Date const *date)
     }
 
     return writeString("</date>", false);
+}
+
+bool XMLWriter::
+handleUID(UID const *uid)
+{
+    /* Write a '<dict><key>CF$UID</key><integer>uid</integer></dict>'. */
+    std::unique_ptr<Dictionary> dictionary = Dictionary::New();
+    dictionary->set("CF$UID", Integer::New(uid->value()));
+    return handleDictionary(dictionary.get());
 }
 
