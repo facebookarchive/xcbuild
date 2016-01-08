@@ -300,15 +300,18 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
      * Copy and compose the info plist.
      */
     if (_productType->hasInfoPlist()) {
-        if (pbxsetting::Type::ParseBoolean(environment.resolve("INFOPLIST_PREPROCESS"))) {
-            // TODO(grp): Preprocess Info.plist using configuration from other build settings.
-        }
+        /* Note that INFOPLIST_FILE is the input, and INFOPLIST_PATH is the output. */
+        std::string infoPlistFile = environment.resolve("INFOPLIST_FILE");
+        if (!infoPlistFile.empty()) {
+            if (pbxsetting::Type::ParseBoolean(environment.resolve("INFOPLIST_PREPROCESS"))) {
+                // TODO(grp): Preprocess Info.plist using configuration from other build settings.
+            }
 
-        if (Tool::InfoPlistResolver const *infoPlistResolver = phaseContext->infoPlistResolver(phaseEnvironment)) {
-            /* Create the Info.plist. Note that INFOPLIST_FILE is the input, and INFOPLIST_PATH is the output. */
-            infoPlistResolver->resolve(&phaseContext->toolContext(), environment, environment.resolve("INFOPLIST_FILE"));
-        } else {
-            fprintf(stderr, "warning: could not find info plist tool\n");
+            if (Tool::InfoPlistResolver const *infoPlistResolver = phaseContext->infoPlistResolver(phaseEnvironment)) {
+                infoPlistResolver->resolve(&phaseContext->toolContext(), environment, infoPlistFile);
+            } else {
+                fprintf(stderr, "warning: could not find info plist tool\n");
+            }
         }
     }
 
