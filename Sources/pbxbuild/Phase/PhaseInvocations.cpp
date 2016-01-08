@@ -49,11 +49,11 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
         buildPhases.push_back(buildPhase);
     }
 
-    bool hasSourcesPhase = false;
+    pbxproj::PBX::SourcesBuildPhase::shared_ptr sourcesPhase = nullptr;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
             auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
-            hasSourcesPhase = true;
+            sourcesPhase = BP;
 
             Phase::SourcesResolver sourcesResolver = Phase::SourcesResolver(BP);
             if (!sourcesResolver.resolve(phaseEnvironment, &phaseContext)) {
@@ -63,7 +63,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
         }
     }
 
-    if (hasSourcesPhase) {
+    if (sourcesPhase != nullptr && !sourcesPhase->files().empty()) {
         pbxproj::PBX::BuildPhase::shared_ptr buildPhase;
         pbxproj::PBX::FrameworksBuildPhase::shared_ptr frameworksPhase;
 

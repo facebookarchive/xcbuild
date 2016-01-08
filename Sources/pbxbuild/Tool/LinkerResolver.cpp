@@ -82,8 +82,6 @@ resolve(
         }
     }
 
-    std::unordered_set<std::string> removed;
-
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
     if (_linker->identifier() == Tool::LinkerResolver::LinkerToolIdentifier()) {
         auto info = Tool::Invocation::DependencyInfo(
