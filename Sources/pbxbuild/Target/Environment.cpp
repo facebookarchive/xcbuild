@@ -342,10 +342,10 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
     }
 
     environment.insertFront(target->settings(), false);
-    environment.insertFront(targetConfiguration->buildSettings(), false);
     if (targetConfigurationFile != nullptr) {
         environment.insertFront(targetConfigurationFile->level(), false);
     }
+    environment.insertFront(targetConfiguration->buildSettings(), false);
 
     environment.insertFront(context->actionSettings(), false);
     for (pbxsetting::Level const &level : context->overrideLevels()) {
