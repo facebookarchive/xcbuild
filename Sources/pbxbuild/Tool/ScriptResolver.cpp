@@ -9,8 +9,11 @@
 
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/Context.h>
+#include <libutil/Escape.h>
+#include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
+using libutil::Escape;
 using libutil::FSUtil;
 
 Tool::ScriptResolver::
@@ -108,7 +111,7 @@ resolve(
 
     Tool::Invocation invocation;
     invocation.executable() = "/bin/sh";
-    invocation.arguments() = { "-c", scriptFilePath };
+    invocation.arguments() = { "-c", Escape::Shell(scriptFilePath) };
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.phonyInputs() = inputFiles; /* User-specified, may not exist. */
