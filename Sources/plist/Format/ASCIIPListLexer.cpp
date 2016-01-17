@@ -258,6 +258,7 @@ ASCIIPListLexerReadNumber(ASCIIPListLexer *lexer)
             p++;
 
         lexer->tokenLength = p - b;
+        lexer->pointer = p;
 
         return kASCIIPListLexerTokenHexNumber;
     }
