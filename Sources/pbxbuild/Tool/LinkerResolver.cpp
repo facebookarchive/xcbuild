@@ -68,6 +68,7 @@ resolve(
     for (std::string const &libraryPath : frameworkPaths) {
         special.push_back("-F" + libraryPath);
     }
+    special.push_back("-F" + environment.resolve("BUILT_PRODUCTS_DIR"));
 
     for (Phase::File const &library : inputLibraries) {
         std::string base = FSUtil::GetBaseNameWithoutExtension(library.path());
