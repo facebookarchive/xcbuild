@@ -69,7 +69,7 @@ struct DependenciesContext {
     DirectedGraph<pbxproj::PBX::Target::shared_ptr> *graph;
     BuildAction::shared_ptr buildAction;
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> *positional;
-    std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> *productPathToTarget;
+    std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> *productNameToTarget;
 };
 
 static void
@@ -111,10 +111,10 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
                 case pbxproj::PBX::GroupItem::kTypeFileReference: {
                     /* A implicit dependency referencing the product of another target through a filesystem path. */
                     pbxproj::PBX::FileReference::shared_ptr fileReference = std::static_pointer_cast<pbxproj::PBX::FileReference>(file->fileRef());
-                    pbxsetting::Value path = fileReference->resolve();
+                    std::string name = fileReference->name();
 
-                    auto it = context.productPathToTarget->find(path.raw());
-                    if (it != context.productPathToTarget->end()) {
+                    auto it = context.productNameToTarget->find(name);
+                    if (it != context.productNameToTarget->end()) {
                         pbxproj::PBX::Target::shared_ptr dependentTarget = it->second;
                         dependencies.insert(dependentTarget);
 
@@ -207,7 +207,7 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
 static std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr>
 BuildProductPathsToTargets(WorkspaceContext const &workspaceContext)
 {
-    std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> productPathToTarget;
+    std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> productNameToTarget;
 
     /*
      * Build a mapping of product path -> target, in order to look up implicit dependencies
@@ -224,17 +224,17 @@ BuildProductPathsToTargets(WorkspaceContext const &workspaceContext)
             pbxproj::PBX::FileReference::shared_ptr const &productReference = nativeTarget->productReference();
 
             if (productReference != nullptr) {
-                /* Use the raw setting value because we can't resolve it yet. */
-                pbxsetting::Value productPath = productReference->resolve();
+                /* Use the product name because we can't resolve the path yet. */
+                std::string productName = productReference->name();
 #if DEPENDENCY_RESOLVER_LOGGING
-                fprintf(stderr, "debug: product output: %s %s => %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), productPath.raw().c_str());
+                fprintf(stderr, "debug: product output: %s %s => %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), productName.c_str());
 #endif
-                productPathToTarget.insert({ productPath.raw(), nativeTarget });
+                productNameToTarget.insert({ productName, nativeTarget });
             }
         }
     }
 
-    return productPathToTarget;
+    return productNameToTarget;
 }
 
 DirectedGraph<pbxproj::PBX::Target::shared_ptr> Build::DependencyResolver::
@@ -255,9 +255,9 @@ resolveSchemeDependencies(Build::Context const &context) const
     }
 
     /* Only create the product path mapping if we have implicit dependencies on to use it. */
-    std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> productPathToTarget;
+    std::unordered_map<std::string, pbxproj::PBX::Target::shared_ptr> productNameToTarget;
     if (buildAction->buildImplicitDependencies()) {
-        productPathToTarget = BuildProductPathsToTargets(context.workspaceContext());
+        productNameToTarget = BuildProductPathsToTargets(context.workspaceContext());
     }
 
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> positional;
@@ -292,15 +292,18 @@ resolveSchemeDependencies(Build::Context const &context) const
             .graph = &graph,
             .buildAction = buildAction,
             .positional = &positional,
-            .productPathToTarget = &productPathToTarget,
+            .productNameToTarget = &productNameToTarget,
         };
         AddDependencies(dependenciesContext, target);
     }
 
 #if DEPENDENCY_RESOLVER_LOGGING
     fprintf(stderr, "debug: scheme-based target ordering\n");
-    for (pbxproj::PBX::Target::shared_ptr const &target : graph.ordered()) {
-        fprintf(stderr, "debug: ordered target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
+    std::pair<bool, std::vector<pbxproj::PBX::Target::shared_ptr>> result = graph.ordered();
+    if (result.first) {
+        for (pbxproj::PBX::Target::shared_ptr const &target : result.second) {
+            fprintf(stderr, "debug: ordered target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
+        }
     }
 #endif
 
@@ -318,7 +321,7 @@ resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::s
         return graph;
     }
 
-    auto productPathToTarget = BuildProductPathsToTargets(context.workspaceContext());
+    auto productNameToTarget = BuildProductPathsToTargets(context.workspaceContext());
 
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> positional;
     for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
@@ -338,15 +341,18 @@ resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::s
             .graph = &graph,
             .buildAction = nullptr,
             .positional = &positional,
-            .productPathToTarget = &productPathToTarget,
+            .productNameToTarget = &productNameToTarget,
         };
         AddDependencies(dependenciesContext, target);
     }
 
 #if DEPENDENCY_RESOLVER_LOGGING
     fprintf(stderr, "debug: legacy target ordering\n");
-    for (pbxproj::PBX::Target::shared_ptr const &target : graph.ordered()) {
-        fprintf(stderr, "debug: ordered target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
+    std::pair<bool, std::vector<pbxproj::PBX::Target::shared_ptr>> result = graph.ordered();
+    if (result.first) {
+        for (pbxproj::PBX::Target::shared_ptr const &target : result.second) {
+            fprintf(stderr, "debug: ordered target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
+        }
     }
 #endif
 
