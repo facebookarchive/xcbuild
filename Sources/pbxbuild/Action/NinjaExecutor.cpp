@@ -12,6 +12,7 @@
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <ninja/Writer.h>
 #include <ninja/Value.h>
+#include <libutil/Escape.h>
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 #include <libutil/md5.h>
@@ -27,6 +28,7 @@ using pbxbuild::Action::NinjaExecutor;
 namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
 namespace Tool = pbxbuild::Tool;
+using libutil::Escape;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
@@ -329,25 +331,6 @@ build(
 }
 
 static std::string
-ShellEscape(std::string const &value)
-{
-    const std::string alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const std::string digits = "0123456789";
-
-    if (value.find_first_not_of(alphabet + digits + "@%_-+=:,./") == std::string::npos) {
-        return value;
-    } else {
-        std::string result = value;
-        std::string::size_type offset = 0;
-        while ((offset = result.find("'", offset)) != std::string::npos) {
-            result.replace(offset, 1, "'\"'\"'");
-            offset += 5;
-        }
-        return "'" + result + "'";
-    }
-}
-
-static std::string
 LocalExecutable(std::string const &executable)
 {
     std::string executableRoot = FSUtil::GetDirectoryName(SysUtil::GetExecutablePath());
@@ -461,9 +444,9 @@ buildTargetInvocations(
          * Build the invocation arguments. Must escape for shell arguments as Ninja passes
          * the command string directly to the shell, which would interpret spaces, etc as meaningful.
          */
-        std::string exec = ShellEscape(executable);
+        std::string exec = Escape::Shell(executable);
         for (std::string const &arg : invocation.arguments()) {
-            exec += " " + ShellEscape(arg);
+            exec += " " + Escape::Shell(arg);
         }
 
         /*
@@ -476,7 +459,7 @@ buildTargetInvocations(
             if (it != invocation.environment().begin()) {
                 environment += " ";
             }
-            environment += it->first + "=" + ShellEscape(it->second);
+            environment += it->first + "=" + Escape::Shell(it->second);
         }
 
         /*
@@ -517,9 +500,9 @@ buildTargetInvocations(
             }
 
             /* Create the command for converting the dependency info. */
-            dependencyInfoExec = ShellEscape(dependencyInfoExecutable);
+            dependencyInfoExec = Escape::Shell(dependencyInfoExecutable);
             for (std::string const &arg : dependencyInfoArguments) {
-                dependencyInfoExec += " " + ShellEscape(arg);
+                dependencyInfoExec += " " + Escape::Shell(arg);
             }
         } else {
             // TODO(grp): Avoid the need for an empty dependency info command if not used.
@@ -531,7 +514,7 @@ buildTargetInvocations(
          */
         std::vector<ninja::Binding> bindings = {
             { "description", ninja::Value::String(description) },
-            { "dir", ninja::Value::String(ShellEscape(invocation.workingDirectory())) },
+            { "dir", ninja::Value::String(Escape::Shell(invocation.workingDirectory())) },
             { "exec", ninja::Value::String(exec) },
         };
         if (!environment.empty()) {

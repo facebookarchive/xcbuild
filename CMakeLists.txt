@@ -85,6 +85,7 @@ set(libutil_SOURCES
     #
     Sources/libutil/Subprocess.cpp
     #
+    Sources/libutil/Escape.cpp
     Sources/libutil/Wildcard.cpp
     #
     Sources/libutil/bsd_glob.c
