@@ -303,7 +303,17 @@ resolveBuildFiles(
 
             if (buildRule != nullptr) {
                 if (pbxspec::PBX::Tool::shared_ptr const &tool = buildRule->tool()) {
-                    toolIdentifier = tool->identifier();
+                    // Some tools additionally limit their file types beyond what their build rule allows.
+                    // For example, the default compiler limits itself to just source files, despite its
+                    // default build rule specifying that it accepts all C-family inputs, including headers.
+                    // TODO(grp): Is this the right way to make .h files not get compiled as resources?
+                    std::string inputFileType = first.fileType()->identifier();
+                    std::vector<std::string> const &toolFileTypes = tool->fileTypes();
+                    bool toolAcceptsInputFileType = (toolFileTypes.empty() || std::find(toolFileTypes.begin(), toolFileTypes.end(), inputFileType) != toolFileTypes.end());
+
+                    if (toolAcceptsInputFileType) {
+                        toolIdentifier = tool->identifier();
+                    }
                 }
             }
 
