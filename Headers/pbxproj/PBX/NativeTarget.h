@@ -21,6 +21,7 @@ public:
 private:
     std::string                    _productType;
     PBX::FileReference::shared_ptr _productReference;
+    std::string                    _productInstallPath;
     PBX::BuildRule::vector         _buildRules;
 
 public:
@@ -33,6 +34,10 @@ public:
 public:
     inline PBX::FileReference::shared_ptr const &productReference() const
     { return _productReference; }
+
+public:
+    inline std::string const &productInstallPath() const
+    { return _productInstallPath; }
 
 public:
     inline BuildRule::vector const &buildRules() const

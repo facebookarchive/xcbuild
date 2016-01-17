@@ -29,6 +29,7 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
 
     auto PR  = context.indirect <FileReference> (&unpack, "productReference", &PRID);
     auto PT  = unpack.cast <plist::String> ("productType");
+    auto PRP = unpack.cast <plist::String> ("productInstallPath");
     auto BRs = unpack.cast <plist::Array> ("buildRules");
 
     if (!unpack.complete(check)) {
@@ -46,6 +47,10 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             abort();
             return false;
         }
+    }
+
+    if (PRP != nullptr) {
+        _productInstallPath = PRP->value();
     }
 
     if (BRs != nullptr) {
