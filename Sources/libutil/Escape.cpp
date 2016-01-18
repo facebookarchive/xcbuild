@@ -30,3 +30,16 @@ Shell(std::string const &value)
     }
 }
 
+std::string Escape::
+Makefile(std::string const &value)
+{
+    std::string result;
+    for (char c : value) {
+        if (isspace(c) || c == '#' || c == '$' || c == '%' || c == ':') {
+            result += '\\';
+        }
+
+        result += c;
+    }
+    return result;
+}

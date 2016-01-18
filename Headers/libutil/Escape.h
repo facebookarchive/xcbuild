@@ -25,6 +25,12 @@ public:
      */
     static std::string
     Shell(std::string const &value);
+
+    /*
+     * Escape a file path for a Makefile.
+     */
+    static std::string
+    Makefile(std::string const &value);
 };
 
 }

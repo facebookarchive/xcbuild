@@ -8,6 +8,7 @@
  */
 
 #include <libutil/Options.h>
+#include <libutil/Escape.h>
 #include <libutil/FSUtil.h>
 
 #include <dependency/DependencyInfo.h>
@@ -21,6 +22,7 @@
 #include <cassert>
 
 using libutil::FSUtil;
+using libutil::Escape;
 
 class Options {
 private:
@@ -195,13 +197,13 @@ SerializeMakefileDependencyInfo(std::string const &output, std::vector<std::stri
     std::string currentDirectory = FSUtil::GetCurrentDirectory();
 
     std::ostringstream result;
-    result << output << ":";
+    result << Escape::Makefile(output) << ":";
 
     for (std::string const &input : inputs) {
         /* Normalize path as Ninja requires match paths. */
         std::string path = FSUtil::ResolveRelativePath(input, currentDirectory);
 
-        result << " \\\n" << "  " << path;
+        result << " \\\n" << "  " << Escape::Makefile(path);
     }
 
     return result.str();
