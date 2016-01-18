@@ -205,7 +205,7 @@ resolve(
     std::vector<std::string> systemHeadermapFiles;
     std::vector<std::string> userHeadermapFiles;
 
-    if (!pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS")) || pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("ALWAYS_SEARCH_USER_PATHS"))) {
+    if (pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("ALWAYS_SEARCH_USER_PATHS")) && !pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("ALWAYS_USE_SEPARATE_HEADERMAPS"))) {
         systemHeadermapFiles.push_back(headermapFile);
     } else {
         if (includeFlatEntriesForTargetBeingBuilt) {
