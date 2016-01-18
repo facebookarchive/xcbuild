@@ -339,18 +339,18 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
     environment.insertFront(sdk->customProperties(), false);
     environment.insertFront(sdk->platform()->overrideProperties(), false);
 
+    if (packageType != nullptr) {
+        environment.insertFront(PackageTypeLevel(packageType), false);
+    }
+    if (productType != nullptr) {
+        environment.insertFront(ProductTypeLevel(productType), false);
+    }
+
     environment.insertFront(target->project()->settings(), false);
     if (projectConfigurationFile != nullptr) {
         environment.insertFront(projectConfigurationFile->level(), false);
     }
     environment.insertFront(projectConfiguration->buildSettings(), false);
-
-    if (packageType != nullptr) {
-        environment.insertFront(PackageTypeLevel(packageType), true);
-    }
-    if (productType != nullptr) {
-        environment.insertFront(ProductTypeLevel(productType), true);
-    }
 
     environment.insertFront(target->settings(), false);
     if (targetConfigurationFile != nullptr) {
