@@ -26,7 +26,6 @@ private:
 
 public:
     SearchPaths();
-    ~SearchPaths();
 
 public:
     std::vector<std::string> const &headerSearchPaths(void) const
@@ -54,7 +53,7 @@ public:
 
 public:
     static std::vector<std::string>
-    ExpandRecursive(pbxsetting::Environment const &environment, std::vector<std::string> const &paths, std::string const &workingDirectory);
+    ExpandRecursive(std::vector<std::string> const &paths, std::string const &workingDirectory);
 };
 
 }

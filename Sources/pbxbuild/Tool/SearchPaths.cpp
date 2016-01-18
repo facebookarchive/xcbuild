@@ -18,11 +18,6 @@ SearchPaths()
 {
 }
 
-Tool::SearchPaths::
-~SearchPaths()
-{
-}
-
 static void
 AppendPaths(std::vector<std::string> *args, std::string const &workingDirectory, std::vector<std::string> const &paths)
 {
@@ -49,7 +44,7 @@ AppendPaths(std::vector<std::string> *args, std::string const &workingDirectory,
 }
 
 std::vector<std::string> Tool::SearchPaths::
-ExpandRecursive(pbxsetting::Environment const &environment, std::vector<std::string> const &paths, std::string const &workingDirectory)
+ExpandRecursive(std::vector<std::string> const &paths, std::string const &workingDirectory)
 {
     std::vector<std::string> result;
     AppendPaths(&result, workingDirectory, paths);
