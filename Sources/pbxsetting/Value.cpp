@@ -253,7 +253,8 @@ FromObject(plist::Object const *object)
         std::vector<std::string> values;
         for (size_t n = 0; n < arrayValue->count(); n++) {
             if (auto arg = arrayValue->value <plist::String> (n)) {
-                values.push_back(arg->value());
+                std::vector<std::string> parsed = Type::ParseList(arg->value());
+                values.insert(values.end(), parsed.begin(), parsed.end());
             }
         }
         return pbxsetting::Value::Parse(Type::FormatList(values));
