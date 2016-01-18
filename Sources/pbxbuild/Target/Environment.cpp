@@ -27,7 +27,7 @@ Target::Environment::
 static std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string>
 BuildFileDisambiguation(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    std::unordered_map<std::string, pbxproj::PBX::BuildFile::shared_ptr> buildFileUnambiguous;
+    std::unordered_multimap<std::string, pbxproj::PBX::BuildFile::shared_ptr> buildFileUnambiguous;
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> buildFileDisambiguation;
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
@@ -38,12 +38,23 @@ BuildFileDisambiguation(pbxproj::PBX::Target::shared_ptr const &target)
         for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
             std::string name = FSUtil::GetBaseNameWithoutExtension(buildFile->fileRef()->name());
 
-            auto it = buildFileUnambiguous.find(name);
-            if (it != buildFileUnambiguous.end()) {
-                buildFileDisambiguation.insert({ it->second, it->first + "-" + it->second->blueprintIdentifier() });
+            /* Use a case-insensitive key to detect conflicts. */
+            std::string lower;
+            std::transform(name.begin(), name.end(), std::back_inserter(lower), ::tolower);
+
+            auto range = buildFileUnambiguous.equal_range(lower);
+            if (range.first != buildFileUnambiguous.end()) {
+                /* Conflicts with at least one other file, add a disambiguation. */
                 buildFileDisambiguation.insert({ buildFile, name + "-" + buildFile->blueprintIdentifier() });
+
+                /* Add disambiguations for all the conflicting files. */
+                for (auto it = range.first; it != range.second; ++it) {
+                    pbxproj::PBX::BuildFile::shared_ptr const &otherBuildFile = it->second;
+                    std::string otherName = FSUtil::GetBaseNameWithoutExtension(otherBuildFile->fileRef()->name());
+                    buildFileDisambiguation.insert({ otherBuildFile, otherName + "-" + otherBuildFile->blueprintIdentifier() });
+                }
             }
-            buildFileUnambiguous.insert({ name, buildFile });
+            buildFileUnambiguous.insert({ lower, buildFile });
         }
     }
 
