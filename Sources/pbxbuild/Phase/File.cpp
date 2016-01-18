@@ -122,8 +122,19 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                 }
                 break;
             }
-            case pbxproj::PBX::GroupItem::kTypeGroup:
             case pbxproj::PBX::GroupItem::kTypeVersionGroup: {
+                pbxproj::XC::VersionGroup::shared_ptr const &versionGroup = std::static_pointer_cast <pbxproj::XC::VersionGroup> (buildFile->fileRef());
+
+                std::string path = environment.expand(versionGroup->resolve());
+                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, versionGroup, path);
+
+                Target::BuildRules::BuildRule::shared_ptr buildRule = buildRules.resolve(fileType, path);
+                Phase::File file = Phase::File(buildFile, buildRule, fileType, path, std::string(), fileNameDisambiguator);
+                result.push_back(file);
+                break;
+
+            }
+            case pbxproj::PBX::GroupItem::kTypeGroup: {
                 fprintf(stderr, "warning: unhandled group item type %lu\n", static_cast<unsigned long>(buildFile->fileRef()->type()));
                 break;
             }

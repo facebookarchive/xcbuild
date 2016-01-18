@@ -195,3 +195,14 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
     return Resolve(specManager, domains, filePath);
 }
 
+pbxspec::PBX::FileType::shared_ptr FileTypeResolver::
+Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::XC::VersionGroup::shared_ptr const &versionGroup, std::string const &filePath)
+{
+    if (!versionGroup->versionGroupType().empty()) {
+        if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(versionGroup->versionGroupType(), domains)) {
+            return fileType;
+        }
+    }
+
+    return Resolve(specManager, domains, filePath);
+}

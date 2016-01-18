@@ -37,6 +37,13 @@ public:
      */
     static pbxspec::PBX::FileType::shared_ptr
     Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::FileReference::shared_ptr const &fileReference, std::string const &filePath);
+
+    /*
+     * Determine the file type of a version group. Uses the explicit file type or falls back
+     * to autodetecting the file type from the path provided.
+     */
+    static pbxspec::PBX::FileType::shared_ptr
+    Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::XC::VersionGroup::shared_ptr const &versionGroup, std::string const &filePath);
 };
 
 }
