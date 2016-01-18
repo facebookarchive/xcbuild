@@ -79,6 +79,11 @@ TEST(MakefileDependencyInfo, Escapes)
     ASSERT_NE(info3, nullptr);
     EXPECT_EQ(info3->dependencyInfo().inputs(), std::vector<std::string>({ "in\\put" }));
     EXPECT_EQ(info3->dependencyInfo().outputs(), std::vector<std::string>({ "out\\put" }));
+
+    auto info4 = MakefileDependencyInfo::Create("out\\ put: in\\ put");
+    ASSERT_NE(info4, nullptr);
+    EXPECT_EQ(info4->dependencyInfo().inputs(), std::vector<std::string>({ "in put" }));
+    EXPECT_EQ(info4->dependencyInfo().outputs(), std::vector<std::string>({ "out put" }));
 }
 
 TEST(MakefileDependencyInfo, Comments)

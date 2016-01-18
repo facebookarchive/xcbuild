@@ -117,7 +117,7 @@ Create(std::string const &contents)
                     /* Invalid character. */
                     return nullptr;
             }
-        } else if (*it == '#' || *it == '%') {
+        } else if (*it == '#' || *it == '%' || (escaped && isspace(*it))) {
             switch (state) {
                 case State::Begin:
                     /* Invalid character. */
