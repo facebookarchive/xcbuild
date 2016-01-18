@@ -86,7 +86,7 @@ AddOptionArgumentValues(std::vector<std::string> *arguments, pbxsetting::Environ
         (option->type() == "PathList" || option->type() == "pathlist")) {
         std::vector<std::string> values = pbxsetting::Type::ParseList(environment.resolve(option->name()));
         if (option->flattenRecursiveSearchPathsInValue()) {
-            values = Tool::SearchPaths::ExpandRecursive(values, workingDirectory);
+            values = Tool::SearchPaths::ExpandRecursive(values, environment, workingDirectory);
         }
 
         for (std::string const &value : values) {

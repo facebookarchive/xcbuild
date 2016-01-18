@@ -27,7 +27,7 @@ SearchPaths(
 }
 
 static void
-AppendPaths(std::vector<std::string> *args, std::string const &workingDirectory, std::vector<std::string> const &paths)
+AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &environment, std::string const &workingDirectory, std::vector<std::string> const &paths)
 {
     for (std::string const &path : paths) {
         std::string recursive = "**";
@@ -38,6 +38,9 @@ AppendPaths(std::vector<std::string> *args, std::string const &workingDirectory,
             std::string absoluteRoot = FSUtil::ResolveRelativePath(root, workingDirectory);
             FSUtil::EnumerateRecursive(absoluteRoot, [&](std::string const &path) -> bool {
                 // TODO(grp): Use build settings for included and excluded recursive paths.
+                // Included: INCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES
+                // Excluded: EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES
+                // Follow: RECURSIVE_SEARCH_PATHS_FOLLOW_SYMLINKS
 
                 if (FSUtil::TestForDirectory(path)) {
                     std::string relativePath = root + "/" + path.substr(absoluteRoot.size() + 1);
@@ -52,10 +55,10 @@ AppendPaths(std::vector<std::string> *args, std::string const &workingDirectory,
 }
 
 std::vector<std::string> Tool::SearchPaths::
-ExpandRecursive(std::vector<std::string> const &paths, std::string const &workingDirectory)
+ExpandRecursive(std::vector<std::string> const &paths, pbxsetting::Environment const &environment, std::string const &workingDirectory)
 {
     std::vector<std::string> result;
-    AppendPaths(&result, workingDirectory, paths);
+    AppendPaths(&result, environment, workingDirectory, paths);
     return result;
 }
 
@@ -63,18 +66,18 @@ Tool::SearchPaths Tool::SearchPaths::
 Create(pbxsetting::Environment const &environment, std::string const &workingDirectory)
 {
     std::vector<std::string> headerSearchPaths;
-    AppendPaths(&headerSearchPaths, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("PRODUCT_TYPE_HEADER_SEARCH_PATHS")));
-    AppendPaths(&headerSearchPaths, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("HEADER_SEARCH_PATHS")));
+    AppendPaths(&headerSearchPaths, environment, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("PRODUCT_TYPE_HEADER_SEARCH_PATHS")));
+    AppendPaths(&headerSearchPaths, environment, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("HEADER_SEARCH_PATHS")));
 
     std::vector<std::string> userHeaderSearchPaths;
-    AppendPaths(&userHeaderSearchPaths, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("USER_HEADER_SEARCH_PATHS")));
+    AppendPaths(&userHeaderSearchPaths, environment, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("USER_HEADER_SEARCH_PATHS")));
 
     std::vector<std::string> frameworkSearchPaths;
-    AppendPaths(&frameworkSearchPaths, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("FRAMEWORK_SEARCH_PATHS")));
-    AppendPaths(&frameworkSearchPaths, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("PRODUCT_TYPE_FRAMEWORK_SEARCH_PATHS")));
+    AppendPaths(&frameworkSearchPaths, environment, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("FRAMEWORK_SEARCH_PATHS")));
+    AppendPaths(&frameworkSearchPaths, environment, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("PRODUCT_TYPE_FRAMEWORK_SEARCH_PATHS")));
 
     std::vector<std::string> librarySearchPaths;
-    AppendPaths(&librarySearchPaths, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("LIBRARY_SEARCH_PATHS")));
+    AppendPaths(&librarySearchPaths, environment, workingDirectory, pbxsetting::Type::ParseList(environment.resolve("LIBRARY_SEARCH_PATHS")));
 
     return Tool::SearchPaths(headerSearchPaths, userHeaderSearchPaths, frameworkSearchPaths, librarySearchPaths);
 }

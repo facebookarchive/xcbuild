@@ -47,7 +47,7 @@ public:
 
 public:
     static std::vector<std::string>
-    ExpandRecursive(std::vector<std::string> const &paths, std::string const &workingDirectory);
+    ExpandRecursive(std::vector<std::string> const &paths, pbxsetting::Environment const &environment, std::string const &workingDirectory);
 };
 
 }
