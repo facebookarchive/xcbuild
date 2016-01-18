@@ -29,7 +29,15 @@ SearchPaths(
 static void
 AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &environment, std::string const &workingDirectory, std::vector<std::string> const &paths)
 {
-    for (std::string const &path : paths) {
+    for (std::string path : paths) {
+        // TODO(grp): Is this the right place to insert the SDKROOT? Should all path lists have this, or just *_SEARCH_PATHS?
+        std::string const system = "/System";
+        std::string const usr    = "/usr";
+        if ((path.size() >= system.size() && path.compare(0, system.size(), system) == 0) ||
+            (path.size() >=    usr.size() && path.compare(0,    usr.size(),    usr) == 0)) {
+            path = environment.resolve("SDKROOT") + "/" + path;
+        }
+
         std::string recursive = "**";
         if (path.size() >= recursive.size() && path.substr(path.size() - recursive.size()) == recursive) {
             std::string root = path.substr(0, path.size() - recursive.size());
