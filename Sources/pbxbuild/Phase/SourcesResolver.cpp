@@ -51,7 +51,6 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     }
 
     /* Populate the tool context with what's needed for compilation. */
-    Tool::SearchPaths::Resolve(&phaseContext->toolContext(), targetEnvironment.environment());
     headermapResolver->resolve(&phaseContext->toolContext(), targetEnvironment.environment(), phaseEnvironment.target());
 
     std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());

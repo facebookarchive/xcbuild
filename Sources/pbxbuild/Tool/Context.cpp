@@ -12,8 +12,9 @@
 namespace Tool = pbxbuild::Tool;
 
 Tool::Context::
-Context(std::string const &workingDirectory) :
-    _workingDirectory(workingDirectory)
+Context(std::string const &workingDirectory, Tool::SearchPaths const &searchPaths) :
+    _workingDirectory(workingDirectory),
+    _searchPaths     (searchPaths)
 {
 }
 

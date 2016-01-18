@@ -25,7 +25,11 @@ private:
     std::vector<std::string> _librarySearchPaths;
 
 public:
-    SearchPaths();
+    SearchPaths(
+        std::vector<std::string> const &headerSearchPaths,
+        std::vector<std::string> const &userHeaderSearchPaths,
+        std::vector<std::string> const &frameworkSearchPaths,
+        std::vector<std::string> const &librarySearchPaths);
 
 public:
     std::vector<std::string> const &headerSearchPaths(void) const
@@ -38,18 +42,8 @@ public:
     { return _librarySearchPaths; }
 
 public:
-    std::vector<std::string> &headerSearchPaths(void)
-    { return _headerSearchPaths; }
-    std::vector<std::string> &userHeaderSearchPaths(void)
-    { return _userHeaderSearchPaths; }
-    std::vector<std::string> &frameworkSearchPaths(void)
-    { return _frameworkSearchPaths; }
-    std::vector<std::string> &librarySearchPaths(void)
-    { return _librarySearchPaths; }
-
-public:
-    static void
-    Resolve(Tool::Context *toolContext, pbxsetting::Environment const &environment);
+    static Tool::SearchPaths
+    Create(pbxsetting::Environment const &environment, std::string const &workingDirectory);
 
 public:
     static std::vector<std::string>

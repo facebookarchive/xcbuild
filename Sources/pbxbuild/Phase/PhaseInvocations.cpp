@@ -22,6 +22,7 @@
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
+namespace Target = pbxbuild::Target;
 
 Phase::PhaseInvocations::
 PhaseInvocations(std::vector<Tool::Invocation const> const &invocations) :
@@ -37,9 +38,14 @@ Phase::PhaseInvocations::
 Phase::PhaseInvocations Phase::PhaseInvocations::
 Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
 {
+    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    std::string const &workingDirectory = targetEnvironment.workingDirectory();
+
     /* Create the tool context for building. */
-    std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
-    Phase::Context phaseContext{Tool::Context(workingDirectory)};
+    Tool::SearchPaths searchPaths = Tool::SearchPaths::Create(targetEnvironment.environment(), workingDirectory);
+    Tool::Context toolContext = Tool::Context(workingDirectory, searchPaths);
+
+    Phase::Context phaseContext(toolContext);
 
     /* Filter build phases to ones appropriate for this target. */
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;

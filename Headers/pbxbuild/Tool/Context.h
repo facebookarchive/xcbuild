@@ -23,11 +23,11 @@ namespace Tool {
 class Context {
 private:
     std::string                 _workingDirectory;
+    SearchPaths                 _searchPaths;
 
 private:
     HeadermapInfo               _headermapInfo;
     CompilationInfo             _compilationInfo;
-    SearchPaths                 _searchPaths;
     std::vector<std::string>    _additionalInfoPlistContents;
 
 private:
@@ -35,20 +35,20 @@ private:
     std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation const>> _variantArchitectureInvocations;
 
 public:
-    Context(std::string const &workingDirectory);
+    Context(std::string const &workingDirectory, SearchPaths const &searchPaths);
     ~Context();
 
 public:
     std::string const &workingDirectory() const
     { return _workingDirectory; }
+    SearchPaths const &searchPaths() const
+    { return _searchPaths; }
 
 public:
     HeadermapInfo const &headermapInfo() const
     { return _headermapInfo; }
     CompilationInfo const &compilationInfo() const
     { return _compilationInfo; }
-    SearchPaths const &searchPaths() const
-    { return _searchPaths; }
     std::vector<std::string> const &additionalInfoPlistContents() const
     { return _additionalInfoPlistContents; }
 
@@ -57,8 +57,6 @@ public:
     { return _headermapInfo; }
     CompilationInfo &compilationInfo()
     { return _compilationInfo; }
-    SearchPaths &searchPaths()
-    { return _searchPaths; }
     std::vector<std::string> &additionalInfoPlistContents()
     { return _additionalInfoPlistContents; }
 
