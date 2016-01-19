@@ -9,6 +9,7 @@
 
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
+#include <pbxbuild/Tool/CompilerCommon.h>
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
@@ -46,56 +47,20 @@ AppendDialectFlags(std::vector<std::string> *args, std::string const &dialect, s
 }
 
 static void
-AppendCompoundFlag(std::vector<std::string> *args, std::string const &path, std::string const &prefix, bool concatenate)
-{
-    if (concatenate) {
-        args->push_back(prefix + path);
-    } else {
-        args->push_back(prefix);
-        args->push_back(path);
-    }
-}
-
-static void
-AppendCompoundFlags(std::vector<std::string> *args, std::vector<std::string> const &paths, std::string const &prefix, bool concatenate)
-{
-    for (std::string const &path : paths) {
-        AppendCompoundFlag(args, path, prefix, concatenate);
-    }
-}
-
-static void
-AppendPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, Tool::SearchPaths const &searchPaths, Tool::HeadermapInfo const &headermapInfo)
-{
-    AppendCompoundFlags(args, headermapInfo.systemHeadermapFiles(), "-I", true);
-    AppendCompoundFlags(args, headermapInfo.userHeadermapFiles(), "-iquote", false);
-
-    if (environment.resolve("USE_HEADER_SYMLINKS") == "YES") {
-        // TODO(grp): Create this symlink tree as needed.
-        AppendCompoundFlags(args, { environment.resolve("CPP_HEADER_SYMLINKS_DIR") }, "-I", true);
-    }
-
-    std::vector<std::string> specialIncludePaths = {
-        environment.resolve("DERIVED_FILE_DIR"),
-        environment.resolve("DERIVED_FILE_DIR") + "/" + environment.resolve("arch"),
-        environment.resolve("BUILT_PRODUCTS_DIR") + "/include",
-    };
-    AppendCompoundFlags(args, specialIncludePaths, "-I", true);
-    AppendCompoundFlags(args, searchPaths.userHeaderSearchPaths(), "-I", true);
-    AppendCompoundFlags(args, searchPaths.headerSearchPaths(), "-I", true);
-
-    std::vector<std::string> specialFrameworkPaths = {
-        environment.resolve("BUILT_PRODUCTS_DIR"),
-    };
-    AppendCompoundFlags(args, specialFrameworkPaths, "-F", true);
-    AppendCompoundFlags(args, searchPaths.frameworkSearchPaths(), "-F", true);
-}
-
-static void
 AppendPrefixHeaderFlags(std::vector<std::string> *args, std::string const &prefixHeader)
 {
     args->push_back("-include");
     args->push_back(prefixHeader);
+}
+
+static void
+AppendFrameworkPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, Tool::SearchPaths const &searchPaths)
+{
+    std::vector<std::string> specialFrameworkPaths = {
+        environment.resolve("BUILT_PRODUCTS_DIR"),
+    };
+    Tool::CompilerCommon::AppendCompoundFlags(args, "-F", true, specialFrameworkPaths);
+    Tool::CompilerCommon::AppendCompoundFlags(args, "-F", true, searchPaths.frameworkSearchPaths());
 }
 
 static void
@@ -122,7 +87,7 @@ static void
 AppendNotUsedInPrecompsFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment)
 {
     std::vector<std::string> preprocessorDefinitions = pbxsetting::Type::ParseList(environment.resolve("GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS"));
-    AppendCompoundFlags(args, preprocessorDefinitions, "-D", true);
+    Tool::CompilerCommon::AppendCompoundFlags(args, "-D", true, preprocessorDefinitions);
 
     std::vector<std::string> otherFlags = pbxsetting::Type::ParseList(environment.resolve("GCC_OTHER_CFLAGS_NOT_USED_IN_PRECOMPS"));
     args->insert(args->end(), otherFlags.begin(), otherFlags.end());
@@ -264,7 +229,8 @@ resolveSource(
 
     arguments.insert(arguments.end(), tokens.arguments().begin(), tokens.arguments().end());
     AppendCustomFlags(&arguments, env, fileType->GCCDialectName());
-    AppendPathFlags(&arguments, env, toolContext->searchPaths(), headermapInfo);
+    Tool::CompilerCommon::AppendIncludePathFlags(&arguments, env, toolContext->searchPaths(), headermapInfo);
+    AppendFrameworkPathFlags(&arguments, env, toolContext->searchPaths());
 
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(env.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
     std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");
