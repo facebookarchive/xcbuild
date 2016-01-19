@@ -15,7 +15,7 @@ using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
 using DependencyInfo = pbxbuild::Tool::Invocation::DependencyInfo;
 
 AuxiliaryFile::
-AuxiliaryFile(std::string const &path, std::vector<char> const &contents, bool executable) :
+AuxiliaryFile(std::string const &path, std::vector<uint8_t> const &contents, bool executable) :
     _path      (path),
     _contents  (contents),
     _executable(executable)
@@ -25,7 +25,7 @@ AuxiliaryFile(std::string const &path, std::vector<char> const &contents, bool e
 AuxiliaryFile::
 AuxiliaryFile(std::string const &path, std::string const &contents, bool executable) :
     _path      (path),
-    _contents  (std::vector<char>(contents.begin(), contents.end())),
+    _contents  (std::vector<uint8_t>(contents.begin(), contents.end())),
     _executable(executable)
 {
 }

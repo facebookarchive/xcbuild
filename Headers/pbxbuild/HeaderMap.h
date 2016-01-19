@@ -27,8 +27,8 @@ public:
     HeaderMap();
 
 public:
-    bool read(std::vector<char> const &buffer);
-    std::vector<char> write();
+    bool read(std::vector<uint8_t> const &buffer);
+    std::vector<uint8_t> write();
 
 public:
     void invalidate();

@@ -384,7 +384,7 @@ buildTargetAuxiliaryFiles(
                 return false;
             }
 
-            out.write(auxiliaryFile.contents().data(), auxiliaryFile.contents().size() * sizeof(char));
+            std::copy(auxiliaryFile.contents().begin(), auxiliaryFile.contents().end(), std::ostream_iterator<char>(out));
             out.close();
 
             if (auxiliaryFile.executable() && !FSUtil::TestForExecute(auxiliaryFile.path())) {

@@ -35,7 +35,7 @@ HeaderMap::HeaderMap() :
 }
 
 bool HeaderMap::
-read(std::vector<char> const &buffer)
+read(std::vector<uint8_t> const &buffer)
 {
     if (buffer.size() < sizeof(HMapHeader)) {
         return false;
@@ -106,10 +106,10 @@ read(std::vector<char> const &buffer)
     return true;
 }
 
-std::vector<char> HeaderMap::
+std::vector<uint8_t> HeaderMap::
 write()
 {
-    std::vector<char> buffer;
+    std::vector<uint8_t> buffer;
 
     if (_modified) {
         rehash(_header.NumBuckets);
