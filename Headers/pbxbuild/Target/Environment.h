@@ -20,55 +20,113 @@ namespace Build { class Context; }
 
 namespace Target {
 
+/*
+ * The resolved data for a specific build of a target. The build settings,
+ * variants, architectures, and target SDKs are determined upon creation.
+ */
 class Environment {
 private:
-    std::shared_ptr<Target::BuildRules>      _buildRules;
     xcsdk::SDK::Target::shared_ptr           _sdk;
+
+private:
+    std::shared_ptr<Target::BuildRules>      _buildRules;
     std::vector<std::string>                 _specDomains;
     pbxspec::PBX::BuildSystem::shared_ptr    _buildSystem;
+
+private:
     pbxspec::PBX::ProductType::shared_ptr    _productType;
     pbxspec::PBX::PackageType::shared_ptr    _packageType;
+
+private:
     std::shared_ptr<pbxsetting::Environment> _environment;
     std::vector<std::string>                 _variants;
     std::vector<std::string>                 _architectures;
+
+private:
     std::string                              _workingDirectory;
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> _buildFileDisambiguation;
 
-public:
+private:
     Environment();
-    ~Environment();
 
 public:
-    Target::BuildRules const &buildRules() const
-    { return *_buildRules.get(); }
+    /*
+     * The base SDK used for this target.
+     */
     xcsdk::SDK::Target::shared_ptr const &sdk() const
     { return _sdk; }
+
+public:
+    /*
+     * The build rules applicable to this target.
+     */
+    Target::BuildRules const &buildRules() const
+    { return *_buildRules.get(); }
+
+    /*
+     * The specification domains for this target.
+     */
     std::vector<std::string> const &specDomains() const
     { return _specDomains; }
+
+    /*
+     * The base build system used for this target.
+     */
     pbxspec::PBX::BuildSystem::shared_ptr const &buildSystem() const
     { return _buildSystem; }
+
+public:
+    /*
+     * The target's product type, if it has one.
+     */
     pbxspec::PBX::ProductType::shared_ptr const &productType() const
     { return _productType; }
+
+    /*
+     * The target's package type, if it has one.
+     */
     pbxspec::PBX::PackageType::shared_ptr const &packageType() const
     { return _packageType; }
 
 public:
+    /*
+     * The complete build setting environment for this build of the target.
+     */
     pbxsetting::Environment const &environment() const
     { return *_environment; }
+
+    /*
+     * The variants to build this target for.
+     */
     std::vector<std::string> const &variants() const
     { return _variants; }
+
+    /*
+     * The architectures to build this target for.
+     */
     std::vector<std::string> const &architectures() const
     { return _architectures; }
 
 public:
+    /*
+     * The working directory the target should be built in.
+     */
     std::string const &workingDirectory() const
     { return _workingDirectory; }
+
+    /*
+     * Diasmbiguates build files with matching names. If build files in this
+     * are output, they should append the string as a suffix to the base name.
+     */
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> const &buildFileDisambiguation() const
     { return _buildFileDisambiguation; }
 
 public:
+    /*
+     * Create a target environment for a specific build of a target.
+     */
     static std::unique_ptr<Environment>
-    Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, Build::Context const *context);
+    Create(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
 };
 
 }

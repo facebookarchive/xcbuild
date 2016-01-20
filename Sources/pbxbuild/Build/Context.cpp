@@ -40,7 +40,7 @@ targetEnvironment(Build::Environment const &buildEnvironment, pbxproj::PBX::Targ
     if (TEI != _targetEnvironments->end()) {
         return std::unique_ptr<Target::Environment>(new Target::Environment(TEI->second));
     } else {
-        std::unique_ptr<Target::Environment> targetEnvironment = Target::Environment::Create(buildEnvironment, target, this);
+        std::unique_ptr<Target::Environment> targetEnvironment = Target::Environment::Create(buildEnvironment, *this, target);
         if (targetEnvironment != nullptr) {
             _targetEnvironments->insert(std::make_pair(target, *targetEnvironment));
         }

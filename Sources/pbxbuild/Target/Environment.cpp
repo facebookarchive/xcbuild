@@ -19,11 +19,6 @@ Environment()
 {
 }
 
-Target::Environment::
-~Environment()
-{
-}
-
 static std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string>
 BuildFileDisambiguation(pbxproj::PBX::Target::shared_ptr const &target)
 {
@@ -226,7 +221,7 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
 }
 
 std::unique_ptr<Target::Environment> Target::Environment::
-Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target, Build::Context const *context)
+Create(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
     xcsdk::SDK::Target::shared_ptr sdk;
     std::vector<std::string> specDomains;
@@ -239,11 +234,11 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
         // use the default level order, because $(SRCROOT) comes below $(SDKROOT). Hack around this for now with a synthetic environment.
         // It's also in the wrong order because project settings should be below the SDK, but are needed to *load* the xcconfig.
         pbxsetting::Environment determinationEnvironment = buildEnvironment.baseEnvironment();
-        determinationEnvironment.insertFront(context->baseSettings(), false);
+        determinationEnvironment.insertFront(buildContext.baseSettings(), false);
 
-        projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), context->configuration());
+        projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), buildContext.configuration());
         if (projectConfiguration == nullptr) {
-            fprintf(stderr, "error: unable to find project configuration %s\n", context->configuration().c_str());
+            fprintf(stderr, "error: unable to find project configuration %s\n", buildContext.configuration().c_str());
             return nullptr;
         }
 
@@ -251,8 +246,8 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
         determinationEnvironment.insertFront(projectConfiguration->buildSettings(), false);
 
         pbxsetting::Environment projectActionEnvironment = determinationEnvironment;
-        projectActionEnvironment.insertFront(context->actionSettings(), false);
-        for (pbxsetting::Level const &level : context->overrideLevels()) {
+        projectActionEnvironment.insertFront(buildContext.actionSettings(), false);
+        for (pbxsetting::Level const &level : buildContext.overrideLevels()) {
             projectActionEnvironment.insertFront(level, false);
         }
 
@@ -261,9 +256,9 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
             determinationEnvironment.insertFront(projectConfigurationFile->level(), false);
         }
 
-        targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), context->configuration());
+        targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), buildContext.configuration());
         if (targetConfiguration == nullptr) {
-            fprintf(stderr, "error: unable to find target configuration %s\n", context->configuration().c_str());
+            fprintf(stderr, "error: unable to find target configuration %s\n", buildContext.configuration().c_str());
             return nullptr;
         }
 
@@ -272,8 +267,8 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
 
         // FIXME(grp): Similar issue for the target xcconfig. These levels aren't complete (no platform) but are needed to *get* which SDK to use.
         pbxsetting::Environment targetActionEnvironment = determinationEnvironment;
-        targetActionEnvironment.insertFront(context->actionSettings(), false);
-        for (pbxsetting::Level const &level : context->overrideLevels()) {
+        targetActionEnvironment.insertFront(buildContext.actionSettings(), false);
+        for (pbxsetting::Level const &level : buildContext.overrideLevels()) {
             targetActionEnvironment.insertFront(level, false);
         }
 
@@ -282,8 +277,8 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
             determinationEnvironment.insertFront(targetConfigurationFile->level(), false);
         }
 
-        determinationEnvironment.insertFront(context->actionSettings(), false);
-        for (pbxsetting::Level const &level : context->overrideLevels()) {
+        determinationEnvironment.insertFront(buildContext.actionSettings(), false);
+        for (pbxsetting::Level const &level : buildContext.overrideLevels()) {
             determinationEnvironment.insertFront(level, false);
         }
 
@@ -326,7 +321,7 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
     // Now we have $(SDKROOT), and can make the real levels.
     pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
     environment.insertFront(buildSystem->defaultSettings(), true);
-    environment.insertFront(context->baseSettings(), false);
+    environment.insertFront(buildContext.baseSettings(), false);
     environment.insertFront(pbxsetting::Level({
         pbxsetting::Setting::Parse("GCC_VERSION", "$(DEFAULT_COMPILER)"),
     }), false);
@@ -358,8 +353,8 @@ Create(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_
     }
     environment.insertFront(targetConfiguration->buildSettings(), false);
 
-    environment.insertFront(context->actionSettings(), false);
-    for (pbxsetting::Level const &level : context->overrideLevels()) {
+    environment.insertFront(buildContext.actionSettings(), false);
+    for (pbxsetting::Level const &level : buildContext.overrideLevels()) {
         environment.insertFront(level, false);
     }
 
