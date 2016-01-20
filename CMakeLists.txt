@@ -70,6 +70,9 @@ set(libplist_SOURCES
     Sources/plist/Format/ASCIIWriter.cpp
     Sources/plist/Format/ASCII.cpp
     #
+    Sources/plist/Format/JSONWriter.cpp
+    Sources/plist/Format/JSON.cpp
+    #
     Sources/plist/Format/Any.cpp
     )
 
@@ -397,6 +400,7 @@ ADD_UNIT_GTEST(plist Boolean Tests/plist/test_Boolean.cpp)
 ADD_UNIT_GTEST(plist String Tests/plist/test_String.cpp)
 ADD_UNIT_GTEST(plist Encoding Tests/plist/Format/test_Encoding.cpp)
 ADD_UNIT_GTEST(plist ASCII Tests/plist/Format/test_ASCII.cpp)
+ADD_UNIT_GTEST(plist JSON Tests/plist/Format/test_JSON.cpp)
 ADD_UNIT_GTEST(plist XML Tests/plist/Format/test_XML.cpp)
 
 ADD_UNIT_GTEST(ninja Value Tests/ninja/test_Value.cpp)

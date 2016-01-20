@@ -20,6 +20,7 @@
 #include <plist/Format/Type.h>
 #include <plist/Format/ASCII.h>
 #include <plist/Format/Binary.h>
+#include <plist/Format/JSON.h>
 #include <plist/Format/SimpleXML.h>
 #include <plist/Format/XML.h>
 #include <plist/Format/Any.h>
