@@ -148,24 +148,18 @@ parse(plist::Dictionary const *dict)
             for (size_t n = 0; n < TCV->count(); n++) {
                 auto TCI = TCV->value <plist::String> (n);
                 if (TCI != nullptr) {
-                    auto TCS = manager->toolchains();
-                    auto TCII = TCS.find(TCI->value());
-                    if (TCII == TCS.end()) {
-                        TCII = TCS.find(Toolchain::DefaultIdentifier());
-                    }
-
-                    if (TCII != TCS.end()) {
-                        _toolchains.push_back(TCII->second);
+                    if (auto toolchain = manager->findToolchain(TCI->value())) {
+                        _toolchains.push_back(toolchain);
+                    } else if (auto defaultToolchain = manager->findToolchain(Toolchain::DefaultIdentifier())) {
+                        _toolchains.push_back(defaultToolchain);
                     }
                 }
             }
         }
     } else {
         if (std::shared_ptr<Manager> manager = _manager.lock()) {
-            auto const &TCS = manager->toolchains();
-            auto TCII = TCS.find(Toolchain::DefaultIdentifier());
-            if (TCII != TCS.end()) {
-                _toolchains.push_back(TCII->second);
+            if (auto defaultToolchain = manager->findToolchain(Toolchain::DefaultIdentifier())) {
+                _toolchains.push_back(defaultToolchain);
             }
         }
     }

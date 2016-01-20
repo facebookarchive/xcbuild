@@ -25,6 +25,7 @@ public:
 private:
     std::weak_ptr<Manager> _manager;
     std::string            _path;
+    std::string            _name;
     std::string            _identifier;
 
 public:
@@ -40,6 +41,8 @@ public:
     { return _path; }
 
 public:
+    inline std::string const &name() const
+    { return _name; }
     inline std::string const &identifier() const
     { return _identifier; }
 

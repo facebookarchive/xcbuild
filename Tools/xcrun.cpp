@@ -244,10 +244,12 @@ main(int argc, char **argv)
     /*
      * Handle the basic options that don't need SDKs.
      */
-    if (options.help()) {
-        return Help();
-    } else if (options.version()) {
-        return Version();
+    if (options.tool().empty()) {
+        if (options.help()) {
+            return Help();
+        } else if (options.version()) {
+            return Version();
+        }
     }
 
     /*
@@ -314,9 +316,8 @@ main(int argc, char **argv)
     xcsdk::SDK::Toolchain::vector toolchains = target->toolchains();
     if (!toolchain.empty()) {
         /* If the custom toolchain exists, use it instead. */
-        auto it = manager->toolchains().find(toolchain);
-        if (it != manager->toolchains().end()) {
-            toolchains = { it->second };
+        if (auto TC = manager->findToolchain(toolchain)) {
+            toolchains = { TC };
         } else {
             fprintf(stderr, "error: unable to find toolchain '%s'\n", toolchain.c_str());
             return -1;

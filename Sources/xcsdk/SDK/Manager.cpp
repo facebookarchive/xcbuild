@@ -12,6 +12,7 @@
 
 using xcsdk::SDK::Manager;
 using xcsdk::SDK::Target;
+using xcsdk::SDK::Toolchain;
 using pbxsetting::Setting;
 using pbxsetting::Level;
 using libutil::FSUtil;
@@ -29,13 +30,28 @@ findTarget(std::string const &name) const
 {
     for (Platform::shared_ptr const &platform : _platforms) {
         for (Target::shared_ptr const &target : platform->targets()) {
+            /* Try both the name and the path; either are valid. */
             if (target->canonicalName() == name || target->path() == name) {
                 return target;
             }
+        }
 
-            if (platform->name() == name || platform->path() == name) {
-                return platform->targets().back();
-            }
+        /* If the platform name matches but no targets do, use any target. */
+        if (platform->name() == name || platform->path() == name) {
+            return platform->targets().back();
+        }
+    }
+
+    return nullptr;
+}
+
+Toolchain::shared_ptr Manager::
+findToolchain(std::string const &name) const
+{
+    for (Toolchain::shared_ptr const &toolchain : _toolchains) {
+        /* Match liberally: name, identifier, or path; all are valid. */
+        if (toolchain->name() == name || toolchain->identifier() == name || toolchain->path() == name) {
+            return toolchain;
         }
     }
 
@@ -59,9 +75,8 @@ computedSettings(void) const
         Setting::Parse("DERIVED_DATA_DIR", "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData"),
     };
 
-    auto tcit = _toolchains.find(Toolchain::DefaultIdentifier());
-    if (tcit != _toolchains.end()) {
-        settings.push_back(Setting::Create("DT_TOOLCHAIN_DIR", tcit->second->path()));
+    if (Toolchain::shared_ptr defaultToolchain = findToolchain(Toolchain::DefaultIdentifier())) {
+        settings.push_back(Setting::Create("DT_TOOLCHAIN_DIR", defaultToolchain->path()));
     } else {
         settings.push_back(Setting::Create("DT_TOOLCHAIN_DIR", ""));
     }
@@ -95,13 +110,13 @@ Open(std::string const &path)
     auto manager = std::make_shared <Manager> ();
     manager->_path = path;
 
-    std::map<std::string, std::shared_ptr<Toolchain>> toolchains;
+    std::vector<std::shared_ptr<Toolchain>> toolchains;
 
     std::string toolchainsPath = path + "/Toolchains";
     FSUtil::EnumerateDirectory(toolchainsPath, "*.xctoolchain", [&](std::string const &filename) -> bool {
         auto toolchain = SDK::Toolchain::Open(manager, toolchainsPath + "/" + filename);
         if (toolchain != nullptr) {
-            toolchains.insert({ toolchain->identifier(), toolchain });
+            toolchains.push_back(toolchain);
         }
 
         return true;

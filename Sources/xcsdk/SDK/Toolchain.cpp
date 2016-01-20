@@ -79,6 +79,7 @@ Open(std::shared_ptr<Manager> manager, std::string const &path)
         // Save some useful info
         //
         toolchain->_path = FSUtil::GetDirectoryName(realPath);
+        toolchain->_name = FSUtil::GetBaseNameWithoutExtension(toolchain->_path);
     } else {
         toolchain = nullptr;
     }
