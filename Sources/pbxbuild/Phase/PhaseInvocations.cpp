@@ -39,11 +39,17 @@ Phase::PhaseInvocations Phase::PhaseInvocations::
 Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-    std::string const &workingDirectory = targetEnvironment.workingDirectory();
 
     /* Create the tool context for building. */
-    Tool::SearchPaths searchPaths = Tool::SearchPaths::Create(targetEnvironment.environment(), workingDirectory);
-    Tool::Context toolContext = Tool::Context(workingDirectory, searchPaths);
+    Tool::SearchPaths searchPaths = Tool::SearchPaths::Create(
+        targetEnvironment.environment(),
+        targetEnvironment.workingDirectory());
+    Tool::Context toolContext = Tool::Context(
+        targetEnvironment.sdk(),
+        targetEnvironment.toolchains(),
+        targetEnvironment.executablePaths(),
+        targetEnvironment.workingDirectory(),
+        searchPaths);
 
     Phase::Context phaseContext(toolContext);
 

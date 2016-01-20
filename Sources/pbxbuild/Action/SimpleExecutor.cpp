@@ -183,7 +183,7 @@ performInvocations(
 {
     for (Tool::Invocation const &invocation : orderedInvocations) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
-        if (invocation.executable().empty()) {
+        if (invocation.executable().path().empty()) {
             continue;
         }
 
@@ -193,19 +193,7 @@ performInvocations(
 
         std::map<std::string, std::string> sortedEnvironment = std::map<std::string, std::string>(invocation.environment().begin(), invocation.environment().end());
 
-        std::string executable = invocation.executable();
-
-        std::string builtinPrefix = "builtin-";
-        bool builtin = executable.compare(0, builtinPrefix.size(), builtinPrefix) == 0;
-
-        if (!builtin && !FSUtil::IsAbsolutePath(executable)) {
-            executable = FSUtil::FindExecutable(executable, targetEnvironment.executablePaths());
-            if (executable.empty()) {
-                fprintf(stderr, "error: unable to find executable %s\n", invocation.executable().c_str());
-            }
-        }
-
-        Formatter::Print(_formatter->beginInvocation(invocation, executable, createProductStructure));
+        Formatter::Print(_formatter->beginInvocation(invocation, invocation.executable().displayName(), createProductStructure));
 
         if (!_dryRun) {
             for (std::string const &output : invocation.outputs()) {
@@ -216,27 +204,29 @@ performInvocations(
                 }
             }
 
-            if (builtin) {
-                std::shared_ptr<builtin::Driver> driver = _builtins.driver(executable);
+            if (!invocation.executable().builtin().empty()) {
+                /* For built-in tools, run them in-process. */
+                std::shared_ptr<builtin::Driver> driver = _builtins.driver(invocation.executable().builtin());
                 if (driver == nullptr) {
-                    Formatter::Print(_formatter->finishInvocation(invocation, executable, createProductStructure));
+                    Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
                     return std::make_pair(false, std::vector<Tool::Invocation const>({ invocation }));
                 }
 
                 if (driver->run(invocation.arguments(), invocation.environment(), invocation.workingDirectory()) != 0) {
-                    Formatter::Print(_formatter->finishInvocation(invocation, executable, createProductStructure));
+                    Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
                     return std::make_pair(false, std::vector<Tool::Invocation const>({ invocation }));
                 }
             } else {
+                /* External tool, run the tool externally. */
                 Subprocess process;
-                if (!process.execute(executable, invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
-                    Formatter::Print(_formatter->finishInvocation(invocation, executable, createProductStructure));
+                if (!process.execute(invocation.executable().path(), invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
+                    Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
                     return std::make_pair(false, std::vector<Tool::Invocation const>({ invocation }));
                 }
             }
         }
 
-        Formatter::Print(_formatter->finishInvocation(invocation, executable, createProductStructure));
+        Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
     }
 
     return std::make_pair(true, std::vector<Tool::Invocation const>());

@@ -92,7 +92,7 @@ resolve(
      * Create the invocation.
      */
     Tool::Invocation invocation;
-    invocation.executable() = tokens.executable();
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
     invocation.arguments() = arguments;
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();

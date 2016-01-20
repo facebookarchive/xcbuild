@@ -41,7 +41,7 @@ resolve(
     }
 
     Tool::Invocation invocation;
-    invocation.executable() = "/usr/bin/touch";
+    invocation.executable() = Tool::Invocation::Executable::Absolute("/usr/bin/touch");
     invocation.arguments() = { "-c", input };
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.outputs() = { output };

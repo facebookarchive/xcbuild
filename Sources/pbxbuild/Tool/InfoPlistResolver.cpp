@@ -62,7 +62,7 @@ resolve(
     bool showEnvironmentInLog = false;
 
     Tool::Invocation invocation;
-    invocation.executable() = tokens.executable();
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
     invocation.arguments() = tokens.arguments();
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();

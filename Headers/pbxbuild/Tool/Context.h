@@ -22,25 +22,43 @@ namespace Tool {
 
 class Context {
 private:
-    std::string                 _workingDirectory;
-    SearchPaths                 _searchPaths;
+    xcsdk::SDK::Target::shared_ptr      _sdk;
+    xcsdk::SDK::Toolchain::vector       _toolchains;
+    std::vector<std::string>            _executablePaths;
+    std::string                         _workingDirectory;
 
 private:
-    HeadermapInfo               _headermapInfo;
-    CompilationInfo             _compilationInfo;
-    std::vector<std::string>    _additionalInfoPlistContents;
+    SearchPaths                         _searchPaths;
 
 private:
-    std::vector<Tool::Invocation const>                                                _invocations;
+    HeadermapInfo                       _headermapInfo;
+    CompilationInfo                     _compilationInfo;
+    std::vector<std::string>            _additionalInfoPlistContents;
+
+private:
+    std::vector<Tool::Invocation const> _invocations;
     std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation const>> _variantArchitectureInvocations;
 
 public:
-    Context(std::string const &workingDirectory, SearchPaths const &searchPaths);
+    Context(
+        xcsdk::SDK::Target::shared_ptr const &sdk,
+        xcsdk::SDK::Toolchain::vector const &toolchains,
+        std::vector<std::string> const &executablePaths,
+        std::string const &workingDirectory,
+        SearchPaths const &searchPaths);
     ~Context();
 
 public:
+    xcsdk::SDK::Target::shared_ptr const &sdk() const
+    { return _sdk; }
+    xcsdk::SDK::Toolchain::vector const &toolchains() const
+    { return _toolchains; }
+    std::vector<std::string> const &executablePaths() const
+    { return _executablePaths; }
     std::string const &workingDirectory() const
     { return _workingDirectory; }
+
+public:
     SearchPaths const &searchPaths() const
     { return _searchPaths; }
 

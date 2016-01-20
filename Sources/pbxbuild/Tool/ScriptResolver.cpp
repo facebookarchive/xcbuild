@@ -64,7 +64,7 @@ resolve(
     std::string fullWorkingDirectory = FSUtil::ResolveRelativePath(legacyTarget->buildWorkingDirectory(), toolContext->workingDirectory());
 
     Tool::Invocation invocation;
-    invocation.executable() = legacyTarget->buildToolPath();
+    invocation.executable() = Tool::Invocation::Executable::Determine(legacyTarget->buildToolPath(), toolContext->executablePaths());
     invocation.arguments() = pbxsetting::Type::ParseList(script);
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = fullWorkingDirectory;
@@ -110,7 +110,7 @@ resolve(
     std::unordered_map<std::string, std::string> environmentVariables = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
 
     Tool::Invocation invocation;
-    invocation.executable() = "/bin/sh";
+    invocation.executable() = Tool::Invocation::Executable::Absolute("/bin/sh");
     invocation.arguments() = { "-c", Escape::Shell(scriptFilePath) };
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
@@ -172,7 +172,7 @@ resolve(
     std::unordered_map<std::string, std::string> environmentVariables = ruleEnvironment.computeValues(pbxsetting::Condition::Empty());
 
     Tool::Invocation invocation;
-    invocation.executable() = "/bin/sh";
+    invocation.executable() = Tool::Invocation::Executable::Absolute("/bin/sh");
     invocation.arguments() = { "-c", buildRule->script() };
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();

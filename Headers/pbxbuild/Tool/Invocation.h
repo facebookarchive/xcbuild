@@ -54,8 +54,63 @@ public:
         { return _path; }
     };
 
+public:
+    /*
+     * Represents the executable used to run the tool for the invocation.
+     */
+    class Executable {
+    private:
+        std::string _path;
+        std::string _builtin;
+
+    public:
+        Executable(std::string const &path, std::string const &builtin);
+
+    public:
+        /*
+         * The path to the executable. If this executable is a bulitin tool, points
+         * to a standalone executable verison of that tool.
+         */
+        std::string const &path() const
+        { return _path; }
+
+        /*
+         * The name of the builtin tool this executable corresponds to.
+         */
+        std::string const &builtin() const
+        { return _builtin; }
+
+    public:
+        /*
+         * The user-facing name to show for the executable. For builtin tools, this
+         * uses the shorter name of the bulitin tool rather than the filesystem path.
+         */
+        std::string const &displayName() const;
+
+    public:
+        /*
+         * Creates an executable from an unknown string. The executable could
+         * be a builtin tool (starts with "builtin-"), an absolute path to a tool,
+         * or a relative path to search in the executable paths.
+         */
+        static Executable
+        Determine(std::string const &executable, std::vector<std::string> const &executablePaths);
+
+        /*
+         * Creates an executable with a known absolute path.
+         */
+        static Executable
+        Absolute(std::string const &path);
+
+        /*
+         * Creates an executable for a known built-in tool.
+         */
+        static Executable
+        Builtin(std::string const &name);
+    };
+
 private:
-    std::string                                  _executable;
+    Executable                                   _executable;
     std::vector<std::string>                     _arguments;
     std::unordered_map<std::string, std::string> _environment;
     std::string                                  _workingDirectory;
@@ -85,7 +140,7 @@ public:
     ~Invocation();
 
 public:
-    std::string const &executable() const
+    Executable const &executable() const
     { return _executable; }
     std::vector<std::string> const &arguments() const
     { return _arguments; }
@@ -95,7 +150,7 @@ public:
     { return _workingDirectory; }
 
 public:
-    std::string &executable()
+    Executable &executable()
     { return _executable; }
     std::vector<std::string> &arguments()
     { return _arguments; }

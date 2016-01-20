@@ -51,7 +51,7 @@ resolve(
     }
 
     Tool::Invocation invocation;
-    invocation.executable() = tokens.executable();
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
     invocation.arguments() = tokens.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
@@ -76,7 +76,7 @@ resolve(
     std::string const &resolvedLogMessage = (!logMessage.empty() ? logMessage : tokens.logMessage());
 
     Tool::Invocation invocation;
-    invocation.executable() = tokens.executable();
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
     invocation.arguments() = tokens.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();

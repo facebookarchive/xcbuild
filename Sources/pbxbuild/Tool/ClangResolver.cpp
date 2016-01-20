@@ -172,7 +172,7 @@ resolvePrecompiledHeader(
         env.expand(_compiler->dependencyInfoFile()));
 
     Tool::Invocation invocation;
-    invocation.executable() = tokens.executable();
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
@@ -268,7 +268,7 @@ resolveSource(
         env.expand(_compiler->dependencyInfoFile()));
 
     Tool::Invocation invocation;
-    invocation.executable() = tokens.executable();
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();

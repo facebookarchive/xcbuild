@@ -119,7 +119,7 @@ NinjaInvocationPhonyOutput(Tool::Invocation const &invocation)
      */
 
     // TODO(grp): Handle identical phony output invocations in a build.
-    std::string key = invocation.executable();
+    std::string key = invocation.executable().path();
     for (std::string const &arg : invocation.arguments()) {
         key += " " + arg;
     }
@@ -280,7 +280,7 @@ build(
          */
         std::unordered_set<std::string> invocationOutputs;
         for (Tool::Invocation const &invocation : phaseInvocations.invocations()) {
-            if (invocation.executable().empty()) {
+            if (invocation.executable().path().empty()) {
                 /* No outputs. */
                 continue;
             }
@@ -341,21 +341,6 @@ static std::string
 NinjaDependencyInfoExecutable()
 {
     return LocalExecutable("ninja-dependency-info");
-}
-
-static std::string
-ResolveExecutable(std::string const &executable, std::vector<std::string> const &searchPaths)
-{
-    std::string builtinPrefix = "builtin-";
-    bool builtin = executable.compare(0, builtinPrefix.size(), builtinPrefix) == 0;
-
-    if (builtin) {
-        return LocalExecutable(executable);
-    } else if (!FSUtil::IsAbsolutePath(executable)) {
-        return FSUtil::FindExecutable(executable, searchPaths);
-    } else {
-        return executable;
-    }
 }
 
 bool NinjaExecutor::
@@ -426,17 +411,7 @@ buildTargetInvocations(
      */
     for (Tool::Invocation const &invocation : invocations) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
-        if (invocation.executable().empty()) {
-            continue;
-        }
-
-        /*
-         * Find the executable to use for the invocation. For builtin tools, this will return
-         * a path to a real executable that Ninja can execute, rather than doing it in-process.
-         */
-        std::string executable = ResolveExecutable(invocation.executable(), targetEnvironment.executablePaths());
-        if (executable.empty()) {
-            fprintf(stderr, "error: unable to find executable %s\n", invocation.executable().c_str());
+        if (invocation.executable().path().empty()) {
             continue;
         }
 
@@ -444,7 +419,7 @@ buildTargetInvocations(
          * Build the invocation arguments. Must escape for shell arguments as Ninja passes
          * the command string directly to the shell, which would interpret spaces, etc as meaningful.
          */
-        std::string exec = Escape::Shell(executable);
+        std::string exec = Escape::Shell(invocation.executable().path());
         for (std::string const &arg : invocation.arguments()) {
             exec += " " + Escape::Shell(arg);
         }
@@ -465,7 +440,7 @@ buildTargetInvocations(
         /*
          * Determine the status message for Ninja to print for this invocation.
          */
-        std::string description = NinjaDescription(_formatter->beginInvocation(invocation, executable, false));
+        std::string description = NinjaDescription(_formatter->beginInvocation(invocation, invocation.executable().displayName(), false));
 
         /*
          * Add the dependency info converter & file.
