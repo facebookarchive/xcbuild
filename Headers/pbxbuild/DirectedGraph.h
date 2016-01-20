@@ -29,6 +29,9 @@ private:
     std::unordered_map<T, std::unordered_set<T>> _adjacency;
 
 public:
+    /*
+     * Inserts a node into the graph along with the nodes its adjacent to.
+     */
     void insert(T const &node, std::unordered_set<T> const &adjacent);
 
 public:

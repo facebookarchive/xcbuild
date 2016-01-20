@@ -18,6 +18,10 @@
 namespace pbxbuild {
 namespace Build {
 
+/*
+ * Resolves dependencies and produces a complete DAG for the targets
+ * in a scheme for a build action.
+ */
 class DependencyResolver {
 private:
     Build::Environment _buildEnvironment;
@@ -27,10 +31,19 @@ public:
     ~DependencyResolver();
 
 public:
+    /*
+     * Resolves dependencies within a scheme. The scheme used is as specified
+     * by the `Build::Context`, as well as the build action.
+     */
     DirectedGraph<pbxproj::PBX::Target::shared_ptr>
     resolveSchemeDependencies(Build::Context const &context) const;
 
 public:
+    /*
+     * Resolves legacy dependencies for targets in a project without a scheme.
+     * If `allTargets` is specified, include all targets in the build; if `target`
+     * is non-empty, include just that target; otherwise, include the first target.
+     */
     DirectedGraph<pbxproj::PBX::Target::shared_ptr>
     resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::string const &target) const;
 };

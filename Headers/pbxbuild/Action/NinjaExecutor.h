@@ -18,6 +18,9 @@ namespace ninja { class Writer; }
 namespace pbxbuild {
 namespace Action {
 
+/*
+ * Concrete executor that generates Ninja files.
+ */
 class NinjaExecutor : public Executor {
 public:
     NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun);

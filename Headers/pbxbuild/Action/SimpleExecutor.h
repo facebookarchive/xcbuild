@@ -16,6 +16,10 @@
 namespace pbxbuild {
 namespace Action {
 
+/*
+ * Simple executor that simply runs invocations in sequence. Advanced features
+ * like incremental builds, dependency info, and such are not supported.
+ */
 class SimpleExecutor : public Executor {
 private:
     builtin::Registry _builtins;

@@ -15,6 +15,9 @@
 namespace pbxbuild {
 namespace Action {
 
+/*
+ * Formats output with the default format.
+ */
 class DefaultFormatter : public Formatter {
 private:
     bool _color;
@@ -52,6 +55,10 @@ public:
     virtual std::string finishInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple);
 
 public:
+    /*
+     * Creates a default formatter. If color is true, terminal escapes
+     * are used for bold and colored text in the formatted output.
+     */
     static std::shared_ptr<DefaultFormatter>
     Create(bool color);
 };

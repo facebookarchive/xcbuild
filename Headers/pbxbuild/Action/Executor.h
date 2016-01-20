@@ -23,6 +23,11 @@ namespace Target { class Environment; }
 
 namespace Action {
 
+/*
+ * Abstract executor for builds. The executor is responsible for creating
+ * environments for the target graph and actually executing the build, taking
+ * into account the `formatter` and `dryRun` parameters passed in.
+ */
 class Executor {
 protected:
     std::shared_ptr<Formatter> _formatter;
@@ -35,6 +40,9 @@ public:
     virtual ~Executor();
 
 public:
+    /*
+     * Abstract build method. Override to implement the build.
+     */
     virtual bool build(
         Build::Environment const &buildEnvironment,
         Build::Context const &buildContext,

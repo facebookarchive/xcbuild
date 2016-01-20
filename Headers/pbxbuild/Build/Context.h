@@ -18,6 +18,11 @@
 namespace pbxbuild {
 namespace Build {
 
+/*
+ * Represents the options and inputs for a specific build. It holds the
+ * workspace, scheme, action, and configuration for the build, in addition
+ * to custom options that can be passed into certain builds.
+ */
 class Context {
 private:
     WorkspaceContext                  _workspaceContext;
@@ -39,40 +44,82 @@ public:
         std::string const &action,
         std::string const &configuration,
         bool defaultConfiguration,
-        std::vector<pbxsetting::Level> const &overrideLevels
-    );
+        std::vector<pbxsetting::Level> const &overrideLevels);
 
 public:
+    /*
+     * The workspace this build will take place in.
+     */
     WorkspaceContext const &workspaceContext() const
     { return _workspaceContext; }
+
+    /*
+     * The scheme the build will use.
+     */
     xcscheme::XC::Scheme::shared_ptr const &scheme() const
     { return _scheme; }
+
+    /*
+     * The group containing the active scheme.
+     */
     xcscheme::SchemeGroup::shared_ptr const &schemeGroup() const
     { return _schemeGroup; }
 
 public:
+    /*
+     * The action the build is for.
+     */
     std::string const &action() const
     { return _action; }
+
+    /*
+     * The configuration being built.
+     */
     std::string const &configuration() const
     { return _configuration; }
+
+    /*
+     * If the specified configuration is a default configuration, or was
+     * directly specified.
+     */
     bool defaultConfiguration() const
     { return _defaultConfiguration; }
 
 public:
+    /*
+     * Build setting levels to use as overrides for all targets in the build.
+     */
     std::vector<pbxsetting::Level> const &overrideLevels() const
     { return _overrideLevels; }
 
 public:
+    /*
+     * The base set of build settings from the full context.
+     */
     pbxsetting::Level baseSettings(void) const;
+
+    /*
+     * The build settings implied by the specified action.
+     */
     pbxsetting::Level actionSettings(void) const;
 
 public:
+    /*
+     * Create or fetch a target's computed environment.
+     */
     std::unique_ptr<Target::Environment>
     targetEnvironment(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const;
 
 public:
+    /*
+     * Finds a target by identifier within a project.
+     */
     pbxproj::PBX::Target::shared_ptr
     resolveTargetIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const;
+
+    /*
+     * Finds a target by the identifier of its product within a project.
+     */
     std::unique_ptr<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>>
     resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const;
 };

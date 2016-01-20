@@ -19,6 +19,9 @@ namespace Tool { class Invocation; }
 
 namespace Action {
 
+/*
+ * Abstract formatter for build output.
+ */
 class Formatter {
 protected:
     Formatter();
@@ -55,6 +58,10 @@ public:
     virtual std::string finishInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple) = 0;
 
 public:
+    /*
+     * Utility function to print a formatted string to standard output. This
+     * is less for use by formatters than by the clients of formatters.
+     */
     static void Print(std::string const &output);
 };
 

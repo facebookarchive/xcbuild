@@ -15,6 +15,10 @@
 namespace pbxbuild {
 namespace Build {
 
+/*
+ * Represents the collection of utilities needed for a build. These utilties
+ * are not tied to the build but are used across the build.
+ */
 class Environment {
 private:
     pbxspec::Manager::shared_ptr         _specManager;
@@ -22,19 +26,36 @@ private:
     pbxsetting::Environment              _baseEnvironment;
 
 public:
-    Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment);
+    Environment(
+        pbxspec::Manager::shared_ptr const &specManager,
+        std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager,
+        pbxsetting::Environment const &baseEnvironment);
 
 public:
+    /*
+     * The specification manager and specifications for the build.
+     */
     pbxspec::Manager::shared_ptr const &specManager() const
     { return _specManager; }
+
+    /*
+     * The SDK manager for the build.
+     */
     std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager() const
     { return _sdkManager; }
 
 public:
+    /*
+     * The base environment from the system.
+     */
     pbxsetting::Environment const &baseEnvironment() const
     { return _baseEnvironment; }
 
 public:
+    /*
+     * Creates a build environment from the default configuration
+     * of each of the build environment's subcomponents.
+     */
     static std::unique_ptr<Environment>
     Default(void);
 };
