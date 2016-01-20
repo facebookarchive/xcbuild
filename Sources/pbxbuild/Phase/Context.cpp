@@ -16,6 +16,7 @@
 #include <pbxbuild/Tool/InterfaceBuilderResolver.h>
 #include <pbxbuild/Tool/MakeDirectoryResolver.h>
 #include <pbxbuild/Tool/ScriptResolver.h>
+#include <pbxbuild/Tool/SwiftResolver.h>
 #include <pbxbuild/Tool/SymlinkResolver.h>
 #include <pbxbuild/Tool/TouchResolver.h>
 #include <pbxbuild/Tool/ToolResolver.h>
@@ -119,6 +120,16 @@ scriptResolver(Phase::Environment const &phaseEnvironment)
     }
 
     return _scriptResolver.get();
+}
+
+Tool::SwiftResolver const *Phase::Context::
+swiftResolver(Phase::Environment const &phaseEnvironment)
+{
+    if (_swiftResolver == nullptr) {
+        _swiftResolver = Tool::SwiftResolver::Create(phaseEnvironment);
+    }
+
+    return _swiftResolver.get();
 }
 
 Tool::SymlinkResolver const *Phase::Context::
@@ -360,6 +371,12 @@ resolveBuildFiles(
             } else if (toolIdentifier == Tool::InterfaceBuilderResolver::StoryboardCompilerToolIdentifier()) {
                 if (Tool::InterfaceBuilderResolver const *interfaceBuilderStoryboardCompilerResolver = this->interfaceBuilderStoryboardCompilerResolver(phaseEnvironment)) {
                     interfaceBuilderStoryboardCompilerResolver->resolve(&_toolContext, environment, files);
+                } else {
+                    return false;
+                }
+            } else if (toolIdentifier == Tool::SwiftResolver::ToolIdentifier()) {
+                if (Tool::SwiftResolver const *swiftResolver = this->swiftResolver(phaseEnvironment)) {
+                    swiftResolver->resolve(&_toolContext, environment, files, fileOutputDirectory);
                 } else {
                     return false;
                 }

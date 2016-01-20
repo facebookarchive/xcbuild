@@ -22,7 +22,7 @@ private:
 
 private:
     std::string                                            _linkerDriver;
-    std::unordered_set<std::string>                        _linkerArguments;
+    std::vector<std::string>                               _linkerArguments;
 
 public:
     CompilationInfo();
@@ -39,13 +39,13 @@ public:
 public:
     std::string const &linkerDriver() const
     { return _linkerDriver; }
-    std::unordered_set<std::string> const &linkerArguments() const
+    std::vector<std::string> const &linkerArguments() const
     { return _linkerArguments; }
 
 public:
     std::string &linkerDriver()
     { return _linkerDriver; }
-    std::unordered_set<std::string> &linkerArguments()
+    std::vector<std::string> &linkerArguments()
     { return _linkerArguments; }
 };
 

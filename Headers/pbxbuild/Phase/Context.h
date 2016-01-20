@@ -26,6 +26,7 @@ namespace Tool {
     class InterfaceBuilderResolver;
     class MakeDirectoryResolver;
     class ScriptResolver;
+    class SwiftResolver;
     class SymlinkResolver;
     class TouchResolver;
     class ToolResolver;
@@ -47,6 +48,7 @@ private:
     std::unique_ptr<Tool::InterfaceBuilderResolver>     _interfaceBuilderCompilerResolver;
     std::unique_ptr<Tool::InterfaceBuilderResolver>     _interfaceBuilderStoryboardCompilerResolver;
     std::unique_ptr<Tool::MakeDirectoryResolver>        _makeDirectoryResolver;
+    std::unique_ptr<Tool::SwiftResolver>                _swiftResolver;
     std::unique_ptr<Tool::ScriptResolver>               _scriptResolver;
     std::unique_ptr<Tool::SymlinkResolver>              _symlinkResolver;
     std::unique_ptr<Tool::TouchResolver>                _touchResolver;
@@ -73,6 +75,7 @@ public:
     Tool::InterfaceBuilderResolver const *interfaceBuilderStoryboardCompilerResolver(Phase::Environment const &phaseEnvironment);
     Tool::MakeDirectoryResolver const    *makeDirectoryResolver(Phase::Environment const &phaseEnvironment);
     Tool::ScriptResolver const           *scriptResolver(Phase::Environment const &phaseEnvironment);
+    Tool::SwiftResolver const            *swiftResolver(Phase::Environment const &phaseEnvironment);
     Tool::SymlinkResolver const          *symlinkResolver(Phase::Environment const &phaseEnvironment);
     Tool::TouchResolver const            *touchResolver(Phase::Environment const &phaseEnvironment);
     Tool::ToolResolver const             *toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier);

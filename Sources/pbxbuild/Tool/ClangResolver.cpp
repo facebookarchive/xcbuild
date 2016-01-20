@@ -310,7 +310,14 @@ resolveSource(
         compilationInfo->linkerDriver() = _compiler->execPath().raw();
     }
 
-    compilationInfo->linkerArguments().insert(options.linkerArgs().begin(), options.linkerArgs().end());
+    for (std::string const &linkerArg : options.linkerArgs()) {
+        std::vector<std::string> *linkerArguments = &compilationInfo->linkerArguments();
+
+        /* Avoid duplicating arguments for multiple compiler invocations. */
+        if (std::find(linkerArguments->begin(), linkerArguments->end(), linkerArg) == linkerArguments->end()) {
+            linkerArguments->push_back(linkerArg);
+        }
+    }
 }
 
 std::unique_ptr<Tool::ClangResolver> Tool::ClangResolver::

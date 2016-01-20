@@ -35,8 +35,7 @@ resolve(
     std::vector<Phase::File> const &inputLibraries,
     std::string const &output,
     std::vector<std::string> const &additionalArguments,
-    std::string const &executable
-)
+    std::string const &executable)
 {
     std::vector<std::string> special;
     std::vector<Tool::Invocation::AuxiliaryFile> auxiliaries;

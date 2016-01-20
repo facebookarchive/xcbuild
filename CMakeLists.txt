@@ -267,6 +267,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/CompilerCommon.cpp
     Sources/pbxbuild/Tool/LinkerResolver.cpp
     Sources/pbxbuild/Tool/ScriptResolver.cpp
+    Sources/pbxbuild/Tool/SwiftResolver.cpp
     Sources/pbxbuild/Tool/TouchResolver.cpp
     Sources/pbxbuild/Tool/ToolResolver.cpp
     Sources/pbxbuild/Phase/Context.cpp
