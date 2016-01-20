@@ -362,15 +362,30 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     std::vector<std::string> variants = ResolveVariants(environment);
     environment.insertFront(ArchitecturesVariantsLevel(architectures, variants), false);
 
+    /* At the target level and below, the SDKROOT changes to always be a SDK path. */
     environment.insertFront(pbxsetting::Level({
         pbxsetting::Setting::Create("SDKROOT", sdk->path()),
     }), false);
+
+    /* Determine toolchains. Must be after the SDK levels are added, so they can be a fallback. */
+    xcsdk::SDK::Toolchain::vector toolchains;
+    for (std::string const &toolchainName : pbxsetting::Type::ParseList(environment.resolve("TOOLCHAINS"))) {
+        if (xcsdk::SDK::Toolchain::shared_ptr toolchain = buildEnvironment.sdkManager()->findToolchain(toolchainName)) {
+            toolchains.push_back(toolchain);
+        }
+    }
+
+    /* Tool search directories. Use the toolchains just discovered. */
+    std::vector<std::string> executablePaths = sdk->executablePaths(toolchains);
 
     auto buildRules = std::make_shared<Target::BuildRules>(Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target));
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
     std::string workingDirectory = target->project()->basePath();
 
     std::unique_ptr<Target::Environment> te = std::unique_ptr<Target::Environment>(new Target::Environment());
+    te->_sdk = sdk;
+    te->_toolchains = toolchains;
+    te->_executablePaths = executablePaths;
     te->_buildRules = buildRules;
     te->_environment = std::unique_ptr<pbxsetting::Environment>(new pbxsetting::Environment(environment));
     te->_variants = variants;
@@ -378,7 +393,6 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     te->_buildSystem = buildSystem;
     te->_packageType = packageType;
     te->_productType = productType;
-    te->_sdk = sdk;
     te->_specDomains = specDomains;
     te->_workingDirectory = workingDirectory;
     te->_buildFileDisambiguation = buildFileDisambiguation;

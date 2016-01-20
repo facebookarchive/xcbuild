@@ -199,7 +199,7 @@ performInvocations(
         bool builtin = executable.compare(0, builtinPrefix.size(), builtinPrefix) == 0;
 
         if (!builtin && !FSUtil::IsAbsolutePath(executable)) {
-            executable = FSUtil::FindExecutable(executable, targetEnvironment.sdk()->executablePaths());
+            executable = FSUtil::FindExecutable(executable, targetEnvironment.executablePaths());
             if (executable.empty()) {
                 fprintf(stderr, "error: unable to find executable %s\n", invocation.executable().c_str());
             }

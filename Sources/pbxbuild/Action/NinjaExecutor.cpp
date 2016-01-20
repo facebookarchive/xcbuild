@@ -434,7 +434,7 @@ buildTargetInvocations(
          * Find the executable to use for the invocation. For builtin tools, this will return
          * a path to a real executable that Ninja can execute, rather than doing it in-process.
          */
-        std::string executable = ResolveExecutable(invocation.executable(), targetEnvironment.sdk()->executablePaths());
+        std::string executable = ResolveExecutable(invocation.executable(), targetEnvironment.executablePaths());
         if (executable.empty()) {
             fprintf(stderr, "error: unable to find executable %s\n", invocation.executable().c_str());
             continue;

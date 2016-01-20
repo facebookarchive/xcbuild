@@ -27,6 +27,8 @@ namespace Target {
 class Environment {
 private:
     xcsdk::SDK::Target::shared_ptr           _sdk;
+    xcsdk::SDK::Toolchain::vector            _toolchains;
+    std::vector<std::string>                 _executablePaths;
 
 private:
     std::shared_ptr<Target::BuildRules>      _buildRules;
@@ -51,10 +53,25 @@ private:
 
 public:
     /*
-     * The base SDK used for this target.
+     * The base SDK used for this target. Determined from the build context
+     * as well as what is specified in the target.
      */
     xcsdk::SDK::Target::shared_ptr const &sdk() const
     { return _sdk; }
+
+    /*
+     * The toolchains to use for this build. The SDK also has toolchains, but
+     * they might have been overridden by the TOOLCHAINS build setting.
+     */
+    xcsdk::SDK::Toolchain::vector const &toolchains() const
+    { return _toolchains; }
+
+    /*
+     * Search paths to look for tools for this target. Derived from the SDK
+     * and the toolchains listed above, but cached here for convenience.
+     */
+    std::vector<std::string> const &executablePaths() const
+    { return _executablePaths; }
 
 public:
     /*
