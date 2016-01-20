@@ -25,13 +25,42 @@ SwiftResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler) :
 }
 
 static std::string
-SwiftLibraryPath(pbxsetting::Environment const &environment)
+SwiftLibraryPath(pbxsetting::Environment const &environment, xcsdk::SDK::Target::shared_ptr const &sdk, xcsdk::SDK::Toolchain::vector const &toolchains)
 {
     std::string path = environment.resolve("SWIFT_LIBRARY_PATH");
-    if (path.empty()) {
-        // TODO(grp): Get the path by finding the Swift libraries in the toolchain.
+    if (!path.empty()) {
+        return path;
     }
-    return path;
+
+    /* What platform and library to search for. */
+    std::string const &platformName = sdk->platform()->name();
+    std::string swiftLibraryName = environment.resolve("SWIFT_STDLIB");
+
+    // TODO(grp): Use a static Swift runtime if appropriate.
+    std::string swiftLibraryDirectory = "swift";
+    std::string swiftLibrarySuffix = ".dylib";
+
+    /* Look in the toolchains for Swift libraries. */
+    std::vector<std::string> swiftLibraryPaths = {
+        swiftLibraryDirectory + "/" + platformName + "/" + "lib" + swiftLibraryName + swiftLibrarySuffix,
+        swiftLibraryDirectory + "/" +                      "lib" + swiftLibraryName + swiftLibrarySuffix,
+                                                           "lib" + swiftLibraryName + swiftLibrarySuffix,
+    };
+
+    for (xcsdk::SDK::Toolchain::shared_ptr const &toolchain : toolchains) {
+        for (std::string const &subpath : swiftLibraryPaths) {
+            /* The Swift library paths are relative to /usr/lib in the toolchain. */
+            std::string path = toolchain->path() + "/" + "usr" + "/" + "lib" + "/" + subpath;
+
+            /* If the Swift library exists, return the directory containing it. */
+            if (FSUtil::TestForPresence(path)) {
+                return FSUtil::GetDirectoryName(path);
+            }
+        }
+    }
+
+    /* Not found. */
+    return std::string();
 }
 
 static void
@@ -284,7 +313,12 @@ resolve(
     // TODO(grp): For multi-arch builds the below flags get added twice.
 
     /* Add Swift libraries to linker arguments. */
-    compilationInfo->linkerArguments().push_back("-L" + SwiftLibraryPath(environment));
+    std::string swiftLibraryPath = SwiftLibraryPath(environment, toolContext->sdk(), toolContext->toolchains());
+    if (!swiftLibraryPath.empty()) {
+        compilationInfo->linkerArguments().push_back("-L" + swiftLibraryPath);
+    } else {
+        fprintf(stderr, "warning: unable to find Swift libraries\n");
+    }
 
     /* Add Swift module to the linked result to allow debugging. */
     if (pbxsetting::Type::ParseBoolean(environment.resolve("GCC_GENERATE_DEBUGGING_SYMBOLS"))) {
