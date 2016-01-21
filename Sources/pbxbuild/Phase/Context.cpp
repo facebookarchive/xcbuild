@@ -12,6 +12,7 @@
 #include <pbxbuild/Tool/AssetCatalogResolver.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/CopyResolver.h>
+#include <pbxbuild/Tool/DittoResolver.h>
 #include <pbxbuild/Tool/InfoPlistResolver.h>
 #include <pbxbuild/Tool/InterfaceBuilderResolver.h>
 #include <pbxbuild/Tool/MakeDirectoryResolver.h>
@@ -72,6 +73,16 @@ copyResolver(Phase::Environment const &phaseEnvironment)
     return _copyResolver.get();
 }
 
+Tool::DittoResolver const *Phase::Context::
+dittoResolver(Phase::Environment const &phaseEnvironment)
+{
+    if (_dittoResolver == nullptr) {
+        _dittoResolver = Tool::DittoResolver::Create(phaseEnvironment);
+    }
+
+    return _dittoResolver.get();
+}
+
 Tool::InfoPlistResolver const *Phase::Context::
 infoPlistResolver(Phase::Environment const &phaseEnvironment)
 {
@@ -126,7 +137,9 @@ Tool::SwiftResolver const *Phase::Context::
 swiftResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_swiftResolver == nullptr) {
-        _swiftResolver = Tool::SwiftResolver::Create(phaseEnvironment);
+        if (Tool::DittoResolver const *dittoResolver = this->dittoResolver(phaseEnvironment)) {
+            _swiftResolver = Tool::SwiftResolver::Create(phaseEnvironment, *dittoResolver);
+        }
     }
 
     return _swiftResolver.get();

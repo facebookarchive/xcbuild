@@ -255,6 +255,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/PrecompiledHeaderInfo.cpp
     Sources/pbxbuild/Tool/SearchPaths.cpp
     Sources/pbxbuild/Tool/CopyResolver.cpp
+    Sources/pbxbuild/Tool/DittoResolver.cpp
     Sources/pbxbuild/Tool/SymlinkResolver.cpp
     Sources/pbxbuild/Tool/MakeDirectoryResolver.cpp
     Sources/pbxbuild/Tool/HeadermapResolver.cpp

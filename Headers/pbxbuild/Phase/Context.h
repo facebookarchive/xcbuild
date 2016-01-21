@@ -22,6 +22,7 @@ namespace Tool {
     class AssetCatalogResolver;
     class ClangResolver;
     class CopyResolver;
+    class DittoResolver;
     class InfoPlistResolver;
     class InterfaceBuilderResolver;
     class MakeDirectoryResolver;
@@ -44,6 +45,7 @@ private:
     std::unique_ptr<Tool::AssetCatalogResolver>         _assetCatalogResolver;
     std::unique_ptr<Tool::ClangResolver>                _clangResolver;
     std::unique_ptr<Tool::CopyResolver>                 _copyResolver;
+    std::unique_ptr<Tool::DittoResolver>                _dittoResolver;
     std::unique_ptr<Tool::InfoPlistResolver>            _infoPlistResolver;
     std::unique_ptr<Tool::InterfaceBuilderResolver>     _interfaceBuilderCompilerResolver;
     std::unique_ptr<Tool::InterfaceBuilderResolver>     _interfaceBuilderStoryboardCompilerResolver;
@@ -70,6 +72,7 @@ public:
     Tool::AssetCatalogResolver const     *assetCatalogResolver(Phase::Environment const &phaseEnvironment);
     Tool::ClangResolver const            *clangResolver(Phase::Environment const &phaseEnvironment);
     Tool::CopyResolver const             *copyResolver(Phase::Environment const &phaseEnvironment);
+    Tool::DittoResolver const            *dittoResolver(Phase::Environment const &phaseEnvironment);
     Tool::InfoPlistResolver const        *infoPlistResolver(Phase::Environment const &phaseEnvironment);
     Tool::InterfaceBuilderResolver const *interfaceBuilderCompilerResolver(Phase::Environment const &phaseEnvironment);
     Tool::InterfaceBuilderResolver const *interfaceBuilderStoryboardCompilerResolver(Phase::Environment const &phaseEnvironment);
