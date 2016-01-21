@@ -51,7 +51,7 @@ CopySwiftModules(Phase::Environment const &phaseEnvironment, Phase::Context *pha
 
     // TODO(grp): Find a better way of finding if this is building a framework.
     bool isFramework = false;
-    for (pbxspec::PBX::ProductType::shared_ptr productType = targetEnvironment.productType(); productType != nullptr; productType = std::static_pointer_cast<pbxspec::PBX::ProductType>(productType->base())) {
+    for (pbxspec::PBX::ProductType::shared_ptr productType = targetEnvironment.productType(); productType != nullptr; productType = productType->base()) {
         if (productType->identifier() == "com.apple.product-type.framework") {
             isFramework = true;
             break;

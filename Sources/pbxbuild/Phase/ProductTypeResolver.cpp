@@ -277,7 +277,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
      */
     bool isBundle = false;
     bool isFramework = false;
-    for (pbxspec::PBX::ProductType::shared_ptr productType = _productType; productType != nullptr; productType = std::static_pointer_cast<pbxspec::PBX::ProductType>(productType->base())) {
+    for (pbxspec::PBX::ProductType::shared_ptr productType = _productType; productType != nullptr; productType = productType->base()) {
         if (productType->identifier() == "com.apple.product-type.framework") {
             isFramework = true;
         } else if (productType->identifier() == "com.apple.product-type.bundle") {

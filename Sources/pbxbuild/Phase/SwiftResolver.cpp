@@ -32,7 +32,7 @@ ShouldBundleSwiftRuntime(Tool::Context const *toolContext, pbxsetting::Environme
 
         // TODO(grp): Find a better way of finding if this is building a application.
         bool isApplication = false;
-        for (pbxspec::PBX::ProductType::shared_ptr PT = productType; PT != nullptr; PT = std::static_pointer_cast<pbxspec::PBX::ProductType>(PT->base())) {
+        for (pbxspec::PBX::ProductType::shared_ptr PT = productType; PT != nullptr; PT = PT->base()) {
             if (PT->identifier() == "com.apple.product-type.application") {
                 isApplication = true;
                 break;
