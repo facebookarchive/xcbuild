@@ -77,23 +77,28 @@ settings() const
     std::string flagName;
     std::string settingName;
     std::string envName;
+    std::string swiftName;
 
     if (StartsWith(_name, "macosx")) {
         flagName = "macosx";
         settingName = "MACOSX";
         envName = "MACOSX";
+        swiftName = "macosx";
     } else if (StartsWith(_name, "iphone")) {
         flagName = "ios";
         settingName = "IPHONEOS";
         envName = "IPHONEOS";
+        swiftName = "ios";
     } else if (StartsWith(_name, "appletv")) {
         flagName = "tvos";
         settingName = "TVOS";
         envName = "TVOS";
+        swiftName = "tvos";
     } else if (StartsWith(_name, "watch")) {
         flagName = "watchos";
         settingName = "WATCHOS";
         envName = "WATCHOS";
+        swiftName = "watchos";
     } else {
         flagName = _name;
 
@@ -113,7 +118,7 @@ settings() const
     settings.push_back(Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_NAME", "m" + flagName + "-version-min"));
     settings.push_back(Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_PREFIX", "-m" + flagName + "-version-min="));
     settings.push_back(Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_ENV", envName + "_DEPLOYMENT_TARGET"));
-    settings.push_back(Setting::Create("SWIFT_PLATFORM_TARGET_PREFIX", flagName));
+    settings.push_back(Setting::Create("SWIFT_PLATFORM_TARGET_PREFIX", swiftName));
 
     settings.push_back(Setting::Parse("EFFECTIVE_PLATFORM_NAME", (_name == "macosx" ? "" : "-$(PLATFORM_NAME)")));
 
