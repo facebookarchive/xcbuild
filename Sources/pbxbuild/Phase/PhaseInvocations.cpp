@@ -18,6 +18,7 @@
 #include <pbxbuild/Phase/FrameworksResolver.h>
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/ShellScriptResolver.h>
+#include <pbxbuild/Phase/SwiftResolver.h>
 #include <pbxbuild/Tool/Context.h>
 
 namespace Phase = pbxbuild::Phase;
@@ -162,6 +163,14 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 if (!productType.resolve(phaseEnvironment, &phaseContext)) {
                     fprintf(stderr, "error: unable to resolve product type\n");
                 }
+            }
+
+            /*
+             * Swift requires the standard library be copied into the product.
+             */
+            Phase::SwiftResolver swift = Phase::SwiftResolver();
+            if (!swift.resolve(phaseEnvironment, &phaseContext)) {
+                fprintf(stderr, "error: unable to resolve swift\n");
             }
             break;
         }

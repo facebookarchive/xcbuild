@@ -270,6 +270,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/LinkerResolver.cpp
     Sources/pbxbuild/Tool/ScriptResolver.cpp
     Sources/pbxbuild/Tool/SwiftResolver.cpp
+    Sources/pbxbuild/Tool/SwiftStandardLibraryResolver.cpp
     Sources/pbxbuild/Tool/TouchResolver.cpp
     Sources/pbxbuild/Tool/ToolResolver.cpp
     Sources/pbxbuild/Phase/Context.cpp
@@ -280,6 +281,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Phase/HeadersResolver.cpp
     Sources/pbxbuild/Phase/LegacyTargetResolver.cpp
     Sources/pbxbuild/Phase/ProductTypeResolver.cpp
+    Sources/pbxbuild/Phase/SwiftResolver.cpp
     Sources/pbxbuild/Phase/ResourcesResolver.cpp
     Sources/pbxbuild/Phase/FrameworksResolver.cpp
     Sources/pbxbuild/Phase/SourcesResolver.cpp
