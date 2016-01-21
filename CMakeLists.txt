@@ -29,6 +29,9 @@ find_library(CORE_SERVICES CoreServices)
 include_directories(Headers)
 include_directories(PrivateHeaders)
 
+set(libext_SOURCES
+    Sources/ext/optional.cpp)
+
 set(libplist_SOURCES
     Sources/plist/Array.cpp
     Sources/plist/Boolean.cpp
@@ -308,6 +311,9 @@ set(libxcdriver_SOURCES
     Sources/xcdriver/ShowBuildSettingsAction.cpp
     Sources/xcdriver/ShowSDKsAction.cpp
     Sources/xcdriver/VersionAction.cpp)
+
+add_library(ext SHARED ${libext_SOURCES})
+target_link_libraries(ext)
 
 add_library(ninja SHARED ${libninja_SOURCES})
 target_link_libraries(ninja)
