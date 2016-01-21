@@ -47,7 +47,7 @@ adjacent(T const &node) const
 }
 
 template<class T>
-std::pair<bool, std::vector<T>> DirectedGraph<T>::
+ext::optional<std::vector<T>> DirectedGraph<T>::
 ordered(void) const
 {
     std::vector<T> result;
@@ -74,7 +74,7 @@ ordered(void) const
         if (it != _adjacency.end()) {
             for (T const &child : it->second) {
                 if (inProgress.find(child) != inProgress.end()) {
-                    return std::make_pair(false, std::vector<T>());
+                    return ext::nullopt;
                 }
 
                 if (explored.find(child) == explored.end()) {
@@ -93,7 +93,7 @@ ordered(void) const
     }
 
     assert(inProgress.empty());
-    return std::make_pair(true, result);
+    return result;
 }
 
 namespace pbxbuild { template class DirectedGraph<pbxproj::PBX::Target::shared_ptr>; }

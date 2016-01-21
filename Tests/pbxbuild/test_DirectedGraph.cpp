@@ -42,9 +42,9 @@ TEST(DirectedGraph, Ordered)
     acyclic.insert(2, std::unordered_set<int>({ 5, 1 }));
     acyclic.insert(5, std::unordered_set<int>({ 1 }));
 
-    std::pair<bool, std::vector<int>> acyclicResult = acyclic.ordered();
-    EXPECT_TRUE(acyclicResult.first);
-    EXPECT_EQ(acyclicResult.second, std::vector<int>({ 1, 5, 2, 3, 4 }));
+    ext::optional<std::vector<int>> acyclicResult = acyclic.ordered();
+    ASSERT_TRUE(acyclicResult);
+    EXPECT_EQ(*acyclicResult, std::vector<int>({ 1, 5, 2, 3, 4 }));
 
     DirectedGraph<int> cyclic;
     cyclic.insert(4, std::unordered_set<int>({ 2, 3, 5 }));
@@ -52,7 +52,7 @@ TEST(DirectedGraph, Ordered)
     cyclic.insert(5, std::unordered_set<int>({ 1 }));
     cyclic.insert(5, std::unordered_set<int>({ 4 }));
 
-    std::pair<bool, std::vector<int>> cyclicResult = cyclic.ordered();
-    EXPECT_FALSE(cyclicResult.first);
+    ext::optional<std::vector<int>> cyclicResult = cyclic.ordered();
+    EXPECT_FALSE(cyclicResult);
 }
 

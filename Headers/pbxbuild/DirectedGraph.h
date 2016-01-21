@@ -11,7 +11,9 @@
 #define __pbxbuild_DirectedGraph_h
 
 #include <pbxbuild/Base.h>
+
 #include <list>
+#include <ext/optional>
 
 namespace pbxbuild {
 
@@ -51,7 +53,7 @@ public:
      * Performs a toplogical sort of the graph. Fails if the graph
      * has a cycle.
      */
-    std::pair<bool, std::vector<T>> ordered() const;
+    ext::optional<std::vector<T>> ordered() const;
 };
 
 }

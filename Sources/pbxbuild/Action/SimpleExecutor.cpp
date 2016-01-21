@@ -43,13 +43,13 @@ build(
 {
     Formatter::Print(_formatter->begin(buildContext));
 
-    std::pair<bool, std::vector<pbxproj::PBX::Target::shared_ptr>> orderedTargets = targetGraph.ordered();
-    if (!orderedTargets.first) {
+    ext::optional<std::vector<pbxproj::PBX::Target::shared_ptr>> orderedTargets = targetGraph.ordered();
+    if (!orderedTargets) {
         fprintf(stderr, "error: cycle detected in target dependencies\n");
         return false;
     }
 
-    for (pbxproj::PBX::Target::shared_ptr const &target : orderedTargets.second) {
+    for (pbxproj::PBX::Target::shared_ptr const &target : *orderedTargets) {
         Formatter::Print(_formatter->beginTarget(buildContext, target));
 
         ext::optional<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
@@ -78,7 +78,7 @@ build(
     return true;
 }
 
-static std::pair<bool, std::vector<Tool::Invocation const>>
+static ext::optional<std::vector<Tool::Invocation const>>
 SortInvocations(std::vector<Tool::Invocation const> const &invocations)
 {
     std::unordered_map<std::string, Tool::Invocation const *> outputToInvocation;
@@ -114,15 +114,15 @@ SortInvocations(std::vector<Tool::Invocation const> const &invocations)
 
     std::vector<Tool::Invocation const> result;
 
-    std::pair<bool, std::vector<Tool::Invocation const *>> orderedInvocations = graph.ordered();
-    if (!orderedInvocations.first) {
-        return std::make_pair(false, result);
+    ext::optional<std::vector<Tool::Invocation const *>> orderedInvocations = graph.ordered();
+    if (!orderedInvocations) {
+        return ext::nullopt;
     }
 
-    for (Tool::Invocation const *invocation : orderedInvocations.second) {
+    for (Tool::Invocation const *invocation : *orderedInvocations) {
         result.push_back(*invocation);
     }
-    return std::make_pair(true, result);
+    return result;
 }
 
 bool SimpleExecutor::
@@ -242,20 +242,20 @@ buildTarget(
         return std::make_pair(false, std::vector<Tool::Invocation const>());
     }
 
-    std::pair<bool, std::vector<Tool::Invocation const>> orderedInvocations = SortInvocations(invocations);
-    if (!orderedInvocations.first) {
+    ext::optional<std::vector<Tool::Invocation const>> orderedInvocations = SortInvocations(invocations);
+    if (!orderedInvocations) {
         fprintf(stderr, "error: cycle detected building invocation graph\n");
         return std::make_pair(false, std::vector<Tool::Invocation const>());
     }
 
     Formatter::Print(_formatter->beginCreateProductStructure(target));
-    std::pair<bool, std::vector<Tool::Invocation const>> structureResult = performInvocations(target, targetEnvironment, orderedInvocations.second, true);
+    std::pair<bool, std::vector<Tool::Invocation const>> structureResult = performInvocations(target, targetEnvironment, *orderedInvocations, true);
     Formatter::Print(_formatter->finishCreateProductStructure(target));
     if (!structureResult.first) {
         return structureResult;
     }
 
-    std::pair<bool, std::vector<Tool::Invocation const>> invocationsResult = performInvocations(target, targetEnvironment, orderedInvocations.second, false);
+    std::pair<bool, std::vector<Tool::Invocation const>> invocationsResult = performInvocations(target, targetEnvironment, *orderedInvocations, false);
     if (!invocationsResult.first) {
         return invocationsResult;
     }

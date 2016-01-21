@@ -61,13 +61,13 @@ Run(Options const &options)
         return -1;
     }
 
-    std::pair<bool, std::vector<pbxproj::PBX::Target::shared_ptr>> targets = graph.ordered();
-    if (!targets.first) {
+    ext::optional<std::vector<pbxproj::PBX::Target::shared_ptr>> targets = graph.ordered();
+    if (!targets) {
         fprintf(stderr, "error: cycle detected in target dependencies\n");
         return -1;
     }
 
-    for (pbxproj::PBX::Target::shared_ptr const &target : targets.second) {
+    for (pbxproj::PBX::Target::shared_ptr const &target : *targets) {
         ext::optional<pbxbuild::Target::Environment> targetEnvironment = buildContext->targetEnvironment(*buildEnvironment, target);
         if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment\n");

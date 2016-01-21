@@ -16,7 +16,7 @@ using pbxbuild::DirectedGraph;
 using libutil::FSUtil;
 using libutil::Wildcard;
 
-static std::pair<bool, std::vector<pbxspec::PBX::FileType::shared_ptr>>
+static ext::optional<std::vector<pbxspec::PBX::FileType::shared_ptr>>
 SortedFileTypes(std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes)
 {
     DirectedGraph<pbxspec::PBX::FileType::shared_ptr> graph;
@@ -45,13 +45,13 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
 
     // Reverse first so more specific file types are processed first.
     std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes = specManager->fileTypes(domains);
-    std::pair<bool, std::vector<pbxspec::PBX::FileType::shared_ptr>> result = SortedFileTypes(fileTypes);
-    if (!result.first) {
+    ext::optional<std::vector<pbxspec::PBX::FileType::shared_ptr>> result = SortedFileTypes(fileTypes);
+    if (!result) {
         fprintf(stderr, "error: cycle creating file type graph\n");
         return nullptr;
     }
 
-    std::vector<pbxspec::PBX::FileType::shared_ptr> const &sortedFileTypes = result.second;
+    std::vector<pbxspec::PBX::FileType::shared_ptr> const &sortedFileTypes = *result;
     for (pbxspec::PBX::FileType::shared_ptr const &fileType : sortedFileTypes) {
         if (isReadable && fileType->isFolder() != isFolder) {
             continue;
