@@ -35,7 +35,7 @@ enum class BinaryDependencyCommand: uint8_t {
     // ??? = 0x02,
 };
 
-std::unique_ptr<BinaryDependencyInfo> BinaryDependencyInfo::
+ext::optional<BinaryDependencyInfo> BinaryDependencyInfo::
 Create(std::vector<uint8_t> const &contents)
 {
     std::string version;
@@ -48,14 +48,14 @@ Create(std::vector<uint8_t> const &contents)
         BinaryDependencyCommand command = static_cast<BinaryDependencyCommand>(*it);
         if (++it == contents.end()) {
             /* No string after command. */
-            return nullptr;
+            return ext::nullopt;
         }
 
         /* Find end of string. */
         auto end = std::find(it, contents.end(), '\0');
         if (end == contents.end()) {
             /* Unterminated string. */
-            return nullptr;
+            return ext::nullopt;
         }
 
         /* Read string. */
@@ -64,7 +64,7 @@ Create(std::vector<uint8_t> const &contents)
         if (command == BinaryDependencyCommand::Version) {
             if (!version.empty()) {
                 /* Multiple version commands. */
-                return nullptr;
+                return ext::nullopt;
             }
 
             version = string;
@@ -76,7 +76,7 @@ Create(std::vector<uint8_t> const &contents)
             missing.push_back(string);
         } else {
             /* Unknown command. */
-            return nullptr;
+            return ext::nullopt;
         }
 
         /* Move onto the next entry. */
@@ -87,5 +87,5 @@ Create(std::vector<uint8_t> const &contents)
     auto info = DependencyInfo(inputs, outputs);
     auto binaryInfo = BinaryDependencyInfo(version, missing, info);
 
-    return std::unique_ptr<BinaryDependencyInfo>(new BinaryDependencyInfo(binaryInfo));
+    return BinaryDependencyInfo(binaryInfo);
 }

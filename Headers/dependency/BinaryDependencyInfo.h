@@ -16,6 +16,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <ext/optional>
 
 namespace dependency {
 
@@ -61,7 +62,7 @@ public:
     /*
      * Load dependency info from binary data.
      */
-    static std::unique_ptr<BinaryDependencyInfo>
+    static ext::optional<BinaryDependencyInfo>
     Create(std::vector<uint8_t> const &contents);
 
 public:

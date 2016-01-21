@@ -22,7 +22,7 @@ MakefileDependencyInfo(std::unordered_multimap<std::string, std::string> const &
 {
 }
 
-std::unique_ptr<MakefileDependencyInfo> MakefileDependencyInfo::
+ext::optional<MakefileDependencyInfo> MakefileDependencyInfo::
 Create(std::string const &contents)
 {
     std::vector<std::string> inputs;
@@ -54,7 +54,7 @@ Create(std::string const &contents)
                     break;
                 case State::Output:
                     /* Output without inputs. */
-                    return nullptr;
+                    return ext::nullopt;
                 case State::Comment:
                 case State::Inputs:
                     /* Current input. */
@@ -102,7 +102,7 @@ Create(std::string const &contents)
             switch (state) {
                 case State::Begin:
                     /* Invalid character. */
-                    return nullptr;
+                    return ext::nullopt;
                 case State::Comment:
                     break;
                 case State::Output:
@@ -115,13 +115,13 @@ Create(std::string const &contents)
                     break;
                 case State::Inputs:
                     /* Invalid character. */
-                    return nullptr;
+                    return ext::nullopt;
             }
         } else if (*it == '#' || *it == '%' || (escaped && isspace(*it))) {
             switch (state) {
                 case State::Begin:
                     /* Invalid character. */
-                    return nullptr;
+                    return ext::nullopt;
                 case State::Comment:
                     break;
                 case State::Output:
@@ -132,7 +132,7 @@ Create(std::string const &contents)
                         break;
                     } else {
                         /* Invalid character. */
-                        return nullptr;
+                        return ext::nullopt;
                     }
             }
         } else {
@@ -160,7 +160,7 @@ Create(std::string const &contents)
             break;
         case State::Output:
             /* Output without inputs. */
-            return nullptr;
+            return ext::nullopt;
         case State::Comment:
         case State::Inputs:
             /* Current input. */
@@ -183,5 +183,5 @@ Create(std::string const &contents)
     auto info = DependencyInfo(inputs, outputs);
     auto binaryInfo = MakefileDependencyInfo(outputInputs, info);
 
-    return std::unique_ptr<MakefileDependencyInfo>(new MakefileDependencyInfo(binaryInfo));
+    return MakefileDependencyInfo(binaryInfo);
 }

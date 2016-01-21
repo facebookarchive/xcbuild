@@ -16,6 +16,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <ext/optional>
 
 namespace dependency {
 
@@ -52,7 +53,7 @@ public:
     /*
      * Create the dependency info from the Makefile contents.
      */
-    static std::unique_ptr<MakefileDependencyInfo>
+    static ext::optional<MakefileDependencyInfo>
     Create(std::string const &contents);
 
 public:

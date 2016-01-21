@@ -152,7 +152,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
         std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
 
         auto binaryInfo = dependency::BinaryDependencyInfo::Create(contents);
-        if (binaryInfo == nullptr) {
+        if (!binaryInfo) {
             fprintf(stderr, "error: invalid binary dependency info\n");
             return false;
         }
@@ -161,7 +161,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
         return true;
     } else if (format == dependency::DependencyInfoFormat::Directory) {
         auto directoryInfo = dependency::DirectoryDependencyInfo::Create(path);
-        if (directoryInfo == nullptr) {
+        if (!directoryInfo) {
             fprintf(stderr, "error: invalid directory\n");
             return false;
         }
@@ -178,7 +178,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
         std::string contents = std::string(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
 
         auto makefileInfo = dependency::MakefileDependencyInfo::Create(contents);
-        if (makefileInfo == nullptr) {
+        if (!makefileInfo) {
             fprintf(stderr, "error: invalid makefile dependency info\n");
             return false;
         }

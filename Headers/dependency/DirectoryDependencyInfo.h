@@ -15,6 +15,7 @@
 
 #include <memory>
 #include <string>
+#include <ext/optional>
 
 namespace dependency {
 
@@ -51,7 +52,7 @@ public:
     /*
      * Create dependency info for a directory.
      */
-    static std::unique_ptr<DirectoryDependencyInfo>
+    static ext::optional<DirectoryDependencyInfo>
     Create(std::string const &directory);
 
 public:

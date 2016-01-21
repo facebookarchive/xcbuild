@@ -22,7 +22,7 @@ DirectoryDependencyInfo(std::string const &directory, DependencyInfo const &depe
 {
 }
 
-std::unique_ptr<DirectoryDependencyInfo> DirectoryDependencyInfo::
+ext::optional<DirectoryDependencyInfo> DirectoryDependencyInfo::
 Create(std::string const &directory)
 {
     std::vector<std::string> inputs;
@@ -37,5 +37,5 @@ Create(std::string const &directory)
     auto info = DependencyInfo(inputs, std::vector<std::string>());
     auto directoryInfo = DirectoryDependencyInfo(directory, info);
 
-    return std::unique_ptr<DirectoryDependencyInfo>(new DirectoryDependencyInfo(directoryInfo));
+    return DirectoryDependencyInfo(directoryInfo);
 }
