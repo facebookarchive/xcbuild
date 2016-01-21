@@ -79,7 +79,8 @@ AppendOutputs(
     std::string const &outputDirectory,
     std::string const &moduleName,
     std::string const &modulePath,
-    std::vector<Phase::File> const &inputs)
+    std::vector<Phase::File> const &inputs,
+    bool includeBitcode)
 {
     std::unique_ptr<plist::Dictionary> outputInfo = plist::Dictionary::New();
 
@@ -107,8 +108,13 @@ AppendOutputs(
         /* All are outputs of the Swift invocation. */
         outputs->push_back(object);
         outputs->push_back(swiftModule);
-        outputs->push_back(llvmbc);
-        outputs->push_back(diagnostics);
+        if (includeBitcode) {
+            outputs->push_back(llvmbc);
+        }
+        if (false) {
+            /* Diagnostics are not always output. */
+            outputs->push_back(diagnostics);
+        }
         outputs->push_back(dependencies);
         outputs->push_back(swiftDependencies);
 
@@ -120,7 +126,9 @@ AppendOutputs(
         std::unique_ptr<plist::Dictionary> dict = plist::Dictionary::New();
         dict->set("swiftmodule", plist::String::New(swiftModule));
         dict->set("object", plist::String::New(object));
-        dict->set("llvm-bc", plist::String::New(llvmbc));
+        if (includeBitcode) {
+            dict->set("llvm-bc", plist::String::New(llvmbc));
+        }
         dict->set("diagnostics", plist::String::New(diagnostics));
         dict->set("dependencies", plist::String::New(dependencies));
         dict->set("swift-dependencies", plist::String::New(swiftDependencies));
@@ -281,7 +289,8 @@ resolve(
      */
     std::string moduleName = environment.resolve("SWIFT_MODULE_NAME");
     std::string modulePath = outputDirectory + "/" + moduleName + ".swiftmodule";
-    AppendOutputs(&arguments, &outputs, &dependencyInfo, &auxiliaryFiles, outputDirectory, moduleName, modulePath, inputs);
+    bool includeBitcode = pbxsetting::Type::ParseBoolean(environment.resolve("ENABLE_BITCODE"));
+    AppendOutputs(&arguments, &outputs, &dependencyInfo, &auxiliaryFiles, outputDirectory, moduleName, modulePath, inputs, includeBitcode);
 
     /*
      * Add flags for interacting with Objective-C code.
