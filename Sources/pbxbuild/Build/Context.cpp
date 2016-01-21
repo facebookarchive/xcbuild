@@ -89,23 +89,23 @@ resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::
 pbxsetting::Level Build::Context::
 actionSettings(void) const
 {
+    std::string build = _workspaceContext.derivedDataName();
+
     return pbxsetting::Level({
         pbxsetting::Setting::Create("ACTION", _action),
         pbxsetting::Setting::Create("BUILD_COMPONENTS", "headers build"), // TODO(grp): Should depend on action.
         pbxsetting::Setting::Create("CONFIGURATION", _configuration),
+        pbxsetting::Setting::Parse("SYMROOT", "$(DERIVED_DATA_DIR)/" + build + "/Build/Products"),
+        pbxsetting::Setting::Parse("OBJROOT", "$(DERIVED_DATA_DIR)/" + build + "/Build/Intermediates"),
     });
 }
 
 pbxsetting::Level Build::Context::
 baseSettings(void) const
 {
-    std::string build = _workspaceContext.derivedDataName();
-
     return pbxsetting::Level({
         pbxsetting::Setting::Parse("CONFIGURATION_BUILD_DIR", "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)"),
         pbxsetting::Setting::Parse("CONFIGURATION_TEMP_DIR", "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)"),
-        pbxsetting::Setting::Parse("SYMROOT", "$(DERIVED_DATA_DIR)/" + build + "/Build/Products"),
-        pbxsetting::Setting::Parse("OBJROOT", "$(DERIVED_DATA_DIR)/" + build + "/Build/Intermediates"),
     });
 }
 

@@ -173,6 +173,7 @@ build(
      */
     pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
     environment.insertFront(buildContext.baseSettings(), false);
+    environment.insertFront(buildContext.actionSettings(), false);
 
     /*
      * Determine where build-level outputs will go. Note we can't use CONFIGURATION_BUILD_DIR
