@@ -19,8 +19,9 @@ namespace Phase = pbxbuild::Phase;
 using libutil::FSUtil;
 
 Tool::SwiftResolver::
-SwiftResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler) :
-    _compiler(compiler)
+SwiftResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler, Tool::DittoResolver const &dittoResolver) :
+    _compiler     (compiler),
+    _dittoResolver(dittoResolver)
 {
 }
 
@@ -61,6 +62,13 @@ SwiftLibraryPath(pbxsetting::Environment const &environment, xcsdk::SDK::Target:
 
     /* Not found. */
     return std::string();
+}
+
+static std::string
+SwiftDocPath(std::string const &moduleName, std::string const &modulePath)
+{
+    /* The .swiftdoc is output alongside the .swiftmodule. */
+    return FSUtil::GetDirectoryName(modulePath) + "/" + moduleName + ".swiftdoc";
 }
 
 static void
@@ -145,7 +153,52 @@ AppendOutputs(
     args->push_back("-emit-module-path");
     args->push_back(modulePath);
 
-    // TODO(grp): Copy the module to BUILT_PRODUCTS_DIR.
+    /* The module is an output. */
+    outputs->push_back(modulePath);
+    outputs->push_back(SwiftDocPath(moduleName, modulePath));
+}
+
+static void
+CopyOutputs(
+    Tool::Context *toolContext,
+    Tool::DittoResolver const *dittoResolver,
+    pbxsetting::Environment const &environment,
+    bool isFramework,
+    std::string const &moduleName,
+    std::string const &modulePath,
+    std::string const &headerName,
+    std::string const &headerPath)
+{
+    /* Output into the framework or the products directory. */
+    std::string outputBase;
+    if (isFramework) {
+        outputBase = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("CONTENTS_FOLDER_PATH") + "/" + "Modules";
+    } else {
+        outputBase = environment.resolve("BUILT_PRODUCTS_DIR");
+    }
+    outputBase += "/" + moduleName + ".swiftmodule";
+
+    /* Each architecture has a separate module subdirectory. */
+    std::string outputName = environment.resolve("arch");
+    if (outputName == "armv7") {
+        /* For some reason, armv7 is special cased as "arm". */
+        outputName = "arm";
+    }
+
+    /* Copy the module to let modules import it. */
+    std::string outputPath = outputBase + "/" + outputName + ".swiftmodule";
+    dittoResolver->resolve(toolContext, modulePath, outputPath);
+
+    /* Copy the swiftdoc. It's next to the module. */
+    std::string docInputPath = SwiftDocPath(moduleName, modulePath);
+    std::string docOutputPath = outputBase + "/" + outputName + ".swiftdoc";
+    dittoResolver->resolve(toolContext, docInputPath, docOutputPath);
+
+    /* Copy the generated header, if requested. */
+    if (pbxsetting::Type::ParseBoolean(environment.resolve("SWIFT_INSTALL_OBJC_HEADER"))) {
+        std::string installedPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH") + "/" + headerName;
+        dittoResolver->resolve(toolContext, headerPath, installedPath);
+    }
 }
 
 static void
@@ -158,6 +211,9 @@ AppendPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &e
 
     std::vector<std::string> includes = pbxsetting::Type::ParseList(environment.resolve("SWIFT_INCLUDE_PATHS"));
     Tool::CompilerCommon::AppendCompoundFlags(args, "-I", false, includes);
+
+    std::vector<std::string> specialFrameworks = { environment.resolve("BUILT_PRODUCTS_DIR") };
+    Tool::CompilerCommon::AppendCompoundFlags(args, "-F", false, specialFrameworks);
 
     std::vector<std::string> frameworks = pbxsetting::Type::ParseList(environment.resolve("FRAMEWORK_SEARCH_PATHS"));
     Tool::CompilerCommon::AppendCompoundFlags(args, "-F", false, frameworks);
@@ -183,24 +239,20 @@ AppendCcFlags(std::vector<std::string> *args, pbxsetting::Environment const &env
 }
 
 static void
-AppendObjcHeader(std::vector<std::string> *args, std::vector<std::string> *outputs, pbxsetting::Environment const &environment, std::string const &outputDirectory)
+AppendObjcHeader(
+    std::vector<std::string> *args,
+    std::vector<std::string> *outputs,
+    pbxsetting::Environment const &environment,
+    std::string const &outputDirectory,
+    std::string const &headerName,
+    std::string const &headerPath)
 {
     /* Output the generated header. */
-    std::string headerName = environment.resolve("SWIFT_OBJC_INTERFACE_HEADER_NAME");
-    std::string headerPath = outputDirectory + "/" + headerName;
     outputs->push_back(headerPath);
 
     args->push_back("-emit-objc-header");
     args->push_back("-emit-objc-header-path");
     args->push_back(headerPath);
-
-    /* Copy the generated header, if requested. */
-    if (pbxsetting::Type::ParseBoolean(environment.resolve("SWIFT_INSTALL_OBJC_HEADER"))) {
-        std::string installedPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH") + "/" + headerName;
-        // TODO(grp): Copy the heaader to installedPath.
-    } else {
-        // TODO(grp): Copy the heaader to DerivedSources.
-    }
 
     /* Load the bridging header. */
     std::string bridgingHeader = environment.resolve("SWIFT_OBJC_BRIDGING_HEADER");
@@ -215,7 +267,8 @@ resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
     std::vector<Phase::File> const &inputs,
-    std::string const &outputDirectory) const
+    std::string const &outputDirectory,
+    bool isFramework) const
 {
     /*
      * Resolve the tool options.
@@ -279,7 +332,13 @@ resolve(
      * Add flags for interacting with Objective-C code.
      */
     AppendCcFlags(&arguments, environment, toolContext->searchPaths(), toolContext->headermapInfo());
-    AppendObjcHeader(&arguments, &outputs, environment, outputDirectory);
+
+    /*
+     * Add the Objective-C bridging headers.
+     */
+    std::string headerName = environment.resolve("SWIFT_OBJC_INTERFACE_HEADER_NAME");
+    std::string headerPath = outputDirectory + "/" + headerName;
+    AppendObjcHeader(&arguments, &outputs, environment, outputDirectory, headerName, headerPath);
 
     /* Compiler working directory. */
     arguments.push_back("-Xcc");
@@ -288,6 +347,9 @@ resolve(
     /* Log message for the outer compile step. */
     std::string logMessage = "CompileSwiftSources " + environment.resolve("variant") + " " + environment.resolve("arch") + " " + _compiler->identifier();
 
+    /*
+     * Add the invocation.
+     */
     Tool::Invocation invocation;
     invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
     invocation.arguments() = arguments;
@@ -303,6 +365,14 @@ resolve(
     auto variantArchitectureKey = std::make_pair(environment.resolve("variant"), environment.resolve("arch"));
     toolContext->variantArchitectureInvocations()[variantArchitectureKey].push_back(invocation);
 
+    /*
+     * Copy build results so later modules can import this one.
+     */
+    CopyOutputs(toolContext, &_dittoResolver, environment, isFramework, moduleName, modulePath, headerName, headerPath);
+
+    /*
+     * Record compilation information for linking.
+     */
     Tool::CompilationInfo *compilationInfo = &toolContext->compilationInfo();
 
     /* Default to Clang as a linker. */
@@ -330,7 +400,7 @@ resolve(
 }
 
 std::unique_ptr<Tool::SwiftResolver> Tool::SwiftResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(Phase::Environment const &phaseEnvironment, Tool::DittoResolver const &dittoResolver)
 {
     Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
@@ -341,6 +411,6 @@ Create(Phase::Environment const &phaseEnvironment)
         return nullptr;
     }
 
-    return std::unique_ptr<Tool::SwiftResolver>(new Tool::SwiftResolver(swiftTool));
+    return std::unique_ptr<Tool::SwiftResolver>(new Tool::SwiftResolver(swiftTool, dittoResolver));
 }
 

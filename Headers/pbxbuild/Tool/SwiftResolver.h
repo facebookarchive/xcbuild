@@ -13,6 +13,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/File.h>
+#include <pbxbuild/Tool/DittoResolver.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -22,16 +23,18 @@ class Context;
 class SwiftResolver {
 private:
     pbxspec::PBX::Compiler::shared_ptr _compiler;
+    Tool::DittoResolver                _dittoResolver;
 
 private:
-    explicit SwiftResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler);
+    explicit SwiftResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler, Tool::DittoResolver const &dittoResolver);
 
 public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         std::vector<Phase::File> const &input,
-        std::string const &outputDirectory) const;
+        std::string const &outputDirectory,
+        bool isFramework) const;
 
 public:
     static std::string ToolIdentifier()
@@ -39,7 +42,7 @@ public:
 
 public:
     static std::unique_ptr<SwiftResolver>
-    Create(Phase::Environment const &phaseEnvironment);
+    Create(Phase::Environment const &phaseEnvironment, Tool::DittoResolver const &dittoResolver);
 };
 
 }

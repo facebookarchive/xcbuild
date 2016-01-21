@@ -388,8 +388,17 @@ resolveBuildFiles(
                     return false;
                 }
             } else if (toolIdentifier == Tool::SwiftResolver::ToolIdentifier()) {
+                // TODO(grp): Find a better way of finding if this is building a framework.
+                bool isFramework = false;
+                for (pbxspec::PBX::ProductType::shared_ptr productType = targetEnvironment.productType(); productType != nullptr; productType = std::static_pointer_cast<pbxspec::PBX::ProductType>(productType->base())) {
+                    if (productType->identifier() == "com.apple.product-type.framework") {
+                        isFramework = true;
+                        break;
+                    }
+                }
+
                 if (Tool::SwiftResolver const *swiftResolver = this->swiftResolver(phaseEnvironment)) {
-                    swiftResolver->resolve(&_toolContext, environment, files, fileOutputDirectory);
+                    swiftResolver->resolve(&_toolContext, environment, files, fileOutputDirectory, isFramework);
                 } else {
                     return false;
                 }
