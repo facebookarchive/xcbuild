@@ -12,6 +12,8 @@
 
 #include <pbxspec/PBX/Specification.h>
 
+#include <ext/optional>
+
 namespace pbxspec { class Manager; }
 
 namespace pbxspec { namespace PBX {
@@ -22,9 +24,9 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    std::string            _name;
-    libutil::string_vector _fileTypes;
-    std::string            _compilerSpec;
+    ext::optional<std::string>            _name;
+    ext::optional<libutil::string_vector> _fileTypes;
+    ext::optional<std::string>            _compilerSpec;
 
 protected:
     friend class pbxspec::Manager;
@@ -32,11 +34,11 @@ protected:
     BuildRule(libutil::string_vector const &fileTypes, std::string const &compilerSpec);
 
 public:
-    inline std::string const &name() const
+    inline ext::optional<std::string> const &name() const
     { return _name; }
-    inline libutil::string_vector const &fileTypes() const
+    inline ext::optional<libutil::string_vector> const &fileTypes() const
     { return _fileTypes; }
-    inline std::string const &compilerSpec() const
+    inline ext::optional<std::string> const &compilerSpec() const
     { return _compilerSpec; }
 
 protected:

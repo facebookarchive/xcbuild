@@ -13,6 +13,8 @@
 #include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
+#include <ext/optional>
+
 namespace pbxspec { namespace PBX {
 
 class ProductType : public Specification {
@@ -25,17 +27,17 @@ public:
     public:
         class Check {
         private:
-            std::string _check;
-            std::string _description;
+            ext::optional<std::string> _check;
+            ext::optional<std::string> _description;
 
         protected:
             friend class Validation;
-            Check(std::string const &check, std::string const &description);
+            Check(ext::optional<std::string> const &check, ext::optional<std::string> const &description);
 
         public:
-            inline std::string const &check() const
+            inline ext::optional<std::string> const &check() const
             { return _check; }
-            inline std::string const &description() const
+            inline ext::optional<std::string> const &description() const
             { return _description; }
         };
 
@@ -43,19 +45,19 @@ public:
         friend class Check;
 
     private:
-        std::string        _validationToolSpec;
-        std::vector<Check> _checks;
+        ext::optional<std::string>        _validationToolSpec;
+        ext::optional<std::vector<Check>> _checks;
 
     protected:
         friend class ProductType;
         Validation();
 
     public:
-        inline std::string const &validationToolSpec() const
+        inline ext::optional<std::string> const &validationToolSpec() const
         { return _validationToolSpec; }
 
     public:
-        inline std::vector<Check> const &checks() const
+        inline ext::optional<std::vector<Check>> const &checks() const
         { return _checks; }
 
     protected:
@@ -66,25 +68,25 @@ protected:
     friend class Validation;
 
 protected:
-    std::string             _defaultTargetName;
-    pbxsetting::Level       _defaultBuildProperties;
-    Validation              _validation;
-    libutil::string_vector  _packageTypes;
-    std::string             _iconNamePrefix;
-    bool                    _hasInfoPlist;
-    bool                    _hasInfoPlistStrings;
-    bool                    _isWrapper;
-    bool                    _isJava;
-    bool                    _supportsZeroLink;
-    bool                    _alwaysPerformSeparateStrip;
-    bool                    _wantsSimpleTargetEditing;
-    bool                    _addWatchCompanionRequirement;
-    bool                    _runsOnProxy;
-    bool                    _disableSchemeAutocreation;
-    bool                    _validateEmbeddedBinaries;
-    bool                    _supportsOnDemandResources;
-    bool                    _canEmbedAddressSanitizerLibraries;
-    std::string             _runpathSearchPathForEmbeddedFrameworks;
+    ext::optional<std::string>             _defaultTargetName;
+    ext::optional<pbxsetting::Level>       _defaultBuildProperties;
+    ext::optional<Validation>              _validation;
+    ext::optional<libutil::string_vector>  _packageTypes;
+    ext::optional<std::string>             _iconNamePrefix;
+    ext::optional<bool>                    _hasInfoPlist;
+    ext::optional<bool>                    _hasInfoPlistStrings;
+    ext::optional<bool>                    _isWrapper;
+    ext::optional<bool>                    _isJava;
+    ext::optional<bool>                    _supportsZeroLink;
+    ext::optional<bool>                    _alwaysPerformSeparateStrip;
+    ext::optional<bool>                    _wantsSimpleTargetEditing;
+    ext::optional<bool>                    _addWatchCompanionRequirement;
+    ext::optional<bool>                    _runsOnProxy;
+    ext::optional<bool>                    _disableSchemeAutocreation;
+    ext::optional<bool>                    _validateEmbeddedBinaries;
+    ext::optional<bool>                    _supportsOnDemandResources;
+    ext::optional<bool>                    _canEmbedAddressSanitizerLibraries;
+    ext::optional<std::string>             _runpathSearchPathForEmbeddedFrameworks;
 
 protected:
     ProductType();
@@ -101,77 +103,103 @@ public:
     { return reinterpret_cast <ProductType::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline std::string const &defaultTargetName() const
+    inline ext::optional<std::string> const &defaultTargetName() const
     { return _defaultTargetName; }
 
 public:
-    inline pbxsetting::Level const &defaultBuildProperties() const
+    inline ext::optional<pbxsetting::Level> const &defaultBuildProperties() const
     { return _defaultBuildProperties; }
 
 public:
-    inline Validation const &validation() const
+    inline ext::optional<Validation> const &validation() const
     { return _validation; }
 
 public:
-    inline libutil::string_vector const &packageTypes() const
+    inline ext::optional<libutil::string_vector> const &packageTypes() const
     { return _packageTypes; }
 
 public:
-    inline std::string const &iconNamePrefix() const
+    inline ext::optional<std::string> const &iconNamePrefix() const
     { return _iconNamePrefix; }
 
 public:
     inline bool hasInfoPlist() const
+    { return _hasInfoPlist.value_or(false); }
+    inline ext::optional<bool> hasInfoPlistOptional() const
     { return _hasInfoPlist; }
-    inline int hasInfoPlistStrings() const
+    inline bool hasInfoPlistStrings() const
+    { return _hasInfoPlistStrings.value_or(false); }
+    inline ext::optional<bool> hasInfoPlistStringsOptional() const
     { return _hasInfoPlistStrings; }
 
 public:
     inline bool isWrapper() const
+    { return _isWrapper.value_or(false); }
+    inline ext::optional<bool> isWrapperOptional() const
     { return _isWrapper; }
 
 public:
     inline bool isJava() const
+    { return _isJava.value_or(false); }
+    inline ext::optional<bool> isJavaOptional() const
     { return _isJava; }
 
 public:
     inline bool supportsZeroLink() const
+    { return _supportsZeroLink.value_or(false); }
+    inline ext::optional<bool> supportsZeroLinkOptional() const
     { return _supportsZeroLink; }
 
 public:
     inline bool alwaysPerformSeparateStrip() const
+    { return _alwaysPerformSeparateStrip.value_or(false); }
+    inline ext::optional<bool> alwaysPerformSeparateStripOptional() const
     { return _alwaysPerformSeparateStrip; }
 
 public:
     inline bool wantsSimpleTargetEditing() const
+    { return _wantsSimpleTargetEditing.value_or(false); }
+    inline ext::optional<bool> wantsSimpleTargetEditingOptional() const
     { return _wantsSimpleTargetEditing; }
 
 public:
     inline bool addWatchCompanionRequirement() const
+    { return _addWatchCompanionRequirement.value_or(false); }
+    inline ext::optional<bool> addWatchCompanionRequirementOptional() const
     { return _addWatchCompanionRequirement; }
 
 public:
     inline bool runsOnProxy() const
+    { return _runsOnProxy.value_or(false); }
+    inline ext::optional<bool> runsOnProxyOptional() const
     { return _runsOnProxy; }
 
 public:
     inline bool disableSchemeAutocreation() const
+    { return _disableSchemeAutocreation.value_or(false); }
+    inline ext::optional<bool> disableSchemeAutocreationOptional() const
     { return _disableSchemeAutocreation; }
 
 public:
     inline bool validateEmbeddedBinaries() const
+    { return _validateEmbeddedBinaries.value_or(false); }
+    inline ext::optional<bool> validateEmbeddedBinariesOptional() const
     { return _validateEmbeddedBinaries; }
 
 public:
     inline bool supportsOnDemandResources() const
+    { return _supportsOnDemandResources.value_or(false); }
+    inline ext::optional<bool> supportsOnDemandResourcesOptional() const
     { return _supportsOnDemandResources; }
 
 public:
     inline bool canEmbedAddressSanitizerLibraries() const
+    { return _canEmbedAddressSanitizerLibraries.value_or(false); }
+    inline ext::optional<bool> canEmbedAddressSanitizerLibrariesOptional() const
     { return _canEmbedAddressSanitizerLibraries; }
 
 public:
-    inline std::string const &runpathSearchPathForEmbeddedFrameworks() const
+    inline ext::optional<std::string> const &runpathSearchPathForEmbeddedFrameworks() const
     { return _runpathSearchPathForEmbeddedFrameworks; }
 
 protected:

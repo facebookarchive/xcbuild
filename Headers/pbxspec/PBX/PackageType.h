@@ -13,6 +13,8 @@
 #include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
+#include <ext/optional>
+
 namespace pbxspec { namespace PBX {
 
 class PackageType : public Specification {
@@ -22,29 +24,25 @@ public:
 
 public:
     class ProductReference {
-    public:
-        typedef std::shared_ptr <ProductReference> shared_ptr;
-        typedef std::vector <shared_ptr> vector;
-
     protected:
-        std::string _name;
-        std::string _fileType;
-        bool        _isLaunchable;
+        ext::optional<std::string> _name;
+        ext::optional<std::string> _fileType;
+        ext::optional<bool>        _isLaunchable;
 
     protected:
         friend class PackageType;
         ProductReference();
 
     public:
-        inline std::string const &name() const
+        inline ext::optional<std::string> const &name() const
         { return _name; }
 
     public:
-        inline std::string const &fileType() const
+        inline ext::optional<std::string> const &fileType() const
         { return _fileType; }
 
     public:
-        inline bool isLaunchable() const
+        inline ext::optional<bool> isLaunchable() const
         { return _isLaunchable; }
 
     protected:
@@ -52,8 +50,8 @@ public:
     };
 
 protected:
-    pbxsetting::Level             _defaultBuildSettings;
-    ProductReference::shared_ptr  _productReference;
+    ext::optional<pbxsetting::Level> _defaultBuildSettings;
+    ext::optional<ProductReference>  _productReference;
 
 protected:
     PackageType();
@@ -70,11 +68,11 @@ public:
     { return reinterpret_cast <PackageType::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline ProductReference::shared_ptr const &productReference() const
+    inline ext::optional<ProductReference> const &productReference() const
     { return _productReference; }
 
 public:
-    inline pbxsetting::Level const &defaultBuildSettings() const
+    inline ext::optional<pbxsetting::Level> const &defaultBuildSettings() const
     { return _defaultBuildSettings; }
 
 protected:

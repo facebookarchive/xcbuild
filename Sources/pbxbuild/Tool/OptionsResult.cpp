@@ -30,10 +30,6 @@ Tool::OptionsResult::
 static bool
 EvaluateCondition(std::string const &condition, pbxsetting::Environment const &environment)
 {
-    if (condition.empty()) {
-        return true;
-    }
-
 #define WARN_UNHANDLED_CONDITION 0
 
     // TODO(grp): Evaluate condition expression language correctly.
@@ -180,17 +176,18 @@ Create(
             continue;
         }
 
-        if (!EvaluateCondition(option->condition(), environment) || !EvaluateCondition(option->commandLineCondition(), environment)) {
+        if (option->condition() && !EvaluateCondition(*option->condition(), environment)) {
+            continue;
+        }
+        if (option->commandLineCondition() && !EvaluateCondition(*option->commandLineCondition(), environment)) {
             continue;
         }
 
-        std::vector<std::string> const &architectures = option->architectures();
-        if (!architectures.empty() && std::find(architectures.begin(), architectures.end(), architecture) == architectures.end()) {
+        if (option->architectures() && std::find(option->architectures()->begin(), option->architectures()->end(), architecture) == option->architectures()->end()) {
             continue;
         }
 
-        std::vector<std::string> const &fileTypes = option->fileTypes();
-        if (!fileTypes.empty() && (fileType == nullptr || std::find(fileTypes.begin(), fileTypes.end(), fileType->identifier()) == fileTypes.end())) {
+        if (option->fileTypes() && fileType != nullptr && std::find(option->fileTypes()->begin(), option->fileTypes()->end(), fileType->identifier()) == option->fileTypes()->end()) {
             continue;
         }
 
@@ -199,16 +196,17 @@ Create(
 
         if (option->type() == "Boolean" || option->type() == "bool") {
             bool booleanValue = pbxsetting::Type::ParseBoolean(value);
-            pbxsetting::Value const &flag = (booleanValue ? option->commandLineFlag() : option->commandLineFlagIfFalse());
+            ext::optional<pbxsetting::Value> const &flag = (booleanValue ? option->commandLineFlag() : option->commandLineFlagIfFalse());
 
-            if (flag != pbxsetting::Value::Empty()) {
+            if (flag) {
                 /* Boolean flags don't get the flag value after, since that would be just YES or NO. */
-                arguments.push_back(environment.expand(flag));
+                arguments.push_back(environment.expand(*flag));
             }
         } else {
             if (!value.empty()) {
-                pbxsetting::Value const &flag = option->commandLineFlag();
-                if (flag != pbxsetting::Value::Empty()) {
+                if (option->commandLineFlag()) {
+                    pbxsetting::Value const &flag = *option->commandLineFlag();
+
                     /* Pass both the command line flag and the option value itself. */
                     std::vector<pbxsetting::Value> values = { flag, pbxsetting::Value::Variable("value") };
                     AddOptionArgumentValues(&arguments, environment, workingDirectory, values, option);
@@ -221,8 +219,8 @@ Create(
 
         if (!value.empty()) {
             /* Pass the prefix then the option value in the same argument. */
-            pbxsetting::Value const &prefix = option->commandLinePrefixFlag();
-            if (option->hasCommandLinePrefixFlag()) {
+            if (option->commandLinePrefixFlag()) {
+                pbxsetting::Value const &prefix = *option->commandLinePrefixFlag();
                 pbxsetting::Value prefixValue = prefix + pbxsetting::Value::Variable("value");
                 AddOptionArgumentValues(&arguments, environment, workingDirectory, { prefixValue }, option);
             }
@@ -231,8 +229,8 @@ Create(
         AddOptionArgsArguments(&arguments, environment, workingDirectory, option->commandLineArgs(), value, option);
         AddOptionArgsArguments(&linkerArgs, environment, workingDirectory, option->additionalLinkerArgs(), value, option);
 
-        std::string const &variable = environment.expand(option->setValueInEnvironmentVariable());
-        if (!variable.empty()) {
+        if (option->setValueInEnvironmentVariable()) {
+            std::string const &variable = environment.expand(*option->setValueInEnvironmentVariable());
             environmentVariables.insert({ variable, value });
         }
 
@@ -254,7 +252,7 @@ Create(
     return Create(
         toolEnvironment.environment(),
         workingDirectory,
-        toolEnvironment.tool()->options(),
+        toolEnvironment.tool()->options().value_or(pbxspec::PBX::PropertyOption::vector()),
         fileType,
-        toolEnvironment.tool()->deletedProperties());
+        toolEnvironment.tool()->deletedProperties().value_or(std::unordered_set<std::string>()));
 }

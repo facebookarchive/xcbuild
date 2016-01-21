@@ -8,42 +8,18 @@
  */
 
 #include <pbxspec/PBX/Compiler.h>
-#include <pbxspec/Manager.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::Compiler;
 
-Compiler::Compiler() :
-    Tool                                     (),
-    _outputDir                               (pbxsetting::Value::Empty()),
-    _generatedInfoPlistContentFilePath       (pbxsetting::Value::Empty()),
-    _dependencyInfoFile                      (pbxsetting::Value::Empty()),
-    _overridingProperties                    (pbxsetting::Level({ })),
-    _useCPlusPlusCompilerDriverWhenBundlizing(false),
-    _dashIFlagAcceptHeadermaps               (false),
-    _supportsHeadermaps                      (false),
-    _supportsIsysroot                        (false),
-    _supportsSeparateUserHeaderPaths         (false),
-    _supportsGeneratePreprocessedFile        (false),
-    _supportsGenerateAssemblyFile            (false),
-    _supportsAnalyzeFile                     (false),
-    _supportsSerializedDiagnostics           (false),
-    _supportsPredictiveCompilation           (false),
-    _supportsMacOSXDeploymentTarget          (false),
-    _supportsMacOSXMinVersionFlag            (false),
-    _prunePrecompiledHeaderCache             (false),
-    _outputAreProducts                       (false),
-    _outputAreSourceFiles                    (false),
-    _softError                               (false),
-    _deeplyStatInputDirectories              (false),
-    _dontProcessOutputs                      (false),
-    _showInCompilerSelectionPopup            (false),
-    _showOnlySelfDefinedProperties           (false),
-    _mightNotEmitAllOutputs                  (false),
-    _includeInUnionedToolDefaults            (false)
+Compiler::
+Compiler() :
+    Tool()
 {
 }
 
-Compiler::~Compiler()
+Compiler::
+~Compiler()
 {
 }
 
@@ -73,46 +49,46 @@ inherit(Compiler::shared_ptr const &b)
 
     auto base = this->base();
 
-    _execCPlusPlusLinkerPath                  = base->execCPlusPlusLinkerPath();
-    _executionDescription                     = base->executionDescription();
-    _sourceFileOption                         = base->sourceFileOption();
-    _outputDir                                = base->outputDir();
-    _outputFileExtension                      = base->outputFileExtension();
-    _commandResultsPostprocessor              = base->commandResultsPostprocessor();
-    _genericCommandFailedErrorString          = base->genericCommandFailedErrorString();
-    _generatedInfoPlistContentFilePath        = base->generatedInfoPlistContentFilePath();
-    _dependencyInfoFile                       = base->dependencyInfoFile();
-    _dependencyInfoArgs                       = base->dependencyInfoArgs();
-    _languages                                = base->languages();
-    _optionConditionFlavors                   = base->optionConditionFlavors();
-    _patternsOfFlagsNotAffectingPrecomps      = base->patternsOfFlagsNotAffectingPrecomps();
-    _messageCategoryInfoOptions               = base->messageCategoryInfoOptions();
-    _synthesizeBuildRuleForBuildPhases        = base->synthesizeBuildRuleForBuildPhases();
-    _inputFileGroupings                       = base->inputFileGroupings();
-    _fallbackTools                            = base->fallbackTools();
-    _additionalDirectoriesToCreate            = base->additionalDirectoriesToCreate();
-    _overridingProperties                     = base->overridingProperties();
-    _useCPlusPlusCompilerDriverWhenBundlizing = base->useCPlusPlusCompilerDriverWhenBundlizing();
-    _supportsHeadermaps                       = base->supportsHeadermaps();
-    _supportsIsysroot                         = base->supportsIsysroot();
-    _supportsSeparateUserHeaderPaths          = base->supportsSeparateUserHeaderPaths();
-    _supportsGeneratePreprocessedFile         = base->supportsGeneratePreprocessedFile();
-    _supportsGenerateAssemblyFile             = base->supportsGenerateAssemblyFile();
-    _supportsAnalyzeFile                      = base->supportsAnalyzeFile();
-    _supportsSerializedDiagnostics            = base->supportsSerializedDiagnostics();
-    _supportsPredictiveCompilation            = base->supportsPredictiveCompilation();
-    _supportsMacOSXDeploymentTarget           = base->supportsMacOSXDeploymentTarget();
-    _supportsMacOSXMinVersionFlag             = base->supportsMacOSXMinVersionFlag();
-    _prunePrecompiledHeaderCache              = base->prunePrecompiledHeaderCache();
-    _outputAreProducts                        = base->outputAreProducts();
-    _outputAreSourceFiles                     = base->outputAreSourceFiles();
-    _softError                                = base->softError();
-    _deeplyStatInputDirectories               = base->deeplyStatInputDirectories();
-    _dontProcessOutputs                       = base->dontProcessOutputs();
-    _showInCompilerSelectionPopup             = base->showInCompilerSelectionPopup();
-    _showOnlySelfDefinedProperties            = base->showOnlySelfDefinedProperties();
-    _mightNotEmitAllOutputs                   = base->mightNotEmitAllOutputs();
-    _includeInUnionedToolDefaults             = base->includeInUnionedToolDefaults();
+    _execCPlusPlusLinkerPath                  = Inherit::Override(_execCPlusPlusLinkerPath, base->_execCPlusPlusLinkerPath);
+    _executionDescription                     = Inherit::Override(_executionDescription, base->_executionDescription);
+    _sourceFileOption                         = Inherit::Override(_sourceFileOption, base->_sourceFileOption);
+    _outputDir                                = Inherit::Override(_outputDir, base->_outputDir);
+    _outputFileExtension                      = Inherit::Override(_outputFileExtension, base->_outputFileExtension);
+    _commandResultsPostprocessor              = Inherit::Override(_commandResultsPostprocessor, base->_commandResultsPostprocessor);
+    _genericCommandFailedErrorString          = Inherit::Override(_genericCommandFailedErrorString, base->_genericCommandFailedErrorString);
+    _generatedInfoPlistContentFilePath        = Inherit::Override(_generatedInfoPlistContentFilePath, base->_generatedInfoPlistContentFilePath);
+    _dependencyInfoFile                       = Inherit::Override(_dependencyInfoFile, base->_dependencyInfoFile);
+    _dependencyInfoArgs                       = Inherit::Combine(_dependencyInfoArgs, base->_dependencyInfoArgs);
+    _languages                                = Inherit::Combine(_languages, base->_languages);
+    _optionConditionFlavors                   = Inherit::Combine(_optionConditionFlavors, base->_optionConditionFlavors);
+    _patternsOfFlagsNotAffectingPrecomps      = Inherit::Combine(_patternsOfFlagsNotAffectingPrecomps, base->_patternsOfFlagsNotAffectingPrecomps);
+    _messageCategoryInfoOptions               = Inherit::Combine(_messageCategoryInfoOptions, base->_messageCategoryInfoOptions);
+    _synthesizeBuildRuleForBuildPhases        = Inherit::Combine(_synthesizeBuildRuleForBuildPhases, base->_synthesizeBuildRuleForBuildPhases);
+    _inputFileGroupings                       = Inherit::Combine(_inputFileGroupings, base->_inputFileGroupings);
+    _fallbackTools                            = Inherit::Combine(_fallbackTools, base->_fallbackTools);
+    _additionalDirectoriesToCreate            = Inherit::Combine(_additionalDirectoriesToCreate, base->_additionalDirectoriesToCreate);
+    _overridingProperties                     = Inherit::Combine(_overridingProperties, base->_overridingProperties);
+    _useCPlusPlusCompilerDriverWhenBundlizing = Inherit::Override(_useCPlusPlusCompilerDriverWhenBundlizing, base->_useCPlusPlusCompilerDriverWhenBundlizing);
+    _supportsHeadermaps                       = Inherit::Override(_supportsHeadermaps, base->_supportsHeadermaps);
+    _supportsIsysroot                         = Inherit::Override(_supportsIsysroot, base->_supportsIsysroot);
+    _supportsSeparateUserHeaderPaths          = Inherit::Override(_supportsSeparateUserHeaderPaths, base->_supportsSeparateUserHeaderPaths);
+    _supportsGeneratePreprocessedFile         = Inherit::Override(_supportsGeneratePreprocessedFile, base->_supportsGeneratePreprocessedFile);
+    _supportsGenerateAssemblyFile             = Inherit::Override(_supportsGenerateAssemblyFile, base->_supportsGenerateAssemblyFile);
+    _supportsAnalyzeFile                      = Inherit::Override(_supportsAnalyzeFile, base->_supportsAnalyzeFile);
+    _supportsSerializedDiagnostics            = Inherit::Override(_supportsSerializedDiagnostics, base->_supportsSerializedDiagnostics);
+    _supportsPredictiveCompilation            = Inherit::Override(_supportsPredictiveCompilation, base->_supportsPredictiveCompilation);
+    _supportsMacOSXDeploymentTarget           = Inherit::Override(_supportsMacOSXDeploymentTarget, base->_supportsMacOSXDeploymentTarget);
+    _supportsMacOSXMinVersionFlag             = Inherit::Override(_supportsMacOSXMinVersionFlag, base->_supportsMacOSXMinVersionFlag);
+    _prunePrecompiledHeaderCache              = Inherit::Override(_prunePrecompiledHeaderCache, base->_prunePrecompiledHeaderCache);
+    _outputAreProducts                        = Inherit::Override(_outputAreProducts, base->_outputAreProducts);
+    _outputAreSourceFiles                     = Inherit::Override(_outputAreSourceFiles, base->_outputAreSourceFiles);
+    _softError                                = Inherit::Override(_softError, base->_softError);
+    _deeplyStatInputDirectories               = Inherit::Override(_deeplyStatInputDirectories, base->_deeplyStatInputDirectories);
+    _dontProcessOutputs                       = Inherit::Override(_dontProcessOutputs, base->_dontProcessOutputs);
+    _showInCompilerSelectionPopup             = Inherit::Override(_showInCompilerSelectionPopup, base->_showInCompilerSelectionPopup);
+    _showOnlySelfDefinedProperties            = Inherit::Override(_showOnlySelfDefinedProperties, base->_showOnlySelfDefinedProperties);
+    _mightNotEmitAllOutputs                   = Inherit::Override(_mightNotEmitAllOutputs, base->_mightNotEmitAllOutputs);
+    _includeInUnionedToolDefaults             = Inherit::Override(_includeInUnionedToolDefaults, base->_includeInUnionedToolDefaults);
 
     return true;
 }
@@ -225,73 +201,82 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (DIAs != nullptr) {
+        _dependencyInfoArgs = std::vector<pbxsetting::Value>();
         for (size_t n = 0; n < DIAs->count(); n++) {
             if (auto DIA = DIAs->value <plist::String> (n)) {
-                _dependencyInfoArgs.push_back(pbxsetting::Value::Parse(DIA->value()));
+                _dependencyInfoArgs->push_back(pbxsetting::Value::Parse(DIA->value()));
             }
         }
     }
 
     if (Ls != nullptr) {
+        _languages = std::vector<std::string>();
         for (size_t n = 0; n < Ls->count(); n++) {
             if (auto L = Ls->value <plist::String> (n)) {
-                _languages.push_back(L->value());
+                _languages->push_back(L->value());
             }
         }
     }
 
     if (OCFs != nullptr) {
+        _optionConditionFlavors = std::vector<std::string>();
         for (size_t n = 0; n < OCFs->count(); n++) {
             if (auto OCF = OCFs->value <plist::String> (n)) {
-                _optionConditionFlavors.push_back(OCF->value());
+                _optionConditionFlavors->push_back(OCF->value());
             }
         }
     }
 
     if (POFNAPs != nullptr) {
+        _patternsOfFlagsNotAffectingPrecomps = std::vector<std::string>();
         for (size_t n = 0; n < POFNAPs->count(); n++) {
             if (auto POFNAP = POFNAPs->value <plist::String> (n)) {
-                _patternsOfFlagsNotAffectingPrecomps.push_back(POFNAP->value());
+                _patternsOfFlagsNotAffectingPrecomps->push_back(POFNAP->value());
             }
         }
     }
 
     if (MCIOs != nullptr) {
+        _messageCategoryInfoOptions = std::vector<std::string>();
         for (size_t n = 0; n < MCIOs->count(); n++) {
             if (auto MCIO = MCIOs->value <plist::String> (n)) {
-                _messageCategoryInfoOptions.push_back(MCIO->value());
+                _messageCategoryInfoOptions->push_back(MCIO->value());
             }
         }
     }
 
     if (SBRFBPs != nullptr) {
+        _synthesizeBuildRuleForBuildPhases = std::vector<std::string>();
         for (size_t n = 0; n < SBRFBPs->count(); n++) {
             if (auto SBRFBP = SBRFBPs->value <plist::String> (n)) {
-                _synthesizeBuildRuleForBuildPhases.push_back(SBRFBP->value());
+                _synthesizeBuildRuleForBuildPhases->push_back(SBRFBP->value());
             }
         }
     }
 
     if (IFGs != nullptr) {
+        _inputFileGroupings = std::vector<std::string>();
         for (size_t n = 0; n < IFGs->count(); n++) {
             if (auto IFG = IFGs->value <plist::String> (n)) {
-                _inputFileGroupings.push_back(IFG->value());
+                _inputFileGroupings->push_back(IFG->value());
             }
         }
     }
 
     if (FTs != nullptr) {
+        _fallbackTools = std::vector<std::string>();
         for (size_t n = 0; n < FTs->count(); n++) {
             if (auto FT = FTs->value <plist::String> (n)) {
-                _fallbackTools.push_back(FT->value());
+                _fallbackTools->push_back(FT->value());
             }
         }
     }
 
     if (ADTCs != nullptr) {
+        _additionalDirectoriesToCreate = std::vector<pbxsetting::Value>();
         for (size_t n = 0; n < ADTCs->count(); n++) {
             if (auto ADTC = ADTCs->value <plist::String> (n)) {
-                _additionalDirectoriesToCreate.push_back(pbxsetting::Value::Parse(ADTC->value()));
+                _additionalDirectoriesToCreate->push_back(pbxsetting::Value::Parse(ADTC->value()));
             }
         }
     }

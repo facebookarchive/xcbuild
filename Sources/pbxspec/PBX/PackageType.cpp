@@ -8,18 +8,20 @@
  */
 
 #include <pbxspec/PBX/PackageType.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::PackageType;
 using pbxsetting::Level;
 using pbxsetting::Setting;
 
-PackageType::PackageType() :
-    Specification        (),
-    _defaultBuildSettings(Level({ }))
+PackageType::
+PackageType() :
+    Specification()
 {
 }
 
-PackageType::~PackageType()
+PackageType::~
+PackageType()
 {
 }
 
@@ -56,14 +58,14 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (PR != nullptr) {
-        _productReference.reset(new ProductReference);
-        if (!_productReference->parse(PR)) {
-            _productReference.reset();
+        ProductReference productReference;
+        if (productReference.parse(PR)) {
+            _productReference = productReference;
         }
     }
 
     if (DBS != nullptr) {
-        std::vector<Setting> settings = _defaultBuildSettings.settings();
+        std::vector<Setting> settings;
         for (size_t n = 0; n < DBS->count(); n++) {
             auto DBSK = DBS->key(n);
             auto DBSV = DBS->value <plist::String> (DBSK);
@@ -96,14 +98,14 @@ inherit(PackageType::shared_ptr const &b)
 
     auto base = this->base();
 
-    _productReference     = base->productReference();
-    _defaultBuildSettings = base->defaultBuildSettings();
+    _productReference     = Inherit::Override(_productReference, base->_productReference);
+    _defaultBuildSettings = Inherit::Combine(_defaultBuildSettings, base->_defaultBuildSettings);
 
     return true;
 }
 
-PackageType::ProductReference::ProductReference() :
-    _isLaunchable(false)
+PackageType::ProductReference::
+ProductReference()
 {
 }
 

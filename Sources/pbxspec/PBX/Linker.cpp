@@ -8,17 +8,18 @@
  */
 
 #include <pbxspec/PBX/Linker.h>
-#include <pbxspec/Manager.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::Linker;
 
-Linker::Linker() :
-    _supportsInputFileList(false),
-    _dependencyInfoFile(pbxsetting::Value::Empty())
+Linker::
+Linker() :
+    Tool()
 {
 }
 
-Linker::~Linker()
+Linker::
+~Linker()
 {
 }
 
@@ -48,9 +49,9 @@ inherit(Linker::shared_ptr const &b)
 
     auto base = this->base();
 
-    _binaryFormats         = base->binaryFormats();
-    _dependencyInfoFile    = base->dependencyInfoFile();
-    _supportsInputFileList = base->supportsInputFileList();
+    _binaryFormats         = Inherit::Combine(_binaryFormats, base->_binaryFormats);
+    _dependencyInfoFile    = Inherit::Override(_dependencyInfoFile, base->_dependencyInfoFile);
+    _supportsInputFileList = Inherit::Override(_supportsInputFileList, base->_supportsInputFileList);
 
     return true;
 }
@@ -89,9 +90,10 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (BFs != nullptr) {
+        _binaryFormats = std::vector<std::string>();
         for (size_t n = 0; n < BFs->count(); n++) {
             if (auto BF = BFs->value <plist::String> (n)) {
-                _binaryFormats.push_back(BF->value());
+                _binaryFormats->push_back(BF->value());
             }
         }
     }

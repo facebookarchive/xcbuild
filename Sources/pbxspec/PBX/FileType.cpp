@@ -9,52 +9,17 @@
 
 #include <pbxspec/PBX/FileType.h>
 #include <pbxspec/Manager.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::FileType;
 
 FileType::FileType() :
-    _isTextFile                             (false),
-    _isBuildPropertiesFile                  (false),
-    _isSourceCode                           (false),
-    _isSwiftSourceCode                      (false),
-    _isPreprocessed                         (false),
-    _isTransparent                          (false),
-    _isDocumentation                        (false),
-    _isEmbeddable                           (false),
-    _isExecutable                           (false),
-    _isExecutableWithGUI                    (false),
-    _isApplication                          (false),
-    _isBundle                               (false),
-    _isLibrary                              (false),
-    _isDynamicLibrary                       (false),
-    _isStaticLibrary                        (false),
-    _isFolder                               (false),
-    _isWrappedFolder                        (false),
-    _isFrameworkWrapper                     (false),
-    _isStaticFrameworkWrapper               (false),
-    _isProjectWrapper                       (false),
-    _isTargetWrapper                        (false),
-    _isScannedForIncludes                   (false),
-    _includeInIndex                         (false),
-    _canSetIncludeInIndex                   (false),
-    _requiresHardTabs                       (false),
-    _containsNativeCode                     (false),
-    _appliesToBuildRules                    (false),
-    _changesCauseDependencyGraphInvalidation(false),
-    _codeSignOnCopy                         (false),
-    _removeHeadersOnCopy                    (false),
-    _validateOnCopy                         (false)
+    Specification()
 {
 }
 
 FileType::~FileType()
 {
-    //
-    // Clear circular dependencies.
-    //
-    for (auto cp : _componentParts) {
-        cp.second.reset();
-    }
 }
 
 bool FileType::
@@ -74,53 +39,53 @@ inherit(FileType::shared_ptr const &b)
 
     auto base = this->base();
 
-    _uti                                     = base->UTI();
-    _extensions                              = base->extensions();
-    _mimeTypes                               = base->MIMETypes();
-    _typeCodes                               = base->typeCodes();
-    _filenamePatterns                        = base->filenamePatterns();
-    _magicWords                              = base->magicWords();
-    _language                                = base->language();
-    _computerLanguage                        = base->computerLanguage();
-    _gccDialectName                          = base->GCCDialectName();
-    _prefix                                  = base->prefix();
-    _permissions                             = base->permissions();
-    _buildPhaseInjectionsWhenEmbedding       = base->buildPhaseInjectionsWhenEmbedding();
-    _appliesToBuildRules                     = base->appliesToBuildRules();
-    _isTextFile                              = base->isTextFile();
-    _isBuildPropertiesFile                   = base->isBuildPropertiesFile();
-    _isSourceCode                            = base->isSourceCode();
-    _isSwiftSourceCode                       = base->isSwiftSourceCode();
-    _isDocumentation                         = base->isDocumentation();
-    _isPreprocessed                          = base->isPreprocessed();
-    _isTransparent                           = base->isTransparent();
-    _isEmbeddable                            = base->isEmbeddable();
-    _isExecutable                            = base->isExecutable();
-    _isExecutableWithGUI                     = base->isExecutableWithGUI();
-    _isApplication                           = base->isApplication();
-    _isBundle                                = base->isBundle();
-    _isLibrary                               = base->isLibrary();
-    _isDynamicLibrary                        = base->isDynamicLibrary();
-    _isStaticLibrary                         = base->isStaticLibrary();
-    _isFolder                                = base->isFolder();
-    _isWrappedFolder                         = base->isWrappedFolder();
-    _isScannedForIncludes                    = base->isScannedForIncludes();
-    _isFrameworkWrapper                      = base->isFrameworkWrapper();
-    _isStaticFrameworkWrapper                = base->isStaticFrameworkWrapper();
-    _isProjectWrapper                        = base->isProjectWrapper();
-    _isTargetWrapper                         = base->isTargetWrapper();
-    _componentParts                          = base->componentParts();
-    _extraPropertyNames                      = base->extraPropertyNames();
-    _includeInIndex                          = base->includeInIndex();
-    _canSetIncludeInIndex                    = base->canSetIncludeInIndex();
-    _requiresHardTabs                        = base->requiresHardTabs();
-    _containsNativeCode                      = base->containsNativeCode();
-    _plistStructureDefinition                = base->plistStructureDefinition();
-    _changesCauseDependencyGraphInvalidation = base->changesCauseDependencyGraphInvalidation();
-    _fallbackAutoroutingBuildPhase           = base->fallbackAutoroutingBuildPhase();
-    _codeSignOnCopy                          = base->codeSignOnCopy();
-    _removeHeadersOnCopy                     = base->removeHeadersOnCopy();
-    _validateOnCopy                          = base->validateOnCopy();
+    _uti                                     = Inherit::Override(_uti, base->_uti);
+    _extensions                              = _extensions; /* Explicitly not inherited. */
+    _mimeTypes                               = Inherit::Combine(_mimeTypes, base->_mimeTypes);
+    _typeCodes                               = Inherit::Combine(_typeCodes, base->_typeCodes);
+    _filenamePatterns                        = Inherit::Combine(_filenamePatterns, base->_filenamePatterns);
+    _magicWords                              = Inherit::Combine(_magicWords, base->_magicWords);
+    _language                                = Inherit::Override(_language, base->_language);
+    _computerLanguage                        = Inherit::Override(_computerLanguage, base->_computerLanguage);
+    _gccDialectName                          = Inherit::Override(_gccDialectName, base->_gccDialectName);
+    _prefix                                  = Inherit::Combine(_prefix, base->_prefix);
+    _permissions                             = Inherit::Override(_permissions, base->_permissions);
+    _buildPhaseInjectionsWhenEmbedding       = Inherit::Combine(_buildPhaseInjectionsWhenEmbedding, base->_buildPhaseInjectionsWhenEmbedding);
+    _appliesToBuildRules                     = Inherit::Override(_appliesToBuildRules, base->_appliesToBuildRules);
+    _isTextFile                              = Inherit::Override(_isTextFile, base->_isTextFile);
+    _isBuildPropertiesFile                   = Inherit::Override(_isBuildPropertiesFile, base->_isBuildPropertiesFile);
+    _isSourceCode                            = Inherit::Override(_isSourceCode, base->_isSourceCode);
+    _isSwiftSourceCode                       = Inherit::Override(_isSwiftSourceCode, base->_isSwiftSourceCode);
+    _isDocumentation                         = Inherit::Override(_isDocumentation, base->_isDocumentation);
+    _isPreprocessed                          = Inherit::Override(_isPreprocessed, base->_isPreprocessed);
+    _isTransparent                           = Inherit::Override(_isTransparent, base->_isTransparent);
+    _isEmbeddable                            = Inherit::Override(_isEmbeddable, base->_isEmbeddable);
+    _isExecutable                            = Inherit::Override(_isExecutable, base->_isExecutable);
+    _isExecutableWithGUI                     = Inherit::Override(_isExecutableWithGUI, base->_isExecutableWithGUI);
+    _isApplication                           = Inherit::Override(_isApplication, base->_isApplication);
+    _isBundle                                = Inherit::Override(_isBundle, base->_isBundle);
+    _isLibrary                               = Inherit::Override(_isLibrary, base->_isLibrary);
+    _isDynamicLibrary                        = Inherit::Override(_isDynamicLibrary, base->_isDynamicLibrary);
+    _isStaticLibrary                         = Inherit::Override(_isStaticLibrary, base->_isStaticLibrary);
+    _isFolder                                = Inherit::Override(_isFolder, base->_isFolder);
+    _isWrappedFolder                         = Inherit::Override(_isWrappedFolder, base->_isWrappedFolder);
+    _isScannedForIncludes                    = Inherit::Override(_isScannedForIncludes, base->_isScannedForIncludes);
+    _isFrameworkWrapper                      = Inherit::Override(_isFrameworkWrapper, base->_isFrameworkWrapper);
+    _isStaticFrameworkWrapper                = Inherit::Override(_isStaticFrameworkWrapper, base->_isStaticFrameworkWrapper);
+    _isProjectWrapper                        = Inherit::Override(_isProjectWrapper, base->_isProjectWrapper);
+    _isTargetWrapper                         = Inherit::Override(_isTargetWrapper, base->_isTargetWrapper);
+    _componentParts                          = Inherit::Combine(_componentParts, base->_componentParts);
+    _extraPropertyNames                      = Inherit::Combine(_extraPropertyNames, base->_extraPropertyNames);
+    _includeInIndex                          = Inherit::Override(_includeInIndex, base->_includeInIndex);
+    _canSetIncludeInIndex                    = Inherit::Override(_canSetIncludeInIndex, base->_canSetIncludeInIndex);
+    _requiresHardTabs                        = Inherit::Override(_requiresHardTabs, base->_requiresHardTabs);
+    _containsNativeCode                      = Inherit::Override(_containsNativeCode, base->_containsNativeCode);
+    _plistStructureDefinition                = Inherit::Override(_plistStructureDefinition, base->_plistStructureDefinition);
+    _changesCauseDependencyGraphInvalidation = Inherit::Override(_changesCauseDependencyGraphInvalidation, base->_changesCauseDependencyGraphInvalidation);
+    _fallbackAutoroutingBuildPhase           = Inherit::Override(_fallbackAutoroutingBuildPhase, base->_fallbackAutoroutingBuildPhase);
+    _codeSignOnCopy                          = Inherit::Override(_codeSignOnCopy, base->_codeSignOnCopy);
+    _removeHeadersOnCopy                     = Inherit::Override(_removeHeadersOnCopy, base->_removeHeadersOnCopy);
+    _validateOnCopy                          = Inherit::Override(_validateOnCopy, base->_validateOnCopy);
 
     return true;
 }
@@ -206,54 +171,54 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
         _uti = U->value();
     }
 
-    //
-    // Extensions are not inherited.
-    //
-    _extensions.clear();
-
     if (Es != nullptr) {
+        _extensions = std::vector<std::string>();
         for (size_t n = 0; n < Es->count(); n++) {
             auto E = Es->value <plist::String> (n);
             if (E != nullptr) {
-                _extensions.push_back(E->value());
+                _extensions->push_back(E->value());
             }
         }
     }
 
     if (MTs != nullptr) {
+        _mimeTypes = std::vector<std::string>();
         for (size_t n = 0; n < MTs->count(); n++) {
             auto MT = MTs->value <plist::String> (n);
             if (MT != nullptr) {
-                _mimeTypes.push_back(MT->value());
+                _mimeTypes->push_back(MT->value());
             }
         }
     }
 
     if (TCs != nullptr) {
+        _typeCodes = std::vector<std::string>();
         for (size_t n = 0; n < TCs->count(); n++) {
             auto TC = TCs->value <plist::String> (n);
             if (TC != nullptr) {
-                _typeCodes.push_back(TC->value());
+                _typeCodes->push_back(TC->value());
             }
         }
     }
 
     if (FPs != nullptr) {
+        _filenamePatterns = std::vector<std::string>();
         for (size_t n = 0; n < FPs->count(); n++) {
             auto FP = FPs->value <plist::String> (n);
             if (FP != nullptr) {
-                _filenamePatterns.push_back(FP->value());
+                _filenamePatterns->push_back(FP->value());
             }
         }
     }
 
     if (MWs != nullptr) {
+        _magicWords = std::vector<std::vector<uint8_t>>();
         for (size_t n = 0; n < MWs->count(); n++) {
             if (auto MW = MWs->value <plist::String> (n)) {
                 std::vector<uint8_t> MWV = std::vector<uint8_t>(MW->value().begin(), MW->value().end());
-                _magicWords.push_back(MWV);
+                _magicWords->push_back(MWV);
             } else if (auto MW = MWs->value <plist::Data> (n)) {
-                _magicWords.push_back(MW->value());
+                _magicWords->push_back(MW->value());
             }
         }
     }
@@ -271,10 +236,11 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (Ps != nullptr) {
+        _prefix = std::vector<std::string>();
         for (size_t n = 0; n < Ps->count(); n++) {
             auto P = Ps->value <plist::String> (n);
             if (P != nullptr) {
-                _prefix.push_back(P->value());
+                _prefix->push_back(P->value());
             }
         }
     }
@@ -284,12 +250,13 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (BPIWE != nullptr) {
+        _buildPhaseInjectionsWhenEmbedding = std::vector<BuildPhaseInjection>();
         for (size_t n = 0; n < BPIWE->count(); n++) {
             auto BPI = BPIWE->value <plist::Dictionary> (n);
             if (BPI != nullptr) {
                 BuildPhaseInjection injection;
                 if (injection.parse(BPI)) {
-                    _buildPhaseInjectionsWhenEmbedding.push_back(injection);
+                    _buildPhaseInjectionsWhenEmbedding->push_back(injection);
                 }
             }
         }
@@ -384,23 +351,24 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (EPNs != nullptr) {
+        _extraPropertyNames = std::vector<std::string>();
         for (size_t n = 0; n < EPNs->count(); n++) {
             auto EPN = EPNs->value <plist::String> (n);
             if (EPN != nullptr) {
-                _extraPropertyNames.push_back(EPN->value());
+                _extraPropertyNames->push_back(EPN->value());
             }
         }
     }
 
     if (CPs != nullptr) {
+        _componentParts = std::vector<ComponentPart>();
         for (size_t n = 0; n < CPs->count(); n++) {
             auto K  = CPs->key(n);
             auto CP = CPs->value <plist::Array> (n);
             if (CP != nullptr) {
-                ComponentPart::shared_ptr cp;
-                cp.reset(new ComponentPart);
-                if (cp->parse(this, CP)) {
-                    _componentParts.insert(std::make_pair(K, cp));
+                ComponentPart cp;
+                if (cp.parse(K, CP)) {
+                    _componentParts->push_back(cp);
                 }
             }
         }
@@ -457,15 +425,11 @@ FileType::ComponentPart::ComponentPart()
 {
 }
 
-void FileType::ComponentPart::
-reset()
-{
-    _reference.reset();
-}
-
 bool FileType::ComponentPart::
-parse(FileType *ftype, plist::Array const *array)
+parse(std::string const &identifier, plist::Array const *array)
 {
+    _identifier = identifier;
+
     auto count = array->count();
 
     if (count >= 1) {
@@ -482,24 +446,22 @@ parse(FileType *ftype, plist::Array const *array)
 
     if (count >= 3) {
         if (auto IDs = array->value <plist::Array> (2)) {
+            _identifiers = std::vector<std::string>();
             for (size_t m = 0; m < IDs->count(); m++) {
                 if (auto ID = IDs->value <plist::String> (m)) {
-                    _identifiers.push_back(ID->value());
+                    _identifiers->push_back(ID->value());
                 }
             }
         } else if (auto R = array->value <plist::String> (2)) {
-            _reference = ftype->_componentParts[R->value()];
+            _reference = R->value();
         }
     }
 
     return true;
 }
 
-FileType::BuildPhaseInjection::BuildPhaseInjection() :
-    _runOnlyForDeploymentPostprocessing (false),
-    _needsRunpathSearchPathForFrameworks(false),
-    _dstSubfolderSpec                   (0),
-    _dstPath                            (pbxsetting::Value::Empty())
+FileType::BuildPhaseInjection::
+BuildPhaseInjection()
 {
 }
 

@@ -93,7 +93,11 @@ ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<st
 static Target::BuildRules::BuildRule::shared_ptr
 SpecificationBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxspec::PBX::BuildRule::shared_ptr const &specBuildRule)
 {
-    std::string TS = specBuildRule->compilerSpec();
+    if (!specBuildRule->compilerSpec()) {
+        return nullptr;
+    }
+
+    std::string const &TS = *specBuildRule->compilerSpec();
     pbxspec::PBX::Tool::shared_ptr tool = specManager->tool(TS, domains) ?:
         std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(TS, domains)) ?:
         std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(TS, domains));
@@ -102,12 +106,14 @@ SpecificationBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vec
     }
 
     pbxspec::PBX::FileType::vector fileTypes;
-    for (std::string const &FT : specBuildRule->fileTypes()) {
-        pbxspec::PBX::FileType::shared_ptr fileType = specManager->fileType(FT, domains);
-        if (fileType == nullptr) {
-            return nullptr;
+    if (specBuildRule->fileTypes()) {
+        for (std::string const &FT : *specBuildRule->fileTypes()) {
+            pbxspec::PBX::FileType::shared_ptr fileType = specManager->fileType(FT, domains);
+            if (fileType == nullptr) {
+                return nullptr;
+            }
+            fileTypes.push_back(fileType);
         }
-        fileTypes.push_back(fileType);
     }
 
     return std::make_shared <Target::BuildRules::BuildRule> (Target::BuildRules::BuildRule(

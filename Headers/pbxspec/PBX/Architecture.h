@@ -13,6 +13,8 @@
 #include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
+#include <ext/optional>
+
 namespace pbxspec { namespace PBX {
 
 class Architecture : public Specification {
@@ -21,12 +23,12 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    libutil::string_vector _realArchitectures;
-    std::string            _architectureSetting;
-    std::string            _perArchBuildSettingName;
-    std::string            _byteOrder;
-    bool                   _listInEnum;
-    int                    _sortNumber;
+    ext::optional<libutil::string_vector> _realArchitectures;
+    ext::optional<std::string>            _architectureSetting;
+    ext::optional<std::string>            _perArchBuildSettingName;
+    ext::optional<std::string>            _byteOrder;
+    ext::optional<bool>                   _listInEnum;
+    ext::optional<int>                    _sortNumber;
 
 protected:
     Architecture();
@@ -43,27 +45,29 @@ public:
     { return reinterpret_cast <Architecture::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline libutil::string_vector const &realArchitectures() const
+    inline ext::optional<libutil::string_vector> const &realArchitectures() const
     { return _realArchitectures; }
 
 public:
-    inline std::string const &architectureSetting() const
+    inline ext::optional<std::string> const &architectureSetting() const
     { return _architectureSetting; }
-    inline std::string const &perArchBuildSettingName() const
+    inline ext::optional<std::string >const &perArchBuildSettingName() const
     { return _perArchBuildSettingName; }
 
 public:
-    inline std::string const &byteOrder() const
+    inline ext::optional<std::string> const &byteOrder() const
     { return _byteOrder; }
 
 public:
     inline bool listInEnum() const
+    { return _listInEnum.value_or(false); }
+    inline ext::optional<bool> listInEnumOptional() const
     { return _listInEnum; }
-    inline int sortNumber() const
+    inline ext::optional<int> sortNumber() const
     { return _sortNumber; }
 
 public:
-    pbxsetting::Setting defaultSetting(void) const;
+    ext::optional<pbxsetting::Setting> defaultSetting(void) const;
 
 protected:
     friend class Specification;

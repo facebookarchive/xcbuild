@@ -8,16 +8,18 @@
  */
 
 #include <pbxspec/PBX/PropertyConditionFlavor.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::PropertyConditionFlavor;
 
-PropertyConditionFlavor::PropertyConditionFlavor() :
-    Specification(),
-    _precedence  (0)
+PropertyConditionFlavor::
+PropertyConditionFlavor() :
+    Specification()
 {
 }
 
-PropertyConditionFlavor::~PropertyConditionFlavor()
+PropertyConditionFlavor::
+~PropertyConditionFlavor()
 {
 }
 
@@ -76,7 +78,7 @@ inherit(PropertyConditionFlavor::shared_ptr const &b)
 
     auto base = this->base();
 
-    _precedence = base->precedence();
+    _precedence = Inherit::Override(_precedence, base->_precedence);
 
     return true;
 }

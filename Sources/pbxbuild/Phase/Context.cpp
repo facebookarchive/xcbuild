@@ -199,7 +199,7 @@ Group(std::vector<Phase::File> const &files)
         pbxspec::PBX::Compiler::shared_ptr const &compiler = std::static_pointer_cast<pbxspec::PBX::Compiler>(buildRule->tool());
 
         /* Determine the grouping. Only a single grouping per file is supported. */
-        std::vector<std::string> const &groupings = compiler->inputFileGroupings();
+        std::vector<std::string> const &groupings = compiler->inputFileGroupings().value_or(std::vector<std::string>());
         if (groupings.size() != 1) {
             if (!groupings.empty()) {
                 fprintf(stderr, "error: more than one input file grouping is not supported\n");
@@ -329,12 +329,14 @@ resolveBuildFiles(
                     // For example, the default compiler limits itself to just source files, despite its
                     // default build rule specifying that it accepts all C-family inputs, including headers.
                     // TODO(grp): Is this the right way to make .h files not get compiled as resources?
-                    std::string inputFileType = first.fileType()->identifier();
-                    std::vector<std::string> const &toolFileTypes = tool->fileTypes();
-                    bool toolAcceptsInputFileType = (toolFileTypes.empty() || std::find(toolFileTypes.begin(), toolFileTypes.end(), inputFileType) != toolFileTypes.end());
+                    if (tool->fileTypes()) {
+                        std::string inputFileType = first.fileType()->identifier();
+                        std::vector<std::string> const &toolFileTypes = *tool->fileTypes();
+                        bool toolAcceptsInputFileType = (toolFileTypes.empty() || std::find(toolFileTypes.begin(), toolFileTypes.end(), inputFileType) != toolFileTypes.end());
 
-                    if (toolAcceptsInputFileType) {
-                        toolIdentifier = tool->identifier();
+                        if (toolAcceptsInputFileType) {
+                            toolIdentifier = tool->identifier();
+                        }
                     }
                 }
             }

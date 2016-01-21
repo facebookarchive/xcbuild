@@ -99,13 +99,12 @@ ExpandTool(
      * Don't expand the command-line here because then it would be split incorrectly (on
      * spaces) when expanding the tokens. Instead, expand each token individually below.
      */
-    std::string toolCommandLine = tool->commandLine().raw();
-    std::string const &resolvedCommandLine = (!toolCommandLine.empty() ? toolCommandLine : "[exec-path] [options] [special-args]");
+    std::string const &resolvedCommandLine = (tool->commandLine() ? tool->commandLine()->raw() : "[exec-path] [options] [special-args]");
 
     /*
      * Determine the executable to use. Use the override if available, otherwise the tool.
      */
-    std::string toolExecutable = environment.expand(tool->execPath());
+    std::string toolExecutable = environment.expand(tool->execPath().value_or(pbxsetting::Value::Empty()));
     std::string const &resolvedExecutable = (!executable.empty() ? executable : toolExecutable);
 
     /*
@@ -126,9 +125,7 @@ ExpandTool(
     /*
      * Determine the input for the log message.
      */
-    std::string ruleName = environment.expand(toolEnvironment.tool()->ruleName());
-    std::string ruleFormat = environment.expand(toolEnvironment.tool()->ruleFormat());
-    std::string const &resolvedName = (!ruleName.empty() ? ruleName : ruleFormat);
+    std::string const &resolvedName = (tool->ruleName() ? environment.expand(*tool->ruleName()) : tool->ruleFormat() ? environment.expand(*tool->ruleFormat()) : std::string());
 
     /*
      * Expand the log message. In this case the setting expansion is less important as the log

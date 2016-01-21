@@ -13,6 +13,8 @@
 #include <pbxspec/Base.h>
 #include <pbxspec/Types.h>
 
+#include <ext/optional>
+
 namespace pbxspec { class Manager; }
 
 namespace pbxspec { namespace PBX {
@@ -23,15 +25,15 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    Specification::shared_ptr _base;
-    std::string               _clazz;
-    std::string               _identifier;
-    std::string               _domain;
-    bool                      _isGlobalDomainInUI;
-    std::string               _name;
-    std::string               _description;
-    std::string               _vendor;
-    std::string               _version;
+    Specification::shared_ptr  _base;
+    std::string                _identifier;
+    std::string                _domain;
+    ext::optional<bool>        _isGlobalDomainInUI;
+    ext::optional<std::string> _clazz;
+    ext::optional<std::string> _name;
+    ext::optional<std::string> _description;
+    ext::optional<std::string> _vendor;
+    ext::optional<std::string> _version;
 
 protected:
     Specification();
@@ -44,8 +46,6 @@ public:
     { return _base; }
 
 public:
-    inline std::string const &clazz() const
-    { return _clazz; }
     inline std::string const &identifier() const
     { return _identifier; }
 
@@ -53,16 +53,20 @@ public:
     inline std::string const &domain() const
     { return _domain; }
     inline bool isGlobalDomainInUI() const
+    { return _isGlobalDomainInUI.value_or(false); }
+    inline ext::optional<bool> isGlobalDomainInUIOptional() const
     { return _isGlobalDomainInUI; }
 
 public:
-    inline std::string const &name() const
+    inline ext::optional<std::string> const &clazz() const
+    { return _clazz; }
+    inline ext::optional<std::string> const &name() const
     { return _name; }
-    inline std::string const &description() const
+    inline ext::optional<std::string> const &description() const
     { return _description; }
-    inline std::string const &vendor() const
+    inline ext::optional<std::string> const &vendor() const
     { return _vendor; }
-    inline std::string const &version() const
+    inline ext::optional<std::string> const &version() const
     { return _version; }
 
 protected:

@@ -8,35 +8,13 @@
  */
 
 #include <pbxspec/PBX/Tool.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::Tool;
 
-Tool::Tool() :
-    Specification                       (),
-    _execPath                           (pbxsetting::Value::Empty()),
-    _execDescription                    (pbxsetting::Value::Empty()),
-    _execDescriptionForPrecompile       (pbxsetting::Value::Empty()),
-    _execDescriptionForCompile          (pbxsetting::Value::Empty()),
-    _execDescriptionForCreateBitcode    (pbxsetting::Value::Empty()),
-    _ruleName                           (pbxsetting::Value::Empty()),
-    _ruleFormat                         (pbxsetting::Value::Empty()),
-    _commandIdentifier                  (pbxsetting::Value::Empty()),
-    _progressDescription                (pbxsetting::Value::Empty()),
-    _progressDescriptionForPrecompile   (pbxsetting::Value::Empty()),
-    _progressDescriptionForCompile      (pbxsetting::Value::Empty()),
-    _progressDescriptionForCreateBitcode(pbxsetting::Value::Empty()),
-    _commandLine                        (pbxsetting::Value::Empty()),
-    _additionalInputFiles               (pbxsetting::Value::Empty()),
-    _outputPath                         (pbxsetting::Value::Empty()),
-    _commandOutputParser                (nullptr),
-    _isAbstract                         (false),
-    _isArchitectureNeutral              (false),
-    _caresAboutInclusionDependencies    (false),
-    _synthesizeBuildRule                (false),
-    _shouldRerunOnError                 (false),
-    _deeplyStatInputDirectories         (false),
-    _isUnsafeToInterrupt                (false),
-    _messageLimit                       (0)
+Tool::
+Tool() :
+    Specification()
 {
 }
 
@@ -51,9 +29,11 @@ pbxsetting::Level Tool::
 defaultSettings(void) const
 {
     std::vector<pbxsetting::Setting> settings;
-    for (PBX::PropertyOption::shared_ptr const &option : _options) {
-        if (option->defaultValue() != nullptr) {
-            settings.push_back(option->defaultSetting());
+    if (_options) {
+        for (PBX::PropertyOption::shared_ptr const &option : *_options) {
+            if (option->defaultValue() != nullptr) {
+                settings.push_back(option->defaultSetting());
+            }
         }
     }
     return pbxsetting::Level(settings);
@@ -202,36 +182,39 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (FTs != nullptr) {
+        _fileTypes = std::vector<std::string>();
         for (size_t n = 0; n < FTs->count(); n++) {
             if (auto FT = FTs->value <plist::String> (n)) {
-                _fileTypes.push_back(FT->value());
+                _fileTypes->push_back(FT->value());
             }
         }
     }
 
     if (IFTs != nullptr) {
+        _inputFileTypes = std::vector<std::string>();
         for (size_t n = 0; n < IFTs->count(); n++) {
             if (auto IFT = IFTs->value <plist::String> (n)) {
-                _inputFileTypes.push_back(IFT->value());
+                _inputFileTypes->push_back(IFT->value());
             }
         }
     }
 
     if (auto AS = plist::CastTo<plist::Array>(As)) {
+        _architectures = std::vector<std::string>();
         for (size_t n = 0; n < AS->count(); n++) {
             if (auto A = AS->value <plist::String> (n)) {
-                _architectures.push_back(A->value());
+                _architectures->push_back(A->value());
             }
         }
     } else if (auto AS = plist::CastTo<plist::String>(As)) {
-        std::vector<std::string> values = pbxsetting::Type::ParseList(AS->value());
-        _architectures.insert(_architectures.end(), values.begin(), values.end());
+        _architectures = pbxsetting::Type::ParseList(AS->value());
     }
 
     if (Os != nullptr) {
+        _outputs = std::vector<pbxsetting::Value>();
         for (size_t n = 0; n < Os->count(); n++) {
             if (auto O = Os->value <plist::String> (n)) {
-                _outputs.push_back(pbxsetting::Value::Parse(O->value()));
+                _outputs->push_back(pbxsetting::Value::Parse(O->value()));
             }
         }
     }
@@ -241,18 +224,20 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (EVs != nullptr) {
+        _environmentVariables = std::unordered_map<std::string, pbxsetting::Value>();
         for (size_t n = 0; n < EVs->count(); n++) {
             auto EVk = EVs->key(n);
             if (auto EVv = EVs->value <plist::String> (EVk)) {
-                _environmentVariables.insert({ EVk, pbxsetting::Value::Parse(EVv->value()) });
+                _environmentVariables->insert({ EVk, pbxsetting::Value::Parse(EVv->value()) });
             }
         }
     }
 
     if (SECs != nullptr) {
+        _successExitCodes = std::vector<int>();
         for (size_t n = 0; n < SECs->count(); n++) {
             if (auto SEC = SECs->value <plist::String> (n)) {
-                _successExitCodes.push_back(pbxsetting::Type::ParseInteger(SEC->value()));
+                _successExitCodes->push_back(pbxsetting::Type::ParseInteger(SEC->value()));
             }
         }
     }
@@ -298,21 +283,23 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (OPs != nullptr) {
+        _options = PropertyOption::vector();
         for (size_t n = 0; n < OPs->count(); n++) {
             if (auto OP = OPs->value <plist::Dictionary> (n)) {
                 PropertyOption::shared_ptr option;
                 option.reset(new PropertyOption);
                 if (option->parse(OP)) {
-                    PropertyOption::Insert(&_options, &_optionsUsed, option);
+                    PropertyOption::Insert(&*_options, &_optionsUsed, option);
                 }
             }
         }
     }
 
     if (DPs != nullptr) {
+        _deletedProperties = std::unordered_set<std::string>();
         for (size_t n = 0; n < DPs->count(); n++) {
             if (auto DP = DPs->value <plist::String> (n)) {
-                _deletedProperties.insert(DP->value());
+                _deletedProperties->insert(DP->value());
             }
         }
     }
@@ -337,40 +324,40 @@ inherit(Tool::shared_ptr const &b)
 
     auto base = this->base();
 
-    _execPath                            = base->execPath();
-    _execDescription                     = base->execDescription();
-    _execDescriptionForPrecompile        = base->execDescriptionForPrecompile();
-    _execDescriptionForCompile           = base->execDescriptionForCompile();
-    _execDescriptionForCreateBitcode     = base->execDescriptionForCreateBitcode();
-    _progressDescription                 = base->progressDescription();
-    _progressDescriptionForPrecompile    = base->progressDescriptionForPrecompile();
-    _progressDescriptionForCompile       = base->progressDescriptionForCompile();
-    _progressDescriptionForCreateBitcode = base->progressDescriptionForCreateBitcode();
-    _commandLine                         = base->commandLine();
-    _commandInvocationClass              = base->commandInvocationClass();
-    _commandIdentifier                   = base->commandIdentifier();
-    _ruleName                            = base->ruleName();
-    _ruleFormat                          = base->ruleFormat();
-    _additionalInputFiles                = base->additionalInputFiles();
-    _builtinJambaseRuleName              = base->builtinJambaseRuleName();
-    _fileTypes                           = base->fileTypes();
-    _inputFileTypes                      = base->inputFileTypes();
-    _architectures                       = base->architectures();
-    _outputs                             = base->outputs();
-    _outputPath                          = base->outputPath();
-    _environmentVariables                = base->environmentVariables();
-    _commandOutputParser                 = base->commandOutputParser()->copy().release();
-    _isAbstract                          = base->isAbstract();
-    _isArchitectureNeutral               = base->isArchitectureNeutral();
-    _caresAboutInclusionDependencies     = base->caresAboutInclusionDependencies();
-    _synthesizeBuildRule                 = base->synthesizeBuildRule();
-    _shouldRerunOnError                  = base->shouldRerunOnError();
-    _deeplyStatInputDirectories          = base->deeplyStatInputDirectories();
-    _isUnsafeToInterrupt                 = base->isUnsafeToInterrupt();
-    _messageLimit                        = base->messageLimit();
-    _options                             = base->options();
-    _optionsUsed                         = base->_optionsUsed;
-    _deletedProperties                   = base->deletedProperties();
+    _execPath                            = Inherit::Override(_execPath, base->_execPath);
+    _execDescription                     = Inherit::Override(_execDescription, base->_execDescription);
+    _execDescriptionForPrecompile        = Inherit::Override(_execDescriptionForPrecompile, base->_execDescriptionForPrecompile);
+    _execDescriptionForCompile           = Inherit::Override(_execDescriptionForCompile, base->_execDescriptionForCompile);
+    _execDescriptionForCreateBitcode     = Inherit::Override(_execDescriptionForCreateBitcode, base->_execDescriptionForCreateBitcode);
+    _progressDescription                 = Inherit::Override(_progressDescription, base->_progressDescription);
+    _progressDescriptionForPrecompile    = Inherit::Override(_progressDescriptionForPrecompile, base->_progressDescriptionForPrecompile);
+    _progressDescriptionForCompile       = Inherit::Override(_progressDescriptionForCompile, base->_progressDescriptionForCompile);
+    _progressDescriptionForCreateBitcode = Inherit::Override(_progressDescriptionForCreateBitcode, base->_progressDescriptionForCreateBitcode);
+    _commandLine                         = Inherit::Override(_commandLine, base->_commandLine);
+    _commandInvocationClass              = Inherit::Override(_commandInvocationClass, base->_commandInvocationClass);
+    _commandIdentifier                   = Inherit::Override(_commandIdentifier, base->_commandIdentifier);
+    _ruleName                            = Inherit::Override(_ruleName, base->_ruleName);
+    _ruleFormat                          = Inherit::Override(_ruleFormat, base->_ruleFormat);
+    _additionalInputFiles                = Inherit::Override(_additionalInputFiles, base->_additionalInputFiles);
+    _builtinJambaseRuleName              = Inherit::Override(_builtinJambaseRuleName, base->_builtinJambaseRuleName);
+    _fileTypes                           = Inherit::Combine(_fileTypes, base->_fileTypes);
+    _inputFileTypes                      = Inherit::Combine(_inputFileTypes, base->_inputFileTypes);
+    _architectures                       = Inherit::Combine(_architectures, base->_architectures);
+    _outputs                             = Inherit::Combine(_outputs, base->_outputs);
+    _outputPath                          = Inherit::Override(_outputPath, base->_outputPath);
+    _deletedProperties                   = Inherit::Combine(_deletedProperties, base->_deletedProperties);
+    _environmentVariables                = Inherit::Combine(_environmentVariables, base->_environmentVariables);
+    _successExitCodes                    = Inherit::Combine(_successExitCodes, base->_successExitCodes);
+    _commandOutputParser                 = _commandOutputParser ?: base->_commandOutputParser->copy().release();
+    _isAbstract                          = Inherit::Override(_isAbstract, base->_isAbstract);
+    _isArchitectureNeutral               = Inherit::Override(_isArchitectureNeutral, base->_isArchitectureNeutral);
+    _caresAboutInclusionDependencies     = Inherit::Override(_caresAboutInclusionDependencies, base->_caresAboutInclusionDependencies);
+    _synthesizeBuildRule                 = Inherit::Override(_synthesizeBuildRule, base->_synthesizeBuildRule);
+    _shouldRerunOnError                  = Inherit::Override(_shouldRerunOnError, base->_shouldRerunOnError);
+    _deeplyStatInputDirectories          = Inherit::Override(_deeplyStatInputDirectories, base->_deeplyStatInputDirectories);
+    _isUnsafeToInterrupt                 = Inherit::Override(_isUnsafeToInterrupt, base->_isUnsafeToInterrupt);
+    _messageLimit                        = Inherit::Override(_messageLimit, base->_messageLimit);
+    _options                             = Inherit::Combine(_options, base->_options, &_optionsUsed, &base->_optionsUsed);
 
     return true;
 }

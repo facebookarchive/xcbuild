@@ -34,16 +34,18 @@ Tool::ClangResolver::
 }
 
 static bool
-DialectIsCPlusPlus(std::string const &dialect)
+DialectIsCPlusPlus(ext::optional<std::string> const &dialect)
 {
-    return (dialect.size() > 2 && dialect.substr(dialect.size() - 2) == "++");
+    return dialect && (dialect->size() > 2 && dialect->substr(dialect->size() - 2) == "++");
 }
 
 static void
-AppendDialectFlags(std::vector<std::string> *args, std::string const &dialect, std::string const &dialectSuffix = "")
+AppendDialectFlags(std::vector<std::string> *args, ext::optional<std::string> const &dialect, std::string const &dialectSuffix = "")
 {
-    args->push_back("-x");
-    args->push_back(dialect + dialectSuffix);
+    if (dialect) {
+        args->push_back("-x");
+        args->push_back(*dialect + dialectSuffix);
+    }
 }
 
 static void
@@ -64,7 +66,7 @@ AppendFrameworkPathFlags(std::vector<std::string> *args, pbxsetting::Environment
 }
 
 static void
-AppendCustomFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, std::string const &dialect)
+AppendCustomFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, ext::optional<std::string> const &dialect)
 {
     std::vector<std::string> flagSettings;
     if (DialectIsCPlusPlus(dialect)) {
@@ -96,19 +98,21 @@ AppendNotUsedInPrecompsFlags(std::vector<std::string> *args, pbxsetting::Environ
 static void
 AppendDependencyInfoFlags(std::vector<std::string> *args, pbxspec::PBX::Compiler::shared_ptr const &compiler, pbxsetting::Environment const &environment)
 {
-    for (pbxsetting::Value const &arg : compiler->dependencyInfoArgs()) {
-        args->push_back(environment.expand(arg));
+    if (compiler->dependencyInfoArgs()) {
+        for (pbxsetting::Value const &arg : *compiler->dependencyInfoArgs()) {
+            args->push_back(environment.expand(arg));
+        }
     }
 }
 
 static void
 AppendInputOutputFlags(std::vector<std::string> *args, pbxspec::PBX::Compiler::shared_ptr const &compiler, std::string const &input, std::string const &output)
 {
-    std::string sourceFileOption = compiler->sourceFileOption();
-    if (sourceFileOption.empty()) {
-        sourceFileOption = "-c";
+    if (compiler->sourceFileOption()) {
+        args->push_back(*compiler->sourceFileOption());
+    } else {
+        args->push_back("-c");
     }
-    args->push_back(sourceFileOption);
     args->push_back(input);
 
     args->push_back("-o");
@@ -132,7 +136,9 @@ CompileLogMessage(
     logMessage += FSUtil::GetRelativePath(input, workingDirectory) + " ";
     logMessage += environment.resolve("variant") + " ";
     logMessage += environment.resolve("arch") + " ";
-    logMessage += fileType->GCCDialectName() + " ";
+    if (fileType->GCCDialectName()) {
+        logMessage += *fileType->GCCDialectName() + " ";
+    }
     logMessage += compiler->identifier();
     return logMessage;
 }
@@ -158,7 +164,7 @@ resolvePrecompiledHeader(
     AppendDependencyInfoFlags(&arguments, _compiler, env);
     AppendInputOutputFlags(&arguments, _compiler, input, output);
 
-    std::string const &dialect = fileType->GCCDialectName();
+    ext::optional<std::string> const &dialect = fileType->GCCDialectName();
     std::string logTitle = DialectIsCPlusPlus(dialect) ? "ProcessPCH++" : "ProcessPCH";
     std::string logMessage = CompileLogMessage(_compiler, logTitle, input, fileType, output, env, toolContext->workingDirectory());
 
@@ -167,9 +173,12 @@ resolvePrecompiledHeader(
         precompiledHeaderInfo.serialize(),
         false);
 
-    auto dependencyInfo = Tool::Invocation::DependencyInfo(
-        dependency::DependencyInfoFormat::Makefile,
-        env.expand(_compiler->dependencyInfoFile()));
+    std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
+    if (_compiler->dependencyInfoFile()) {
+        dependencyInfo.push_back(Tool::Invocation::DependencyInfo(
+            dependency::DependencyInfoFormat::Makefile,
+            env.expand(*_compiler->dependencyInfoFile())));
+    }
 
     Tool::Invocation invocation;
     invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
@@ -178,7 +187,7 @@ resolvePrecompiledHeader(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
-    invocation.dependencyInfo() = { dependencyInfo };
+    invocation.dependencyInfo() = dependencyInfo;
     invocation.auxiliaryFiles().push_back(serializedFile);
     invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
@@ -193,15 +202,14 @@ resolveSource(
 {
     Tool::HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
 
-    std::string resolvedOutputDirectory = environment.expand(_compiler->outputDir());
-    if (resolvedOutputDirectory.empty()) {
+    std::string resolvedOutputDirectory;
+    if (_compiler->outputDir()) {
+        resolvedOutputDirectory = environment.expand(*_compiler->outputDir());
+    } else {
         resolvedOutputDirectory = outputDirectory;
     }
 
-    std::string outputExtension = _compiler->outputFileExtension();
-    if (outputExtension.empty()) {
-        outputExtension = "o";
-    }
+    std::string outputExtension = _compiler->outputFileExtension().value_or("o");
 
     std::string outputBaseName = FSUtil::GetBaseNameWithoutExtension(input.path());
     if (!input.fileNameDisambiguator().empty()) {
@@ -263,9 +271,12 @@ resolveSource(
 
     std::string logMessage = CompileLogMessage(_compiler, "CompileC", input.path(), fileType, output, env, toolContext->workingDirectory());
 
-    auto dependencyInfo = Tool::Invocation::DependencyInfo(
-        dependency::DependencyInfoFormat::Makefile,
-        env.expand(_compiler->dependencyInfoFile()));
+    std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
+    if (_compiler->dependencyInfoFile()) {
+        dependencyInfo.push_back(Tool::Invocation::DependencyInfo(
+            dependency::DependencyInfoFormat::Makefile,
+            env.expand(*_compiler->dependencyInfoFile())));
+    }
 
     Tool::Invocation invocation;
     invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
@@ -275,7 +286,7 @@ resolveSource(
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.inputDependencies() = inputDependencies;
-    invocation.dependencyInfo() = { dependencyInfo };
+    invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = logMessage;
 
     /* Add the compilation invocation to the context. */
@@ -302,12 +313,12 @@ resolveSource(
         }
     }
 
-    if (DialectIsCPlusPlus(fileType->GCCDialectName())) {
+    if (DialectIsCPlusPlus(fileType->GCCDialectName()) && _compiler->execCPlusPlusLinkerPath()) {
         /* If a single C++ file is seen, use the C++ linker driver. */
-        compilationInfo->linkerDriver() = _compiler->execCPlusPlusLinkerPath();
-    } else if (compilationInfo->linkerDriver().empty()) {
+        compilationInfo->linkerDriver() = *_compiler->execCPlusPlusLinkerPath();
+    } else if (compilationInfo->linkerDriver().empty() && _compiler->execPath()) {
         /* If a C file is seen after a C++ file, don't reset back to the C driver. */
-        compilationInfo->linkerDriver() = _compiler->execPath().raw();
+        compilationInfo->linkerDriver() = _compiler->execPath()->raw();
     }
 
     for (std::string const &linkerArg : options.linkerArgs()) {

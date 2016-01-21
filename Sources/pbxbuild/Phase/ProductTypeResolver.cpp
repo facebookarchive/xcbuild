@@ -319,8 +319,8 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
      * Validate the product; specific checks are in the validation tool.
      */
     if (pbxsetting::Type::ParseBoolean(environment.resolve("VALIDATE_PRODUCT"))) {
-        if (!_productType->validation().validationToolSpec().empty()) {
-            std::string const &validationToolIdentifier = _productType->validation().validationToolSpec();
+        if (_productType->validation() && _productType->validation()->validationToolSpec()) {
+            std::string const &validationToolIdentifier = *_productType->validation()->validationToolSpec();
             if (Tool::ToolResolver const *toolResolver = phaseContext->toolResolver(phaseEnvironment, validationToolIdentifier)) {
                 // TODO(grp): Run validation tool.
             } else {

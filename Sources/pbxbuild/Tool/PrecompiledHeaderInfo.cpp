@@ -95,10 +95,12 @@ Create(pbxspec::PBX::Compiler::shared_ptr const &compiler, std::string const &pr
     std::vector<std::string> relevantArguments;
     for (std::string const &argument : arguments) {
         bool ignore = false;
-        for (std::string const &pattern : compiler->patternsOfFlagsNotAffectingPrecomps()) {
-            if (Wildcard::Match(pattern, argument)) {
-                ignore = true;
-                break;
+        if (compiler->patternsOfFlagsNotAffectingPrecomps()) {
+            for (std::string const &pattern : *compiler->patternsOfFlagsNotAffectingPrecomps()) {
+                if (Wildcard::Match(pattern, argument)) {
+                    ignore = true;
+                    break;
+                }
             }
         }
 

@@ -13,6 +13,8 @@
 #include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
+#include <ext/optional>
+
 namespace pbxspec { namespace PBX {
 
 class PropertyConditionFlavor : public Specification {
@@ -21,7 +23,7 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    int _precedence;
+    ext::optional<int> _precedence;
 
 protected:
     PropertyConditionFlavor();
@@ -38,7 +40,7 @@ public:
     { return reinterpret_cast <PropertyConditionFlavor::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline int precedence() const
+    inline ext::optional<int> precedence() const
     { return _precedence; }
 
 protected:

@@ -168,10 +168,12 @@ CreateInternal(
     if (tool->type() == pbxspec::PBX::Compiler::Type()) {
         pbxspec::PBX::Compiler::shared_ptr const &compiler = std::static_pointer_cast<pbxspec::PBX::Compiler>(tool);
 
-        pbxsetting::Level compilerLevel = pbxsetting::Level({
-            pbxsetting::Setting::Create("DependencyInfoFile", compiler->dependencyInfoFile()),
-        });
-        environment.insertFront(compilerLevel, false);
+        if (compiler->dependencyInfoFile()) {
+            pbxsetting::Level compilerLevel = pbxsetting::Level({
+                pbxsetting::Setting::Create("DependencyInfoFile", *compiler->dependencyInfoFile()),
+            });
+            environment.insertFront(compilerLevel, false);
+        }
     }
 
     /*
@@ -190,7 +192,7 @@ CreateInternal(
         }
     }
 
-    if (!tool->outputs().empty()) {
+    if (tool->outputs()) {
         if (!outputs.empty()) {
             /* The tool's outputs may reference the variables from the passed-in outputs. */
             std::string const &output = outputs.front();
@@ -198,20 +200,20 @@ CreateInternal(
         }
 
         /* The tool does specify outputs; use those. */
-        std::string output = environment.expand(tool->outputs().front());
-        for (pbxsetting::Value const &output : tool->outputs()) {
+        std::string output = environment.expand(tool->outputs()->front());
+        for (pbxsetting::Value const &output : *tool->outputs()) {
             std::string outputPath = environment.expand(output);
 
-            if (&output == &tool->outputs().front()) {
+            if (&output == &tool->outputs()->front()) {
                 /* The first output is added to the environment. */
                 environment.insertFront(OutputLevel(outputPath), false);
             }
 
             outputPaths.push_back(outputPath);
         }
-    } else if (tool->outputPath() != pbxsetting::Value::Empty()) {
+    } else if (tool->outputPath()) {
         /* The tool specifies a single output. */
-        std::string const &output = environment.expand(tool->outputPath());
+        std::string const &output = environment.expand(*tool->outputPath());
         environment.insertFront(OutputLevel(output), false);
         outputPaths.push_back(output);
     } else if (!outputs.empty()) {

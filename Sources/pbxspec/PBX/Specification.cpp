@@ -18,14 +18,15 @@
 #include <pbxspec/PBX/PropertyConditionFlavor.h>
 #include <pbxspec/PBX/Tool.h>
 #include <pbxspec/Context.h>
+#include <pbxspec/Inherit.h>
 #include <pbxspec/Manager.h>
 
 using pbxspec::PBX::Specification;
 using pbxspec::Manager;
 using libutil::FSUtil;
 
-Specification::Specification() :
-    _isGlobalDomainInUI(false)
+Specification::
+Specification()
 {
 }
 
@@ -36,12 +37,12 @@ inherit(Specification::shared_ptr const &base)
         return false;
 
     _base               = base;
-    _clazz              = base->clazz();
-    _isGlobalDomainInUI = base->isGlobalDomainInUI();
-    _name               = base->name();
-    _description        = base->description();
-    _vendor             = base->vendor();
-    _version            = base->version();
+    _clazz              = Inherit::Override(_clazz, base->_clazz);
+    _isGlobalDomainInUI = Inherit::Override(_isGlobalDomainInUI, base->_isGlobalDomainInUI);
+    _name               = Inherit::Override(_name, base->_name);
+    _description        = Inherit::Override(_description, base->_description);
+    _vendor             = Inherit::Override(_vendor, base->_vendor);
+    _version            = Inherit::Override(_version, base->_version);
 
     return true;
 }

@@ -77,13 +77,15 @@ resolve(
 
     // TODO(grp): These should be handled generically for all tools.
     std::unordered_map<std::string, std::string> environmentVariables = options.environment();
-    for (auto const &variable : _tool->environmentVariables()) {
-        environmentVariables.insert({ variable.first, environment.expand(variable.second) });
+    if (_tool->environmentVariables()) {
+        for (auto const &variable : *_tool->environmentVariables()) {
+            environmentVariables.insert({ variable.first, environment.expand(variable.second) });
+        }
     }
 
     // TODO(grp): This should be handled generically for all tools.
-    std::string infoPlistContent = environment.expand(_tool->generatedInfoPlistContentFilePath());
-    if (!infoPlistContent.empty()) {
+    if (_tool->generatedInfoPlistContentFilePath()) {
+        std::string infoPlistContent = environment.expand(*_tool->generatedInfoPlistContentFilePath());
         toolContext->additionalInfoPlistContents().push_back(infoPlistContent);
         outputs.push_back(infoPlistContent);
     }

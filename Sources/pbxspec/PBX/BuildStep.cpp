@@ -8,6 +8,7 @@
  */
 
 #include <pbxspec/PBX/BuildStep.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::BuildStep;
 
@@ -75,7 +76,7 @@ inherit(BuildStep::shared_ptr const &b)
 
     auto base = this->base();
 
-    _buildStepType = base->buildStepType();
+    _buildStepType = Inherit::Override(_buildStepType, base->_buildStepType);
 
     return true;
 }

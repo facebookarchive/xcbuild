@@ -12,6 +12,8 @@
 
 #include <pbxspec/PBX/Tool.h>
 
+#include <ext/optional>
+
 namespace pbxspec { namespace PBX {
 
 class Linker : public Tool {
@@ -20,9 +22,9 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    libutil::string_vector _binaryFormats;
-    pbxsetting::Value      _dependencyInfoFile;
-    bool                   _supportsInputFileList;
+    ext::optional<libutil::string_vector> _binaryFormats;
+    ext::optional<pbxsetting::Value>      _dependencyInfoFile;
+    ext::optional<bool>                   _supportsInputFileList;
 
 protected:
     Linker();
@@ -39,19 +41,17 @@ public:
     { return reinterpret_cast <Linker::shared_ptr const &> (Tool::base()); }
 
 public:
-    inline libutil::string_vector const &architectures() const
-    { return _architectures; }
-
-public:
-    inline libutil::string_vector const &binaryFormats() const
+    inline ext::optional<libutil::string_vector> const &binaryFormats() const
     { return _binaryFormats; }
 
 public:
-    inline pbxsetting::Value const &dependencyInfoFile() const
+    inline ext::optional<pbxsetting::Value> const &dependencyInfoFile() const
     { return _dependencyInfoFile; }
 
 public:
     inline bool supportsInputFileList() const
+    { return _supportsInputFileList.value_or(false); }
+    inline ext::optional<bool> supportsInputFileListOptional() const
     { return _supportsInputFileList; }
 
 protected:

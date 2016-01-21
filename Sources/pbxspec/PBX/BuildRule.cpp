@@ -42,7 +42,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (FT != nullptr) {
-        _fileTypes.push_back(FT->value());
+        _fileTypes = std::vector<std::string>({ FT->value() });
     }
 
     if (CS != nullptr) {

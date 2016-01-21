@@ -115,10 +115,11 @@ PlatformArchitecturesLevel(pbxspec::Manager::shared_ptr const &specManager, std:
 
     pbxspec::PBX::Architecture::vector architectures = specManager->architectures(specDomains);
     for (pbxspec::PBX::Architecture::shared_ptr const &architecture : architectures) {
-        if (!architecture->architectureSetting().empty()) {
-            architectureSettings.push_back(architecture->defaultSetting());
+        ext::optional<pbxsetting::Setting> architectureSetting = architecture->defaultSetting();
+        if (architectureSetting) {
+            architectureSettings.push_back(*architectureSetting);
         }
-        if (architecture->realArchitectures().empty()) {
+        if (!architecture->realArchitectures()) {
             if (std::find(platformArchitectures.begin(), platformArchitectures.end(), architecture->identifier()) == platformArchitectures.end()) {
                 platformArchitectures.push_back(architecture->identifier());
             }
@@ -137,8 +138,10 @@ PackageTypeLevel(pbxspec::PBX::PackageType::shared_ptr const &packageType)
         pbxsetting::Setting::Create("PACKAGE_TYPE", packageType->identifier()),
     };
 
-    pbxsetting::Level packageTypeLevel = packageType->defaultBuildSettings();
-    settings.insert(settings.end(), packageTypeLevel.settings().begin(), packageTypeLevel.settings().end());
+    if (packageType->defaultBuildSettings()) {
+        pbxsetting::Level const &packageTypeLevel = *packageType->defaultBuildSettings();
+        settings.insert(settings.end(), packageTypeLevel.settings().begin(), packageTypeLevel.settings().end());
+    }
 
     return pbxsetting::Level(settings);
 }
@@ -151,8 +154,10 @@ ProductTypeLevel(pbxspec::PBX::ProductType::shared_ptr const &productType)
         pbxsetting::Setting::Create("PRODUCT_TYPE", productType->identifier()),
     };
 
-    pbxsetting::Level productTypeLevel = productType->defaultBuildProperties();
-    settings.insert(settings.end(), productTypeLevel.settings().begin(), productTypeLevel.settings().end());
+    if (productType->defaultBuildProperties()) {
+        pbxsetting::Level const &productTypeLevel = *productType->defaultBuildProperties();
+        settings.insert(settings.end(), productTypeLevel.settings().begin(), productTypeLevel.settings().end());
+    }
 
     return pbxsetting::Level(settings);
 }
@@ -311,10 +316,12 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         }
 
         // FIXME(grp): Should this always use the first package type?
-        packageType = buildEnvironment.specManager()->packageType(productType->packageTypes().at(0), specDomains);
-        if (packageType == nullptr) {
-            fprintf(stderr, "error: unable to find package type %s\n", productType->packageTypes().at(0).c_str());
-            return ext::nullopt;
+        if (productType->packageTypes() && !productType->packageTypes()->empty()) {
+            packageType = buildEnvironment.specManager()->packageType(productType->packageTypes()->at(0), specDomains);
+            if (packageType == nullptr) {
+                fprintf(stderr, "error: unable to find package type %s\n", productType->packageTypes()->at(0).c_str());
+                return ext::nullopt;
+            }
         }
     }
 

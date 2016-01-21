@@ -59,11 +59,11 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
 
         bool empty = true;
 
-        if (!fileType->extensions().empty()) {
+        if (fileType->extensions()) {
             empty = false;
             bool matched = false;
 
-            for (std::string const &extension : fileType->extensions()) {
+            for (std::string const &extension : *fileType->extensions()) {
                 // TODO(grp): Is this correct? Needed for handling ".S" as ".s", but might be over-broad.
                 if (strcasecmp(extension.c_str(), fileExtension.c_str()) == 0) {
                     matched = true;
@@ -76,11 +76,11 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
         }
 
 
-        if (!fileType->prefix().empty()) {
+        if (fileType->prefix()) {
             empty = false;
             bool matched = false;
 
-            for (std::string const &prefix : fileType->prefix()) {
+            for (std::string const &prefix : *fileType->prefix()) {
                 if (fileName.find(prefix) == 0) {
                     matched = true;
                 }
@@ -91,11 +91,11 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
             }
         }
 
-        if (!fileType->filenamePatterns().empty()) {
+        if (fileType->filenamePatterns()) {
             empty = false;
             bool matched = false;
 
-            for (std::string const &pattern : fileType->filenamePatterns()) {
+            for (std::string const &pattern : *fileType->filenamePatterns()) {
                 if (Wildcard::Match(pattern, fileName)) {
                     matched = true;
                 }
@@ -106,11 +106,11 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
             }
         }
 
-        if (isReadable && !fileType->permissions().empty()) {
+        if (isReadable && fileType->permissions()) {
             empty = false;
             bool matched = false;
 
-            std::string const &permissions = fileType->permissions();
+            std::string const &permissions = *fileType->permissions();
             if (permissions == "read") {
                 matched = isReadable;
             } else if (permissions == "write") {
@@ -128,11 +128,11 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
 
         // TODO(grp): Support TypeCodes. Not very important.
 
-        if (isReadable && !fileType->magicWords().empty()) {
+        if (isReadable && fileType->magicWords()) {
             empty = false;
             bool matched = false;
 
-            for (std::vector<uint8_t> const &magicWord : fileType->magicWords()) {
+            for (std::vector<uint8_t> const &magicWord : *fileType->magicWords()) {
                 if (fileContents.size() < magicWord.size()) {
                     if (!fileHandle.is_open()) {
                         fileHandle.open(fileName, std::ios::in | std::ios::binary);

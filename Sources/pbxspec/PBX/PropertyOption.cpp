@@ -11,30 +11,13 @@
 
 using pbxspec::PBX::PropertyOption;
 
-PropertyOption::PropertyOption() :
-    _basic                             (false),
-    _commonOption                      (false),
-    _avoidEmptyValues                  (false),
-    _commandLineFlag                   (pbxsetting::Value::Empty()),
-    _commandLineFlagIfFalse            (pbxsetting::Value::Empty()),
-    _commandLinePrefixFlag             (pbxsetting::Value::Empty()),
-    _hasCommandLinePrefixFlag          (false),
-    _commandLineArgs                   (nullptr),
-    _additionalLinkerArgs              (nullptr),
-    _defaultValue                      (nullptr),
-    _allowedValues                     (nullptr),
-    _values                            (nullptr),
-    _isInputDependency                 (false),
-    _isCommandInput                    (false),
-    _isCommandOutput                   (false),
-    _outputsAreSourceFiles             (false),
-    _avoidMacroDefinition              (false),
-    _flattenRecursiveSearchPathsInValue(false),
-    _setValueInEnvironmentVariable     (pbxsetting::Value::Empty())
+PropertyOption::
+PropertyOption()
 {
 }
 
-PropertyOption::~PropertyOption()
+PropertyOption::
+~PropertyOption()
 {
     if (_additionalLinkerArgs != nullptr) {
         _additionalLinkerArgs->release();
@@ -109,6 +92,9 @@ parse(plist::Dictionary const *dict)
 
     if (N != nullptr) {
         _name = N->value();
+    } else {
+        /* Name is required. */
+        return false;
     }
 
     if (DN != nullptr) {
@@ -117,6 +103,9 @@ parse(plist::Dictionary const *dict)
 
     if (T != nullptr) {
         _type = T->value();
+    } else {
+        /* Type is required. */
+        return false;
     }
 
     if (UT != nullptr) {
@@ -170,7 +159,6 @@ parse(plist::Dictionary const *dict)
     if (CLPF != nullptr) {
         _commandLinePrefixFlag = pbxsetting::Value::Parse(CLPF->value());
     }
-    _hasCommandLinePrefixFlag = (CLPF != nullptr);
 
     if (DV != nullptr) {
         _defaultValue = DV->copy().release();
@@ -185,25 +173,28 @@ parse(plist::Dictionary const *dict)
     }
 
     if (FTs != nullptr) {
+        _fileTypes = std::vector<std::string>();
         for (size_t n = 0; n < FTs->count(); n++) {
             if (auto FT = FTs->value <plist::String> (n)) {
-                _fileTypes.push_back(FT->value());
+                _fileTypes->push_back(FT->value());
             }
         }
     }
 
     if (CFs != nullptr) {
+        _conditionFlavors = std::vector<std::string>();
         for (size_t n = 0; n < CFs->count(); n++) {
             if (auto CF = CFs->value <plist::String> (n)) {
-                _conditionFlavors.push_back(CF->value());
+                _conditionFlavors->push_back(CF->value());
             }
         }
     }
 
     if (SVRs != nullptr) {
+        _supportedVersionRanges = std::vector<std::string>();
         for (size_t n = 0; n < SVRs->count(); n++) {
             if (auto SVR = SVRs->value <plist::String> (n)) {
-                _supportedVersionRanges.push_back(SVR->value());
+                _supportedVersionRanges->push_back(SVR->value());
             }
         }
     }
@@ -249,9 +240,10 @@ parse(plist::Dictionary const *dict)
     }
 
     if (As != nullptr) {
+        _architectures = std::vector<std::string>();
         for (size_t n = 0; n < As->count(); n++) {
             if (auto A = As->value <plist::String> (n)) {
-                _architectures.push_back(A->value());
+                _architectures->push_back(A->value());
             }
         }
     }

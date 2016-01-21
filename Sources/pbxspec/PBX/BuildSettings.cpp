@@ -8,6 +8,7 @@
  */
 
 #include <pbxspec/PBX/BuildSettings.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::BuildSettings;
 
@@ -52,12 +53,13 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (Os != nullptr) {
+        _options = PropertyOption::vector();
         for (size_t n = 0; n < Os->count(); n++) {
             if (auto O = Os->value <plist::Dictionary> (n)) {
                 PropertyOption::shared_ptr option;
                 option.reset(new PropertyOption);
                 if (option->parse(O)) {
-                    PropertyOption::Insert(&_options, &_optionsUsed, option);
+                    PropertyOption::Insert(&*_options, &_optionsUsed, option);
                 }
             }
         }
@@ -83,8 +85,7 @@ inherit(BuildSettings::shared_ptr const &b)
 
     auto base = this->base();
 
-    _options            = base->options();
-    _optionsUsed        = base->_optionsUsed;
+    _options            = Inherit::Combine(_options, base->options(), &_optionsUsed, &base->_optionsUsed);
 
     return true;
 }

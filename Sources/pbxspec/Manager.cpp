@@ -252,22 +252,22 @@ synthesizedBuildRules(std::vector<std::string> const &domains) const
     BuildRule::vector buildRules;
 
     for (Compiler::shared_ptr const &compiler : compilers(domains)) {
-        if (compiler->synthesizeBuildRule()) {
-            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(compiler->inputFileTypes(), compiler->identifier()));
+        if (compiler->synthesizeBuildRule() && compiler->inputFileTypes()) {
+            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(*compiler->inputFileTypes(), compiler->identifier()));
             buildRules.push_back(buildRule);
         }
     }
 
     for (Linker::shared_ptr const &linker : linkers(domains)) {
-        if (linker->synthesizeBuildRule()) {
-            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(linker->inputFileTypes(), linker->identifier()));
+        if (linker->synthesizeBuildRule() && linker->inputFileTypes()) {
+            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(*linker->inputFileTypes(), linker->identifier()));
             buildRules.push_back(buildRule);
         }
     }
 
     for (Tool::shared_ptr const &tool : tools(domains)) {
-        if (tool->synthesizeBuildRule()) {
-            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(tool->inputFileTypes(), tool->identifier()));
+        if (tool->synthesizeBuildRule() && tool->inputFileTypes()) {
+            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(*tool->inputFileTypes(), tool->identifier()));
             buildRules.push_back(buildRule);
         }
     }

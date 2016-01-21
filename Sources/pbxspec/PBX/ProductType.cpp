@@ -8,27 +8,14 @@
  */
 
 #include <pbxspec/PBX/ProductType.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::ProductType;
 using pbxsetting::Level;
 using pbxsetting::Setting;
 
 ProductType::ProductType() :
-    Specification                          (),
-    _defaultBuildProperties                (Level({ })),
-    _hasInfoPlist                          (false),
-    _hasInfoPlistStrings                   (false),
-    _isWrapper                             (false),
-    _isJava                                (false),
-    _supportsZeroLink                      (false),
-    _alwaysPerformSeparateStrip            (false),
-    _wantsSimpleTargetEditing              (false),
-    _addWatchCompanionRequirement          (false),
-    _runsOnProxy                           (false),
-    _disableSchemeAutocreation             (false),
-    _validateEmbeddedBinaries              (false),
-    _supportsOnDemandResources             (false),
-    _canEmbedAddressSanitizerLibraries     (false)
+    Specification()
 {
 }
 
@@ -79,7 +66,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto VEB  = unpack.coerce <plist::Boolean> ("ValidateEmbeddedBinaries");
     auto SODR = unpack.coerce <plist::Boolean> ("SupportsOnDemandResources");
     auto CEAL = unpack.coerce <plist::Boolean> ("CanEmbedAddressSanitizerLibraries");
-    auto RSEF = unpack.coerce <plist::Boolean> ("RunpathSearchPathForEmbeddedFrameworks");
+    auto RSEF = unpack.coerce <plist::String> ("RunpathSearchPathForEmbeddedFrameworks");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errors().c_str());
@@ -90,7 +77,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (DBP != nullptr) {
-        std::vector<Setting> settings = _defaultBuildProperties.settings();
+        std::vector<Setting> settings;
         for (size_t n = 0; n < DBP->count(); n++) {
             auto DBPK = DBP->key(n);
             auto DBPV = DBP->value <plist::String> (DBPK);
@@ -104,7 +91,8 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (V != nullptr) {
-        _validation.parse(V);
+        _validation = Validation();
+        _validation->parse(V);
     }
 
     if (INP != nullptr) {
@@ -112,11 +100,10 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (PTs != nullptr) {
-        _packageTypes.clear();
-
+        _packageTypes = std::vector<std::string>();
         for (size_t n = 0; n < PTs->count(); n++) {
             if (auto PT = PTs->value <plist::String> (n)) {
-                _packageTypes.push_back(PT->value());
+                _packageTypes->push_back(PT->value());
             }
         }
     }
@@ -197,25 +184,25 @@ inherit(ProductType::shared_ptr const &b)
 
     auto base = this->base();
 
-    _defaultTargetName                      = base->defaultTargetName();
-    _defaultBuildProperties                 = base->defaultBuildProperties();
-    _validation                             = base->validation();
-    _iconNamePrefix                         = base->iconNamePrefix();
-    _packageTypes                           = base->packageTypes();
-    _hasInfoPlist                           = base->hasInfoPlist();
-    _hasInfoPlistStrings                    = base->hasInfoPlistStrings();
-    _isWrapper                              = base->isWrapper();
-    _isJava                                 = base->isJava();
-    _supportsZeroLink                       = base->supportsZeroLink();
-    _alwaysPerformSeparateStrip             = base->alwaysPerformSeparateStrip();
-    _wantsSimpleTargetEditing               = base->wantsSimpleTargetEditing();
-    _addWatchCompanionRequirement           = base->addWatchCompanionRequirement();
-    _runsOnProxy                            = base->runsOnProxy();
-    _disableSchemeAutocreation              = base->disableSchemeAutocreation();
-    _validateEmbeddedBinaries               = base->validateEmbeddedBinaries();
-    _supportsOnDemandResources              = base->supportsOnDemandResources();
-    _canEmbedAddressSanitizerLibraries      = base->canEmbedAddressSanitizerLibraries();
-    _runpathSearchPathForEmbeddedFrameworks = base->runpathSearchPathForEmbeddedFrameworks();
+    _defaultTargetName                      = Inherit::Override(_defaultTargetName, base->_defaultTargetName);
+    _defaultBuildProperties                 = Inherit::Combine(_defaultBuildProperties, base->_defaultBuildProperties);
+    _validation                             = Inherit::Override(_validation, base->_validation);
+    _iconNamePrefix                         = Inherit::Override(_iconNamePrefix, base->_iconNamePrefix);
+    _packageTypes                           = Inherit::Override(_packageTypes, base->_packageTypes);
+    _hasInfoPlist                           = Inherit::Override(_hasInfoPlist, base->_hasInfoPlist);
+    _hasInfoPlistStrings                    = Inherit::Override(_hasInfoPlistStrings, base->_hasInfoPlistStrings);
+    _isWrapper                              = Inherit::Override(_isWrapper, base->_isWrapper);
+    _isJava                                 = Inherit::Override(_isJava, base->_isJava);
+    _supportsZeroLink                       = Inherit::Override(_supportsZeroLink, base->_supportsZeroLink);
+    _alwaysPerformSeparateStrip             = Inherit::Override(_alwaysPerformSeparateStrip, base->_alwaysPerformSeparateStrip);
+    _wantsSimpleTargetEditing               = Inherit::Override(_wantsSimpleTargetEditing, base->_wantsSimpleTargetEditing);
+    _addWatchCompanionRequirement           = Inherit::Override(_addWatchCompanionRequirement, base->_addWatchCompanionRequirement);
+    _runsOnProxy                            = Inherit::Override(_runsOnProxy, base->_runsOnProxy);
+    _disableSchemeAutocreation              = Inherit::Override(_disableSchemeAutocreation, base->_disableSchemeAutocreation);
+    _validateEmbeddedBinaries               = Inherit::Override(_validateEmbeddedBinaries, base->_validateEmbeddedBinaries);
+    _supportsOnDemandResources              = Inherit::Override(_supportsOnDemandResources, base->_supportsOnDemandResources);
+    _canEmbedAddressSanitizerLibraries      = Inherit::Override(_canEmbedAddressSanitizerLibraries, base->_canEmbedAddressSanitizerLibraries);
+    _runpathSearchPathForEmbeddedFrameworks = Inherit::Override(_runpathSearchPathForEmbeddedFrameworks, base->_runpathSearchPathForEmbeddedFrameworks);
 
     return true;
 }
@@ -243,10 +230,11 @@ parse(plist::Dictionary const *dict)
     }
 
     if (Cs != nullptr) {
+        _checks = std::vector<ProductType::Validation::Check>();
         for (size_t n = 0; n < Cs->count(); n++) {
             if (auto CV = Cs->value <plist::String> (n)) {
                 auto C = ProductType::Validation::Check(Cs->key(n), CV->value());
-                _checks.push_back(C);
+                _checks->push_back(C);
             }
         }
     }
@@ -255,7 +243,7 @@ parse(plist::Dictionary const *dict)
 }
 
 ProductType::Validation::Check::
-Check(std::string const &check, std::string const &description) :
+Check(ext::optional<std::string> const &check, ext::optional<std::string> const &description) :
     _check      (check),
     _description(description)
 {

@@ -12,6 +12,8 @@
 
 #include <pbxspec/PBX/Specification.h>
 
+#include <ext/optional>
+
 namespace pbxspec { namespace PBX {
 
 class BuildStep : public Specification {
@@ -20,7 +22,7 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    std::string _buildStepType;
+    ext::optional<std::string> _buildStepType;
 
 protected:
     BuildStep();
@@ -37,7 +39,7 @@ public:
     { return reinterpret_cast <BuildStep::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline std::string const &buildStepType() const
+    inline ext::optional<std::string> const &buildStepType() const
     { return _buildStepType; }
 
 protected:

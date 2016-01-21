@@ -13,6 +13,8 @@
 #include <pbxspec/PBX/Specification.h>
 #include <pbxspec/PBX/PropertyOption.h>
 
+#include <ext/optional>
+
 namespace pbxspec { namespace PBX {
 
 class BuildSystem : public Specification {
@@ -21,10 +23,10 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    PropertyOption::vector   _options;
-    PropertyOption::used_map _optionsUsed;
-    PropertyOption::vector   _properties;
-    PropertyOption::used_map _propertiesUsed;
+    ext::optional<PropertyOption::vector>   _options;
+    PropertyOption::used_map                _optionsUsed;
+    ext::optional<PropertyOption::vector>   _properties;
+    PropertyOption::used_map                _propertiesUsed;
 
 protected:
     BuildSystem();
@@ -41,11 +43,11 @@ public:
     { return reinterpret_cast <BuildSystem::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline PropertyOption::vector const &options() const
+    inline ext::optional<PropertyOption::vector> const &options() const
     { return _options; }
 
 public:
-    inline PropertyOption::vector const &properties() const
+    inline ext::optional<PropertyOption::vector> const &properties() const
     { return _properties; }
 
 public:

@@ -13,6 +13,8 @@
 #include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
+#include <ext/optional>
+
 namespace pbxspec { namespace PBX {
 
 class FileType : public Specification {
@@ -22,71 +24,75 @@ public:
 
 public:
     class ComponentPart {
-    public:
-        typedef std::shared_ptr <ComponentPart> shared_ptr;
-        typedef std::map <std::string, shared_ptr> map;
-
     protected:
-        std::string            _type;
-        std::string            _location;
-        libutil::string_vector _identifiers;
-        shared_ptr             _reference;
+        std::string                           _identifier;
+        ext::optional<std::string>            _type;
+        ext::optional<std::string>            _location;
+        ext::optional<libutil::string_vector> _identifiers;
+        ext::optional<std::string>            _reference;
 
     protected:
         friend class FileType;
         ComponentPart();
 
     public:
-        inline std::string const &type() const
+        inline std::string const &identifier() const
+        { return _identifier; }
+
+    public:
+        inline ext::optional<std::string> const &type() const
         { return _type; }
 
     public:
-        inline std::string const &location() const
+        inline ext::optional<std::string> const &location() const
         { return _location; }
 
     public:
-        inline libutil::string_vector const &identifiers() const
+        inline ext::optional<libutil::string_vector> const &identifiers() const
         { return _identifiers; }
 
     public:
-        inline shared_ptr const &reference() const
+        inline ext::optional<std::string> const &reference() const
         { return _reference; }
 
     protected:
-        void reset();
-        bool parse(FileType *ftype, plist::Array const *array);
+        bool parse(std::string const &identifier, plist::Array const *array);
     };
 
 public:
     class BuildPhaseInjection {
     protected:
-        std::string       _buildPhase;
-        std::string       _name;
-        bool              _runOnlyForDeploymentPostprocessing;
-        bool              _needsRunpathSearchPathForFrameworks;
-        int               _dstSubfolderSpec;
-        pbxsetting::Value _dstPath;
+        ext::optional<std::string>       _buildPhase;
+        ext::optional<std::string>       _name;
+        ext::optional<bool>              _runOnlyForDeploymentPostprocessing;
+        ext::optional<bool>              _needsRunpathSearchPathForFrameworks;
+        ext::optional<int>               _dstSubfolderSpec;
+        ext::optional<pbxsetting::Value> _dstPath;
 
     protected:
         friend class FileType;
         BuildPhaseInjection();
 
     public:
-        inline std::string const &buildPhase() const
+        inline ext::optional<std::string> const &buildPhase() const
         { return _buildPhase; }
-        inline std::string const &name() const
+        inline ext::optional<std::string> const &name() const
         { return _name; }
 
     public:
         inline bool runOnlyForDeploymentPostprocessing() const
+        { return _runOnlyForDeploymentPostprocessing.value_or(false); }
+        inline ext::optional<bool> runOnlyForDeploymentPostprocessingOptional() const
         { return _runOnlyForDeploymentPostprocessing; }
         inline bool needsRunpathSearchPathForFrameworks() const
+        { return _needsRunpathSearchPathForFrameworks.value_or(false); }
+        inline ext::optional<bool> needsRunpathSearchPathForFrameworksOptional() const
         { return _needsRunpathSearchPathForFrameworks; }
 
     public:
-        inline int dstSubfolderSpec() const
+        inline ext::optional<int> dstSubfolderSpec() const
         { return _dstSubfolderSpec; }
-        inline pbxsetting::Value const &dstPath() const
+        inline ext::optional<pbxsetting::Value> const &dstPath() const
         { return _dstPath; }
 
     protected:
@@ -98,53 +104,53 @@ protected:
     friend class BuildPhaseInjection;
 
 protected:
-    std::string            _uti;
-    std::string            _language;
-    std::string            _computerLanguage;
-    std::string            _gccDialectName;
-    std::string            _plistStructureDefinition;
-    std::string            _permissions;
-    libutil::string_vector _extensions;
-    libutil::string_vector _mimeTypes;
-    libutil::string_vector _typeCodes;
-    libutil::string_vector _filenamePatterns;
-    std::vector<std::vector<uint8_t>> _magicWords;
-    libutil::string_vector _extraPropertyNames;
-    libutil::string_vector _prefix;
-    ComponentPart::map     _componentParts;
-    std::vector<BuildPhaseInjection>  _buildPhaseInjectionsWhenEmbedding;
-    bool                   _isTextFile;
-    bool                   _isBuildPropertiesFile;
-    bool                   _isSourceCode;
-    bool                   _isSwiftSourceCode;
-    bool                   _isPreprocessed;
-    bool                   _isTransparent;
-    bool                   _isDocumentation;
-    bool                   _isEmbeddable;
-    bool                   _isExecutable;
-    bool                   _isExecutableWithGUI;
-    bool                   _isApplication;
-    bool                   _isBundle;
-    bool                   _isLibrary;
-    bool                   _isDynamicLibrary;
-    bool                   _isStaticLibrary;
-    bool                   _isFolder;
-    bool                   _isWrappedFolder;
-    bool                   _isFrameworkWrapper;
-    bool                   _isStaticFrameworkWrapper;
-    bool                   _isProjectWrapper;
-    bool                   _isTargetWrapper;
-    bool                   _isScannedForIncludes;
-    bool                   _includeInIndex;
-    bool                   _canSetIncludeInIndex;
-    bool                   _requiresHardTabs;
-    bool                   _containsNativeCode;
-    bool                   _appliesToBuildRules;
-    bool                   _changesCauseDependencyGraphInvalidation;
-    std::string            _fallbackAutoroutingBuildPhase;
-    bool                   _codeSignOnCopy;
-    bool                   _removeHeadersOnCopy;
-    bool                   _validateOnCopy;
+    ext::optional<std::string>            _uti;
+    ext::optional<std::string>            _language;
+    ext::optional<std::string>            _computerLanguage;
+    ext::optional<std::string>            _gccDialectName;
+    ext::optional<std::string>            _plistStructureDefinition;
+    ext::optional<std::string>            _permissions;
+    ext::optional<libutil::string_vector> _extensions;
+    ext::optional<libutil::string_vector> _mimeTypes;
+    ext::optional<libutil::string_vector> _typeCodes;
+    ext::optional<libutil::string_vector> _filenamePatterns;
+    ext::optional<std::vector<std::vector<uint8_t>>> _magicWords;
+    ext::optional<libutil::string_vector> _extraPropertyNames;
+    ext::optional<libutil::string_vector> _prefix;
+    ext::optional<std::vector<ComponentPart>>        _componentParts;
+    ext::optional<std::vector<BuildPhaseInjection>>  _buildPhaseInjectionsWhenEmbedding;
+    ext::optional<bool>                   _isTextFile;
+    ext::optional<bool>                   _isBuildPropertiesFile;
+    ext::optional<bool>                   _isSourceCode;
+    ext::optional<bool>                   _isSwiftSourceCode;
+    ext::optional<bool>                   _isPreprocessed;
+    ext::optional<bool>                   _isTransparent;
+    ext::optional<bool>                   _isDocumentation;
+    ext::optional<bool>                   _isEmbeddable;
+    ext::optional<bool>                   _isExecutable;
+    ext::optional<bool>                   _isExecutableWithGUI;
+    ext::optional<bool>                   _isApplication;
+    ext::optional<bool>                   _isBundle;
+    ext::optional<bool>                   _isLibrary;
+    ext::optional<bool>                   _isDynamicLibrary;
+    ext::optional<bool>                   _isStaticLibrary;
+    ext::optional<bool>                   _isFolder;
+    ext::optional<bool>                   _isWrappedFolder;
+    ext::optional<bool>                   _isFrameworkWrapper;
+    ext::optional<bool>                   _isStaticFrameworkWrapper;
+    ext::optional<bool>                   _isProjectWrapper;
+    ext::optional<bool>                   _isTargetWrapper;
+    ext::optional<bool>                   _isScannedForIncludes;
+    ext::optional<bool>                   _includeInIndex;
+    ext::optional<bool>                   _canSetIncludeInIndex;
+    ext::optional<bool>                   _requiresHardTabs;
+    ext::optional<bool>                   _containsNativeCode;
+    ext::optional<bool>                   _appliesToBuildRules;
+    ext::optional<bool>                   _changesCauseDependencyGraphInvalidation;
+    ext::optional<std::string>            _fallbackAutoroutingBuildPhase;
+    ext::optional<bool>                   _codeSignOnCopy;
+    ext::optional<bool>                   _removeHeadersOnCopy;
+    ext::optional<bool>                   _validateOnCopy;
 
 protected:
     FileType();
@@ -161,147 +167,209 @@ public:
     { return reinterpret_cast <FileType::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline std::string const &UTI() const
+    inline ext::optional<std::string> const &UTI() const
     { return _uti; }
 
 public:
-    inline libutil::string_vector const &extensions() const
+    inline ext::optional<libutil::string_vector> const &extensions() const
     { return _extensions; }
-    inline libutil::string_vector const &MIMETypes() const
+    inline ext::optional<libutil::string_vector> const &MIMETypes() const
     { return _mimeTypes; }
-    inline libutil::string_vector const &typeCodes() const
+    inline ext::optional<libutil::string_vector> const &typeCodes() const
     { return _typeCodes; }
-    inline libutil::string_vector const &filenamePatterns() const
+    inline ext::optional<libutil::string_vector> const &filenamePatterns() const
     { return _filenamePatterns; }
-    std::vector<std::vector<uint8_t>> const &magicWords() const
+    inline ext::optional<std::vector<std::vector<uint8_t>>> const &magicWords() const
     { return _magicWords; }
 
 public:
-    inline std::string const &language() const
+    inline ext::optional<std::string> const &language() const
     { return _language; }
-    inline std::string const &computerLanguage() const
+    inline ext::optional<std::string> const &computerLanguage() const
     { return _computerLanguage; }
 
 public:
-    inline std::string const &GCCDialectName() const
+    inline ext::optional<std::string> const &GCCDialectName() const
     { return _gccDialectName; }
 
 public:
-    inline std::string const &plistStructureDefinition() const
+    inline ext::optional<std::string> const &plistStructureDefinition() const
     { return _plistStructureDefinition; }
 
 public:
     inline bool isTextFile() const
+    { return _isTextFile.value_or(false); }
+    inline ext::optional<bool> isTextFileOptional() const
     { return _isTextFile; }
     inline bool isTransparent() const
+    { return _isTransparent.value_or(false); }
+    inline ext::optional<bool> isTransparentOptional() const
     { return _isTransparent; }
 
 public:
     inline bool isBuildPropertiesFile() const
+    { return _isBuildPropertiesFile.value_or(false); }
+    inline ext::optional<bool> isBuildPropertiesFileOptional() const
     { return _isBuildPropertiesFile; }
 
 public:
     inline bool isEmbeddable() const
+    { return _isEmbeddable.value_or(false); }
+    inline ext::optional<bool> isEmbeddableOptional() const
     { return _isEmbeddable; }
 
 public:
     inline bool isExecutable() const
+    { return _isExecutable.value_or(false); }
+    inline ext::optional<bool> isExecutableOptional() const
     { return _isExecutable; }
     inline bool isExecutableWithGUI() const
+    { return _isExecutableWithGUI.value_or(false); }
+    inline ext::optional<bool> isExecutableWithGUIOptional() const
     { return _isExecutableWithGUI; }
     inline bool containsNativeCode() const
+    { return _containsNativeCode.value_or(false); }
+    inline ext::optional<bool> containsNativeCodeOptional() const
     { return _containsNativeCode; }
 
 public:
     inline bool isApplication() const
+    { return _isApplication.value_or(false); }
+    inline ext::optional<bool> isApplicationOptional() const
     { return _isApplication; }
 
 public:
     inline bool isBundle() const
+    { return _isBundle.value_or(false); }
+    inline ext::optional<bool> isBundleOptional() const
     { return _isBundle; }
 
 public:
     inline bool isLibrary() const
+    { return _isLibrary.value_or(false); }
+    inline ext::optional<bool> isLibraryOptional() const
     { return _isLibrary; }
     inline bool isDynamicLibrary() const
+    { return _isDynamicLibrary.value_or(false); }
+    inline ext::optional<bool> isDynamicLibraryOptional() const
     { return _isDynamicLibrary; }
     inline bool isStaticLibrary() const
+    { return _isStaticLibrary.value_or(false); }
+    inline ext::optional<bool> isStaticLibraryOptional() const
     { return _isStaticLibrary; }
 
 public:
     inline bool isFolder() const
+    { return _isFolder.value_or(false); }
+    inline ext::optional<bool> isFolderOptional() const
     { return _isFolder; }
     inline bool isWrappedFolder() const
+    { return _isWrappedFolder.value_or(false); }
+    inline ext::optional<bool> isWrappedFolderOptional() const
     { return _isWrappedFolder; }
 
 public:
     inline bool isFrameworkWrapper() const
+    { return _isFrameworkWrapper.value_or(false); }
+    inline ext::optional<bool> isFrameworkWrapperOptional() const
     { return _isFrameworkWrapper; }
     inline bool isStaticFrameworkWrapper() const
+    { return _isStaticFrameworkWrapper.value_or(false); }
+    inline ext::optional<bool> isStaticFrameworkWrapperOptional() const
     { return _isStaticFrameworkWrapper; }
 
 public:
     inline bool isProjectWrapper() const
+    { return _isProjectWrapper.value_or(false); }
+    inline ext::optional<bool> isProjectWrapperOptional() const
     { return _isProjectWrapper; }
 
 public:
     inline bool isTargetWrapper() const
+    { return _isTargetWrapper.value_or(false); }
+    inline ext::optional<bool> isTargetWrapperOptional() const
     { return _isTargetWrapper; }
 
 public:
-    inline libutil::string_vector const &extraPropertyNames() const
+    inline ext::optional<libutil::string_vector> const &extraPropertyNames() const
     { return _extraPropertyNames; }
-    inline ComponentPart::map const &componentParts() const
+    inline ext::optional<std::vector<ComponentPart>> const &componentParts() const
     { return _componentParts; }
 
 public:
-    inline std::vector<BuildPhaseInjection> const &buildPhaseInjectionsWhenEmbedding() const
+    inline ext::optional<std::vector<BuildPhaseInjection>> const &buildPhaseInjectionsWhenEmbedding() const
     { return _buildPhaseInjectionsWhenEmbedding; }
 
 public:
     inline bool isSourceCode() const
+    { return _isSourceCode.value_or(false); }
+    inline ext::optional<bool> isSourceCodeOptional() const
     { return _isSourceCode; }
     inline bool isSwiftSourceCode() const
+    { return _isSwiftSourceCode.value_or(false); }
+    inline ext::optional<bool> isSwiftSourceCodeOptional() const
     { return _isSwiftSourceCode; }
     inline bool isPreprocessed() const
+    { return _isPreprocessed.value_or(false); }
+    inline ext::optional<bool> isPreprocessedOptional() const
     { return _isPreprocessed; }
     inline bool isScannedForIncludes() const
+    { return _isScannedForIncludes.value_or(false); }
+    inline ext::optional<bool> isScannedForIncludesOptional() const
     { return _isScannedForIncludes; }
     inline bool includeInIndex() const
+    { return _includeInIndex.value_or(false); }
+    inline ext::optional<bool> includeInIndexOptional() const
     { return _includeInIndex; }
     inline bool canSetIncludeInIndex() const
+    { return _canSetIncludeInIndex.value_or(false); }
+    inline ext::optional<bool> canSetIncludeInIndexOptional() const
     { return _canSetIncludeInIndex; }
 
 public:
     inline bool isDocumentation() const
+    { return _isDocumentation.value_or(false); }
+    inline ext::optional<bool> isDocumentationOptional() const
     { return _isDocumentation; }
 
 public:
     inline bool requiresHardTabs() const
+    { return _requiresHardTabs.value_or(false); }
+    inline ext::optional<bool> requiresHardTabsOptional() const
     { return _requiresHardTabs; }
 
 public:
-    inline std::string const &permissions() const
+    inline ext::optional<std::string> const &permissions() const
     { return _permissions; }
 
 public:
-    inline libutil::string_vector const &prefix() const
+    inline ext::optional<libutil::string_vector> const &prefix() const
     { return _prefix; }
 
 public:
     inline bool appliesToBuildRules() const
+    { return _appliesToBuildRules.value_or(false); }
+    inline ext::optional<bool> appliesToBuildRulesOptional() const
     { return _appliesToBuildRules; }
     inline bool changesCauseDependencyGraphInvalidation() const
+    { return _changesCauseDependencyGraphInvalidation.value_or(false); }
+    inline ext::optional<bool> changesCauseDependencyGraphInvalidationOptional() const
     { return _changesCauseDependencyGraphInvalidation; }
-    inline std::string const &fallbackAutoroutingBuildPhase() const
+    inline ext::optional<std::string> const &fallbackAutoroutingBuildPhase() const
     { return _fallbackAutoroutingBuildPhase; }
 
 public:
     inline bool codeSignOnCopy() const
+    { return _codeSignOnCopy.value_or(false); }
+    inline ext::optional<bool> codeSignOnCopyOptional() const
     { return _codeSignOnCopy; }
     inline bool removeHeadersOnCopy() const
+    { return _removeHeadersOnCopy.value_or(false); }
+    inline ext::optional<bool> removeHeadersOnCopyOptional() const
     { return _removeHeadersOnCopy; }
     inline bool validateOnCopy() const
+    { return _validateOnCopy.value_or(false); }
+    inline ext::optional<bool> validateOnCopyOptional() const
     { return _validateOnCopy; }
 
 protected:

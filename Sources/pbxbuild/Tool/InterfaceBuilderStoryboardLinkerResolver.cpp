@@ -69,8 +69,10 @@ resolve(
 
     // TODO(grp): These should be handled generically for all tools.
     std::unordered_map<std::string, std::string> environmentVariables = options.environment();
-    for (auto const &variable : _tool->environmentVariables()) {
-        environmentVariables.insert({ variable.first, environment.expand(variable.second) });
+    if (_tool->environmentVariables()) {
+        for (auto const &variable : *_tool->environmentVariables()) {
+            environmentVariables.insert({ variable.first, environment.expand(variable.second) });
+        }
     }
 
     /*

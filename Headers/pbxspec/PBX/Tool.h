@@ -13,6 +13,8 @@
 #include <pbxspec/PBX/Specification.h>
 #include <pbxspec/PBX/PropertyOption.h>
 
+#include <ext/optional>
+
 namespace pbxspec { namespace PBX {
 
 class Tool : public Specification {
@@ -21,41 +23,41 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    pbxsetting::Value               _execPath;
-    pbxsetting::Value               _execDescription;
-    pbxsetting::Value               _execDescriptionForPrecompile;
-    pbxsetting::Value               _execDescriptionForCompile;
-    pbxsetting::Value               _execDescriptionForCreateBitcode;
-    pbxsetting::Value               _progressDescription;
-    pbxsetting::Value               _progressDescriptionForPrecompile;
-    pbxsetting::Value               _progressDescriptionForCompile;
-    pbxsetting::Value               _progressDescriptionForCreateBitcode;
-    pbxsetting::Value               _commandLine;
-    std::string                     _commandInvocationClass;
-    pbxsetting::Value               _commandIdentifier;
-    pbxsetting::Value               _ruleName;
-    pbxsetting::Value               _ruleFormat;
-    pbxsetting::Value               _additionalInputFiles;
-    std::string                     _builtinJambaseRuleName;
-    std::vector<std::string>        _fileTypes;
-    std::vector<std::string>        _inputFileTypes;
-    std::vector<std::string>        _architectures;
-    std::vector<pbxsetting::Value>  _outputs;
-    pbxsetting::Value               _outputPath;
-    std::unordered_set<std::string> _deletedProperties;
-    std::unordered_map<std::string, pbxsetting::Value> _environmentVariables;
-    std::vector<int>                _successExitCodes;
-    plist::Object                  *_commandOutputParser;
-    bool                            _isAbstract;
-    bool                            _isArchitectureNeutral;
-    bool                            _caresAboutInclusionDependencies;
-    bool                            _synthesizeBuildRule;
-    bool                            _shouldRerunOnError;
-    bool                            _deeplyStatInputDirectories;
-    bool                            _isUnsafeToInterrupt;
-    int                             _messageLimit;
-    PropertyOption::vector          _options;
-    PropertyOption::used_map        _optionsUsed;
+    ext::optional<pbxsetting::Value>               _execPath;
+    ext::optional<pbxsetting::Value>               _execDescription;
+    ext::optional<pbxsetting::Value>               _execDescriptionForPrecompile;
+    ext::optional<pbxsetting::Value>               _execDescriptionForCompile;
+    ext::optional<pbxsetting::Value>               _execDescriptionForCreateBitcode;
+    ext::optional<pbxsetting::Value>               _progressDescription;
+    ext::optional<pbxsetting::Value>               _progressDescriptionForPrecompile;
+    ext::optional<pbxsetting::Value>               _progressDescriptionForCompile;
+    ext::optional<pbxsetting::Value>               _progressDescriptionForCreateBitcode;
+    ext::optional<pbxsetting::Value>               _commandLine;
+    ext::optional<std::string>                     _commandInvocationClass;
+    ext::optional<pbxsetting::Value>               _commandIdentifier;
+    ext::optional<pbxsetting::Value>               _ruleName;
+    ext::optional<pbxsetting::Value>               _ruleFormat;
+    ext::optional<pbxsetting::Value>               _additionalInputFiles;
+    ext::optional<std::string>                     _builtinJambaseRuleName;
+    ext::optional<std::vector<std::string>>        _fileTypes;
+    ext::optional<std::vector<std::string>>        _inputFileTypes;
+    ext::optional<std::vector<std::string>>        _architectures;
+    ext::optional<std::vector<pbxsetting::Value>>  _outputs;
+    ext::optional<pbxsetting::Value>               _outputPath;
+    ext::optional<std::unordered_set<std::string>> _deletedProperties;
+    ext::optional<std::unordered_map<std::string, pbxsetting::Value>> _environmentVariables;
+    ext::optional<std::vector<int>>                _successExitCodes;
+    plist::Object                                 *_commandOutputParser;
+    ext::optional<bool>                            _isAbstract;
+    ext::optional<bool>                            _isArchitectureNeutral;
+    ext::optional<bool>                            _caresAboutInclusionDependencies;
+    ext::optional<bool>                            _synthesizeBuildRule;
+    ext::optional<bool>                            _shouldRerunOnError;
+    ext::optional<bool>                            _deeplyStatInputDirectories;
+    ext::optional<bool>                            _isUnsafeToInterrupt;
+    ext::optional<int>                             _messageLimit;
+    ext::optional<PropertyOption::vector>          _options;
+    PropertyOption::used_map                       _optionsUsed;
 
 protected:
     Tool();
@@ -72,73 +74,73 @@ public:
     { return reinterpret_cast <Tool::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline pbxsetting::Value const &execPath() const
+    inline ext::optional<pbxsetting::Value> const &execPath() const
     { return _execPath; }
 
 public:
-    inline pbxsetting::Value const &execDescription() const
+    inline ext::optional<pbxsetting::Value> const &execDescription() const
     { return _execDescription; }
-    inline pbxsetting::Value const &execDescriptionForPrecompile() const
+    inline ext::optional<pbxsetting::Value> const &execDescriptionForPrecompile() const
     { return _execDescriptionForPrecompile; }
-    inline pbxsetting::Value const &execDescriptionForCompile() const
+    inline ext::optional<pbxsetting::Value> const &execDescriptionForCompile() const
     { return _execDescriptionForCompile; }
-    inline pbxsetting::Value const &execDescriptionForCreateBitcode() const
+    inline ext::optional<pbxsetting::Value> const &execDescriptionForCreateBitcode() const
     { return _execDescriptionForCreateBitcode; }
 
 public:
-    inline pbxsetting::Value const &progressDescription() const
+    inline ext::optional<pbxsetting::Value> const &progressDescription() const
     { return _progressDescription; }
-    inline pbxsetting::Value const &progressDescriptionForPrecompile() const
+    inline ext::optional<pbxsetting::Value> const &progressDescriptionForPrecompile() const
     { return _progressDescriptionForPrecompile; }
-    inline pbxsetting::Value const &progressDescriptionForCompile() const
+    inline ext::optional<pbxsetting::Value> const &progressDescriptionForCompile() const
     { return _progressDescriptionForCompile; }
-    inline pbxsetting::Value const &progressDescriptionForCreateBitcode() const
+    inline ext::optional<pbxsetting::Value> const &progressDescriptionForCreateBitcode() const
     { return _progressDescriptionForCreateBitcode; }
 
 public:
-    inline pbxsetting::Value const &commandLine() const
+    inline ext::optional<pbxsetting::Value> const &commandLine() const
     { return _commandLine; }
 
 public:
-    inline std::string const &commandInvocationClass() const
+    inline ext::optional<std::string> const &commandInvocationClass() const
     { return _commandInvocationClass; }
-    inline pbxsetting::Value const &commandIdentifier() const
+    inline ext::optional<pbxsetting::Value> const &commandIdentifier() const
     { return _commandIdentifier; }
 
 public:
-    inline pbxsetting::Value const &ruleName() const
+    inline ext::optional<pbxsetting::Value> const &ruleName() const
     { return _ruleName; }
-    inline pbxsetting::Value const &ruleFormat() const
+    inline ext::optional<pbxsetting::Value> const &ruleFormat() const
     { return _ruleFormat; }
-    inline std::string const &builtinJambaseRuleName() const
+    inline ext::optional<std::string> const &builtinJambaseRuleName() const
     { return _builtinJambaseRuleName; }
 
 public:
-    inline pbxsetting::Value const &additionalInputFiles() const
+    inline ext::optional<pbxsetting::Value> const &additionalInputFiles() const
     { return _additionalInputFiles; }
 
 public:
-    inline std::vector<std::string> const &fileTypes() const
+    inline ext::optional<std::vector<std::string>> const &fileTypes() const
     { return _fileTypes; }
-    inline std::vector<std::string> const &inputFileTypes() const
+    inline ext::optional<std::vector<std::string>> const &inputFileTypes() const
     { return _inputFileTypes; }
 
 public:
-    inline std::vector<std::string> const &architectures() const
+    inline ext::optional<std::vector<std::string>> const &architectures() const
     { return _architectures; }
 
 public:
-    inline std::vector<pbxsetting::Value> const &outputs() const
+    inline ext::optional<std::vector<pbxsetting::Value>> const &outputs() const
     { return _outputs; }
-    inline pbxsetting::Value const &outputPath() const
+    inline ext::optional<pbxsetting::Value> const &outputPath() const
     { return _outputPath; }
 
 public:
-    inline std::unordered_map<std::string, pbxsetting::Value> const &environmentVariables() const
+    inline ext::optional<std::unordered_map<std::string, pbxsetting::Value>> const &environmentVariables() const
     { return _environmentVariables; }
 
 public:
-    inline std::vector<int> const &successExitCodes() const
+    inline ext::optional<std::vector<int>> const &successExitCodes() const
     { return _successExitCodes; }
 
 public:
@@ -147,42 +149,56 @@ public:
 
 public:
     inline bool isAbstract() const
+    { return _isAbstract.value_or(false); }
+    inline ext::optional<bool> isAbstractOptional() const
     { return _isAbstract; }
 
 public:
     inline bool isArchitectureNeutral() const
+    { return _isArchitectureNeutral.value_or(false); }
+    inline ext::optional<bool> isArchitectureNeutralOptional() const
     { return _isArchitectureNeutral; }
 
 public:
     inline bool caresAboutInclusionDependencies() const
+    { return _caresAboutInclusionDependencies.value_or(false); }
+    inline ext::optional<bool> caresAboutInclusionDependenciesOptional() const
     { return _caresAboutInclusionDependencies; }
 
 public:
     inline bool synthesizeBuildRule() const
+    { return _synthesizeBuildRule.value_or(false); }
+    inline ext::optional<bool> synthesizeBuildRuleOptional() const
     { return _synthesizeBuildRule; }
 
 public:
     inline bool shouldRerunOnError() const
+    { return _shouldRerunOnError.value_or(false); }
+    inline ext::optional<bool> shouldRerunOnErrorOptional() const
     { return _shouldRerunOnError; }
 
 public:
     inline bool deeplyStatInputDirectories() const
+    { return _deeplyStatInputDirectories.value_or(false); }
+    inline ext::optional<bool> deeplyStatInputDirectoriesOptional() const
     { return _deeplyStatInputDirectories; }
 
 public:
     inline bool isUnsafeToInterrupt() const
+    { return _isUnsafeToInterrupt.value_or(false); }
+    inline ext::optional<bool> isUnsafeToInterruptOptional() const
     { return _isUnsafeToInterrupt; }
 
 public:
-    inline int messageLimit() const
+    inline ext::optional<int> messageLimit() const
     { return _messageLimit; }
 
 public:
-    inline PropertyOption::vector const &options() const
+    inline ext::optional<PropertyOption::vector> const &options() const
     { return _options; }
 
 public:
-    inline std::unordered_set<std::string> const &deletedProperties() const
+    inline ext::optional<std::unordered_set<std::string>> const &deletedProperties() const
     { return _deletedProperties; }
 
 public:

@@ -8,13 +8,12 @@
  */
 
 #include <pbxspec/PBX/Architecture.h>
+#include <pbxspec/Inherit.h>
 
 using pbxspec::PBX::Architecture;
 
 Architecture::Architecture() :
-    Specification(),
-    _listInEnum  (false),
-    _sortNumber  (0)
+    Specification()
 {
 }
 
@@ -22,10 +21,15 @@ Architecture::~Architecture()
 {
 }
 
-pbxsetting::Setting Architecture::
+ext::optional<pbxsetting::Setting> Architecture::
 defaultSetting(void) const
 {
-    return pbxsetting::Setting::Create(_architectureSetting, pbxsetting::Type::FormatList(_realArchitectures));
+    if (_architectureSetting) {
+        std::string value = (_realArchitectures ? pbxsetting::Type::FormatList(*_realArchitectures) : "");
+        return pbxsetting::Setting::Create(*_architectureSetting, value);
+    } else {
+        return ext::nullopt;
+    }
 }
 
 Architecture::shared_ptr Architecture::
@@ -65,9 +69,10 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (RAs != nullptr) {
+        _realArchitectures = std::vector<std::string>();
         for (size_t n = 0; n < RAs->count(); n++) {
             if (auto RA = RAs->value <plist::String> (n)) {
-                _realArchitectures.push_back(RA->value());
+                _realArchitectures->push_back(RA->value());
             }
         }
     }
@@ -112,12 +117,12 @@ inherit(Architecture::shared_ptr const &b)
 
     auto base = this->base();
 
-    _realArchitectures       = base->realArchitectures();
-    _architectureSetting     = base->architectureSetting();
-    _perArchBuildSettingName = base->perArchBuildSettingName();
-    _byteOrder               = base->byteOrder();
-    _listInEnum              = base->listInEnum();
-    _sortNumber              = base->sortNumber();
+    _realArchitectures       = Inherit::Combine(_realArchitectures, base->_realArchitectures);
+    _architectureSetting     = Inherit::Override(_architectureSetting, base->_architectureSetting);
+    _perArchBuildSettingName = Inherit::Override(_perArchBuildSettingName, base->_perArchBuildSettingName);
+    _byteOrder               = Inherit::Override(_byteOrder, base->_byteOrder);
+    _listInEnum              = Inherit::Override(_listInEnum, base->_listInEnum);
+    _sortNumber              = Inherit::Override(_sortNumber, base->_sortNumber);
 
     return true;
 }
