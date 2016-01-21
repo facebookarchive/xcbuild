@@ -28,8 +28,8 @@ ListAction::
 int ListAction::
 Run(Options const &options)
 {
-    std::unique_ptr<pbxbuild::WorkspaceContext> context = Action::CreateWorkspace(options);
-    if (context == nullptr) {
+    ext::optional<pbxbuild::WorkspaceContext> context = Action::CreateWorkspace(options);
+    if (!context) {
         return -1;
     }
 

@@ -12,6 +12,8 @@
 
 #include <xcdriver/Base.h>
 
+#include <ext/optional>
+
 namespace xcdriver {
 
 class Options;
@@ -56,7 +58,7 @@ public:
     VerifyBuildActions(std::vector<std::string> const &actions);
 
 public:
-    static std::unique_ptr<pbxbuild::WorkspaceContext>
+    static ext::optional<pbxbuild::WorkspaceContext>
     CreateWorkspace(Options const &options);
 
 public:
@@ -64,7 +66,7 @@ public:
     CreateOverrideLevels(Options const &options, pbxsetting::Environment const &environment);
 
 public:
-    static std::unique_ptr<pbxbuild::Build::Context>
+    static ext::optional<pbxbuild::Build::Context>
     CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &workspaceContext, std::vector<pbxsetting::Level> const &overrideLevels);
 };
 

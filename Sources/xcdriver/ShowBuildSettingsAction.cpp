@@ -38,15 +38,15 @@ Run(Options const &options)
         return -1;
     }
 
-    std::unique_ptr<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(options);
-    if (workspaceContext == nullptr) {
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(options);
+    if (!workspaceContext) {
         return -1;
     }
 
     std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(options, buildEnvironment->baseEnvironment());
 
-    std::unique_ptr<pbxbuild::Build::Context> buildContext = Action::CreateBuildContext(options, *workspaceContext, overrideLevels);
-    if (buildContext == nullptr) {
+    ext::optional<pbxbuild::Build::Context> buildContext = Action::CreateBuildContext(options, *workspaceContext, overrideLevels);
+    if (!buildContext) {
         return -1;
     }
 

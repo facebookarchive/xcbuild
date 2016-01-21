@@ -58,26 +58,24 @@ OpenProject(std::string const &projectPath, std::string const &directory)
     }
 }
 
-std::unique_ptr<pbxbuild::WorkspaceContext> Action::
+ext::optional<pbxbuild::WorkspaceContext> Action::
 CreateWorkspace(Options const &options)
 {
     if (!options.workspace().empty()) {
         xcworkspace::XC::Workspace::shared_ptr workspace = xcworkspace::XC::Workspace::Open(options.workspace());
         if (workspace == nullptr) {
             fprintf(stderr, "error: unable to open workspace '%s'\n", options.workspace().c_str());
-            return nullptr;
+            return ext::nullopt;
         }
 
-        pbxbuild::WorkspaceContext context = pbxbuild::WorkspaceContext::Workspace(workspace);
-        return std::unique_ptr<pbxbuild::WorkspaceContext>(new pbxbuild::WorkspaceContext(context));
+        return pbxbuild::WorkspaceContext::Workspace(workspace);
     } else {
         pbxproj::PBX::Project::shared_ptr project = OpenProject(options.project(), FSUtil::GetCurrentDirectory());
         if (project == nullptr) {
-            return nullptr;
+            return ext::nullopt;
         }
 
-        pbxbuild::WorkspaceContext context = pbxbuild::WorkspaceContext::Project(project);
-        return std::unique_ptr<pbxbuild::WorkspaceContext>(new pbxbuild::WorkspaceContext(context));
+        return pbxbuild::WorkspaceContext::Project(project);
     }
 }
 
@@ -120,14 +118,14 @@ CreateOverrideLevels(Options const &options, pbxsetting::Environment const &envi
     return levels;
 }
 
-std::unique_ptr<pbxbuild::Build::Context> Action::
+ext::optional<pbxbuild::Build::Context> Action::
 CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &workspaceContext, std::vector<pbxsetting::Level> const &overrideLevels)
 {
     std::vector<std::string> actions = (!options.actions().empty() ? options.actions() : std::vector<std::string>({ "build" }));
     std::string action = actions.front(); // TODO(grp): Support multiple actions and skipUnavailableOptions.
     if (action != "build") {
         fprintf(stderr, "error: action '%s' is not implemented\n", action.c_str());
-        return nullptr;
+        return ext::nullopt;
     }
 
     /* Find the scheme from the options. */
@@ -157,11 +155,11 @@ CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &wor
 
         if (configuration.empty()) {
             fprintf(stderr, "error: unable to determine build configuration\n");
-            return nullptr;
+            return ext::nullopt;
         }
     }
 
-    return std::unique_ptr<pbxbuild::Build::Context>(new pbxbuild::Build::Context(
+    return pbxbuild::Build::Context(
         workspaceContext,
         scheme,
         schemeGroup,
@@ -169,7 +167,7 @@ CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &wor
         configuration,
         defaultConfiguration,
         overrideLevels
-    ));
+    );
 }
 
 bool Action::

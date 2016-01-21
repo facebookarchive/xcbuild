@@ -118,8 +118,8 @@ Run(Options const &options)
      * Load the workspace for the provided options. There may or may not be an actual workspace;
      * the workspace context abstracts either a single project or a workspace.
      */
-    std::unique_ptr<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(options);
-    if (workspaceContext == nullptr) {
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(options);
+    if (!workspaceContext) {
         return -1;
     }
 
@@ -129,8 +129,8 @@ Run(Options const &options)
     /*
      * Create the build context for builing a specific scheme in the workspace.
      */
-    std::unique_ptr<pbxbuild::Build::Context> buildContext = Action::CreateBuildContext(options, *workspaceContext, overrideLevels);
-    if (buildContext == nullptr) {
+    ext::optional<pbxbuild::Build::Context> buildContext = Action::CreateBuildContext(options, *workspaceContext, overrideLevels);
+    if (!buildContext) {
         return -1;
     }
 
