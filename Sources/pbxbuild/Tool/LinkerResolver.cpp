@@ -64,9 +64,6 @@ resolve(
     for (std::string const &libraryPath : libraryPaths) {
         special.push_back("-L" + libraryPath);
     }
-    for (std::string const &libraryPath : frameworkPaths) {
-        special.push_back("-F" + libraryPath);
-    }
     special.push_back("-F" + environment.resolve("BUILT_PRODUCTS_DIR"));
 
     for (Phase::File const &library : inputLibraries) {
