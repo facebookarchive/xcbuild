@@ -65,11 +65,11 @@ resolveTargetIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::s
     return nullptr;
 }
 
-std::unique_ptr<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>> Build::Context::
+ext::optional<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>> Build::Context::
 resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::string const &identifier) const
 {
     if (project == nullptr) {
-        return nullptr;
+        return ext::nullopt;
     }
 
     pbxproj::PBX::Target::shared_ptr foundTarget = nullptr;
@@ -77,13 +77,12 @@ resolveProductIdentifier(pbxproj::PBX::Project::shared_ptr const &project, std::
         if (target->type() == pbxproj::PBX::Target::kTypeNative) {
             pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast<pbxproj::PBX::NativeTarget>(target);
             if (nativeTarget->productReference() != nullptr && nativeTarget->productReference()->blueprintIdentifier() == identifier) {
-                auto pair = std::make_pair(target, nativeTarget->productReference());
-                return std::unique_ptr<std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>>(new std::pair<pbxproj::PBX::Target::shared_ptr, pbxproj::PBX::FileReference::shared_ptr>(pair));
+                return std::make_pair(target, nativeTarget->productReference());
             }
         }
     }
 
-    return nullptr;
+    return ext::nullopt;
 }
 
 pbxsetting::Level Build::Context::

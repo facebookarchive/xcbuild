@@ -52,7 +52,7 @@ ResolveContainerItemProxy(Build::Environment const &buildEnvironment, Build::Con
     pbxproj::PBX::Project::shared_ptr project = context.workspaceContext().project(path);
     if (productReference) {
         auto result = context.resolveProductIdentifier(project, proxy->remoteGlobalIDString());
-        if (result == nullptr) {
+        if (!result) {
             fprintf(stderr, "warning: not able to resolve product identifier %s in project %s\n", proxy->remoteGlobalIDString().c_str(), project ? project->name().c_str() : path.c_str());
             return nullptr;
         }

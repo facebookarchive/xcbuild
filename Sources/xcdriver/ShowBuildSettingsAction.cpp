@@ -32,8 +32,8 @@ Run(Options const &options)
         return -1;
     }
 
-    std::unique_ptr<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default();
-    if (buildEnvironment == nullptr) {
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default();
+    if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
     }

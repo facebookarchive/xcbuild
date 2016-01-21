@@ -12,6 +12,8 @@
 
 #include <pbxbuild/Base.h>
 
+#include <ext/optional>
+
 namespace pbxbuild {
 namespace Build {
 
@@ -56,7 +58,7 @@ public:
      * Creates a build environment from the default configuration
      * of each of the build environment's subcomponents.
      */
-    static std::unique_ptr<Environment>
+    static ext::optional<Environment>
     Default(void);
 };
 

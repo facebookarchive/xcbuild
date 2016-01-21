@@ -83,7 +83,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                 std::string containerPath = environment.expand(containerReference->resolve());
 
                 auto remote = buildContext.resolveProductIdentifier(buildContext.workspaceContext().project(containerPath), proxy->remoteGlobalIDString());
-                if (remote == nullptr) {
+                if (!remote) {
                     fprintf(stderr, "error: unable to find remote target product from proxied reference\n");
                     continue;
                 }
