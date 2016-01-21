@@ -68,8 +68,8 @@ Run(Options const &options)
     }
 
     for (pbxproj::PBX::Target::shared_ptr const &target : targets.second) {
-        std::unique_ptr<pbxbuild::Target::Environment> targetEnvironment = buildContext->targetEnvironment(*buildEnvironment, target);
-        if (targetEnvironment == nullptr) {
+        ext::optional<pbxbuild::Target::Environment> targetEnvironment = buildContext->targetEnvironment(*buildEnvironment, target);
+        if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment\n");
             continue;
         }

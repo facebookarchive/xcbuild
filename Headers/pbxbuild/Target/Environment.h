@@ -14,6 +14,8 @@
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Target/BuildRules.h>
 
+#include <ext/optional>
+
 namespace pbxbuild {
 
 namespace Build { class Context; }
@@ -142,7 +144,7 @@ public:
     /*
      * Create a target environment for a specific build of a target.
      */
-    static std::unique_ptr<Environment>
+    static ext::optional<Environment>
     Create(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
 };
 

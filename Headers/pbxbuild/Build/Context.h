@@ -15,6 +15,8 @@
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Target/Environment.h>
 
+#include <ext/optional>
+
 namespace pbxbuild {
 namespace Build {
 
@@ -107,7 +109,7 @@ public:
     /*
      * Create or fetch a target's computed environment.
      */
-    std::unique_ptr<Target::Environment>
+    ext::optional<Target::Environment>
     targetEnvironment(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const;
 
 public:

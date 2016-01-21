@@ -52,8 +52,8 @@ build(
     for (pbxproj::PBX::Target::shared_ptr const &target : orderedTargets.second) {
         Formatter::Print(_formatter->beginTarget(buildContext, target));
 
-        std::unique_ptr<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
-        if (targetEnvironment == nullptr) {
+        ext::optional<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             Formatter::Print(_formatter->finishTarget(buildContext, target));
             continue;

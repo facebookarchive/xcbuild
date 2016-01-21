@@ -220,7 +220,7 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
     return pbxsetting::Level(settings);
 }
 
-std::unique_ptr<Target::Environment> Target::Environment::
+ext::optional<Target::Environment> Target::Environment::
 Create(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
     xcsdk::SDK::Target::shared_ptr sdk;
@@ -239,7 +239,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), buildContext.configuration());
         if (projectConfiguration == nullptr) {
             fprintf(stderr, "error: unable to find project configuration %s\n", buildContext.configuration().c_str());
-            return nullptr;
+            return ext::nullopt;
         }
 
         determinationEnvironment.insertFront(target->project()->settings(), false);
@@ -259,7 +259,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), buildContext.configuration());
         if (targetConfiguration == nullptr) {
             fprintf(stderr, "error: unable to find target configuration %s\n", buildContext.configuration().c_str());
-            return nullptr;
+            return ext::nullopt;
         }
 
         determinationEnvironment.insertFront(target->settings(), false);
@@ -286,7 +286,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         sdk = buildEnvironment.sdkManager()->findTarget(sdkroot);
         if (sdk == nullptr) {
             fprintf(stderr, "error: unable to find sdkroot %s\n", sdkroot.c_str());
-            return nullptr;
+            return ext::nullopt;
         }
 
         buildEnvironment.specManager()->registerDomain({ sdk->platform()->name(), sdk->platform()->path() + "/Developer/Library/Xcode/Specifications" });
@@ -296,7 +296,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     pbxspec::PBX::BuildSystem::shared_ptr buildSystem = TargetBuildSystem(buildEnvironment.specManager(), specDomains, target);
     if (buildSystem == nullptr) {
         fprintf(stderr, "error: unable to create build system\n");
-        return nullptr;
+        return ext::nullopt;
     }
 
     pbxspec::PBX::ProductType::shared_ptr productType = nullptr;
@@ -307,14 +307,14 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         productType = buildEnvironment.specManager()->productType(nativeTarget->productType(), specDomains);
         if (productType == nullptr) {
             fprintf(stderr, "error: unable to find product type %s\n", nativeTarget->productType().c_str());
-            return nullptr;
+            return ext::nullopt;
         }
 
         // FIXME(grp): Should this always use the first package type?
         packageType = buildEnvironment.specManager()->packageType(productType->packageTypes().at(0), specDomains);
         if (packageType == nullptr) {
             fprintf(stderr, "error: unable to find package type %s\n", productType->packageTypes().at(0).c_str());
-            return nullptr;
+            return ext::nullopt;
         }
     }
 
@@ -382,19 +382,19 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
     std::string workingDirectory = target->project()->basePath();
 
-    std::unique_ptr<Target::Environment> te = std::unique_ptr<Target::Environment>(new Target::Environment());
-    te->_sdk = sdk;
-    te->_toolchains = toolchains;
-    te->_executablePaths = executablePaths;
-    te->_buildRules = buildRules;
-    te->_environment = std::unique_ptr<pbxsetting::Environment>(new pbxsetting::Environment(environment));
-    te->_variants = variants;
-    te->_architectures = architectures;
-    te->_buildSystem = buildSystem;
-    te->_packageType = packageType;
-    te->_productType = productType;
-    te->_specDomains = specDomains;
-    te->_workingDirectory = workingDirectory;
-    te->_buildFileDisambiguation = buildFileDisambiguation;
+    Target::Environment te = Target::Environment();
+    te._sdk = sdk;
+    te._toolchains = toolchains;
+    te._executablePaths = executablePaths;
+    te._buildRules = buildRules;
+    te._environment = std::unique_ptr<pbxsetting::Environment>(new pbxsetting::Environment(environment));
+    te._variants = variants;
+    te._architectures = architectures;
+    te._buildSystem = buildSystem;
+    te._packageType = packageType;
+    te._productType = productType;
+    te._specDomains = specDomains;
+    te._workingDirectory = workingDirectory;
+    te._buildFileDisambiguation = buildFileDisambiguation;
     return te;
 }

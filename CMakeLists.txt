@@ -349,7 +349,7 @@ add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxsetting util plist)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec dependency ninja builtin)
+target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec dependency ninja builtin ext)
 
 add_library(xcdriver SHARED ${libxcdriver_SOURCES})
 target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)

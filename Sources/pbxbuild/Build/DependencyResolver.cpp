@@ -41,8 +41,8 @@ ResolveContainerItemProxy(Build::Environment const &buildEnvironment, Build::Con
         return nullptr;
     }
 
-    std::unique_ptr<Target::Environment> targetEnvironment = context.targetEnvironment(buildEnvironment, target);
-    if (targetEnvironment == nullptr) {
+    ext::optional<Target::Environment> targetEnvironment = context.targetEnvironment(buildEnvironment, target);
+    if (!targetEnvironment) {
         fprintf(stderr, "warning: not able to get target environment for target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
         return nullptr;
     }

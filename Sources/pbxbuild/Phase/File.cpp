@@ -88,8 +88,8 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                     continue;
                 }
 
-                std::unique_ptr<Target::Environment> remoteEnvironment = buildContext.targetEnvironment(buildEnvironment, remote->first);
-                if (remoteEnvironment == nullptr) {
+                ext::optional<Target::Environment> remoteEnvironment = buildContext.targetEnvironment(buildEnvironment, remote->first);
+                if (!remoteEnvironment) {
                     fprintf(stderr, "error: unable to create target environment for remote target\n");
                     continue;
                 }

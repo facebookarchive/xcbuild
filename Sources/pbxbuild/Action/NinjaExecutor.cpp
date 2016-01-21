@@ -239,8 +239,8 @@ build(
         /*
          * Resolve this target and generate its invocations.
          */
-        std::unique_ptr<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
-        if (targetEnvironment == nullptr) {
+        ext::optional<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             continue;
         }

@@ -33,15 +33,15 @@ Context(
 {
 }
 
-std::unique_ptr<pbxbuild::Target::Environment> Build::Context::
+ext::optional<pbxbuild::Target::Environment> Build::Context::
 targetEnvironment(Build::Environment const &buildEnvironment, pbxproj::PBX::Target::shared_ptr const &target) const
 {
     auto TEI = _targetEnvironments->find(target);
     if (TEI != _targetEnvironments->end()) {
-        return std::unique_ptr<Target::Environment>(new Target::Environment(TEI->second));
+        return TEI->second;
     } else {
-        std::unique_ptr<Target::Environment> targetEnvironment = Target::Environment::Create(buildEnvironment, *this, target);
-        if (targetEnvironment != nullptr) {
+        ext::optional<Target::Environment> targetEnvironment = Target::Environment::Create(buildEnvironment, *this, target);
+        if (targetEnvironment) {
             _targetEnvironments->insert(std::make_pair(target, *targetEnvironment));
         }
         return targetEnvironment;
