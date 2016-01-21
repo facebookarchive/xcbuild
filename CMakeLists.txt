@@ -251,6 +251,7 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Tool/Tokens.cpp
     Sources/pbxbuild/Tool/OptionsResult.cpp
     Sources/pbxbuild/Tool/CompilationInfo.cpp
+    Sources/pbxbuild/Tool/SwiftModuleInfo.cpp
     Sources/pbxbuild/Tool/HeadermapInfo.cpp
     Sources/pbxbuild/Tool/PrecompiledHeaderInfo.cpp
     Sources/pbxbuild/Tool/SearchPaths.cpp

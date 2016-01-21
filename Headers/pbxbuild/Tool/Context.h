@@ -14,6 +14,7 @@
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
+#include <pbxbuild/Tool/SwiftModuleInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 
@@ -33,6 +34,7 @@ private:
 private:
     HeadermapInfo                       _headermapInfo;
     CompilationInfo                     _compilationInfo;
+    std::vector<SwiftModuleInfo>        _swiftModuleInfo;
     std::vector<std::string>            _additionalInfoPlistContents;
 
 private:
@@ -67,6 +69,8 @@ public:
     { return _headermapInfo; }
     CompilationInfo const &compilationInfo() const
     { return _compilationInfo; }
+    std::vector<SwiftModuleInfo> const &swiftModuleInfo() const
+    { return _swiftModuleInfo; }
     std::vector<std::string> const &additionalInfoPlistContents() const
     { return _additionalInfoPlistContents; }
 
@@ -75,6 +79,8 @@ public:
     { return _headermapInfo; }
     CompilationInfo &compilationInfo()
     { return _compilationInfo; }
+    std::vector<SwiftModuleInfo> &swiftModuleInfo()
+    { return _swiftModuleInfo; }
     std::vector<std::string> &additionalInfoPlistContents()
     { return _additionalInfoPlistContents; }
 

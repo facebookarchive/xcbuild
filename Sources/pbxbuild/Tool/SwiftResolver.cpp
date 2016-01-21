@@ -19,9 +19,8 @@ namespace Phase = pbxbuild::Phase;
 using libutil::FSUtil;
 
 Tool::SwiftResolver::
-SwiftResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler, Tool::DittoResolver const &dittoResolver) :
-    _compiler     (compiler),
-    _dittoResolver(dittoResolver)
+SwiftResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler) :
+    _compiler(compiler)
 {
 }
 
@@ -159,49 +158,6 @@ AppendOutputs(
 }
 
 static void
-CopyOutputs(
-    Tool::Context *toolContext,
-    Tool::DittoResolver const *dittoResolver,
-    pbxsetting::Environment const &environment,
-    bool isFramework,
-    std::string const &moduleName,
-    std::string const &modulePath,
-    std::string const &headerName,
-    std::string const &headerPath)
-{
-    /* Output into the framework or the products directory. */
-    std::string outputBase;
-    if (isFramework) {
-        outputBase = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("CONTENTS_FOLDER_PATH") + "/" + "Modules";
-    } else {
-        outputBase = environment.resolve("BUILT_PRODUCTS_DIR");
-    }
-    outputBase += "/" + moduleName + ".swiftmodule";
-
-    /* Each architecture has a separate module subdirectory. */
-    std::string outputName = environment.resolve("arch");
-    if (outputName == "armv7") {
-        /* For some reason, armv7 is special cased as "arm". */
-        outputName = "arm";
-    }
-
-    /* Copy the module to let modules import it. */
-    std::string outputPath = outputBase + "/" + outputName + ".swiftmodule";
-    dittoResolver->resolve(toolContext, modulePath, outputPath);
-
-    /* Copy the swiftdoc. It's next to the module. */
-    std::string docInputPath = SwiftDocPath(moduleName, modulePath);
-    std::string docOutputPath = outputBase + "/" + outputName + ".swiftdoc";
-    dittoResolver->resolve(toolContext, docInputPath, docOutputPath);
-
-    /* Copy the generated header, if requested. */
-    if (pbxsetting::Type::ParseBoolean(environment.resolve("SWIFT_INSTALL_OBJC_HEADER"))) {
-        std::string installedPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH") + "/" + headerName;
-        dittoResolver->resolve(toolContext, headerPath, installedPath);
-    }
-}
-
-static void
 AppendPathFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment)
 {
     /* Note: Swift paths are passed un-concatenated as two arguments. */
@@ -267,8 +223,7 @@ resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
     std::vector<Phase::File> const &inputs,
-    std::string const &outputDirectory,
-    bool isFramework) const
+    std::string const &outputDirectory) const
 {
     /*
      * Resolve the tool options.
@@ -366,9 +321,16 @@ resolve(
     toolContext->variantArchitectureInvocations()[variantArchitectureKey].push_back(invocation);
 
     /*
-     * Copy build results so later modules can import this one.
+     * Add the Swift module info so the module can be copied.
      */
-    CopyOutputs(toolContext, &_dittoResolver, environment, isFramework, moduleName, modulePath, headerName, headerPath);
+    auto swiftModuleInfo = Tool::SwiftModuleInfo(
+        environment.resolve("arch"),
+        moduleName,
+        modulePath,
+        SwiftDocPath(moduleName, modulePath),
+        headerPath,
+        pbxsetting::Type::ParseBoolean(environment.resolve("SWIFT_INSTALL_OBJC_HEADER")));
+    toolContext->swiftModuleInfo().push_back(swiftModuleInfo);
 
     /*
      * Record compilation information for linking.
@@ -400,7 +362,7 @@ resolve(
 }
 
 std::unique_ptr<Tool::SwiftResolver> Tool::SwiftResolver::
-Create(Phase::Environment const &phaseEnvironment, Tool::DittoResolver const &dittoResolver)
+Create(Phase::Environment const &phaseEnvironment)
 {
     Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
@@ -411,6 +373,6 @@ Create(Phase::Environment const &phaseEnvironment, Tool::DittoResolver const &di
         return nullptr;
     }
 
-    return std::unique_ptr<Tool::SwiftResolver>(new Tool::SwiftResolver(swiftTool, dittoResolver));
+    return std::unique_ptr<Tool::SwiftResolver>(new Tool::SwiftResolver(swiftTool));
 }
 

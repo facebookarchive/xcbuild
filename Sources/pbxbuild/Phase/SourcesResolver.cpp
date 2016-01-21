@@ -15,13 +15,16 @@
 #include <pbxbuild/Build/Context.h>
 #include <pbxbuild/Tool/ClangResolver.h>
 #include <pbxbuild/Tool/HeadermapResolver.h>
+#include <pbxbuild/Tool/DittoResolver.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 
 namespace Phase = pbxbuild::Phase;
+namespace Target = pbxbuild::Target;
 namespace Tool = pbxbuild::Tool;
+using libutil::FSUtil;
 
 Phase::SourcesResolver::
 SourcesResolver(pbxproj::PBX::SourcesBuildPhase::shared_ptr const &buildPhase) :
@@ -34,10 +37,66 @@ Phase::SourcesResolver::
 {
 }
 
+static bool
+CopySwiftModules(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
+{
+    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    pbxsetting::Environment const &environment = targetEnvironment.environment();
+    Tool::Context *toolContext = &phaseContext->toolContext();
+
+    Tool::DittoResolver const *dittoResolver = phaseContext->dittoResolver(phaseEnvironment);
+    if (dittoResolver == nullptr) {
+        return false;
+    }
+
+    // TODO(grp): Find a better way of finding if this is building a framework.
+    bool isFramework = false;
+    for (pbxspec::PBX::ProductType::shared_ptr productType = targetEnvironment.productType(); productType != nullptr; productType = std::static_pointer_cast<pbxspec::PBX::ProductType>(productType->base())) {
+        if (productType->identifier() == "com.apple.product-type.framework") {
+            isFramework = true;
+            break;
+        }
+    }
+
+    for (Tool::SwiftModuleInfo const &moduleInfo : toolContext->swiftModuleInfo()) {
+        /* Output into the framework or the products directory. */
+        std::string outputBase;
+        if (isFramework) {
+            outputBase = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("CONTENTS_FOLDER_PATH") + "/" + "Modules";
+        } else {
+            outputBase = environment.resolve("BUILT_PRODUCTS_DIR");
+        }
+        outputBase += "/" + moduleInfo.moduleName() + ".swiftmodule";
+
+        /* Each architecture has a separate module subdirectory. */
+        std::string outputName = moduleInfo.architecture();
+        if (outputName == "armv7") {
+            /* For some reason, armv7 is special cased as "arm". */
+            outputName = "arm";
+        }
+
+        /* Copy the module to let modules import it. */
+        std::string outputPath = outputBase + "/" + outputName + ".swiftmodule";
+        dittoResolver->resolve(toolContext, moduleInfo.modulePath(), outputPath);
+
+        /* Copy the swiftdoc. It's next to the module. */
+        std::string docOutputPath = outputBase + "/" + outputName + ".swiftdoc";
+        dittoResolver->resolve(toolContext, moduleInfo.docPath(), docOutputPath);
+
+        /* Copy the generated header, if requested. */
+        if (moduleInfo.installHeader()) {
+            std::string headerName = FSUtil::GetBaseName(moduleInfo.headerPath());
+            std::string installedHeaderPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH") + "/" + headerName;
+            dittoResolver->resolve(toolContext, moduleInfo.headerPath(), installedHeaderPath);
+        }
+    }
+
+    return true;
+}
+
 bool Phase::SourcesResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     Tool::ClangResolver const *clangResolver = phaseContext->clangResolver(phaseEnvironment);
@@ -55,7 +114,9 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
 
     std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
 
-    /* Split files based on whether their tool is architecture-neutral. */
+    /*
+     * Split files based on whether their tool is architecture-neutral.
+     */
     std::vector<Phase::File> neutralFiles;
     std::vector<Phase::File> architectureFiles;
     for (Phase::File const &file : files) {
@@ -66,14 +127,18 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         }
     }
 
-    /* Resolve non-architecture-specific files. These are resolved just once. */
+    /*
+     * Resolve non-architecture-specific files. These are resolved just once.
+     */
     std::vector<std::vector<Phase::File>> neutralGroups = Phase::Context::Group(neutralFiles);
     std::string neutralOutputDirectory = targetEnvironment.environment().resolve("OBJECT_FILE_DIR");
     if (!phaseContext->resolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase, neutralGroups, neutralOutputDirectory)) {
         return false;
     }
 
-    /* Resolve architecture-specific files. */
+    /*
+     * Resolve architecture-specific files.
+     */
     std::vector<std::vector<Phase::File>> architectureGroups = Phase::Context::Group(architectureFiles);
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
@@ -87,6 +152,13 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
                 return false;
             }
         }
+    }
+
+    /*
+     * For any built Swift modules, copy their outputs as needed.
+     */
+    if (!CopySwiftModules(phaseEnvironment, phaseContext)) {
+        return false;
     }
 
     return true;
