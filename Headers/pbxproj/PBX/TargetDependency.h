@@ -24,6 +24,7 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
+    std::string                          _name;
     std::shared_ptr <Target>             _target;
     std::shared_ptr <ContainerItemProxy> _targetProxy;
 
@@ -31,10 +32,12 @@ public:
     TargetDependency();
 
 public:
-    inline std::shared_ptr<Target> const &target() const
-    { return _target; }
+    inline std::string const &name() const
+    { return _name; }
 
 public:
+    inline std::shared_ptr<Target> const &target() const
+    { return _target; }
     inline std::shared_ptr<ContainerItemProxy> const &targetProxy() const
     { return _targetProxy; }
 
