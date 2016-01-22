@@ -23,10 +23,11 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    ext::optional<PropertyOption::vector>   _options;
-    PropertyOption::used_map                _optionsUsed;
-    ext::optional<PropertyOption::vector>   _properties;
-    PropertyOption::used_map                _propertiesUsed;
+    ext::optional<PropertyOption::vector>          _options;
+    PropertyOption::used_map                       _optionsUsed;
+    ext::optional<PropertyOption::vector>          _properties;
+    PropertyOption::used_map                       _propertiesUsed;
+    ext::optional<std::unordered_set<std::string>> _deletedProperties;
 
 protected:
     BuildSystem();
@@ -49,6 +50,10 @@ public:
 public:
     inline ext::optional<PropertyOption::vector> const &properties() const
     { return _properties; }
+
+public:
+    inline ext::optional<std::unordered_set<std::string>> const &deletedProperties() const
+    { return _deletedProperties; }
 
 public:
     pbxsetting::Level defaultSettings(void) const;

@@ -67,8 +67,9 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
 
     auto unpack = plist::Keys::Unpack("BuildSystem", dict, seen);
 
-    auto Os = unpack.cast <plist::Array> ("Options");
-    auto Ps = unpack.cast <plist::Array> ("Properties");
+    auto Os  = unpack.cast <plist::Array> ("Options");
+    auto Ps  = unpack.cast <plist::Array> ("Properties");
+    auto DPs = unpack.cast <plist::Array> ("DeletedProperties");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errors().c_str());
@@ -100,6 +101,15 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
         }
     }
 
+    if (DPs != nullptr) {
+        _deletedProperties = std::unordered_set<std::string>();
+        for (size_t n = 0; n < DPs->count(); n++) {
+            if (auto DP = DPs->value <plist::String> (n)) {
+                _deletedProperties->insert(DP->value());
+            }
+        }
+    }
+
     return true;
 }
 
@@ -120,8 +130,9 @@ inherit(BuildSystem::shared_ptr const &b)
 
     auto base = this->base();
 
-    _options            = Inherit::Combine(_options, base->options(), &_optionsUsed, &base->_optionsUsed);
-    _properties         = Inherit::Combine(_properties, base->properties(), &_propertiesUsed, &base->_propertiesUsed);
+    _options           = Inherit::Combine(_options, base->_options, &_optionsUsed, &base->_optionsUsed);
+    _properties        = Inherit::Combine(_properties, base->_properties, &_propertiesUsed, &base->_propertiesUsed);
+    _deletedProperties = Inherit::Combine(_deletedProperties, base->_deletedProperties);
 
     return true;
 }

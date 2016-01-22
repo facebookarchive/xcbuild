@@ -83,6 +83,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto BJRN   = unpack.cast <plist::String> ("BuiltinJambaseRuleName");
     auto FTs    = unpack.cast <plist::Array> ("FileTypes");
     auto IFTs   = unpack.cast <plist::Array> ("InputFileTypes");
+    auto ITs    = unpack.cast <plist::Array> ("InputTypes");
     auto Os     = unpack.cast <plist::Array> ("Outputs");
     auto OP     = unpack.cast <plist::String> ("OutputPath");
     auto As     = unpack.cast <plist::Object> ("Architectures");
@@ -196,6 +197,15 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
         for (size_t n = 0; n < IFTs->count(); n++) {
             if (auto IFT = IFTs->value <plist::String> (n)) {
                 _inputFileTypes->push_back(IFT->value());
+            }
+        }
+    }
+
+    if (ITs != nullptr) {
+        _inputTypes = std::vector<std::string>();
+        for (size_t n = 0; n < ITs->count(); n++) {
+            if (auto IT = ITs->value <plist::String> (n)) {
+                _inputTypes->push_back(IT->value());
             }
         }
     }
@@ -343,6 +353,7 @@ inherit(Tool::shared_ptr const &b)
     _builtinJambaseRuleName              = Inherit::Override(_builtinJambaseRuleName, base->_builtinJambaseRuleName);
     _fileTypes                           = Inherit::Combine(_fileTypes, base->_fileTypes);
     _inputFileTypes                      = Inherit::Combine(_inputFileTypes, base->_inputFileTypes);
+    _inputTypes                          = Inherit::Combine(_inputTypes, base->_inputTypes);
     _architectures                       = Inherit::Combine(_architectures, base->_architectures);
     _outputs                             = Inherit::Combine(_outputs, base->_outputs);
     _outputPath                          = Inherit::Override(_outputPath, base->_outputPath);

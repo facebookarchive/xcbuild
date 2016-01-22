@@ -119,6 +119,9 @@ parse(plist::Dictionary const *dict)
     auto FT = unpack.cast <plist::String> ("FileType");
     auto IL = unpack.coerce <plist::Boolean> ("IsLaunchable");
 
+    /* This appears to be a typo in the default specifications. */
+    auto EB = unpack.cast <plist::String>("ENABLE_BITCODE");
+
     if (!unpack.complete(true)) {
         fprintf(stderr, "%s", unpack.errors().c_str());
     }

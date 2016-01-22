@@ -41,6 +41,7 @@ protected:
     ext::optional<std::string>                     _builtinJambaseRuleName;
     ext::optional<std::vector<std::string>>        _fileTypes;
     ext::optional<std::vector<std::string>>        _inputFileTypes;
+    ext::optional<std::vector<std::string>>        _inputTypes;
     ext::optional<std::vector<std::string>>        _architectures;
     ext::optional<std::vector<pbxsetting::Value>>  _outputs;
     ext::optional<pbxsetting::Value>               _outputPath;
@@ -124,6 +125,8 @@ public:
     { return _fileTypes; }
     inline ext::optional<std::vector<std::string>> const &inputFileTypes() const
     { return _inputFileTypes; }
+    inline ext::optional<std::vector<std::string>> const &inputTypes() const
+    { return _inputTypes; }
 
 public:
     inline ext::optional<std::vector<std::string>> const &architectures() const
