@@ -294,7 +294,12 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
             return ext::nullopt;
         }
 
-        buildEnvironment.specManager()->registerDomain({ sdk->platform()->name(), sdk->platform()->path() + "/Developer/Library/Xcode/Specifications" });
+        buildEnvironment.specManager()->registerDomains({
+            pbxspec::Manager::PlatformDomain(
+                buildEnvironment.sdkManager()->path(),
+                sdk->platform()->name(),
+                sdk->platform()->path()),
+        });
         specDomains = SDKSpecificationDomains(sdk);
     }
 

@@ -26,6 +26,8 @@ public:
 
 protected:
     Specification::shared_ptr  _base;
+    ext::optional<std::string> _basedOnIdentifier;
+    ext::optional<std::string> _basedOnDomain;
     std::string                _identifier;
     std::string                _domain;
     ext::optional<bool>        _isGlobalDomainInUI;
@@ -44,6 +46,12 @@ public:
 public:
     inline Specification::shared_ptr const &base() const
     { return _base; }
+
+public:
+    inline ext::optional<std::string> const &basedOnIdentifier() const
+    { return _basedOnIdentifier; }
+    inline ext::optional<std::string> const &basedOnDomain() const
+    { return _basedOnDomain; }
 
 public:
     inline std::string const &identifier() const
@@ -73,14 +81,14 @@ protected:
     virtual bool parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 
 protected:
+    friend class pbxspec::Manager;
     virtual bool inherit(Specification::shared_ptr const &base);
 
 protected:
     static bool ParseType(Context *context, plist::Dictionary const *dict, std::string const &expectedType, std::string *determinedType = nullptr);
 
 public:
-    friend class pbxspec::Manager;
-    static bool Open(Context *context, std::string const &filename);
+    static ext::optional<Specification::vector> Open(Context *context, std::string const &filename);
 
 private:
     static Specification::shared_ptr Parse(Context *context, plist::Dictionary const *dict);

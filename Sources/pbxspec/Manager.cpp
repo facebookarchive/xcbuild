@@ -76,14 +76,11 @@ findSpecification(std::vector<std::string> const &domains, std::string const &id
 {
     typename T::vector vector = findSpecifications <T> (domains, type);
 
-    //
-    // Do an inverse find so that we can find the overrides.
-    //
-    auto I = std::find_if(vector.rbegin(), vector.rend(), [&identifier](Specification::shared_ptr const &spec) -> bool {
+    auto I = std::find_if(vector.begin(), vector.end(), [&identifier](Specification::shared_ptr const &spec) -> bool {
         return identifier == spec->identifier();
     });
 
-    if (I != vector.rend()) {
+    if (I != vector.end()) {
         return *I;
     }
 
@@ -302,12 +299,20 @@ addSpecification(PBX::Specification::shared_ptr const &spec)
 }
 
 void Manager::
-registerDomain(std::pair<std::string, std::string> const &domain)
+registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
 {
-    auto const &it = _domains.find(domain.first);
-    if (it == _domains.end()) {
+    PBX::Specification::vector specifications;
+
+    for (auto const &domain : domains) {
+        /*
+         * Avoid double domain registration. Unncessary and causes warnings.
+         */
+        if (_domains.find(domain.first) != _domains.end()) {
+            continue;
+        }
+        _domains.insert(domain);
+
         Context context = {
-            .manager = this,
             .domain = domain.first,
         };
 
@@ -326,7 +331,11 @@ registerDomain(std::pair<std::string, std::string> const &domain)
 #if 0
                     fprintf(stderr, "importing specification '%s'\n", filename.c_str());
 #endif
-                    if (!Specification::Open(&context, filename)) {
+
+                    ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(&context, filename);
+                    if (fileSpecifications) {
+                        specifications.insert(specifications.end(), fileSpecifications->begin(), fileSpecifications->end());
+                    } else {
                         fprintf(stderr, "warning: failed to import specification '%s'\n", filename.c_str());
                     }
                 }
@@ -336,12 +345,41 @@ registerDomain(std::pair<std::string, std::string> const &domain)
 #if 0
             fprintf(stderr, "importing specification '%s'\n", domain.second.c_str());
 #endif
-            if (!Specification::Open(&context, domain.second)) {
+            ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(&context, domain.second);
+            if (fileSpecifications) {
+                specifications.insert(specifications.end(), fileSpecifications->begin(), fileSpecifications->end());
+            } else {
                 fprintf(stderr, "warning: failed to import specification '%s'\n", domain.second.c_str());
             }
         }
+    }
 
-        _domains.insert(domain);
+    /*
+     * Register all specifications. Must be before inheritance in case specifications
+     * inherit from other specifications also being registered at the same time.
+     */
+    for (PBX::Specification::shared_ptr const &specification : specifications) {
+        addSpecification(specification);
+    }
+
+    /*
+     * Inherit from existing specifications.
+     */
+    for (PBX::Specification::shared_ptr const &specification : specifications) {
+        if (specification->basedOnIdentifier() && specification->basedOnDomain()) {
+            /* Find the base specification. */
+            auto base = this->specification(specification->type(), *specification->basedOnIdentifier(), AnyDomain(*specification->basedOnDomain()));
+            if (base == nullptr) {
+                fprintf(stderr, "error: cannot find base %s specification '%s:%s'\n", specification->type(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
+                continue;
+            }
+
+            /* Perform inheritance. */
+            if (!specification->inherit(base)) {
+                fprintf(stderr, "error: could not inherit from base %s specification '%s:%s'\n", specification->type(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
+                continue;
+            }
+        }
     }
 }
 
@@ -401,18 +439,17 @@ EmbeddedDomains(std::string const &developerRoot)
     };
 }
 
-std::vector<std::pair<std::string, std::string>> Manager::
-PlatformDomains(std::string const &developerRoot)
+std::pair<std::string, std::string> Manager::
+PlatformDomain(std::string const &developerRoot, std::string const &platformName, std::string const &platformPath)
 {
     std::string root = developerRoot + "/..";
-    return {
-        { "iphoneos", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Device.xcspec" },
-        { "iphonesimulator", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Simulator.xcspec" },
-        { "watchos", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Device.xcspec" },
-        { "watchsimulator", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Simulator.xcspec" },
-        { "watchos", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Shared.xcspec" },
-        { "watchsimulator", root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Shared.xcspec" },
-    };
+    if (platformName == "iphoneos" || platformName == "watchos" || platformName == "appletvos") {
+        return { platformName, root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Device.xcspec" };
+    } else if (platformName == "iphonesimulator" || platformName == "watchsimulator" || platformName == "appletvsimulator") {
+        return { platformName, root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Simulator.xcspec" };
+    } else {
+        return { platformName, platformPath + "/Developer/Library/Xcode/Specifications" };
+    }
 }
 
 std::string Manager::

@@ -25,7 +25,7 @@ main(int argc, char **argv)
 
     std::string path = argv[1];
     Manager::shared_ptr manager = Manager::Create();
-    manager->registerDomain({ "xcspec", path });
+    manager->registerDomains({ { "xcspec", path } });
 
     return 0;
 }

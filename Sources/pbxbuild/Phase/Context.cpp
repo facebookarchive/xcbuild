@@ -337,6 +337,8 @@ resolveBuildFiles(
                         if (toolAcceptsInputFileType) {
                             toolIdentifier = tool->identifier();
                         }
+                    } else {
+                        toolIdentifier = tool->identifier();
                     }
                 }
             }

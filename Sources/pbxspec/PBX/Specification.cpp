@@ -88,27 +88,14 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     if (BO != nullptr) {
         auto basedOn           = BO->value();
 
-        auto basedOnDomain     = Manager::AnyDomain();
-        auto basedOnIdentifier = basedOn;
+        _basedOnDomain     = Manager::AnyDomain();
+        _basedOnIdentifier = basedOn;
 
         auto colon = basedOn.find(':');
         if (colon != std::string::npos) {
-            basedOnDomain     = basedOn.substr(0, colon);
-            basedOnIdentifier = basedOn.substr(colon + 1);
+            _basedOnDomain     = basedOn.substr(0, colon);
+            _basedOnIdentifier = basedOn.substr(colon + 1);
         }
-
-        auto base = context->manager->specification(type(), basedOnIdentifier, { basedOnDomain });
-        if (base == nullptr) {
-            fprintf(stderr, "error: cannot find base %s specification '%s:%s'\n",
-                    type(), basedOnDomain.c_str(), basedOnIdentifier.c_str());
-            return false;
-        }
-
-        //
-        // Inherit all the values.
-        //
-        if (!inherit(base))
-            return false;
     }
 
     if (GD != nullptr) {
@@ -197,18 +184,18 @@ Parse(Context *context, plist::Dictionary const *dict)
     return nullptr;
 }
 
-bool Specification::
+ext::optional<Specification::vector> Specification::
 Open(Context *context, std::string const &filename)
 {
     if (filename.empty()) {
-        fprintf(stderr, "stderr: empty specification path\n");
-        return false;
+        fprintf(stderr, "error: empty specification path\n");
+        return ext::nullopt;
     }
 
     std::string realPath = FSUtil::ResolvePath(filename);
     if (realPath.empty()) {
         fprintf(stderr, "stderr: invalid specification path\n");
-        return false;
+        return ext::nullopt;
     }
 
     //
@@ -217,7 +204,7 @@ Open(Context *context, std::string const &filename)
     std::unique_ptr<plist::Object> plist = plist::Format::Any::Read(filename).first;
     if (plist == nullptr) {
         fprintf(stderr, "stderr: unable to read specification plist\n");
-        return false;
+        return ext::nullopt;
     }
 
     //
@@ -225,25 +212,23 @@ Open(Context *context, std::string const &filename)
     // if it's an array then multiple specifications are present.
     //
     if (auto dict = plist::CastTo <plist::Dictionary> (plist.get())) {
-        auto spec = Parse(context, dict);
-        if (spec != nullptr) {
-            //
-            // Add specification to manager.
-            //
-            context->manager->addSpecification(spec);
+        if (auto spec = Parse(context, dict)) {
+            return Specification::vector({ spec });
+        } else {
+            fprintf(stderr, "error: single specification failed to parse\n");
+            return ext::nullopt;
         }
-
-        return (spec != nullptr);
     } else if (auto array = plist::CastTo <plist::Array> (plist.get())) {
         size_t errors = 0;
-        size_t count  = array->count();
-        for (size_t n = 0; n < count; n++) {
+        Specification::vector specifications;
+
+        for (size_t n = 0; n < array->count(); n++) {
             if (auto dict = array->value <plist::Dictionary> (n)) {
-                auto spec = Parse(context, dict);
-                if (spec == nullptr) {
-                    errors++;
+                if (auto spec = Parse(context, dict)) {
+                    specifications.push_back(spec);
                 } else {
-                    context->manager->addSpecification(spec);
+                    fprintf(stderr, "error: specification failed to parse\n");
+                    errors++;
                 }
             } else {
                 fprintf(stderr, "error: specification entry was not a dictionary\n");
@@ -251,11 +236,15 @@ Open(Context *context, std::string const &filename)
             }
         }
 
-
-        return (errors < count);
+        if (errors == 0 || array->count() == 0) {
+            return specifications;
+        } else {
+            fprintf(stderr, "error: specification failed to parse, errors %lu\n", errors);
+            return ext::nullopt;
+        }
     }
 
     fprintf(stderr, "error: specification file '%s' does not contain a dictionary nor an array", filename.c_str());
-    return false;
+    return ext::nullopt;
 }
 

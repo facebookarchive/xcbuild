@@ -199,17 +199,19 @@ CreateInternal(
             environment.insertFront(OutputLevel(output), false);
         }
 
-        /* The tool does specify outputs; use those. */
-        std::string output = environment.expand(tool->outputs()->front());
-        for (pbxsetting::Value const &output : *tool->outputs()) {
-            std::string outputPath = environment.expand(output);
+        if (!tool->outputs()->empty()) {
+            /* The tool does specify outputs; use those. */
+            std::string output = environment.expand(tool->outputs()->front());
+            for (pbxsetting::Value const &output : *tool->outputs()) {
+                std::string outputPath = environment.expand(output);
 
-            if (&output == &tool->outputs()->front()) {
-                /* The first output is added to the environment. */
-                environment.insertFront(OutputLevel(outputPath), false);
+                if (&output == &tool->outputs()->front()) {
+                    /* The first output is added to the environment. */
+                    environment.insertFront(OutputLevel(outputPath), false);
+                }
+
+                outputPaths.push_back(outputPath);
             }
-
-            outputPaths.push_back(outputPath);
         }
     } else if (tool->outputPath()) {
         /* The tool specifies a single output. */

@@ -125,10 +125,8 @@ public:
     PBX::BuildRule::vector synthesizedBuildRules(std::vector<std::string> const &domains) const;
 
 public:
-    void
-    registerDomain(std::pair<std::string, std::string> const &domain);
-    void
-    registerBuildRules(std::string const &path);
+    void registerDomains(std::vector<std::pair<std::string, std::string>> const &domains);
+    void registerBuildRules(std::string const &path);
 
 protected:
     friend class pbxspec::PBX::Specification;
@@ -158,8 +156,8 @@ public:
     DefaultDomain(std::string const &developerRoot);
     static std::vector<std::pair<std::string, std::string>>
     EmbeddedDomains(std::string const &developerRoot);
-    static std::vector<std::pair<std::string, std::string>>
-    PlatformDomains(std::string const &developerRoot);
+    static std::pair<std::string, std::string>
+    PlatformDomain(std::string const &developerRoot, std::string const &platformName, std::string const &platformPath);
 
 public:
     static std::string

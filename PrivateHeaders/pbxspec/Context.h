@@ -16,7 +16,6 @@ namespace pbxspec {
 
 class Context {
 public:
-    Manager *manager;
     std::string domain;
 
 public:
