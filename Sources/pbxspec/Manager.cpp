@@ -310,11 +310,11 @@ inheritSpecification(PBX::Specification::shared_ptr const &specification)
 {
     if (specification->basedOnIdentifier() && specification->basedOnDomain() && specification->base() == nullptr) {
         /*
-         * Search the specified domain then the base domain. Some specifications inherit
-         * from domain/identifier pairs that don't exist in practice, but by using the
-         * default domain they can successfully inherit.
+         * Search the specified domain then in any domain. Some specifications inherit
+         * from domain/identifier pairs that don't exist in practice, but by using any
+         * domain they can successfully inherit from something potentially relevant.
          */
-        std::vector<std::string> domains = { *specification->basedOnDomain(), "default" };
+        std::vector<std::string> domains = { *specification->basedOnDomain(), AnyDomain() };
 
         /* Find the base specification. */
         auto base = this->specification(specification->type(), *specification->basedOnIdentifier(), domains);

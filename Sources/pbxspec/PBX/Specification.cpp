@@ -88,7 +88,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     if (BO != nullptr) {
         auto basedOn           = BO->value();
 
-        _basedOnDomain     = Manager::AnyDomain();
+        _basedOnDomain     = _domain;
         _basedOnIdentifier = basedOn;
 
         auto colon = basedOn.find(':');
