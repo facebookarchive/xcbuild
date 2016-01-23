@@ -128,10 +128,9 @@ public:
     void registerDomains(std::vector<std::pair<std::string, std::string>> const &domains);
     void registerBuildRules(std::string const &path);
 
-protected:
-    friend class pbxspec::PBX::Specification;
-    void
-    addSpecification(PBX::Specification::shared_ptr const &spec);
+private:
+    void addSpecification(PBX::Specification::shared_ptr const &specification);
+    bool inheritSpecification(PBX::Specification::shared_ptr const &specification);
 
 private:
     template <typename T>

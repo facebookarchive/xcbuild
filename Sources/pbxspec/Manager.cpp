@@ -305,6 +305,42 @@ addSpecification(PBX::Specification::shared_ptr const &spec)
     _specifications[spec->domain()][spec->type()].push_back(spec);
 }
 
+bool Manager::
+inheritSpecification(PBX::Specification::shared_ptr const &specification)
+{
+    if (specification->basedOnIdentifier() && specification->basedOnDomain() && specification->base() == nullptr) {
+        /*
+         * Search the specified domain then the base domain. Some specifications inherit
+         * from domain/identifier pairs that don't exist in practice, but by using the
+         * default domain they can successfully inherit.
+         */
+        std::vector<std::string> domains = { *specification->basedOnDomain(), "default" };
+
+        /* Find the base specification. */
+        auto base = this->specification(specification->type(), *specification->basedOnIdentifier(), domains);
+        if (base == nullptr) {
+            fprintf(stderr, "error: cannot find base %s specification '%s:%s'\n", specification->type(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
+            return false;
+        }
+
+        /*
+         * Ensure the base specification itself has been inherited. Since inheritance
+         * copies values from the base, the base must have its own values set first.
+         */
+        if (!inheritSpecification(base)) {
+            return false;
+        }
+
+        /* Perform inheritance. */
+        if (!specification->inherit(base)) {
+            fprintf(stderr, "error: could not inherit from base %s specification '%s:%s'\n", specification->type(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void Manager::
 registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
 {
@@ -378,29 +414,12 @@ registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
     }
 
     /*
-     * Inherit from existing specifications.
+     * Inherit from existing and newly added specifications.
      */
     for (PBX::Specification::shared_ptr const &specification : specifications) {
-        if (specification->basedOnIdentifier() && specification->basedOnDomain()) {
-            /*
-             * Search the specified domain then the base domain. Some specifications inherit
-             * from domain/identifier pairs that don't exist in practice, but by using the
-             * default domain they can successfully inherit.
-             */
-            std::vector<std::string> domains = { *specification->basedOnDomain(), "default" };
-
-            /* Find the base specification. */
-            auto base = this->specification(specification->type(), *specification->basedOnIdentifier(), domains);
-            if (base == nullptr) {
-                fprintf(stderr, "error: cannot find base %s specification '%s:%s'\n", specification->type(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
-                continue;
-            }
-
-            /* Perform inheritance. */
-            if (!specification->inherit(base)) {
-                fprintf(stderr, "error: could not inherit from base %s specification '%s:%s'\n", specification->type(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
-                continue;
-            }
+        if (!inheritSpecification(specification)) {
+            /* Unfortunately, not much useful error handling to do here. */
+            continue;
         }
     }
 }
