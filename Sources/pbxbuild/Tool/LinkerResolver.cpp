@@ -53,18 +53,18 @@ resolve(
     }
 
     std::unordered_set<std::string> libraryPaths;
-    std::unordered_set<std::string> frameworkPaths;
     for (Phase::File const &library : inputLibraries) {
-        if (library.fileType()->isFrameworkWrapper()) {
-            frameworkPaths.insert(FSUtil::GetDirectoryName(library.path()));
-        } else {
+        if (!library.fileType()->isFrameworkWrapper()) {
             libraryPaths.insert(FSUtil::GetDirectoryName(library.path()));
         }
     }
     for (std::string const &libraryPath : libraryPaths) {
         special.push_back("-L" + libraryPath);
     }
-    special.push_back("-F" + environment.resolve("BUILT_PRODUCTS_DIR"));
+
+    if (_linker->identifier() != Tool::LinkerResolver::LibtoolToolIdentifier() || environment.resolve("MACH_O_TYPE") != "staticlib") {
+        special.push_back("-F" + environment.resolve("BUILT_PRODUCTS_DIR"));
+    }
 
     for (Phase::File const &library : inputLibraries) {
         std::string base = FSUtil::GetBaseNameWithoutExtension(library.path());
