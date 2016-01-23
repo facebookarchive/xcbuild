@@ -33,7 +33,7 @@ public:
     typedef std::shared_ptr <Manager> shared_ptr;
 
 private:
-    std::map<std::string, std::string>                                        _domains;
+    std::unordered_set<std::string>                                           _domains;
     std::map<std::string, std::map<char const *, PBX::Specification::vector>> _specifications;
     PBX::BuildRule::vector                                                    _buildRules;
 
@@ -148,16 +148,14 @@ public:
 public:
     static std::string
     AnyDomain();
-    static std::vector<std::string>
-    AnyDomain(std::string const &preferred);
 
 public:
-    static std::pair<std::string, std::string>
-    DefaultDomain(std::string const &developerRoot);
+    static std::vector<std::pair<std::string, std::string>>
+    DefaultDomains(std::string const &developerRoot);
     static std::vector<std::pair<std::string, std::string>>
     EmbeddedDomains(std::string const &developerRoot);
-    static std::pair<std::string, std::string>
-    PlatformDomain(std::string const &developerRoot, std::string const &platformName, std::string const &platformPath);
+    static std::vector<std::pair<std::string, std::string>>
+    PlatformDomains(std::string const &developerRoot, std::string const &platformName, std::string const &platformPath);
 
 public:
     static std::string

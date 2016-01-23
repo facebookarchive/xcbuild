@@ -286,6 +286,13 @@ addSpecification(PBX::Specification::shared_ptr const &spec)
     }
 
     if (auto ospec = specification(spec->type(), spec->identifier(), { spec->domain() })) {
+        /*
+         * Workaround for a typo in the default specifications; don't warn.
+         */
+        if (spec->identifier() == "PlatformStandardUniversal") {
+            return;
+        }
+
         fprintf(stderr, "error: registering %s specification '%s' in domain %s twice\n",
                 spec->type(), spec->identifier().c_str(), spec->domain().c_str());
         return;
@@ -310,7 +317,6 @@ registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
         if (_domains.find(domain.first) != _domains.end()) {
             continue;
         }
-        _domains.insert(domain);
 
         Context context = {
             .domain = domain.first,
@@ -355,6 +361,15 @@ registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
     }
 
     /*
+     * Mark all of the domains regsitered. This is after all of the inputs so the
+     * same domain can be registered multiple times (loaded from multiple paths)
+     * in a single registration, but can't be registered twice outside that.
+     */
+    for (auto const &domain : domains) {
+        _domains.insert(domain.first);
+    }
+
+    /*
      * Register all specifications. Must be before inheritance in case specifications
      * inherit from other specifications also being registered at the same time.
      */
@@ -367,8 +382,15 @@ registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
      */
     for (PBX::Specification::shared_ptr const &specification : specifications) {
         if (specification->basedOnIdentifier() && specification->basedOnDomain()) {
+            /*
+             * Search the specified domain then the base domain. Some specifications inherit
+             * from domain/identifier pairs that don't exist in practice, but by using the
+             * default domain they can successfully inherit.
+             */
+            std::vector<std::string> domains = { *specification->basedOnDomain(), "default" };
+
             /* Find the base specification. */
-            auto base = this->specification(specification->type(), *specification->basedOnIdentifier(), AnyDomain(*specification->basedOnDomain()));
+            auto base = this->specification(specification->type(), *specification->basedOnIdentifier(), domains);
             if (base == nullptr) {
                 fprintf(stderr, "error: cannot find base %s specification '%s:%s'\n", specification->type(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
                 continue;
@@ -416,16 +438,24 @@ AnyDomain()
     return "<<domain>>";
 }
 
-std::vector<std::string> Manager::
-AnyDomain(std::string const &preferred)
+std::vector<std::pair<std::string, std::string>> Manager::
+DefaultDomains(std::string const &developerRoot)
 {
-    return { preferred, AnyDomain() };
-}
+    std::string root       = developerRoot + "/../PlugIns/Xcode3Core.ideplugin";
+    std::string frameworks = root + "/Contents/Frameworks";
+    std::string plugins    = root + "/Contents/SharedSupport/Developer/Library/Xcode/Plug-ins";
 
-std::pair<std::string, std::string> Manager::
-DefaultDomain(std::string const &developerRoot)
-{
-    return { "default", developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents" };
+    return {
+        { "default", frameworks + "/" + "DevToolsCore.framework" },
+        { "default", plugins + "/" + "Clang LLVM 1.0.xcplugin" },
+        { "default", plugins + "/" + "Core Data.xcplugin" },
+        { "default", plugins + "/" + "CoreBuildTasks.xcplugin" },
+        { "default", plugins + "/" + "IBCompilerPlugin.xcplugin" },
+        { "default", plugins + "/" + "Metal.xcplugin" },
+        { "default", plugins + "/" + "SceneKit.xcplugin" },
+        { "default", plugins + "/" + "SpriteKit.xcplugin" },
+        { "default", plugins + "/" + "XCLanguageSupport.xcplugin" },
+    };
 }
 
 std::vector<std::pair<std::string, std::string>> Manager::
@@ -433,27 +463,39 @@ EmbeddedDomains(std::string const &developerRoot)
 {
     std::string root = developerRoot + "/../PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources";
     return {
-        { "embedded-shared", root + "/Embedded-Shared.xcspec" },
-        { "embedded", root + "/Embedded-Device.xcspec" },
-        { "embedded-simulator", root + "/Embedded-Simulator.xcspec" },
+        { "embedded-shared", root + "/" + "Embedded-Shared.xcspec" },
+        { "embedded", root + "/" + "Embedded-Device.xcspec" },
+        { "embedded-simulator", root + "/" + "Embedded-Simulator.xcspec" },
     };
 }
 
-std::pair<std::string, std::string> Manager::
-PlatformDomain(std::string const &developerRoot, std::string const &platformName, std::string const &platformPath)
+std::vector<std::pair<std::string, std::string>> Manager::
+PlatformDomains(std::string const &developerRoot, std::string const &platformName, std::string const &platformPath)
 {
-    std::string root = developerRoot + "/..";
+    std::vector<std::pair<std::string, std::string>> domains;
+
+    std::string root = developerRoot + "/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources";
     if (platformName == "iphoneos" || platformName == "watchos" || platformName == "appletvos") {
-        return { platformName, root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Device.xcspec" };
+        domains.push_back({ platformName, root + "/" + "Device.xcspec" });
     } else if (platformName == "iphonesimulator" || platformName == "watchsimulator" || platformName == "appletvsimulator") {
-        return { platformName, root + "/Developer/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources/Simulator.xcspec" };
+        domains.push_back({ platformName, root + "/" + "Simulator.xcspec" });
     } else {
-        return { platformName, platformPath + "/Developer/Library/Xcode/Specifications" };
+        /* The standard platform specifications directory. */
+        domains.push_back({ platformName, platformPath + "/Developer/Library/Xcode/Specifications" });
     }
+
+    if (platformName == "iphoneos" || platformName == "iphonesimulator") {
+        std::string path = developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer/Library/Xcode/Plug-ins/XCWatchKit1Support.xcplugin";
+        domains.push_back({ platformName, path });
+    }
+
+    return domains;
 }
 
 std::string Manager::
 DeveloperBuildRules(std::string const &developerRoot)
 {
-    return developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents/Frameworks/DevToolsCore.framework/Versions/A/Resources/BuiltInBuildRules.plist";
+    std::string root = developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents/Frameworks/DevToolsCore.framework/Resources";
+    return root + "/" + "BuiltInBuildRules.plist";
 }
+

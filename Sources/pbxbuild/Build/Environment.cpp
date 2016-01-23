@@ -35,7 +35,7 @@ Default(void)
         return ext::nullopt;
     }
 
-    specManager->registerDomains({ pbxspec::Manager::DefaultDomain(developerRoot) });
+    specManager->registerDomains(pbxspec::Manager::DefaultDomains(developerRoot));
     specManager->registerDomains(pbxspec::Manager::EmbeddedDomains(developerRoot));
 
     std::string buildRules = pbxspec::Manager::DeveloperBuildRules(developerRoot);
