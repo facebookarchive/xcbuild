@@ -230,7 +230,7 @@ process(Environment const &environment)
 }
 
 void ConfigFile::
-error(unsigned line, std::string const &format, ...)
+error(unsigned line, std::string format, ...)
 {
     static char const sErrorMessage[] = "error";
 

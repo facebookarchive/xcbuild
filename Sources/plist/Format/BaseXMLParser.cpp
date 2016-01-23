@@ -82,13 +82,13 @@ onCharacterData(std::string const &cdata, size_t depth)
 }
 
 void BaseXMLParser::
-error(std::string const &format, ...)
+error(std::string format, ...)
 {
     static char const sErrorMessage[] = "syntax error";
 
     va_list  ap;
     char    *buf;
- 
+
     va_start(ap, format);
     if (::vasprintf(&buf, format.c_str(), ap) < 0) {
         buf = const_cast <char *> (sErrorMessage);

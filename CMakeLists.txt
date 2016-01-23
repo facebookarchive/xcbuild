@@ -21,7 +21,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/expat/expat/lib)
 include_directories(${CMAKE_BINARY_DIR}/ThirdParty/expat/expat)
 
+set(BUILD_tools OFF CACHE BOOL ".")
+set(BUILD_examples OFF CACHE BOOL ".")
+set(BUILD_tests OFF CACHE BOOL ".")
+set(BUILD_shared ON CACHE BOOL ".")
 add_subdirectory(ThirdParty/expat/expat)
+set_target_properties(expat PROPERTIES COMPILE_FLAGS "-Wno-writable-strings")
 
 find_library(CORE_FOUNDATION CoreFoundation)
 find_library(CORE_SERVICES CoreServices)

@@ -52,7 +52,7 @@ private:
     void process(Environment const &environment);
 
 private:
-    void error(unsigned line, std::string const &format, ...);
+    void error(unsigned line, std::string format, ...);
 };
 
 }

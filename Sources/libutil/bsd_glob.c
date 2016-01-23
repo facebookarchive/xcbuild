@@ -212,10 +212,6 @@ static void      qprintf(const char *, Char *);
 #define issetugid() 0
 #endif
 
-#ifndef HAVE_STRLCPY
-#define strlcpy strncpy
-#endif
-
 
 int
 glob(const char *pattern, int flags, int (*errfunc)(const char *, int),
@@ -1050,7 +1046,7 @@ g_opendir(Char *str, glob_t *pglob)
         char buf[PATH_MAX];
 
         if (!*str)
-                strlcpy(buf, ".", sizeof buf);
+                strncpy(buf, ".", sizeof buf);
         else {
                 if (g_Ctoc(str, buf, sizeof(buf)))
                         return(NULL);

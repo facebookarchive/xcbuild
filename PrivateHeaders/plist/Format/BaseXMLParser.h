@@ -59,7 +59,7 @@ protected:
     virtual void onCharacterData(std::string const &cdata, size_t depth);
 
 protected:
-    void error(std::string const &format, ...);
+    void error(std::string format, ...);
 
 private:
     static void XMLCALL StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts);

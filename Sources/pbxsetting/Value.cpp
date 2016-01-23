@@ -26,6 +26,7 @@ operator==(Entry const &rhs) const
         return *value == *rhs.value;
     } else {
         assert(false);
+        return false;
     }
 }
 
