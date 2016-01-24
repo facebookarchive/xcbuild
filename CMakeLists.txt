@@ -411,6 +411,7 @@ endfunction ()
 
 ADD_UNIT_GTEST(util FSUtil Tests/libutil/test_FSUtil.cpp)
 ADD_UNIT_GTEST(util Wildcard Tests/libutil/test_Wildcard.cpp)
+ADD_UNIT_GTEST(util Escape Tests/libutil/test_Escape.cpp)
 
 ADD_UNIT_GTEST(plist Boolean Tests/plist/test_Boolean.cpp)
 ADD_UNIT_GTEST(plist String Tests/plist/test_String.cpp)

@@ -14,19 +14,33 @@ using libutil::Escape;
 std::string Escape::
 Shell(std::string const &value)
 {
-    const std::string alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const std::string digits = "0123456789";
+    static std::string const *escaped = nullptr;
+    if (escaped == nullptr) {
+        std::string alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        std::string digits = "0123456789";
+        escaped = new std::string(alphabet + digits + "@%_-+=:,./");
+    }
 
-    if (value.find_first_not_of(alphabet + digits + "@%_-+=:,./") == std::string::npos) {
+    if (value.find_first_not_of(*escaped) == std::string::npos) {
         return value;
     } else {
-        std::string result = value;
+        std::string result;
+        result.reserve(value.size() + 4);
+        result += "'";
+
         std::string::size_type offset = 0;
-        while ((offset = result.find("'", offset)) != std::string::npos) {
-            result.replace(offset, 1, "'\"'\"'");
-            offset += 5;
+        std::string::size_type previous = 0;
+        while ((offset = value.find("'", offset)) != std::string::npos) {
+            result.append(value.data() + previous, offset - previous);
+            result += "'\\''";
+
+            offset += 1;
+            previous = offset;
         }
-        return "'" + result + "'";
+        result.append(value.data() + previous, value.size() - previous);
+
+        result += "'";
+        return result;
     }
 }
 
@@ -34,6 +48,8 @@ std::string Escape::
 Makefile(std::string const &value)
 {
     std::string result;
+    result.reserve(value.size());
+
     for (char c : value) {
         if (isspace(c) || c == '#' || c == '$' || c == '%' || c == ':') {
             result += '\\';
@@ -41,5 +57,6 @@ Makefile(std::string const &value)
 
         result += c;
     }
+
     return result;
 }
