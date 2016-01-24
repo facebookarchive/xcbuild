@@ -20,7 +20,6 @@ class Toolchain {
 public:
     typedef std::shared_ptr <Toolchain> shared_ptr;
     typedef std::vector <shared_ptr> vector;
-    typedef std::map <std::string, shared_ptr> map;
 
 private:
     std::weak_ptr<Manager> _manager;

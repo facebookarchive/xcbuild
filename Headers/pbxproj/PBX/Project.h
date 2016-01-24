@@ -18,7 +18,7 @@ private:
     std::string                        _projectFile;
     std::string                        _basePath;
     std::string                        _name;
-    Object::map                        _blueprints;
+    std::unordered_map<std::string, Object::shared_ptr> _blueprints;
 
 private:
     XC::ConfigurationList::shared_ptr  _buildConfigurationList;
@@ -91,10 +91,6 @@ protected:
     friend class pbxproj::Context;
     inline void cacheObject(Object::shared_ptr const &object)
     { _blueprints[object->blueprintIdentifier()] = object; }
-
-public:
-    inline Object::map const &blueprints() const
-    { return _blueprints; }
 
 public:
     inline FileReference::vector const &fileReferences() const

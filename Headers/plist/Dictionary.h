@@ -14,18 +14,14 @@
 #include <plist/Object.h>
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 namespace plist {
 
 class Dictionary : public Object {
 private:
-    typedef std::vector<std::string>                       KeyVector;
-    typedef std::map<std::string, std::unique_ptr<Object>> Map;
-
-private:
-    KeyVector _keys;
-    Map       _map;
+    std::vector<std::string>                                 _keys;
+    std::unordered_map<std::string, std::unique_ptr<Object>> _map;
 
 public:
     Dictionary()
@@ -80,14 +76,14 @@ public:
 
     inline Object const *value(std::string const &key) const
     {
-        Map::const_iterator i = _map.find(key);
-        return (i != _map.end() ? i->second.get() : nullptr);
+        auto it = _map.find(key);
+        return (it != _map.end() ? it->second.get() : nullptr);
     }
 
     inline Object *value(std::string const &key)
     {
-        Map::const_iterator i = _map.find(key);
-        return (i != _map.end() ? i->second.get() : nullptr);
+        auto it = _map.find(key);
+        return (it != _map.end() ? it->second.get() : nullptr);
     }
 
     template <typename T>
@@ -119,21 +115,21 @@ public:
 
     inline void remove(std::string const &key)
     {
-        Map::iterator I;
+        auto it = _map.find(key);;
 
-        if ((I = _map.find(key)) != _map.end()) {
-            _map.erase(I);
+        if (it != _map.end()) {
+            _map.erase(it);
             _keys.erase(std::find(_keys.begin(), _keys.end(), key));
         }
     }
 
 public:
-    inline KeyVector::const_iterator begin() const
+    inline std::vector<std::string>::const_iterator begin() const
     {
         return _keys.begin();
     }
 
-    inline KeyVector::const_iterator end() const
+    inline std::vector<std::string>::const_iterator end() const
     {
         return _keys.end();
     }
@@ -177,8 +173,8 @@ public:
         if (count() != obj->count())
             return false;
 
-        for (Map::const_iterator i = _map.begin(); i != _map.end(); ++i) {
-            if (!value(i->first)->equals(obj->value(i->first)))
+        for (auto it = _map.begin(); it != _map.end(); ++it) {
+            if (!value(it->first)->equals(obj->value(it->first)))
                 return false;
         }
 

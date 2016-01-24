@@ -18,7 +18,6 @@ class Object {
 public:
     typedef std::shared_ptr <Object> shared_ptr;
     typedef std::vector <shared_ptr> vector;
-    typedef std::map <std::string, shared_ptr> map;
 
 private:
     std::string _isa;
