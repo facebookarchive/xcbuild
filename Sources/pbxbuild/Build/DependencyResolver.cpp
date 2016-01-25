@@ -187,7 +187,7 @@ static void
 AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared_ptr const &target)
 {
     /* If there's no build action, this is a legacy context which always have implicit dependencies. */
-    if (context.buildAction != nullptr && context.buildAction->buildImplicitDependencies()) {
+    if (context.buildAction == nullptr || (context.buildAction != nullptr && context.buildAction->buildImplicitDependencies())) {
         AddImplicitDependencies(context, target);
     }
 
@@ -329,7 +329,7 @@ resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::s
             if (!targetName.empty() && target->name() != targetName) {
                 /* Building a specific target, and not this one. */
                 continue;
-            } else if (target != project->targets().front()) {
+            } else if (targetName.empty() && target != project->targets().front()) {
                 /* No specific target, build whatever the first target is. */
                 continue;
             }
