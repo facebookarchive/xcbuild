@@ -69,6 +69,8 @@ static void
 AppendCustomFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment, ext::optional<std::string> const &dialect)
 {
     std::vector<std::string> flagSettings;
+    flagSettings.push_back("WARNING_CFLAGS");
+    flagSettings.push_back("OPTIMIZATION_CFLAGS");
     if (DialectIsCPlusPlus(dialect)) {
         flagSettings.push_back("OTHER_CPLUSPLUSFLAGS");
     } else {
@@ -76,8 +78,6 @@ AppendCustomFlags(std::vector<std::string> *args, pbxsetting::Environment const 
     }
     flagSettings.push_back("OTHER_CFLAGS_" + environment.resolve("CURRENT_VARIANT"));
     flagSettings.push_back("PER_ARCH_CFLAGS_" + environment.resolve("CURRENT_ARCH"));
-    flagSettings.push_back("WARNING_CFLAGS");
-    flagSettings.push_back("OPTIMIZATION_CFLAGS");
 
     for (std::string const &flagSetting : flagSettings) {
         std::vector<std::string> flags = pbxsetting::Type::ParseList(environment.resolve(flagSetting));
@@ -236,9 +236,9 @@ resolveSource(
     size_t dialectOffset = arguments.size();
 
     arguments.insert(arguments.end(), tokens.arguments().begin(), tokens.arguments().end());
-    AppendCustomFlags(&arguments, env, fileType->GCCDialectName());
     Tool::CompilerCommon::AppendIncludePathFlags(&arguments, env, toolContext->searchPaths(), headermapInfo);
     AppendFrameworkPathFlags(&arguments, env, toolContext->searchPaths());
+    AppendCustomFlags(&arguments, env, fileType->GCCDialectName());
 
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(env.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
     std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");

@@ -37,13 +37,14 @@ AppendIncludePathFlags(std::vector<std::string> *args, pbxsetting::Environment c
         AppendCompoundFlags(args, "-I", true, { environment.resolve("CPP_HEADER_SYMLINKS_DIR") });
     }
 
-    std::vector<std::string> specialIncludePaths = {
-        environment.resolve("DERIVED_FILE_DIR"),
-        environment.resolve("DERIVED_FILE_DIR") + "/" + environment.resolve("arch"),
+    AppendCompoundFlags(args, "-I", true, {
         environment.resolve("BUILT_PRODUCTS_DIR") + "/include",
-    };
-    AppendCompoundFlags(args, "-I", true, specialIncludePaths);
+    });
     AppendCompoundFlags(args, "-I", true, searchPaths.userHeaderSearchPaths());
     AppendCompoundFlags(args, "-I", true, searchPaths.headerSearchPaths());
+    AppendCompoundFlags(args, "-I", true, {
+        environment.resolve("DERIVED_FILE_DIR") + "/" + environment.resolve("arch"),
+        environment.resolve("DERIVED_FILE_DIR"),
+    });
 }
 
