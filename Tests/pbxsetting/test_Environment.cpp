@@ -92,6 +92,19 @@ TEST(Environment, Inherited)
     EXPECT_EQ(inherited.resolve("OTHER_LDFLAGS"), "-ObjC -framework Security");
 }
 
+TEST(Environment, InheritedWithLevelInFront)
+{
+    Environment inherited;
+    inherited.insertBack(Level({ }), false);
+    inherited.insertBack(Level({
+        Setting::Parse("OTHER_LDFLAGS = $(inherited) -framework Security"),
+    }), false);
+    inherited.insertBack(Level({
+        Setting::Parse("OTHER_LDFLAGS = -ObjC"),
+    }), false);
+    EXPECT_EQ(inherited.resolve("OTHER_LDFLAGS"), "-ObjC -framework Security");
+}
+
 TEST(Environment, Operations)
 {
     Environment environment;

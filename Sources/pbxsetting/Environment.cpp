@@ -177,9 +177,10 @@ resolveInheritance(Condition const &condition, InheritanceContext const &context
 std::string Environment::
 resolveAssignment(Condition const &condition, std::string const &setting) const
 {
-    InheritanceContext context = { .valid = true, .setting = setting, .it = _levels.begin() };
+    InheritanceContext context = { .valid = true, .setting = setting };
 
-    for (Level const &level : _levels) {
+    for (context.it = _levels.begin(); context.it != _levels.end(); ++context.it) {
+        Level const &level = *context.it;
         auto result = level.get(setting, condition);
         if (result.first) {
             return resolveValue(condition, result.second, context);
