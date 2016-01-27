@@ -12,6 +12,8 @@
 #include <xcdriver/Options.h>
 #include <builtin/builtin.h>
 
+#include <unistd.h>
+
 using xcdriver::BuildAction;
 using xcdriver::Options;
 using libutil::FSUtil;

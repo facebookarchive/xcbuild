@@ -9,7 +9,7 @@
 
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/Condition.h>
-#include <libutil/base.h>
+#include <libutil/Base.h>
 
 using pbxsetting::Setting;
 using pbxsetting::Condition;
