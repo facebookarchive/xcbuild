@@ -23,37 +23,79 @@ BaseXMLParser::BaseXMLParser() :
 bool BaseXMLParser::
 parse(std::vector<uint8_t> const &contents)
 {
-    _depth         = 0;
-    _parser        = ::XML_ParserCreate(nullptr);
+    _depth  = 0;
+    _parser = ::xmlReaderForMemory(reinterpret_cast<char const *>(contents.data()), contents.size(), nullptr, nullptr, XML_PARSE_NOENT | XML_PARSE_NONET);
     if (_parser == nullptr) {
         return false;
     }
 
-    ::XML_SetUserData(_parser, this);
-    ::XML_SetStartElementHandler(_parser, &BaseXMLParser::StartElementHandler);
-    ::XML_SetEndElementHandler(_parser, &BaseXMLParser::EndElementHandler);
-    ::XML_SetCharacterDataHandler(_parser, &BaseXMLParser::CharacterDataHandler);
-
     onBeginParse();
 
-    XML_Status status = ::XML_Parse(_parser, reinterpret_cast<char const *>(contents.data()), contents.size(), true);
-    ::XML_ParserFree(_parser);
+    int ret = xmlTextReaderRead(_parser);
+    while (ret == 1) {
+        _depth = xmlTextReaderDepth(_parser);
 
-    _parser        = nullptr;
-    _depth         = 0;
+        int type = xmlTextReaderNodeType(_parser);
+        if (type == 1 /* Start element. */) {
+            std::unordered_map<std::string, std::string> attrs;
 
-    onEndParse(status == XML_STATUS_OK);
+            ret = xmlTextReaderMoveToFirstAttribute(_parser);
+            while (ret == 1) {
+                /* Store attribute. */
+                xmlChar const *name = xmlTextReaderConstName(_parser);
+                xmlChar const *value = xmlTextReaderConstValue(_parser);
+                attrs[std::string(reinterpret_cast<char const *>(name))] = std::string(reinterpret_cast<char const *>(value));
 
-    return (status == XML_STATUS_OK);
-}
+                ret = xmlTextReaderMoveToNextAttribute(_parser);
+            }
 
-bool BaseXMLParser::
-stop()
-{
-    if (_parser == nullptr)
-        return false;
+            /* Handle error. */
+            if (ret != 0) {
+                break;
+            }
 
-    return ::XML_StopParser(_parser, XML_FALSE) == XML_STATUS_OK;
+            ret = xmlTextReaderMoveToElement(_parser);
+            if (ret != 0 && ret != 1) {
+                break;
+            }
+
+            /* Check for empty element. Before onStart in case of error. */
+            ret = xmlTextReaderIsEmptyElement(_parser);
+            if (ret != 0 && ret != 1) {
+                break;
+            }
+
+            xmlChar const *name = xmlTextReaderConstName(_parser);
+            onStartElement(std::string(reinterpret_cast<char const *>(name)), attrs, _depth);
+
+            if (ret == 1) {
+                /* Empty element. */
+                onEndElement(std::string(reinterpret_cast<char const *>(name)), _depth);
+            }
+        } else if (type == 15 /* End element. */) {
+            xmlChar const *name = xmlTextReaderConstName(_parser);
+            onEndElement(std::string(reinterpret_cast<char const *>(name)), _depth);
+        } else if (type == 3 /* Text. */) {
+            xmlChar const *value = xmlTextReaderConstValue(_parser);
+            onCharacterData(std::string(reinterpret_cast<char const *>(value)), _depth);
+        }
+
+        /* Handle error. */
+        if (_parser == nullptr) {
+            ret = -1;
+            break;
+        }
+
+        ret = xmlTextReaderRead(_parser);
+    }
+
+    ::xmlFreeTextReader(_parser);
+    _parser = nullptr;
+
+    _depth = 0;
+    onEndParse(ret == 0);
+
+    return (ret == 0);
 }
 
 void BaseXMLParser::
@@ -95,41 +137,14 @@ error(std::string format, ...)
     }
     va_end(ap);
 
-    _line = ::XML_GetCurrentLineNumber(_parser);
-    _column = ::XML_GetCurrentColumnNumber(_parser);
+    _line = ::xmlTextReaderGetParserLineNumber(_parser);
+    _column = ::xmlTextReaderGetParserColumnNumber(_parser);
     _error = std::string(buf);
 
     if (buf != sErrorMessage) {
         ::free(buf);
     }
 
-    stop();
-}
-
-void XMLCALL BaseXMLParser::
-StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts)
-{
-    std::unordered_map<std::string, std::string> attrs;
-    auto       self = reinterpret_cast <BaseXMLParser *> (userData);
-
-    for (const XML_Char **attsp = atts; *attsp != nullptr; attsp += 2) {
-        attrs[attsp[0]] = attsp[1];
-    }
-    self->onStartElement(name, attrs, self->_depth);
-    self->_depth++;
-}
-
-void XMLCALL BaseXMLParser::
-EndElementHandler(void *userData, const XML_Char *name)
-{
-    auto self = reinterpret_cast <BaseXMLParser *> (userData);
-    self->_depth--;
-    self->onEndElement(name, self->_depth);
-}
-
-void XMLCALL BaseXMLParser::
-CharacterDataHandler(void *userData, const XML_Char *s, int len)
-{
-    auto self = reinterpret_cast <BaseXMLParser *> (userData);
-    self->onCharacterData(std::string(s, len), self->_depth);
+    ::xmlFreeTextReader(_parser);
+    _parser = nullptr;
 }

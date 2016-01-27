@@ -18,18 +18,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 
-include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/expat/expat/lib)
-include_directories(${CMAKE_BINARY_DIR}/ThirdParty/expat/expat)
-
-set(BUILD_tools OFF CACHE BOOL ".")
-set(BUILD_examples OFF CACHE BOOL ".")
-set(BUILD_tests OFF CACHE BOOL ".")
-set(BUILD_shared ON CACHE BOOL ".")
-add_subdirectory(ThirdParty/expat/expat)
-set_target_properties(expat PROPERTIES COMPILE_FLAGS "-Wno-writable-strings")
-
 find_library(CORE_FOUNDATION CoreFoundation)
 find_library(CORE_SERVICES CoreServices)
+
+find_package(libxml2 REQUIRED)
+include_directories(${LIBXML2_INCLUDE_DIR})
 
 include_directories(Headers)
 include_directories(PrivateHeaders)
@@ -324,7 +317,7 @@ add_library(ninja SHARED ${libninja_SOURCES})
 target_link_libraries(ninja)
 
 add_library(plist SHARED ${libplist_SOURCES})
-target_link_libraries(plist expat)
+target_link_libraries(plist xml2)
 
 add_library(util SHARED ${libutil_SOURCES})
 target_link_libraries(util)

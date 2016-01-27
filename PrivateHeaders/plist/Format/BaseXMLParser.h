@@ -11,24 +11,25 @@
 #define __plist_Format_BaseXMLParser_h
 
 #include <plist/Base.h>
-#include <expat.h>
 
 #include <vector>
 #include <string>
 #include <unordered_map>
+
+#include <libxml/xmlreader.h>
 
 namespace plist {
 namespace Format {
 
 class BaseXMLParser {
 private:
-    ::XML_Parser   _parser;
-    size_t         _depth;
+    ::xmlTextReaderPtr _parser;
+    size_t             _depth;
 
 private:
-    size_t         _line;
-    size_t         _column;
-    std::string    _error;
+    size_t             _line;
+    size_t             _column;
+    std::string        _error;
 
 public:
     BaseXMLParser();
@@ -43,7 +44,6 @@ public:
 
 protected:
     bool parse(std::vector<uint8_t> const &contents);
-    bool stop();
 
 protected:
     inline size_t depth() const
@@ -60,11 +60,6 @@ protected:
 
 protected:
     void error(std::string format, ...);
-
-private:
-    static void XMLCALL StartElementHandler(void *userData, const XML_Char *name, const XML_Char **atts);
-    static void XMLCALL EndElementHandler(void *userData, const XML_Char *name); 
-    static void XMLCALL CharacterDataHandler(void *userData, const XML_Char *s, int len); 
 };
 
 }

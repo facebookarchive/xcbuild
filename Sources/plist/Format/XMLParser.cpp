@@ -74,7 +74,7 @@ onStartElement(std::string const &name, std::unordered_map<std::string, std::str
         }
         return;
     }
-    
+
     //
     // If we have a root, and depth == 1 there's an extra
     // entry after the first element, bail out.
@@ -85,7 +85,6 @@ onStartElement(std::string const &name, std::unordered_map<std::string, std::str
     }
 
     if (!beginObject(name)) {
-        stop();
         return;
     }
 }
@@ -94,7 +93,7 @@ void XMLParser::
 onEndElement(std::string const &name, size_t)
 {
     if (!endObject(name)) {
-        stop();
+        error("unexpected end element: " + name);
     }
 }
 
@@ -104,8 +103,7 @@ onCharacterData(std::string const &cdata, size_t)
     if (!isExpectingCDATA()) {
         for (size_t n = 0; n < cdata.size(); n++) {
             if (!isspace(cdata[n])) {
-                error("unexpected cdata");
-                stop();
+                error("unexpected cdata: " + cdata);
             }
         }
         return;
@@ -159,7 +157,7 @@ beginObject(std::string const &name)
                         "in dictionary definition");
                 return false;
             }
-            
+
             return beginKey();
         } else if (isExpectingKey()) {
             error("unexpected element '%s' when a key "
@@ -346,9 +344,16 @@ beginInteger()
 bool XMLParser::
 endInteger()
 {
-    CastTo <Integer> (_state.current)->setValue(std::stoi(_cdata));
-    pop();
-    return true;
+    char *end = NULL;
+    long long integer = ::strtoll(_cdata.c_str(), &end, 0);
+    if (end != _cdata.c_str()) {
+        CastTo <Integer> (_state.current)->setValue(integer);
+        pop();
+        return true;
+    } else {
+        pop();
+        return false;
+    }
 }
 
 bool XMLParser::
@@ -362,9 +367,16 @@ beginReal()
 bool XMLParser::
 endReal()
 {
-    CastTo <Real> (_state.current)->setValue(std::stod(_cdata));
-    pop();
-    return true;
+    char *end = NULL;
+    double real = ::strtod(_cdata.c_str(), &end);
+    if (end != _cdata.c_str()) {
+        CastTo <Real> (_state.current)->setValue(real);
+        pop();
+        return true;
+    } else {
+        pop();
+        return false;
+    }
 }
 
 bool XMLParser::
