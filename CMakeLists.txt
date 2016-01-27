@@ -10,6 +10,7 @@
 project(pbxbuild C CXX)
 
 cmake_minimum_required(VERSION 2.8)
+set(CMAKE_MACOSX_RPATH 1)
 
 set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
