@@ -15,7 +15,7 @@
     <th colspan="3">Performance</th>
   </tr>
   <tr><td>:rocket:</td><td>Blazing fast incremential builds</td><th rowspan="3"></th><th rowspan="3"><code>xcodebuild</code></th><th rowspan="3">xcbuild + Ninja</th></tr>
-  <tr><td>:book:</td><td>Documents of the Xcode build process</td></tr>
+  <tr><td>:book:</td><td>Documents the Xcode build process</td></tr>
   <tr><td>:link:</td><td>Builds Xcode projects and workspaces</td></tr>
   <tr><td>:hatching_chick:</td><td>Supports Swift apps and frameworks</td><th rowspan="3">Clean Build</th><td rowspan="3">30.103s</td><td rowspan="3">25.122s</td></tr>
   <tr><td>:sparkles:</td><td>Tools and libraries for Xcode projects</td></tr>
