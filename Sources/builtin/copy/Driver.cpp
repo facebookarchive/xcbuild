@@ -43,6 +43,12 @@ CopyPath(std::string const &inputPath, std::string const &outputPath)
         return false;
     }
 
+    /* Should preserve permissions but make writable. */
+    Subprocess chmod;
+    if (!chmod.execute("/bin/chmod", { "-R", "+w", inputPath }) || chmod.exitcode() != 0) {
+        return false;
+    }
+
     return true;
 }
 
