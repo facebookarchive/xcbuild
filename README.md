@@ -51,7 +51,7 @@ Build output will be in the `build` directory. Run xcbuild with `./build/xcbuild
 The command line options are compatible with [xcodebuild](https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man1/xcodebuild.1.html).
 
 ```
-xcbuild -workspace Example.xcworkspace -scheme Release
+xcbuild -workspace Example.xcworkspace -scheme Example
 ```
 
 ### Using Ninja (or llbuild)
