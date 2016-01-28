@@ -48,23 +48,32 @@ TEST(Boolean, Coerce)
     auto b3 = Boolean::Coerce(s3.get());
     EXPECT_TRUE(b3->value());
 
-    auto s4 = String::New("trUE");
+    /* Project files use 1 for true. */
+    auto s4 = String::New("1");
     auto b4 = Boolean::Coerce(s4.get());
     EXPECT_TRUE(b4->value());
 
-    auto s5 = String::New("NO");
+    auto s5 = String::New("trUE");
     auto b5 = Boolean::Coerce(s5.get());
-    EXPECT_FALSE(b5->value());
+    EXPECT_TRUE(b5->value());
 
-    auto s6 = String::New("false");
+    auto s6 = String::New("NO");
     auto b6 = Boolean::Coerce(s6.get());
     EXPECT_FALSE(b6->value());
 
-    auto s7 = String::New("");
+    auto s7 = String::New("false");
     auto b7 = Boolean::Coerce(s7.get());
     EXPECT_FALSE(b7->value());
 
-    auto a8 = Dictionary::New();
-    auto b8 = Boolean::Coerce(a8.get());
-    EXPECT_EQ(b8, nullptr);
+    auto s8 = String::New("0");
+    auto b8 = Boolean::Coerce(s8.get());
+    EXPECT_FALSE(b8->value());
+
+    auto s9 = String::New("");
+    auto b9 = Boolean::Coerce(s9.get());
+    EXPECT_FALSE(b9->value());
+
+    auto a10 = Dictionary::New();
+    auto b10 = Boolean::Coerce(a10.get());
+    EXPECT_EQ(b10, nullptr);
 }

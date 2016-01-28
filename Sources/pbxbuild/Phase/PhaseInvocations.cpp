@@ -40,6 +40,7 @@ Phase::PhaseInvocations Phase::PhaseInvocations::
 Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_ptr const &target)
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    pbxsetting::Environment const &environment = targetEnvironment.environment();
 
     /* Create the tool context for building. */
     Tool::SearchPaths searchPaths = Tool::SearchPaths::Create(
@@ -55,10 +56,17 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
     Phase::Context phaseContext(toolContext);
 
     /* Filter build phases to ones appropriate for this target. */
+    bool deploymentPostprocessing = pbxsetting::Type::ParseBoolean(environment.resolve("DEPLOYMENT_POSTPROCESSING"));
     std::vector<pbxproj::PBX::BuildPhase::shared_ptr> buildPhases;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
         // TODO(grp): Check buildActionMask against buildContext.action.
-        // TODO(grp): Check runOnlyForDeploymentPostprocessing.
+
+        fprintf(stderr, "run only %d and is %d\n", buildPhase->runOnlyForDeploymentPostprocessing(), deploymentPostprocessing);
+        if (buildPhase->runOnlyForDeploymentPostprocessing() && !deploymentPostprocessing) {
+            /* Requires deployment postprocessing, but not doing that. */
+            continue;
+        }
+
         buildPhases.push_back(buildPhase);
     }
 

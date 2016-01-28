@@ -49,7 +49,10 @@ Coerce(Object const *obj)
     if (Boolean const *boolean = CastTo<Boolean>(obj)) {
         return boolean->copy();
     } else if (String const *string = CastTo<String>(obj)) {
-        bool value = (strcasecmp(string->value().c_str(), "yes") == 0 || strcasecmp(string->value().c_str(), "true") == 0);
+        bool value = (
+            strcasecmp(string->value().c_str(), "yes") == 0 ||
+            strcasecmp(string->value().c_str(), "true") == 0 ||
+            string->value() == "1");
         return Boolean::New(value);
     } else if (Integer const *integer = CastTo<Integer>(obj)) {
         return Boolean::New(integer->value() != 0);
