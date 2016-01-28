@@ -64,8 +64,8 @@ ResolveContainerItemProxy(Build::Environment const &buildEnvironment, Build::Con
 }
 
 struct DependenciesContext {
-    Build::Environment buildEnvironment;
-    Build::Context context;
+    Build::Environment const *buildEnvironment;
+    Build::Context     const *buildContext;
     DirectedGraph<pbxproj::PBX::Target::shared_ptr> *graph;
     BuildAction::shared_ptr buildAction;
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> *positional;
@@ -93,7 +93,7 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
                     /* A implicit dependency referencing the product of another target through a direct reference to that target's product. */
                     pbxproj::PBX::ReferenceProxy::shared_ptr proxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (file->fileRef());
 
-                    pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, proxy->remoteRef(), true);
+                    pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(*context.buildEnvironment, *context.buildContext, target, proxy->remoteRef(), true);
                     if (proxiedTarget != nullptr) {
                         dependencies.insert(proxiedTarget);
 
@@ -160,7 +160,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
             AddDependencies(context, dependency->target());
         } else if (dependency->targetProxy() != nullptr) {
             /* A dependency referencing a target in another project. Get that target. */
-            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(context.buildEnvironment, context.context, target, dependency->targetProxy(), false);
+            pbxproj::PBX::Target::shared_ptr proxiedTarget = ResolveContainerItemProxy(*context.buildEnvironment, *context.buildContext, target, dependency->targetProxy(), false);
             if (proxiedTarget != nullptr) {
                 dependencies.insert(proxiedTarget);
 
@@ -287,8 +287,8 @@ resolveSchemeDependencies(Build::Context const &context) const
         }
 
         DependenciesContext dependenciesContext = {
-            .buildEnvironment = _buildEnvironment,
-            .context = context,
+            .buildEnvironment = &_buildEnvironment,
+            .buildContext     = &context,
             .graph = &graph,
             .buildAction = buildAction,
             .positional = &positional,
@@ -336,8 +336,8 @@ resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::s
         }
 
         DependenciesContext dependenciesContext = {
-            .buildEnvironment = _buildEnvironment,
-            .context = context,
+            .buildEnvironment = &_buildEnvironment,
+            .buildContext     = &context,
             .graph = &graph,
             .buildAction = nullptr,
             .positional = &positional,
