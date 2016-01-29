@@ -61,7 +61,6 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
         // TODO(grp): Check buildActionMask against buildContext.action.
 
-        fprintf(stderr, "run only %d and is %d\n", buildPhase->runOnlyForDeploymentPostprocessing(), deploymentPostprocessing);
         if (buildPhase->runOnlyForDeploymentPostprocessing() && !deploymentPostprocessing) {
             /* Requires deployment postprocessing, but not doing that. */
             continue;
