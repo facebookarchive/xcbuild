@@ -4,3 +4,6 @@
 # Build
 /build/
 
+# YCM
+.ycm_extra_conf.pyc
+
