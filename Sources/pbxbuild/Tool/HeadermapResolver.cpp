@@ -40,6 +40,10 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
         }
 
         for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+            if (buildFile->fileRef() == nullptr) {
+                continue;
+            }
+
             std::string filePath = environment.expand(buildFile->fileRef()->resolve());
             std::string fullPath = FSUtil::GetDirectoryName(filePath);
             if (allHeaderSearchPaths.insert(fullPath).second) {

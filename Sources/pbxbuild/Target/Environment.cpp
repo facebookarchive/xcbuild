@@ -31,6 +31,10 @@ BuildFileDisambiguation(pbxproj::PBX::Target::shared_ptr const &target)
         }
 
         for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+            if (buildFile->fileRef() == nullptr) {
+                continue;
+            }
+
             std::string name = FSUtil::GetBaseNameWithoutExtension(buildFile->fileRef()->name());
 
             /* Use a case-insensitive key to detect conflicts. */
