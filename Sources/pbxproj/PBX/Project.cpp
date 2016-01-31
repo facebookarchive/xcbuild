@@ -31,13 +31,19 @@ settings(void) const
     std::vector<pbxsetting::Setting> settings = {
         pbxsetting::Setting::Create("PROJECT", _name),
         pbxsetting::Setting::Create("PROJECT_NAME", _name),
-        pbxsetting::Setting::Create("PROJECT_DIR", _basePath),
+        pbxsetting::Setting::Create("PROJECT_DIR", sourceRoot()),
         pbxsetting::Setting::Create("PROJECT_FILE_PATH", _projectFile),
-        pbxsetting::Setting::Create("SRCROOT", _basePath),
+        pbxsetting::Setting::Create("SRCROOT", sourceRoot()),
         pbxsetting::Setting::Create("DEVELOPMENT_LANGUAGE", (!_developmentRegion.empty() ? _developmentRegion : "English")),
     };
 
     return pbxsetting::Level(settings);
+}
+
+std::string Project::
+sourceRoot() const
+{
+    return FSUtil::NormalizePath(_basePath + "/" + _projectDirPath);
 }
 
 bool Project::

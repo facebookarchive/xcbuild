@@ -395,7 +395,9 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
 
     auto buildRules = std::make_shared<Target::BuildRules>(Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target));
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
-    std::string workingDirectory = target->project()->basePath();
+
+    /* Use the source root, which could have been modified by project options, rather than the raw project path. */
+    std::string workingDirectory = target->project()->sourceRoot();
 
     Target::Environment te = Target::Environment();
     te._sdk = sdk;

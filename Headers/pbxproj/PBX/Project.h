@@ -110,6 +110,9 @@ public:
     inline std::string const &basePath() const
     { return _basePath; }
 
+public:
+    std::string sourceRoot() const;
+
 protected:
     friend class pbxproj::Context;
     inline void cacheObject(Object::shared_ptr const &object)
