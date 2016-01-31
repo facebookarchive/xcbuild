@@ -59,8 +59,6 @@ resolve(
     std::unordered_map<std::string, std::string> buildSettingValues = environment.computeValues(pbxsetting::Condition::Empty());
     environmentVariables.insert(buildSettingValues.begin(), buildSettingValues.end());
 
-    bool showEnvironmentInLog = false;
-
     Tool::Invocation invocation;
     invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
     invocation.arguments() = tokens.arguments();

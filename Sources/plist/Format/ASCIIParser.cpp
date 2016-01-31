@@ -135,9 +135,7 @@ push(ValueState state, Object *container, String *key)
 bool ASCIIParser::
 pop()
 {
-    Object *container;
-    String *key;
-    int     count = _stateStack.size();
+    int count = _stateStack.size();
 
     if (count == 0) {
         if (_state == ValueState::Init)

@@ -296,8 +296,6 @@ resolveBuildFiles(
     std::string const &outputDirectory,
     std::string const &fallbackToolIdentifier)
 {
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
     for (std::vector<Phase::File> const &files : groups) {
         assert(!files.empty());
         Phase::File const &first = files.front();

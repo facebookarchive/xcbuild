@@ -33,16 +33,6 @@ parse(std::vector<uint8_t> const &contents)
     return _root;
 }
 
-static inline bool
-IsNumber(std::string const &s)
-{
-    for (size_t n = 0; n < s.length(); n++) {
-        if (!isdigit(s[n]))
-            return false;
-    }
-    return true;
-}
-
 void SimpleXMLParser::
 onBeginParse()
 {

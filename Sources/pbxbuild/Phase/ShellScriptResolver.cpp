@@ -34,7 +34,6 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         return false;
     }
 
-    std::string const &workingDirectory = phaseEnvironment.targetEnvironment().workingDirectory();
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
 
     scriptResolver->resolve(&phaseContext->toolContext(), environment, _buildPhase);

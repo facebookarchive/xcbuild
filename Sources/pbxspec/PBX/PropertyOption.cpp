@@ -14,9 +14,9 @@ using pbxspec::PBX::PropertyOption;
 PropertyOption::
 PropertyOption() :
     _additionalLinkerArgs(nullptr),
-    _values              (nullptr),
-    _allowedValues       (nullptr),
     _defaultValue        (nullptr),
+    _allowedValues       (nullptr),
+    _values              (nullptr),
     _commandLineArgs     (nullptr)
 {
 }

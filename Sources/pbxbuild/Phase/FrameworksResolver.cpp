@@ -38,7 +38,6 @@ Phase::FrameworksResolver::
 bool Phase::FrameworksResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
 
     Tool::CompilationInfo const &compilationInfo = phaseContext->toolContext().compilationInfo();

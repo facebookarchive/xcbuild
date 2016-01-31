@@ -29,7 +29,7 @@ _copy() const
 std::unique_ptr<Null> Null::
 Coerce(Object const *obj)
 {
-    if (Null const *null = CastTo<Null>(null)) {
+    if (Null const *null = CastTo<Null>(obj)) {
         return null->copy();
     }
 

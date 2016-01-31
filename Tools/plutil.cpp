@@ -569,7 +569,7 @@ Modify(Options const &options, std::string const &file, std::unique_ptr<plist::O
                     currentObject = dict->value(key);
                 } else if (plist::Array *array = plist::CastTo<plist::Array>(currentObject)) {
                     uint64_t index = std::stoull(key.c_str(), NULL, 0);
-                    currentObject = dict->value(index);
+                    currentObject = array->value(index);
                 }
             } else {
                 /* Final key path: perform the action. */

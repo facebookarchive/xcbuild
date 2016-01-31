@@ -118,7 +118,6 @@ bool Phase::SwiftResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext) const
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
     /*

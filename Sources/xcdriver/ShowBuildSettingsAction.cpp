@@ -75,7 +75,7 @@ Run(Options const &options)
         }
 
         pbxsetting::Environment const &environment = targetEnvironment->environment();
-        std::unordered_map<std::string, std::string> values = targetEnvironment->environment().computeValues(pbxsetting::Condition::Empty());
+        std::unordered_map<std::string, std::string> values = environment.computeValues(pbxsetting::Condition::Empty());
         std::map<std::string, std::string> orderedValues = std::map<std::string, std::string>(values.begin(), values.end());
 
         printf("Build settings for action %s and target %s:\n", buildContext->action().c_str(), target->name().c_str());
