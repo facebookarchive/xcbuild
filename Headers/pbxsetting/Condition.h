@@ -27,7 +27,7 @@ public:
     ~Condition();
 
 public:
-    friend class std::hash<Condition>;
+    friend struct std::hash<Condition>;
 
 public:
     std::unordered_map<std::string, std::string> const &

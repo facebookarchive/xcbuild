@@ -14,7 +14,7 @@
 
 namespace libutil {
 
-struct Options {
+class Options {
 private:
     Options();
     ~Options();
