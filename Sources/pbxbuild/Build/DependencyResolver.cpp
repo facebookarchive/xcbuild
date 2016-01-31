@@ -299,9 +299,9 @@ resolveSchemeDependencies(Build::Context const &context) const
 
 #if DEPENDENCY_RESOLVER_LOGGING
     fprintf(stderr, "debug: scheme-based target ordering\n");
-    std::pair<bool, std::vector<pbxproj::PBX::Target::shared_ptr>> result = graph.ordered();
-    if (result.first) {
-        for (pbxproj::PBX::Target::shared_ptr const &target : result.second) {
+    ext::optional<std::vector<pbxproj::PBX::Target::shared_ptr>> result = graph.ordered();
+    if (result) {
+        for (pbxproj::PBX::Target::shared_ptr const &target : *result) {
             fprintf(stderr, "debug: ordered target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
         }
     }
@@ -348,9 +348,9 @@ resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::s
 
 #if DEPENDENCY_RESOLVER_LOGGING
     fprintf(stderr, "debug: legacy target ordering\n");
-    std::pair<bool, std::vector<pbxproj::PBX::Target::shared_ptr>> result = graph.ordered();
-    if (result.first) {
-        for (pbxproj::PBX::Target::shared_ptr const &target : result.second) {
+    ext::optional<std::vector<pbxproj::PBX::Target::shared_ptr>> result = graph.ordered();
+    if (result) {
+        for (pbxproj::PBX::Target::shared_ptr const &target : *result) {
             fprintf(stderr, "debug: ordered target %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str());
         }
     }
