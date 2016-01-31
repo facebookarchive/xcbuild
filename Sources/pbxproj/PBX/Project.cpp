@@ -18,7 +18,8 @@ using pbxproj::PBX::Project;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
-Project::Project() :
+Project::
+Project() :
     Object                 (Isa()),
     _hasScannedForEncodings(false)
 {
@@ -61,6 +62,7 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto PRG  = context.indirect <Group> (&unpack, "productRefGroup", &PRGID);
     auto PDP  = unpack.cast <plist::String> ("projectDirPath");
     auto PR   = unpack.cast <plist::String> ("projectRoot");
+    auto PRs  = unpack.cast <plist::Array> ("projectReferences");
     auto Ts   = unpack.cast <plist::Array> ("targets");
 
     if (!unpack.complete(check)) {
@@ -115,6 +117,18 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
 
     if (PR != nullptr) {
         _projectRoot = PR->value();
+    }
+
+    if (PRs != nullptr) {
+        for (size_t n = 0; n < PRs->count(); n++) {
+            if (auto PR = plist::CastTo<plist::Dictionary>(PRs->value(n))) {
+                ProjectReference projectReference;
+                if (!projectReference.parse(context, PR)) {
+                    return false;
+                }
+                _projectReferences.push_back(projectReference);
+            }
+        }
     }
 
     if (Ts != nullptr) {
@@ -279,3 +293,43 @@ Open(std::string const &path)
 
     return project;
 }
+
+Project::ProjectReference::
+ProjectReference()
+{
+}
+
+bool Project::ProjectReference::
+parse(Context &context, plist::Dictionary const *dict)
+{
+    std::unordered_set<std::string> seen;
+
+    auto unpack = plist::Keys::Unpack("ProjectReference", dict, &seen);
+
+    std::string PGID;
+    std::string PRID;
+
+    auto PG = context.indirect <Group> (&unpack, "ProductGroup", &PGID);
+    auto PR = context.indirect <FileReference> (&unpack, "ProjectRef", &PRID);
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errors().c_str());
+    }
+
+    if (PG != nullptr) {
+        _productGroup = context.parseObject(context.groups, PGID, PG);
+        if (_productGroup == nullptr) {
+            return false;
+        }
+    }
+
+    if (PR != nullptr) {
+        _projectReference = context.parseObject(context.fileReferences, PRID, PR);
+        if (_projectReference == nullptr) {
+            return false;
+        }
+    }
+
+    return true;
+}
+

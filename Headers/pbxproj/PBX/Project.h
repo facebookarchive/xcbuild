@@ -11,6 +11,26 @@ namespace pbxproj { namespace PBX {
 
 class Project : public Object {
 public:
+    class ProjectReference {
+    private:
+        Group::shared_ptr         _productGroup;
+        FileReference::shared_ptr _projectReference;
+
+    public:
+        ProjectReference();
+
+    public:
+        inline Group::shared_ptr const &productGroup() const
+        { return _productGroup; }
+        inline FileReference::shared_ptr const &projectReference() const
+        { return _projectReference; }
+
+    protected:
+        friend class pbxproj::PBX::Project;
+        bool parse(Context &context, plist::Dictionary const *dict);
+    };
+
+public:
     typedef std::shared_ptr <Project> shared_ptr;
     typedef std::vector <shared_ptr> vector;
 
@@ -30,6 +50,7 @@ private:
     Group::shared_ptr                  _productRefGroup;
     std::string                        _projectDirPath;
     std::string                        _projectRoot;
+    std::vector<ProjectReference>      _projectReferences;
     Target::vector                     _targets;
     FileReference::vector              _fileReferences;
 
@@ -74,9 +95,11 @@ public:
     { return _projectRoot; }
 
 public:
+    inline std::vector<ProjectReference> const &projectReferences() const
+    { return _projectReferences; }
+
+public:
     inline Target::vector const &targets() const
-    { return _targets; }
-    inline Target::vector &targets()
     { return _targets; }
 
 public:
