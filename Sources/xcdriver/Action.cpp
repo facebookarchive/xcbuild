@@ -138,6 +138,11 @@ CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &wor
                 schemeGroup = schemeGroup_;
             }
         }
+
+        if (scheme == nullptr || schemeGroup == nullptr) {
+            fprintf(stderr, "error: unable to find scheme '%s'\n", options.scheme().c_str());
+            return ext::nullopt;
+        }
     }
 
     std::string configuration = options.configuration();
