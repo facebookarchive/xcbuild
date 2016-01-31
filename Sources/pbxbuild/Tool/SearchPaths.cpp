@@ -35,7 +35,12 @@ AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &envir
         std::string const usr    = "/usr";
         if ((path.size() >= system.size() && path.compare(0, system.size(), system) == 0) ||
             (path.size() >=    usr.size() && path.compare(0,    usr.size(),    usr) == 0)) {
-            path = environment.resolve("SDKROOT") + "/" + path;
+            std::string sdkPath = FSUtil::NormalizePath(environment.resolve("SDKROOT") + path);
+
+            // TODO(grp): Testing if the directory exists seems fragile.
+            if (FSUtil::TestForDirectory(sdkPath)) {
+                path = sdkPath;
+            }
         }
 
         std::string recursive = "**";
