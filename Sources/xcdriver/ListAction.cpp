@@ -28,43 +28,48 @@ ListAction::
 int ListAction::
 Run(Options const &options)
 {
-    ext::optional<pbxbuild::WorkspaceContext> context = Action::CreateWorkspace(options);
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default();
+    if (!buildEnvironment) {
+        fprintf(stderr, "error: couldn't create build environment\n");
+        return -1;
+    }
+
+    ext::optional<pbxbuild::WorkspaceContext> context = Action::CreateWorkspace(*buildEnvironment, options);
     if (!context) {
         return -1;
     }
 
+    /* Collect all schemes in the workspace. */
+    std::vector<xcscheme::XC::Scheme::shared_ptr> schemes;
+    for (xcscheme::SchemeGroup::shared_ptr const &schemeGroup : context->schemeGroups()) {
+        schemes.insert(schemes.end(), schemeGroup->schemes().begin(), schemeGroup->schemes().end());
+    }
+
+    std::sort(schemes.begin(), schemes.end(), [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool {
+        return ::strcasecmp(a->name().c_str(), b->name().c_str()) < 0;
+    });
+
+    auto I = std::unique(schemes.begin(), schemes.end(), [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool {
+        return (a->path() == b->path());
+    });
+    schemes.resize(std::distance(schemes.begin(), I));
+
     if (context->workspace() != nullptr) {
         xcworkspace::XC::Workspace::shared_ptr const &workspace = context->workspace();
-
-        /* Collect all schemes in the workspace. */
-        std::vector<xcscheme::XC::Scheme::shared_ptr> schemes;
-        for (xcscheme::SchemeGroup::shared_ptr const &schemeGroup : context->schemeGroups()) {
-            schemes.insert(schemes.end(), schemeGroup->schemes().begin(), schemeGroup->schemes().end());
-        }
 
         printf("Information about workspace \"%s\":\n", workspace->name().c_str());
 
         if (schemes.empty()) {
             printf("\n%4sThis workspace contains no scheme.\n", "");
         } else {
-            std::sort(schemes.begin(), schemes.end(), [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool {
-                return ::strcasecmp(a->name().c_str(), b->name().c_str()) < 0;
-            });
-
-            auto I = std::unique(schemes.begin(), schemes.end(), [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool {
-                return (a->path() == b->path());
-            });
-            schemes.resize(std::distance(schemes.begin(), I));
-
             printf("%4sSchemes:\n", "");
             for (auto scheme : schemes) {
                 printf("%8s%s\n", "", scheme->name().c_str());
             }
             printf("\n");
         }
-    } else {
-        // TODO(grp): Assume there is always one project. There should be more, when nested projects are preloaded.
-        pbxproj::PBX::Project::shared_ptr const &project = context->projects().begin()->second;
+    } else if (context->project() != nullptr) {
+        pbxproj::PBX::Project::shared_ptr const &project = context->project();
 
         printf("Information about project \"%s\":\n", project->name().c_str());
 
@@ -89,15 +94,14 @@ Run(Options const &options)
         }
         printf("\n");
 
-        xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
-        if (!group->schemes().empty()) {
+        if (schemes.empty()) {
+            printf("\n%4sThis project contains no scheme.\n", "");
+        } else {
             printf("%4sSchemes:\n", "");
-
-            for (auto scheme : group->schemes()) {
+            for (auto scheme : schemes) {
                 printf("%8s%s\n", "", scheme->name().c_str());
             }
-        } else {
-            printf("%4sThis project contains no scheme.\n", "");
+            printf("\n");
         }
     }
 

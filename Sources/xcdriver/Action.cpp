@@ -59,7 +59,7 @@ OpenProject(std::string const &projectPath, std::string const &directory)
 }
 
 ext::optional<pbxbuild::WorkspaceContext> Action::
-CreateWorkspace(Options const &options)
+CreateWorkspace(pbxbuild::Build::Environment const &buildEnvironment, Options const &options)
 {
     if (!options.workspace().empty()) {
         xcworkspace::XC::Workspace::shared_ptr workspace = xcworkspace::XC::Workspace::Open(options.workspace());
@@ -68,14 +68,14 @@ CreateWorkspace(Options const &options)
             return ext::nullopt;
         }
 
-        return pbxbuild::WorkspaceContext::Workspace(workspace);
+        return pbxbuild::WorkspaceContext::Workspace(buildEnvironment.baseEnvironment(), workspace);
     } else {
         pbxproj::PBX::Project::shared_ptr project = OpenProject(options.project(), FSUtil::GetCurrentDirectory());
         if (project == nullptr) {
             return ext::nullopt;
         }
 
-        return pbxbuild::WorkspaceContext::Project(project);
+        return pbxbuild::WorkspaceContext::Project(buildEnvironment.baseEnvironment(), project);
     }
 }
 

@@ -46,14 +46,7 @@ project(std::string const &projectPath) const
     if (PI != _projects.end()) {
         return PI->second;
     } else {
-        // TODO(grp): Limit this to just subprojects of existing projects.
-        pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(resolvedProjectPath);
-        if (project != nullptr) {
-            _projects.insert({ resolvedProjectPath, project });
-        } else {
-            fprintf(stderr, "warning: unable to load project at %s\n", projectPath.c_str());
-        }
-        return project;
+        return nullptr;
     }
 }
 
@@ -149,10 +142,101 @@ IterateWorkspaceFiles(xcworkspace::XC::Workspace::shared_ptr const &workspace, s
     }
 }
 
-WorkspaceContext WorkspaceContext::
-Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace)
+static void
+LoadWorkspaceProjects(std::vector<pbxproj::PBX::Project::shared_ptr> *projects, xcworkspace::XC::Workspace::shared_ptr const &workspace)
 {
-    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> projects;
+    /*
+     * Load all the projects in the workspace.
+     */
+    IterateWorkspaceFiles(workspace, [&](xcworkspace::XC::FileRef::shared_ptr const &ref) {
+        std::string path = ref->resolve(workspace);
+
+        pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(path);
+        if (project != nullptr) {
+            projects->push_back(project);
+        }
+    });
+}
+
+static void
+LoadNestedProjects(std::vector<pbxproj::PBX::Project::shared_ptr> *projects, pbxsetting::Environment const &baseEnvironment, std::vector<pbxproj::PBX::Project::shared_ptr> const &rootProjects)
+{
+    std::vector<pbxproj::PBX::Project::shared_ptr> nestedProjects;
+
+    /*
+     * Load all nested projects recursively.
+     */
+    for (pbxproj::PBX::Project::shared_ptr const &project : rootProjects) {
+        /*
+         * Determine the settings environment to find the project paths. This may not be complete,
+         * but it's unclear exactly what settings are available here. Notably, we don't yet know what
+         * the configuration or what target to use, so just the project settings seems reasonable.
+         */
+        pbxsetting::Environment environment = baseEnvironment;
+        environment.insertFront(project->settings(), false);
+
+        /*
+         * Find the nested projects.
+         */
+        for (pbxproj::PBX::Project::ProjectReference const &projectReference : project->projectReferences()) {
+            pbxproj::PBX::FileReference::shared_ptr const &projectFileReference = projectReference.projectReference();
+            std::string projectPath = environment.expand(projectFileReference->resolve());
+
+            /*
+             * Load the project.
+             */
+            pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(projectPath);
+            if (project != nullptr) {
+                nestedProjects.push_back(project);
+            }
+        }
+    }
+
+    /*
+     * Append the nested projects. This has to be after the loop as `rootProjects` might alias `projects`.
+     */
+    projects->insert(projects->end(), nestedProjects.begin(), nestedProjects.end());
+
+    if (!nestedProjects.empty()) {
+        /*
+         * Load nested projects of the nested projects.
+         */
+        LoadNestedProjects(projects, baseEnvironment, nestedProjects);
+    }
+}
+
+static void
+LoadProjectSchemes(std::vector<xcscheme::SchemeGroup::shared_ptr> *schemeGroups, std::vector<pbxproj::PBX::Project::shared_ptr> const &projects)
+{
+    /*
+     * Load the schemes inside the projects.
+     */
+    for (pbxproj::PBX::Project::shared_ptr const &project : projects) {
+        xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
+        if (projectGroup != nullptr) {
+            schemeGroups->push_back(projectGroup);
+        }
+    }
+}
+
+static std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr>
+CreateProjectMap(std::vector<pbxproj::PBX::Project::shared_ptr> const &projects)
+{
+    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> projectsMap;
+
+    for (pbxproj::PBX::Project::shared_ptr const &project : projects) {
+        /* Normalize path so it can be found on lookup. */
+        std::string normalizedPath = FSUtil::NormalizePath(project->projectFile());
+        projectsMap.insert({ normalizedPath, project });
+    }
+
+    return projectsMap;
+}
+
+WorkspaceContext WorkspaceContext::
+Workspace(pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace)
+{
+    std::vector<pbxproj::PBX::Project::shared_ptr> projects;
     std::vector<xcscheme::SchemeGroup::shared_ptr> schemeGroups;
 
     /*
@@ -164,49 +248,53 @@ Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace)
     }
 
     /*
-     * Load all the projects in the workspace (and schemes inside those projects).
+     * Load projects within the workspace.
      */
-    IterateWorkspaceFiles(workspace, [&](xcworkspace::XC::FileRef::shared_ptr const &ref) {
-        std::string path = ref->resolve(workspace);
-        pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(path);
-        if (project != nullptr) {
-            projects.insert({ project->projectFile(), project });
+    LoadWorkspaceProjects(&projects, workspace);
 
-            /*
-             * Load the schemes inside this project.
-             */
-            xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
-            if (projectGroup != nullptr) {
-                schemeGroups.push_back(projectGroup);
-            }
-        }
-    });
+    /*
+     * Recursively load nested projects within those projects.
+     */
+    LoadNestedProjects(&projects, baseEnvironment, projects);
 
-    // TODO(grp): Load nested projects here.
+    /*
+     * Load schemes for all projects, including nested projects.
+     */
+    LoadProjectSchemes(&schemeGroups, projects);
 
+    /*
+     * Determine the DerivedData path for the workspace.
+     */
     std::string derivedDataName = workspace->name() + "-" + DerivedDataHash(workspace->projectFile());
 
-    return WorkspaceContext(workspace->basePath(), derivedDataName, workspace, nullptr, schemeGroups, projects);
+    return WorkspaceContext(workspace->basePath(), derivedDataName, workspace, nullptr, schemeGroups, CreateProjectMap(projects));
 }
 
 WorkspaceContext WorkspaceContext::
-Project(pbxproj::PBX::Project::shared_ptr const &project)
+Project(pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project)
 {
-    /*
-     * Add the schemes from the project itself.
-     */
-    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
+    std::vector<pbxproj::PBX::Project::shared_ptr> projects;
+    std::vector<xcscheme::SchemeGroup::shared_ptr> schemeGroups;
 
     /*
-     * The root is a project, so add it to the projects map so it can be found in project lookups later.
+     * The root is a project, so it should be in the projects list.
      */
-    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> projects = {
-        { project->projectFile(), project },
-    };
+    projects.push_back(project);
 
-    // TODO(grp): Load nested projects here.
+    /*
+     * Recursively load nested projects within the project.
+     */
+    LoadNestedProjects(&projects, baseEnvironment, projects);
 
+    /*
+     * Load schemes for all projects, including the root and nested projects.
+     */
+    LoadProjectSchemes(&schemeGroups, projects);
+
+    /*
+     * Determine the DerivedData path for the root project.
+     */
     std::string derivedDataName = project->name() + "-" + DerivedDataHash(project->projectFile());
 
-    return WorkspaceContext(project->basePath(), derivedDataName, nullptr, project, { group }, projects);
+    return WorkspaceContext(project->basePath(), derivedDataName, nullptr, project, schemeGroups, CreateProjectMap(projects));
 }

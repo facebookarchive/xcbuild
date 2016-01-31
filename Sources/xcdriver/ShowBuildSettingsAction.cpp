@@ -38,7 +38,7 @@ Run(Options const &options)
         return -1;
     }
 
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(options);
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(*buildEnvironment, options);
     if (!workspaceContext) {
         return -1;
     }

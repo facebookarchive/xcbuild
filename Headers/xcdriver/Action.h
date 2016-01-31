@@ -59,7 +59,7 @@ public:
 
 public:
     static ext::optional<pbxbuild::WorkspaceContext>
-    CreateWorkspace(Options const &options);
+    CreateWorkspace(pbxbuild::Build::Environment const &buildEnvironment, Options const &options);
 
 public:
     static std::vector<pbxsetting::Level>

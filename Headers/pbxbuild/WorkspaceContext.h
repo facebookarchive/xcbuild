@@ -30,8 +30,7 @@ private:
     xcworkspace::XC::Workspace::shared_ptr         _workspace;
     pbxproj::PBX::Project::shared_ptr              _project;
     std::vector<xcscheme::SchemeGroup::shared_ptr> _schemeGroups;
-    // TODO(grp): Mutable until nested projects are loaded when the workspace is created.
-    mutable std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> _projects;
+    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> _projects;
 
 public:
     WorkspaceContext(
@@ -103,13 +102,13 @@ public:
      * Creates a workspace context from a real workspace.
      */
     static WorkspaceContext
-    Workspace(xcworkspace::XC::Workspace::shared_ptr const &workspace);
+    Workspace(pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace);
 
     /*
      * Creates a workspace context for a legacy project-only build.
      */
     static WorkspaceContext
-    Project(pbxproj::PBX::Project::shared_ptr const &project);
+    Project(pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project);
 };
 
 }

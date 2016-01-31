@@ -120,7 +120,7 @@ Run(Options const &options)
      * Load the workspace for the provided options. There may or may not be an actual workspace;
      * the workspace context abstracts either a single project or a workspace.
      */
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(options);
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(*buildEnvironment, options);
     if (!workspaceContext) {
         return -1;
     }
