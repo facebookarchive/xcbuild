@@ -28,10 +28,14 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
 {
     auto unpack = plist::Keys::Unpack("Object", dict, seen);
 
-    auto N = unpack.cast <plist::String> ("isa");
+    auto I = unpack.cast <plist::String> ("isa");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errors().c_str());
+    }
+
+    if (I != nullptr) {
+        (void)I;
     }
 
     return true;

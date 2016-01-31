@@ -14,8 +14,8 @@ using pbxspec::PBX::Tool;
 
 Tool::
 Tool() :
-    _commandOutputParser(nullptr),
-    Specification       ()
+    Specification       (),
+    _commandOutputParser(nullptr)
 {
 }
 

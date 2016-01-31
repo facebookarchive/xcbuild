@@ -138,5 +138,9 @@ parse(plist::Dictionary const *dict)
         _isLaunchable = IL->value();
     }
 
+    if (EB != nullptr) {
+        (void)EB;
+    }
+
     return true;
 }

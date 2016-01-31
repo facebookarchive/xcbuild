@@ -13,11 +13,11 @@ using pbxspec::PBX::PropertyOption;
 
 PropertyOption::
 PropertyOption() :
+    _commandLineArgs     (nullptr),
     _additionalLinkerArgs(nullptr),
     _defaultValue        (nullptr),
     _allowedValues       (nullptr),
-    _values              (nullptr),
-    _commandLineArgs     (nullptr)
+    _values              (nullptr)
 {
 }
 

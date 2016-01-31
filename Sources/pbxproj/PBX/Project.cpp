@@ -84,6 +84,11 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
         }
     }
 
+    if (A != nullptr) {
+        // TODO(grp): Handle attributes.
+        (void)A;
+    }
+
     if (CV != nullptr) {
         _compatibilityVersion = CV->value();
     }

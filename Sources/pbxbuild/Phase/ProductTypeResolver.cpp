@@ -322,6 +322,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
             std::string const &validationToolIdentifier = *_productType->validation()->validationToolSpec();
             if (Tool::ToolResolver const *toolResolver = phaseContext->toolResolver(phaseEnvironment, validationToolIdentifier)) {
                 // TODO(grp): Run validation tool.
+                (void)toolResolver;
             } else {
                 fprintf(stderr, "warning: could not find validation tool %s\n", validationToolIdentifier.c_str());
             }
@@ -359,6 +360,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     if (_productType->identifier() == "com.apple.product-type.application" && targetEnvironment.sdk()->platform()->name() == "macosx") {
         if (Tool::ToolResolver const *launchServicesResolver = phaseContext->toolResolver(phaseEnvironment, "com.apple.build-tasks.ls-register-url")) {
             // TODO(grp): Register with launch services. Note this needs the same dependencies as touch.
+            (void)launchServicesResolver;
         } else {
             fprintf(stderr, "warning: could not find register tool\n");
         }
