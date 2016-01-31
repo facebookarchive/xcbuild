@@ -153,10 +153,10 @@ Level DefaultSettings::
 Build(void)
 {
     std::vector<Setting> settings = {
-        Setting::Create("XCODE_PRODUCT_BUILD_VERSION", "6E35b"),
-        Setting::Create("XCODE_VERSION_ACTUAL", "0710"),
+        Setting::Create("XCODE_PRODUCT_BUILD_VERSION", "7C68"),
+        Setting::Create("XCODE_VERSION_ACTUAL", "0720"),
         Setting::Create("XCODE_VERSION_MAJOR", "0700"),
-        Setting::Create("XCODE_VERSION_MINOR", "0710"),
+        Setting::Create("XCODE_VERSION_MINOR", "0720"),
         Setting::Parse("XCODE_APP_SUPPORT_DIR", "$(DEVELOPER_LIBRARY_DIR)/Xcode"),
     };
 
