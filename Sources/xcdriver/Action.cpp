@@ -156,6 +156,9 @@ CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &wor
         } else if (workspaceContext.project() != nullptr) {
             defaultConfiguration = true;
             configuration = workspaceContext.project()->buildConfigurationList()->defaultConfigurationName();
+        } else {
+            fprintf(stderr, "error: a scheme is required to build a workspace\n");
+            return ext::nullopt;
         }
 
         if (configuration.empty()) {
