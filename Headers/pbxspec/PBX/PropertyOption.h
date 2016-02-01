@@ -41,6 +41,7 @@ public:
 protected:
     std::string                            _name;
     ext::optional<std::string>             _displayName;
+    plist::Object                         *_displayValues;
     std::string                            _type;
     ext::optional<std::string>             _uiType;
     ext::optional<std::string>             _category;

@@ -13,6 +13,7 @@ using pbxspec::PBX::PropertyOption;
 
 PropertyOption::
 PropertyOption() :
+    _displayValues       (nullptr),
     _commandLineArgs     (nullptr),
     _additionalLinkerArgs(nullptr),
     _defaultValue        (nullptr),
@@ -30,6 +31,10 @@ PropertyOption::
 
     if (_values != nullptr) {
         _values->release();
+    }
+
+    if (_displayValues != nullptr) {
+        _displayValues->release();
     }
 
     if (_allowedValues != nullptr) {
@@ -59,6 +64,7 @@ parse(plist::Dictionary const *dict)
 
     auto N      = unpack.cast <plist::String> ("Name");
     auto DN     = unpack.cast <plist::String> ("DisplayName");
+    auto DVs    = unpack.cast <plist::Object> ("DisplayValues");
     auto T      = unpack.cast <plist::String> ("Type");
     auto UT     = unpack.cast <plist::String> ("UIType");
     auto C      = unpack.cast <plist::String> ("Category");
@@ -104,6 +110,10 @@ parse(plist::Dictionary const *dict)
 
     if (DN != nullptr) {
         _displayName = DN->value();
+    }
+
+    if (DVs != nullptr) {
+        _displayValues = DVs->copy().release();
     }
 
     if (T != nullptr) {
