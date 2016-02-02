@@ -42,14 +42,13 @@ static bool
 __ABPWriteOffsetTable(ABPContext *context)
 {
     uint64_t n;
-    uint64_t highestOffset = 0;
+    uint64_t highestOffset;
 
-    /* Find highest offset. */
-    for (n = 0; n < context->trailer.objectsCount; n++) {
-        if (context->offsets[n] > highestOffset) {
-            highestOffset = context->offsets[n];
-        }
-    }
+    /* Update offset in trailer. */
+    context->trailer.offsetTableEndOffset = __ABPTell(context);
+
+    /* Highest offset is offset table offset */
+    highestOffset = context->trailer.offsetTableEndOffset;
 
     /* Estimate offset integer size. */
     if (highestOffset > UINT32_MAX) {
@@ -61,9 +60,6 @@ __ABPWriteOffsetTable(ABPContext *context)
     } else {
         context->trailer.offsetIntByteSize = sizeof(uint8_t);
     }
-
-    /* Update offset in trailer. */
-    context->trailer.offsetTableEndOffset = __ABPTell(context);
 
     /* Write out the offsets. */
     for (n = 0; n < context->trailer.objectsCount; n++) {
