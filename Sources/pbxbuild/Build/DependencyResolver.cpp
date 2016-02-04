@@ -187,7 +187,7 @@ static void
 AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared_ptr const &target)
 {
     /* If there's no build action, this is a legacy context which always have implicit dependencies. */
-    if (context.buildAction == nullptr || (context.buildAction != nullptr && context.buildAction->buildImplicitDependencies())) {
+    if (context.buildAction == nullptr || context.buildAction->buildImplicitDependencies()) {
         AddImplicitDependencies(context, target);
     }
 
@@ -288,8 +288,21 @@ resolveSchemeDependencies(Build::Context const &context) const
 
         pbxproj::PBX::Target::shared_ptr target = context.resolveTargetIdentifier(project, reference->blueprintIdentifier());
         if (target == nullptr) {
-            fprintf(stderr, "warning: couldn't find buildable reference for build action entry\n");
-            continue;
+            /*
+             * If the blueprintIdentifier doesn't match, try the blueprintName. This can happen when a checked-in
+             * scheme references a generated project. After regeneration, the scheme's blueprint identifier won't match.
+             */
+            for (pbxproj::PBX::Target::shared_ptr const &projectTarget : project->targets()) {
+                if (reference->blueprintName() == projectTarget->name()) {
+                    target = projectTarget;
+                    break;
+                }
+            }
+
+            if (target == nullptr) {
+                fprintf(stderr, "warning: couldn't find buildable reference for build action entry '%s'\n", reference->blueprintName().c_str());
+                continue;
+            }
         }
 
         DependenciesContext dependenciesContext = {
