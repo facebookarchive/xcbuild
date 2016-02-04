@@ -201,12 +201,14 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
         }
 #endif
 
-        /*
-         * Non-parallel targets are currently implemented by adding a dependency from this target
-         * on all previous targets seen. This is inefficient: the space used in the graph is O(N^2).
-         */
-        context.graph->insert(target, *context.positional);
-        context.positional->insert(target);
+        if (context.positional->find(target) == context.positional->end()) {
+            /*
+             * Non-parallel targets are currently implemented by adding a dependency from this target
+             * on all previous targets seen. This is inefficient: the space used in the graph is O(N^2).
+             */
+            context.graph->insert(target, *context.positional);
+            context.positional->insert(target);
+        }
     }
 }
 
