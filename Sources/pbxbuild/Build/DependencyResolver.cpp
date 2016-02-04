@@ -153,7 +153,7 @@ AddExplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
             dependencies.insert(dependency->target());
 
 #if DEPENDENCY_RESOLVER_LOGGING
-            fprintf(stderr, "debug: explicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), dependency->blueprintIdentifier().c_str(), dependency->target()->name().c_str());
+            fprintf(stderr, "debug: explicit dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), dependency->target()->blueprintIdentifier().c_str(), dependency->target()->name().c_str());
 #endif
 
             /* Recursively search for implicit & explicit dependencies. */
@@ -195,6 +195,12 @@ AddDependencies(DependenciesContext const &context, pbxproj::PBX::Target::shared
 
     /* If there's no build action, this is a legacy context which always parallelizes builds. */
     if (context.buildAction != nullptr && !context.buildAction->parallelizeBuildables()) {
+#if DEPENDENCY_RESOLVER_LOGGING
+        for (pbxproj::PBX::Target::shared_ptr const &orderTarget : *context.positional) {
+            fprintf(stderr, "debug: order dependency: %s %s -> %s %s\n", target->blueprintIdentifier().c_str(), target->name().c_str(), orderTarget->blueprintIdentifier().c_str(), orderTarget->name().c_str());
+        }
+#endif
+
         /*
          * Non-parallel targets are currently implemented by adding a dependency from this target
          * on all previous targets seen. This is inefficient: the space used in the graph is O(N^2).
