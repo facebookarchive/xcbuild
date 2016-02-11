@@ -30,7 +30,7 @@ New(std::string const &value)
 std::unique_ptr<String> String::
 New(std::string &&value)
 {
-    return std::unique_ptr<String>(new String(value));
+    return std::unique_ptr<String>(new String(std::move(value)));
 }
 
 std::unique_ptr<Object> String::

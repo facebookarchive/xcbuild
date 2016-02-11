@@ -30,7 +30,7 @@ New(std::vector<uint8_t> const &value)
 std::unique_ptr<Data> Data::
 New(std::vector<uint8_t> &&value)
 {
-    return std::unique_ptr<Data>(new Data(value));
+    return std::unique_ptr<Data>(new Data(std::move(value)));
 }
 
 std::unique_ptr<Data> Data::
