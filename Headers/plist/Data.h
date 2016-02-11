@@ -28,7 +28,7 @@ public:
     }
 
     Data(std::vector <uint8_t> &&value) :
-        _value(value)
+        _value(std::move(value))
     {
     }
 
@@ -52,7 +52,7 @@ public:
 
     inline void setValue(std::vector <uint8_t> &&value)
     {
-        _value = value;
+        _value = std::move(value);
     }
 
 public:

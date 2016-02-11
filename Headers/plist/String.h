@@ -26,7 +26,7 @@ public:
     }
 
     String(std::string &&value) :
-        _value(value)
+        _value(std::move(value))
     {
     }
 
@@ -43,7 +43,7 @@ public:
 
     inline void setValue(std::string &&value)
     {
-        _value = value;
+        _value = std::move(value);
     }
 
 public:
