@@ -63,7 +63,7 @@ Run(Options const &options)
             printf("\n%4sThis workspace contains no scheme.\n", "");
         } else {
             printf("%4sSchemes:\n", "");
-            for (auto scheme : schemes) {
+            for (auto const &scheme : schemes) {
                 printf("%8s%s\n", "", scheme->name().c_str());
             }
             printf("\n");
@@ -75,7 +75,7 @@ Run(Options const &options)
 
         if (!project->targets().empty()) {
             printf("%4sTargets:\n", "");
-            for (auto target : project->targets()) {
+            for (auto const &target : project->targets()) {
                 printf("%8s%s\n", "", target->name().c_str());
             }
         } else {
@@ -85,7 +85,7 @@ Run(Options const &options)
 
         if (project->buildConfigurationList()) {
             printf("%4sBuild Configurations:\n", "");
-            for (auto config : *project->buildConfigurationList()) {
+            for (auto const &config : *project->buildConfigurationList()) {
                 printf("%8s%s\n", "", config->name().c_str());
             }
             printf("\n%4sIf no build configuration is specified and -scheme is not passed then \"%s\" is used.\n", "", project->buildConfigurationList()->defaultConfigurationName().c_str());
@@ -98,7 +98,7 @@ Run(Options const &options)
             printf("\n%4sThis project contains no scheme.\n", "");
         } else {
             printf("%4sSchemes:\n", "");
-            for (auto scheme : schemes) {
+            for (auto const &scheme : schemes) {
                 printf("%8s%s\n", "", scheme->name().c_str());
             }
             printf("\n");

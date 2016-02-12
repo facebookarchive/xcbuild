@@ -122,7 +122,7 @@ std::string Environment::
 resolveValue(Condition const &condition, Value const &value, InheritanceContext const &context) const
 {
     std::string result;
-    for (auto entry : value.entries()) {
+    for (auto const &entry : value.entries()) {
         switch (entry.type) {
             case Value::Entry::String: {
                 result += entry.string;

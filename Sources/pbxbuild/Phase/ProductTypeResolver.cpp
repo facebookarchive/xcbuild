@@ -238,7 +238,7 @@ ResolveFrameworkStructure(Phase::Environment const &phaseEnvironment, Phase::Con
         /*
          * The symlinks to create are now determined. Add the symlinks.
          */
-        for (Symlink symlink : symlinks) {
+        for (Symlink const &symlink : symlinks) {
             pbxsetting::Value const &value = symlinkDirectories.at(symlink);
             std::string valueDirectory = targetBuildDirectory + "/" + environment.expand(value);
 

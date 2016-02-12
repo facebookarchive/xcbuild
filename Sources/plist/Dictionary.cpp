@@ -34,7 +34,7 @@ merge(Dictionary const *dict, bool replace)
     if (dict == nullptr || dict == this)
         return;
 
-    for (auto key : *dict) {
+    for (auto const &key : *dict) {
         if (replace || _map.find(key) == _map.end()) {
             set(key, dict->value(key)->copy());
         }
