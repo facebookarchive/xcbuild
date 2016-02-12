@@ -104,7 +104,7 @@ CollectScanDirectories(
         }
 
         std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, environment, buildPhase->files());
-        for (Phase::File const file : files) {
+        for (Phase::File const &file : files) {
             if (file.fileType() != nullptr && file.fileType()->isFrameworkWrapper()) {
                 directories.push_back(file.path());
             }

@@ -55,7 +55,7 @@ onStartElement(std::string const &name, std::unordered_map<std::string, std::str
 {
     Dictionary *dict = Dictionary::New().release();
 
-    for (auto I : attrs) {
+    for (auto const &I : attrs) {
         if (I.second == "YES") {
             dict->set(I.first, Boolean::New(true));
         } else if (I.second == "NO") {

@@ -298,7 +298,7 @@ Open(std::string const &path)
     //
     // Transfer all file references from cache.
     //
-    for (auto I : context.fileReferences) {
+    for (auto const &I : context.fileReferences) {
         project->_fileReferences.push_back(I.second);
     }
 

@@ -48,7 +48,7 @@ onEndParse(bool success)
         if (_state.current != nullptr && _state.current != _root) {
             _state.current->release();
         }
-        for (auto s : _stack) {
+        for (auto const &s : _stack) {
             if (s.current != _state.current && s.current != _root) {
                 s.current->release();
             }

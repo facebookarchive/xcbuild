@@ -35,9 +35,9 @@ Run(Options const &options)
         return 1;
     }
 
-    for (auto platform : manager->platforms()) {
+    for (auto const &platform : manager->platforms()) {
         printf("%s SDKs:\n", platform->description().c_str());
-        for (auto target : platform->targets()) {
+        for (auto const &target : platform->targets()) {
             printf("\t%-32s-sdk %s\n", target->displayName().c_str(), target->canonicalName().c_str());
         }
         printf("\n");
