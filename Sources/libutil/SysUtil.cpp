@@ -20,8 +20,9 @@
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
-#elif defined(__GLIBC__)
+#elif defined(__linux__) && defined(__GLIBC__)
 #include <sys/auxv.h>
+#include <linux/limits.h>
 #endif
 
 extern char **environ;
@@ -46,13 +47,13 @@ EnvironmentVariables()
     return environment;
 }
 
-#if defined(__GLIBC__)
+#if defined(__linux__) && defined(__GLIBC__)
 char initialWorkingDirectory[PATH_MAX] = { 0 };
 
 __attribute__((constructor))
 static void GetExecutablePathInitialize()
 {
-    strncpy(initialWorkingDirectory, getcwd(), sizeof(initialWorkingDirectory));
+    getcwd(initialWorkingDirectory, sizeof(initialWorkingDirectory));
 }
 #endif
 
@@ -72,8 +73,8 @@ GetExecutablePath()
     }
 
     return FSUtil::NormalizePath(buffer);
-#elif defined(__GLIBC__)
-    char const *path = getauxval(AT_EXECFN);
+#elif defined(__linux__) && defined(__GLIBC__)
+    char const *path = reinterpret_cast<char const *>(getauxval(AT_EXECFN));
     if (path == NULL) {
         assert(false);
         abort();
