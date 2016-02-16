@@ -10,6 +10,9 @@
 #include <xcdriver/BuildAction.h>
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
+#include <xcexecution/NinjaExecutor.h>
+#include <xcexecution/SimpleExecutor.h>
+#include <xcexecution/DefaultFormatter.h>
 #include <builtin/builtin.h>
 
 #include <unistd.h>
@@ -28,33 +31,33 @@ BuildAction::
 {
 }
 
-static std::shared_ptr<pbxbuild::Action::Formatter>
+static std::shared_ptr<xcexecution::Formatter>
 CreateFormatter(std::string const &formatter)
 {
     if (formatter == "default" || formatter.empty()) {
         /* Only use color if attached to a terminal. */
         bool color = isatty(fileno(stdout));
 
-        auto formatter = pbxbuild::Action::DefaultFormatter::Create(color);
-        return std::static_pointer_cast<pbxbuild::Action::Formatter>(formatter);
+        auto formatter = xcexecution::DefaultFormatter::Create(color);
+        return std::static_pointer_cast<xcexecution::Formatter>(formatter);
     }
 
     return nullptr;
 }
 
-static std::unique_ptr<pbxbuild::Action::Executor>
+static std::unique_ptr<xcexecution::Executor>
 CreateExecutor(
     std::string const &executor,
-    std::shared_ptr<pbxbuild::Action::Formatter> const &formatter,
+    std::shared_ptr<xcexecution::Formatter> const &formatter,
     bool dryRun)
 {
     if (executor == "simple" || executor.empty()) {
         auto registry = builtin::Registry::Default();
-        auto executor = pbxbuild::Action::SimpleExecutor::Create(formatter, dryRun, registry);
-        return libutil::static_unique_pointer_cast<pbxbuild::Action::Executor>(std::move(executor));
+        auto executor = xcexecution::SimpleExecutor::Create(formatter, dryRun, registry);
+        return libutil::static_unique_pointer_cast<xcexecution::Executor>(std::move(executor));
     } else if (executor == "ninja") {
-        auto executor = pbxbuild::Action::NinjaExecutor::Create(formatter, dryRun);
-        return libutil::static_unique_pointer_cast<pbxbuild::Action::Executor>(std::move(executor));
+        auto executor = xcexecution::NinjaExecutor::Create(formatter, dryRun);
+        return libutil::static_unique_pointer_cast<xcexecution::Executor>(std::move(executor));
     }
 
     return nullptr;
@@ -153,7 +156,7 @@ Run(Options const &options)
     /*
      * Create the formatter to format the build log.
      */
-    std::shared_ptr<pbxbuild::Action::Formatter> formatter = CreateFormatter(options.formatter());
+    std::shared_ptr<xcexecution::Formatter> formatter = CreateFormatter(options.formatter());
     if (formatter == nullptr) {
         fprintf(stderr, "error: unknown formatter %s\n", options.formatter().c_str());
         return -1;
@@ -162,7 +165,7 @@ Run(Options const &options)
     /*
      * Create the executor used to perform the build.
      */
-    std::unique_ptr<pbxbuild::Action::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun());
+    std::unique_ptr<xcexecution::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun());
     if (executor == nullptr) {
         fprintf(stderr, "error: unknown executor %s\n", options.executor().c_str());
         return -1;

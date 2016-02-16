@@ -7,14 +7,13 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_Action_SimpleExecutor_h
-#define __pbxbuild_Action_SimpleExecutor_h
+#ifndef __xcexecution_SimpleExecutor_h
+#define __xcexecution_SimpleExecutor_h
 
-#include <pbxbuild/Action/Executor.h>
-#include <builtin/builtin.h>
+#include <xcexecution/Executor.h>
+#include <builtin/Registry.h>
 
-namespace pbxbuild {
-namespace Action {
+namespace xcexecution {
 
 /*
  * Simple executor that simply runs invocations in sequence. Advanced features
@@ -30,24 +29,24 @@ public:
 
 public:
     virtual bool build(
-        Build::Environment const &buildEnvironment,
-        Build::Context const &buildContext,
-        DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
+        pbxbuild::Build::Environment const &buildEnvironment,
+        pbxbuild::Build::Context const &buildContext,
+        pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
 private:
     bool writeAuxiliaryFiles(
         pbxproj::PBX::Target::shared_ptr const &target,
-        Target::Environment const &targetEnvironment,
-        std::vector<Tool::Invocation const> const &invocations);
-    std::pair<bool, std::vector<Tool::Invocation const>> performInvocations(
+        pbxbuild::Target::Environment const &targetEnvironment,
+        std::vector<pbxbuild::Tool::Invocation const> const &invocations);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation const>> performInvocations(
         pbxproj::PBX::Target::shared_ptr const &target,
-        Target::Environment const &targetEnvironment,
-        std::vector<Tool::Invocation const> const &orderedInvocations,
+        pbxbuild::Target::Environment const &targetEnvironment,
+        std::vector<pbxbuild::Tool::Invocation const> const &orderedInvocations,
         bool createProductStructure);
-    std::pair<bool, std::vector<Tool::Invocation const>> buildTarget(
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation const>> buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
-        Target::Environment const &targetEnvironment,
-        std::vector<Tool::Invocation const> const &invocations);
+        pbxbuild::Target::Environment const &targetEnvironment,
+        std::vector<pbxbuild::Tool::Invocation const> const &invocations);
 
 public:
     static std::unique_ptr<SimpleExecutor>
@@ -55,6 +54,5 @@ public:
 };
 
 }
-}
 
-#endif // !__pbxbuild_Action_SimpleExecutor_h
+#endif // !__xcexecution_SimpleExecutor_h

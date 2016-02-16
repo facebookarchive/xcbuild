@@ -7,7 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Action/NinjaExecutor.h>
+#include <xcexecution/NinjaExecutor.h>
+
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <ninja/Writer.h>
@@ -24,10 +25,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-using pbxbuild::Action::NinjaExecutor;
-namespace Build = pbxbuild::Build;
-namespace Target = pbxbuild::Target;
-namespace Tool = pbxbuild::Tool;
+using xcexecution::NinjaExecutor;
 using libutil::Escape;
 using libutil::FSUtil;
 using libutil::SysUtil;
@@ -56,7 +54,7 @@ TargetNinjaFinish(pbxproj::PBX::Target::shared_ptr const &target)
 }
 
 static std::string
-TargetNinjaPath(pbxproj::PBX::Target::shared_ptr const &target, Target::Environment const &targetEnvironment)
+TargetNinjaPath(pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::Target::Environment const &targetEnvironment)
 {
     /*
      * Determine where the Ninja file should go. We use the target's temp dir
@@ -106,7 +104,7 @@ NinjaHash(std::string const &input)
 }
 
 static std::string
-NinjaInvocationPhonyOutput(Tool::Invocation const &invocation)
+NinjaInvocationPhonyOutput(pbxbuild::Tool::Invocation const &invocation)
 {
     /*
      * This is a hack to support invocations that have no outputs. Ninja requires
@@ -128,7 +126,7 @@ NinjaInvocationPhonyOutput(Tool::Invocation const &invocation)
 }
 
 static std::vector<std::string>
-NinjaInvocationOutputs(Tool::Invocation const &invocation)
+NinjaInvocationOutputs(pbxbuild::Tool::Invocation const &invocation)
 {
     std::vector<std::string> outputs;
 
@@ -164,9 +162,9 @@ WriteNinja(ninja::Writer const &writer, std::string const &path)
 
 bool NinjaExecutor::
 build(
-    Build::Environment const &buildEnvironment,
-    Build::Context const &buildContext,
-    DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
+    pbxbuild::Build::Environment const &buildEnvironment,
+    pbxbuild::Build::Context const &buildContext,
+    pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
 {
     /*
      * This environment contains only settings shared for the entire build.
@@ -239,14 +237,14 @@ build(
         /*
          * Resolve this target and generate its invocations.
          */
-        ext::optional<Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        ext::optional<pbxbuild::Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
         if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             continue;
         }
 
-        Phase::Environment phaseEnvironment = Phase::Environment(buildEnvironment, buildContext, target, *targetEnvironment);
-        Phase::PhaseInvocations phaseInvocations = Phase::PhaseInvocations::Create(phaseEnvironment, target);
+        pbxbuild::Phase::Environment phaseEnvironment = pbxbuild::Phase::Environment(buildEnvironment, buildContext, target, *targetEnvironment);
+        pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
 
         /*
          * As described above, the target's begin depends on all of the target dependencies.
@@ -280,7 +278,7 @@ build(
          * As described above, the target's finish depends on all of the invocation outputs.
          */
         std::unordered_set<std::string> invocationOutputs;
-        for (Tool::Invocation const &invocation : phaseInvocations.invocations()) {
+        for (pbxbuild::Tool::Invocation const &invocation : phaseInvocations.invocations()) {
             if (invocation.executable().path().empty()) {
                 /* No outputs. */
                 continue;
@@ -296,7 +294,7 @@ build(
          * However, avoid adding the phony invocation if a real output *does* include
          * the phony input, to avoid Ninja complaining about duplicate rules.
          */
-        for (Tool::Invocation const &invocation : phaseInvocations.invocations()) {
+        for (pbxbuild::Tool::Invocation const &invocation : phaseInvocations.invocations()) {
             for (std::string const &phonyInput : invocation.phonyInputs()) {
                 if (invocationOutputs.find(phonyInput) == invocationOutputs.end()) {
                     writer.build({ ninja::Value::String(phonyInput) }, "phony", { });
@@ -348,8 +346,8 @@ bool NinjaExecutor::
 buildTargetAuxiliaryFiles(
     ninja::Writer *writer,
     pbxproj::PBX::Target::shared_ptr const &target,
-    Target::Environment const &targetEnvironment,
-    std::vector<Tool::Invocation const> const &invocations)
+    pbxbuild::Target::Environment const &targetEnvironment,
+    std::vector<pbxbuild::Tool::Invocation const> const &invocations)
 {
     // TODO(grp): In a dry run, Ninja will still need these files to exist, but the whole
     // point of a dry run is to avoid the filesystem. What's the best way to resolve this?
@@ -358,8 +356,8 @@ buildTargetAuxiliaryFiles(
     }
 
     // TODO(grp): Could this defer writing auxiliary files and let Ninja do it?
-    for (Tool::Invocation const &invocation : invocations) {
-        for (Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
+    for (pbxbuild::Tool::Invocation const &invocation : invocations) {
+        for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
             if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(auxiliaryFile.path()))) {
                 return false;
             }
@@ -387,8 +385,8 @@ buildTargetAuxiliaryFiles(
 bool NinjaExecutor::
 buildTargetInvocations(
     pbxproj::PBX::Target::shared_ptr const &target,
-    Target::Environment const &targetEnvironment,
-    std::vector<Tool::Invocation const> const &invocations)
+    pbxbuild::Target::Environment const &targetEnvironment,
+    std::vector<pbxbuild::Tool::Invocation const> const &invocations)
 {
     std::string targetBegin = TargetNinjaBegin(target);
 
@@ -410,7 +408,7 @@ buildTargetInvocations(
     /*
      * Add the build command for each invocation.
      */
-    for (Tool::Invocation const &invocation : invocations) {
+    for (pbxbuild::Tool::Invocation const &invocation : invocations) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
         if (invocation.executable().path().empty()) {
             continue;
@@ -466,7 +464,7 @@ buildTargetInvocations(
             };
 
             /* Add the input for each dependency info. */
-            for (Tool::Invocation::DependencyInfo const &dependencyInfo : invocation.dependencyInfo()) {
+            for (pbxbuild::Tool::Invocation::DependencyInfo const &dependencyInfo : invocation.dependencyInfo()) {
                 std::string formatName;
                 if (!dependency::DependencyInfoFormats::Name(dependencyInfo.format(), &formatName)) {
                     return false;

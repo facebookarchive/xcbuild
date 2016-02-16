@@ -7,13 +7,12 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_Action_DefaultFormatter_h
-#define __pbxbuild_Action_DefaultFormatter_h
+#ifndef __xcexecution_DefaultFormatter_h
+#define __xcexecution_DefaultFormatter_h
 
-#include <pbxbuild/Action/Formatter.h>
+#include <xcexecution/Formatter.h>
 
-namespace pbxbuild {
-namespace Action {
+namespace xcexecution {
 
 /*
  * Formats output with the default format.
@@ -27,13 +26,13 @@ public:
     ~DefaultFormatter();
 
 public:
-    virtual std::string begin(Build::Context const &buildContext);
-    virtual std::string success(Build::Context const &buildContext);
-    virtual std::string failure(Build::Context const &buildContext, std::vector<Tool::Invocation const> const &failingInvocations);
+    virtual std::string begin(pbxbuild::Build::Context const &buildContext);
+    virtual std::string success(pbxbuild::Build::Context const &buildContext);
+    virtual std::string failure(pbxbuild::Build::Context const &buildContext, std::vector<pbxbuild::Tool::Invocation const> const &failingInvocations);
 
 public:
-    virtual std::string beginTarget(Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
-    virtual std::string finishTarget(Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
+    virtual std::string beginTarget(pbxbuild::Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
+    virtual std::string finishTarget(pbxbuild::Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);
 
 public:
     virtual std::string beginCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target);
@@ -51,8 +50,8 @@ public:
     virtual std::string finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target);
 
 public:
-    virtual std::string beginInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple);
-    virtual std::string finishInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple);
+    virtual std::string beginInvocation(pbxbuild::Tool::Invocation const &invocation, std::string const &executable, bool simple);
+    virtual std::string finishInvocation(pbxbuild::Tool::Invocation const &invocation, std::string const &executable, bool simple);
 
 public:
     /*
@@ -64,6 +63,5 @@ public:
 };
 
 }
-}
 
-#endif // !__pbxbuild_Action_DefaultFormatter_h
+#endif // !__xcexecution_DefaultFormatter_h

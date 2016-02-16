@@ -294,11 +294,14 @@ set(libpbxbuild_SOURCES
     Sources/pbxbuild/Build/Context.cpp
     Sources/pbxbuild/Build/Environment.cpp
     Sources/pbxbuild/Build/DependencyResolver.cpp
-    Sources/pbxbuild/Action/Executor.cpp
-    Sources/pbxbuild/Action/SimpleExecutor.cpp
-    Sources/pbxbuild/Action/NinjaExecutor.cpp
-    Sources/pbxbuild/Action/Formatter.cpp
-    Sources/pbxbuild/Action/DefaultFormatter.cpp
+    )
+
+set(libxcexecution_SOURCES
+    Sources/xcexecution/Executor.cpp
+    Sources/xcexecution/SimpleExecutor.cpp
+    Sources/xcexecution/NinjaExecutor.cpp
+    Sources/xcexecution/Formatter.cpp
+    Sources/xcexecution/DefaultFormatter.cpp
     )
 
 set(libxcdriver_SOURCES
@@ -310,7 +313,8 @@ set(libxcdriver_SOURCES
     Sources/xcdriver/ListAction.cpp
     Sources/xcdriver/ShowBuildSettingsAction.cpp
     Sources/xcdriver/ShowSDKsAction.cpp
-    Sources/xcdriver/VersionAction.cpp)
+    Sources/xcdriver/VersionAction.cpp
+    )
 
 add_library(ext SHARED ${libext_SOURCES})
 target_link_libraries(ext)
@@ -349,10 +353,13 @@ add_library(pbxspec SHARED ${libpbxspec_SOURCES})
 target_link_libraries(pbxspec pbxsetting util plist)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec dependency ninja builtin ext)
+target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec dependency ext)
+
+add_library(xcexecution SHARED ${libxcexecution_SOURCES})
+target_link_libraries(xcexecution pbxbuild dependency ninja builtin)
 
 add_library(xcdriver SHARED ${libxcdriver_SOURCES})
-target_link_libraries(xcdriver pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
+target_link_libraries(xcdriver xcexecution pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
 
 add_executable(plutil Tools/plutil.cpp)
 target_link_libraries(plutil plist util)

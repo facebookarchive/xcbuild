@@ -7,16 +7,14 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_Action_NinjaExecutor_h
-#define __pbxbuild_Action_NinjaExecutor_h
+#ifndef __xcexecution_NinjaExecutor_h
+#define __xcexecution_NinjaExecutor_h
 
-#include <pbxbuild/Action/Executor.h>
-#include <builtin/builtin.h>
+#include <xcexecution/Executor.h>
 
 namespace ninja { class Writer; }
 
-namespace pbxbuild {
-namespace Action {
+namespace xcexecution {
 
 /*
  * Concrete executor that generates Ninja files.
@@ -28,24 +26,24 @@ public:
 
 public:
     virtual bool build(
-        Build::Environment const &buildEnvironment,
-        Build::Context const &buildContext,
-        DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
+        pbxbuild::Build::Environment const &buildEnvironment,
+        pbxbuild::Build::Context const &buildContext,
+        pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
 
 private:
     bool buildOutputDirectories(
         ninja::Writer *writer,
-        std::vector<Tool::Invocation const> const &invocations,
+        std::vector<pbxbuild::Tool::Invocation const> const &invocations,
         std::unordered_set<std::string> *seenDirectories);
     bool buildTargetAuxiliaryFiles(
         ninja::Writer *writer,
         pbxproj::PBX::Target::shared_ptr const &target,
-        Target::Environment const &targetEnvironment,
-        std::vector<Tool::Invocation const> const &invocations);
+        pbxbuild::Target::Environment const &targetEnvironment,
+        std::vector<pbxbuild::Tool::Invocation const> const &invocations);
     bool buildTargetInvocations(
         pbxproj::PBX::Target::shared_ptr const &target,
-        Target::Environment const &targetEnvironment,
-        std::vector<Tool::Invocation const> const &invocations);
+        pbxbuild::Target::Environment const &targetEnvironment,
+        std::vector<pbxbuild::Tool::Invocation const> const &invocations);
 
 public:
     static std::unique_ptr<NinjaExecutor>
@@ -53,6 +51,5 @@ public:
 };
 
 }
-}
 
-#endif // !__pbxbuild_Action_NinjaExecutor_h
+#endif // !__xcexecution_NinjaExecutor_h

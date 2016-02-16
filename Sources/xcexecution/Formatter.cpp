@@ -7,18 +7,23 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Action/Executor.h>
+#include <xcexecution/Formatter.h>
 
-using pbxbuild::Action::Executor;
+using xcexecution::Formatter;
 
-Executor::
-Executor(std::shared_ptr<Formatter> const &formatter, bool dryRun) :
-    _formatter(formatter),
-    _dryRun   (dryRun)
+Formatter::
+Formatter()
 {
 }
 
-Executor::
-~Executor()
+Formatter::
+~Formatter()
 {
 }
+
+void Formatter::
+Print(std::string const &output)
+{
+    fputs(output.c_str(), stdout);
+}
+

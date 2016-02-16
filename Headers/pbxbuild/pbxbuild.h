@@ -40,10 +40,4 @@
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Build/Context.h>
 
-#include <pbxbuild/Action/Executor.h>
-#include <pbxbuild/Action/SimpleExecutor.h>
-#include <pbxbuild/Action/NinjaExecutor.h>
-#include <pbxbuild/Action/Formatter.h>
-#include <pbxbuild/Action/DefaultFormatter.h>
-
 #endif  // !__pbxbuild_pbxbuild_h

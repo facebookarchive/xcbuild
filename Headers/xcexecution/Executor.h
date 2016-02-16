@@ -7,21 +7,20 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __pbxbuild_Action_Executor_h
-#define __pbxbuild_Action_Executor_h
+#ifndef __xcexecution_Executor_h
+#define __xcexecution_Executor_h
 
-#include <pbxbuild/Base.h>
-#include <pbxbuild/Action/Formatter.h>
-#include <pbxbuild/Build/Environment.h>
-#include <pbxbuild/Build/Context.h>
+#include <xcexecution/Base.h>
+#include <xcexecution/Formatter.h>
 #include <pbxbuild/DirectedGraph.h>
-#include <pbxbuild/Tool/Invocation.h>
 
 namespace pbxbuild {
-
+namespace Build { class Context; }
+namespace Build { class Environment; }
 namespace Target { class Environment; }
+}
 
-namespace Action {
+namespace xcexecution {
 
 /*
  * Abstract executor for builds. The executor is responsible for creating
@@ -44,12 +43,11 @@ public:
      * Abstract build method. Override to implement the build.
      */
     virtual bool build(
-        Build::Environment const &buildEnvironment,
-        Build::Context const &buildContext,
-        DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph) = 0;
+        pbxbuild::Build::Environment const &buildEnvironment,
+        pbxbuild::Build::Context const &buildContext,
+        pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph) = 0;
 };
 
 }
-}
 
-#endif // !__pbxbuild_Action_Executor_h
+#endif // !__xcexecution_Executor_h

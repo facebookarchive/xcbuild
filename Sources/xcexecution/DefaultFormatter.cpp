@@ -7,12 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/Action/DefaultFormatter.h>
+#include <xcexecution/DefaultFormatter.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Build/Context.h>
 
-using pbxbuild::Action::DefaultFormatter;
-namespace Tool = pbxbuild::Tool;
+using xcexecution::DefaultFormatter;
 
 DefaultFormatter::
 DefaultFormatter(bool color) :
@@ -36,7 +35,7 @@ DefaultFormatter::
 #define INDENT std::string("    ")
 
 static std::string
-FormatInvocation(Tool::Invocation const &invocation, bool _color)
+FormatInvocation(pbxbuild::Tool::Invocation const &invocation, bool _color)
 {
     std::string message = invocation.logMessage();
     std::string::size_type space = message.find(' ');
@@ -57,7 +56,7 @@ FormatAction(std::string const &action)
 }
 
 std::string DefaultFormatter::
-begin(Build::Context const &buildContext)
+begin(pbxbuild::Build::Context const &buildContext)
 {
     std::string result;
 
@@ -81,7 +80,7 @@ begin(Build::Context const &buildContext)
 }
 
 std::string DefaultFormatter::
-success(Build::Context const &buildContext)
+success(pbxbuild::Build::Context const &buildContext)
 {
     std::string result;
 
@@ -93,7 +92,7 @@ success(Build::Context const &buildContext)
 }
 
 std::string DefaultFormatter::
-failure(Build::Context const &buildContext, std::vector<Tool::Invocation const> const &failingInvocations)
+failure(pbxbuild::Build::Context const &buildContext, std::vector<pbxbuild::Tool::Invocation const> const &failingInvocations)
 {
     std::string result;
 
@@ -102,7 +101,7 @@ failure(Build::Context const &buildContext, std::vector<Tool::Invocation const> 
     result += ANSI_STYLE_NO_BOLD + ANSI_COLOR_RESET + "\n";
 
     result += "\nThe following build commands failed:\n";
-    for (Tool::Invocation const &invocation : failingInvocations) {
+    for (pbxbuild::Tool::Invocation const &invocation : failingInvocations) {
         result += INDENT + FormatInvocation(invocation, _color) + "\n";
     }
     result += "(" + std::to_string(failingInvocations.size()) + " failure" + (failingInvocations.size() != 1 ? "s" : "") + ")\n";
@@ -111,7 +110,7 @@ failure(Build::Context const &buildContext, std::vector<Tool::Invocation const> 
 }
 
 std::string DefaultFormatter::
-beginTarget(Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
+beginTarget(pbxbuild::Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
     std::string result;
     result += ANSI_STYLE_BOLD + ANSI_COLOR_CYAN;
@@ -135,7 +134,7 @@ beginTarget(Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr
 }
 
 std::string DefaultFormatter::
-finishTarget(Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
+finishTarget(pbxbuild::Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
     return std::string();
 }
@@ -220,7 +219,7 @@ finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
 }
 
 std::string DefaultFormatter::
-beginInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple)
+beginInvocation(pbxbuild::Tool::Invocation const &invocation, std::string const &executable, bool simple)
 {
     if (simple) {
         std::string message = executable;
@@ -253,7 +252,7 @@ beginInvocation(Tool::Invocation const &invocation, std::string const &executabl
 }
 
 std::string DefaultFormatter::
-finishInvocation(Tool::Invocation const &invocation, std::string const &executable, bool simple)
+finishInvocation(pbxbuild::Tool::Invocation const &invocation, std::string const &executable, bool simple)
 {
     if (simple) {
         return std::string();
