@@ -14,8 +14,10 @@ To make xcbuild useful as more than just a build tool, it's built as a collectio
 
 High level overview of each component library:
 
+ - `ext`: *Standalone.* Standard library extensions from the future.
  - `plist`: *Standalone.* Reader, writer, and model for ASCII, binary, and XML property lists.
  - `ninja`: *Standalone.* Generator for Ninja build files.
+ - `dependency`: *Standalone.* Parse dependency info from various tools.
  - `libutil`: Common utilities and platform abstractions.
  - `pbxsetting`: Build setting parsing, levels, and resolution.
  - `xcsdk`: Loads the available platforms, SDKs, and toolchains in a developer root.
@@ -29,7 +31,7 @@ High level overview of each component library:
    - `Target`: Creates the build environment and settings for each target.
    - `Phase`: Implementations for the various build phases (compile, link, copy, etc).
    - `Tool`: Tool implementations for generating command line invocations.
-   - `Action`: Build execution engines and log formatting.
+ - `xcexecution`: Build execution engines and log formatting.
  - `xcdriver`: Parses command line options and drives the build.
 
 ## Style
