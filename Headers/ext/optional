@@ -255,7 +255,7 @@ public:
 	bad_optional_access() : std::logic_error("Bad optional Access") {}
 
 //	Get the key function ~bad_optional_access() into the dylib
-    virtual ~bad_optional_access() _NOEXCEPT;
+    virtual ~bad_optional_access() noexcept;
 };
 
 }
@@ -975,7 +975,7 @@ struct __attribute__ ((__visibility__("default"))) hash<ext::optional<_Tp> >
     typedef size_t        result_type;
 
     __attribute__ ((__always_inline__))
-    result_type operator()(const argument_type& __opt) const _NOEXCEPT
+    result_type operator()(const argument_type& __opt) const noexcept
     {
         return static_cast<bool>(__opt) ? hash<_Tp>()(*__opt) : 0;
     }

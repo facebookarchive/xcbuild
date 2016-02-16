@@ -26,6 +26,6 @@
 
 namespace ext {
 
-bad_optional_access::~bad_optional_access() _NOEXCEPT = default;
+bad_optional_access::~bad_optional_access() noexcept = default;
 
 }
