@@ -10,6 +10,8 @@
 #include <dependency/BinaryDependencyInfo.h>
 #include <dependency/DependencyInfo.h>
 
+#include <algorithm>
+
 using dependency::BinaryDependencyInfo;
 using dependency::DependencyInfo;
 

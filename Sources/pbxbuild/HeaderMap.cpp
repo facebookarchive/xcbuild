@@ -9,6 +9,8 @@
 
 #include <pbxbuild/HeaderMap.h>
 
+#include <cstring>
+
 using pbxbuild::HeaderMap;
 
 static std::string
@@ -25,7 +27,7 @@ CanonicalizeKey(std::string const &key)
 HeaderMap::HeaderMap() :
     _modified(false)
 {
-    std::memset(&_header, 0, sizeof(_header));
+    ::memset(&_header, 0, sizeof(_header));
 
     //
     // Initially we set to 8 buckets.
@@ -135,7 +137,7 @@ write()
 void HeaderMap::
 invalidate()
 {
-    std::memset(&_header, 0, sizeof(_header));
+    ::memset(&_header, 0, sizeof(_header));
     _buckets.clear();
     _strings.clear();
     _offsets.clear();
@@ -245,7 +247,7 @@ add(std::string const &string, bool key)
 
         size_t offset = _strings.size();
         _strings.resize(offset + string.length() + 1);
-        std::memcpy(&_strings[offset], &string[0], string.length() + 1);
+        ::memcpy(&_strings[offset], &string[0], string.length() + 1);
 
         I = _offsets.insert(std::make_pair(string, offset)).first;
 

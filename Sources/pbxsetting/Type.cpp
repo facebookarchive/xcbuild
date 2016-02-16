@@ -13,6 +13,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include <strings.h>
+
 using pbxsetting::Type;
 using libutil::Wildcard;
 

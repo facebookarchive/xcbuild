@@ -259,7 +259,7 @@ insertBack(Level const &level, bool isDefault)
 void Environment::
 dump() const
 {
-    int offset = 0;
+    size_t offset = 0;
 
     for (Level const &level : _levels) {
         if (offset == _offset) {

@@ -15,6 +15,7 @@
 #include <libutil/FSUtil.h>
 
 #include <cstdio>
+#include <cstdarg>
 
 using pbxsetting::ConfigFile;
 using pbxsetting::Level;

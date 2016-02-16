@@ -15,6 +15,8 @@
 
 #include <vector>
 
+#include <string.h>
+
 namespace plist {
 
 class Data : public Object {
@@ -59,7 +61,7 @@ public:
     inline void setValue(void const *bytes, size_t length)
     {
         _value.resize(length);
-        std::memcpy(&_value[0], bytes, length);
+        ::memcpy(&_value[0], bytes, length);
     }
 
 public:

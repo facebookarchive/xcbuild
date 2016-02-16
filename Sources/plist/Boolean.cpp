@@ -12,6 +12,8 @@
 #include <plist/Integer.h>
 #include <plist/Real.h>
 
+#include <strings.h>
+
 using plist::Object;
 using plist::Boolean;
 using plist::Integer;

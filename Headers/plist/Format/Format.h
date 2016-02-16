@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <fstream>
+#include <iterator>
 
 namespace plist {
 namespace Format {
