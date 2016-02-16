@@ -17,13 +17,24 @@ set(CMAKE_BUILD_TYPE "Debug")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color")
+endif ()
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 
 find_library(CORE_FOUNDATION CoreFoundation)
-find_library(CORE_SERVICES CoreServices)
+if ("${CORE_FOUNDATION}" STREQUAL "CORE_FOUNDATION-NOTFOUND")
+  set(CORE_FOUNDATION "")
+endif ()
 
-find_package(libxml2 REQUIRED)
+find_library(CORE_SERVICES CoreServices)
+if ("${CORE_SERVICES}" STREQUAL "CORE_SERVICES-NOTFOUND")
+  set(CORE_SERVICES "")
+endif ()
+
+find_package(LibXml2 REQUIRED)
 include_directories(${LIBXML2_INCLUDE_DIR})
 
 include_directories(Headers)
