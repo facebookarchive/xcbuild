@@ -25,7 +25,7 @@ private:
     XML(Encoding encoding);
 
 public:
-    static Type Type();
+    static Type FormatType();
 
 public:
     inline Encoding encoding() const

@@ -45,7 +45,7 @@ public:
     template<typename T>
     inline T const *format() const
     {
-        if (_type == T::Type()) {
+        if (_type == T::FormatType()) {
             return reinterpret_cast<T const *>(&_contents);
         } else {
             return nullptr;
@@ -58,7 +58,7 @@ public:
     {
         Contents contents;
         *reinterpret_cast<T *>(&contents) = format;
-        return Any(T::Type(), contents);
+        return Any(T::FormatType(), contents);
     }
 };
 

@@ -26,10 +26,12 @@ ASCII(bool strings, Encoding encoding) :
 }
 
 Type ASCII::
-Type()
+FormatType()
 {
     return Type::ASCII;
 }
+
+namespace plist { namespace Format {
 
 template<>
 std::unique_ptr<ASCII> Format<ASCII>::
@@ -257,6 +259,8 @@ Serialize(Object const *object, ASCII const &format)
 
     return std::make_pair(std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>(data.begin(), data.end())), std::string());
 }
+
+} }
 
 ASCII ASCII::
 Create(bool strings, Encoding encoding)

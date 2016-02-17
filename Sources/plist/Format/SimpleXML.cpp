@@ -22,6 +22,8 @@ SimpleXML(Encoding encoding) :
 {
 }
 
+namespace plist { namespace Format {
+
 template<>
 std::unique_ptr<SimpleXML> Format<SimpleXML>::
 Identify(std::vector<uint8_t> const &contents)
@@ -91,6 +93,8 @@ Serialize(Object const *object, SimpleXML const &format)
 {
     return std::make_pair(nullptr, "not yet implemented");
 }
+
+} }
 
 SimpleXML SimpleXML::
 Create(Encoding encoding)

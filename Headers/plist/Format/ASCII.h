@@ -26,7 +26,7 @@ private:
     ASCII(bool strings, Encoding encoding);
 
 public:
-    static Type Type();
+    static Type FormatType();
 
 public:
     inline bool strings() const

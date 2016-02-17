@@ -26,10 +26,12 @@ XML(Encoding encoding) :
 }
 
 Type XML::
-Type()
+FormatType()
 {
     return Type::XML;
 }
+
+namespace plist { namespace Format {
 
 template<>
 std::unique_ptr<XML> Format<XML>::
@@ -111,6 +113,8 @@ Serialize(Object const *object, XML const &format)
 
     return std::make_pair(std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>(data.begin(), data.end())), std::string());
 }
+
+} }
 
 XML XML::
 Create(Encoding encoding)

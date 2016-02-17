@@ -21,6 +21,8 @@ JSON()
 {
 }
 
+namespace plist { namespace Format {
+
 template<>
 std::unique_ptr<JSON> Format<JSON>::
 Identify(std::vector<uint8_t> const &contents)
@@ -51,6 +53,8 @@ Serialize(Object const *object, JSON const &format)
 
     return std::make_pair(std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>(writer.contents())), std::string());
 }
+
+} }
 
 JSON JSON::
 Create()

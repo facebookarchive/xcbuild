@@ -37,6 +37,8 @@ Any::
     }
 }
 
+namespace plist { namespace Format {
+
 template<typename T>
 static std::unique_ptr<Any>
 IdentifyImpl(std::vector<uint8_t> const &contents)
@@ -117,3 +119,5 @@ Serialize(Object const *object, Any const &format)
 	default: abort();
     }
 }
+
+} }

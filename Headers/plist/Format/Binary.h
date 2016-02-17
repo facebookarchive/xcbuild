@@ -21,7 +21,7 @@ private:
     Binary();
 
 public:
-    static Type Type();
+    static Type FormatType();
 
 public:
     static Binary Create();

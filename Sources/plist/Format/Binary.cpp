@@ -39,10 +39,12 @@ Binary()
 }
 
 Type Binary::
-Type()
+FormatType()
 {
     return Type::Binary;
 }
+
+namespace plist { namespace Format {
 
 template<>
 std::unique_ptr<Binary> Format<Binary>::
@@ -423,6 +425,8 @@ Serialize(Object const *object, Binary const &format)
 
     return std::make_pair(std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>(writeContext.contents.begin(), writeContext.contents.end())), std::string());
 }
+
+} }
 
 Binary Binary::
 Create()
