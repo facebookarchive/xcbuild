@@ -32,21 +32,9 @@ Any(Type type, Contents const &contents) :
 }
 
 Any::
-Any(Any const &any)
+Any(Any const &any) :
+    Any(any._type, any._contents)
 {
-    _type = any._type;
-
-    switch (_type) {
-        case Type::Binary:
-            _contents.binary = any._contents.binary;
-            break;
-        case Type::XML:
-            _contents.xml = any._contents.xml;
-            break;
-        case Type::ASCII:
-            _contents.ascii = any._contents.ascii;
-            break;
-    }
 }
 
 Any::
