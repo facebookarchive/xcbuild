@@ -33,6 +33,8 @@ xcbuild and [xctool](https://github.com/facebook/xctool) are both Xcode-compatib
 
 ## Building
 
+[![Build Status](https://travis-ci.com/facebook/xcbuild.svg?token=p4iwmVwonzx8yB5jYjFo&branch=master)](https://travis-ci.com/facebook/xcbuild)
+
 - Xcode 7 or later, on OS X.
 - [CMake](http://www.cmake.org) and [Ninja](https://martine.github.io/ninja/) (or [llbuild](https://github.com/apple/swift-llbuild)). 
   - With [Homebrew](http://brew.sh/): `brew install cmake ninja`
