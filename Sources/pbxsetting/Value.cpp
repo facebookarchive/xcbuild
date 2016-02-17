@@ -228,10 +228,7 @@ String(std::string const &value)
     }
 
     return Value({
-        Entry({
-            .type = Value::Entry::String,
-            .string = value,
-        }),
+        Entry(Value::Entry::String, value),
     });
 }
 
@@ -239,15 +236,9 @@ Value Value::
 Variable(std::string const &value)
 {
     return Value({
-        Entry({
-            .type = Value::Entry::Value,
-            .value = std::make_shared<Value>(Value({
-                Entry({
-                    .type = Value::Entry::String,
-                    .string = value,
-                }),
-            })),
-        }),
+        Entry(Value::Entry::Value, std::make_shared<Value>(Value({
+            Entry(Value::Entry::String, value),
+        }))),
     });
 }
 
