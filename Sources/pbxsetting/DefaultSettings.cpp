@@ -42,13 +42,18 @@ Environment(void)
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));
 
-    // FIXME(grp): This is definitely not portable.
+#if defined(__APPLE__)
     size_t len = confstr(_CS_DARWIN_USER_CACHE_DIR, NULL, 0);
     char *cache = (char *)malloc(len);
     confstr(_CS_DARWIN_USER_CACHE_DIR, cache, len);
-    std::string cache_root = FSUtil::NormalizePath(std::string(cache) + "/com.apple.DeveloperTools/6.4-$(XCODE_PRODUCT_BUILD_VERSION)/Xcode");
-    settings.push_back(Setting::Create("CACHE_ROOT", cache_root));
+    std::string cache_root = std::string(cache);
     free(cache);
+#else
+    // TODO(grp): Find a better cache root.
+    std::string cache_root = "/tmp";
+#endif
+    cache_root = FSUtil::NormalizePath(cache_root + "/com.apple.DeveloperTools/6.4-$(XCODE_PRODUCT_BUILD_VERSION)/Xcode");
+    settings.push_back(Setting::Create("CACHE_ROOT", cache_root));
 
     // Seems identical to TEMP_FILE_DIR but with an 'S'.
     settings.push_back(Setting::Parse("TEMP_FILES_DIR", "$(TEMP_DIR)"));
