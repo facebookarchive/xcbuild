@@ -77,8 +77,8 @@ build(
     return true;
 }
 
-static ext::optional<std::vector<pbxbuild::Tool::Invocation const>>
-SortInvocations(std::vector<pbxbuild::Tool::Invocation const> const &invocations)
+static ext::optional<std::vector<pbxbuild::Tool::Invocation>>
+SortInvocations(std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
     std::unordered_map<std::string, pbxbuild::Tool::Invocation const *> outputToInvocation;
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
@@ -111,7 +111,7 @@ SortInvocations(std::vector<pbxbuild::Tool::Invocation const> const &invocations
         }
     }
 
-    std::vector<pbxbuild::Tool::Invocation const> result;
+    std::vector<pbxbuild::Tool::Invocation> result;
 
     ext::optional<std::vector<pbxbuild::Tool::Invocation const *>> orderedInvocations = graph.ordered();
     if (!orderedInvocations) {
@@ -128,7 +128,7 @@ bool SimpleExecutor::
 writeAuxiliaryFiles(
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
-    std::vector<pbxbuild::Tool::Invocation const> const &invocations)
+    std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
     Formatter::Print(_formatter->beginWriteAuxiliaryFiles(target));
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
@@ -173,11 +173,11 @@ writeAuxiliaryFiles(
     return true;
 }
 
-std::pair<bool, std::vector<pbxbuild::Tool::Invocation const>> SimpleExecutor::
+std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 performInvocations(
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
-    std::vector<pbxbuild::Tool::Invocation const> const &orderedInvocations,
+    std::vector<pbxbuild::Tool::Invocation> const &orderedInvocations,
     bool createProductStructure)
 {
     for (pbxbuild::Tool::Invocation const &invocation : orderedInvocations) {
@@ -199,7 +199,7 @@ performInvocations(
                 std::string directory = FSUtil::GetDirectoryName(output);
 
                 if (!FSUtil::CreateDirectory(directory)) {
-                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation const>({ invocation }));
+                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
             }
 
@@ -208,19 +208,19 @@ performInvocations(
                 std::shared_ptr<builtin::Driver> driver = _builtins.driver(invocation.executable().builtin());
                 if (driver == nullptr) {
                     Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
-                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation const>({ invocation }));
+                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
 
                 if (driver->run(invocation.arguments(), invocation.environment(), invocation.workingDirectory()) != 0) {
                     Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
-                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation const>({ invocation }));
+                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
             } else {
                 /* External tool, run the tool externally. */
                 Subprocess process;
                 if (!process.execute(invocation.executable().path(), invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
                     Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
-                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation const>({ invocation }));
+                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
             }
         }
@@ -228,38 +228,38 @@ performInvocations(
         Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
     }
 
-    return std::make_pair(true, std::vector<pbxbuild::Tool::Invocation const>());
+    return std::make_pair(true, std::vector<pbxbuild::Tool::Invocation>());
 }
 
-std::pair<bool, std::vector<pbxbuild::Tool::Invocation const>> SimpleExecutor::
+std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 buildTarget(
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
-    std::vector<pbxbuild::Tool::Invocation const> const &invocations)
+    std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
     if (!writeAuxiliaryFiles(target, targetEnvironment, invocations)) {
-        return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation const>());
+        return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>());
     }
 
-    ext::optional<std::vector<pbxbuild::Tool::Invocation const>> orderedInvocations = SortInvocations(invocations);
+    ext::optional<std::vector<pbxbuild::Tool::Invocation>> orderedInvocations = SortInvocations(invocations);
     if (!orderedInvocations) {
         fprintf(stderr, "error: cycle detected building invocation graph\n");
-        return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation const>());
+        return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>());
     }
 
     Formatter::Print(_formatter->beginCreateProductStructure(target));
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation const>> structureResult = performInvocations(target, targetEnvironment, *orderedInvocations, true);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(target, targetEnvironment, *orderedInvocations, true);
     Formatter::Print(_formatter->finishCreateProductStructure(target));
     if (!structureResult.first) {
         return structureResult;
     }
 
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation const>> invocationsResult = performInvocations(target, targetEnvironment, *orderedInvocations, false);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(target, targetEnvironment, *orderedInvocations, false);
     if (!invocationsResult.first) {
         return invocationsResult;
     }
 
-    return std::make_pair(true, std::vector<pbxbuild::Tool::Invocation const>());
+    return std::make_pair(true, std::vector<pbxbuild::Tool::Invocation>());
 }
 
 std::unique_ptr<SimpleExecutor> SimpleExecutor::

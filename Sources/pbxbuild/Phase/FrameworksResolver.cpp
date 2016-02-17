@@ -90,7 +90,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
             std::vector<std::string> sourceOutputs;
             auto it = phaseContext->toolContext().variantArchitectureInvocations().find(std::make_pair(variant, arch));
             if (it != phaseContext->toolContext().variantArchitectureInvocations().end()) {
-                std::vector<Tool::Invocation const> const &sourceInvocations = it->second;
+                std::vector<Tool::Invocation> const &sourceInvocations = it->second;
                 for (Tool::Invocation const &invocation : sourceInvocations) {
                     for (std::string const &output : invocation.outputs()) {
                         // TODO(grp): Is this the right set of source outputs to link?

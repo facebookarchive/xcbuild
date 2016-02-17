@@ -28,7 +28,7 @@ public:
 public:
     virtual std::string begin(pbxbuild::Build::Context const &buildContext);
     virtual std::string success(pbxbuild::Build::Context const &buildContext);
-    virtual std::string failure(pbxbuild::Build::Context const &buildContext, std::vector<pbxbuild::Tool::Invocation const> const &failingInvocations);
+    virtual std::string failure(pbxbuild::Build::Context const &buildContext, std::vector<pbxbuild::Tool::Invocation> const &failingInvocations);
 
 public:
     virtual std::string beginTarget(pbxbuild::Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target);

@@ -20,14 +20,14 @@ class Environment;
 
 class PhaseInvocations {
 private:
-    std::vector<Tool::Invocation const> _invocations;
+    std::vector<Tool::Invocation> _invocations;
 
 public:
-    PhaseInvocations(std::vector<Tool::Invocation const> const &invocations);
+    PhaseInvocations(std::vector<Tool::Invocation> const &invocations);
     ~PhaseInvocations();
 
 public:
-    std::vector<Tool::Invocation const> const &invocations() const
+    std::vector<Tool::Invocation> const &invocations() const
     { return _invocations; }
 
 public:

@@ -92,7 +92,7 @@ success(pbxbuild::Build::Context const &buildContext)
 }
 
 std::string DefaultFormatter::
-failure(pbxbuild::Build::Context const &buildContext, std::vector<pbxbuild::Tool::Invocation const> const &failingInvocations)
+failure(pbxbuild::Build::Context const &buildContext, std::vector<pbxbuild::Tool::Invocation> const &failingInvocations)
 {
     std::string result;
 

@@ -347,7 +347,7 @@ buildTargetAuxiliaryFiles(
     ninja::Writer *writer,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
-    std::vector<pbxbuild::Tool::Invocation const> const &invocations)
+    std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
     // TODO(grp): In a dry run, Ninja will still need these files to exist, but the whole
     // point of a dry run is to avoid the filesystem. What's the best way to resolve this?
@@ -386,7 +386,7 @@ bool NinjaExecutor::
 buildTargetInvocations(
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
-    std::vector<pbxbuild::Tool::Invocation const> const &invocations)
+    std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
     std::string targetBegin = TargetNinjaBegin(target);
 

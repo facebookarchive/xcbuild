@@ -38,8 +38,8 @@ private:
     std::vector<std::string>            _additionalInfoPlistContents;
 
 private:
-    std::vector<Tool::Invocation const> _invocations;
-    std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation const>> _variantArchitectureInvocations;
+    std::vector<Tool::Invocation> _invocations;
+    std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation>> _variantArchitectureInvocations;
 
 public:
     Context(
@@ -85,15 +85,15 @@ public:
     { return _additionalInfoPlistContents; }
 
 public:
-    std::vector<Tool::Invocation const> const &invocations() const
+    std::vector<Tool::Invocation> const &invocations() const
     { return _invocations; }
-    std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation const>> const &variantArchitectureInvocations() const
+    std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation>> const &variantArchitectureInvocations() const
     { return _variantArchitectureInvocations; }
 
 public:
-    std::vector<Tool::Invocation const> &invocations()
+    std::vector<Tool::Invocation> &invocations()
     { return _invocations; }
-    std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation const>> &variantArchitectureInvocations()
+    std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation>> &variantArchitectureInvocations()
     { return _variantArchitectureInvocations; }
 };
 

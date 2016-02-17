@@ -37,16 +37,16 @@ private:
     bool writeAuxiliaryFiles(
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
-        std::vector<pbxbuild::Tool::Invocation const> const &invocations);
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation const>> performInvocations(
+        std::vector<pbxbuild::Tool::Invocation> const &invocations);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> performInvocations(
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
-        std::vector<pbxbuild::Tool::Invocation const> const &orderedInvocations,
+        std::vector<pbxbuild::Tool::Invocation> const &orderedInvocations,
         bool createProductStructure);
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation const>> buildTarget(
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> buildTarget(
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
-        std::vector<pbxbuild::Tool::Invocation const> const &invocations);
+        std::vector<pbxbuild::Tool::Invocation> const &invocations);
 
 public:
     static std::unique_ptr<SimpleExecutor>

@@ -45,7 +45,7 @@ StartsWith(std::string const &str, std::string const &prefix)
 }
 
 static std::unordered_set<std::string>
-DirectoriesContainingOutputs(std::vector<Tool::Invocation const> const &invocations, std::unordered_set<std::string> const &directories)
+DirectoriesContainingOutputs(std::vector<Tool::Invocation> const &invocations, std::unordered_set<std::string> const &directories)
 {
     std::unordered_set<std::string> populatedDirectories;
 
@@ -97,7 +97,7 @@ ResolveBundleStructure(Phase::Environment const &phaseEnvironment, Phase::Contex
     /*
      * Check which directories contain files from other invocations.
      */
-    std::vector<Tool::Invocation const> const &invocations = phaseContext->toolContext().invocations();
+    std::vector<Tool::Invocation> const &invocations = phaseContext->toolContext().invocations();
     std::unordered_set<std::string> populatedDirectories = DirectoriesContainingOutputs(invocations, possibleDirectories);
 
     /*
@@ -176,7 +176,7 @@ ResolveFrameworkStructure(Phase::Environment const &phaseEnvironment, Phase::Con
     }
 
     /* Has any outputs in the plugins directory: needs plugins. */
-    std::vector<Tool::Invocation const> const &invocations = phaseContext->toolContext().invocations();
+    std::vector<Tool::Invocation> const &invocations = phaseContext->toolContext().invocations();
     std::string pluginsDirectory = targetBuildDirectory + "/" + environment.resolve("PLUGINS_FOLDER_PATH");
     if (!DirectoriesContainingOutputs(invocations, { pluginsDirectory }).empty()) {
         symlinks.insert(Symlink::Plugins);
