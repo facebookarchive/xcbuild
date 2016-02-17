@@ -56,9 +56,14 @@ ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<st
     pbxspec::PBX::Tool::shared_ptr tool = nullptr;
     std::string TS = projBuildRule->compilerSpec();
     if (TS != "com.apple.compilers.proxy.script") {
-        tool = specManager->tool(TS, domains) ?:
-            std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(TS, domains)) ?:
-            std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(TS, domains));
+        tool = specManager->tool(TS, domains);
+        if (tool == nullptr) {
+            tool = std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(TS, domains));
+        }
+        if (tool == nullptr) {
+            tool = std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(TS, domains));
+        }
+
         if (tool == nullptr) {
             fprintf(stderr, "warning: couldn't find tool %s specified in build rule\n", TS.c_str());
             return nullptr;
@@ -98,9 +103,14 @@ SpecificationBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vec
     }
 
     std::string const &TS = *specBuildRule->compilerSpec();
-    pbxspec::PBX::Tool::shared_ptr tool = specManager->tool(TS, domains) ?:
-        std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(TS, domains)) ?:
-        std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(TS, domains));
+    pbxspec::PBX::Tool::shared_ptr tool = specManager->tool(TS, domains);
+    if (tool == nullptr) {
+        tool = std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->compiler(TS, domains));
+    }
+    if (tool == nullptr) {
+        tool = std::static_pointer_cast<pbxspec::PBX::Tool>(specManager->linker(TS, domains));
+    }
+
     if (tool == nullptr) {
         return nullptr;
     }
