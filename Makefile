@@ -13,7 +13,7 @@ cmake := cmake
 cmake_flags := -G Ninja
 
 ninja := $(if $(shell which llbuild),llbuild ninja build,ninja)
-ninja_flags :=
+ninja_flags := $(if $(shell echo "$$NINJA_JOBS"),-j$(shell echo "$$NINJA_JOBS"),)
 
 all:
 	mkdir -p $(build)

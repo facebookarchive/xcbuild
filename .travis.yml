@@ -10,18 +10,21 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      compiler: gcc48
+      compiler: gcc5
       env:
-        - CC=gcc-4.8
-        - CXX=g++-4.8
+        - CC=gcc-5
+        - CXX=g++-5
+
+        # Travis is so parallel it runs out of memory. Limit that.
+        - NINJA_JOBS=2
       addons:
         apt:
           sources:
             - kalakris-cmake
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-4.8
-            - g++-4.8
+            - gcc-5
+            - g++-5
             - libxml2-dev
             - ninja-build
             - cmake
