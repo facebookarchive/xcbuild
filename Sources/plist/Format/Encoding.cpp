@@ -12,6 +12,10 @@
 
 #include <cassert>
 
+#if !defined(__APPLE__)
+#include <endian.h>
+#endif
+
 using plist::Format::Encoding;
 using plist::Format::Encodings;
 
@@ -66,6 +70,7 @@ BOM(Encoding encoding)
             return { 0x00, 0x00, 0xFE, 0xFF };
         case Encoding::UTF32LE:
             return { 0xFF, 0xFE, 0x00, 0x00 };
+        default: abort();
     }
 }
 
@@ -74,9 +79,9 @@ enum class Endian {
     Little,
 };
 
-#if defined(__BIG_ENDIAN__)
+#if defined(__BIG_ENDIAN__) || __BYTE_ORDER == __BIG_ENDIAN
 static Endian const HostEndian = Endian::Big;
-#elif defined(__LITTLE_ENDIAN__)
+#elif defined(__LITTLE_ENDIAN__) || __BYTE_ORDER == __LITTLE_ENDIAN
 static Endian const HostEndian = Endian::Little;
 #else
 #error Unknown endianness.
@@ -94,6 +99,7 @@ EncodingEndian(Encoding encoding)
         case Encoding::UTF32BE:
         case Encoding::UTF16BE:
             return Endian::Big;
+        default: abort();
     }
 }
 

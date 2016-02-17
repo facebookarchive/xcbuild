@@ -11,6 +11,7 @@
 #include <plist/Objects.h>
 
 #include <cassert>
+#include <cinttypes>
 
 using plist::Format::JSONWriter;
 using plist::Object;
@@ -323,7 +324,7 @@ handleInteger(Integer const *integer, bool root)
     int               rc;
     char              buf[32];
 
-    rc = snprintf(buf, sizeof(buf), "%lld", integer->value());
+    rc = snprintf(buf, sizeof(buf), "%" PRId64, integer->value());
     assert(rc < (int)sizeof(buf));
 
     if (!writeString(buf, !_lastKey)) {

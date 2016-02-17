@@ -88,6 +88,7 @@ Deserialize(std::vector<uint8_t> const &contents, Any const &format)
             return DeserializeImpl<XML>(contents, format);
         case Type::ASCII:
             return DeserializeImpl<ASCII>(contents, format);
+	default: abort();
     }
 }
 
@@ -113,5 +114,6 @@ Serialize(Object const *object, Any const &format)
             return SerializeImpl<XML>(object, format);
         case Type::ASCII:
             return SerializeImpl<ASCII>(object, format);
+	default: abort();
     }
 }

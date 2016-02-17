@@ -15,6 +15,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Phase/File.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxbuild/Tool/ToolResolver.h>
 
 namespace pbxbuild {
 
@@ -30,7 +31,6 @@ namespace Tool {
     class SwiftResolver;
     class SymlinkResolver;
     class TouchResolver;
-    class ToolResolver;
 }
 
 namespace Phase {
