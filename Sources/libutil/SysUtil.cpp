@@ -12,6 +12,8 @@
 
 #include <sstream>
 
+#include <cstring>
+
 #include <pwd.h>
 #include <grp.h>
 #include <unistd.h>
@@ -20,9 +22,11 @@
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
-#elif defined(__linux__) && defined(__GLIBC__)
-#include <sys/auxv.h>
+#elif defined(__linux__)
 #include <linux/limits.h>
+#if __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16
+#include <sys/auxv.h>
+#endif
 #endif
 
 extern char **environ;
@@ -47,14 +51,18 @@ EnvironmentVariables()
     return environment;
 }
 
-#if defined(__linux__) && defined(__GLIBC__)
-char initialWorkingDirectory[PATH_MAX] = { 0 };
+#if defined(__linux__)
+#if defined(__GLIBC__)
+static char initialWorkingDirectory[PATH_MAX] = { 0 };
+static char initialExecutablePath[PATH_MAX] = { 0 };
 
 __attribute__((constructor))
-static void GetExecutablePathInitialize()
+static void GetExecutablePathInitialize(int argc, char **argv)
 {
     getcwd(initialWorkingDirectory, sizeof(initialWorkingDirectory));
+    strncpy(initialExecutablePath, argv[0], sizeof(initialExecutablePath));
 }
+#endif
 #endif
 
 std::string SysUtil::
@@ -73,12 +81,18 @@ GetExecutablePath()
     }
 
     return FSUtil::NormalizePath(buffer);
-#elif defined(__linux__) && defined(__GLIBC__)
+#elif defined(__linux__)
+#if __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16
     char const *path = reinterpret_cast<char const *>(getauxval(AT_EXECFN));
     if (path == NULL) {
         assert(false);
         abort();
     }
+#elif defined(__GLIBC__)
+    char const *path = reinterpret_cast<char const *>(initialExecutablePath);
+#else
+#error Unsupported platform.
+#endif
 
     std::string absolutePath = FSUtil::ResolveRelativePath(std::string(path), std::string(initialWorkingDirectory));
     return FSUtil::NormalizePath(absolutePath);
