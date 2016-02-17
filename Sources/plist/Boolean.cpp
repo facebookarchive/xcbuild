@@ -20,13 +20,10 @@ using plist::Integer;
 using plist::Real;
 using plist::String;
 
-Boolean const Boolean::kTrue(true);
-Boolean const Boolean::kFalse(false);
-
 std::unique_ptr<Boolean> Boolean::
 New(bool value)
 {
-    return std::unique_ptr<Boolean>(const_cast<Boolean *>(value ? &kTrue : &kFalse));
+    return std::unique_ptr<Boolean>(new Boolean(value));
 }
 
 bool Boolean::
@@ -37,6 +34,12 @@ equals(Object const *obj) const
 
     Boolean const *objt = CastTo <Boolean> (obj);
     return (objt != nullptr && equals(objt));
+}
+
+bool Boolean::
+equals(Boolean const *obj) const
+{
+    return (obj != nullptr && (obj == this || value() == obj->value()));
 }
 
 std::unique_ptr<Object> Boolean::

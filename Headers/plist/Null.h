@@ -22,24 +22,6 @@ private:
     }
 
 public:
-    static void *operator new(size_t) throw()
-    {
-        return nullptr;
-    }
-
-    static void operator delete(void *)
-    {
-    }
-
-public:
-    virtual void release() const
-    {
-    }
-
-private:
-    static Null const kNull;
-
-public:
     static std::unique_ptr<Null> New();
 
 public:

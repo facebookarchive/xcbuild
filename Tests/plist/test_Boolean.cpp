@@ -27,11 +27,11 @@ TEST(Boolean, Identity)
 {
     auto t1 = Boolean::New(true);
     auto t2 = Boolean::New(true);
-    EXPECT_EQ(t1, t2);
+    EXPECT_TRUE(t1->equals(t2.get()));
 
     auto f1 = Boolean::New(false);
     auto f2 = Boolean::New(false);
-    EXPECT_EQ(f1, f2);
+    EXPECT_TRUE(f1->equals(f2.get()));
 }
 
 TEST(Boolean, Coerce)

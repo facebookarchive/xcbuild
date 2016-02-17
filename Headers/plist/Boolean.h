@@ -26,25 +26,6 @@ private:
     }
 
 public:
-    static void *operator new(size_t) throw()
-    {
-        return nullptr;
-    }
-
-    static void operator delete(void *)
-    {
-    }
-
-public:
-    virtual void release() const
-    {
-    }
-
-private:
-    static Boolean const kTrue;
-    static Boolean const kFalse;
-
-public:
     static std::unique_ptr<Boolean> New(bool value);
 
 public:
@@ -76,10 +57,7 @@ public:
 
 public:
     virtual bool equals(Object const *obj) const;
-    virtual bool equals(Boolean const *obj) const
-    {
-        return (obj != nullptr && (obj == this || value() == obj->value()));
-    }
+    virtual bool equals(Boolean const *obj) const;
 };
 
 }
