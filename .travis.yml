@@ -10,11 +10,15 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      compiler: gcc
+      compiler: gcc48
       addons:
         apt:
-          sources: kalakris-cmake
+          sources:
+            - kalakris-cmake
+            - ubuntu-toolchain-r-test
           packages:
+            - gcc-4.8
+            - g++-4.8
             - libxml2-dev
             - ninja-build
             - cmake
