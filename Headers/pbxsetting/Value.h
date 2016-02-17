@@ -43,6 +43,9 @@ public:
             Value,
         };
 
+        Entry(Type type, std::string const &string);
+        Entry(Type type, std::shared_ptr<class Value> const &value);
+
         bool operator==(Entry const &rhs) const;
         bool operator!=(Entry const &rhs) const;
 

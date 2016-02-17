@@ -15,6 +15,20 @@
 
 using pbxsetting::Value;
 
+Value::Entry::
+Entry(Type type, std::string const &string) :
+    type  (type),
+    string(string)
+{
+}
+
+Value::Entry::
+Entry(Type type, std::shared_ptr<class Value> const &value) :
+    type (type),
+    value(value)
+{
+}
+
 bool Value::Entry::
 operator==(Entry const &rhs) const
 {
@@ -177,7 +191,7 @@ ParseValue(std::string const &value, size_t from, ValueDelimiter end = kDelimite
         if (open == std::string::npos || start == kDelimiterNone || open >= to) {
             length = to - append_offset;
             if (length > 0) {
-                entries.push_back({ .type = Value::Entry::String, .string = value.substr(append_offset, length) });
+                entries.push_back(Value::Entry(Value::Entry::String, value.substr(append_offset, length)));
             }
 
             return { .found = true, .end = to, .value = Value(entries) };
@@ -187,10 +201,10 @@ ParseValue(std::string const &value, size_t from, ValueDelimiter end = kDelimite
         if (result.found) {
             length = open - append_offset;
             if (length > 0) {
-                entries.push_back({ .type = Value::Entry::String, .string = value.substr(append_offset, length) });
+                entries.push_back(Value::Entry(Value::Entry::String, value.substr(append_offset, length)));
             }
 
-            entries.push_back({ .type = Value::Entry::Value, .value = std::make_shared<Value>(result.value) });
+            entries.push_back(Value::Entry(Value::Entry::Value, std::make_shared<Value>(result.value)));
 
             append_offset = result.end + closelen;
             search_offset = result.end + closelen;
