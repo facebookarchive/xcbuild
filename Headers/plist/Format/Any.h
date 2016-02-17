@@ -35,6 +35,7 @@ private:
 
 public:
     Any(Type type, Contents const &contents);
+    Any(Any const &);
     ~Any();
 
 public:
