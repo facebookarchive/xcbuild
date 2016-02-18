@@ -49,8 +49,7 @@ ParseList(std::string const &value)
     char quote = '\0';
     bool escaped = false;
 
-    for (std::string::size_type i = 0; i < value.size(); i++) {
-        char c = value[i];
+    for (char c : value) {
         if (!escaped) {
             if (c == '\'' || c == '"') {
                 if (quote != '\0') {
