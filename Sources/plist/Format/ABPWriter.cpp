@@ -533,9 +533,9 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
     };
 
     bool (*writer)(ABPContext *, Object const *) = nullptr;
-    for (int i = 0; i < sizeof(kTypeToCB) / sizeof(*kTypeToCB); ++i) {
-        if (kTypeToCB[i].type == type) {
-            writer = (bool(*)(ABPContext *, Object const *))kTypeToCB[i].cb;
+    for (auto const &it : kTypeToCB) {
+        if (it.type == type) {
+            writer = (bool(*)(ABPContext *, Object const *))it.cb;
             break;
         }
     }

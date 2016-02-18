@@ -174,8 +174,8 @@ public:
         if (count() != obj->count())
             return false;
 
-        for (auto it = _map.begin(); it != _map.end(); ++it) {
-            if (!value(it->first)->equals(obj->value(it->first)))
+        for (auto const &it : _map) {
+            if (!value(it.first)->equals(obj->value(it.first)))
                 return false;
         }
 

@@ -81,26 +81,26 @@ read(std::vector<uint8_t> const &buffer)
     //
     // Now fill _keys and _offsets so that we can manipulate this hmap.
     //
-    for (size_t n = 0; n < _buckets.size(); n++) {
-        if (_buckets[n].Key == HMAP_EmptyBucketKey)
+    for (auto const &bucket : _buckets) {
+        if (bucket.Key == HMAP_EmptyBucketKey)
             continue;
 
-        if (_buckets[n].Key >= _strings.size() ||
-            _buckets[n].Suffix >= _strings.size() ||
-            _buckets[n].Prefix >= _strings.size())
+        if (bucket.Key >= _strings.size() ||
+            bucket.Suffix >= _strings.size() ||
+            bucket.Prefix >= _strings.size())
             continue;
 
-        _keys.insert(CanonicalizeKey(&_strings[_buckets[n].Key]));
+        _keys.insert(CanonicalizeKey(&_strings[bucket.Key]));
 
         _offsets.insert(std::make_pair(
-                    &_strings[_buckets[n].Key],
-                    _buckets[n].Key));
+                    &_strings[bucket.Key],
+                    bucket.Key));
         _offsets.insert(std::make_pair(
-                    &_strings[_buckets[n].Prefix],
-                    _buckets[n].Prefix));
+                    &_strings[bucket.Prefix],
+                    bucket.Prefix));
         _offsets.insert(std::make_pair(
-                    &_strings[_buckets[n].Suffix],
-                    _buckets[n].Suffix));
+                    &_strings[bucket.Suffix],
+                    bucket.Suffix));
     }
 
     _modified = false;

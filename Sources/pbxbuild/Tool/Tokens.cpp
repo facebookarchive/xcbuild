@@ -112,8 +112,8 @@ ExpandTool(
      * line's settings first or, if the values contain spaces, they would be split incorrectly.
      */
     std::vector<std::string> expandedCommandLine = Expand(resolvedCommandLine, resolvedExecutable, arguments, specialArguments, inputs, outputs);
-    for (auto it = expandedCommandLine.begin(); it != expandedCommandLine.end(); ++it) {
-        *it = environment.expand(pbxsetting::Value::Parse(*it));
+    for (auto &it : expandedCommandLine) {
+        it = environment.expand(pbxsetting::Value::Parse(it));
     }
 
     /*

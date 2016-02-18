@@ -345,9 +345,9 @@ handleData(Data const *data, bool root)
     _lastKey = false;
 
     std::vector<uint8_t> const &value = data->value();
-    for (int i = 0; i < value.size(); ++i) {
+    for (auto it : value) {
         char buf[3];
-        int  rc = snprintf(buf, sizeof(buf), "%02x", value[i]);
+        int  rc = snprintf(buf, sizeof(buf), "%02x", it);
         assert(rc < (int)sizeof(buf));
 
         if (!writeString(buf, false)) {
