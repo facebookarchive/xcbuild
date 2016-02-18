@@ -64,7 +64,7 @@ Identify(std::vector<uint8_t> const &contents)
     enum State state = kStateBegin, pstate = state;
     bool identifier = false;
 
-    for (std::vector<uint8_t>::const_iterator bp = contents.begin(); bp != contents.end();) {
+    for (auto bp = contents.begin(); bp != contents.end();) {
         /* Conceal zeroes for UTF-16/32 encodings. */
         if (*bp == 0 || (state != kStateComment &&
                          state != kStateInlineComment &&
