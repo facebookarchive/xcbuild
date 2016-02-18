@@ -55,6 +55,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     }
 
     OSStatus status = LSRegisterURL(URL, true);
+    CFRelease(URL);
     if (status != noErr) {
         fprintf(stderr, "error: LSRegisterURL failed %ld\n", (long)status);
         return 1;
