@@ -273,7 +273,7 @@ NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, 
         return std::make_pair(false, "unknown type option " + arg);
     }
 
-    *adjustment = std::move(Options::Adjustment(type, path, std::move(object)));
+    *adjustment = Options::Adjustment(type, path, std::move(object));
 
     return result;
 }
