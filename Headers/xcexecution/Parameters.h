@@ -105,13 +105,13 @@ public:
      */
     ext::optional<pbxbuild::WorkspaceContext> loadWorkspace(
         pbxbuild::Build::Environment const &buildEnvironment,
-        std::string const &workingDirectory);
+        std::string const &workingDirectory) const;
 
     /*
      * Creates the build context for a specific action.
      */
     ext::optional<pbxbuild::Build::Context> createBuildContext(
-        pbxbuild::WorkspaceContext const &workspaceContext);
+        pbxbuild::WorkspaceContext const &workspaceContext) const;
 
     /*
      * Resolve inter-target dependencies.
@@ -119,7 +119,7 @@ public:
     ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>>
     resolveDependencies(
         pbxbuild::Build::Environment const &buildEnvironment,
-        pbxbuild::Build::Context const &buildContext);
+        pbxbuild::Build::Context const &buildContext) const;
 };
 
 }

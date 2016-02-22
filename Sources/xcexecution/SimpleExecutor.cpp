@@ -9,6 +9,7 @@
 
 #include <xcexecution/SimpleExecutor.h>
 
+#include <xcexecution/Parameters.h>
 #include <builtin/Driver.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
@@ -37,43 +38,57 @@ SimpleExecutor::
 bool SimpleExecutor::
 build(
     pbxbuild::Build::Environment const &buildEnvironment,
-    pbxbuild::Build::Context const &buildContext,
-    pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
+    Parameters const &buildParameters)
 {
-    Formatter::Print(_formatter->begin(buildContext));
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(buildEnvironment, FSUtil::GetCurrentDirectory());
+    if (!workspaceContext) {
+        return false;
+    }
 
-    ext::optional<std::vector<pbxproj::PBX::Target::shared_ptr>> orderedTargets = targetGraph.ordered();
+    ext::optional<pbxbuild::Build::Context> buildContext = buildParameters.createBuildContext(*workspaceContext);
+    if (!buildContext) {
+        return false;
+    }
+
+    Formatter::Print(_formatter->begin(*buildContext));
+
+    ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>> targetGraph = buildParameters.resolveDependencies(buildEnvironment, *buildContext);
+    if (!targetGraph) {
+        return false;
+    }
+
+    ext::optional<std::vector<pbxproj::PBX::Target::shared_ptr>> orderedTargets = targetGraph->ordered();
     if (!orderedTargets) {
         fprintf(stderr, "error: cycle detected in target dependencies\n");
         return false;
     }
 
     for (pbxproj::PBX::Target::shared_ptr const &target : *orderedTargets) {
-        Formatter::Print(_formatter->beginTarget(buildContext, target));
+        Formatter::Print(_formatter->beginTarget(*buildContext, target));
 
-        ext::optional<pbxbuild::Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        ext::optional<pbxbuild::Target::Environment> targetEnvironment = buildContext->targetEnvironment(buildEnvironment, target);
         if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
-            Formatter::Print(_formatter->finishTarget(buildContext, target));
+            Formatter::Print(_formatter->finishTarget(*buildContext, target));
             continue;
         }
 
         Formatter::Print(_formatter->beginCheckDependencies(target));
-        pbxbuild::Phase::Environment phaseEnvironment = pbxbuild::Phase::Environment(buildEnvironment, buildContext, target, *targetEnvironment);
+        pbxbuild::Phase::Environment phaseEnvironment = pbxbuild::Phase::Environment(buildEnvironment, *buildContext, target, *targetEnvironment);
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
         Formatter::Print(_formatter->finishCheckDependencies(target));
 
         auto result = buildTarget(target, *targetEnvironment, phaseInvocations.invocations());
         if (!result.first) {
-            Formatter::Print(_formatter->finishTarget(buildContext, target));
-            Formatter::Print(_formatter->failure(buildContext, result.second));
+            Formatter::Print(_formatter->finishTarget(*buildContext, target));
+            Formatter::Print(_formatter->failure(*buildContext, result.second));
             return false;
         }
 
-        Formatter::Print(_formatter->finishTarget(buildContext, target));
+        Formatter::Print(_formatter->finishTarget(*buildContext, target));
     }
 
-    Formatter::Print(_formatter->success(buildContext));
+    Formatter::Print(_formatter->success(*buildContext));
     return true;
 }
 

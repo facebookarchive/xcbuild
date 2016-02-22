@@ -22,6 +22,8 @@ namespace Target { class Environment; }
 
 namespace xcexecution {
 
+class Parameters;
+
 /*
  * Abstract executor for builds. The executor is responsible for creating
  * environments for the target graph and actually executing the build, taking
@@ -44,8 +46,7 @@ public:
      */
     virtual bool build(
         pbxbuild::Build::Environment const &buildEnvironment,
-        pbxbuild::Build::Context const &buildContext,
-        pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph) = 0;
+        Parameters const &buildParameters) = 0;
 };
 
 }

@@ -146,36 +146,10 @@ Run(Options const &options)
      */
     xcexecution::Parameters parameters = Action::CreateParameters(options, overrideLevels);
 
-
-    /*
-     * Load the workspace for the provided options. There may or may not be an actual workspace;
-     * the workspace context abstracts either a single project or a workspace.
-     */
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = parameters.loadWorkspace(*buildEnvironment, FSUtil::GetCurrentDirectory());
-    if (!workspaceContext) {
-        return -1;
-    }
-
-    /*
-     * Create the build context for builing a specific scheme in the workspace.
-     */
-    ext::optional<pbxbuild::Build::Context> buildContext = parameters.createBuildContext(*workspaceContext);
-    if (!buildContext) {
-        return -1;
-    }
-
-    /*
-     * Build the target dependency graph. The executor uses this to know which targets to build.
-     */
-    ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>> graph = parameters.resolveDependencies(*buildEnvironment, *buildContext);
-    if (!graph) {
-        return -1;
-    }
-
     /*
      * Perform the build!
      */
-    bool success = executor->build(*buildEnvironment, *buildContext, *graph);
+    bool success = executor->build(*buildEnvironment, parameters);
     if (!success) {
         return 1;
     }

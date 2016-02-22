@@ -71,7 +71,7 @@ OpenProject(ext::optional<std::string> const &projectPath, std::string const &di
 }
 
 ext::optional<pbxbuild::WorkspaceContext> Parameters::
-loadWorkspace(pbxbuild::Build::Environment const &buildEnvironment, std::string const &workingDirectory)
+loadWorkspace(pbxbuild::Build::Environment const &buildEnvironment, std::string const &workingDirectory) const
 {
     if (_workspace) {
         xcworkspace::XC::Workspace::shared_ptr workspace = xcworkspace::XC::Workspace::Open(*_workspace);
@@ -92,7 +92,7 @@ loadWorkspace(pbxbuild::Build::Environment const &buildEnvironment, std::string 
 }
 
 ext::optional<pbxbuild::Build::Context> Parameters::
-createBuildContext(pbxbuild::WorkspaceContext const &workspaceContext)
+createBuildContext(pbxbuild::WorkspaceContext const &workspaceContext) const
 {
     std::vector<std::string> actions = (!_actions.empty() ? _actions : std::vector<std::string>({ "build" }));
     std::string action = actions.front(); // TODO(grp): Support multiple actions and skipUnavailableOptions.
@@ -157,7 +157,7 @@ createBuildContext(pbxbuild::WorkspaceContext const &workspaceContext)
 }
 
 ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>> Parameters::
-resolveDependencies(pbxbuild::Build::Environment const &buildEnvironment, pbxbuild::Build::Context const &buildContext)
+resolveDependencies(pbxbuild::Build::Environment const &buildEnvironment, pbxbuild::Build::Context const &buildContext) const
 {
     pbxbuild::Build::DependencyResolver resolver = pbxbuild::Build::DependencyResolver(buildEnvironment);
 

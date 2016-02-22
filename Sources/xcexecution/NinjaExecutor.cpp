@@ -9,6 +9,7 @@
 
 #include <xcexecution/NinjaExecutor.h>
 
+#include <xcexecution/Parameters.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <ninja/Writer.h>
@@ -163,15 +164,24 @@ WriteNinja(ninja::Writer const &writer, std::string const &path)
 bool NinjaExecutor::
 build(
     pbxbuild::Build::Environment const &buildEnvironment,
-    pbxbuild::Build::Context const &buildContext,
-    pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph)
+    Parameters const &buildParameters)
 {
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(buildEnvironment, FSUtil::GetCurrentDirectory());
+    if (!workspaceContext) {
+        return false;
+    }
+
+    ext::optional<pbxbuild::Build::Context> buildContext = buildParameters.createBuildContext(*workspaceContext);
+    if (!buildContext) {
+        return false;
+    }
+
     /*
      * This environment contains only settings shared for the entire build.
      */
     pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
-    environment.insertFront(buildContext.baseSettings(), false);
-    environment.insertFront(buildContext.actionSettings(), false);
+    environment.insertFront(buildContext->baseSettings(), false);
+    environment.insertFront(buildContext->actionSettings(), false);
 
     /*
      * Determine where build-level outputs will go. Note we can't use CONFIGURATION_BUILD_DIR
@@ -186,16 +196,16 @@ build(
      */
     ninja::Writer writer;
     writer.comment("xcbuild ninja");
-    writer.comment("Action: " + buildContext.action());
-    if (buildContext.workspaceContext().workspace() != nullptr) {
-        writer.comment("Workspace: " + buildContext.workspaceContext().workspace()->projectFile());
-    } else if (buildContext.workspaceContext().project() != nullptr) {
-        writer.comment("Project: " + buildContext.workspaceContext().project()->projectFile());
+    writer.comment("Action: " + buildContext->action());
+    if (buildContext->workspaceContext().workspace() != nullptr) {
+        writer.comment("Workspace: " + buildContext->workspaceContext().workspace()->projectFile());
+    } else if (buildContext->workspaceContext().project() != nullptr) {
+        writer.comment("Project: " + buildContext->workspaceContext().project()->projectFile());
     }
-    if (buildContext.scheme() != nullptr) {
-        writer.comment("Scheme: " + buildContext.scheme()->name());
+    if (buildContext->scheme() != nullptr) {
+        writer.comment("Scheme: " + buildContext->scheme()->name());
     }
-    writer.comment("Configuation: " + buildContext.configuration());
+    writer.comment("Configuation: " + buildContext->configuration());
     writer.newline();
 
     /*
@@ -212,10 +222,18 @@ build(
     writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env -i $env $exec && $depexec"));
 
     /*
+     * Determine graph of targets to build.
+     */
+    ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>> targetGraph = buildParameters.resolveDependencies(buildEnvironment, *buildContext);
+    if (!targetGraph) {
+        return false;
+    }
+
+    /*
      * Go over each target and write out Ninja targets for the start and end of each.
      * Don't bother topologically sorting the targets now, since Ninja will do that for us.
      */
-    for (pbxproj::PBX::Target::shared_ptr const &target : targetGraph.nodes()) {
+    for (pbxproj::PBX::Target::shared_ptr const &target : targetGraph->nodes()) {
 
         /*
          * Beginning target depends on finishing the targets before that. This is implemented
@@ -237,20 +255,20 @@ build(
         /*
          * Resolve this target and generate its invocations.
          */
-        ext::optional<pbxbuild::Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
+        ext::optional<pbxbuild::Target::Environment> targetEnvironment = buildContext->targetEnvironment(buildEnvironment, target);
         if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             continue;
         }
 
-        pbxbuild::Phase::Environment phaseEnvironment = pbxbuild::Phase::Environment(buildEnvironment, buildContext, target, *targetEnvironment);
+        pbxbuild::Phase::Environment phaseEnvironment = pbxbuild::Phase::Environment(buildEnvironment, *buildContext, target, *targetEnvironment);
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
 
         /*
          * As described above, the target's begin depends on all of the target dependencies.
          */
         std::vector<ninja::Value> dependenciesFinished;
-        for (pbxproj::PBX::Target::shared_ptr const &dependency : targetGraph.adjacent(target)) {
+        for (pbxproj::PBX::Target::shared_ptr const &dependency : targetGraph->adjacent(target)) {
             std::string targetFinished = TargetNinjaFinish(dependency);
             dependenciesFinished.push_back(ninja::Value::String(targetFinished));
         }

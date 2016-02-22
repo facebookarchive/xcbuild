@@ -30,8 +30,7 @@ public:
 public:
     virtual bool build(
         pbxbuild::Build::Environment const &buildEnvironment,
-        pbxbuild::Build::Context const &buildContext,
-        pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph);
+        Parameters const &buildParameters);
 
 private:
     bool writeAuxiliaryFiles(
