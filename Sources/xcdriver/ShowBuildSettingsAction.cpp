@@ -38,14 +38,15 @@ Run(Options const &options)
         return -1;
     }
 
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(*buildEnvironment, options);
+    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(options, buildEnvironment->baseEnvironment());
+    xcexecution::Parameters parameters = Action::CreateParameters(options, overrideLevels);
+
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = parameters.loadWorkspace(*buildEnvironment, FSUtil::GetCurrentDirectory());
     if (!workspaceContext) {
         return -1;
     }
 
-    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(options, buildEnvironment->baseEnvironment());
-
-    ext::optional<pbxbuild::Build::Context> buildContext = Action::CreateBuildContext(options, *workspaceContext, overrideLevels);
+    ext::optional<pbxbuild::Build::Context> buildContext = parameters.createBuildContext(*workspaceContext);
     if (!buildContext) {
         return -1;
     }

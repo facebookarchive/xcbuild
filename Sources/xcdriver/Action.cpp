@@ -24,61 +24,6 @@ Action::
 {
 }
 
-static pbxproj::PBX::Project::shared_ptr
-OpenProject(std::string const &projectPath, std::string const &directory)
-{
-    if (!projectPath.empty()) {
-        return pbxproj::PBX::Project::Open(projectPath);
-    } else {
-        bool multiple = false;
-        std::string projectName;
-
-        FSUtil::EnumerateDirectory(directory, "*.xcodeproj", [&](std::string const &filename) -> bool {
-            if (!projectName.empty()) {
-                multiple = true;
-            }
-
-            projectName = filename;
-            return true;
-        });
-
-        if (multiple) {
-            fprintf(stderr, "error: multiple projects in directory\n");
-            return nullptr;
-        } else if (projectName.empty()) {
-            fprintf(stderr, "error: no project found\n");
-            return nullptr;
-        } else {
-            pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(directory + "/" + projectName);
-            if (project == nullptr) {
-                fprintf(stderr, "error: unable to open project '%s'\n", projectName.c_str());
-            }
-            return project;
-        }
-    }
-}
-
-ext::optional<pbxbuild::WorkspaceContext> Action::
-CreateWorkspace(pbxbuild::Build::Environment const &buildEnvironment, Options const &options)
-{
-    if (!options.workspace().empty()) {
-        xcworkspace::XC::Workspace::shared_ptr workspace = xcworkspace::XC::Workspace::Open(options.workspace());
-        if (workspace == nullptr) {
-            fprintf(stderr, "error: unable to open workspace '%s'\n", options.workspace().c_str());
-            return ext::nullopt;
-        }
-
-        return pbxbuild::WorkspaceContext::Workspace(buildEnvironment.baseEnvironment(), workspace);
-    } else {
-        pbxproj::PBX::Project::shared_ptr project = OpenProject(options.project(), FSUtil::GetCurrentDirectory());
-        if (project == nullptr) {
-            return ext::nullopt;
-        }
-
-        return pbxbuild::WorkspaceContext::Project(buildEnvironment.baseEnvironment(), project);
-    }
-}
-
 std::vector<pbxsetting::Level> Action::
 CreateOverrideLevels(Options const &options, pbxsetting::Environment const &environment)
 {
@@ -118,64 +63,16 @@ CreateOverrideLevels(Options const &options, pbxsetting::Environment const &envi
     return levels;
 }
 
-ext::optional<pbxbuild::Build::Context> Action::
-CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &workspaceContext, std::vector<pbxsetting::Level> const &overrideLevels)
+xcexecution::Parameters Action::
+CreateParameters(Options const &options, std::vector<pbxsetting::Level> const &overrideLevels)
 {
-    std::vector<std::string> actions = (!options.actions().empty() ? options.actions() : std::vector<std::string>({ "build" }));
-    std::string action = actions.front(); // TODO(grp): Support multiple actions and skipUnavailableOptions.
-    if (action != "build") {
-        fprintf(stderr, "error: action '%s' is not implemented\n", action.c_str());
-        return ext::nullopt;
-    }
-
-    /* Find the scheme from the options. */
-    xcscheme::XC::Scheme::shared_ptr scheme = nullptr;
-    xcscheme::SchemeGroup::shared_ptr schemeGroup = nullptr;
-    if (!options.scheme().empty()) {
-        for (xcscheme::SchemeGroup::shared_ptr const &schemeGroup_ : workspaceContext.schemeGroups()) {
-            if (xcscheme::XC::Scheme::shared_ptr scheme_ = schemeGroup_->scheme(options.scheme())) {
-                scheme = scheme_;
-                schemeGroup = schemeGroup_;
-            }
-        }
-
-        if (scheme == nullptr || schemeGroup == nullptr) {
-            fprintf(stderr, "error: unable to find scheme '%s'\n", options.scheme().c_str());
-            return ext::nullopt;
-        }
-    }
-
-    std::string configuration = options.configuration();
-    bool defaultConfiguration = false;
-    if (configuration.empty()) {
-        if (scheme != nullptr) {
-            configuration = scheme->buildAction()->buildConfiguration();
-            if (configuration.empty()) {
-                configuration = "Debug";
-            }
-        } else if (workspaceContext.project() != nullptr) {
-            defaultConfiguration = true;
-            configuration = workspaceContext.project()->buildConfigurationList()->defaultConfigurationName();
-        } else {
-            fprintf(stderr, "error: a scheme is required to build a workspace\n");
-            return ext::nullopt;
-        }
-
-        if (configuration.empty()) {
-            fprintf(stderr, "error: unable to determine build configuration\n");
-            return ext::nullopt;
-        }
-    }
-
-    return pbxbuild::Build::Context(
-        workspaceContext,
-        scheme,
-        schemeGroup,
-        action,
-        configuration,
-        defaultConfiguration,
-        overrideLevels
-    );
+    return xcexecution::Parameters(
+        !options.workspace().empty() ? ext::make_optional(options.workspace()) : ext::nullopt,
+        !options.project().empty() ? ext::make_optional(options.project()) : ext::nullopt,
+        !options.scheme().empty() ? ext::make_optional(options.scheme()) : ext::nullopt,
+        options.actions(),
+        !options.configuration().empty() ? ext::make_optional(options.configuration()) : ext::nullopt,
+        overrideLevels);
 }
 
 bool Action::

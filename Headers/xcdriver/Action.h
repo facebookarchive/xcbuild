@@ -11,6 +11,7 @@
 #define __xcdriver_Action_h
 
 #include <xcdriver/Base.h>
+#include <xcexecution/Parameters.h>
 
 #include <ext/optional>
 
@@ -58,16 +59,12 @@ public:
     VerifyBuildActions(std::vector<std::string> const &actions);
 
 public:
-    static ext::optional<pbxbuild::WorkspaceContext>
-    CreateWorkspace(pbxbuild::Build::Environment const &buildEnvironment, Options const &options);
-
-public:
     static std::vector<pbxsetting::Level>
     CreateOverrideLevels(Options const &options, pbxsetting::Environment const &environment);
 
 public:
-    static ext::optional<pbxbuild::Build::Context>
-    CreateBuildContext(Options const &options, pbxbuild::WorkspaceContext const &workspaceContext, std::vector<pbxsetting::Level> const &overrideLevels);
+    static xcexecution::Parameters
+    CreateParameters(Options const &options, std::vector<pbxsetting::Level> const &overrideLevels);
 };
 
 }

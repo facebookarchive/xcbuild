@@ -315,6 +315,7 @@ set(libpbxbuild_SOURCES
     )
 
 set(libxcexecution_SOURCES
+    Sources/xcexecution/Parameters.cpp
     Sources/xcexecution/Executor.cpp
     Sources/xcexecution/SimpleExecutor.cpp
     Sources/xcexecution/NinjaExecutor.cpp

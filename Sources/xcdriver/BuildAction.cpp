@@ -111,6 +111,24 @@ Run(Options const &options)
     }
 
     /*
+     * Create the formatter to format the build log.
+     */
+    std::shared_ptr<xcexecution::Formatter> formatter = CreateFormatter(options.formatter());
+    if (formatter == nullptr) {
+        fprintf(stderr, "error: unknown formatter %s\n", options.formatter().c_str());
+        return -1;
+    }
+
+    /*
+     * Create the executor used to perform the build.
+     */
+    std::unique_ptr<xcexecution::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun());
+    if (executor == nullptr) {
+        fprintf(stderr, "error: unknown executor %s\n", options.executor().c_str());
+        return -1;
+    }
+
+    /*
      * Use the default build environment. We don't need anything custom here.
      */
     ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default();
@@ -119,22 +137,29 @@ Run(Options const &options)
         return -1;
     }
 
-    /*
-     * Load the workspace for the provided options. There may or may not be an actual workspace;
-     * the workspace context abstracts either a single project or a workspace.
-     */
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = Action::CreateWorkspace(*buildEnvironment, options);
-    if (!workspaceContext) {
-        return -1;
-    }
-
     /* The build settings passed in on the command line override all others. */
     std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(options, buildEnvironment->baseEnvironment());
 
     /*
+     * Create the build parameters. The executor uses this to load a workspace and create a
+     * build context, but is not required to when the parameters haven't changed from a cache.
+     */
+    xcexecution::Parameters parameters = Action::CreateParameters(options, overrideLevels);
+
+
+    /*
+     * Load the workspace for the provided options. There may or may not be an actual workspace;
+     * the workspace context abstracts either a single project or a workspace.
+     */
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = parameters.loadWorkspace(*buildEnvironment, FSUtil::GetCurrentDirectory());
+    if (!workspaceContext) {
+        return -1;
+    }
+
+    /*
      * Create the build context for builing a specific scheme in the workspace.
      */
-    ext::optional<pbxbuild::Build::Context> buildContext = Action::CreateBuildContext(options, *workspaceContext, overrideLevels);
+    ext::optional<pbxbuild::Build::Context> buildContext = parameters.createBuildContext(*workspaceContext);
     if (!buildContext) {
         return -1;
     }
@@ -150,24 +175,6 @@ Run(Options const &options)
         graph = resolver.resolveLegacyDependencies(*buildContext, options.allTargets(), options.target());
     } else {
         fprintf(stderr, "error: scheme is required for workspace\n");
-        return -1;
-    }
-
-    /*
-     * Create the formatter to format the build log.
-     */
-    std::shared_ptr<xcexecution::Formatter> formatter = CreateFormatter(options.formatter());
-    if (formatter == nullptr) {
-        fprintf(stderr, "error: unknown formatter %s\n", options.formatter().c_str());
-        return -1;
-    }
-
-    /*
-     * Create the executor used to perform the build.
-     */
-    std::unique_ptr<xcexecution::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun());
-    if (executor == nullptr) {
-        fprintf(stderr, "error: unknown executor %s\n", options.executor().c_str());
         return -1;
     }
 
