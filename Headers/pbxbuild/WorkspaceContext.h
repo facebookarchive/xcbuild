@@ -11,6 +11,7 @@
 #define __pbxbuild_WorkspaceContext_h
 
 #include <pbxbuild/Base.h>
+#include <pbxbuild/DerivedDataHash.h>
 
 namespace pbxbuild {
 
@@ -26,7 +27,7 @@ namespace pbxbuild {
 class WorkspaceContext {
 private:
     std::string                                    _basePath;
-    std::string                                    _derivedDataName;
+    DerivedDataHash                                _derivedDataHash;
     xcworkspace::XC::Workspace::shared_ptr         _workspace;
     pbxproj::PBX::Project::shared_ptr              _project;
     std::vector<xcscheme::SchemeGroup::shared_ptr> _schemeGroups;
@@ -35,7 +36,7 @@ private:
 public:
     WorkspaceContext(
         std::string const &basePath,
-        std::string const &derivedDataName,
+        DerivedDataHash const &derivedDataHash,
         xcworkspace::XC::Workspace::shared_ptr const &workspace,
         pbxproj::PBX::Project::shared_ptr const &project,
         std::vector<xcscheme::SchemeGroup::shared_ptr> const &schemeGroups,
@@ -52,8 +53,8 @@ public:
     /*
      * The path inside DerivedData to use when building this workspace.
      */
-    std::string const &derivedDataName() const
-    { return _derivedDataName; }
+    DerivedDataHash const &derivedDataHash() const
+    { return _derivedDataHash; }
 
 public:
     /*

@@ -9,21 +9,21 @@
 
 #include <pbxbuild/WorkspaceContext.h>
 #include <libutil/FSUtil.h>
-#include <libutil/md5.h>
 
 using pbxbuild::WorkspaceContext;
+using pbxbuild::DerivedDataHash;
 using libutil::FSUtil;
 
 WorkspaceContext::
 WorkspaceContext(
     std::string const &basePath,
-    std::string const &derivedDataName,
+    DerivedDataHash const &derivedDataHash,
     xcworkspace::XC::Workspace::shared_ptr const &workspace,
     pbxproj::PBX::Project::shared_ptr const &project,
     std::vector<xcscheme::SchemeGroup::shared_ptr> const &schemeGroups,
     std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects) :
     _basePath       (basePath),
-    _derivedDataName(derivedDataName),
+    _derivedDataHash(derivedDataHash),
     _workspace      (workspace),
     _project        (project),
     _schemeGroups   (schemeGroups),
@@ -60,59 +60,6 @@ scheme(std::string const &name) const
     }
 
     return nullptr;
-}
-
-static uint64_t
-hton64(uint64_t v)
-{
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    v = ((v & 0x00000000000000FFULL) << 56) |
-        ((v & 0x000000000000FF00ULL) << 40) |
-        ((v & 0x0000000000FF0000ULL) << 24) |
-        ((v & 0x00000000FF000000ULL) <<  8) |
-        ((v & 0x000000FF00000000ULL) >>  8) |
-        ((v & 0x0000FF0000000000ULL) >> 24) |
-        ((v & 0x00FF000000000000ULL) >> 40) |
-        ((v & 0xFF00000000000000ULL) >> 56);
-#endif
-    return v;
-}
-
-static std::string
-DerivedDataHash(std::string const &path)
-{
-    /*
-     * This algorithm is documented here:
-     * https://samdmarshall.com/blog/xcode_deriveddata_hashes.html
-     */
-
-    md5_state_t state;
-    md5_init(&state);
-    md5_append(&state, reinterpret_cast<const md5_byte_t *>(path.data()), path.size());
-
-    uint8_t digest[16];
-    md5_finish(&state, reinterpret_cast<md5_byte_t *>(&digest));
-
-    char hash_path[28];
-    int counter;
-
-    uint64_t first_value = hton64(*reinterpret_cast<uint64_t *>(&digest[0]));
-    counter = 13;
-    while (counter >= 0) {
-        hash_path[counter] = 'a' + (first_value % 26);
-        first_value /= 26;
-        counter--;
-    }
-
-    uint64_t second_value = hton64(*reinterpret_cast<uint64_t *>(&digest[8]));
-    counter = 27;
-    while (counter > 13) {
-        hash_path[counter] = 'a' + (second_value % 26);
-        second_value /= 26;
-        counter--;
-    }
-
-    return std::string(hash_path, 28);
 }
 
 static void
@@ -265,9 +212,9 @@ Workspace(pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Works
     /*
      * Determine the DerivedData path for the workspace.
      */
-    std::string derivedDataName = workspace->name() + "-" + DerivedDataHash(workspace->projectFile());
+    DerivedDataHash derivedDataHash = DerivedDataHash::Create(workspace->projectFile());
 
-    return WorkspaceContext(workspace->basePath(), derivedDataName, workspace, nullptr, schemeGroups, CreateProjectMap(projects));
+    return WorkspaceContext(workspace->basePath(), derivedDataHash, workspace, nullptr, schemeGroups, CreateProjectMap(projects));
 }
 
 WorkspaceContext WorkspaceContext::
@@ -294,7 +241,7 @@ Project(pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::s
     /*
      * Determine the DerivedData path for the root project.
      */
-    std::string derivedDataName = project->name() + "-" + DerivedDataHash(project->projectFile());
+    DerivedDataHash derivedDataHash = DerivedDataHash::Create(project->projectFile());
 
-    return WorkspaceContext(project->basePath(), derivedDataName, nullptr, project, schemeGroups, CreateProjectMap(projects));
+    return WorkspaceContext(project->basePath(), derivedDataHash, nullptr, project, schemeGroups, CreateProjectMap(projects));
 }

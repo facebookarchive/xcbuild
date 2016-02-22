@@ -264,6 +264,7 @@ set(libpbxspec_SOURCES
 set(libpbxbuild_SOURCES
     Sources/pbxbuild/DirectedGraph.cpp
     Sources/pbxbuild/HeaderMap.cpp
+    Sources/pbxbuild/DerivedDataHash.cpp
     Sources/pbxbuild/WorkspaceContext.cpp
     Sources/pbxbuild/FileTypeResolver.cpp
     Sources/pbxbuild/Tool/Context.cpp
@@ -455,6 +456,7 @@ ADD_UNIT_GTEST(pbxsetting Value Tests/pbxsetting/test_Value.cpp)
 
 ADD_UNIT_GTEST(pbxbuild DirectedGraph Tests/pbxbuild/test_DirectedGraph.cpp)
 ADD_UNIT_GTEST(pbxbuild OptionsResolver Tests/pbxbuild/test_OptionsResolver.cpp)
+ADD_UNIT_GTEST(pbxbuild DerivedDataHash Tests/pbxbuild/test_DerivedDataHash.cpp)
 
 ADD_UNIT_GTEST(xcdriver Options Tests/xcdriver/test_Options.cpp)
 ADD_UNIT_GTEST(xcdriver Action Tests/xcdriver/test_Action.cpp)
