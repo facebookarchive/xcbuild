@@ -62,6 +62,40 @@ scheme(std::string const &name) const
     return nullptr;
 }
 
+std::vector<std::string> WorkspaceContext::
+loadedFilePaths() const
+{
+    std::vector<std::string> loadedFilePaths;
+
+    /* Estimate all files; assume two schemes per scheme group. */
+    loadedFilePaths.reserve(_projects.size() + _schemeGroups.size() * 2 + 1);
+
+    /*
+     * Add workspace data path.
+     */
+    if (_workspace != nullptr) {
+        loadedFilePaths.push_back(_workspace->dataFile());
+    }
+
+    /*
+     * Add all projects' data paths.
+     */
+    for (auto const &entry : _projects) {
+        loadedFilePaths.push_back(entry.second->dataFile());
+    }
+
+    /*
+     * Add all schemes' data paths.
+     */
+    for (xcscheme::SchemeGroup::shared_ptr const &schemeGroup : _schemeGroups) {
+        for (xcscheme::XC::Scheme::shared_ptr const &scheme : schemeGroup->schemes()) {
+            loadedFilePaths.push_back(scheme->path());
+        }
+    }
+
+    return loadedFilePaths;
+}
+
 static void
 IterateWorkspaceItem(xcworkspace::XC::GroupItem::shared_ptr const &item, std::function<void(xcworkspace::XC::FileRef::shared_ptr const &)> const &cb)
 {

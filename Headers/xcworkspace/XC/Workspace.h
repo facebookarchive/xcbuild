@@ -19,12 +19,13 @@ public:
     typedef std::shared_ptr <Workspace> shared_ptr;
 
 private:
-    std::string                _projectFile;
-    std::string                _basePath;
-    std::string                _name;
+    std::string       _projectFile;
+    std::string       _dataFile;
+    std::string       _basePath;
+    std::string       _name;
 
 private:
-    GroupItem::vector       _items;
+    GroupItem::vector _items;
 
 public:
     Workspace();
@@ -35,6 +36,8 @@ public:
 public:
     inline std::string const &projectFile() const
     { return _projectFile; }
+    inline std::string const &dataFile() const
+    { return _dataFile; }
     inline std::string const &basePath() const
     { return _basePath; }
     inline std::string const &name() const

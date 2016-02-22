@@ -47,6 +47,10 @@ private:
     std::vector<std::string>                 _architectures;
 
 private:
+    pbxsetting::XC::Config::shared_ptr       _projectConfigurationFile;
+    pbxsetting::XC::Config::shared_ptr       _targetConfigurationFile;
+
+private:
     std::string                              _workingDirectory;
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> _buildFileDisambiguation;
 
@@ -125,6 +129,19 @@ public:
      */
     std::vector<std::string> const &architectures() const
     { return _architectures; }
+
+public:
+    /*
+     * The configuration files loaded for the project in this configuration.
+     */
+    pbxsetting::XC::Config::shared_ptr const &projectConfigurationFile() const
+    { return _projectConfigurationFile; }
+
+    /*
+     * The configuration files loaded for this target and configuration.
+     */
+    pbxsetting::XC::Config::shared_ptr const &targetConfigurationFile() const
+    { return _targetConfigurationFile; }
 
 public:
     /*

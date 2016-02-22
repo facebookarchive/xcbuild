@@ -90,13 +90,10 @@ Open(std::string const &path)
         //
         // Save some useful info
         //
+        workspace->_dataFile    = realPath;
         workspace->_projectFile = FSUtil::GetDirectoryName(realPath);
-
-        size_t slash = workspace->_projectFile.rfind('/');
-        size_t dot   = workspace->_projectFile.rfind('.');
-
-        workspace->_basePath    = workspace->_projectFile.substr(0, slash);
-        workspace->_name        = workspace->_projectFile.substr(slash + 1, dot - slash - 1);
+        workspace->_basePath    = FSUtil::GetDirectoryName(workspace->_projectFile);
+        workspace->_name        = FSUtil::GetBaseNameWithoutExtension(workspace->_projectFile);
     } else {
         workspace = nullptr;
     }

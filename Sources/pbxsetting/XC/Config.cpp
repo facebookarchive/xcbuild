@@ -30,6 +30,7 @@ Open(std::string const &path, Environment const &environment, error_function con
     }
 
     auto config = std::make_shared <Config> ();
+    config->_path = path;
     config->_level = result.second;
 
     return config;

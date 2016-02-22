@@ -411,6 +411,8 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     te._packageType = packageType;
     te._productType = productType;
     te._specDomains = specDomains;
+    te._projectConfigurationFile = projectConfigurationFile;
+    te._targetConfigurationFile = targetConfigurationFile;
     te._workingDirectory = workingDirectory;
     te._buildFileDisambiguation = buildFileDisambiguation;
     return te;

@@ -287,13 +287,10 @@ Open(std::string const &path)
     //
     // Save some useful info
     //
+    project->_dataFile    = realPath;
     project->_projectFile = FSUtil::GetDirectoryName(realPath);
-
-    size_t slash = project->_projectFile.rfind('/');
-    size_t dot   = project->_projectFile.rfind('.');
-
-    project->_basePath    = project->_projectFile.substr(0, slash);
-    project->_name        = project->_projectFile.substr(slash + 1, dot - slash - 1);
+    project->_basePath    = FSUtil::GetDirectoryName(project->_projectFile);
+    project->_name        = FSUtil::GetBaseNameWithoutExtension(project->_projectFile);
 
     //
     // Transfer all file references from cache.

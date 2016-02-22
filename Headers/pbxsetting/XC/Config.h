@@ -26,7 +26,8 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    Level _level;
+    std::string _path;
+    Level       _level;
 
 public:
     typedef std::function <bool(std::string const &filename, unsigned line,
@@ -37,6 +38,8 @@ public:
     ~Config();
 
 public:
+    inline std::string const &path() const
+    { return _path; }
     inline Level const &level() const
     { return _level; }
 

@@ -100,6 +100,13 @@ public:
 
 public:
     /*
+     * All loaded files in the workspace. Includes files loaded for the workspace itself, any
+     * projects inside the workspace, and all schemes in the workspace or projects inside it.
+     */
+    std::vector<std::string> loadedFilePaths() const;
+
+public:
+    /*
      * Creates a workspace context from a real workspace.
      */
     static WorkspaceContext

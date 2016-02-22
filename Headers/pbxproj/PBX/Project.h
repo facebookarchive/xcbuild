@@ -36,6 +36,7 @@ public:
 
 private:
     std::string                        _projectFile;
+    std::string                        _dataFile;
     std::string                        _basePath;
     std::string                        _name;
     std::unordered_map<std::string, Object::shared_ptr> _blueprints;
@@ -105,6 +106,8 @@ public:
 public:
     inline std::string const &name() const
     { return _name; }
+    inline std::string const &dataFile() const
+    { return _dataFile; }
     inline std::string const &projectFile() const
     { return _projectFile; }
     inline std::string const &basePath() const
