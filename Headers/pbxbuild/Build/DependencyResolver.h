@@ -42,10 +42,10 @@ public:
     /*
      * Resolves legacy dependencies for targets in a project without a scheme.
      * If `allTargets` is specified, include all targets in the build; if `target`
-     * is non-empty, include just that target; otherwise, include the first target.
+     * is specified, include just that target; otherwise, include the first target.
      */
     DirectedGraph<pbxproj::PBX::Target::shared_ptr>
-    resolveLegacyDependencies(Build::Context const &context, bool allTargets, std::string const &target) const;
+    resolveLegacyDependencies(Build::Context const &context, bool allTargets, ext::optional<std::string> const &target) const;
 };
 
 }

@@ -13,6 +13,7 @@
 #include <xcexecution/Base.h>
 #include <pbxsetting/Level.h>
 #include <pbxbuild/Build/Context.h>
+#include <pbxbuild/DirectedGraph.h>
 #include <pbxbuild/WorkspaceContext.h>
 
 #include <ext/optional>
@@ -32,6 +33,8 @@ private:
     ext::optional<std::string>     _workspace;
     ext::optional<std::string>     _project;
     ext::optional<std::string>     _scheme;
+    ext::optional<std::string>     _target;
+    bool                           _allTargets;
     std::vector<std::string>       _actions;
     ext::optional<std::string>     _configuration;
     std::vector<pbxsetting::Level> _overrideLevels;
@@ -41,28 +44,42 @@ public:
         ext::optional<std::string> const &workspace,
         ext::optional<std::string> const &project,
         ext::optional<std::string> const &scheme,
+        ext::optional<std::string> const &target,
+        bool allTargets,
         std::vector<std::string> const &actions,
         ext::optional<std::string> const &configuration,
         std::vector<pbxsetting::Level> const &overrideLevels);
 
 public:
     /*
-     * The workspace to build
+     * The workspace to build.
      */
     ext::optional<std::string> const &workspace() const
     { return _workspace; }
 
     /*
-     * The project to build
+     * The project to build.
      */
     ext::optional<std::string> const &project() const
     { return _project; }
 
     /*
-     * The scheme to build
+     * The scheme to build.
      */
     ext::optional<std::string> const &scheme() const
     { return _scheme; }
+
+    /*
+     * The target to build.
+     */
+    ext::optional<std::string> const &target() const
+    { return _target; }
+
+    /*
+     * Build all targets.
+     */
+    bool allTargets() const
+    { return _allTargets; }
 
     /*
      * The specified actions to build.
@@ -95,6 +112,14 @@ public:
      */
     ext::optional<pbxbuild::Build::Context> createBuildContext(
         pbxbuild::WorkspaceContext const &workspaceContext);
+
+    /*
+     * Resolve inter-target dependencies.
+     */
+    ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>>
+    resolveDependencies(
+        pbxbuild::Build::Environment const &buildEnvironment,
+        pbxbuild::Build::Context const &buildContext);
 };
 
 }

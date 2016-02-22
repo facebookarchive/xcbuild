@@ -9,6 +9,7 @@
 
 #include <xcexecution/Parameters.h>
 
+#include <pbxbuild/Build/DependencyResolver.h>
 #include <libutil/FSUtil.h>
 
 using xcexecution::Parameters;
@@ -19,12 +20,16 @@ Parameters(
     ext::optional<std::string> const &workspace,
     ext::optional<std::string> const &project,
     ext::optional<std::string> const &scheme,
+    ext::optional<std::string> const &target,
+    bool allTargets,
     std::vector<std::string> const &actions,
     ext::optional<std::string> const &configuration,
     std::vector<pbxsetting::Level> const &overrideLevels) :
     _workspace     (workspace),
     _project       (project),
     _scheme        (scheme),
+    _target        (target),
+    _allTargets    (allTargets),
     _actions       (actions),
     _configuration (configuration),
     _overrideLevels(overrideLevels)
@@ -150,3 +155,19 @@ createBuildContext(pbxbuild::WorkspaceContext const &workspaceContext)
         defaultConfiguration,
         _overrideLevels);
 }
+
+ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>> Parameters::
+resolveDependencies(pbxbuild::Build::Environment const &buildEnvironment, pbxbuild::Build::Context const &buildContext)
+{
+    pbxbuild::Build::DependencyResolver resolver = pbxbuild::Build::DependencyResolver(buildEnvironment);
+
+    if (buildContext.scheme() != nullptr) {
+        return resolver.resolveSchemeDependencies(buildContext);
+    } else if (buildContext.workspaceContext().project() != nullptr) {
+        return resolver.resolveLegacyDependencies(buildContext, _allTargets, _target);
+    } else {
+        fprintf(stderr, "error: scheme is required for workspace\n");
+        return ext::nullopt;
+    }
+}
+

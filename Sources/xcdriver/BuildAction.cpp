@@ -167,21 +167,15 @@ Run(Options const &options)
     /*
      * Build the target dependency graph. The executor uses this to know which targets to build.
      */
-    pbxbuild::Build::DependencyResolver resolver = pbxbuild::Build::DependencyResolver(*buildEnvironment);
-    pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> graph;
-    if (buildContext->scheme() != nullptr) {
-        graph = resolver.resolveSchemeDependencies(*buildContext);
-    } else if (workspaceContext->project() != nullptr) {
-        graph = resolver.resolveLegacyDependencies(*buildContext, options.allTargets(), options.target());
-    } else {
-        fprintf(stderr, "error: scheme is required for workspace\n");
+    ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>> graph = parameters.resolveDependencies(*buildEnvironment, *buildContext);
+    if (!graph) {
         return -1;
     }
 
     /*
      * Perform the build!
      */
-    bool success = executor->build(*buildEnvironment, *buildContext, graph);
+    bool success = executor->build(*buildEnvironment, *buildContext, *graph);
     if (!success) {
         return 1;
     }

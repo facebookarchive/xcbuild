@@ -51,18 +51,12 @@ Run(Options const &options)
         return -1;
     }
 
-    pbxbuild::Build::DependencyResolver resolver = pbxbuild::Build::DependencyResolver(*buildEnvironment);
-    pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> graph;
-    if (buildContext->scheme() != nullptr) {
-        graph = resolver.resolveSchemeDependencies(*buildContext);
-    } else if (workspaceContext->project() != nullptr) {
-        graph = resolver.resolveLegacyDependencies(*buildContext, options.allTargets(), options.target());
-    } else {
-        fprintf(stderr, "error: scheme is required for workspace\n");
+    ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>> graph = parameters.resolveDependencies(*buildEnvironment, *buildContext);
+    if (!graph) {
         return -1;
     }
 
-    ext::optional<std::vector<pbxproj::PBX::Target::shared_ptr>> targets = graph.ordered();
+    ext::optional<std::vector<pbxproj::PBX::Target::shared_ptr>> targets = graph->ordered();
     if (!targets) {
         fprintf(stderr, "error: cycle detected in target dependencies\n");
         return -1;
