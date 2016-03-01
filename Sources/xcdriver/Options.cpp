@@ -20,6 +20,7 @@ Options() :
     _checkFirstLaunchStatus    (false),
     _version                   (false),
     _allTargets                (false),
+    _generate                  (false),
     _parallelizeTargets        (false),
     _jobs                      (0),
     _dryRun                    (false),
@@ -133,6 +134,8 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::NextString(&_executor, args, it);
     } else if (arg == "-formatter") {
         return libutil::Options::NextString(&_formatter, args, it);
+    } else if (arg == "-generate") {
+        return libutil::Options::MarkBool(&_generate, arg);
     } else if (!arg.empty() && arg[0] != '-') {
         if (arg.find('=') != std::string::npos) {
             _settings.push_back(pbxsetting::Setting::Parse(arg));

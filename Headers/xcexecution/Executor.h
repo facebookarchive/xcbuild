@@ -33,9 +33,10 @@ class Executor {
 protected:
     std::shared_ptr<Formatter> _formatter;
     bool                       _dryRun;
+    bool                       _generate;
 
 protected:
-    Executor(std::shared_ptr<Formatter> const &formatter, bool dryRun);
+    Executor(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate);
 
 public:
     virtual ~Executor();

@@ -39,6 +39,7 @@ private:
 private:
     std::string _formatter;
     std::string _executor;
+    bool        _generate;
 
 private:
     bool        _parallelizeTargets;
@@ -133,6 +134,9 @@ public:
     /* Extension. */
     std::string const &executor() const
     { return _executor; }
+    /* Extension. */
+    bool generate() const
+    { return _generate; }
 
 public:
     bool parallelizeTargets() const

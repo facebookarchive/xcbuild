@@ -16,6 +16,7 @@
 #include <ninja/Value.h>
 #include <libutil/Escape.h>
 #include <libutil/FSUtil.h>
+#include <libutil/Subprocess.h>
 #include <libutil/SysUtil.h>
 #include <libutil/md5.h>
 
@@ -27,13 +28,15 @@
 #include <sys/stat.h>
 
 using xcexecution::NinjaExecutor;
+using xcexecution::Parameters;
 using libutil::Escape;
 using libutil::FSUtil;
+using libutil::Subprocess;
 using libutil::SysUtil;
 
 NinjaExecutor::
-NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun) :
-    Executor(formatter, dryRun)
+NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate) :
+    Executor(formatter, dryRun, generate)
 {
 }
 
@@ -140,6 +143,56 @@ NinjaInvocationOutputs(pbxbuild::Tool::Invocation const &invocation)
     return outputs;
 }
 
+static void
+WriteNinjaRegenerate(ninja::Writer *writer, std::string const &ninjaPath, Parameters const &buildParameters, std::vector<std::string> const &inputPaths)
+{
+    /*
+     * Regenerate using this executor. Force regeneration to avoid recursively
+     * executing Ninja when Ninja itself calls this generate command.
+     */
+    std::vector<std::string> generateArguments = { "-generate", "-executor", "ninja" };
+
+    /*
+     * Add arguments necessary to recreate the same set of build parameters.
+     */
+    std::vector<std::string> parameterArguments = buildParameters.canonicalArguments();
+    generateArguments.insert(generateArguments.end(), parameterArguments.begin(), parameterArguments.end());
+
+    /*
+     * Re-run the current executable to re-generate the Ninja file. There is an
+     * implicit assumption here that this executable takes the parameters above.
+     */
+    std::string exec = Escape::Shell(SysUtil::GetExecutablePath());
+
+    /*
+     * Escape executable and input parameters for Ninja.
+     */
+    for (std::string const &arg : generateArguments) {
+        exec += " " + Escape::Shell(arg);
+    }
+    std::vector<ninja::Value> inputPathValues;
+    for (std::string const &inputPath : inputPaths) {
+        inputPathValues.push_back(ninja::Value::String(inputPath));
+    }
+
+    /*
+     * Write out the Ninja rule to regenerate sources.
+     */
+    std::string ruleName = "regenerate";
+    writer->rule(ruleName, ninja::Value::Expression("cd $dir && $exec"));
+    writer->build({ ninja::Value::String(ninjaPath) }, ruleName, inputPathValues, {
+        { "dir", ninja::Value::String(Escape::Shell(FSUtil::GetCurrentDirectory())) },
+        { "exec", ninja::Value::String(exec) },
+        { "description", ninja::Value::String("Regenerating Ninja files...") },
+
+        /* This command regenerates the Ninja files. */
+        { "generator", ninja::Value::String("1") },
+
+        /* Use the console pool to pass through terminal settings. */
+        { "pool", ninja::Value::String("console") },
+    });
+}
+
 static bool
 WriteNinja(ninja::Writer const &writer, std::string const &path)
 {
@@ -161,51 +214,224 @@ WriteNinja(ninja::Writer const &writer, std::string const &path)
     return true;
 }
 
+static bool
+ShouldGenerateNinja(bool generate, Parameters const &buildParameters, std::string const &ninjaPath, std::string const &configurationHashPath)
+{
+    /*
+     * If explicitly asked to generate, definitely need to regenerate.
+     */
+    if (generate) {
+        return true;
+    }
+
+    /*
+     * If the Ninja file doesn't exist, must re-generate to create it.
+     */
+    if (!FSUtil::TestForPresence(ninjaPath)) {
+        return true;
+    }
+
+    /*
+     * If the configuration hash doesn't exist, the configuration is unknown so
+     * the Ninja must be regenerated to ensure it matches the configuration.
+     */
+    if (!FSUtil::TestForPresence(configurationHashPath)) {
+        return true;
+    }
+
+    /*
+     * If the contents of the configration hash doesn't match, need to update for
+     * the new configuration.
+     */
+    std::ifstream file = std::ifstream(configurationHashPath, std::ios::binary);
+    if (file.fail()) {
+        /* Can't be read, same as not existing. */
+        return true;
+    }
+    std::string hashContents = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+    if (hashContents != buildParameters.canonicalHash()) {
+        return true;
+    }
+
+    /*
+     * Nothing changed, safe to use the cached Ninja.
+     */
+    return false;
+}
+
 bool NinjaExecutor::
 build(
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
 {
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(buildEnvironment, FSUtil::GetCurrentDirectory());
-    if (!workspaceContext) {
-        return false;
-    }
-
-    ext::optional<pbxbuild::Build::Context> buildContext = buildParameters.createBuildContext(*workspaceContext);
-    if (!buildContext) {
-        return false;
-    }
+    /*
+     * Load the derived data hash in order to output the Ninja file in the
+     * right derived data directory. This does not load the workspace context
+     * to avoid loading potentially very large projects for incremental builds.
+     */
+    std::string workspacePath = FSUtil::ResolvePath(buildParameters.workspace().value_or(*buildParameters.project()));
+    pbxbuild::DerivedDataHash derivedDataHash = pbxbuild::DerivedDataHash::Create(workspacePath);
+    pbxsetting::Level derivedDataLevel = pbxsetting::Level(derivedDataHash.overrideSettings());
 
     /*
      * This environment contains only settings shared for the entire build.
      */
     pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
-    environment.insertFront(buildContext->baseSettings(), false);
-    environment.insertFront(buildContext->actionSettings(), false);
+    environment.insertFront(derivedDataLevel, false);
 
     /*
      * Determine where build-level outputs will go. Note we can't use CONFIGURATION_BUILD_DIR
      * at this point because that includes the EFFECTIVE_PLATFORM_NAME, but we don't have a platform.
      */
     std::string intermediatesDirectory = environment.resolve("OBJROOT");
-    // TODO(grp): How to handle varying configurations / actions / other build context options?
+    std::string ninjaPath = intermediatesDirectory + "/" + "build.ninja";
+    std::string configurationHashPath = intermediatesDirectory + "/" + ".ninja-configuration";
 
+    /*
+     * If the Ninja file needs to be generated, generate it.
+     */
+    if (ShouldGenerateNinja(_generate, buildParameters, ninjaPath, configurationHashPath)) {
+        fprintf(stderr, "Generating Ninja files...\n");
+
+        /*
+         * Load the workspace. This can be quite slow, so only do it if it's needed to generate
+         * the Ninja file. Similarly, only resolve dependencies in that case.
+         */
+        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(buildEnvironment, FSUtil::GetCurrentDirectory());
+        if (!workspaceContext) {
+            fprintf(stderr, "error: unable to load workspace\n");
+            return false;
+        }
+
+        ext::optional<pbxbuild::Build::Context> buildContext = buildParameters.createBuildContext(*workspaceContext);
+        if (!buildContext) {
+            fprintf(stderr, "error: unable to create build context\n");
+            return false;
+        }
+
+        ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>> targetGraph = buildParameters.resolveDependencies(buildEnvironment, *buildContext);
+        if (!targetGraph) {
+            fprintf(stderr, "error: unable to resolve dependencies\n");
+            return false;
+        }
+
+        /*
+         * Generate the Ninja file.
+         */
+        bool result = buildAction(
+            buildParameters,
+            buildEnvironment,
+            *buildContext,
+            *targetGraph,
+            ninjaPath,
+            intermediatesDirectory);
+
+        if (!result) {
+            fprintf(stderr, "error: failed to generate build.ninja\n");
+            return false;
+        }
+
+        /*
+         * Write out the configuration hash for the parameters in the Ninja.
+         */
+        std::ofstream file;
+        file.open(configurationHashPath, std::ios::binary);
+        if (file.fail()) {
+            fprintf(stderr, "error: failed to generate ninja configuration hash\n");
+            return false;
+        }
+
+        std::string hashContents = buildParameters.canonicalHash();
+        std::copy(hashContents.begin(), hashContents.end(), std::ostream_iterator<char>(file));
+    }
+
+    /*
+     * Only perform a build if not passing -generate. If -generate is passed, that's because Ninja
+     * is already running and asking to re-generate the project file. Re-running it would recurse.
+     */
+    if (!_generate) {
+        /*
+         * Use the Ninja file just generated.
+         */
+        std::vector<std::string> arguments = { "-f", ninjaPath };
+
+        /*
+         * Find the path to the Ninja executable to use.
+         */
+        std::string executable = FSUtil::FindExecutable("ninja");
+        if (executable.empty()) {
+            /*
+             * Couldn't find standard Ninja, try with llbuild.
+             */
+            executable = FSUtil::FindExecutable("llbuild");
+
+            /*
+             * If neither Ninja or llbuild are available, can't start the build.
+             */
+            if (executable.empty()) {
+                fprintf(stderr, "error: could not find ninja or llbuild in PATH\n");
+                return false;
+            }
+
+            /*
+             * Use llbuild's Ninja executor, which requires extra arguments.
+             */
+            std::vector<std::string> llbuildArguments = { "ninja", "build" };
+            arguments.insert(arguments.begin(), llbuildArguments.begin(), llbuildArguments.end());
+        }
+
+        /*
+         * Pass through the dry run option.
+         */
+        if (_dryRun) {
+            arguments.push_back("-n");
+        }
+
+        // TODO(grp): Pass number of jobs if specified.
+
+        /*
+         * Pass through all environment variables, in case they affect Ninja or build settings
+         * when re-generating the Ninja files.
+         */
+        std::unordered_map<std::string, std::string> environmentVariables = SysUtil::EnvironmentVariables();
+
+        /*
+         * Run Ninja and return if it failed. Ninja itself does the build.
+         */
+        Subprocess ninja;
+        if (!ninja.execute(executable, arguments, environmentVariables, intermediatesDirectory) || ninja.exitcode() != 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool NinjaExecutor::
+buildAction(
+    Parameters const &buildParameters,
+    pbxbuild::Build::Environment const &buildEnvironment,
+    pbxbuild::Build::Context const &buildContext,
+    pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph,
+    std::string const &ninjaPath,
+    std::string const &intermediatesDirectory)
+{
     /*
      * Write out a Ninja file for the build as a whole. Note each target will have a separate
      * file, this is to coordinate the build between targets.
      */
     ninja::Writer writer;
     writer.comment("xcbuild ninja");
-    writer.comment("Action: " + buildContext->action());
-    if (buildContext->workspaceContext().workspace() != nullptr) {
-        writer.comment("Workspace: " + buildContext->workspaceContext().workspace()->projectFile());
-    } else if (buildContext->workspaceContext().project() != nullptr) {
-        writer.comment("Project: " + buildContext->workspaceContext().project()->projectFile());
+    writer.comment("Action: " + buildContext.action());
+    if (buildContext.workspaceContext().workspace() != nullptr) {
+        writer.comment("Workspace: " + buildContext.workspaceContext().workspace()->projectFile());
+    } else if (buildContext.workspaceContext().project() != nullptr) {
+        writer.comment("Project: " + buildContext.workspaceContext().project()->projectFile());
     }
-    if (buildContext->scheme() != nullptr) {
-        writer.comment("Scheme: " + buildContext->scheme()->name());
+    if (buildContext.scheme() != nullptr) {
+        writer.comment("Scheme: " + buildContext.scheme()->name());
     }
-    writer.comment("Configuation: " + buildContext->configuration());
+    writer.comment("Configuation: " + buildContext.configuration());
     writer.newline();
 
     /*
@@ -222,18 +448,15 @@ build(
     writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env -i $env $exec && $depexec"));
 
     /*
-     * Determine graph of targets to build.
+     * Build up a list of all of the inputs to the build, so Ninja can regenerate as necessary.
      */
-    ext::optional<pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr>> targetGraph = buildParameters.resolveDependencies(buildEnvironment, *buildContext);
-    if (!targetGraph) {
-        return false;
-    }
+    std::vector<std::string> inputPaths = buildContext.workspaceContext().loadedFilePaths();
 
     /*
      * Go over each target and write out Ninja targets for the start and end of each.
      * Don't bother topologically sorting the targets now, since Ninja will do that for us.
      */
-    for (pbxproj::PBX::Target::shared_ptr const &target : targetGraph->nodes()) {
+    for (pbxproj::PBX::Target::shared_ptr const &target : targetGraph.nodes()) {
 
         /*
          * Beginning target depends on finishing the targets before that. This is implemented
@@ -255,20 +478,20 @@ build(
         /*
          * Resolve this target and generate its invocations.
          */
-        ext::optional<pbxbuild::Target::Environment> targetEnvironment = buildContext->targetEnvironment(buildEnvironment, target);
+        ext::optional<pbxbuild::Target::Environment> targetEnvironment = buildContext.targetEnvironment(buildEnvironment, target);
         if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             continue;
         }
 
-        pbxbuild::Phase::Environment phaseEnvironment = pbxbuild::Phase::Environment(buildEnvironment, *buildContext, target, *targetEnvironment);
+        pbxbuild::Phase::Environment phaseEnvironment = pbxbuild::Phase::Environment(buildEnvironment, buildContext, target, *targetEnvironment);
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
 
         /*
          * As described above, the target's begin depends on all of the target dependencies.
          */
         std::vector<ninja::Value> dependenciesFinished;
-        for (pbxproj::PBX::Target::shared_ptr const &dependency : targetGraph->adjacent(target)) {
+        for (pbxproj::PBX::Target::shared_ptr const &dependency : targetGraph.adjacent(target)) {
             std::string targetFinished = TargetNinjaFinish(dependency);
             dependenciesFinished.push_back(ninja::Value::String(targetFinished));
         }
@@ -283,6 +506,7 @@ build(
          * Write out the Ninja file to build this target.
          */
         if (!buildTargetInvocations(target, *targetEnvironment, phaseInvocations.invocations())) {
+            fprintf(stderr, "error: failed to build target ninja\n");
             return false;
         }
 
@@ -329,20 +553,35 @@ build(
             invocationOutputsValues.push_back(ninja::Value::String(output));
         }
         writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputsValues);
+
+        /*
+         * Add loaded files for the target configuration to the inputs.
+         */
+        if (targetEnvironment->projectConfigurationFile() != nullptr) {
+            inputPaths.push_back(targetEnvironment->projectConfigurationFile()->path());
+        }
+        if (targetEnvironment->targetConfigurationFile() != nullptr) {
+            inputPaths.push_back(targetEnvironment->targetConfigurationFile()->path());
+        }
     }
+
+    /*
+     * Add a Ninja rule to regenerate the build.ninja file itself.
+     */
+    WriteNinjaRegenerate(&writer, ninjaPath, buildParameters, inputPaths);
 
     /*
      * Serialize the Ninja file into the build root.
      */
-    std::string path = intermediatesDirectory + "/" + "build.ninja";
-    if (!WriteNinja(writer, path)) {
+    if (!WriteNinja(writer, ninjaPath)) {
+        fprintf(stderr, "error: failed to write Ninja to %s\n", ninjaPath.c_str());
         return false;
     }
 
     /*
      * Note where the Ninja file is written.
      */
-    fprintf(stderr, "Wrote meta-ninja: %s\n", path.c_str());
+    fprintf(stderr, "Wrote Ninja: %s\n", ninjaPath.c_str());
 
     return true;
 }
@@ -367,22 +606,19 @@ buildTargetAuxiliaryFiles(
     pbxbuild::Target::Environment const &targetEnvironment,
     std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
-    // TODO(grp): In a dry run, Ninja will still need these files to exist, but the whole
-    // point of a dry run is to avoid the filesystem. What's the best way to resolve this?
-    if (_dryRun) {
-        return true;
-    }
-
     // TODO(grp): Could this defer writing auxiliary files and let Ninja do it?
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
         for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-            if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(auxiliaryFile.path()))) {
+            std::string auxiliaryDirectory = FSUtil::GetDirectoryName(auxiliaryFile.path());
+            if (!FSUtil::CreateDirectory(auxiliaryDirectory)) {
+                fprintf(stderr, "error: failed to create auxiliary directory: %s\n", auxiliaryDirectory.c_str());
                 return false;
             }
 
             std::ofstream out;
             out.open(auxiliaryFile.path(), std::ios::out | std::ios::trunc | std::ios::binary);
             if (out.fail()) {
+                fprintf(stderr, "error: failed to write auxiliary file: %s\n", auxiliaryFile.path().c_str());
                 return false;
             }
 
@@ -391,6 +627,7 @@ buildTargetAuxiliaryFiles(
 
             if (auxiliaryFile.executable() && !FSUtil::TestForExecute(auxiliaryFile.path())) {
                 if (::chmod(auxiliaryFile.path().c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
+                    fprintf(stderr, "error: failed to mark auxiliary file executable: %s\n", auxiliaryFile.path().c_str());
                     return false;
                 }
             }
@@ -567,22 +804,19 @@ buildTargetInvocations(
      */
     std::string path = TargetNinjaPath(target, targetEnvironment);
     if (!WriteNinja(writer, path)) {
+        fprintf(stderr, "error: unable to write target ninja: %s\n", path.c_str());
         return false;
     }
-
-    /*
-     * Note where the Ninja file is written.
-     */
-    fprintf(stderr, "Wrote %s ninja: %s\n", target->name().c_str(), path.c_str());
 
     return true;
 }
 
 std::unique_ptr<NinjaExecutor> NinjaExecutor::
-Create(std::shared_ptr<Formatter> const &formatter, bool dryRun)
+Create(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate)
 {
     return std::unique_ptr<NinjaExecutor>(new NinjaExecutor(
         formatter,
-        dryRun
+        dryRun,
+        generate
     ));
 }

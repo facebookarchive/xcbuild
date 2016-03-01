@@ -12,9 +12,10 @@
 using xcexecution::Executor;
 
 Executor::
-Executor(std::shared_ptr<Formatter> const &formatter, bool dryRun) :
+Executor(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate) :
     _formatter(formatter),
-    _dryRun   (dryRun)
+    _dryRun   (dryRun),
+    _generate (generate)
 {
 }
 

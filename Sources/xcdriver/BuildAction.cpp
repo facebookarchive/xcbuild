@@ -49,14 +49,15 @@ static std::unique_ptr<xcexecution::Executor>
 CreateExecutor(
     std::string const &executor,
     std::shared_ptr<xcexecution::Formatter> const &formatter,
-    bool dryRun)
+    bool dryRun,
+    bool generate)
 {
     if (executor == "simple" || executor.empty()) {
         auto registry = builtin::Registry::Default();
         auto executor = xcexecution::SimpleExecutor::Create(formatter, dryRun, registry);
         return libutil::static_unique_pointer_cast<xcexecution::Executor>(std::move(executor));
     } else if (executor == "ninja") {
-        auto executor = xcexecution::NinjaExecutor::Create(formatter, dryRun);
+        auto executor = xcexecution::NinjaExecutor::Create(formatter, dryRun, generate);
         return libutil::static_unique_pointer_cast<xcexecution::Executor>(std::move(executor));
     }
 
@@ -122,7 +123,7 @@ Run(Options const &options)
     /*
      * Create the executor used to perform the build.
      */
-    std::unique_ptr<xcexecution::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun());
+    std::unique_ptr<xcexecution::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun(), options.generate());
     if (executor == nullptr) {
         fprintf(stderr, "error: unknown executor %s\n", options.executor().c_str());
         return -1;

@@ -21,7 +21,7 @@ namespace xcexecution {
  */
 class NinjaExecutor : public Executor {
 public:
-    NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun);
+    NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate);
     ~NinjaExecutor();
 
 public:
@@ -30,6 +30,13 @@ public:
         Parameters const &buildParameters);
 
 private:
+    bool buildAction(
+        Parameters const &buildParameters,
+        pbxbuild::Build::Environment const &buildEnvironment,
+        pbxbuild::Build::Context const &buildContext,
+        pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph,
+        std::string const &ninjaPath,
+        std::string const &intermediatesDirectory);
     bool buildOutputDirectories(
         ninja::Writer *writer,
         std::vector<pbxbuild::Tool::Invocation> const &invocations,
@@ -46,7 +53,7 @@ private:
 
 public:
     static std::unique_ptr<NinjaExecutor>
-    Create(std::shared_ptr<Formatter> const &formatter, bool dryRun);
+    Create(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate);
 };
 
 }

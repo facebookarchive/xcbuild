@@ -25,7 +25,7 @@ using libutil::Subprocess;
 
 SimpleExecutor::
 SimpleExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins) :
-    Executor (formatter, dryRun),
+    Executor (formatter, dryRun, false),
     _builtins(builtins)
 {
 }
