@@ -340,52 +340,52 @@ set(libxcdriver_SOURCES
     )
 
 add_library(ext SHARED ${libext_SOURCES})
-target_link_libraries(ext)
+target_link_libraries(ext LINK_PRIVATE)
 
 add_library(ninja SHARED ${libninja_SOURCES})
-target_link_libraries(ninja)
+target_link_libraries(ninja LINK_PRIVATE)
 
 add_library(plist SHARED ${libplist_SOURCES})
-target_link_libraries(plist xml2)
+target_link_libraries(plist LINK_PRIVATE xml2)
 
 add_library(util SHARED ${libutil_SOURCES})
-target_link_libraries(util)
+target_link_libraries(util LINK_PRIVATE)
 
 add_library(dependency SHARED ${libdependency_SOURCES})
-target_link_libraries(dependency util)
+target_link_libraries(dependency LINK_PRIVATE util)
 
 add_library(pbxsetting SHARED ${libpbxsetting_SOURCES})
-target_link_libraries(pbxsetting util plist)
+target_link_libraries(pbxsetting LINK_PRIVATE util plist)
 
 add_library(builtin SHARED ${libbuiltin_SOURCES})
-target_link_libraries(builtin util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
+target_link_libraries(builtin LINK_PRIVATE util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
 
 add_library(xcsdk SHARED ${libxcsdk_SOURCES})
-target_link_libraries(xcsdk pbxsetting util plist)
+target_link_libraries(xcsdk LINK_PRIVATE pbxsetting util plist)
 
 add_library(xcscheme SHARED ${libxcscheme_SOURCES})
-target_link_libraries(xcscheme util plist)
+target_link_libraries(xcscheme LINK_PRIVATE util plist)
 
 add_library(pbxproj SHARED ${libpbxproj_SOURCES})
-target_link_libraries(pbxproj pbxsetting util plist)
+target_link_libraries(pbxproj LINK_PRIVATE pbxsetting util plist)
 
 add_library(xcworkspace SHARED ${libxcworkspace_SOURCES})
-target_link_libraries(xcworkspace util plist)
+target_link_libraries(xcworkspace LINK_PRIVATE util plist)
 
 add_library(pbxspec SHARED ${libpbxspec_SOURCES})
-target_link_libraries(pbxspec pbxsetting util plist)
+target_link_libraries(pbxspec LINK_PRIVATE pbxsetting util plist)
 
 add_library(pbxbuild SHARED ${libpbxbuild_SOURCES})
-target_link_libraries(pbxbuild xcsdk xcworkspace xcscheme pbxproj pbxspec dependency ext)
+target_link_libraries(pbxbuild LINK_PRIVATE xcsdk xcworkspace xcscheme pbxproj pbxspec pbxsetting dependency util plist ext)
 
 add_library(xcformatter SHARED ${libxcformatter_SOURCES})
-target_link_libraries(xcformatter pbxbuild pbxproj)
+target_link_libraries(xcformatter LINK_PRIVATE pbxbuild pbxproj pbxsetting)
 
 add_library(xcexecution SHARED ${libxcexecution_SOURCES})
-target_link_libraries(xcexecution xcformatter pbxbuild dependency ninja builtin)
+target_link_libraries(xcexecution LINK_PRIVATE xcformatter pbxbuild xcscheme xcworkspace pbxproj pbxsetting util dependency ninja builtin)
 
 add_library(xcdriver SHARED ${libxcdriver_SOURCES})
-target_link_libraries(xcdriver xcexecution xcformatter pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
+target_link_libraries(xcdriver LINK_PRIVATE xcexecution xcformatter pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
 
 add_executable(plutil Tools/plutil.cpp)
 target_link_libraries(plutil plist util)
@@ -462,6 +462,7 @@ ADD_UNIT_GTEST(pbxsetting Value Tests/pbxsetting/test_Value.cpp)
 
 ADD_UNIT_GTEST(pbxbuild DirectedGraph Tests/pbxbuild/test_DirectedGraph.cpp)
 ADD_UNIT_GTEST(pbxbuild OptionsResolver Tests/pbxbuild/test_OptionsResolver.cpp)
+target_link_libraries(test_pbxbuild_OptionsResolver pbxspec pbxsetting plist)
 ADD_UNIT_GTEST(pbxbuild DerivedDataHash Tests/pbxbuild/test_DerivedDataHash.cpp)
 
 ADD_UNIT_GTEST(xcdriver Options Tests/xcdriver/test_Options.cpp)
