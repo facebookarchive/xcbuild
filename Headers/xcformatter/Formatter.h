@@ -7,18 +7,17 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __xcexecution_Formatter_h
-#define __xcexecution_Formatter_h
+#ifndef __xcformatter_Formatter_h
+#define __xcformatter_Formatter_h
 
-#include <xcexecution/Base.h>
-#include <pbxproj/pbxproj.h>
+#include <pbxproj/PBX/Target.h>
 
 namespace pbxbuild {
 namespace Build { class Context; }
 namespace Tool { class Invocation; }
 }
 
-namespace xcexecution {
+namespace xcformatter {
 
 /*
  * Abstract formatter for build output.
@@ -68,4 +67,4 @@ public:
 
 }
 
-#endif // !__xcexecution_Formatter_h
+#endif // !__xcformatter_Formatter_h

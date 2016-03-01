@@ -31,7 +31,8 @@ High level overview of each component library:
    - `Target`: Creates the build environment and settings for each target.
    - `Phase`: Implementations for the various build phases (compile, link, copy, etc).
    - `Tool`: Tool implementations for generating command line invocations.
- - `xcexecution`: Build execution engines and log formatting.
+ - `xcformatter`: Build log formatting styles.
+ - `xcexecution`: Build execution engines.
  - `xcdriver`: Parses command line options and drives the build.
 
 ## Style

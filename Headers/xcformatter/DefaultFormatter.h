@@ -7,12 +7,12 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __xcexecution_DefaultFormatter_h
-#define __xcexecution_DefaultFormatter_h
+#ifndef __xcformatter_DefaultFormatter_h
+#define __xcformatter_DefaultFormatter_h
 
-#include <xcexecution/Formatter.h>
+#include <xcformatter/Formatter.h>
 
-namespace xcexecution {
+namespace xcformatter {
 
 /*
  * Formats output with the default format.
@@ -64,4 +64,4 @@ public:
 
 }
 
-#endif // !__xcexecution_DefaultFormatter_h
+#endif // !__xcformatter_DefaultFormatter_h

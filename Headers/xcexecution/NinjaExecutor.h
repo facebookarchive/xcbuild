@@ -21,7 +21,7 @@ namespace xcexecution {
  */
 class NinjaExecutor : public Executor {
 public:
-    NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate);
+    NinjaExecutor(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, bool generate);
     ~NinjaExecutor();
 
 public:
@@ -53,7 +53,7 @@ private:
 
 public:
     static std::unique_ptr<NinjaExecutor>
-    Create(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate);
+    Create(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, bool generate);
 };
 
 }

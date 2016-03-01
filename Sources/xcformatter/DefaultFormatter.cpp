@@ -7,11 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <xcexecution/DefaultFormatter.h>
+#include <xcformatter/DefaultFormatter.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Build/Context.h>
 
-using xcexecution::DefaultFormatter;
+using xcformatter::DefaultFormatter;
 
 DefaultFormatter::
 DefaultFormatter(bool color) :

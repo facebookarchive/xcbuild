@@ -7,9 +7,9 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <xcexecution/Formatter.h>
+#include <xcformatter/Formatter.h>
 
-using xcexecution::Formatter;
+using xcformatter::Formatter;
 
 Formatter::
 Formatter()

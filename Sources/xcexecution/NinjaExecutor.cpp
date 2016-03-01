@@ -35,7 +35,7 @@ using libutil::Subprocess;
 using libutil::SysUtil;
 
 NinjaExecutor::
-NinjaExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate) :
+NinjaExecutor(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, bool generate) :
     Executor(formatter, dryRun, generate)
 {
 }
@@ -812,7 +812,7 @@ buildTargetInvocations(
 }
 
 std::unique_ptr<NinjaExecutor> NinjaExecutor::
-Create(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate)
+Create(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, bool generate)
 {
     return std::unique_ptr<NinjaExecutor>(new NinjaExecutor(
         formatter,

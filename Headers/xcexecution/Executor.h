@@ -11,7 +11,7 @@
 #define __xcexecution_Executor_h
 
 #include <xcexecution/Base.h>
-#include <xcexecution/Formatter.h>
+#include <xcformatter/Formatter.h>
 #include <pbxbuild/DirectedGraph.h>
 
 namespace pbxbuild {
@@ -31,12 +31,12 @@ class Parameters;
  */
 class Executor {
 protected:
-    std::shared_ptr<Formatter> _formatter;
-    bool                       _dryRun;
-    bool                       _generate;
+    std::shared_ptr<xcformatter::Formatter> _formatter;
+    bool                                    _dryRun;
+    bool                                    _generate;
 
 protected:
-    Executor(std::shared_ptr<Formatter> const &formatter, bool dryRun, bool generate);
+    Executor(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, bool generate);
 
 public:
     virtual ~Executor();

@@ -24,7 +24,7 @@ private:
     builtin::Registry _builtins;
 
 public:
-    SimpleExecutor(std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
+    SimpleExecutor(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
     ~SimpleExecutor();
 
 public:
@@ -49,7 +49,7 @@ private:
 
 public:
     static std::unique_ptr<SimpleExecutor>
-    Create(std::shared_ptr<Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
+    Create(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins);
 };
 
 }

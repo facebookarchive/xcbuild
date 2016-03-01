@@ -12,7 +12,7 @@
 #include <xcdriver/Options.h>
 #include <xcexecution/NinjaExecutor.h>
 #include <xcexecution/SimpleExecutor.h>
-#include <xcexecution/DefaultFormatter.h>
+#include <xcformatter/DefaultFormatter.h>
 #include <builtin/builtin.h>
 
 #include <unistd.h>
@@ -31,15 +31,15 @@ BuildAction::
 {
 }
 
-static std::shared_ptr<xcexecution::Formatter>
+static std::shared_ptr<xcformatter::Formatter>
 CreateFormatter(std::string const &formatter)
 {
     if (formatter == "default" || formatter.empty()) {
         /* Only use color if attached to a terminal. */
         bool color = isatty(fileno(stdout));
 
-        auto formatter = xcexecution::DefaultFormatter::Create(color);
-        return std::static_pointer_cast<xcexecution::Formatter>(formatter);
+        auto formatter = xcformatter::DefaultFormatter::Create(color);
+        return std::static_pointer_cast<xcformatter::Formatter>(formatter);
     }
 
     return nullptr;
@@ -48,7 +48,7 @@ CreateFormatter(std::string const &formatter)
 static std::unique_ptr<xcexecution::Executor>
 CreateExecutor(
     std::string const &executor,
-    std::shared_ptr<xcexecution::Formatter> const &formatter,
+    std::shared_ptr<xcformatter::Formatter> const &formatter,
     bool dryRun,
     bool generate)
 {
@@ -114,7 +114,7 @@ Run(Options const &options)
     /*
      * Create the formatter to format the build log.
      */
-    std::shared_ptr<xcexecution::Formatter> formatter = CreateFormatter(options.formatter());
+    std::shared_ptr<xcformatter::Formatter> formatter = CreateFormatter(options.formatter());
     if (formatter == nullptr) {
         fprintf(stderr, "error: unknown formatter %s\n", options.formatter().c_str());
         return -1;
