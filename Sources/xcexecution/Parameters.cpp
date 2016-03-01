@@ -11,6 +11,10 @@
 
 #include <pbxbuild/Build/DependencyResolver.h>
 #include <libutil/FSUtil.h>
+#include <libutil/md5.h>
+
+#include <sstream>
+#include <iomanip>
 
 using xcexecution::Parameters;
 using libutil::FSUtil;
@@ -34,6 +38,76 @@ Parameters(
     _configuration (configuration),
     _overrideLevels(overrideLevels)
 {
+}
+
+std::vector<std::string> Parameters::
+canonicalArguments() const
+{
+    std::vector<std::string> arguments;
+
+    if (_workspace) {
+        arguments.push_back("-workspace");
+        arguments.push_back(*_workspace);
+    }
+
+    if (_project) {
+        arguments.push_back("-project");
+        arguments.push_back(*_project);
+    }
+
+    if (_scheme) {
+        arguments.push_back("-scheme");
+        arguments.push_back(*_scheme);
+    }
+
+    if (_target) {
+        arguments.push_back("-target");
+        arguments.push_back(*_target);
+    }
+
+    if (_allTargets) {
+        arguments.push_back("-allTargets");
+    }
+
+    if (_configuration) {
+        arguments.push_back("-configuration");
+        arguments.push_back(*_configuration);
+    }
+
+    for (std::string const &action : _actions) {
+        arguments.push_back(action);
+    }
+
+    for (pbxsetting::Level const &overrideLevel : _overrideLevels) {
+        for (pbxsetting::Setting const &setting : overrideLevel.settings()) {
+            arguments.push_back(setting.name() + "=" + setting.value().raw());
+        }
+    }
+
+    return arguments;
+}
+
+std::string Parameters::
+canonicalHash() const
+{
+    md5_state_t state;
+    md5_init(&state);
+
+    std::vector<std::string> arguments = canonicalArguments();
+    for (std::string const &argument : arguments) {
+        /* Inlucde trailing NUL terminator to separate arguments. */
+        md5_append(&state, reinterpret_cast<const md5_byte_t *>(argument.data()), argument.size() + 1);
+    }
+
+    uint8_t digest[16];
+    md5_finish(&state, reinterpret_cast<md5_byte_t *>(&digest));
+
+    std::ostringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (uint8_t c : digest) {
+        ss << std::setw(2) << static_cast<int>(c);
+    }
+    return ss.str();
 }
 
 static pbxproj::PBX::Project::shared_ptr

@@ -101,6 +101,17 @@ public:
 
 public:
     /*
+     * The canonical set of arguments to reproduce these parameters.
+     */
+    std::vector<std::string> canonicalArguments() const;
+
+    /*
+     * A stable hash of the parameters. Useful as a cache key.
+     */
+    std::string canonicalHash() const;
+
+public:
+    /*
      * Loads the workspace from the build parameters.
      */
     ext::optional<pbxbuild::WorkspaceContext> loadWorkspace(
