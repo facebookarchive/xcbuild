@@ -144,7 +144,7 @@ NinjaInvocationOutputs(pbxbuild::Tool::Invocation const &invocation)
 }
 
 static void
-WriteNinjaRegenerate(ninja::Writer *writer, std::string const &ninjaPath, Parameters const &buildParameters, std::vector<std::string> const &inputPaths)
+WriteNinjaRegenerate(ninja::Writer *writer, Parameters const &buildParameters, std::string const &ninjaPath, std::string const &configurationHashPath, std::vector<std::string> const &inputPaths)
 {
     /*
      * Regenerate using this executor. Force regeneration to avoid recursively
@@ -171,6 +171,7 @@ WriteNinjaRegenerate(ninja::Writer *writer, std::string const &ninjaPath, Parame
         exec += " " + Escape::Shell(arg);
     }
     std::vector<ninja::Value> inputPathValues;
+    inputPathValues.push_back(ninja::Value::String(configurationHashPath));
     for (std::string const &inputPath : inputPaths) {
         inputPathValues.push_back(ninja::Value::String(inputPath));
     }
@@ -324,6 +325,7 @@ build(
             *buildContext,
             *targetGraph,
             ninjaPath,
+            configurationHashPath,
             intermediatesDirectory);
 
         if (!result) {
@@ -414,6 +416,7 @@ buildAction(
     pbxbuild::Build::Context const &buildContext,
     pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph,
     std::string const &ninjaPath,
+    std::string const &configurationHashPath,
     std::string const &intermediatesDirectory)
 {
     /*
@@ -568,7 +571,7 @@ buildAction(
     /*
      * Add a Ninja rule to regenerate the build.ninja file itself.
      */
-    WriteNinjaRegenerate(&writer, ninjaPath, buildParameters, inputPaths);
+    WriteNinjaRegenerate(&writer, buildParameters, ninjaPath, configurationHashPath, inputPaths);
 
     /*
      * Serialize the Ninja file into the build root.

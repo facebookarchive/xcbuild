@@ -36,6 +36,7 @@ private:
         pbxbuild::Build::Context const &buildContext,
         pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph,
         std::string const &ninjaPath,
+        std::string const &configurationHashPath,
         std::string const &intermediatesDirectory);
     bool buildOutputDirectories(
         ninja::Writer *writer,
