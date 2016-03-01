@@ -6,7 +6,7 @@
 
 **xcbuild** is an Xcode-compatible build tool with the goal of providing faster builds, better documentation of the build process and running on multiple platforms (in particular OS X and Linux)
 
-### Why use xcbuild? 
+### Why xcbuild? 
 
 <table>
   <tr>
@@ -64,15 +64,7 @@ To switch to the significantly faster [Ninja](https://martine.github.io/ninja/) 
 xcbuild -executor ninja [-workspace Example.xcworkspace ...]
 ```
 
-```
-Wrote meta-ninja: ~/Library/Developer/Xcode/DerivedData/.../Build/Intermediates/build.ninja
-```
-
-Copy the path to the `meta-ninja` and run
-
-```sh
-ninja -f ~/Library/Developer/Xcode/DerivedData/.../Build/Intermediates/build.ninja
-``` 
+Besides the `-executor ninja` parameters, the options are otherwise identical. The Ninja executor is fastest if it can avoid re-generating the Ninja files if the build configuration and input project files do not change.
 
 ## Contributing
 
