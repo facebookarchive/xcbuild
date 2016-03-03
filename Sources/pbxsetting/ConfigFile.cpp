@@ -11,6 +11,7 @@
 #include <pbxsetting/Level.h>
 #include <pbxsetting/Setting.h>
 
+#include <libutil/Base.h>
 #include <libutil/FSUtil.h>
 
 #include <cstdio>
@@ -19,7 +20,6 @@
 using pbxsetting::ConfigFile;
 using pbxsetting::Level;
 using pbxsetting::Setting;
-using libutil::trim;
 using libutil::FSUtil;
 
 ConfigFile::ConfigFile()
@@ -41,7 +41,7 @@ open(std::string const &path, Environment const &environment, XC::Config::error_
 
         std::string line;
         while (std::getline(_processed, line)) {
-            trim(line);
+            libutil::trim(line);
 
             if (line.size() > 0) {
                 if (line.back() == ';') {
@@ -189,11 +189,11 @@ process(Environment const &environment)
         if (line.empty())
             continue;
 
-        trim(line);
+        libutil::trim(line);
         if (line[0] == '#') {
             if (line.substr(1, 7) == "include") {
                 line = line.substr(8);
-                trim(line);
+                libutil::trim(line);
                 if (line.front() != '"' || line.back() != '"') {
                     error(lineno, "Malformed #include directive");
                     if (_stop)

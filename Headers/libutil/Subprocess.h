@@ -10,7 +10,9 @@
 #ifndef __libutil_Subprocess_h
 #define __libutil_Subprocess_h
 
-#include <libutil/Base.h>
+#include <string>
+#include <vector>
+#include <unordered_map>
 
 namespace libutil {
 

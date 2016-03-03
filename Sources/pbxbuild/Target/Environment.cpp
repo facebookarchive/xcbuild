@@ -11,6 +11,8 @@
 #include <pbxbuild/Build/Context.h>
 #include <libutil/FSUtil.h>
 
+#include <set>
+
 namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
 using libutil::FSUtil;

@@ -9,6 +9,8 @@
 
 #include <libutil/Options.h>
 
+#include <cstdlib>
+
 using libutil::Options;
 
 std::pair<bool, std::string> Options::

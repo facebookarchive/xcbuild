@@ -12,6 +12,7 @@
 #include <libutil/FSUtil.h>
 
 #include <fstream>
+#include <iostream>
 
 class Options {
 public:

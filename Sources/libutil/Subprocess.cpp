@@ -10,6 +10,8 @@
 #include <libutil/Subprocess.h>
 #include <libutil/FSUtil.h>
 
+#include <sstream>
+
 #include <sys/wait.h>
 #include <unistd.h>
 

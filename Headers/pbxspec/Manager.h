@@ -26,6 +26,8 @@
 #include <pbxspec/PBX/Specification.h>
 #include <pbxspec/PBX/Tool.h>
 
+#include <map>
+
 namespace pbxspec {
 
 class Manager {

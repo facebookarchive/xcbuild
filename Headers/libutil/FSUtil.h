@@ -10,7 +10,9 @@
 #ifndef __libutil_FSUtil_h
 #define __libutil_FSUtil_h
 
-#include <libutil/Base.h>
+#include <functional>
+#include <string>
+#include <vector>
 
 namespace libutil {
 

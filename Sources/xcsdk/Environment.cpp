@@ -8,6 +8,7 @@
  */
 
 #include <xcsdk/Environment.h>
+#include <libutil/Base.h>
 #include <libutil/FSUtil.h>
 #include <libutil/Subprocess.h>
 

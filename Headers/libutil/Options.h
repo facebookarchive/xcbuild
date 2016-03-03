@@ -10,7 +10,8 @@
 #ifndef __libutil_Options_h
 #define __libutil_Options_h
 
-#include <libutil/Base.h>
+#include <string>
+#include <vector>
 
 namespace libutil {
 

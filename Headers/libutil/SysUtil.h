@@ -10,7 +10,8 @@
 #ifndef __libutil_SysUtil_h
 #define __libutil_SysUtil_h
 
-#include <libutil/Base.h>
+#include <string>
+#include <unordered_map>
 
 namespace libutil {
 

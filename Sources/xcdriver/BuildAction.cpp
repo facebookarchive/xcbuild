@@ -14,6 +14,7 @@
 #include <xcexecution/SimpleExecutor.h>
 #include <xcformatter/DefaultFormatter.h>
 #include <builtin/builtin.h>
+#include <libutil/Base.h>
 
 #include <unistd.h>
 

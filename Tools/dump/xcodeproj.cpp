@@ -14,6 +14,7 @@
 
 #include <cstring>
 #include <cerrno>
+#include <set>
 
 using namespace pbxproj;
 using namespace libutil;

@@ -12,17 +12,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <cctype>
-#include <cassert>
-#include <locale>
 #include <string>
-#include <vector>
-#include <memory>
-#include <set>
-#include <unordered_set>
-#include <map>
-#include <unordered_map>
-#include <iostream>
 
 namespace libutil {
 

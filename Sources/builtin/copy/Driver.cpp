@@ -13,6 +13,8 @@
 #include <libutil/FSUtil.h>
 #include <libutil/Subprocess.h>
 
+#include <unordered_set>
+
 using builtin::copy::Driver;
 using builtin::copy::Options;
 using libutil::FSUtil;

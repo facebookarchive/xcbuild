@@ -10,7 +10,7 @@
 #ifndef __libutil_Wildcard_h
 #define __libutil_Wildcard_h
 
-#include <libutil/Base.h>
+#include <string>
 
 namespace libutil {
 

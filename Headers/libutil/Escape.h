@@ -10,7 +10,7 @@
 #ifndef __libutil_Escape_h
 #define __libutil_Escape_h
 
-#include <libutil/Base.h>
+#include <string>
 
 namespace libutil {
 

@@ -12,6 +12,8 @@
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 
+#include <cstdlib>
+
 #include <unistd.h>
 
 using pbxsetting::DefaultSettings;
