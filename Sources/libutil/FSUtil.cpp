@@ -71,6 +71,11 @@ TestForSymlink(std::string const &path)
 std::string FSUtil::
 GetDirectoryName(std::string const &path)
 {
+    if (path.find('/') == std::string::npos) {
+        // dirname() returns '.' for empty
+        return std::string();
+    }
+
     std::string copy(path);
     return ::dirname(&copy[0]);
 }
@@ -78,6 +83,11 @@ GetDirectoryName(std::string const &path)
 std::string FSUtil::
 GetBaseName(std::string const &path)
 {
+    if (path.empty()) {
+        // basename() returns '.' for empty
+        return std::string();
+    }
+
     std::string copy(path);
     return ::basename(&copy[0]);
 }
@@ -86,12 +96,11 @@ std::string FSUtil::
 GetBaseNameWithoutExtension(std::string const &path)
 {
     std::string base = GetBaseName(path);
-    if (base.empty())
-        return base;
 
     size_t pos = base.rfind('.');
-    if (pos == std::string::npos)
-        return std::string();
+    if (pos == std::string::npos) {
+        return base;
+    }
 
     return base.substr(0, pos);
 }
@@ -140,12 +149,11 @@ std::string FSUtil::
 GetFileExtension(std::string const &path)
 {
     std::string base = GetBaseName(path);
-    if (base.empty())
-        return base;
 
     size_t pos = base.rfind('.');
-    if (pos == std::string::npos)
+    if (pos == std::string::npos) {
         return std::string();
+    }
 
     return base.substr(pos + 1);
 }
