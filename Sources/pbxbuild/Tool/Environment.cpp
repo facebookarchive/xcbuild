@@ -8,6 +8,8 @@
  */
 
 #include <pbxbuild/Tool/Environment.h>
+#include <libutil/FSUtil.h>
+
 #include <sstream>
 
 namespace Tool = pbxbuild::Tool;

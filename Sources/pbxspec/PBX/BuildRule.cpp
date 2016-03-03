@@ -17,7 +17,7 @@ BuildRule()
 }
 
 BuildRule::
-BuildRule(libutil::string_vector const &fileTypes, std::string const &compilerSpec) :
+BuildRule(std::vector<std::string> const &fileTypes, std::string const &compilerSpec) :
     _fileTypes(fileTypes),
     _compilerSpec(compilerSpec)
 {

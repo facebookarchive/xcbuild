@@ -12,6 +12,7 @@
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Tokens.h>
+#include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;

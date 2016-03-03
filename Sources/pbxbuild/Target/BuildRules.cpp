@@ -8,6 +8,8 @@
  */
 
 #include <pbxbuild/Target/BuildRules.h>
+#include <libutil/FSUtil.h>
+#include <libutil/Wildcard.h>
 
 namespace Target = pbxbuild::Target;
 using libutil::FSUtil;

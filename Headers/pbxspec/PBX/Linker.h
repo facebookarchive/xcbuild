@@ -22,9 +22,9 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    ext::optional<libutil::string_vector> _binaryFormats;
-    ext::optional<pbxsetting::Value>      _dependencyInfoFile;
-    ext::optional<bool>                   _supportsInputFileList;
+    ext::optional<std::vector<std::string>> _binaryFormats;
+    ext::optional<pbxsetting::Value>        _dependencyInfoFile;
+    ext::optional<bool>                     _supportsInputFileList;
 
 protected:
     Linker();
@@ -41,7 +41,7 @@ public:
     { return reinterpret_cast <Linker::shared_ptr const &> (Tool::base()); }
 
 public:
-    inline ext::optional<libutil::string_vector> const &binaryFormats() const
+    inline ext::optional<std::vector<std::string>> const &binaryFormats() const
     { return _binaryFormats; }
 
 public:

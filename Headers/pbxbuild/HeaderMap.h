@@ -12,6 +12,11 @@
 
 #include <pbxbuild/HMapFile.h>
 
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+
 namespace pbxbuild {
 
 class HeaderMap {

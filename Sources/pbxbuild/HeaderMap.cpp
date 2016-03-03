@@ -9,6 +9,7 @@
 
 #include <pbxbuild/HeaderMap.h>
 
+#include <map>
 #include <cstring>
 
 using pbxbuild::HeaderMap;

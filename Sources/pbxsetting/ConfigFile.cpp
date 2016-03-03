@@ -11,7 +11,6 @@
 #include <pbxsetting/Level.h>
 #include <pbxsetting/Setting.h>
 
-#include <libutil/libutil.h>
 #include <libutil/FSUtil.h>
 
 #include <cstdio>

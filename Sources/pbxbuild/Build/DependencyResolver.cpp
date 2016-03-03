@@ -19,7 +19,6 @@ using pbxbuild::DirectedGraph;
 using xcscheme::XC::Scheme;
 using xcscheme::XC::BuildAction;
 using xcscheme::XC::BuildActionEntry;
-using libutil::FSUtil;
 
 Build::DependencyResolver::
 DependencyResolver(Build::Environment const &buildEnvironment) :

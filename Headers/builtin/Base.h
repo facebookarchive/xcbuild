@@ -10,8 +10,6 @@
 #ifndef __builtin_Base_h
 #define __builtin_Base_h
 
-#include <libutil/libutil.h>
-
 namespace builtin {
 
 }

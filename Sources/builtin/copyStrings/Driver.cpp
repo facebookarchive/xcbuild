@@ -10,11 +10,11 @@
 #include <builtin/copyStrings/Driver.h>
 #include <builtin/copyStrings/Options.h>
 #include <plist/plist.h>
+#include <libutil/FSUtil.h>
 
 using builtin::copyStrings::Driver;
 using builtin::copyStrings::Options;
 using libutil::FSUtil;
-using libutil::Subprocess;
 
 Driver::
 Driver()

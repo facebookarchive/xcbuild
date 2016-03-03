@@ -9,6 +9,9 @@
 
 #include <pbxbuild/FileTypeResolver.h>
 #include <pbxbuild/DirectedGraph.h>
+#include <libutil/FSUtil.h>
+#include <libutil/Wildcard.h>
+
 #include <fstream>
 
 using pbxbuild::FileTypeResolver;

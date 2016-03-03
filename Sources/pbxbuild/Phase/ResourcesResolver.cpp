@@ -12,6 +12,7 @@
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/InterfaceBuilderStoryboardLinkerResolver.h>
+#include <libutil/FSUtil.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Target = pbxbuild::Target;

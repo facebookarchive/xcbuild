@@ -12,7 +12,6 @@
 #include <pbxbuild/Tool/Environment.h>
 
 namespace Tool = pbxbuild::Tool;
-using libutil::FSUtil;
 
 Tool::OptionsResult::
 OptionsResult(std::vector<std::string> const &arguments, std::unordered_map<std::string, std::string> const &environment, std::vector<std::string> const &linkerArgs) :

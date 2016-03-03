@@ -11,6 +11,9 @@
 #define __builtin_Driver_h
 
 #include <builtin/Base.h>
+#include <string>
+#include <vector>
+#include <unordered_map>
 
 namespace builtin {
 

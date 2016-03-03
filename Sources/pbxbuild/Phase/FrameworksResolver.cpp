@@ -17,6 +17,7 @@
 #include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/Tool/LinkerResolver.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
+#include <libutil/FSUtil.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Build = pbxbuild::Build;

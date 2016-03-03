@@ -11,7 +11,6 @@
 #define __pbxspec_Base_h
 
 #include <plist/plist.h>
-#include <libutil/libutil.h>
 
 namespace pbxspec {
 

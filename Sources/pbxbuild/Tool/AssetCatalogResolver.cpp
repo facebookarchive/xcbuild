@@ -15,7 +15,6 @@
 #include <pbxbuild/Tool/Context.h>
 
 namespace Tool = pbxbuild::Tool;
-using libutil::FSUtil;
 
 Tool::AssetCatalogResolver::
 AssetCatalogResolver(pbxspec::PBX::Compiler::shared_ptr const &tool) :

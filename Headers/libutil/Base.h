@@ -26,9 +26,6 @@
 
 namespace libutil {
 
-typedef std::vector <std::string> string_vector;
-typedef std::set <std::string> string_set;
-
 // trim from start
 static inline std::string &ltrim(std::string &s)
 {

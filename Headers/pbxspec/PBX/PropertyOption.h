@@ -39,40 +39,40 @@ public:
     }
 
 protected:
-    std::string                            _name;
-    ext::optional<std::string>             _displayName;
-    plist::Object                         *_displayValues;
-    std::string                            _type;
-    ext::optional<std::string>             _uiType;
-    ext::optional<std::string>             _category;
-    ext::optional<std::string>             _description;
-    ext::optional<std::string>             _condition;
-    ext::optional<std::string>             _appearsAfter;
-    ext::optional<std::string>             _inputInclusions;
-    ext::optional<std::string>             _outputDependencies;
-    ext::optional<bool>                    _basic;
-    ext::optional<bool>                    _commonOption;
-    ext::optional<bool>                    _avoidEmptyValues;
-    ext::optional<std::string>             _commandLineCondition;
-    ext::optional<pbxsetting::Value>       _commandLineFlag;
-    ext::optional<pbxsetting::Value>       _commandLineFlagIfFalse;
-    ext::optional<pbxsetting::Value>       _commandLinePrefixFlag;
-    plist::Object                         *_commandLineArgs;
-    plist::Object                         *_additionalLinkerArgs;
-    plist::Object                         *_defaultValue;
-    plist::Object                         *_allowedValues;
-    plist::Object                         *_values;
-    ext::optional<libutil::string_vector>  _architectures;
-    ext::optional<libutil::string_vector>  _fileTypes;
-    ext::optional<libutil::string_vector>  _conditionFlavors;
-    ext::optional<libutil::string_vector>  _supportedVersionRanges;
-    ext::optional<bool>                    _isInputDependency;
-    ext::optional<bool>                    _isCommandInput;
-    ext::optional<bool>                    _isCommandOutput;
-    ext::optional<bool>                    _outputsAreSourceFiles;
-    ext::optional<bool>                    _avoidMacroDefinition;
-    ext::optional<bool>                    _flattenRecursiveSearchPathsInValue;
-    ext::optional<pbxsetting::Value>       _setValueInEnvironmentVariable;
+    std::string                              _name;
+    ext::optional<std::string>               _displayName;
+    plist::Object                           *_displayValues;
+    std::string                              _type;
+    ext::optional<std::string>               _uiType;
+    ext::optional<std::string>               _category;
+    ext::optional<std::string>               _description;
+    ext::optional<std::string>               _condition;
+    ext::optional<std::string>               _appearsAfter;
+    ext::optional<std::string>               _inputInclusions;
+    ext::optional<std::string>               _outputDependencies;
+    ext::optional<bool>                      _basic;
+    ext::optional<bool>                      _commonOption;
+    ext::optional<bool>                      _avoidEmptyValues;
+    ext::optional<std::string>               _commandLineCondition;
+    ext::optional<pbxsetting::Value>         _commandLineFlag;
+    ext::optional<pbxsetting::Value>         _commandLineFlagIfFalse;
+    ext::optional<pbxsetting::Value>         _commandLinePrefixFlag;
+    plist::Object                            *_commandLineArgs;
+    plist::Object                            *_additionalLinkerArgs;
+    plist::Object                            *_defaultValue;
+    plist::Object                            *_allowedValues;
+    plist::Object                            *_values;
+    ext::optional<std::vector<std::string>>  _architectures;
+    ext::optional<std::vector<std::string>>  _fileTypes;
+    ext::optional<std::vector<std::string>>  _conditionFlavors;
+    ext::optional<std::vector<std::string>>  _supportedVersionRanges;
+    ext::optional<bool>                      _isInputDependency;
+    ext::optional<bool>                      _isCommandInput;
+    ext::optional<bool>                      _isCommandOutput;
+    ext::optional<bool>                      _outputsAreSourceFiles;
+    ext::optional<bool>                      _avoidMacroDefinition;
+    ext::optional<bool>                      _flattenRecursiveSearchPathsInValue;
+    ext::optional<pbxsetting::Value>         _setValueInEnvironmentVariable;
 
 protected:
     friend class BuildSystem;
@@ -116,7 +116,7 @@ public:
     { return _appearsAfter; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &architectures() const
+    inline ext::optional<std::vector<std::string>> const &architectures() const
     { return _architectures; }
 
 public:
@@ -170,15 +170,15 @@ public:
     { return _outputsAreSourceFiles; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &fileTypes() const
+    inline ext::optional<std::vector<std::string>> const &fileTypes() const
     { return _fileTypes; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &conditionFlavors() const
+    inline ext::optional<std::vector<std::string>> const &conditionFlavors() const
     { return _conditionFlavors; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &supportedVersionRanges() const
+    inline ext::optional<std::vector<std::string>> const &supportedVersionRanges() const
     { return _supportedVersionRanges; }
 
 public:

@@ -10,10 +10,10 @@
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Environment.h>
+
 #include <sstream>
 
 namespace Tool = pbxbuild::Tool;
-using libutil::FSUtil;
 
 std::vector<std::string> Tool::Tokens::
 Expand(

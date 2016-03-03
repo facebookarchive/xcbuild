@@ -14,7 +14,6 @@
 #include <pbxbuild/Tool/Context.h>
 
 namespace Tool = pbxbuild::Tool;
-using libutil::FSUtil;
 
 Tool::SwiftStandardLibraryResolver::
 SwiftStandardLibraryResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :

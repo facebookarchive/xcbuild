@@ -23,12 +23,12 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 protected:
-    ext::optional<libutil::string_vector> _realArchitectures;
-    ext::optional<std::string>            _architectureSetting;
-    ext::optional<std::string>            _perArchBuildSettingName;
-    ext::optional<std::string>            _byteOrder;
-    ext::optional<bool>                   _listInEnum;
-    ext::optional<int>                    _sortNumber;
+    ext::optional<std::vector<std::string>> _realArchitectures;
+    ext::optional<std::string>              _architectureSetting;
+    ext::optional<std::string>              _perArchBuildSettingName;
+    ext::optional<std::string>              _byteOrder;
+    ext::optional<bool>                     _listInEnum;
+    ext::optional<int>                      _sortNumber;
 
 protected:
     Architecture();
@@ -45,7 +45,7 @@ public:
     { return reinterpret_cast <Architecture::shared_ptr const &> (Specification::base()); }
 
 public:
-    inline ext::optional<libutil::string_vector> const &realArchitectures() const
+    inline ext::optional<std::vector<std::string>> const &realArchitectures() const
     { return _realArchitectures; }
 
 public:

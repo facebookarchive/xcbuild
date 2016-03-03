@@ -68,25 +68,25 @@ protected:
     friend class Validation;
 
 protected:
-    ext::optional<std::string>             _defaultTargetName;
-    ext::optional<pbxsetting::Level>       _defaultBuildProperties;
-    ext::optional<Validation>              _validation;
-    ext::optional<libutil::string_vector>  _packageTypes;
-    ext::optional<std::string>             _iconNamePrefix;
-    ext::optional<bool>                    _hasInfoPlist;
-    ext::optional<bool>                    _hasInfoPlistStrings;
-    ext::optional<bool>                    _isWrapper;
-    ext::optional<bool>                    _isJava;
-    ext::optional<bool>                    _supportsZeroLink;
-    ext::optional<bool>                    _alwaysPerformSeparateStrip;
-    ext::optional<bool>                    _wantsSimpleTargetEditing;
-    ext::optional<bool>                    _addWatchCompanionRequirement;
-    ext::optional<bool>                    _runsOnProxy;
-    ext::optional<bool>                    _disableSchemeAutocreation;
-    ext::optional<bool>                    _validateEmbeddedBinaries;
-    ext::optional<bool>                    _supportsOnDemandResources;
-    ext::optional<bool>                    _canEmbedAddressSanitizerLibraries;
-    ext::optional<std::string>             _runpathSearchPathForEmbeddedFrameworks;
+    ext::optional<std::string>              _defaultTargetName;
+    ext::optional<pbxsetting::Level>        _defaultBuildProperties;
+    ext::optional<Validation>               _validation;
+    ext::optional<std::vector<std::string>> _packageTypes;
+    ext::optional<std::string>              _iconNamePrefix;
+    ext::optional<bool>                     _hasInfoPlist;
+    ext::optional<bool>                     _hasInfoPlistStrings;
+    ext::optional<bool>                     _isWrapper;
+    ext::optional<bool>                     _isJava;
+    ext::optional<bool>                     _supportsZeroLink;
+    ext::optional<bool>                     _alwaysPerformSeparateStrip;
+    ext::optional<bool>                     _wantsSimpleTargetEditing;
+    ext::optional<bool>                     _addWatchCompanionRequirement;
+    ext::optional<bool>                     _runsOnProxy;
+    ext::optional<bool>                     _disableSchemeAutocreation;
+    ext::optional<bool>                     _validateEmbeddedBinaries;
+    ext::optional<bool>                     _supportsOnDemandResources;
+    ext::optional<bool>                     _canEmbedAddressSanitizerLibraries;
+    ext::optional<std::string>              _runpathSearchPathForEmbeddedFrameworks;
 
 protected:
     ProductType();
@@ -115,7 +115,7 @@ public:
     { return _validation; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &packageTypes() const
+    inline ext::optional<std::vector<std::string>> const &packageTypes() const
     { return _packageTypes; }
 
 public:

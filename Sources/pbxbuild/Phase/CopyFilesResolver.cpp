@@ -15,7 +15,6 @@
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
-using libutil::FSUtil;
 
 Phase::CopyFilesResolver::
 CopyFilesResolver(pbxproj::PBX::CopyFilesBuildPhase::shared_ptr const &buildPhase) :

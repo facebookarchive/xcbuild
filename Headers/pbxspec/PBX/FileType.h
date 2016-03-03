@@ -25,11 +25,11 @@ public:
 public:
     class ComponentPart {
     protected:
-        std::string                           _identifier;
-        ext::optional<std::string>            _type;
-        ext::optional<std::string>            _location;
-        ext::optional<libutil::string_vector> _identifiers;
-        ext::optional<std::string>            _reference;
+        std::string                             _identifier;
+        ext::optional<std::string>              _type;
+        ext::optional<std::string>              _location;
+        ext::optional<std::vector<std::string>> _identifiers;
+        ext::optional<std::string>              _reference;
 
     protected:
         friend class FileType;
@@ -48,7 +48,7 @@ public:
         { return _location; }
 
     public:
-        inline ext::optional<libutil::string_vector> const &identifiers() const
+        inline ext::optional<std::vector<std::string>> const &identifiers() const
         { return _identifiers; }
 
     public:
@@ -104,53 +104,53 @@ protected:
     friend class BuildPhaseInjection;
 
 protected:
-    ext::optional<std::string>            _uti;
-    ext::optional<std::string>            _language;
-    ext::optional<std::string>            _computerLanguage;
-    ext::optional<std::string>            _gccDialectName;
-    ext::optional<std::string>            _plistStructureDefinition;
-    ext::optional<std::string>            _permissions;
-    ext::optional<libutil::string_vector> _extensions;
-    ext::optional<libutil::string_vector> _mimeTypes;
-    ext::optional<libutil::string_vector> _typeCodes;
-    ext::optional<libutil::string_vector> _filenamePatterns;
+    ext::optional<std::string>              _uti;
+    ext::optional<std::string>              _language;
+    ext::optional<std::string>              _computerLanguage;
+    ext::optional<std::string>              _gccDialectName;
+    ext::optional<std::string>              _plistStructureDefinition;
+    ext::optional<std::string>              _permissions;
+    ext::optional<std::vector<std::string>> _extensions;
+    ext::optional<std::vector<std::string>> _mimeTypes;
+    ext::optional<std::vector<std::string>> _typeCodes;
+    ext::optional<std::vector<std::string>> _filenamePatterns;
     ext::optional<std::vector<std::vector<uint8_t>>> _magicWords;
-    ext::optional<libutil::string_vector> _extraPropertyNames;
-    ext::optional<libutil::string_vector> _prefix;
-    ext::optional<std::vector<ComponentPart>>        _componentParts;
-    ext::optional<std::vector<BuildPhaseInjection>>  _buildPhaseInjectionsWhenEmbedding;
-    ext::optional<bool>                   _isTextFile;
-    ext::optional<bool>                   _isBuildPropertiesFile;
-    ext::optional<bool>                   _isSourceCode;
-    ext::optional<bool>                   _isSwiftSourceCode;
-    ext::optional<bool>                   _isPreprocessed;
-    ext::optional<bool>                   _isTransparent;
-    ext::optional<bool>                   _isDocumentation;
-    ext::optional<bool>                   _isEmbeddable;
-    ext::optional<bool>                   _isExecutable;
-    ext::optional<bool>                   _isExecutableWithGUI;
-    ext::optional<bool>                   _isApplication;
-    ext::optional<bool>                   _isBundle;
-    ext::optional<bool>                   _isLibrary;
-    ext::optional<bool>                   _isDynamicLibrary;
-    ext::optional<bool>                   _isStaticLibrary;
-    ext::optional<bool>                   _isFolder;
-    ext::optional<bool>                   _isWrappedFolder;
-    ext::optional<bool>                   _isFrameworkWrapper;
-    ext::optional<bool>                   _isStaticFrameworkWrapper;
-    ext::optional<bool>                   _isProjectWrapper;
-    ext::optional<bool>                   _isTargetWrapper;
-    ext::optional<bool>                   _isScannedForIncludes;
-    ext::optional<bool>                   _includeInIndex;
-    ext::optional<bool>                   _canSetIncludeInIndex;
-    ext::optional<bool>                   _requiresHardTabs;
-    ext::optional<bool>                   _containsNativeCode;
-    ext::optional<bool>                   _appliesToBuildRules;
-    ext::optional<bool>                   _changesCauseDependencyGraphInvalidation;
-    ext::optional<std::string>            _fallbackAutoroutingBuildPhase;
-    ext::optional<bool>                   _codeSignOnCopy;
-    ext::optional<bool>                   _removeHeadersOnCopy;
-    ext::optional<bool>                   _validateOnCopy;
+    ext::optional<std::vector<std::string>> _extraPropertyNames;
+    ext::optional<std::vector<std::string>> _prefix;
+    ext::optional<std::vector<ComponentPart>>       _componentParts;
+    ext::optional<std::vector<BuildPhaseInjection>> _buildPhaseInjectionsWhenEmbedding;
+    ext::optional<bool>                     _isTextFile;
+    ext::optional<bool>                     _isBuildPropertiesFile;
+    ext::optional<bool>                     _isSourceCode;
+    ext::optional<bool>                     _isSwiftSourceCode;
+    ext::optional<bool>                     _isPreprocessed;
+    ext::optional<bool>                     _isTransparent;
+    ext::optional<bool>                     _isDocumentation;
+    ext::optional<bool>                     _isEmbeddable;
+    ext::optional<bool>                     _isExecutable;
+    ext::optional<bool>                     _isExecutableWithGUI;
+    ext::optional<bool>                     _isApplication;
+    ext::optional<bool>                     _isBundle;
+    ext::optional<bool>                     _isLibrary;
+    ext::optional<bool>                     _isDynamicLibrary;
+    ext::optional<bool>                     _isStaticLibrary;
+    ext::optional<bool>                     _isFolder;
+    ext::optional<bool>                     _isWrappedFolder;
+    ext::optional<bool>                     _isFrameworkWrapper;
+    ext::optional<bool>                     _isStaticFrameworkWrapper;
+    ext::optional<bool>                     _isProjectWrapper;
+    ext::optional<bool>                     _isTargetWrapper;
+    ext::optional<bool>                     _isScannedForIncludes;
+    ext::optional<bool>                     _includeInIndex;
+    ext::optional<bool>                     _canSetIncludeInIndex;
+    ext::optional<bool>                     _requiresHardTabs;
+    ext::optional<bool>                     _containsNativeCode;
+    ext::optional<bool>                     _appliesToBuildRules;
+    ext::optional<bool>                     _changesCauseDependencyGraphInvalidation;
+    ext::optional<std::string>              _fallbackAutoroutingBuildPhase;
+    ext::optional<bool>                     _codeSignOnCopy;
+    ext::optional<bool>                     _removeHeadersOnCopy;
+    ext::optional<bool>                     _validateOnCopy;
 
 protected:
     FileType();
@@ -171,13 +171,13 @@ public:
     { return _uti; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &extensions() const
+    inline ext::optional<std::vector<std::string>> const &extensions() const
     { return _extensions; }
-    inline ext::optional<libutil::string_vector> const &MIMETypes() const
+    inline ext::optional<std::vector<std::string>> const &MIMETypes() const
     { return _mimeTypes; }
-    inline ext::optional<libutil::string_vector> const &typeCodes() const
+    inline ext::optional<std::vector<std::string>> const &typeCodes() const
     { return _typeCodes; }
-    inline ext::optional<libutil::string_vector> const &filenamePatterns() const
+    inline ext::optional<std::vector<std::string>> const &filenamePatterns() const
     { return _filenamePatterns; }
     inline ext::optional<std::vector<std::vector<uint8_t>>> const &magicWords() const
     { return _magicWords; }
@@ -291,7 +291,7 @@ public:
     { return _isTargetWrapper; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &extraPropertyNames() const
+    inline ext::optional<std::vector<std::string>> const &extraPropertyNames() const
     { return _extraPropertyNames; }
     inline ext::optional<std::vector<ComponentPart>> const &componentParts() const
     { return _componentParts; }
@@ -343,7 +343,7 @@ public:
     { return _permissions; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &prefix() const
+    inline ext::optional<std::vector<std::string>> const &prefix() const
     { return _prefix; }
 
 public:

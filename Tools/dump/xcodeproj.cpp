@@ -161,7 +161,7 @@ GetSourceFileReferences(PBX::Project::shared_ptr const &project,
 
 void
 GetSourceFilePaths(PBX::Project::shared_ptr const &project,
-        std::string const &target, string_set &paths)
+        std::string const &target, std::set<std::string> &paths)
 {
     PBX::FileReference::vector refs;
     GetSourceFileReferences(project, target, refs);
@@ -204,7 +204,7 @@ GetHeaderFileReferences(PBX::Project::shared_ptr const &project,
 
 void
 GetHeaderFilePaths(PBX::Project::shared_ptr const &project,
-        std::string const &target, string_set &paths)
+        std::string const &target, std::set<std::string> &paths)
 {
     PBX::FileReference::vector refs;
     GetHeaderFileReferences(project, target, refs);

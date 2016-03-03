@@ -13,6 +13,8 @@
 #include <builtin/Driver.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
+#include <libutil/FSUtil.h>
+#include <libutil/Subprocess.h>
 
 #include <fstream>
 

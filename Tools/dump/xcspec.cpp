@@ -13,7 +13,6 @@
 
 using pbxspec::Manager;
 using pbxspec::PBX::Specification;
-using libutil::FSUtil;
 
 int
 main(int argc, char **argv)

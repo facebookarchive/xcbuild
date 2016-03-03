@@ -378,7 +378,7 @@ FindExecutable(std::string const &name, std::string const &paths)
 }
 
 std::string FSUtil::
-FindExecutable(std::string const &name, string_vector const &paths)
+FindExecutable(std::string const &name, std::vector<std::string> const &paths)
 {
     std::string exePath = FindFile(name, paths);
 
@@ -398,10 +398,10 @@ FindFile(std::string const &name, std::string const &paths)
     if (name.empty())
         return std::string();
 
-    string_vector      vpaths;
-    string_set         seen;
-    std::string        path;
-    std::istringstream is(paths);
+    std::vector<std::string>        vpaths;
+    std::unordered_set<std::string> seen;
+    std::string                     path;
+    std::istringstream              is(paths);
 
     while (std::getline(is, path, ':')) {
         if (seen.find(path) != seen.end())
@@ -415,7 +415,7 @@ FindFile(std::string const &name, std::string const &paths)
 }
 
 std::string FSUtil::
-FindFile(std::string const &name, string_vector const &paths)
+FindFile(std::string const &name, std::vector<std::string> const &paths)
 {
     if (name.empty())
         return std::string();

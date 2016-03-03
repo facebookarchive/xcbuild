@@ -20,6 +20,7 @@
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
+#include <libutil/FSUtil.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Target = pbxbuild::Target;

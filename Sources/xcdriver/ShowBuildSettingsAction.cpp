@@ -10,6 +10,7 @@
 #include <xcdriver/ShowBuildSettingsAction.h>
 #include <xcdriver/Options.h>
 #include <xcdriver/Action.h>
+#include <libutil/FSUtil.h>
 
 using xcdriver::ShowBuildSettingsAction;
 using xcdriver::Options;

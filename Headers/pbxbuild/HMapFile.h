@@ -11,7 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <libutil/libutil.h>
+#include <string>
+#include <cstdint>
 
 //===----------------------------------------------------------------------===//
 // Data Structures and Manifest Constants

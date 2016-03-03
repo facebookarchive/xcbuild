@@ -10,6 +10,7 @@
 #include <xcdriver/ListAction.h>
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
+#include <libutil/FSUtil.h>
 
 using xcdriver::ListAction;
 using xcdriver::Options;

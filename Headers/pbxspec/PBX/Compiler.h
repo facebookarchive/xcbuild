@@ -32,13 +32,13 @@ protected:
     ext::optional<pbxsetting::Value>              _generatedInfoPlistContentFilePath;
     ext::optional<pbxsetting::Value>              _dependencyInfoFile;
     ext::optional<std::vector<pbxsetting::Value>> _dependencyInfoArgs;
-    ext::optional<libutil::string_vector>         _languages;
-    ext::optional<libutil::string_vector>         _optionConditionFlavors;
-    ext::optional<libutil::string_vector>         _patternsOfFlagsNotAffectingPrecomps;
-    ext::optional<libutil::string_vector>         _messageCategoryInfoOptions;
-    ext::optional<libutil::string_vector>         _synthesizeBuildRuleForBuildPhases;
-    ext::optional<libutil::string_vector>         _inputFileGroupings;
-    ext::optional<libutil::string_vector>         _fallbackTools;
+    ext::optional<std::vector<std::string>>       _languages;
+    ext::optional<std::vector<std::string>>       _optionConditionFlavors;
+    ext::optional<std::vector<std::string>>       _patternsOfFlagsNotAffectingPrecomps;
+    ext::optional<std::vector<std::string>>       _messageCategoryInfoOptions;
+    ext::optional<std::vector<std::string>>       _synthesizeBuildRuleForBuildPhases;
+    ext::optional<std::vector<std::string>>       _inputFileGroupings;
+    ext::optional<std::vector<std::string>>       _fallbackTools;
     ext::optional<std::vector<pbxsetting::Value>> _additionalDirectoriesToCreate;
     ext::optional<pbxsetting::Level>              _overridingProperties;
     ext::optional<bool>                           _useCPlusPlusCompilerDriverWhenBundlizing;
@@ -115,31 +115,31 @@ public:
     { return _dependencyInfoArgs; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &languages() const
+    inline ext::optional<std::vector<std::string>> const &languages() const
     { return _languages; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &optionConditionFlavors() const
+    inline ext::optional<std::vector<std::string>> const &optionConditionFlavors() const
     { return _optionConditionFlavors; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &patternsOfFlagsNotAffectingPrecomps() const
+    inline ext::optional<std::vector<std::string>> const &patternsOfFlagsNotAffectingPrecomps() const
     { return _patternsOfFlagsNotAffectingPrecomps; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &messageCategoryInfoOptions() const
+    inline ext::optional<std::vector<std::string>> const &messageCategoryInfoOptions() const
     { return _messageCategoryInfoOptions; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &synthesizeBuildRuleForBuildPhases() const
+    inline ext::optional<std::vector<std::string>> const &synthesizeBuildRuleForBuildPhases() const
     { return _synthesizeBuildRuleForBuildPhases; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &inputFileGroupings() const
+    inline ext::optional<std::vector<std::string>> const &inputFileGroupings() const
     { return _inputFileGroupings; }
 
 public:
-    inline ext::optional<libutil::string_vector> const &fallbackTools() const
+    inline ext::optional<std::vector<std::string>> const &fallbackTools() const
     { return _fallbackTools; }
 
 public:

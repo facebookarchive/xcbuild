@@ -9,6 +9,7 @@
 
 #include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/Build/Context.h>
+#include <libutil/FSUtil.h>
 
 namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;

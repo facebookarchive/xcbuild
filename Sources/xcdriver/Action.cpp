@@ -12,7 +12,6 @@
 
 using xcdriver::Action;
 using xcdriver::Options;
-using libutil::FSUtil;
 
 Action::
 Action()

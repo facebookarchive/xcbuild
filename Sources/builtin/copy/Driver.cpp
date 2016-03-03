@@ -10,6 +10,9 @@
 #include <builtin/copy/Driver.h>
 #include <builtin/copy/Options.h>
 
+#include <libutil/FSUtil.h>
+#include <libutil/Subprocess.h>
+
 using builtin::copy::Driver;
 using builtin::copy::Options;
 using libutil::FSUtil;

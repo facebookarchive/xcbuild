@@ -11,6 +11,7 @@
 #define __xcdriver_Options_h
 
 #include <xcdriver/Base.h>
+#include <libutil/Options.h>
 
 namespace xcdriver {
 

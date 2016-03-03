@@ -9,6 +9,7 @@
 
 #include <pbxbuild/Tool/DittoResolver.h>
 #include <pbxbuild/Tool/Context.h>
+#include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;

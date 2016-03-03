@@ -19,7 +19,6 @@
 
 using xcdriver::BuildAction;
 using xcdriver::Options;
-using libutil::FSUtil;
 
 BuildAction::
 BuildAction()

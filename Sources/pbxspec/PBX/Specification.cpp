@@ -20,6 +20,7 @@
 #include <pbxspec/Context.h>
 #include <pbxspec/Inherit.h>
 #include <pbxspec/Manager.h>
+#include <libutil/FSUtil.h>
 
 using pbxspec::PBX::Specification;
 using pbxspec::Manager;

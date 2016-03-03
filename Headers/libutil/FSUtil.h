@@ -77,12 +77,12 @@ public:
 
 public:
     static std::string FindFile(std::string const &name, std::string const &paths);
-    static std::string FindFile(std::string const &name, string_vector const &paths);
+    static std::string FindFile(std::string const &name, std::vector<std::string> const &paths);
 
 public:
     static std::string FindExecutable(std::string const &name);
     static std::string FindExecutable(std::string const &name, std::string const &paths);
-    static std::string FindExecutable(std::string const &name, string_vector const &paths);
+    static std::string FindExecutable(std::string const &name, std::vector<std::string> const &paths);
 
     template <typename... P>
     static inline std::string FindExecutables(P const &... names)

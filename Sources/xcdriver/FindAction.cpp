@@ -9,8 +9,8 @@
 
 #include <xcdriver/FindAction.h>
 #include <xcdriver/Options.h>
-
 #include <xcsdk/xcsdk.h>
+#include <libutil/FSUtil.h>
 
 using xcdriver::FindAction;
 using xcdriver::Options;

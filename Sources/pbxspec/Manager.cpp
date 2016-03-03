@@ -9,6 +9,7 @@
 
 #include <pbxspec/Manager.h>
 #include <pbxspec/Context.h>
+#include <libutil/FSUtil.h>
 
 using pbxspec::Manager;
 using pbxspec::Context;

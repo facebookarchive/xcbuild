@@ -11,6 +11,11 @@
 #define __builtin_copy_Options_h
 
 #include <builtin/Base.h>
+#include <libutil/Options.h>
+
+#include <string>
+#include <vector>
+#include <utility>
 
 namespace builtin {
 namespace copy {

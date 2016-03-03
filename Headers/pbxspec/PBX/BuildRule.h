@@ -24,19 +24,19 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    ext::optional<std::string>            _name;
-    ext::optional<libutil::string_vector> _fileTypes;
-    ext::optional<std::string>            _compilerSpec;
+    ext::optional<std::string>              _name;
+    ext::optional<std::vector<std::string>> _fileTypes;
+    ext::optional<std::string>              _compilerSpec;
 
 protected:
     friend class pbxspec::Manager;
     BuildRule();
-    BuildRule(libutil::string_vector const &fileTypes, std::string const &compilerSpec);
+    BuildRule(std::vector<std::string> const &fileTypes, std::string const &compilerSpec);
 
 public:
     inline ext::optional<std::string> const &name() const
     { return _name; }
-    inline ext::optional<libutil::string_vector> const &fileTypes() const
+    inline ext::optional<std::vector<std::string>> const &fileTypes() const
     { return _fileTypes; }
     inline ext::optional<std::string> const &compilerSpec() const
     { return _compilerSpec; }

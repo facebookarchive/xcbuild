@@ -11,6 +11,7 @@
 #include <builtin/copyPlist/Options.h>
 #include <plist/Object.h>
 #include <plist/Format/Any.h>
+#include <libutil/FSUtil.h>
 
 using builtin::copyPlist::Driver;
 using builtin::copyPlist::Options;

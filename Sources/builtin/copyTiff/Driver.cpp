@@ -9,11 +9,11 @@
 
 #include <builtin/copyTiff/Driver.h>
 #include <builtin/copyTiff/Options.h>
+#include <libutil/FSUtil.h>
 
 using builtin::copyTiff::Driver;
 using builtin::copyTiff::Options;
 using libutil::FSUtil;
-using libutil::Subprocess;
 
 Driver::
 Driver()

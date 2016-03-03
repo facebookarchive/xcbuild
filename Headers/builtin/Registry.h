@@ -12,6 +12,11 @@
 
 #include <builtin/Base.h>
 
+#include <memory>
+#include <string>
+#include <vector>
+#include <unordered_map>
+
 namespace builtin {
 
 class Driver;

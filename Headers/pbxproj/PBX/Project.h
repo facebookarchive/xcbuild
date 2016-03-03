@@ -46,7 +46,7 @@ private:
     std::string                        _compatibilityVersion;
     std::string                        _developmentRegion;
     bool                               _hasScannedForEncodings;
-    libutil::string_vector             _knownRegions;
+    std::vector<std::string>             _knownRegions;
     Group::shared_ptr                  _mainGroup;
     Group::shared_ptr                  _productRefGroup;
     std::string                        _projectDirPath;
@@ -78,7 +78,7 @@ public:
     { return _hasScannedForEncodings; }
 
 public:
-    inline libutil::string_vector const &knownRegions() const
+    inline std::vector<std::string> const &knownRegions() const
     { return _knownRegions; }
 
 public:

@@ -25,7 +25,7 @@ private:
     std::string            _filePatterns;
     std::string            _fileType;
     std::string            _script;
-    libutil::string_vector _outputFiles;
+    std::vector<std::string> _outputFiles;
     bool                   _isEditable;
 
 public:
@@ -47,7 +47,7 @@ public:
     { return _script; }
 
 public:
-    inline libutil::string_vector const &outputFiles() const
+    inline std::vector<std::string> const &outputFiles() const
     { return _outputFiles; }
 
 public:
