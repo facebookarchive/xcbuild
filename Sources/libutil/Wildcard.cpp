@@ -9,6 +9,8 @@
 
 #include <libutil/Wildcard.h>
 
+#include <algorithm>
+
 using libutil::Wildcard;
 
 bool Wildcard::

@@ -13,9 +13,9 @@
 #include <plist/Base.h>
 #include <plist/Object.h>
 
+#include <algorithm>
 #include <vector>
 #include <unordered_map>
-#include <algorithm>
 
 namespace plist {
 
