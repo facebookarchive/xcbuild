@@ -26,3 +26,14 @@ TEST(Escape, Shell)
     EXPECT_EQ(Escape::Shell("'"), "''\\'''");
 }
 
+TEST(Escape, Makefile)
+{
+    EXPECT_EQ(Escape::Makefile(""), "");
+    EXPECT_EQ(Escape::Makefile("alpha"), "alpha");
+    EXPECT_EQ(Escape::Makefile("alpha9numeric"), "alpha9numeric");
+    EXPECT_EQ(Escape::Makefile("dollar$"), "dollar\\$");
+    EXPECT_EQ(Escape::Makefile("co:l:on"), "co\\:l\\:on");
+    EXPECT_EQ(Escape::Makefile("ha#sh"), "ha\\#sh");
+    EXPECT_EQ(Escape::Makefile("per%cent"), "per\\%cent");
+    EXPECT_EQ(Escape::Makefile("'\"\\"), "'\"\\");
+}
