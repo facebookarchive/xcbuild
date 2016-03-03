@@ -207,6 +207,10 @@ ResolveRelativePath(std::string const &path, std::string const &workingDirectory
 {
     if (IsAbsolutePath(path)) {
         return path;
+    } else if (path.empty()) {
+        return workingDirectory;
+    } else if (workingDirectory.empty()) {
+        return path;
     } else {
         return NormalizePath(workingDirectory + "/" + path);
     }
