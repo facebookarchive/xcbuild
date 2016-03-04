@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Memory Management */
 
@@ -98,5 +101,9 @@ bom_tree_iterate(struct bom_tree_context *tree, bom_tree_iterator iterator, void
 void
 bom_tree_add(struct bom_tree_context *tree, const void *key, size_t key_len, const void *value, size_t value_len);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _BOM_H */

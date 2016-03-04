@@ -19,6 +19,10 @@
 #ifndef _BOM_FORMAT_H
 #define _BOM_FORMAT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Build of Materials format (BOM)
  *
@@ -103,5 +107,10 @@ struct bom_tree_entry {
   uint32_t backward; // previous leaf, when there are multiple leafs
   struct bom_tree_entry_indexes indexes[0];
 } __attribute__((packed));
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _BOM_FORMAT_H */

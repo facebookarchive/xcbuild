@@ -151,24 +151,30 @@ bom_tree_iterate(struct bom_tree_context *tree_context, bom_tree_iterator iterat
     struct bom_tree *tree = (struct bom_tree *)bom_index_get(tree_context->context, tree_index, NULL);
 
     struct bom_tree_entry *paths = (struct bom_tree_entry *)bom_index_get(tree_context->context, ntohl(tree->child), NULL);
-
-    while (paths != NULL) {
-        for (unsigned int i = 0; i < ntohs(paths->count); i++) {
-            struct bom_tree_entry_indexes *indexes = &paths->indexes[i];
-
-            size_t key_len;
-            void *key = bom_index_get(tree_context->context, ntohl(indexes->key_index), &key_len);
-
-            size_t value_len;
-            void *value = bom_index_get(tree_context->context, ntohl(indexes->value_index), &value_len);
-
-            iterator(tree_context, key, key_len, value, value_len, ctx);
+    if (paths != NULL) {
+        if (!paths->is_leaf) {
+            struct bom_tree_entry_indexes *indexes = &paths->indexes[0];
+            paths = (struct bom_tree_entry *)bom_index_get(tree_context->context, ntohl(indexes->value_index), NULL);
         }
 
-        if (paths->forward != htonl(0)) {
-            paths = (struct bom_tree_entry *)bom_index_get(tree_context->context, ntohl(paths->forward), NULL);
-        } else {
-            paths = NULL;
+        while (paths != NULL) {
+            for (unsigned int i = 0; i < ntohs(paths->count); i++) {
+                struct bom_tree_entry_indexes *indexes = &paths->indexes[i];
+
+                size_t key_len;
+                void *key = bom_index_get(tree_context->context, ntohl(indexes->key_index), &key_len);
+
+                size_t value_len;
+                void *value = bom_index_get(tree_context->context, ntohl(indexes->value_index), &value_len);
+
+                iterator(tree_context, key, key_len, value, value_len, ctx);
+            }
+
+            if (paths->forward != htonl(0)) {
+                paths = (struct bom_tree_entry *)bom_index_get(tree_context->context, ntohl(paths->forward), NULL);
+            } else {
+                paths = NULL;
+            }
         }
     }
 
