@@ -11,6 +11,8 @@
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Build/Context.h>
 
+#include <algorithm>
+
 using xcformatter::DefaultFormatter;
 
 DefaultFormatter::

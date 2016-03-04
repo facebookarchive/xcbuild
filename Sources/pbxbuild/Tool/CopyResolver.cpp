@@ -14,6 +14,8 @@
 #include <pbxbuild/Tool/Context.h>
 #include <libutil/FSUtil.h>
 
+#include <algorithm>
+
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 

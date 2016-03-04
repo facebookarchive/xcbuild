@@ -11,6 +11,8 @@
 #include <xcsdk/SDK/Manager.h>
 #include <libutil/FSUtil.h>
 
+#include <algorithm>
+
 using xcsdk::SDK::Platform;
 using pbxsetting::Level;
 using pbxsetting::Setting;

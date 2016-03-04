@@ -10,6 +10,7 @@
 #include <pbxbuild/DirectedGraph.h>
 #include <pbxbuild/Tool/Invocation.h>
 
+#include <algorithm>
 #include <cassert>
 
 using pbxbuild::DirectedGraph;
