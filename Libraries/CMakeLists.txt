@@ -10,6 +10,8 @@
 add_subdirectory(builtin)
 add_subdirectory(dependency)
 add_subdirectory(ext)
+add_subdirectory(libcar)
+add_subdirectory(libbom)
 add_subdirectory(libutil)
 add_subdirectory(ninja)
 add_subdirectory(pbxbuild)
