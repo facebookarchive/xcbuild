@@ -24,6 +24,9 @@ target_link_libraries(pbxsetting PUBLIC util plist)
 target_include_directories(pbxsetting PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(pbxsetting PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
 
+add_executable(dump_xcconfig Tools/dump_xcconfig.cpp)
+target_link_libraries(dump_xcconfig pbxsetting util)
+
 ADD_UNIT_GTEST(pbxsetting Condition Tests/test_Condition.cpp)
 ADD_UNIT_GTEST(pbxsetting Environment Tests/test_Environment.cpp)
 ADD_UNIT_GTEST(pbxsetting Setting Tests/test_Setting.cpp)

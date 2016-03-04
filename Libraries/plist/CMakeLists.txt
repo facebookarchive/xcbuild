@@ -61,6 +61,9 @@ target_link_libraries(plist PUBLIC xml2)
 target_include_directories(plist PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
 
+add_executable(plutil Tools/plutil.cpp)
+target_link_libraries(plutil plist util)
+
 ADD_UNIT_GTEST(plist Boolean Tests/test_Boolean.cpp)
 ADD_UNIT_GTEST(plist String Tests/test_String.cpp)
 ADD_UNIT_GTEST(plist Encoding Tests/Format/test_Encoding.cpp)

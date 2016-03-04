@@ -7,10 +7,14 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-project(pbxbuild C CXX)
+project(xcbuild C CXX)
 
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_MACOSX_RPATH 1)
+
+# Output into root build directory.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
@@ -44,5 +48,4 @@ function (ADD_UNIT_GTEST LIBRARY NAME SOURCES)
 endfunction ()
 
 add_subdirectory(Libraries)
-add_subdirectory(Tools)
 

@@ -52,3 +52,30 @@ endif ()
 target_link_libraries(builtin PUBLIC util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
 target_include_directories(builtin PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 
+add_executable(builtin-copy Tools/copy.cpp)
+target_link_libraries(builtin-copy builtin)
+
+add_executable(builtin-copyPlist Tools/copyPlist.cpp)
+target_link_libraries(builtin-copyPlist builtin)
+
+add_executable(builtin-copyStrings Tools/copyStrings.cpp)
+target_link_libraries(builtin-copyStrings builtin)
+
+add_executable(builtin-copyTiff Tools/copyTiff.cpp)
+target_link_libraries(builtin-copyTiff builtin)
+
+add_executable(builtin-infoPlistUtility Tools/infoPlistUtility.cpp)
+target_link_libraries(builtin-infoPlistUtility builtin)
+
+add_executable(builtin-lsRegisterURL Tools/lsRegisterURL.cpp)
+target_link_libraries(builtin-lsRegisterURL builtin)
+
+add_executable(builtin-productPackagingUtility Tools/productPackagingUtility.cpp)
+target_link_libraries(builtin-productPackagingUtility builtin)
+
+add_executable(builtin-validationUtility Tools/validationUtility.cpp)
+target_link_libraries(builtin-validationUtility builtin)
+
+add_executable(builtin-embeddedBinaryValidationUtility Tools/embeddedBinaryValidationUtility.cpp)
+target_link_libraries(builtin-embeddedBinaryValidationUtility builtin)
+

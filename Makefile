@@ -17,8 +17,8 @@ ninja_flags := $(if $(shell echo "$$NINJA_JOBS"),-j$(shell echo "$$NINJA_JOBS"),
 
 all:
 	mkdir -p $(build)
-	cd $(build) && $(cmake) $(cmake_flags) ..
-	cd $(build) && $(ninja) $(ninja_flags)
+	$(cmake) -B$(build) -H. $(cmake_flags)
+	$(ninja) -C $(build) $(ninja_flags)
 
 test: all
 	set -e; for test in build/test_*; do echo; echo "$$test"; ./$$test; done

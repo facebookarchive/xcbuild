@@ -113,7 +113,7 @@ Help(std::string const &error = std::string())
         fprintf(stderr, "\n");
     }
 
-    fprintf(stderr, "Usage: ninja-dependency-info [options]\n\n");
+    fprintf(stderr, "Usage: dependency-info-tool [options]\n\n");
     fprintf(stderr, "Converts dependency info to Ninja format.\n\n");
 
 #define INDENT "  "

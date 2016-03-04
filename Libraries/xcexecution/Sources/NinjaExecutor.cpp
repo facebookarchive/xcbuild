@@ -599,7 +599,7 @@ LocalExecutable(std::string const &executable)
 static std::string
 NinjaDependencyInfoExecutable()
 {
-    return LocalExecutable("ninja-dependency-info");
+    return LocalExecutable("dependency-info-tool");
 }
 
 bool NinjaExecutor::

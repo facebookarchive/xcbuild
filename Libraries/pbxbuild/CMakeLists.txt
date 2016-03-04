@@ -64,6 +64,9 @@ add_library(pbxbuild SHARED
 target_link_libraries(pbxbuild PUBLIC xcsdk xcworkspace xcscheme pbxproj pbxspec pbxsetting dependency util plist ext)
 target_include_directories(pbxbuild PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 
+add_executable(dump_hmap Tools/dump_hmap.cpp)
+target_link_libraries(dump_hmap pbxbuild util plist)
+
 ADD_UNIT_GTEST(pbxbuild DirectedGraph Tests/test_DirectedGraph.cpp)
 ADD_UNIT_GTEST(pbxbuild OptionsResolver Tests/test_OptionsResolver.cpp)
 target_link_libraries(test_pbxbuild_OptionsResolver PRIVATE pbxspec pbxsetting plist)

@@ -22,5 +22,13 @@ add_library(xcdriver SHARED
 target_link_libraries(xcdriver PUBLIC xcexecution xcformatter pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
 target_include_directories(xcdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 
+add_executable(xcbuild Tools/xcbuild.cpp)
+target_link_libraries(xcbuild xcdriver)
+
+add_custom_command(TARGET xcbuild
+                   COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE_NAME:xcbuild> $<TARGET_FILE_DIR:xcbuild>/xcodebuild
+                   DEPENDS $<TARGET_FILE:xcbuild>)
+
 ADD_UNIT_GTEST(xcdriver Options Tests/test_Options.cpp)
 ADD_UNIT_GTEST(xcdriver Action Tests/test_Action.cpp)
+
