@@ -2,10 +2,9 @@
 
 #include <car/car.h>
 
-#if __has_include("lzvn.h")
-#include "lzvn.h"
-#endif
 #include <zlib.h>
+#include <compression.h>
+#define _COMPRESSION_LZVN 0x900
 
 #include <assert.h>
 #include <string.h>
@@ -267,8 +266,10 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
 
     struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((void *)value->info + info_len);
     memcpy(header1->magic, "CELM", 4);
-    header1->unknown1 = 0; // todo
-    header1->unknown2 = 2; // todo
+    header1->flags.unknown1 = 0; // todo
+    header1->flags.unknown2 = 0; // todo
+    header1->flags.reserved = 0; // todo
+    header1->compression = car_rendition_data_compression_magic_zlib; // todo
     header1->length = strm.total_out;
 
     void *image_data = (void *)header1 + sizeof(struct car_rendition_data_header1);
@@ -394,22 +395,22 @@ _car_rendition_data_copy_callback(struct car_rendition_context *context, struct 
 {
     struct _car_rendition_data_copy_ctx *data_ctx = (struct _car_rendition_data_copy_ctx *)ctx;
 
-    /* Advance past the header and the info section. We just want the data. */
-    struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((void *)value + sizeof(struct car_rendition_value) + value->info_len);
-
-    void *compressed_data = &header1->data;
-    size_t compressed_length = header1->length;
-
-    /* Check for the secondary header, and use its values if available. */
-    /* todo find a way of determining in advance if this is present */
-    struct car_rendition_data_header2 *header2 = (struct car_rendition_data_header2 *)compressed_data;
-    if (!strncmp(header2->magic, "KCBC", 4)) {
-        compressed_data = &header2->data;
-        compressed_length = header2->length;
+    struct car_rendition_info_header *info_header = (struct car_rendition_info_header *)value->info;
+    while (((uintptr_t)info_header - (uintptr_t)value->info) < value->info_len) {
+        info_header = (struct car_rendition_info_header *)((intptr_t)info_header + sizeof(struct car_rendition_info_header) + info_header->length);
     }
 
-    /* todo get a better value, or handle other pixel formats etc */
-    size_t uncompressed_length = value->width * value->height * 4;
+    size_t bytes_per_pixel;
+    if (value->pixel_format == car_rendition_value_pixel_format_argb) {
+        bytes_per_pixel = 4;
+    } else if (value->pixel_format == car_rendition_value_pixel_format_ga8) {
+        bytes_per_pixel = 2;
+    } else {
+        fprintf(stderr, "error: unsupported pixel format %.4s\n", (char const *)&value->pixel_format);
+        return;
+    }
+
+    size_t uncompressed_length = value->width * value->height * bytes_per_pixel;
     void *uncompressed_data = malloc(uncompressed_length);
     if (uncompressed_data == NULL) {
         printf("Couldn't allocate uncompressed data of size %zd.\n", uncompressed_length);
@@ -417,56 +418,78 @@ _car_rendition_data_copy_callback(struct car_rendition_context *context, struct 
     }
     memset(uncompressed_data, 0, uncompressed_length);
 
-    /* todo find a way of determining in advance what compression is used */
-    uint32_t data_magic = *(uint32_t *)compressed_data;
-    if (data_magic == car_rendition_data_compression_magic_deflate || car_rendition_data_compression_magic_deflate == ntohl(data_magic)) {
-        z_stream strm;
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
-        strm.opaque = Z_NULL;
-        strm.avail_in = compressed_length;
-        strm.next_in = compressed_data;
+    /* Advance past the header and the info section. We just want the data. */
+    struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((void *)value + sizeof(struct car_rendition_value) + value->info_len);
 
-        int ret = inflateInit2(&strm, 16+MAX_WBITS);
-        if (ret != Z_OK) {
-            free(uncompressed_data);
-            return;
-        }
-
-        strm.avail_out = uncompressed_length;
-        strm.next_out = uncompressed_data;
-
-        ret = inflate(&strm, Z_NO_FLUSH);
-        if (ret != Z_OK && ret != Z_STREAM_END) {
-            printf("Deflate decompression failed; ret: %x.\n", ret);
-            free(uncompressed_data);
-            return;
-        }
-
-        ret = inflateEnd(&strm);
-        if (ret != Z_OK) {
-            free(uncompressed_data);
-            return;
-        }
-    } else if (data_magic == car_rendition_data_compression_magic_lzvn) {
-#if __has_include("lzvn.h")
-        size_t ret = lzvn_decode(uncompressed_data, uncompressed_length, compressed_data, compressed_length);
-        if (ret == 0) {
-            printf("LZVN decompression failed; ret: %zx.\n", ret);
-        }
-#else
-        printf("LZVN compression unsupported.\n");
-        free(uncompressed_data);
-        return;
-#endif
-    } else {
-        printf("Unknown compression format magic: %08x\n", data_magic);
-        free(uncompressed_data);
+    if (strncmp(header1->magic, "MLEC", sizeof(header1->magic)) != 0) {
+        fprintf(stderr, "error: header1 magic is wrong, can't possibly decode\n");
         return;
     }
 
-    data_ctx->data = uncompressed_data;
-    data_ctx->data_len = uncompressed_length;
+    void *compressed_data = &header1->data;
+    size_t compressed_length = header1->length;
+
+    /* Check for the secondary header, and use its values if available. */
+    /* todo find a way of determining in advance if this is present */
+    struct car_rendition_data_header2 *header2 = (struct car_rendition_data_header2 *)compressed_data;
+    if (strncmp(header2->magic, "KCBC", 4) == 0) {
+        compressed_data = &header2->data;
+        compressed_length = header2->length;
+    }
+
+    compression_algorithm algorithm = 0;
+    switch (header1->compression) {
+        case car_rendition_data_compression_magic_rle:
+            fprintf(stderr, "error: unable to handle RLE compression\n");
+            break;
+        case car_rendition_data_compression_magic_unk1:
+            fprintf(stderr, "using compression: LZ4\n");
+            algorithm = COMPRESSION_LZ4; // right?
+            break;
+        case car_rendition_data_compression_magic_zlib:
+            fprintf(stderr, "using compression: ZLIB\n");
+            algorithm = COMPRESSION_ZLIB; // right?
+            break;
+        case car_rendition_data_compression_magic_lzvn:
+            fprintf(stderr, "using compression: LZVN\n");
+            algorithm = _COMPRESSION_LZVN; // right?
+            break;
+        case car_rendition_data_compression_magic_jpeg_lzfse:
+            fprintf(stderr, "using compression: LZFSE\n");
+            algorithm = COMPRESSION_LZFSE;
+            break;
+        case car_rendition_data_compression_magic_blurredimage:
+            fprintf(stderr, "error: unable to handle BlurredImage\n");
+            break;
+        default:
+            fprintf(stderr, "error: unkonwn compression %x\n", header1->compression);
+            break;
+    }
+
+    if (algorithm != 0) {
+        size_t offset = 0;
+        while (offset < uncompressed_length) {
+            if (offset != 0) {
+                struct car_rendition_data_header2 *header2 = (struct car_rendition_data_header2 *)compressed_data;
+                assert(strncmp(header2->magic, "KCBC", sizeof(header2->magic)) == 0);
+                compressed_length = header2->length;
+                compressed_data = header2->data;
+            }
+
+            size_t compression_result = compression_decode_buffer(uncompressed_data + offset, uncompressed_length - offset, compressed_data, compressed_length, NULL, algorithm);
+            if (compression_result != 0) {
+                offset += compression_result;
+                compressed_data += compressed_length;
+
+                //uncompressed_length = compression_result;
+                data_ctx->data = uncompressed_data;
+                data_ctx->data_len = uncompressed_length;
+            } else {
+                fprintf(stderr, "error: decompression failure\n");
+                break;
+            }
+        }
+    }
 }
 
 void *

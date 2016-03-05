@@ -235,7 +235,8 @@ struct car_rendition_value {
         unsigned int is_excluded_from_contrast_filter : 1;
         unsigned int is_vector : 1;
         unsigned int is_opaque : 1;
-        unsigned int reserved : 28;
+        unsigned int bitmap_encoding : 4;
+        unsigned int reserved : 24;
     } flags;
 
     uint32_t width;
@@ -257,17 +258,18 @@ struct car_rendition_value {
     struct {
         uint32_t bitmap_count;
         uint32_t reserved;
-        uint32_t payload_size; // size of all the proceeding information listLength + data
+        uint32_t payload_size; // size of all the proceeding information info_len + data
     } bitmaps;
 
     struct car_rendition_info_header info[0];
 } __attribute__((packed));
 
 enum car_rendition_value_pixel_format {
-    car_rendition_value_pixel_format_argb = 'ARGB',
-    car_rendition_value_pixel_format_pdf = 'PDF ',
-    car_rendition_value_pixel_format_raw_data = 'DATA',
-    car_rendition_value_pixel_format_jpeg = 'JPEG',
+    car_rendition_value_pixel_format_argb = 'ARGB', // color + alpha
+    car_rendition_value_pixel_format_ga8 = 'GA8 ', // gray + alpha
+    car_rendition_value_pixel_format_pdf = 'PDF ', // pdf document
+    car_rendition_value_pixel_format_raw_data = 'DATA', // raw data
+    car_rendition_value_pixel_format_jpeg = 'JPEG', // jpeg image
 };
 
 enum car_rendition_value_layout {
@@ -290,11 +292,11 @@ enum car_rendition_value_layout {
     car_rendition_value_layout_animation_filmstrip = 50,
 
     // Non-images > 999:
-    car_rendition_value_layout_RawData = 1000,
-    car_rendition_value_layout_ExternalLink = 1001,
-    car_rendition_value_layout_LayerStack = 1002,
-    car_rendition_value_layout_InternalLink = 1003,
-    car_rendition_value_layout_AssetPack = 1004,
+    car_rendition_value_layout_raw_data = 1000,
+    car_rendition_value_layout_external_link = 1001,
+    car_rendition_value_layout_layer_stack = 1002,
+    car_rendition_value_layout_internal_link = 1003,
+    car_rendition_value_layout_asset_pack = 1004,
 };
 
 struct car_rendition_info_slice {
@@ -306,7 +308,7 @@ struct car_rendition_info_slice {
 
 struct car_rendition_info_slices {
     struct car_rendition_info_header header;
-    unsigned int nslices;
+    uint32_t nslices;
     struct car_rendition_info_slice slices[0];
 } __attribute__((packed));
 
@@ -323,6 +325,41 @@ struct car_rendition_info_metrics {
     struct car_rendition_info_metrics_metric image_size;
 } __attribute__((packed));
 
+struct car_rendition_info_composition {
+    struct car_rendition_info_header header;
+    uint32_t blend_mode;
+    float opacity;
+} __attribute__((packed));
+
+struct car_rendition_info_uti {
+    struct car_rendition_info_header header;
+    uint32_t uti_length;
+    char uti[0];
+} __attribute__((packed));
+
+struct car_rendition_info_bitmap_info {
+    struct car_rendition_info_header header;
+    uint32_t exif_orientation;
+} __attribute__((packed));
+
+struct car_rendition_info_bytes_per_row {
+    struct car_rendition_info_header header;
+    uint32_t bytes_per_row;
+} __attribute__((packed));
+
+struct car_rendition_info_reference {
+    struct car_rendition_info_header header;
+    uint32_t magic; // INLK
+    uint32_t padding; // always 0?
+    uint32_t x;
+    uint32_t y;
+    uint32_t width;
+    uint32_t height;
+    uint16_t layout; // since rendition header says internal link
+    uint16_t key_length;
+    car_rendition_key key[0]; // rendition containing data
+};
+
 enum car_rendition_info_magic {
     car_rendition_info_magic_slices = 1001,
     car_rendition_info_magic_metrics = 1003,
@@ -331,12 +368,17 @@ enum car_rendition_info_magic {
     car_rendition_info_magic_bitmap_info = 1006,
     car_rendition_info_magic_bytes_per_row = 1007,
     car_rendition_info_magic_reference = 1010,
+    car_rendition_info_magic_alpha_cropped_frame = 1011,
 };
 
 struct car_rendition_data_header1 {
     char magic[4]; // CELM
-    uint32_t unknown1; // always 0
-    uint32_t unknown2; // always 2 (or 3?)
+    struct {
+        unsigned int unknown1 : 1;
+        unsigned int unknown2 : 1;
+        unsigned int reserved : 30;
+    } flags;
+    uint32_t compression; // see magic below
     uint32_t length; // length of data
     uint8_t data[0]; // length
 };
@@ -351,8 +393,12 @@ struct car_rendition_data_header2 {
 };
 
 enum car_rendition_data_compression_magic {
-    car_rendition_data_compression_magic_deflate = 0x1f8b0800,
-    car_rendition_data_compression_magic_lzvn = 0x0e16160e,
+    car_rendition_data_compression_magic_rle = 0,
+    car_rendition_data_compression_magic_unk1 = 1, // LZW?
+    car_rendition_data_compression_magic_zlib = 2,
+    car_rendition_data_compression_magic_lzvn = 3,
+    car_rendition_data_compression_magic_jpeg_lzfse = 4,
+    car_rendition_data_compression_magic_blurredimage = 5,
 };
 
 extern const char *const car_header_variable;

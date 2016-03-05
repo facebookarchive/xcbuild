@@ -11,6 +11,6 @@ find_package(ZLIB REQUIRED)
 target_include_directories(car PRIVATE "${ZLIB_INCLUDE_DIR}")
 target_link_libraries(car PRIVATE ${ZLIB_LIBRARIES})
 
-target_link_libraries(car PUBLIC bom)
+target_link_libraries(car PUBLIC bom compression)
 target_include_directories(car PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 
