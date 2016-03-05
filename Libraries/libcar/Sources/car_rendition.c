@@ -169,8 +169,8 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
     int key_format_index = bom_variable_get(car_bom_get(context->car), car_key_format_variable);
     struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(car_bom_get(context->car), key_format_index, NULL);
 
-    size_t key_len = sizeof(struct car_rendition_key) + sizeof(uint16_t) * keyfmt->num_identifiers;
-    struct car_rendition_key *key = malloc(key_len);
+    size_t key_len = sizeof(car_rendition_key) * keyfmt->num_identifiers;
+    car_rendition_key *key = malloc(key_len);
     if (key == NULL) {
         car_rendition_free(context);
         return NULL;
@@ -180,7 +180,7 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
     for (size_t i = 0; i < keyfmt->num_identifiers; i++) {
         enum car_attribute_identifier identifier = keyfmt->identifier_list[i];
         uint16_t value = car_attribute_get(attributes, identifier);
-        key->values[i] = (value == UINT16_MAX ? 0 : value);
+        key[i] = (value == UINT16_MAX ? 0 : value);
     }
 
     z_stream strm;
@@ -344,12 +344,12 @@ struct _car_rendition_value_ctx {
 static void
 _car_rendition_value_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
 {
-    struct car_rendition_key *rendition_key = key;
+    car_rendition_key *rendition_key = key;
     struct car_rendition_value *rendition_value = value;
 
     struct _car_rendition_value_ctx *value_ctx = (struct _car_rendition_value_ctx *)ctx;
 
-    struct car_attribute_list *attributes = car_attribute_alloc_values(value_ctx->key_format->num_identifiers, value_ctx->key_format->identifier_list, rendition_key->values);
+    struct car_attribute_list *attributes = car_attribute_alloc_values(value_ctx->key_format->num_identifiers, value_ctx->key_format->identifier_list, rendition_key);
     if (attributes == NULL) {
         return;
     }

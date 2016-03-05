@@ -11,6 +11,10 @@
 /* Unfortunate, but needed for car_attribute_identifier. */
 #include <car/car_format.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /* Attributes */
 
@@ -150,5 +154,9 @@ car_part_dump(struct car_context *context);
 void
 car_element_dump(struct car_context *context);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _CAR_H */

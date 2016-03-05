@@ -26,6 +26,10 @@
 #ifndef _CAR_FORMAT_H
 #define _CAR_FORMAT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Compiled Asset Archive format (car)
  *
@@ -190,9 +194,8 @@ struct car_key_format {
     uint32_t identifier_list[0];
 } __attribute__((packed));
 
-struct car_facet_key {
-    char facet_name[0]; // length is key length
-} __attribute__((packed));
+// length is key length
+typedef char car_facet_key;
 
 struct car_facet_value {
     // ????
@@ -215,9 +218,8 @@ struct car_part_element_value {
     char name[0]; // length - 8
 } __attribute__((packed));
 
-struct car_rendition_key {
-    uint16_t values[0]; // flat list of short values in the order of the attributes from the keyformat plus a trailing null
-};
+// flat list of short values in the order of the attributes from the keyformat plus a trailing null
+typedef uint16_t car_rendition_key;
 
 struct car_rendition_info_header {
     uint32_t magic;
@@ -353,18 +355,22 @@ enum car_rendition_data_compression_magic {
     car_rendition_data_compression_magic_lzvn = 0x0e16160e,
 };
 
-const char *const car_header_variable;
-const char *const car_key_format_variable;
-const char *const car_facet_keys_variable;
-const char *const car_part_info_variable;
-const char *const car_element_info_variable;
-const char *const car_renditions_variable;
-const char *const car_colors_variable;
-const char *const car_fonts_variable;
-const char *const car_font_sizes_variable;
-const char *const car_glyphs_variable;
-const char *const car_bezels_variable;
+extern const char *const car_header_variable;
+extern const char *const car_key_format_variable;
+extern const char *const car_facet_keys_variable;
+extern const char *const car_part_info_variable;
+extern const char *const car_element_info_variable;
+extern const char *const car_renditions_variable;
+extern const char *const car_colors_variable;
+extern const char *const car_fonts_variable;
+extern const char *const car_font_sizes_variable;
+extern const char *const car_glyphs_variable;
+extern const char *const car_bezels_variable;
 
-const char *const car_attribute_identifier_names[_car_attribute_identifier_count];
+extern const char *const car_attribute_identifier_names[_car_attribute_identifier_count];
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _CAR_FORMAT_H */

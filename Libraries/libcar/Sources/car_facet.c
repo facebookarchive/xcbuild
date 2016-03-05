@@ -97,13 +97,13 @@ car_facet_alloc_new(struct car_context *car, const char *name, struct car_attrib
         return NULL;
     }
 
-    size_t key_len = sizeof(struct car_facet_key) + strlen(name);
-    struct car_facet_key *key = malloc(key_len);
+    size_t key_len = sizeof(car_facet_key) + strlen(name);
+    car_facet_key *key = malloc(key_len);
     if (key == NULL) {
         car_facet_free(context);
         return NULL;
     }
-    strncpy(key->facet_name, name, strlen(name));
+    strncpy(key, name, strlen(name));
 
     size_t attribute_count = car_attribute_count(attributes);
     size_t attribute_len = sizeof(struct car_facet_value) + sizeof(struct car_attribute_pair) * attribute_count;
@@ -155,8 +155,8 @@ _car_facet_attributes_iterator(struct bom_tree_context *tree, void *key, size_t 
 {
     struct _car_facet_attributes_ctx *attributes_ctx = (struct _car_facet_attributes_ctx *)ctx;
 
-    struct car_facet_key *facet_key = key;
-    if (!strncmp(attributes_ctx->context->name, facet_key->facet_name, key_len)) {
+    car_facet_key *facet_key = key;
+    if (!strncmp(attributes_ctx->context->name, facet_key, key_len)) {
         struct car_facet_value *facet_value = value;
 
         enum car_attribute_identifier *attribute_identifiers = malloc(facet_value->attributes_count * sizeof(enum car_attribute_identifier));
