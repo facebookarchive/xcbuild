@@ -26,6 +26,8 @@
 #ifndef _CAR_FORMAT_H
 #define _CAR_FORMAT_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -78,7 +80,7 @@ struct car_attribute_pair {
     uint16_t value;
 } __attribute__((packed));
 
-enum car_attribute_identifier {
+enum car_attribute_identifier: uint32_t {
     car_attribute_identifier_element = 1,
     car_attribute_identifier_part = 2,
     car_attribute_identifier_size = 3,

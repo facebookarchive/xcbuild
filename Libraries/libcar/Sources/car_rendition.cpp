@@ -1,6 +1,7 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
 #include <car/car.h>
+#include <car/car_format.h>
 
 #include <zlib.h>
 #include <compression.h>
@@ -12,45 +13,39 @@
 
 struct car_rendition_context {
     struct car_context *car;
-    struct car_attribute_list *attributes;
+    car::AttributeList attributes;
 };
 
 static struct car_rendition_context *
-_car_rendition_alloc(struct car_context *car, struct car_attribute_list *attributes)
+_car_rendition_alloc(struct car_context *car, car::AttributeList const &attributes)
 {
     assert(car != NULL);
-    assert(attributes != NULL);
 
-    struct car_rendition_context *context = malloc(sizeof(struct car_rendition_context));
+    struct car_rendition_context *context = (struct car_rendition_context *)malloc(sizeof(struct car_rendition_context));
     if (context == NULL) {
         return NULL;
     }
 
     context->car = car;
-
-    context->attributes = car_attribute_alloc_copy(attributes);
-    if (context->attributes == NULL) {
-        car_rendition_free(context);
-        return NULL;
-    }
+    new (&context->attributes) car::AttributeList(attributes);
 
     return context;
 }
 
 struct _car_rendition_exists_ctx {
-    struct car_attribute_list *attributes;
+    car::AttributeList attributes;
     bool exists;
 };
 
 static void
-_car_rendition_exists_iterator(struct car_context *context, struct car_attribute_list *attributes, void *ctx)
+_car_rendition_exists_iterator(struct car_context *context, car::AttributeList const &attributes, void *ctx)
 {
     struct _car_rendition_exists_ctx *exists_ctx = (struct _car_rendition_exists_ctx *)ctx;
-    exists_ctx->exists = exists_ctx->exists || car_attribute_equal(attributes, exists_ctx->attributes);
+    exists_ctx->exists = exists_ctx->exists || attributes == exists_ctx->attributes;
 }
 
 struct car_rendition_context *
-car_rendition_alloc_load(struct car_context *car, struct car_attribute_list *attributes)
+car_rendition_alloc_load(struct car_context *car, car::AttributeList const &attributes)
 {
     struct car_rendition_context *context = _car_rendition_alloc(car, attributes);
     if (context == NULL) {
@@ -68,66 +63,51 @@ car_rendition_alloc_load(struct car_context *car, struct car_attribute_list *att
     return context;
 }
 
-struct _car_key_format_add_ctx {
-    struct car_key_format *key_format;
-    uint32_t *missing_identifiers;
-    size_t missing_attribute_found_count;
-};
-
 static void
-_car_key_format_add_iterator(struct car_attribute_list *attributes, int index, enum car_attribute_identifier identifier, uint16_t value, void *ctx)
-{
-    struct _car_key_format_add_ctx *missing_ctx = (struct _car_key_format_add_ctx *)ctx;
-
-    /* If this identifier is already in the key format, nothing to do here. */
-    bool found_identifier = false;
-    for (size_t i = 0; i < missing_ctx->key_format->num_identifiers; i++) {
-        enum car_attribute_identifier key_format_identifier = missing_ctx->key_format->identifier_list[i];
-        if (key_format_identifier == identifier) {
-            found_identifier = true;
-        }
-    }
-    if (found_identifier) {
-        return;
-    }
-
-    /* Save the missing identifier for adding to the key list. */
-    missing_ctx->missing_identifiers[missing_ctx->missing_attribute_found_count++] = identifier;
-}
-
-static void
-car_key_format_add(struct car_context *car, struct car_attribute_list *attributes)
+car_key_format_add(struct car_context *car, car::AttributeList const &attributes)
 {
     size_t key_format_len = 0;
     int key_format_index = bom_variable_get(car_bom_get(car), car_key_format_variable);
     struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(car_bom_get(car), key_format_index, &key_format_len);
 
     /* Find how many attributes are already in the key format. */
-    size_t attribute_count = car_attribute_count(attributes);
+    size_t attribute_count = attributes.count();
     size_t attribute_found_count = 0;
     for (size_t i = 0; i < keyfmt->num_identifiers; i++) {
-        enum car_attribute_identifier identifier = keyfmt->identifier_list[i];
-        uint16_t value = car_attribute_get(attributes, identifier);
-        if (value != UINT16_MAX) {
+        enum car_attribute_identifier identifier = (enum car_attribute_identifier)keyfmt->identifier_list[i];
+        ext::optional<uint16_t> value = attributes.get(identifier);
+        if (value) {
             attribute_found_count++;
         }
     }
 
     /* Come up with list of attribute identifiers not in the key format yet. */
     size_t missing_attribute_count = attribute_count - attribute_found_count;
-    uint32_t *missing_identifiers = malloc(sizeof(uint32_t) * missing_attribute_count);
+    uint32_t *missing_identifiers = (uint32_t *)malloc(sizeof(uint32_t) * missing_attribute_count);
     if (missing_identifiers == NULL) {
         return;
     }
-    struct _car_key_format_add_ctx missing_ctx = {
-        .key_format = keyfmt,
-        .missing_identifiers = missing_identifiers,
-        .missing_attribute_found_count = 0,
-    };
-    car_attribute_iterate(attributes, _car_key_format_add_iterator, &missing_ctx);
+
+    int missing_attribute_found_count = 0;
+    attributes.iterate([&](enum car_attribute_identifier identifier, uint16_t value) {
+        /* If this identifier is already in the key format, nothing to do here. */
+        bool found_identifier = false;
+        for (size_t i = 0; i < keyfmt->num_identifiers; i++) {
+            enum car_attribute_identifier key_format_identifier = (enum car_attribute_identifier)keyfmt->identifier_list[i];
+            if (key_format_identifier == identifier) {
+                found_identifier = true;
+            }
+        }
+        if (found_identifier) {
+            return;
+        }
+
+        /* Save the missing identifier for adding to the key list. */
+        missing_identifiers[missing_attribute_found_count++] = identifier;
+    });
 
     /* Make room in the key format for the new identifiers. */
-    size_t missing_attribute_found_len = missing_ctx.missing_attribute_found_count * sizeof(uint32_t);
+    size_t missing_attribute_found_len = missing_attribute_found_count * sizeof(uint32_t);
     bom_index_append(car_bom_get(car), key_format_index, missing_attribute_found_len);
 
     /* Refetch key format (no longer valid after mutation). */
@@ -136,11 +116,11 @@ car_key_format_add(struct car_context *car, struct car_attribute_list *attribute
 
     /* Move any data in the key format after the list to after where the new identifiers will be inserted. */
     size_t key_format_start_len = sizeof(struct car_key_format) + keyfmt->num_identifiers * sizeof(uint32_t);
-    memmove((void *)missing_identifiers_point + missing_attribute_found_len, missing_identifiers_point, key_format_len - key_format_start_len);
+    memmove((void *)((intptr_t)missing_identifiers_point + missing_attribute_found_len), missing_identifiers_point, key_format_len - key_format_start_len);
 
     /* Update key format with newly added identifiers. */
     memcpy(missing_identifiers_point, missing_identifiers, missing_attribute_found_len);
-    keyfmt->num_identifiers += missing_ctx.missing_attribute_found_count;
+    keyfmt->num_identifiers += missing_attribute_found_count;
 
     free(missing_identifiers);
 }
@@ -148,7 +128,7 @@ car_key_format_add(struct car_context *car, struct car_attribute_list *attribute
 
 
 struct car_rendition_context *
-car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attributes, struct car_rendition_properties properties, void *data, size_t data_len)
+car_rendition_alloc_new(struct car_context *car, car::AttributeList attributes, struct car_rendition_properties properties, void *data, size_t data_len)
 {
     struct car_rendition_context *context = _car_rendition_alloc(car, attributes);
     if (context == NULL) {
@@ -169,7 +149,7 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
     struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(car_bom_get(context->car), key_format_index, NULL);
 
     size_t key_len = sizeof(car_rendition_key) * keyfmt->num_identifiers;
-    car_rendition_key *key = malloc(key_len);
+    car_rendition_key *key = (car_rendition_key *)malloc(key_len);
     if (key == NULL) {
         car_rendition_free(context);
         return NULL;
@@ -177,9 +157,9 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
 
     /* Set values in order they are in the key format. */
     for (size_t i = 0; i < keyfmt->num_identifiers; i++) {
-        enum car_attribute_identifier identifier = keyfmt->identifier_list[i];
-        uint16_t value = car_attribute_get(attributes, identifier);
-        key[i] = (value == UINT16_MAX ? 0 : value);
+        enum car_attribute_identifier identifier = (enum car_attribute_identifier)keyfmt->identifier_list[i];
+        ext::optional<uint16_t> value = attributes.get(identifier);
+        key[i] = value.value_or(0);
     }
 
     z_stream strm;
@@ -187,7 +167,7 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
     strm.avail_in = data_len;
-    strm.next_in = data;
+    strm.next_in = (Bytef *)data;
 
     int ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 | 16 /* GZIP_ENCODING */, 8, Z_DEFAULT_STRATEGY);
     if (ret != Z_OK) {
@@ -206,7 +186,7 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
 
     do {
         strm.avail_out = compressed_maximum_len - strm.total_out;
-        strm.next_out = compressed_data + strm.total_out;
+        strm.next_out = (Bytef *)((uintptr_t)compressed_data + strm.total_out);
 
         ret = deflate(&strm, Z_FINISH);
         if (ret != Z_OK && ret != Z_STREAM_END) {
@@ -228,7 +208,7 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
     size_t info_len = sizeof(struct car_rendition_info_slices);
 
     size_t value_len = sizeof(struct car_rendition_value) + sizeof(struct car_rendition_data_header1) + info_len + strm.total_out;
-    struct car_rendition_value *value = malloc(value_len);
+    struct car_rendition_value *value = (struct car_rendition_value *)malloc(value_len);
     if (value == NULL) {
         free(key);
         free(compressed_data);
@@ -264,7 +244,7 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
     slices->header.length = sizeof(struct car_rendition_info_slices) - sizeof(struct car_rendition_info_header);
     slices->nslices = 0;
 
-    struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((void *)value->info + info_len);
+    struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((uintptr_t)value->info + info_len);
     memcpy(header1->magic, "CELM", 4);
     header1->flags.unknown1 = 0; // todo
     header1->flags.unknown2 = 0; // todo
@@ -272,7 +252,7 @@ car_rendition_alloc_new(struct car_context *car, struct car_attribute_list *attr
     header1->compression = car_rendition_data_compression_magic_zlib; // todo
     header1->length = strm.total_out;
 
-    void *image_data = (void *)header1 + sizeof(struct car_rendition_data_header1);
+    void *image_data = (void *)((uintptr_t)header1 + sizeof(struct car_rendition_data_header1));
     memcpy(image_data, compressed_data, strm.total_out);
     free(compressed_data);
 
@@ -306,10 +286,7 @@ car_rendition_dump(struct car_rendition_context *context)
     printf("Width: %d\n", properties.width);
     printf("Height: %d\n", properties.height);
     printf("Scale: %f\n", properties.scale);
-
-    struct car_attribute_list *attributes = car_rendition_attributes_copy(context);
-    car_attribute_dump(attributes);
-    car_attribute_free(attributes);
+    context->attributes.dump();
 }
 
 void
@@ -319,19 +296,17 @@ car_rendition_free(struct car_rendition_context *context)
         return;
     }
 
-    free(context->attributes);
     free(context);
 }
 
-struct car_attribute_list *
+car::AttributeList
 car_rendition_attributes_copy(struct car_rendition_context *context)
 {
     assert(context != NULL);
 
     /* Note this does not get them from the data. */
-    return car_attribute_alloc_copy(context->attributes);
+    return context->attributes;
 }
-
 
 typedef void (*_car_rendition_value_callback)(struct car_rendition_context *context, struct car_rendition_value *value, void *ctx);
 
@@ -345,21 +320,15 @@ struct _car_rendition_value_ctx {
 static void
 _car_rendition_value_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
 {
-    car_rendition_key *rendition_key = key;
-    struct car_rendition_value *rendition_value = value;
+    car_rendition_key *rendition_key = (car_rendition_key *)key;
+    struct car_rendition_value *rendition_value = (struct car_rendition_value *)value;
 
     struct _car_rendition_value_ctx *value_ctx = (struct _car_rendition_value_ctx *)ctx;
 
-    struct car_attribute_list *attributes = car_attribute_alloc_values(value_ctx->key_format->num_identifiers, value_ctx->key_format->identifier_list, rendition_key);
-    if (attributes == NULL) {
-        return;
-    }
-
-    if (car_attribute_equal(attributes, value_ctx->context->attributes)) {
+    car::AttributeList attributes = car::AttributeList::Load(value_ctx->key_format->num_identifiers, (enum car_attribute_identifier *)value_ctx->key_format->identifier_list, rendition_key);
+    if (attributes == value_ctx->context->attributes) {
         value_ctx->callback(value_ctx->context, rendition_value, value_ctx->ctx);
     }
-
-    car_attribute_free(attributes);
 }
 
 void
@@ -419,7 +388,7 @@ _car_rendition_data_copy_callback(struct car_rendition_context *context, struct 
     memset(uncompressed_data, 0, uncompressed_length);
 
     /* Advance past the header and the info section. We just want the data. */
-    struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((void *)value + sizeof(struct car_rendition_value) + value->info_len);
+    struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((uintptr_t)value + sizeof(struct car_rendition_value) + value->info_len);
 
     if (strncmp(header1->magic, "MLEC", sizeof(header1->magic)) != 0) {
         fprintf(stderr, "error: header1 magic is wrong, can't possibly decode\n");
@@ -437,7 +406,7 @@ _car_rendition_data_copy_callback(struct car_rendition_context *context, struct 
         compressed_length = header2->length;
     }
 
-    compression_algorithm algorithm = 0;
+    ext::optional<compression_algorithm> algorithm;
     switch (header1->compression) {
         case car_rendition_data_compression_magic_rle:
             fprintf(stderr, "error: unable to handle RLE compression\n");
@@ -452,7 +421,7 @@ _car_rendition_data_copy_callback(struct car_rendition_context *context, struct 
             break;
         case car_rendition_data_compression_magic_lzvn:
             fprintf(stderr, "using compression: LZVN\n");
-            algorithm = _COMPRESSION_LZVN; // right?
+            algorithm = (compression_algorithm)_COMPRESSION_LZVN; // right?
             break;
         case car_rendition_data_compression_magic_jpeg_lzfse:
             fprintf(stderr, "using compression: LZFSE\n");
@@ -466,7 +435,7 @@ _car_rendition_data_copy_callback(struct car_rendition_context *context, struct 
             break;
     }
 
-    if (algorithm != 0) {
+    if (algorithm) {
         size_t offset = 0;
         while (offset < uncompressed_length) {
             if (offset != 0) {
@@ -476,10 +445,10 @@ _car_rendition_data_copy_callback(struct car_rendition_context *context, struct 
                 compressed_data = header2->data;
             }
 
-            size_t compression_result = compression_decode_buffer(uncompressed_data + offset, uncompressed_length - offset, compressed_data, compressed_length, NULL, algorithm);
+            size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, *algorithm);
             if (compression_result != 0) {
                 offset += compression_result;
-                compressed_data += compressed_length;
+                compressed_data = (void *)((uintptr_t)compressed_data + compressed_length);
 
                 //uncompressed_length = compression_result;
                 data_ctx->data = uncompressed_data;

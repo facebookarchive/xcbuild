@@ -1,6 +1,7 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
 #include <car/car.h>
+#include <car/car_format.h>
 
 #include <stdlib.h>
 #include <assert.h>
@@ -55,7 +56,7 @@ _car_alloc(struct bom_context *bom)
 {
     assert(bom != NULL);
 
-    struct car_context *context = malloc(sizeof(*context));
+    struct car_context *context = (struct car_context *)malloc(sizeof(*context));
     if (context == NULL) {
         bom_free(bom);
         return NULL;
@@ -93,7 +94,7 @@ car_alloc_empty(struct bom_context *bom)
         return NULL;
     }
 
-    struct car_header *header = malloc(sizeof(struct car_header));
+    struct car_header *header = (struct car_header *)malloc(sizeof(struct car_header));
     if (header == NULL) {
         car_free(context);
         return NULL;
@@ -116,7 +117,7 @@ car_alloc_empty(struct bom_context *bom)
     bom_variable_add(context->bom, car_header_variable, header_index);
     free(header);
 
-    struct car_key_format *keyfmt = malloc(sizeof(struct car_key_format));
+    struct car_key_format *keyfmt = (struct car_key_format *)malloc(sizeof(struct car_key_format));
     if (keyfmt == NULL) {
         car_free(context);
         return NULL;
@@ -212,16 +213,16 @@ _car_tree_iterator(struct car_context *context, const char *tree_variable, bom_t
 static void
 _car_facet_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
 {
-    car_facet_key *facet_key = key;
+    car_facet_key *facet_key = (car_facet_key *)key;
 
-    char *name = malloc(key_len + 1);
+    char *name = (char *)malloc(key_len + 1);
     if (name == NULL) {
         return;
     }
     strncpy(name, facet_key, key_len);
     name[key_len] = '\0';
 
-    struct _car_iterator_ctx *iterator_ctx = ctx;
+    struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
     ((car_facet_iterator)iterator_ctx->iterator)(iterator_ctx->context, name, iterator_ctx->ctx);
 
     free(name);
@@ -230,7 +231,7 @@ _car_facet_iterator(struct bom_tree_context *tree, void *key, size_t key_len, vo
 void
 car_facet_iterate(struct car_context *context, car_facet_iterator iterator, void *ctx)
 {
-    _car_tree_iterator(context, car_facet_keys_variable, _car_facet_iterator, iterator, ctx);
+    _car_tree_iterator(context, car_facet_keys_variable, _car_facet_iterator, (void *)iterator, ctx);
 }
 
 
@@ -239,26 +240,20 @@ car_facet_iterate(struct car_context *context, car_facet_iterator iterator, void
 static void
 _car_rendition_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
 {
-    car_rendition_key *rendition_key = key;
-    struct _car_iterator_ctx *iterator_ctx = ctx;
+    car_rendition_key *rendition_key = (car_rendition_key *)key;
+    struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
 
     int key_format_index = bom_variable_get(iterator_ctx->context->bom, car_key_format_variable);
     struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(iterator_ctx->context->bom, key_format_index, NULL);
 
-    struct car_attribute_list *attributes = car_attribute_alloc_values(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
-    if (attributes == NULL) {
-        return;
-    }
-
+    car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, (enum car_attribute_identifier *)keyfmt->identifier_list, rendition_key);
     ((car_rendition_iterator)iterator_ctx->iterator)(iterator_ctx->context, attributes, iterator_ctx->ctx);
-
-    car_attribute_free(attributes);
 }
 
 void
 car_rendition_iterate(struct car_context *context, car_rendition_iterator iterator, void *ctx)
 {
-    _car_tree_iterator(context, car_renditions_variable, _car_rendition_iterator, iterator, ctx);
+    _car_tree_iterator(context, car_renditions_variable, _car_rendition_iterator, (void *)iterator, ctx);
 }
 
 
