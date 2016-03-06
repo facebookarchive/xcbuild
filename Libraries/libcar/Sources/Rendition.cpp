@@ -253,25 +253,8 @@ car_key_format_add(car::Archive *archive, car::AttributeList const &attributes)
     int key_format_index = bom_variable_get(archive->bom(), car_key_format_variable);
     struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(archive->bom(), key_format_index, &key_format_len);
 
-    /* Find how many attributes are already in the key format. */
-    size_t attribute_count = attributes.count();
-    size_t attribute_found_count = 0;
-    for (size_t i = 0; i < keyfmt->num_identifiers; i++) {
-        enum car_attribute_identifier identifier = (enum car_attribute_identifier)keyfmt->identifier_list[i];
-        ext::optional<uint16_t> value = attributes.get(identifier);
-        if (value) {
-            attribute_found_count++;
-        }
-    }
-
     /* Come up with list of attribute identifiers not in the key format yet. */
-    size_t missing_attribute_count = attribute_count - attribute_found_count;
-    uint32_t *missing_identifiers = (uint32_t *)malloc(sizeof(uint32_t) * missing_attribute_count);
-    if (missing_identifiers == NULL) {
-        return;
-    }
-
-    int missing_attribute_found_count = 0;
+    std::vector<enum car_attribute_identifier> missing_identifiers;
     attributes.iterate([&](enum car_attribute_identifier identifier, uint16_t value) {
         /* If this identifier is already in the key format, nothing to do here. */
         bool found_identifier = false;
@@ -286,11 +269,11 @@ car_key_format_add(car::Archive *archive, car::AttributeList const &attributes)
         }
 
         /* Save the missing identifier for adding to the key list. */
-        missing_identifiers[missing_attribute_found_count++] = identifier;
+        missing_identifiers.push_back(identifier);
     });
 
     /* Make room in the key format for the new identifiers. */
-    size_t missing_attribute_found_len = missing_attribute_found_count * sizeof(uint32_t);
+    size_t missing_attribute_found_len = missing_identifiers.size() * sizeof(uint32_t);
     bom_index_append(archive->bom(), key_format_index, missing_attribute_found_len);
 
     /* Refetch key format (no longer valid after mutation). */
@@ -302,10 +285,8 @@ car_key_format_add(car::Archive *archive, car::AttributeList const &attributes)
     memmove((void *)((intptr_t)missing_identifiers_point + missing_attribute_found_len), missing_identifiers_point, key_format_len - key_format_start_len);
 
     /* Update key format with newly added identifiers. */
-    memcpy(missing_identifiers_point, missing_identifiers, missing_attribute_found_len);
-    keyfmt->num_identifiers += missing_attribute_found_count;
-
-    free(missing_identifiers);
+    memcpy(missing_identifiers_point, missing_identifiers.data(), missing_attribute_found_len);
+    keyfmt->num_identifiers += missing_identifiers.size();
 }
 
 ext::optional<Rendition> Rendition::
