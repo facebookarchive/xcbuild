@@ -5,8 +5,8 @@ add_library(car SHARED
             Sources/Archive.cpp
             Sources/AttributeList.cpp
             Sources/Facet.cpp
+            Sources/Rendition.cpp
             Sources/car_format.c
-            Sources/car_rendition.cpp
             )
 
 find_package(ZLIB REQUIRED)
