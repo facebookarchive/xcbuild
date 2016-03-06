@@ -74,6 +74,26 @@ renditionIterate(RenditionIterator iterator, void *ctx) const
     _car_tree_iterator(this, car_renditions_variable, _car_rendition_iterator, (void *)iterator, ctx);
 }
 
+void Archive::
+dump() const
+{
+    int header_index = bom_variable_get(_bom.get(), car_header_variable);
+    struct car_header *header = (struct car_header *)bom_index_get(_bom.get(), header_index, NULL);
+
+    printf("Magic: %.4s\n", header->magic);
+    printf("UI version: %x\n", header->ui_version);
+    printf("Storage version: %x\n", header->storage_version);
+    printf("Storage Timestamp: %x\n", header->storage_timestamp);
+    printf("Rendition Count: %x\n", header->rendition_count);
+    printf("Creator: %s\n", header->file_creator);
+    printf("Other Creator: %s\n", header->other_creator);
+    printf("UUID: %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x\n", header->uuid[0], header->uuid[1], header->uuid[2], header->uuid[3], header->uuid[4], header->uuid[5], header->uuid[6], header->uuid[7], header->uuid[8], header->uuid[9], header->uuid[10], header->uuid[11], header->uuid[12], header->uuid[13], header->uuid[14], header->uuid[15]);
+    printf("Associated Checksum: %x\n", header->associated_checksum);
+    printf("Schema Version: %x\n", header->schema_version);
+    printf("Color space ID: %x\n", header->color_space_id);
+    printf("Key Semantics: %x\n", header->key_semantics);
+}
+
 ext::optional<Archive> Archive::
 Load(unique_ptr_bom bom)
 {
@@ -98,7 +118,7 @@ Create(unique_ptr_bom bom)
 
     strncpy(header->magic, "RATC", 4);
     header->ui_version = 0x131; // todo
-    header->storage_version = 8;
+    header->storage_version = 0xC; // todo
     header->storage_timestamp = time(NULL); // todo
     header->rendition_count = 0;
     strncpy(header->file_creator, "asset catalog compiler\n", sizeof(header->file_creator));
@@ -131,27 +151,6 @@ Create(unique_ptr_bom bom)
 
     struct bom_tree_context *rendition_tree = bom_tree_alloc_empty(bom.get(), car_renditions_variable);
     bom_tree_free(rendition_tree);
-
-    struct bom_tree_context *part_info_tree = bom_tree_alloc_empty(bom.get(), car_part_info_variable);
-    bom_tree_free(part_info_tree);
-
-    struct bom_tree_context *element_info_tree = bom_tree_alloc_empty(bom.get(), car_element_info_variable);
-    bom_tree_free(element_info_tree);
-
-    struct bom_tree_context *colors_tree = bom_tree_alloc_empty(bom.get(), car_colors_variable);
-    bom_tree_free(colors_tree);
-
-    struct bom_tree_context *fonts_tree = bom_tree_alloc_empty(bom.get(), car_fonts_variable);
-    bom_tree_free(fonts_tree);
-
-    struct bom_tree_context *font_sizes_tree = bom_tree_alloc_empty(bom.get(), car_font_sizes_variable);
-    bom_tree_free(font_sizes_tree);
-
-    struct bom_tree_context *glyphs_tree = bom_tree_alloc_empty(bom.get(), car_glyphs_variable);
-    bom_tree_free(glyphs_tree);
-
-    struct bom_tree_context *bezels_tree = bom_tree_alloc_empty(bom.get(), car_bezels_variable);
-    bom_tree_free(bezels_tree);
 
     return Archive(std::move(bom));
 }

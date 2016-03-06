@@ -13,6 +13,9 @@
 
 namespace car {
 
+/*
+ * An archive within a BOM file holding facets and their renditions.
+ */
 class Archive {
 public:
     typedef std::unique_ptr<struct bom_context, decltype(&bom_free)> unique_ptr_bom;
@@ -43,6 +46,12 @@ public:
      */
     typedef void (*RenditionIterator)(Archive const *archive, AttributeList const &attributes, void *ctx);
     void renditionIterate(RenditionIterator iterator, void *ctx) const;
+
+public:
+    /*
+     * Print debug information about the archive.
+     */
+    void dump() const;
 
 public:
     /*

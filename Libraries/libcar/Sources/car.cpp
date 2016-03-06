@@ -6,26 +6,6 @@
 #include <stdio.h>
 
 void
-car_header_dump(car::Archive const *archive)
-{
-    int header_index = bom_variable_get(archive->bom(), car_header_variable);
-    struct car_header *header = (struct car_header *)bom_index_get(archive->bom(), header_index, NULL);
-
-    printf("Magic: %.4s\n", header->magic);
-    printf("UI version: %x\n", header->ui_version);
-    printf("Storage version: %x\n", header->storage_version);
-    printf("Storage Timestamp: %x\n", header->storage_timestamp);
-    printf("Rendition Count: %x\n", header->rendition_count);
-    printf("Creator: %s\n", header->file_creator);
-    printf("Other Creator: %s\n", header->other_creator);
-    printf("UUID: %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x\n", header->uuid[0], header->uuid[1], header->uuid[2], header->uuid[3], header->uuid[4], header->uuid[5], header->uuid[6], header->uuid[7], header->uuid[8], header->uuid[9], header->uuid[10], header->uuid[11], header->uuid[12], header->uuid[13], header->uuid[14], header->uuid[15]);
-    printf("Associated Checksum: %x\n", header->associated_checksum);
-    printf("Schema Version: %x\n", header->schema_version);
-    printf("Color space ID: %x\n", header->color_space_id);
-    printf("Key Semantics: %x\n", header->key_semantics);
-}
-
-void
 car_key_format_dump(car::Archive const *archive)
 {
     int key_format_index = bom_variable_get(archive->bom(), car_key_format_variable);
