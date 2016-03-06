@@ -180,16 +180,13 @@ bom_index_iterate(struct bom_context *context, bom_index_iterator iterator, void
     struct bom_index_header *index_header = (struct bom_index_header *)((void *)header + ntohl(header->index_offset));
 
     for (size_t i = 0; i < ntohl(index_header->count); i++) {
-        struct bom_index *index = &index_header->index[i];
-        size_t ioffset = ntohl(index->address);
-        size_t ilength = ntohl(index->length);
-        if (ioffset + ilength > context->memory.size) {
-            printf("Warning: %zd index length (%zd, %zd) extends outside buffer (%zx).\n", i, ioffset, ilength, context->memory.size);
+        size_t data_len;
+        void *data = bom_index_get(context, i, &data_len);
+        if (data == NULL) {
             continue;
         }
 
-        void *idata = (void *)header + ioffset;
-        if (!iterator(context, i, idata, ilength, ctx)) {
+        if (!iterator(context, i, data, data_len, ctx)) {
             break;
         }
     }
@@ -197,36 +194,31 @@ bom_index_iterate(struct bom_context *context, bom_index_iterator iterator, void
     context->iteration_count--;
 }
 
-struct _bom_index_get_context {
-    uint32_t index;
-    void *data;
-    size_t data_len;
-};
-
-static bool
-_bom_index_get_iterator(struct bom_context *context, uint32_t index, void *data, size_t data_len, void *ctx)
-{
-    struct _bom_index_get_context *get_context = ctx;
-    if (get_context->index == index) {
-        get_context->data = data;
-        get_context->data_len = data_len;
-        return false;
-    }
-
-    return true;
-}
-
 void *
 bom_index_get(struct bom_context *context, uint32_t index, size_t *data_len)
 {
     assert(context != NULL);
 
-    struct _bom_index_get_context get_context = { index, NULL, 0 };
-    bom_index_iterate(context, _bom_index_get_iterator, &get_context);
-    if (data_len != NULL) {
-        *data_len = get_context.data_len;
+    struct bom_header *header = (struct bom_header *)context->memory.data;
+    struct bom_index_header *index_header = (struct bom_index_header *)((void *)header + ntohl(header->index_offset));
+
+    if (index >= ntohl(index_header->count)) {
+        return NULL;
     }
-    return get_context.data;
+
+    struct bom_index *iindex = &index_header->index[index];
+    size_t ioffset = ntohl(iindex->address);
+    size_t ilength = ntohl(iindex->length);
+    if (ioffset + ilength > context->memory.size) {
+        printf("warning: %zd index length (%zd, %zd) extends outside buffer (%zx).\n", index, ioffset, ilength, context->memory.size);
+        return NULL;
+    }
+
+    if (data_len != NULL) {
+        *data_len = ilength;
+    }
+
+    return (void *)header + ioffset;
 }
 
 uint32_t
