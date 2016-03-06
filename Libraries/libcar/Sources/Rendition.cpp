@@ -170,17 +170,52 @@ _car_rendition_data_copy_callback(Rendition const *rendition, struct car_renditi
                 compressed_data = header2->data;
             }
 
-            size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, *algorithm);
-            if (compression_result != 0) {
-                offset += compression_result;
-                compressed_data = (void *)((uintptr_t)compressed_data + compressed_length);
+            if (*algorithm == COMPRESSION_ZLIB) {
+                z_stream strm;
+                strm.zalloc = Z_NULL;
+                strm.zfree = Z_NULL;
+                strm.opaque = Z_NULL;
+                strm.avail_in = compressed_length;
+                strm.next_in = (Bytef *)compressed_data;
 
-                //uncompressed_length = compression_result;
+                int ret = inflateInit2(&strm, 16+MAX_WBITS);
+                if (ret != Z_OK) {
+                   free(uncompressed_data);
+                   return;
+                }
+
+                strm.avail_out = uncompressed_length;
+                strm.next_out = (Bytef *)uncompressed_data;
+
+                ret = inflate(&strm, Z_NO_FLUSH);
+                if (ret != Z_OK && ret != Z_STREAM_END) {
+                    printf("error: decompression failure: %x.\n", ret);
+                    free(uncompressed_data);
+                    return;
+                }
+
+                ret = inflateEnd(&strm);
+                if (ret != Z_OK) {
+                    free(uncompressed_data);
+                    return;
+                }
+
                 data_ctx->data = uncompressed_data;
                 data_ctx->data_len = uncompressed_length;
+                offset += (uncompressed_length - strm.avail_out);
             } else {
-                fprintf(stderr, "error: decompression failure\n");
-                break;
+                size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, *algorithm);
+                if (compression_result != 0) {
+                    offset += compression_result;
+                    compressed_data = (void *)((uintptr_t)compressed_data + compressed_length);
+
+                    data_ctx->data = uncompressed_data;
+                    data_ctx->data_len = uncompressed_length;
+                } else {
+                    fprintf(stderr, "error: decompression failure\n");
+                    free(uncompressed_data);
+                    return;
+                }
             }
         }
     }
