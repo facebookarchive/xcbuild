@@ -3,365 +3,13 @@
 #include <car/car.h>
 #include <car/car_format.h>
 
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-#include <time.h>
 #include <stdio.h>
 
-const char *const car_header_variable = "CARHEADER";
-const char *const car_key_format_variable = "KEYFORMAT";
-const char *const car_facet_keys_variable = "FACETKEYS";
-const char *const car_part_info_variable = "PART_INFO";
-const char *const car_element_info_variable = "ELEMENT_INFO";
-const char *const car_renditions_variable = "RENDITIONS";
-const char *const car_colors_variable = "COLORS";
-const char *const car_fonts_variable = "FONTS";
-const char *const car_font_sizes_variable = "FONTSIZES";
-const char *const car_glyphs_variable = "GLYPHS";
-const char *const car_bezels_variable = "BEZELS";
-
-const char *const car_attribute_identifier_names[_car_attribute_identifier_count] = {
-    [car_attribute_identifier_element] = "element",
-    [car_attribute_identifier_part] = "part",
-    [car_attribute_identifier_size] = "size",
-    [car_attribute_identifier_direction] = "direction",
-    [car_attribute_identifier_value] = "value",
-    [car_attribute_identifier_dimension1] = "dimension1",
-    [car_attribute_identifier_dimension2] = "dimension2",
-    [car_attribute_identifier_state] = "state",
-    [car_attribute_identifier_layer] = "layer",
-    [car_attribute_identifier_scale] = "scale",
-    [car_attribute_identifier_presentation_state] = "presentation_state",
-    [car_attribute_identifier_idiom] = "idiom",
-    [car_attribute_identifier_subtype] = "subtype",
-    [car_attribute_identifier_identifier] = "identifier",
-    [car_attribute_identifier_previous_value] = "previous_value",
-    [car_attribute_identifier_previous_state] = "previous_state",
-    [car_attribute_identifier_size_class_horizontal] = "size_class_horizontal",
-    [car_attribute_identifier_size_class_vertical] = "size_class_vertical",
-    [car_attribute_identifier_memory_class] = "memory_class",
-    [car_attribute_identifier_graphics_class] = "graphics_class",
-};
-
-
-/* Context */
-
-struct car_context {
-    struct bom_context *bom;
-};
-
-static struct car_context *
-_car_alloc(struct bom_context *bom)
-{
-    assert(bom != NULL);
-
-    struct car_context *context = (struct car_context *)malloc(sizeof(*context));
-    if (context == NULL) {
-        bom_free(bom);
-        return NULL;
-    }
-
-    context->bom = bom;
-
-    return context;
-}
-
-struct car_context *
-car_alloc_load(struct bom_context *bom)
-{
-    struct car_context *context = _car_alloc(bom);
-    if (context == NULL) {
-        return NULL;
-    }
-
-    int header_index = bom_variable_get(context->bom, car_header_variable);
-    size_t header_len;
-    struct car_header *header = (struct car_header *)bom_index_get(context->bom, header_index, &header_len);
-    if (header_len < sizeof(struct car_header) || strncmp(header->magic, "RATC", 4) || header->storage_version < 8) {
-        car_free(context);
-        return NULL;
-    }
-
-    return context;
-}
-
-struct car_context *
-car_alloc_empty(struct bom_context *bom)
-{
-    struct car_context *context = _car_alloc(bom);
-    if (context == NULL) {
-        return NULL;
-    }
-
-    struct car_header *header = (struct car_header *)malloc(sizeof(struct car_header));
-    if (header == NULL) {
-        car_free(context);
-        return NULL;
-    }
-
-    strncpy(header->magic, "RATC", 4);
-    header->ui_version = 0x131; // todo
-    header->storage_version = 8;
-    header->storage_timestamp = time(NULL); // todo
-    header->rendition_count = 0;
-    strncpy(header->file_creator, "asset catalog compiler\n", sizeof(header->file_creator));
-    strncpy(header->other_creator, "version 1.0", sizeof(header->other_creator));
-    arc4random_buf(&header->uuid, sizeof(header->uuid));
-    header->associated_checksum = 0; // todo
-    header->schema_version = 4; // todo
-    header->color_space_id = 1; // todo
-    header->key_semantics = 1; // todo
-
-    int header_index = bom_index_add(context->bom, header, sizeof(struct car_header));
-    bom_variable_add(context->bom, car_header_variable, header_index);
-    free(header);
-
-    struct car_key_format *keyfmt = (struct car_key_format *)malloc(sizeof(struct car_key_format));
-    if (keyfmt == NULL) {
-        car_free(context);
-        return NULL;
-    }
-
-    strncpy(keyfmt->magic, "tmfk", 4);
-    keyfmt->reserved = 0;
-    keyfmt->num_identifiers = 0;
-
-    int key_format_index = bom_index_add(context->bom, keyfmt, sizeof(struct car_key_format));
-    bom_variable_add(context->bom, car_key_format_variable, key_format_index);
-    free(keyfmt);
-
-    struct bom_tree_context *facet_tree = bom_tree_alloc_empty(context->bom, car_facet_keys_variable);
-    bom_tree_free(facet_tree);
-
-    struct bom_tree_context *rendition_tree = bom_tree_alloc_empty(context->bom, car_renditions_variable);
-    bom_tree_free(rendition_tree);
-
-    struct bom_tree_context *part_info_tree = bom_tree_alloc_empty(context->bom, car_part_info_variable);
-    bom_tree_free(part_info_tree);
-
-    struct bom_tree_context *element_info_tree = bom_tree_alloc_empty(context->bom, car_element_info_variable);
-    bom_tree_free(element_info_tree);
-
-    struct bom_tree_context *colors_tree = bom_tree_alloc_empty(context->bom, car_colors_variable);
-    bom_tree_free(colors_tree);
-
-    struct bom_tree_context *fonts_tree = bom_tree_alloc_empty(context->bom, car_fonts_variable);
-    bom_tree_free(fonts_tree);
-
-    struct bom_tree_context *font_sizes_tree = bom_tree_alloc_empty(context->bom, car_font_sizes_variable);
-    bom_tree_free(font_sizes_tree);
-
-    struct bom_tree_context *glyphs_tree = bom_tree_alloc_empty(context->bom, car_glyphs_variable);
-    bom_tree_free(glyphs_tree);
-
-    struct bom_tree_context *bezels_tree = bom_tree_alloc_empty(context->bom, car_bezels_variable);
-    bom_tree_free(bezels_tree);
-
-    return context;
-}
-
 void
-car_free(struct car_context *context)
+car_header_dump(car::Archive const *archive)
 {
-    if (context == NULL) {
-        return;
-    }
-
-    bom_free(context->bom);
-    free(context);
-}
-
-struct bom_context *
-car_bom_get(struct car_context *context)
-{
-    return context->bom;
-}
-
-
-/* Tree Iterator */
-
-struct _car_iterator_ctx {
-    struct car_context *context;
-    void *ctx;
-    void *iterator;
-};
-
-void
-_car_tree_iterator(struct car_context *context, const char *tree_variable, bom_tree_iterator tree_iterator, void *iterator, void *ctx)
-{
-    assert(context != NULL);
-    assert(iterator != NULL);
-
-    struct bom_tree_context *tree = bom_tree_alloc_load(context->bom, tree_variable);
-    if (tree == NULL) {
-        return;
-    }
-
-    struct _car_iterator_ctx iterator_ctx = {
-        .context = context,
-        .ctx = ctx,
-        .iterator = iterator,
-    };
-    bom_tree_iterate(tree, tree_iterator, &iterator_ctx);
-    bom_tree_free(tree);
-}
-
-
-/* Facet */
-
-static void
-_car_facet_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
-{
-    car_facet_key *facet_key = (car_facet_key *)key;
-    struct car_facet_value *facet_value = (struct car_facet_value *)value;
-
-    car::Facet facet = car::Facet(
-        std::string(facet_key, key_len),
-        car::AttributeList::Load(facet_value->attributes_count, facet_value->attributes));
-
-    struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
-    ((car_facet_iterator)iterator_ctx->iterator)(iterator_ctx->context, facet, iterator_ctx->ctx);
-}
-
-void
-car_facet_iterate(struct car_context *context, car_facet_iterator iterator, void *ctx)
-{
-    _car_tree_iterator(context, car_facet_keys_variable, _car_facet_iterator, (void *)iterator, ctx);
-}
-
-struct _car_facet_rendition_iterate_ctx {
-    struct car_context *context;
-    car::Facet const *facet;
-    uint16_t facet_identifier;
-    car_facet_rendition_iterator iterator;
-    void *ctx;
-};
-
-static void
-_car_facet_rendition_iterator(struct car_context *context, car::AttributeList const &attributes, void *ctx)
-{
-    struct _car_facet_rendition_iterate_ctx *iterate_ctx = (struct _car_facet_rendition_iterate_ctx *)ctx;
-
-    ext::optional<uint16_t> rendition_identifier = attributes.get(car_attribute_identifier_identifier);
-    if (rendition_identifier && *rendition_identifier == iterate_ctx->facet_identifier) {
-        ((car_facet_rendition_iterator)iterate_ctx->iterator)(iterate_ctx->context, iterate_ctx->facet, attributes, iterate_ctx->ctx);
-    }
-}
-
-void
-car_facet_rendition_iterate(struct car_context *context, car::Facet const &facet, car_facet_rendition_iterator iterator, void *ctx)
-{
-    assert(context != NULL);
-
-    ext::optional<uint16_t> facet_identifier = facet.attributes().get(car_attribute_identifier_identifier);
-    if (!facet_identifier) {
-        return;
-    }
-
-    struct _car_facet_rendition_iterate_ctx iterate_ctx = {
-        .context = context,
-        .facet = &facet,
-        .facet_identifier = *facet_identifier,
-        .iterator = iterator,
-        .ctx = ctx,
-    };
-    car_rendition_iterate(context, _car_facet_rendition_iterator, &iterate_ctx);
-}
-
-struct _car_facet_exists_ctx {
-    std::string const *name;
-    bool exists;
-};
-
-static void
-_car_facet_exists_iterator(struct car_context *context, car::Facet const &facet, void *ctx)
-{
-    struct _car_facet_exists_ctx *exists_ctx = (struct _car_facet_exists_ctx *)ctx;
-    exists_ctx->exists = exists_ctx->exists || facet.name() == *exists_ctx->name;
-}
-
-bool
-car_facet_add(struct car_context *context, car::Facet const &facet)
-{
-    /* Verify facet does not yet exist. */
-    struct _car_facet_exists_ctx ctx = { .name = &facet.name(), .exists = false };
-    car_facet_iterate(context, _car_facet_exists_iterator, &ctx);
-    if (ctx.exists) {
-        return false;
-    }
-
-    size_t key_len = sizeof(car_facet_key) + facet.name().size();
-    car_facet_key *key = (car_facet_key *)malloc(key_len);
-    if (key == NULL) {
-        return false;
-    }
-    strncpy(key, facet.name().c_str(), facet.name().size());
-
-    size_t attribute_count = facet.attributes().count();
-    size_t attribute_len = sizeof(struct car_facet_value) + sizeof(struct car_attribute_pair) * attribute_count;
-    struct car_facet_value *value = (struct car_facet_value *)malloc(attribute_len);
-    if (value == NULL) {
-        free(key);
-        return false;
-    }
-    value->hot_spot.x = 0; // todo
-    value->hot_spot.y = 0; // todo
-    value->attributes_count = attribute_count;
-
-    size_t index = 0;
-    facet.attributes().iterate([&](enum car_attribute_identifier identifier, uint16_t attribute_value) {
-        struct car_attribute_pair *attribute = &value->attributes[index];
-        attribute->identifier = identifier;
-        attribute->value = attribute_value;
-    });
-
-    struct bom_tree_context *tree = bom_tree_alloc_load(context->bom, car_facet_keys_variable);
-    if (tree == NULL) {
-        free(key);
-        free(value);
-        return false;
-    }
-
-    bom_tree_add(tree, key, key_len, value, attribute_len);
-
-    free(key);
-    free(value);
-    bom_tree_free(tree);
-
-    return true;
-}
-
-
-/* Rendition */
-
-static void
-_car_rendition_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
-{
-    car_rendition_key *rendition_key = (car_rendition_key *)key;
-    struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
-
-    int key_format_index = bom_variable_get(iterator_ctx->context->bom, car_key_format_variable);
-    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(iterator_ctx->context->bom, key_format_index, NULL);
-
-    car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
-    ((car_rendition_iterator)iterator_ctx->iterator)(iterator_ctx->context, attributes, iterator_ctx->ctx);
-}
-
-void
-car_rendition_iterate(struct car_context *context, car_rendition_iterator iterator, void *ctx)
-{
-    _car_tree_iterator(context, car_renditions_variable, _car_rendition_iterator, (void *)iterator, ctx);
-}
-
-
-/* Debugging */
-
-void
-car_header_dump(struct car_context *context)
-{
-    int header_index = bom_variable_get(context->bom, car_header_variable);
-    struct car_header *header = (struct car_header *)bom_index_get(context->bom, header_index, NULL);
+    int header_index = bom_variable_get(archive->bom(), car_header_variable);
+    struct car_header *header = (struct car_header *)bom_index_get(archive->bom(), header_index, NULL);
 
     printf("Magic: %.4s\n", header->magic);
     printf("UI version: %x\n", header->ui_version);
@@ -378,10 +26,10 @@ car_header_dump(struct car_context *context)
 }
 
 void
-car_key_format_dump(struct car_context *context)
+car_key_format_dump(car::Archive const *archive)
 {
-    int key_format_index = bom_variable_get(context->bom, car_key_format_variable);
-    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(context->bom, key_format_index, NULL);
+    int key_format_index = bom_variable_get(archive->bom(), car_key_format_variable);
+    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(archive->bom(), key_format_index, NULL);
 
     printf("Magic: %.4s\n", keyfmt->magic);
     printf("Identifier Count: %d\n", keyfmt->num_identifiers);
@@ -408,9 +56,9 @@ _car_part_element_dump_iterator(struct bom_tree_context *tree, void *key, size_t
 }
 
 void
-car_part_dump(struct car_context *context)
+car_part_dump(car::Archive const *archive)
 {
-    struct bom_tree_context *tree = bom_tree_alloc_load(context->bom, car_part_info_variable);
+    struct bom_tree_context *tree = bom_tree_alloc_load(archive->bom(), car_part_info_variable);
     if (tree == NULL) {
         printf("Invalid part list.\n");
         return;
@@ -421,9 +69,9 @@ car_part_dump(struct car_context *context)
 }
 
 void
-car_element_dump(struct car_context *context)
+car_element_dump(car::Archive const *archive)
 {
-    struct bom_tree_context *tree = bom_tree_alloc_load(context->bom, car_element_info_variable);
+    struct bom_tree_context *tree = bom_tree_alloc_load(archive->bom(), car_element_info_variable);
     if (tree == NULL) {
         printf("Invalid element list.\n");
         return;

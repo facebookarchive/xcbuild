@@ -12,21 +12,21 @@
 #include <stdio.h>
 
 struct car_rendition_context {
-    struct car_context *car;
+    car::Archive *archive;
     car::AttributeList attributes;
 };
 
 static struct car_rendition_context *
-_car_rendition_alloc(struct car_context *car, car::AttributeList const &attributes)
+_car_rendition_alloc(car::Archive *archive, car::AttributeList const &attributes)
 {
-    assert(car != NULL);
+    assert(archive != NULL);
 
     struct car_rendition_context *context = (struct car_rendition_context *)malloc(sizeof(struct car_rendition_context));
     if (context == NULL) {
         return NULL;
     }
 
-    context->car = car;
+    context->archive = archive;
     new (&context->attributes) car::AttributeList(attributes);
 
     return context;
@@ -38,23 +38,23 @@ struct _car_rendition_exists_ctx {
 };
 
 static void
-_car_rendition_exists_iterator(struct car_context *context, car::AttributeList const &attributes, void *ctx)
+_car_rendition_exists_iterator(car::Archive const *context, car::AttributeList const &attributes, void *ctx)
 {
     struct _car_rendition_exists_ctx *exists_ctx = (struct _car_rendition_exists_ctx *)ctx;
     exists_ctx->exists = exists_ctx->exists || attributes == exists_ctx->attributes;
 }
 
 struct car_rendition_context *
-car_rendition_alloc_load(struct car_context *car, car::AttributeList const &attributes)
+car_rendition_alloc_load(car::Archive *archive, car::AttributeList const &attributes)
 {
-    struct car_rendition_context *context = _car_rendition_alloc(car, attributes);
+    struct car_rendition_context *context = _car_rendition_alloc(archive, attributes);
     if (context == NULL) {
         return NULL;
     }
 
     /* Verify rendition does, in fact, exist. */
     struct _car_rendition_exists_ctx ctx = { .attributes = context->attributes, .exists = false };
-    car_rendition_iterate(context->car, _car_rendition_exists_iterator, &ctx);
+    context->archive->renditionIterate(_car_rendition_exists_iterator, &ctx);
     if (!ctx.exists) {
         car_rendition_free(context);
         return NULL;
@@ -64,11 +64,11 @@ car_rendition_alloc_load(struct car_context *car, car::AttributeList const &attr
 }
 
 static void
-car_key_format_add(struct car_context *car, car::AttributeList const &attributes)
+car_key_format_add(car::Archive *archive, car::AttributeList const &attributes)
 {
     size_t key_format_len = 0;
-    int key_format_index = bom_variable_get(car_bom_get(car), car_key_format_variable);
-    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(car_bom_get(car), key_format_index, &key_format_len);
+    int key_format_index = bom_variable_get(archive->bom(), car_key_format_variable);
+    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(archive->bom(), key_format_index, &key_format_len);
 
     /* Find how many attributes are already in the key format. */
     size_t attribute_count = attributes.count();
@@ -108,10 +108,10 @@ car_key_format_add(struct car_context *car, car::AttributeList const &attributes
 
     /* Make room in the key format for the new identifiers. */
     size_t missing_attribute_found_len = missing_attribute_found_count * sizeof(uint32_t);
-    bom_index_append(car_bom_get(car), key_format_index, missing_attribute_found_len);
+    bom_index_append(archive->bom(), key_format_index, missing_attribute_found_len);
 
     /* Refetch key format (no longer valid after mutation). */
-    keyfmt = (struct car_key_format *)bom_index_get(car_bom_get(car), key_format_index, NULL);
+    keyfmt = (struct car_key_format *)bom_index_get(archive->bom(), key_format_index, NULL);
     uint32_t *missing_identifiers_point = &keyfmt->identifier_list[keyfmt->num_identifiers];
 
     /* Move any data in the key format after the list to after where the new identifiers will be inserted. */
@@ -128,25 +128,25 @@ car_key_format_add(struct car_context *car, car::AttributeList const &attributes
 
 
 struct car_rendition_context *
-car_rendition_alloc_new(struct car_context *car, car::AttributeList attributes, struct car_rendition_properties properties, void *data, size_t data_len)
+car_rendition_alloc_new(car::Archive *archive, car::AttributeList attributes, struct car_rendition_properties properties, void *data, size_t data_len)
 {
-    struct car_rendition_context *context = _car_rendition_alloc(car, attributes);
+    struct car_rendition_context *context = _car_rendition_alloc(archive, attributes);
     if (context == NULL) {
         return NULL;
     }
 
     /* Verify rendition does not exist. */
     struct _car_rendition_exists_ctx ctx = { .attributes = context->attributes, .exists = false };
-    car_rendition_iterate(context->car, _car_rendition_exists_iterator, &ctx);
+    context->archive->renditionIterate(_car_rendition_exists_iterator, &ctx);
     if (ctx.exists) {
         car_rendition_free(context);
         return NULL;
     }
 
     /* Add any missing keys to the key format, then fetch it. */
-    car_key_format_add(context->car, context->attributes);
-    int key_format_index = bom_variable_get(car_bom_get(context->car), car_key_format_variable);
-    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(car_bom_get(context->car), key_format_index, NULL);
+    car_key_format_add(context->archive, context->attributes);
+    int key_format_index = bom_variable_get(context->archive->bom(), car_key_format_variable);
+    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(context->archive->bom(), key_format_index, NULL);
 
     size_t key_len = sizeof(car_rendition_key) * keyfmt->num_identifiers;
     car_rendition_key *key = (car_rendition_key *)malloc(key_len);
@@ -256,25 +256,18 @@ car_rendition_alloc_new(struct car_context *car, car::AttributeList attributes, 
     memcpy(image_data, compressed_data, strm.total_out);
     free(compressed_data);
 
-    struct bom_tree_context *tree = bom_tree_alloc_load(car_bom_get(context->car), car_renditions_variable);
+    struct bom_tree_context *tree = bom_tree_alloc_load(context->archive->bom(), car_renditions_variable);
     bom_tree_add(tree, key, key_len, value, value_len);
 
     free(key);
     free(value);
 
     /* Update external counts to reflect added rendition. */
-    int header_index = bom_variable_get(car_bom_get(car), car_header_variable);
-    struct car_header *header = (struct car_header *)bom_index_get(car_bom_get(car), header_index, NULL);
+    int header_index = bom_variable_get(context->archive->bom(), car_header_variable);
+    struct car_header *header = (struct car_header *)bom_index_get(context->archive->bom(), header_index, NULL);
     header->rendition_count++;
 
     return context;
-}
-
-struct car_context *
-car_rendition_car_get(struct car_rendition_context *context)
-{
-    assert(context != NULL);
-    return context->car;
 }
 
 void
@@ -336,13 +329,13 @@ _car_rendition_value_get(struct car_rendition_context *context, _car_rendition_v
 {
     assert(context != NULL);
 
-    struct bom_tree_context *tree = bom_tree_alloc_load(car_bom_get(context->car), car_renditions_variable);
+    struct bom_tree_context *tree = bom_tree_alloc_load(context->archive->bom(), car_renditions_variable);
     if (tree == NULL) {
         return;
     }
 
-    int key_format_index = bom_variable_get(car_bom_get(context->car), car_key_format_variable);
-    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(car_bom_get(context->car), key_format_index, NULL);
+    int key_format_index = bom_variable_get(context->archive->bom(), car_key_format_variable);
+    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(context->archive->bom(), key_format_index, NULL);
 
     struct _car_rendition_value_ctx value_ctx = {
         .context = context,
