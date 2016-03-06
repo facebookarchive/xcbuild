@@ -325,7 +325,7 @@ _car_rendition_value_iterator(struct bom_tree_context *tree, void *key, size_t k
 
     struct _car_rendition_value_ctx *value_ctx = (struct _car_rendition_value_ctx *)ctx;
 
-    car::AttributeList attributes = car::AttributeList::Load(value_ctx->key_format->num_identifiers, (enum car_attribute_identifier *)value_ctx->key_format->identifier_list, rendition_key);
+    car::AttributeList attributes = car::AttributeList::Load(value_ctx->key_format->num_identifiers, value_ctx->key_format->identifier_list, rendition_key);
     if (attributes == value_ctx->context->attributes) {
         value_ctx->callback(value_ctx->context, rendition_value, value_ctx->ctx);
     }

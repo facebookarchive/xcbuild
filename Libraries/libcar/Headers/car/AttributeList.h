@@ -1,5 +1,8 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
+#ifndef _LIBCAR_ATTRIBUTELIST_H
+#define _LIBCAR_ATTRIBUTELIST_H
+
 /* Unfortunate, but needed for car_attribute_identifier. */
 #include <car/car_format.h>
 #include <ext/optional>
@@ -72,8 +75,15 @@ public:
      */
     static AttributeList Load(
         size_t count,
-        enum car_attribute_identifier *identifiers,
+        uint32_t *identifiers,
         uint16_t *values);
+
+    /*
+     * Load an attribute list from a buffer of identifier value pairs.
+     */
+    static AttributeList Load(
+        size_t count,
+        struct car_attribute_pair *pairs);
 };
 
 }
@@ -88,3 +98,4 @@ template<> struct hash<car::AttributeList>
 };
 }
 
+#endif /* _LIBCAR_ATTRIBUTELIST_H */

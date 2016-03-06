@@ -80,7 +80,7 @@ struct car_attribute_pair {
     uint16_t value;
 } __attribute__((packed));
 
-enum car_attribute_identifier: uint32_t {
+enum car_attribute_identifier {
     car_attribute_identifier_element = 1,
     car_attribute_identifier_part = 2,
     car_attribute_identifier_size = 3,

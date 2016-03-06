@@ -63,21 +63,31 @@ dump() const
 AttributeList AttributeList::
 Load(
     size_t count,
-    enum car_attribute_identifier *identifiers,
+    uint32_t *identifiers,
     uint16_t *values)
 {
     std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
     for (size_t i = 0; i < count; ++i) {
-        attributes.insert({ identifiers[i], values[i] });
+        attributes.insert({ (enum car_attribute_identifier)identifiers[i], values[i] });
     }
     return AttributeList(attributes);
 }
 
-#if 0
+AttributeList AttributeList::
+Load(
+    size_t count,
+    struct car_attribute_pair *pairs)
+{
+    std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
+    for (size_t i = 0; i < count; ++i) {
+        attributes.insert({ (enum car_attribute_identifier)pairs[i].identifier, pairs[i].value });
+    }
+    return AttributeList(attributes);
+}
+
 size_t std::hash<AttributeList>::
 operator()(AttributeList const &attributes) const
 {
     /* Not a great hash. */
     return attributes.count();
 }
-#endif

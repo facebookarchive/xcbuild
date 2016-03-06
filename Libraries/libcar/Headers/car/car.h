@@ -9,6 +9,7 @@
 #include <bom/bom.h>
 
 #include <car/AttributeList.h>
+#include <car/Facet.h>
 
 
 /* Asset Archive */
@@ -32,10 +33,18 @@ typedef void (*car_rendition_iterator)(struct car_context *context, car::Attribu
 void
 car_rendition_iterate(struct car_context *context, car_rendition_iterator iterator, void *ctx);
 
-typedef void (*car_facet_iterator)(struct car_context *context, const char *name, void *ctx);
+typedef void (*car_facet_iterator)(struct car_context *context, car::Facet const &facet, void *ctx);
 
 void
 car_facet_iterate(struct car_context *context, car_facet_iterator iterator, void *ctx);
+
+typedef void (*car_facet_rendition_iterator)(struct car_context *context, car::Facet const *facet, car::AttributeList const &attributes, void *ctx);
+
+void
+car_facet_rendition_iterate(struct car_context *context, car::Facet const &facet, car_facet_rendition_iterator iterator, void *ctx);
+
+bool
+car_facet_add(struct car_context *context, car::Facet const &facet);
 
 
 /* Rendition */
@@ -75,30 +84,6 @@ car_rendition_data_copy(struct car_rendition_context *context, size_t *data_len)
 struct car_rendition_properties
 car_rendition_properties_get(struct car_rendition_context *context);
 
-
-/* Facet */
-
-struct car_facet_context;
-
-struct car_facet_context *
-car_facet_alloc_load(struct car_context *car, const char *name);
-
-struct car_facet_context *
-car_facet_alloc_new(struct car_context *car, const char *name, car::AttributeList const &attributes);
-
-struct car_context *
-car_facet_car_get(struct car_facet_context *context);
-
-void
-car_facet_free(struct car_facet_context *context);
-
-ext::optional<car::AttributeList>
-car_facet_attributes_copy(struct car_facet_context *context);
-
-typedef void (*car_facet_rendition_iterator)(struct car_facet_context *context, car::AttributeList const &attributes, void *ctx);
-
-void
-car_facet_rendition_iterate(struct car_facet_context *context, car_facet_rendition_iterator iterator, void *ctx);
 
 
 /* Debug */

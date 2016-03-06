@@ -3,7 +3,7 @@
 add_library(car SHARED
             Sources/car.cpp
             Sources/AttributeList.cpp
-            Sources/car_facet.cpp
+            Sources/Facet.cpp
             Sources/car_rendition.cpp
             )
 
