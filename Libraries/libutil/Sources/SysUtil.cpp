@@ -11,8 +11,8 @@
 #include <libutil/FSUtil.h>
 
 #include <sstream>
-
 #include <cstring>
+#include <cassert>
 
 #include <pwd.h>
 #include <grp.h>
