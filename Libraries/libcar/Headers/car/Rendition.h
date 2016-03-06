@@ -65,12 +65,12 @@ public:
     /*
      * Load an existing rendition matching the provided attributes.
      */
-    static ext::optional<Rendition> Load(car::Archive const *archive, car::AttributeList const &attributes);
+    static ext::optional<Rendition> Load(Archive const *archive, AttributeList const &attributes);
 
     /*
      * Create a new rendition with the given properties.
      */
-    static ext::optional<Rendition> Create(car::Archive *archive, car::AttributeList const &attributes, Properties const &properties, void *data, size_t data_len);
+    static ext::optional<Rendition> Create(Archive *archive, AttributeList const &attributes, Properties const &properties, void *data, size_t data_len);
 };
 
 }

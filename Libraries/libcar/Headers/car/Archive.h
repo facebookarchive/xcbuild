@@ -4,7 +4,6 @@
 #define _LIBCAR_ARCHIVE_H
 
 #include <car/AttributeList.h>
-#include <car/Facet.h>
 #include <bom/bom.h>
 #include <ext/optional>
 
@@ -36,7 +35,7 @@ public:
     /*
      * Iterate all facets.
      */
-    typedef void (*FacetIterator)(Archive const *archive, Facet const &facet, void *ctx);
+    typedef void (*FacetIterator)(Archive const *archive, std::string const &name, void *ctx);
     void facetIterate(FacetIterator iterator, void *ctx) const;
 
     /*
@@ -44,17 +43,6 @@ public:
      */
     typedef void (*RenditionIterator)(Archive const *archive, AttributeList const &attributes, void *ctx);
     void renditionIterate(RenditionIterator iterator, void *ctx) const;
-
-    /*
-     * Iterate renditions for a facet.
-     */
-    typedef void (*FacetRenditionIterator)(Archive const *archive, Facet const *facet, AttributeList const &attributes, void *ctx);
-    void facetRenditionIterate(Facet const &facet, FacetRenditionIterator iterator, void *ctx) const;
-
-    /*
-     * Add a new facet to the archive.
-     */
-    bool facetAdd(Facet const &facet);
 
 public:
     /*

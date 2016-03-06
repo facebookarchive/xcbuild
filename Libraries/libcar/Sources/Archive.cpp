@@ -43,14 +43,10 @@ static void
 _car_facet_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
 {
     car_facet_key *facet_key = (car_facet_key *)key;
-    struct car_facet_value *facet_value = (struct car_facet_value *)value;
-
-    car::Facet facet = car::Facet(
-        std::string(facet_key, key_len),
-        car::AttributeList::Load(facet_value->attributes_count, facet_value->attributes));
+    std::string name = std::string(facet_key, key_len);
 
     struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
-    ((car::Archive::FacetIterator)iterator_ctx->iterator)(iterator_ctx->archive, facet, iterator_ctx->ctx);
+    ((car::Archive::FacetIterator)iterator_ctx->iterator)(iterator_ctx->archive, name, iterator_ctx->ctx);
 }
 
 void Archive::
@@ -76,104 +72,6 @@ void Archive::
 renditionIterate(RenditionIterator iterator, void *ctx) const
 {
     _car_tree_iterator(this, car_renditions_variable, _car_rendition_iterator, (void *)iterator, ctx);
-}
-
-struct _car_facet_rendition_iterate_ctx {
-    car::Facet const *facet;
-    uint16_t facet_identifier;
-    car::Archive::FacetRenditionIterator iterator;
-    void *ctx;
-};
-
-static void
-_car_facet_rendition_iterator(Archive const *archive, car::AttributeList const &attributes, void *ctx)
-{
-    struct _car_facet_rendition_iterate_ctx *iterate_ctx = (struct _car_facet_rendition_iterate_ctx *)ctx;
-
-    ext::optional<uint16_t> rendition_identifier = attributes.get(car_attribute_identifier_identifier);
-    if (rendition_identifier && *rendition_identifier == iterate_ctx->facet_identifier) {
-        ((car::Archive::FacetRenditionIterator)iterate_ctx->iterator)(archive, iterate_ctx->facet, attributes, iterate_ctx->ctx);
-    }
-}
-
-void Archive::
-facetRenditionIterate(Facet const &facet, FacetRenditionIterator iterator, void *ctx) const
-{
-    ext::optional<uint16_t> facet_identifier = facet.attributes().get(car_attribute_identifier_identifier);
-    if (!facet_identifier) {
-        return;
-    }
-
-    struct _car_facet_rendition_iterate_ctx iterate_ctx = {
-        .facet = &facet,
-        .facet_identifier = *facet_identifier,
-        .iterator = iterator,
-        .ctx = ctx,
-    };
-    renditionIterate(_car_facet_rendition_iterator, &iterate_ctx);
-}
-
-struct _car_facet_exists_ctx {
-    std::string const *name;
-    bool exists;
-};
-
-static void
-_car_facet_exists_iterator(Archive const *context, car::Facet const &facet, void *ctx)
-{
-    struct _car_facet_exists_ctx *exists_ctx = (struct _car_facet_exists_ctx *)ctx;
-    exists_ctx->exists = exists_ctx->exists || facet.name() == *exists_ctx->name;
-}
-
-bool Archive::
-facetAdd(Facet const &facet)
-{
-    /* Verify facet does not yet exist. */
-    struct _car_facet_exists_ctx ctx = { .name = &facet.name(), .exists = false };
-    facetIterate(_car_facet_exists_iterator, &ctx);
-    if (ctx.exists) {
-        return false;
-    }
-
-    size_t key_len = sizeof(car_facet_key) + facet.name().size();
-    car_facet_key *key = (car_facet_key *)malloc(key_len);
-    if (key == NULL) {
-        return false;
-    }
-    strncpy(key, facet.name().c_str(), facet.name().size());
-
-    size_t attribute_count = facet.attributes().count();
-    size_t attribute_len = sizeof(struct car_facet_value) + sizeof(struct car_attribute_pair) * attribute_count;
-    struct car_facet_value *value = (struct car_facet_value *)malloc(attribute_len);
-    if (value == NULL) {
-        free(key);
-        return false;
-    }
-    value->hot_spot.x = 0; // todo
-    value->hot_spot.y = 0; // todo
-    value->attributes_count = attribute_count;
-
-    size_t index = 0;
-    facet.attributes().iterate([&](enum car_attribute_identifier identifier, uint16_t attribute_value) {
-        struct car_attribute_pair *attribute = &value->attributes[index];
-        attribute->identifier = identifier;
-        attribute->value = attribute_value;
-    });
-
-    struct bom_tree_context *tree = bom_tree_alloc_load(_bom.get(), car_facet_keys_variable);
-    if (tree == NULL) {
-        free(key);
-        free(value);
-        return false;
-    }
-
-    bom_tree_add(tree, key, key_len, value, attribute_len);
-
-    free(key);
-    free(value);
-    bom_tree_free(tree);
-
-    return true;
 }
 
 ext::optional<Archive> Archive::
