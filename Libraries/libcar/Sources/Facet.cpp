@@ -2,7 +2,7 @@
 
 #include <car/Facet.h>
 #include <car/Rendition.h>
-#include <car/Archive.h>
+#include <car/Reader.h>
 
 #include <cstring>
 #include <cstdlib>
@@ -28,7 +28,7 @@ dump() const
 }
 
 void Facet::
-renditionIterate(Archive const *archive, std::function<void(Rendition const &)> const &iterator) const
+renditionIterate(Reader const *archive, std::function<void(Rendition const &)> const &iterator) const
 {
     ext::optional<car::AttributeList> attributes = this->attributes();
     if (!attributes) {

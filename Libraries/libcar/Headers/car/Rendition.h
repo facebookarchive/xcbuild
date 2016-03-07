@@ -11,7 +11,7 @@
 
 namespace car {
 
-class Archive;
+class Reader;
 
 /*
  * Represents a specific variant of a facet.

@@ -10,7 +10,7 @@
 
 namespace car {
 
-class Archive;
+class Reader;
 class Rendition;
 
 /*
@@ -42,7 +42,7 @@ public:
     /*
      * Iterate renditions for a facet.
      */
-    void renditionIterate(Archive const *archive, std::function<void(Rendition const &)> const &iterator) const;
+    void renditionIterate(Reader const *archive, std::function<void(Rendition const &)> const &iterator) const;
 
 public:
     /*

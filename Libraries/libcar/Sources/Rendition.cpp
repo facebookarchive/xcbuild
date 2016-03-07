@@ -1,7 +1,7 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
 #include <car/Rendition.h>
-#include <car/Archive.h>
+#include <car/Reader.h>
 #include <car/car_format.h>
 
 #include <cassert>

@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 void
-car_key_format_dump(car::Archive const *archive)
+car_key_format_dump(car::Reader const *archive)
 {
     int key_format_index = bom_variable_get(archive->bom(), car_key_format_variable);
     struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(archive->bom(), key_format_index, NULL);
@@ -36,7 +36,7 @@ _car_part_element_dump_iterator(struct bom_tree_context *tree, void *key, size_t
 }
 
 void
-car_part_dump(car::Archive const *archive)
+car_part_dump(car::Reader const *archive)
 {
     struct bom_tree_context *tree = bom_tree_alloc_load(archive->bom(), car_part_info_variable);
     if (tree == NULL) {
@@ -49,7 +49,7 @@ car_part_dump(car::Archive const *archive)
 }
 
 void
-car_element_dump(car::Archive const *archive)
+car_element_dump(car::Reader const *archive)
 {
     struct bom_tree_context *tree = bom_tree_alloc_load(archive->bom(), car_element_info_variable);
     if (tree == NULL) {

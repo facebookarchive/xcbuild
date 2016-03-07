@@ -1,27 +1,27 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
-#include <car/Archive.h>
+#include <car/Reader.h>
 #include <car/Facet.h>
 #include <car/Rendition.h>
 #include <car/car_format.h>
 
 #include <cassert>
 
-using car::Archive;
+using car::Reader;
 
-Archive::
-Archive(unique_ptr_bom bom) :
+Reader::
+Reader(unique_ptr_bom bom) :
     _bom(std::move(bom))
 {
 }
 
 struct _car_iterator_ctx {
-    Archive const *archive;
+    Reader const *archive;
     void *iterator;
 };
 
 void
-_car_tree_iterator(Archive const *archive, const char *tree_variable, bom_tree_iterator tree_iterator, void *iterator)
+_car_tree_iterator(Reader const *archive, const char *tree_variable, bom_tree_iterator tree_iterator, void *iterator)
 {
     assert(archive != NULL);
     assert(iterator != NULL);
@@ -54,7 +54,7 @@ _car_facet_iterator(struct bom_tree_context *tree, void *key, size_t key_len, vo
     (*reinterpret_cast<std::function<void(car::Facet const &)> const *>(iterator_ctx->iterator))(facet);
 }
 
-void Archive::
+void Reader::
 facetIterate(std::function<void(Facet const &)> const &iterator) const
 {
     _car_tree_iterator(this, car_facet_keys_variable, _car_facet_iterator, const_cast<void *>(reinterpret_cast<void const *>(&iterator)));
@@ -77,13 +77,13 @@ _car_rendition_iterator(struct bom_tree_context *tree, void *key, size_t key_len
     (*reinterpret_cast<std::function<void(car::Rendition const &)> const *>(iterator_ctx->iterator))(rendition);
 }
 
-void Archive::
+void Reader::
 renditionIterate(std::function<void(Rendition const &)> const &iterator) const
 {
     _car_tree_iterator(this, car_renditions_variable, _car_rendition_iterator, const_cast<void *>(reinterpret_cast<void const *>(&iterator)));
 }
 
-void Archive::
+void Reader::
 dump() const
 {
     int header_index = bom_variable_get(_bom.get(), car_header_variable);
@@ -103,7 +103,7 @@ dump() const
     printf("Key Semantics: %x\n", header->key_semantics);
 }
 
-ext::optional<Archive> Archive::
+ext::optional<Reader> Reader::
 Load(unique_ptr_bom bom)
 {
     int header_index = bom_variable_get(bom.get(), car_header_variable);
@@ -114,10 +114,10 @@ Load(unique_ptr_bom bom)
         return ext::nullopt;
     }
 
-    return Archive(std::move(bom));
+    return Reader(std::move(bom));
 }
 
-ext::optional<Archive> Archive::
+ext::optional<Reader> Reader::
 Create(unique_ptr_bom bom)
 {
     struct car_header *header = (struct car_header *)malloc(sizeof(struct car_header));
@@ -161,6 +161,6 @@ Create(unique_ptr_bom bom)
     struct bom_tree_context *rendition_tree = bom_tree_alloc_empty(bom.get(), car_renditions_variable);
     bom_tree_free(rendition_tree);
 
-    return Archive(std::move(bom));
+    return Reader(std::move(bom));
 }
 
