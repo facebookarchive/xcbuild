@@ -9,8 +9,11 @@
 #include <cstdio>
 
 #include <zlib.h>
+
+#if defined(__APPLE__)
 #include <compression.h>
 #define _COMPRESSION_LZVN 0x900
+#endif
 
 using car::Rendition;
 
@@ -122,87 +125,89 @@ copyData(size_t *data_len) const
         compressed_length = header2->length;
     }
 
-    ext::optional<compression_algorithm> algorithm;
-    switch (header1->compression) {
-        case car_rendition_data_compression_magic_rle:
-            fprintf(stderr, "error: unable to handle RLE compression\n");
-            break;
-        case car_rendition_data_compression_magic_unk1:
-            fprintf(stderr, "using compression: LZ4\n");
-            algorithm = COMPRESSION_LZ4; // right?
-            break;
-        case car_rendition_data_compression_magic_zlib:
-            fprintf(stderr, "using compression: ZLIB\n");
-            algorithm = COMPRESSION_ZLIB; // right?
-            break;
-        case car_rendition_data_compression_magic_lzvn:
-            fprintf(stderr, "using compression: LZVN\n");
-            algorithm = (compression_algorithm)_COMPRESSION_LZVN; // right?
-            break;
-        case car_rendition_data_compression_magic_jpeg_lzfse:
-            fprintf(stderr, "using compression: LZFSE\n");
-            algorithm = COMPRESSION_LZFSE;
-            break;
-        case car_rendition_data_compression_magic_blurredimage:
-            fprintf(stderr, "error: unable to handle BlurredImage\n");
-            break;
-        default:
-            fprintf(stderr, "error: unkonwn compression %x\n", header1->compression);
-            break;
-    }
+    size_t offset = 0;
+    while (offset < uncompressed_length) {
+        if (offset != 0) {
+            struct car_rendition_data_header2 *header2 = (struct car_rendition_data_header2 *)compressed_data;
+            assert(strncmp(header2->magic, "KCBC", sizeof(header2->magic)) == 0);
+            compressed_length = header2->length;
+            compressed_data = header2->data;
+        }
 
-    if (algorithm) {
-        size_t offset = 0;
-        while (offset < uncompressed_length) {
-            if (offset != 0) {
-                struct car_rendition_data_header2 *header2 = (struct car_rendition_data_header2 *)compressed_data;
-                assert(strncmp(header2->magic, "KCBC", sizeof(header2->magic)) == 0);
-                compressed_length = header2->length;
-                compressed_data = header2->data;
+        if (header1->compression == car_rendition_data_compression_magic_zlib) {
+            z_stream strm;
+            strm.zalloc = Z_NULL;
+            strm.zfree = Z_NULL;
+            strm.opaque = Z_NULL;
+            strm.avail_in = compressed_length;
+            strm.next_in = (Bytef *)compressed_data;
+
+            int ret = inflateInit2(&strm, 16+MAX_WBITS);
+            if (ret != Z_OK) {
+               free(uncompressed_data);
+               return NULL;
             }
 
-            if (*algorithm == COMPRESSION_ZLIB) {
-                z_stream strm;
-                strm.zalloc = Z_NULL;
-                strm.zfree = Z_NULL;
-                strm.opaque = Z_NULL;
-                strm.avail_in = compressed_length;
-                strm.next_in = (Bytef *)compressed_data;
+            strm.avail_out = uncompressed_length;
+            strm.next_out = (Bytef *)uncompressed_data;
 
-                int ret = inflateInit2(&strm, 16+MAX_WBITS);
-                if (ret != Z_OK) {
-                   free(uncompressed_data);
-                   return NULL;
-                }
+            ret = inflate(&strm, Z_NO_FLUSH);
+            if (ret != Z_OK && ret != Z_STREAM_END) {
+                printf("error: decompression failure: %x.\n", ret);
+                free(uncompressed_data);
+                return NULL;
+            }
 
-                strm.avail_out = uncompressed_length;
-                strm.next_out = (Bytef *)uncompressed_data;
+            ret = inflateEnd(&strm);
+            if (ret != Z_OK) {
+                free(uncompressed_data);
+                return NULL;
+            }
 
-                ret = inflate(&strm, Z_NO_FLUSH);
-                if (ret != Z_OK && ret != Z_STREAM_END) {
-                    printf("error: decompression failure: %x.\n", ret);
-                    free(uncompressed_data);
-                    return NULL;
-                }
-
-                ret = inflateEnd(&strm);
-                if (ret != Z_OK) {
-                    free(uncompressed_data);
-                    return NULL;
-                }
-
-                offset += (uncompressed_length - strm.avail_out);
+            offset += (uncompressed_length - strm.avail_out);
+        } else if (header1->compression == car_rendition_data_compression_magic_rle) {
+            fprintf(stderr, "error: unable to handle RLE\n");
+            return NULL;
+        } else if (header1->compression == car_rendition_data_compression_magic_unk1) {
+            fprintf(stderr, "error: unable to handle UNKNOWN\n");
+            return NULL;
+        } else if (header1->compression == car_rendition_data_compression_magic_lzvn || header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
+#if defined(__APPLE__)
+            compression_algorithm algorithm;
+            if (header1->compression == car_rendition_data_compression_magic_lzvn) {
+                algorithm = (compression_algorithm)_COMPRESSION_LZVN;
+            } else if (header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
+                algorithm = COMPRESSION_LZFSE;
             } else {
-                size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, *algorithm);
-                if (compression_result != 0) {
-                    offset += compression_result;
-                    compressed_data = (void *)((uintptr_t)compressed_data + compressed_length);
-                } else {
-                    fprintf(stderr, "error: decompression failure\n");
-                    free(uncompressed_data);
-                    return NULL;
-                }
+                assert(false);
             }
+
+            size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, algorithm);
+            if (compression_result != 0) {
+                offset += compression_result;
+                compressed_data = (void *)((uintptr_t)compressed_data + compressed_length);
+            } else {
+                fprintf(stderr, "error: decompression failure\n");
+                free(uncompressed_data);
+                return NULL;
+            }
+#else
+            if (header1->compression == car_rendition_data_compression_magic_lzvn) {
+                fprintf(stderr, "error: unable to handle LZVN\n");
+                return NULL;
+            } else if (header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
+                fprintf(stderr, "error: unable to handle LZFSE\n");
+                return NULL;
+            } else {
+                assert(false);
+            }
+#endif
+        } else if (header1->compression == car_rendition_data_compression_magic_blurredimage) {
+            fprintf(stderr, "error: unable to handle BlurredImage\n");
+            return NULL;
+        } else {
+            fprintf(stderr, "error: unknown compression algorithm %x\n", header1->compression);
+            return NULL;
         }
     }
 

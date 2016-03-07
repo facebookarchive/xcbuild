@@ -13,6 +13,11 @@ find_package(ZLIB REQUIRED)
 target_include_directories(car PRIVATE "${ZLIB_INCLUDE_DIR}")
 target_link_libraries(car PRIVATE ${ZLIB_LIBRARIES})
 
-target_link_libraries(car PUBLIC ext bom compression)
+find_library(COMPRESSION compression)
+if ("${COMPRESSION}" STREQUAL "COMPRESSION-NOTFOUND")
+  set(COMPRESSION "")
+endif ()
+
+target_link_libraries(car PUBLIC ext bom ${COMPRESSION})
 target_include_directories(car PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 
