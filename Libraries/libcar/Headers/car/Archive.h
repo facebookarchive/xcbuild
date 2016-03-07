@@ -14,6 +14,7 @@
 
 namespace car {
 
+class Facet;
 class Rendition;
 
 /*
@@ -41,8 +42,7 @@ public:
     /*
      * Iterate all facets.
      */
-    typedef void (*FacetIterator)(Archive const *archive, std::string const &name, void *ctx);
-    void facetIterate(FacetIterator iterator, void *ctx) const;
+    void facetIterate(std::function<void(Facet const &)> const &facet) const;
 
     /*
      * Iterate all renditions.

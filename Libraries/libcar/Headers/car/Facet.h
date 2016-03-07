@@ -19,35 +19,30 @@ class Rendition;
  */
 class Facet {
 private:
-    Archive const *_archive;
-    std::string    _name;
+    std::string   _name;
+    AttributeList _attributes;
 
 public:
-    Facet(Archive const *archive, std::string const &name);
+    Facet(std::string const &name, AttributeList const &attributes);
 
 public:
-    /*
-     * The archive containing the facet.
-     */
-    Archive const *archive() const
-    { return _archive; }
-
     /*
      * The name of the facet.
      */
     std::string const &name() const
     { return _name; }
 
-public:
     /*
      * The attributes associated with the facet.
      */
-    ext::optional<AttributeList> attributes() const;
+    AttributeList attributes() const
+    { return _attributes; }
 
+public:
     /*
      * Iterate renditions for a facet.
      */
-    void renditionIterate(std::function<void(Rendition const &)> const &iterator) const;
+    void renditionIterate(Archive const *archive, std::function<void(Rendition const &)> const &iterator) const;
 
 public:
     /*
@@ -57,14 +52,9 @@ public:
 
 public:
     /*
-     * Load an existing facet with the given name.
+     * Create a facet with the provided name and attributes
      */
-    static ext::optional<Facet> Load(Archive const *archive, std::string const &name);
-
-    /*
-     * Create a new facet with the provided name and attributes
-     */
-    static ext::optional<Facet> Create(Archive *archive, std::string const &name, AttributeList const &attributes);
+    static Facet Create(std::string const &name, AttributeList const &attributes);
 };
 
 }

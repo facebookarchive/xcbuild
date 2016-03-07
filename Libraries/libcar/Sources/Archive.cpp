@@ -1,6 +1,7 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
 #include <car/Archive.h>
+#include <car/Facet.h>
 #include <car/Rendition.h>
 #include <car/car_format.h>
 
@@ -16,12 +17,11 @@ Archive(unique_ptr_bom bom) :
 
 struct _car_iterator_ctx {
     Archive const *archive;
-    void *ctx;
     void *iterator;
 };
 
 void
-_car_tree_iterator(Archive const *archive, const char *tree_variable, bom_tree_iterator tree_iterator, void *iterator, void *ctx)
+_car_tree_iterator(Archive const *archive, const char *tree_variable, bom_tree_iterator tree_iterator, void *iterator)
 {
     assert(archive != NULL);
     assert(iterator != NULL);
@@ -33,7 +33,6 @@ _car_tree_iterator(Archive const *archive, const char *tree_variable, bom_tree_i
 
     struct _car_iterator_ctx iterator_ctx = {
         .archive = archive,
-        .ctx = ctx,
         .iterator = iterator,
     };
     bom_tree_iterate(tree, tree_iterator, &iterator_ctx);
@@ -43,17 +42,22 @@ _car_tree_iterator(Archive const *archive, const char *tree_variable, bom_tree_i
 static void
 _car_facet_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
 {
-    car_facet_key *facet_key = (car_facet_key *)key;
-    std::string name = std::string(facet_key, key_len);
-
     struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
-    ((car::Archive::FacetIterator)iterator_ctx->iterator)(iterator_ctx->archive, name, iterator_ctx->ctx);
+
+    car_facet_key *facet_key = (car_facet_key *)key;
+    struct car_facet_value *facet_value = (struct car_facet_value *)value;
+
+    std::string name = std::string(facet_key, key_len);
+    car::AttributeList attributes = car::AttributeList::Load(facet_value->attributes_count, facet_value->attributes);
+    car::Facet facet = car::Facet::Create(name, attributes);
+
+    (*reinterpret_cast<std::function<void(car::Facet const &)> const *>(iterator_ctx->iterator))(facet);
 }
 
 void Archive::
-facetIterate(FacetIterator iterator, void *ctx) const
+facetIterate(std::function<void(Facet const &)> const &iterator) const
 {
-    _car_tree_iterator(this, car_facet_keys_variable, _car_facet_iterator, (void *)iterator, ctx);
+    _car_tree_iterator(this, car_facet_keys_variable, _car_facet_iterator, const_cast<void *>(reinterpret_cast<void const *>(&iterator)));
 }
 
 static void
@@ -70,13 +74,13 @@ _car_rendition_iterator(struct bom_tree_context *tree, void *key, size_t key_len
     car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
     car::Rendition rendition = car::Rendition::Load(attributes, rendition_value);
 
-    (*static_cast<std::function<void(car::Rendition const &)> const *>(iterator_ctx->iterator))(rendition);
+    (*reinterpret_cast<std::function<void(car::Rendition const &)> const *>(iterator_ctx->iterator))(rendition);
 }
 
 void Archive::
 renditionIterate(std::function<void(Rendition const &)> const &iterator) const
 {
-    _car_tree_iterator(this, car_renditions_variable, _car_rendition_iterator, (void *)&iterator, NULL);
+    _car_tree_iterator(this, car_renditions_variable, _car_rendition_iterator, const_cast<void *>(reinterpret_cast<void const *>(&iterator)));
 }
 
 void Archive::
