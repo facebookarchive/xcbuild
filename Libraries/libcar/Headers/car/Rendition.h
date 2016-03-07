@@ -6,6 +6,9 @@
 #include <car/AttributeList.h>
 #include <ext/optional>
 
+#include <string>
+#include <functional>
+
 namespace car {
 
 class Archive;
@@ -14,30 +17,65 @@ class Archive;
  * Represents a specific variant of a facet.
  */
 class Rendition {
+public:
+    class Data {
+    public:
+        enum class Format {
+            /*
+             * RGBA pixels in order.
+             */
+            RGBA,
+            /*
+             * Gray and alpha in order.
+             */
+            GA8,
+            /*
+             * Raw data.
+             */
+            Data,
+        };
+
+    private:
+        std::vector<uint8_t> _data;
+        Format               _format;
+
+    public:
+        Data(std::vector<uint8_t> const &data, Format format);
+
+    public:
+        /*
+         * The raw data.
+         */
+        std::vector<uint8_t> const &data() const
+        { return _data; }
+        std::vector<uint8_t> &data()
+        { return _data; }
+
+        /*
+         * The pixel format of the data.
+         */
+        Format format() const
+        { return _format; }
+        Format &format()
+        { return _format; }
+    };
+
 private:
-    Archive const *_archive;
     AttributeList  _attributes;
 
 private:
-    Rendition(Archive const *archive, AttributeList const &attributes);
+    std::function<ext::optional<Data>(Rendition const *)> _data;
+
+private:
+    std::string _fileName;
+    int         _width;
+    int         _height;
+    float       _scale;
+
+private:
+    Rendition(AttributeList const &attributes, std::function<ext::optional<Data>(Rendition const *)> const &data);
 
 public:
-    struct Properties {
-        char file_name[129];
-        int modification_time;
-
-        int width;
-        int height;
-        float scale;
-    };
-
-public:
-    /*
-     * The archive this rendition is in.
-     */
-    Archive const *archive() const
-    { return _archive; }
-
     /*
      * The attributes that describe the rendition.
      */
@@ -46,14 +84,42 @@ public:
 
 public:
     /*
-     * Information about the rendition.
+     * The file name of the rendition
      */
-    Properties properties() const;
+    std::string const &fileName() const
+    { return _fileName; }
+    std::string &fileName()
+    { return _fileName; }
 
     /*
-     * The rendition pixel data.
+     * The width of the rendition, in pixels.
      */
-    void *copyData(size_t *data_len) const;
+    int width() const
+    { return _width; }
+    int &width()
+    { return _width; }
+
+    /*
+     * The height of the rendition, in pixels.
+     */
+    int height() const
+    { return _height; }
+    int &height()
+    { return _height; }
+
+    /*
+     * The scale of the rendition.
+     */
+    float scale() const
+    { return _scale; }
+    float &scale()
+    { return _scale; }
+
+public:
+    /*
+     * The rendition pixel data. May incur expensive decoding.
+     */
+    ext::optional<Data> decode() const;
 
 public:
     /*
@@ -65,12 +131,16 @@ public:
     /*
      * Load an existing rendition matching the provided attributes.
      */
-    static ext::optional<Rendition> Load(Archive const *archive, AttributeList const &attributes);
+    static Rendition const Load(
+        AttributeList const &attributes,
+        struct car_rendition_value *value);
 
     /*
      * Create a new rendition with the given properties.
      */
-    static ext::optional<Rendition> Create(Archive *archive, AttributeList const &attributes, Properties const &properties, void *data, size_t data_len);
+    static Rendition Create(
+        AttributeList const &attributes,
+        std::function<ext::optional<Data>(Rendition const *)> const &data);
 };
 
 }

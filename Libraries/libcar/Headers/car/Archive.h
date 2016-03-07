@@ -7,11 +7,14 @@
 #include <bom/bom.h>
 #include <ext/optional>
 
+#include <functional>
 #include <string>
 #include <vector>
 #include <unordered_map>
 
 namespace car {
+
+class Rendition;
 
 /*
  * An archive within a BOM file holding facets and their renditions.
@@ -44,8 +47,7 @@ public:
     /*
      * Iterate all renditions.
      */
-    typedef void (*RenditionIterator)(Archive const *archive, AttributeList const &attributes, void *ctx);
-    void renditionIterate(RenditionIterator iterator, void *ctx) const;
+    void renditionIterate(std::function<void(Rendition const &)> const &iterator) const;
 
 public:
     /*

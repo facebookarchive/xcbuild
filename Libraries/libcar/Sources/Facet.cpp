@@ -1,6 +1,7 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
 #include <car/Facet.h>
+#include <car/Rendition.h>
 #include <car/Archive.h>
 
 #include <cstring>
@@ -86,44 +87,21 @@ dump() const
     }
 }
 
-struct _car_facet_rendition_iterate_ctx {
-    Facet const *facet;
-    uint16_t facet_identifier;
-    Facet::RenditionIterator iterator;
-    void *ctx;
-};
-
-static void
-_car_facet_rendition_iterator(car::Archive const *archive, car::AttributeList const &attributes, void *ctx)
-{
-    struct _car_facet_rendition_iterate_ctx *iterate_ctx = (struct _car_facet_rendition_iterate_ctx *)ctx;
-
-    ext::optional<uint16_t> rendition_identifier = attributes.get(car_attribute_identifier_identifier);
-    if (rendition_identifier && *rendition_identifier == iterate_ctx->facet_identifier) {
-        ((Facet::RenditionIterator)iterate_ctx->iterator)(iterate_ctx->facet, attributes, iterate_ctx->ctx);
-    }
-}
-
 void Facet::
-renditionIterate(RenditionIterator iterator, void *ctx) const
+renditionIterate(std::function<void(Rendition const &)> const &iterator) const
 {
     ext::optional<car::AttributeList> attributes = this->attributes();
     if (!attributes) {
         return;
     }
 
-    ext::optional<uint16_t> facet_identifier = attributes->get(car_attribute_identifier_identifier);
-    if (!facet_identifier) {
-        return;
-    }
-
-    struct _car_facet_rendition_iterate_ctx iterate_ctx = {
-        .facet = this,
-        .facet_identifier = *facet_identifier,
-        .iterator = iterator,
-        .ctx = ctx,
-    };
-    _archive->renditionIterate(_car_facet_rendition_iterator, &iterate_ctx);
+    _archive->renditionIterate([&](Rendition const &rendition) {
+        ext::optional<uint16_t> facet_identifier = attributes->get(car_attribute_identifier_identifier);
+        ext::optional<uint16_t> rendition_identifier = rendition.attributes().get(car_attribute_identifier_identifier);
+        if (rendition_identifier && facet_identifier && *rendition_identifier == *facet_identifier) {
+            iterator(rendition);
+        }
+    });
 }
 
 struct _car_facet_exists_ctx {

@@ -11,6 +11,7 @@
 namespace car {
 
 class Archive;
+class Rendition;
 
 /*
  * A facet represents an entry in an archive, identifiy by name.
@@ -46,8 +47,7 @@ public:
     /*
      * Iterate renditions for a facet.
      */
-    typedef void (*RenditionIterator)(Facet const *facet, AttributeList const &attributes, void *ctx);
-    void renditionIterate(RenditionIterator iterator, void *ctx) const;
+    void renditionIterate(std::function<void(Rendition const &)> const &iterator) const;
 
 public:
     /*

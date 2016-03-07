@@ -1,6 +1,7 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
 #include <car/Archive.h>
+#include <car/Rendition.h>
 #include <car/car_format.h>
 
 #include <cassert>
@@ -58,20 +59,24 @@ facetIterate(FacetIterator iterator, void *ctx) const
 static void
 _car_rendition_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
 {
-    car_rendition_key *rendition_key = (car_rendition_key *)key;
     struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
+
+    car_rendition_key *rendition_key = (car_rendition_key *)key;
+    struct car_rendition_value *rendition_value = (struct car_rendition_value *)value;
 
     int key_format_index = bom_variable_get(iterator_ctx->archive->bom(), car_key_format_variable);
     struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(iterator_ctx->archive->bom(), key_format_index, NULL);
 
     car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
-    ((car::Archive::RenditionIterator)iterator_ctx->iterator)(iterator_ctx->archive, attributes, iterator_ctx->ctx);
+    car::Rendition rendition = car::Rendition::Load(attributes, rendition_value);
+
+    (*static_cast<std::function<void(car::Rendition const &)> const *>(iterator_ctx->iterator))(rendition);
 }
 
 void Archive::
-renditionIterate(RenditionIterator iterator, void *ctx) const
+renditionIterate(std::function<void(Rendition const &)> const &iterator) const
 {
-    _car_tree_iterator(this, car_renditions_variable, _car_rendition_iterator, (void *)iterator, ctx);
+    _car_tree_iterator(this, car_renditions_variable, _car_rendition_iterator, (void *)&iterator, NULL);
 }
 
 void Archive::
