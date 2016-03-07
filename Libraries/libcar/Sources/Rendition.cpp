@@ -33,13 +33,10 @@ _car_rendition_exists_iterator(car::Archive const *archive, car::AttributeList c
     exists_ctx->exists = exists_ctx->exists || attributes == exists_ctx->attributes;
 }
 
-typedef void (*_car_rendition_value_callback)(Rendition const *rendition, struct car_rendition_value *value, void *ctx);
-
 struct _car_rendition_value_ctx {
     Rendition const *rendition;
     struct car_key_format *key_format;
-    _car_rendition_value_callback callback;
-    void *ctx;
+    struct car_rendition_value *value;
 };
 
 static void
@@ -52,18 +49,16 @@ _car_rendition_value_iterator(struct bom_tree_context *tree, void *key, size_t k
 
     car::AttributeList attributes = car::AttributeList::Load(value_ctx->key_format->num_identifiers, value_ctx->key_format->identifier_list, rendition_key);
     if (attributes == value_ctx->rendition->attributes()) {
-        value_ctx->callback(value_ctx->rendition, rendition_value, value_ctx->ctx);
+        value_ctx->value = rendition_value;
     }
 }
 
-static void
-_car_rendition_value_get(Rendition const *rendition, _car_rendition_value_callback callback, void *ctx)
+static struct car_rendition_value *
+_car_rendition_value_get(Rendition const *rendition)
 {
-    assert(rendition != NULL);
-
     struct bom_tree_context *tree = bom_tree_alloc_load(rendition->archive()->bom(), car_renditions_variable);
     if (tree == NULL) {
-        return;
+        return NULL;
     }
 
     int key_format_index = bom_variable_get(rendition->archive()->bom(), car_key_format_variable);
@@ -72,22 +67,18 @@ _car_rendition_value_get(Rendition const *rendition, _car_rendition_value_callba
     struct _car_rendition_value_ctx value_ctx = {
         .rendition = rendition,
         .key_format = keyfmt,
-        .callback = callback,
-        .ctx = ctx,
+        .value = NULL,
     };
     bom_tree_iterate(tree, _car_rendition_value_iterator, &value_ctx);
     bom_tree_free(tree);
+
+    return value_ctx.value;
 }
 
-struct _car_rendition_data_copy_ctx {
-    void *data;
-    size_t data_len;
-};
-
-static void
-_car_rendition_data_copy_callback(Rendition const *rendition, struct car_rendition_value *value, void *ctx)
+void *Rendition::
+copyData(size_t *data_len) const
 {
-    struct _car_rendition_data_copy_ctx *data_ctx = (struct _car_rendition_data_copy_ctx *)ctx;
+    struct car_rendition_value *value = _car_rendition_value_get(this);
 
     struct car_rendition_info_header *info_header = (struct car_rendition_info_header *)value->info;
     while (((uintptr_t)info_header - (uintptr_t)value->info) < value->info_len) {
@@ -101,14 +92,14 @@ _car_rendition_data_copy_callback(Rendition const *rendition, struct car_renditi
         bytes_per_pixel = 2;
     } else {
         fprintf(stderr, "error: unsupported pixel format %.4s\n", (char const *)&value->pixel_format);
-        return;
+        return NULL;
     }
 
     size_t uncompressed_length = value->width * value->height * bytes_per_pixel;
     void *uncompressed_data = malloc(uncompressed_length);
     if (uncompressed_data == NULL) {
         printf("Couldn't allocate uncompressed data of size %zd.\n", uncompressed_length);
-        return;
+        return NULL;
     }
     memset(uncompressed_data, 0, uncompressed_length);
 
@@ -117,7 +108,7 @@ _car_rendition_data_copy_callback(Rendition const *rendition, struct car_renditi
 
     if (strncmp(header1->magic, "MLEC", sizeof(header1->magic)) != 0) {
         fprintf(stderr, "error: header1 magic is wrong, can't possibly decode\n");
-        return;
+        return NULL;
     }
 
     void *compressed_data = &header1->data;
@@ -181,7 +172,7 @@ _car_rendition_data_copy_callback(Rendition const *rendition, struct car_renditi
                 int ret = inflateInit2(&strm, 16+MAX_WBITS);
                 if (ret != Z_OK) {
                    free(uncompressed_data);
-                   return;
+                   return NULL;
                 }
 
                 strm.avail_out = uncompressed_length;
@@ -191,68 +182,48 @@ _car_rendition_data_copy_callback(Rendition const *rendition, struct car_renditi
                 if (ret != Z_OK && ret != Z_STREAM_END) {
                     printf("error: decompression failure: %x.\n", ret);
                     free(uncompressed_data);
-                    return;
+                    return NULL;
                 }
 
                 ret = inflateEnd(&strm);
                 if (ret != Z_OK) {
                     free(uncompressed_data);
-                    return;
+                    return NULL;
                 }
 
-                data_ctx->data = uncompressed_data;
-                data_ctx->data_len = uncompressed_length;
                 offset += (uncompressed_length - strm.avail_out);
             } else {
                 size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, *algorithm);
                 if (compression_result != 0) {
                     offset += compression_result;
                     compressed_data = (void *)((uintptr_t)compressed_data + compressed_length);
-
-                    data_ctx->data = uncompressed_data;
-                    data_ctx->data_len = uncompressed_length;
                 } else {
                     fprintf(stderr, "error: decompression failure\n");
                     free(uncompressed_data);
-                    return;
+                    return NULL;
                 }
             }
         }
     }
-}
 
-void *Rendition::
-copyData(size_t *data_len) const
-{
-    struct _car_rendition_data_copy_ctx data_ctx = {
-        .data = NULL,
-        .data_len = 0,
-    };
-    _car_rendition_value_get(this, _car_rendition_data_copy_callback, &data_ctx);
-    if (data_len != NULL) {
-        *data_len = data_ctx.data_len;
-    }
-    return data_ctx.data;
-}
-
-static void
-_car_rendition_properties_get_callback(Rendition const *rendition, struct car_rendition_value *value, void *ctx)
-{
-    Rendition::Properties *properties = (Rendition::Properties *)ctx;
-    properties->width = value->width;
-    properties->height = value->height;
-    properties->scale = (double)value->scale_factor / 100.0;
-
-    strncpy(properties->file_name, value->metadata.name, sizeof(value->metadata.name));
-    properties->file_name[sizeof(value->metadata.name)] = '\0';
-    properties->modification_time = value->metadata.modification_date;
+    *data_len = uncompressed_length;
+    return uncompressed_data;
 }
 
 Rendition::Properties Rendition::
 properties() const
 {
-    Properties properties = { };
-    _car_rendition_value_get(this, _car_rendition_properties_get_callback, &properties);
+    struct car_rendition_value *value = _car_rendition_value_get(this);
+    assert(value != NULL);
+
+    Properties properties;
+    properties.width = value->width;
+    properties.height = value->height;
+    properties.scale = (double)value->scale_factor / 100.0;
+
+    strncpy(properties.file_name, value->metadata.name, sizeof(value->metadata.name));
+    properties.file_name[sizeof(value->metadata.name)] = '\0';
+    properties.modification_time = value->metadata.modification_date;
     return properties;
 }
 
@@ -322,6 +293,8 @@ car_key_format_add(car::Archive *archive, car::AttributeList const &attributes)
     /* Update key format with newly added identifiers. */
     memcpy(missing_identifiers_point, missing_identifiers.data(), missing_attribute_found_len);
     keyfmt->num_identifiers += missing_identifiers.size();
+
+    // TODO: Update existing rendition keys to use the new format. (!)
 }
 
 ext::optional<Rendition> Rendition::
