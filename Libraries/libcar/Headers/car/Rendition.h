@@ -22,18 +22,23 @@ public:
     public:
         enum class Format {
             /*
-             * RGBA pixels in order.
+             * BGRA pixels in order.
              */
-            RGBA,
+            PremultipliedBGRA8,
             /*
              * Gray and alpha in order.
              */
-            GA8,
+            PremultipliedGA8,
             /*
              * Raw data.
              */
             Data,
         };
+
+        /*
+         * The size of a pixel in the format.
+         */
+        static size_t FormatSize(Format format);
 
     private:
         std::vector<uint8_t> _data;

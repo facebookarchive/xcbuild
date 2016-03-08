@@ -24,6 +24,19 @@ Data(std::vector<uint8_t> const &data, Format format) :
 {
 }
 
+size_t Rendition::Data::
+FormatSize(Rendition::Data::Format format)
+{
+    switch (format) {
+        case Format::PremultipliedBGRA8:
+            return 4;
+        case Format::PremultipliedGA8:
+            return 2;
+        case Format::Data:
+            return 1;
+    }
+}
+
 Rendition::
 Rendition(AttributeList const &attributes, std::function<ext::optional<Data>(Rendition const *)> const &data) :
     _attributes(attributes),
@@ -37,7 +50,7 @@ Rendition(AttributeList const &attributes, std::function<ext::optional<Data>(Ren
 void Rendition::
 dump() const
 {
-    printf("Name: %s\n", _fileName.c_str());
+    printf("Rendition: %s\n", _fileName.c_str());
     printf("Width: %d\n", _width);
     printf("Height: %d\n", _height);
     printf("Scale: %f\n", _scale);
@@ -78,19 +91,17 @@ _decode(struct car_rendition_value *value)
     }
 
     Rendition::Data::Format format;
-    size_t bytes_per_pixel;
     if (value->pixel_format == car_rendition_value_pixel_format_argb) {
-        format = Rendition::Data::Format::RGBA;
-        bytes_per_pixel = 4;
+        format = Rendition::Data::Format::PremultipliedBGRA8;
     } else if (value->pixel_format == car_rendition_value_pixel_format_ga8) {
-        format = Rendition::Data::Format::GA8;
-        bytes_per_pixel = 2;
+        format = Rendition::Data::Format::PremultipliedGA8;
     } else {
         format = Rendition::Data::Format::Data;
         fprintf(stderr, "error: unsupported pixel format %.4s\n", (char const *)&value->pixel_format);
         return ext::nullopt;
     }
 
+    size_t bytes_per_pixel = Rendition::Data::FormatSize(format);
     size_t uncompressed_length = value->width * value->height * bytes_per_pixel;
     Rendition::Data data = Rendition::Data(std::vector<uint8_t>(uncompressed_length), format);
     void *uncompressed_data = static_cast<void *>(data.data().data());
