@@ -35,8 +35,6 @@ public:
     static std::pair<bool, std::string>
     Parse(T *options, std::vector<std::string> const &args)
     {
-        std::string error;
-
         for (auto it = args.begin(); it != args.end(); ++it) {
             std::pair<bool, std::string> result = options->parseArgument(args, &it);
             if (!result.first) {
