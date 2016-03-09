@@ -16,23 +16,23 @@ Reader(unique_ptr_bom bom) :
 }
 
 struct _car_iterator_ctx {
-    Reader const *archive;
+    Reader const *reader;
     void *iterator;
 };
 
 void
-_car_tree_iterator(Reader const *archive, const char *tree_variable, bom_tree_iterator tree_iterator, void *iterator)
+_car_tree_iterator(Reader const *reader, const char *tree_variable, bom_tree_iterator tree_iterator, void *iterator)
 {
-    assert(archive != NULL);
+    assert(reader != NULL);
     assert(iterator != NULL);
 
-    struct bom_tree_context *tree = bom_tree_alloc_load(archive->bom(), tree_variable);
+    struct bom_tree_context *tree = bom_tree_alloc_load(reader->bom(), tree_variable);
     if (tree == NULL) {
         return;
     }
 
     struct _car_iterator_ctx iterator_ctx = {
-        .archive = archive,
+        .reader = reader,
         .iterator = iterator,
     };
     bom_tree_iterate(tree, tree_iterator, &iterator_ctx);
@@ -68,8 +68,8 @@ _car_rendition_iterator(struct bom_tree_context *tree, void *key, size_t key_len
     car_rendition_key *rendition_key = (car_rendition_key *)key;
     struct car_rendition_value *rendition_value = (struct car_rendition_value *)value;
 
-    int key_format_index = bom_variable_get(iterator_ctx->archive->bom(), car_key_format_variable);
-    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(iterator_ctx->archive->bom(), key_format_index, NULL);
+    int key_format_index = bom_variable_get(iterator_ctx->reader->bom(), car_key_format_variable);
+    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(iterator_ctx->reader->bom(), key_format_index, NULL);
 
     car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
     car::Rendition rendition = car::Rendition::Load(attributes, rendition_value);
@@ -101,6 +101,45 @@ dump() const
     printf("Schema Version: %x\n", header->schema_version);
     printf("Color space ID: %x\n", header->color_space_id);
     printf("Key Semantics: %x\n", header->key_semantics);
+    printf("\n");
+
+    int key_format_index = bom_variable_get(_bom.get(), car_key_format_variable);
+    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(_bom.get(), key_format_index, NULL);
+
+    printf("Key Format: %.4s\n", keyfmt->magic);
+    printf("Identifier Count: %d\n", keyfmt->num_identifiers);
+    for (uint32_t i = 0; i < keyfmt->num_identifiers; i++) {
+        uint32_t identifier = keyfmt->identifier_list[i];
+        if (identifier < sizeof(car_attribute_identifier_names) / sizeof(*car_attribute_identifier_names)) {
+            printf("Identifier: %s (%d)\n", car_attribute_identifier_names[identifier] ?: "(unknown)", identifier);
+        } else {
+            printf("Identifier: (unknown) (%d)\n", identifier);
+        }
+    }
+    printf("\n");
+
+    auto part_element_iterator = [](struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx) {
+        struct car_part_element_key *part_element_key = (struct car_part_element_key *)key;
+        printf("%s ID: %x\n", (char const *)ctx, part_element_key->part_element_id);
+
+        struct car_part_element_value *part_element_value = (struct car_part_element_value *)value;
+        printf("Unknown 1: %x\n", part_element_value->unknown1);
+        printf("Unknown 2: %x\n", part_element_value->unknown2);
+        printf("Name: %.*s\n", (int)(value_len - sizeof(struct car_part_element_value)), part_element_value->name);
+        printf("\n");
+    };
+
+    struct bom_tree_context *part = bom_tree_alloc_load(_bom.get(), car_part_info_variable);
+    if (part != NULL) {
+        bom_tree_iterate(part, part_element_iterator, (void *)"Part");
+        bom_tree_free(part);
+    }
+
+    struct bom_tree_context *element = bom_tree_alloc_load(_bom.get(), car_element_info_variable);
+    if (element != NULL) {
+        bom_tree_iterate(element, part_element_iterator, (void *)"Element");
+        bom_tree_free(element);
+    }
 }
 
 ext::optional<Reader> Reader::

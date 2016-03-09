@@ -1,7 +1,9 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
 #include <bom/bom.h>
-#include <car/car.h>
+#include <car/Reader.h>
+#include <car/Facet.h>
+#include <car/Rendition.h>
 
 #include <string>
 #include <fstream>
@@ -215,6 +217,7 @@ main(int argc, char **argv)
         printf("Variable: %s [%08zx]\n", name, data_len);
         return true;
     }, NULL);
+    printf("\n");
 
     ext::optional<car::Reader> car = car::Reader::Load(std::move(bom));
     if (!car) {
@@ -223,15 +226,6 @@ main(int argc, char **argv)
     }
 
     car->dump();
-    printf("\n");
-
-    car_part_dump(&*car);
-    printf("\n");
-
-    car_element_dump(&*car);
-    printf("\n");
-
-    car_key_format_dump(&*car);
     printf("\n");
 
     car->facetIterate([&car](car::Facet const &facet) {

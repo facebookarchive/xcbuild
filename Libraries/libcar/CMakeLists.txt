@@ -1,7 +1,6 @@
 # Copyright 2013-present Facebook. All Rights Reserved.
 
 add_library(car SHARED
-            Sources/car.cpp
             Sources/Reader.cpp
             Sources/AttributeList.cpp
             Sources/Facet.cpp
