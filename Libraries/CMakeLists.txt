@@ -7,6 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
+add_subdirectory(acdriver)
 add_subdirectory(builtin)
 add_subdirectory(dependency)
 add_subdirectory(ext)
