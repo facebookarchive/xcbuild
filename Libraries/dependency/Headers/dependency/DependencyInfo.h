@@ -35,11 +35,15 @@ public:
      */
     std::vector<std::string> const &inputs() const
     { return _inputs; }
+    std::vector<std::string> &inputs()
+    { return _inputs; }
 
     /*
      * The files output by the tool.
      */
     std::vector<std::string> const &outputs() const
+    { return _outputs; }
+    std::vector<std::string> &outputs()
     { return _outputs; }
 };
 

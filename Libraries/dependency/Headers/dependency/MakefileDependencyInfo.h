@@ -31,15 +31,15 @@ private:
     DependencyInfo                                    _dependencyInfo;
 
 public:
-    MakefileDependencyInfo(
-        std::unordered_multimap<std::string, std::string> const &outputInputs,
-        DependencyInfo const &dependencyInfo);
+    MakefileDependencyInfo();
 
 public:
     /*
      * The map from output to the output's inputs.
      */
     std::unordered_multimap<std::string, std::string> const &outputInputs() const
+    { return _outputInputs; }
+    std::unordered_multimap<std::string, std::string> &outputInputs()
     { return _outputInputs; }
 
 public:
@@ -48,13 +48,21 @@ public:
      */
     DependencyInfo const &dependencyInfo() const
     { return _dependencyInfo; }
+    DependencyInfo &dependencyInfo()
+    { return _dependencyInfo; }
+
+public:
+    /*
+     * Serialize the dependency info.
+     */
+    std::string serialize() const;
 
 public:
     /*
      * Create the dependency info from the Makefile contents.
      */
     static ext::optional<MakefileDependencyInfo>
-    Create(std::string const &contents);
+    Deserialize(std::string const &contents);
 
 public:
     /*

@@ -16,20 +16,11 @@ using dependency::BinaryDependencyInfo;
 using dependency::DependencyInfo;
 
 BinaryDependencyInfo::
-BinaryDependencyInfo(std::string const &version, std::vector<std::string> const &missing, DependencyInfo const &dependencyInfo) :
-    _version       (version),
-    _missing       (missing),
-    _dependencyInfo(dependencyInfo)
+BinaryDependencyInfo()
 {
 }
 
-BinaryDependencyInfo::
-BinaryDependencyInfo(DependencyInfo const &dependencyInfo) :
-    BinaryDependencyInfo(std::string(), std::vector<std::string>(), dependencyInfo)
-{
-}
-
-enum class BinaryDependencyCommand: uint8_t {
+enum class BinaryDependencyCommand : uint8_t {
     Version = 0x00,
     Input = 0x10,
     Missing = 0x11,
@@ -37,8 +28,46 @@ enum class BinaryDependencyCommand: uint8_t {
     // ??? = 0x02,
 };
 
+static void
+WriteCommand(std::vector<uint8_t> *result, BinaryDependencyCommand command, std::string const &string)
+{
+    result->push_back(static_cast<uint8_t>(command));
+    for (char c : string) {
+        result->push_back(static_cast<uint8_t>(c));
+    }
+    result->push_back('\0');
+}
+
+std::vector<uint8_t> BinaryDependencyInfo::
+serialize() const
+{
+    std::vector<uint8_t> result;
+
+    /* Write version. */
+    if (!_version.empty()) {
+        WriteCommand(&result, BinaryDependencyCommand::Version, _version);
+    }
+
+    /* Write output. */
+    for (std::string const &output : _dependencyInfo.outputs()) {
+        WriteCommand(&result, BinaryDependencyCommand::Output, output);
+    }
+
+    /* Write input. */
+    for (std::string const &input : _dependencyInfo.inputs()) {
+        WriteCommand(&result, BinaryDependencyCommand::Input, input);
+    }
+
+    /* Write missing. */
+    for (std::string const &missing : _missing) {
+        WriteCommand(&result, BinaryDependencyCommand::Missing, missing);
+    }
+
+    return result;
+}
+
 ext::optional<BinaryDependencyInfo> BinaryDependencyInfo::
-Create(std::vector<uint8_t> const &contents)
+Deserialize(std::vector<uint8_t> const &contents)
 {
     std::string version;
     std::vector<std::string> inputs;
@@ -86,8 +115,10 @@ Create(std::vector<uint8_t> const &contents)
     }
 
     /* Create dependency info. */
-    auto info = DependencyInfo(inputs, outputs);
-    auto binaryInfo = BinaryDependencyInfo(version, missing, info);
-
+    BinaryDependencyInfo binaryInfo;
+    binaryInfo.version() = version;
+    binaryInfo.missing() = missing;
+    binaryInfo.dependencyInfo().inputs() = inputs;
+    binaryInfo.dependencyInfo().outputs() = outputs;
     return BinaryDependencyInfo(binaryInfo);
 }

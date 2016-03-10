@@ -152,7 +152,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
 
         std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
 
-        auto binaryInfo = dependency::BinaryDependencyInfo::Create(contents);
+        auto binaryInfo = dependency::BinaryDependencyInfo::Deserialize(contents);
         if (!binaryInfo) {
             fprintf(stderr, "error: invalid binary dependency info\n");
             return false;
@@ -161,7 +161,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
         *dependencyInfo = binaryInfo->dependencyInfo();
         return true;
     } else if (format == dependency::DependencyInfoFormat::Directory) {
-        auto directoryInfo = dependency::DirectoryDependencyInfo::Create(path);
+        auto directoryInfo = dependency::DirectoryDependencyInfo::Deserialize(path);
         if (!directoryInfo) {
             fprintf(stderr, "error: invalid directory\n");
             return false;
@@ -178,7 +178,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
 
         std::string contents = std::string(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
 
-        auto makefileInfo = dependency::MakefileDependencyInfo::Create(contents);
+        auto makefileInfo = dependency::MakefileDependencyInfo::Deserialize(contents);
         if (!makefileInfo) {
             fprintf(stderr, "error: invalid makefile dependency info\n");
             return false;
@@ -195,19 +195,19 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
 static std::string
 SerializeMakefileDependencyInfo(std::string const &output, std::vector<std::string> const &inputs)
 {
+    /* Normalize path as Ninja requires matching paths. */
+    std::vector<std::string> resolvedInputs;
     std::string currentDirectory = FSUtil::GetCurrentDirectory();
-
-    std::ostringstream result;
-    result << Escape::Makefile(output) << ":";
-
     for (std::string const &input : inputs) {
-        /* Normalize path as Ninja requires match paths. */
         std::string path = FSUtil::ResolveRelativePath(input, currentDirectory);
-
-        result << " \\\n" << "  " << Escape::Makefile(path);
+        resolvedInputs.push_back(path);
     }
 
-    return result.str();
+    /* Serialize dependency info. */
+    dependency::MakefileDependencyInfo makefileInfo;
+    makefileInfo.dependencyInfo().inputs() = resolvedInputs;
+    makefileInfo.dependencyInfo().outputs() = { output };
+    return makefileInfo.serialize();
 }
 
 int

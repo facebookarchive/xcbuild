@@ -23,7 +23,7 @@ DirectoryDependencyInfo(std::string const &directory, DependencyInfo const &depe
 }
 
 ext::optional<DirectoryDependencyInfo> DirectoryDependencyInfo::
-Create(std::string const &directory)
+Deserialize(std::string const &directory)
 {
     std::vector<std::string> inputs;
 

@@ -53,7 +53,7 @@ public:
      * Create dependency info for a directory.
      */
     static ext::optional<DirectoryDependencyInfo>
-    Create(std::string const &directory);
+    Deserialize(std::string const &directory);
 
 public:
     /*

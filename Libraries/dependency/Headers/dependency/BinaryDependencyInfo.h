@@ -32,11 +32,7 @@ private:
     DependencyInfo           _dependencyInfo;
 
 public:
-    BinaryDependencyInfo(
-        std::string const &version,
-        std::vector<std::string> const &missing,
-        DependencyInfo const &dependencyInfo);
-    BinaryDependencyInfo(DependencyInfo const &dependencyInfo);
+    BinaryDependencyInfo();
 
 public:
     /*
@@ -44,11 +40,15 @@ public:
      */
     std::string const &version() const
     { return _version; }
+    std::string &version()
+    { return _version; }
 
     /*
      * Files that were accessed but did not exist.
      */
     std::vector<std::string> const &missing() const
+    { return _missing; }
+    std::vector<std::string> &missing()
     { return _missing; }
 
 public:
@@ -57,13 +57,21 @@ public:
      */
     DependencyInfo const &dependencyInfo() const
     { return _dependencyInfo; }
+    DependencyInfo &dependencyInfo()
+    { return _dependencyInfo; }
+
+public:
+    /*
+     * Serialize the dependency info.
+     */
+    std::vector<uint8_t> serialize() const;
 
 public:
     /*
      * Load dependency info from binary data.
      */
     static ext::optional<BinaryDependencyInfo>
-    Create(std::vector<uint8_t> const &contents);
+    Deserialize(std::vector<uint8_t> const &contents);
 
 public:
     /*
