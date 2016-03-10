@@ -63,9 +63,12 @@ ValidateStrings(plist::Object const *root)
     if (plist::Dictionary const *dictionary = plist::CastTo<plist::Dictionary>(root)) {
         for (size_t n = 0; n < dictionary->count(); n++) {
             auto key = dictionary->key(n);
-            auto value = dictionary->value <plist::String> (key);
-            if (value == nullptr) {
-                return std::make_pair(false, "strings key '" + key + "' is not a string");
+            if (dictionary->value <plist::String> (key)) {
+                /* Valid for .strings files. */
+            } else if (dictionary->value <plist::Dictionary> (key)) {
+                /* Valid for .stringdict files. */
+            } else {
+                return std::make_pair(false, "strings key '" + key + "' is not a string (.strings) or a dictionary (.stringsdict)");
             }
         }
 
