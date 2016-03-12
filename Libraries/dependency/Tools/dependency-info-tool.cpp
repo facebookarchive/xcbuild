@@ -141,7 +141,7 @@ Version()
 }
 
 static bool
-LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat format, dependency::DependencyInfo *dependencyInfo)
+LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat format, std::vector<dependency::DependencyInfo> *dependencyInfo)
 {
     if (format == dependency::DependencyInfoFormat::Binary) {
         std::ifstream input = std::ifstream(path, std::ios::binary);
@@ -158,7 +158,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
             return false;
         }
 
-        *dependencyInfo = binaryInfo->dependencyInfo();
+        dependencyInfo->push_back(binaryInfo->dependencyInfo());
         return true;
     } else if (format == dependency::DependencyInfoFormat::Directory) {
         auto directoryInfo = dependency::DirectoryDependencyInfo::Deserialize(path);
@@ -167,7 +167,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
             return false;
         }
 
-        *dependencyInfo = directoryInfo->dependencyInfo();
+        dependencyInfo->push_back(directoryInfo->dependencyInfo());
         return true;
     } else if (format == dependency::DependencyInfoFormat::Makefile) {
         std::ifstream input = std::ifstream(path, std::ios::binary);
@@ -184,7 +184,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
             return false;
         }
 
-        *dependencyInfo = makefileInfo->dependencyInfo();
+        dependencyInfo->insert(dependencyInfo->end(), makefileInfo->dependencyInfo().begin(), makefileInfo->dependencyInfo().end());
         return true;
     } else {
         assert(false);
@@ -195,18 +195,19 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
 static std::string
 SerializeMakefileDependencyInfo(std::string const &output, std::vector<std::string> const &inputs)
 {
+    dependency::DependencyInfo dependencyInfo;
+    dependencyInfo.outputs() = { output };
+
     /* Normalize path as Ninja requires matching paths. */
-    std::vector<std::string> resolvedInputs;
     std::string currentDirectory = FSUtil::GetCurrentDirectory();
     for (std::string const &input : inputs) {
         std::string path = FSUtil::ResolveRelativePath(input, currentDirectory);
-        resolvedInputs.push_back(path);
+        dependencyInfo.inputs().push_back(path);
     }
 
     /* Serialize dependency info. */
     dependency::MakefileDependencyInfo makefileInfo;
-    makefileInfo.dependencyInfo().inputs() = resolvedInputs;
-    makefileInfo.dependencyInfo().outputs() = { output };
+    makefileInfo.dependencyInfo() = { dependencyInfo };
     return makefileInfo.serialize();
 }
 
@@ -245,12 +246,14 @@ main(int argc, char **argv)
         /*
          * Load the dependency info.
          */
-        dependency::DependencyInfo info;
+        std::vector<dependency::DependencyInfo> info;
         if (!LoadDependencyInfo(input.second, input.first, &info)) {
             return -1;
         }
 
-        inputs.insert(inputs.end(), info.inputs().begin(), info.inputs().end());
+        for (dependency::DependencyInfo const &dependencyInfo : info) {
+            inputs.insert(inputs.end(), dependencyInfo.inputs().begin(), dependencyInfo.inputs().end());
+        }
     }
 
     /*

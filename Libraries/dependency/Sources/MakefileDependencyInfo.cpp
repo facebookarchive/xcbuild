@@ -28,75 +28,31 @@ serialize() const
 {
     std::string result;
 
-    std::unordered_set<std::string> seenOutputs;
-    std::unordered_set<std::string> seenInputs;
-
-    /* Add outputs. */
-    for (auto it = _outputInputs.begin(); it != _outputInputs.end(); ++it) {
-        std::string const &output = it->first;
-        seenOutputs.insert(output);
-
-        /* Add output. */
-        result += Escape::Makefile(output);
-        result += ":";
-
-        /* Add inputs. */
-        auto range = _outputInputs.equal_range(output);
-        for (it = range.first; it != range.second; ++it) {
-            std::string const &input = it->second;
-            seenInputs.insert(input);
-
-            result += " \\\n";
-            result += "  ";
-            result += Escape::Makefile(input);
-        }
-
-        /* Iterator now points to next key. */
-        if (it == _outputInputs.end()) {
-            break;
-        }
-
-        result += "\n\n";
-    }
-
-    /* Write out remaining outputs not seen so far. */
-    bool firstOutput = false;
-    for (std::string const &output : _dependencyInfo.outputs()) {
-        if (seenOutputs.find(output) != seenOutputs.end()) {
-            /* Already written. */
-            continue;
-        }
-
-        if (!firstOutput) {
-            if (!seenOutputs.empty()) {
-                /* Separator from previous entry. */
-                result += "\n\n";
+    for (DependencyInfo const &dependencyInfo : _dependencyInfo) {
+        /* Add outputs. */
+        for (std::string const &output : dependencyInfo.outputs()) {
+            if (&output != &dependencyInfo.outputs().front()) {
+                /* Outputs after the first need a separator. */
+                result += " ";
             }
-            firstOutput = true;
-        } else {
-            /* Outputs after the first need a separator. */
-            result += " ";
+
+            /* Add the output. */
+            result += Escape::Makefile(output);
         }
 
-        /* Add the output. */
-        result += Escape::Makefile(output);
-    }
-
-    if (firstOutput) {
         /* Add separator. */
         result += ":";
 
-        /* Write out remaining inputs not seen so far. */
-        for (std::string const &input : _dependencyInfo.inputs()) {
-            if (seenInputs.find(input) != seenInputs.end()) {
-                /* Already written. */
-                continue;
-            }
-
-            /* Add the input. */
+        /* Add inputs. */
+        for (std::string const &input : dependencyInfo.inputs()) {
             result += " \\\n";
             result += "  ";
             result += Escape::Makefile(input);
+        }
+
+        if (&dependencyInfo != &_dependencyInfo.back()) {
+            /* Separator for next info. */
+            result += "\n\n";
         }
     }
 
@@ -106,9 +62,7 @@ serialize() const
 ext::optional<MakefileDependencyInfo> MakefileDependencyInfo::
 Deserialize(std::string const &contents)
 {
-    std::vector<std::string> inputs;
-    std::vector<std::string> outputs;
-    std::unordered_multimap<std::string, std::string> outputInputs;
+    std::vector<DependencyInfo> dependencyInfo;
 
     enum class State {
         Begin,
@@ -120,8 +74,7 @@ Deserialize(std::string const &contents)
     State state = State::Begin;
 
     std::string current;
-    std::string currentOutput;
-    std::vector<std::string> currentInputs;
+    DependencyInfo currentDependencyInfo;
 
     for (auto it = contents.begin(), prev = contents.end(); it != contents.end(); prev = it, ++it) {
         bool escaped = (prev != contents.end() && *prev == '\\');
@@ -140,21 +93,16 @@ Deserialize(std::string const &contents)
                 case State::Inputs:
                     /* Current input. */
                     if (!current.empty()) {
-                        currentInputs.push_back(current);
+                        currentDependencyInfo.inputs().push_back(current);
                         current = std::string();
                     }
 
                     /* Store this output and inputs. */
-                    if (!currentOutput.empty()) {
-                        outputs.push_back(currentOutput);
-                        inputs.insert(inputs.end(), currentInputs.begin(), currentInputs.end());
-                        for (std::string const &input : currentInputs) {
-                            outputInputs.insert({ currentOutput, input });
-                        }
+                    if (!currentDependencyInfo.outputs().empty()) {
+                        dependencyInfo.push_back(currentDependencyInfo);
 
                         /* Reset for next entry. */
-                        currentOutput = std::string();
-                        currentInputs = std::vector<std::string>();
+                        currentDependencyInfo = DependencyInfo();
                     }
 
                     state = State::Begin;
@@ -174,7 +122,7 @@ Deserialize(std::string const &contents)
 
                     /* Next input. */
                     if (!current.empty()) {
-                        currentInputs.push_back(current);
+                        currentDependencyInfo.inputs().push_back(current);
                         current = std::string();
                     }
                     break;
@@ -190,7 +138,7 @@ Deserialize(std::string const &contents)
                     assert(!current.empty());
 
                     /* Wait for inputs. */
-                    currentOutput = current;
+                    currentDependencyInfo.outputs().push_back(current);
                     current = std::string();
                     state = State::Inputs;
                     break;
@@ -246,24 +194,18 @@ Deserialize(std::string const &contents)
         case State::Inputs:
             /* Current input. */
             if (!current.empty()) {
-                currentInputs.push_back(current);
+                currentDependencyInfo.inputs().push_back(current);
             }
 
             /* Store this output and inputs. */
-            if (!currentOutput.empty()) {
-                outputs.push_back(currentOutput);
-                inputs.insert(inputs.end(), currentInputs.begin(), currentInputs.end());
-                for (std::string const &input : currentInputs) {
-                    outputInputs.insert({ currentOutput, input });
-                }
+            if (!currentDependencyInfo.outputs().empty()) {
+                dependencyInfo.push_back(currentDependencyInfo);
             }
             break;
     }
 
     /* Create dependency info. */
     MakefileDependencyInfo makefileInfo;
-    makefileInfo.outputInputs() = outputInputs;
-    makefileInfo.dependencyInfo().inputs() = inputs;
-    makefileInfo.dependencyInfo().outputs() = outputs;
+    makefileInfo.dependencyInfo() = dependencyInfo;
     return makefileInfo;
 }

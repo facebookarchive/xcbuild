@@ -15,7 +15,8 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <vector>
+#include <utility>
 #include <ext/optional>
 
 namespace dependency {
@@ -25,30 +26,18 @@ namespace dependency {
  */
 class MakefileDependencyInfo {
 private:
-    std::unordered_multimap<std::string, std::string> _outputInputs;
-
-private:
-    DependencyInfo                                    _dependencyInfo;
+    std::vector<DependencyInfo> _dependencyInfo;
 
 public:
     MakefileDependencyInfo();
 
 public:
     /*
-     * The map from output to the output's inputs.
-     */
-    std::unordered_multimap<std::string, std::string> const &outputInputs() const
-    { return _outputInputs; }
-    std::unordered_multimap<std::string, std::string> &outputInputs()
-    { return _outputInputs; }
-
-public:
-    /*
      * The encoded dependency info.
      */
-    DependencyInfo const &dependencyInfo() const
+    std::vector<DependencyInfo> const &dependencyInfo() const
     { return _dependencyInfo; }
-    DependencyInfo &dependencyInfo()
+    std::vector<DependencyInfo> &dependencyInfo()
     { return _dependencyInfo; }
 
 public:
