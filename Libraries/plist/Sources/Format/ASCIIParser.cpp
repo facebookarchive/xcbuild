@@ -452,10 +452,6 @@ parse(ASCIIPListLexer *lexer, bool strings)
                 if (token != kASCIIPListLexerTokenUnquotedString &&
                     token != kASCIIPListLexerTokenQuotedString &&
                     token != kASCIIPListLexerTokenData &&
-                    token != kASCIIPListLexerTokenNumber &&
-                    token != kASCIIPListLexerTokenHexNumber &&
-                    token != kASCIIPListLexerTokenBoolFalse &&
-                    token != kASCIIPListLexerTokenBoolTrue &&
                     token != kASCIIPListLexerTokenDictionaryStart &&
                     token != kASCIIPListLexerTokenArrayStart &&
                     token != kASCIIPListLexerTokenDictionaryEnd &&

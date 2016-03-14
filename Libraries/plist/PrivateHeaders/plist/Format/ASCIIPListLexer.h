@@ -12,7 +12,6 @@
 
 enum {
     kASCIIPListLexerStyleASCII,
-    kASCIIPListLexerStyleStrings,
     kASCIIPListLexerStyleJSON,
 };
 
@@ -33,8 +32,6 @@ enum {
     kASCIIPListLexerTokenUnquotedString,
     kASCIIPListLexerTokenQuotedString,
     kASCIIPListLexerTokenNumber,
-    kASCIIPListLexerTokenOctNumber,
-    kASCIIPListLexerTokenHexNumber,
     kASCIIPListLexerTokenBoolFalse,
     kASCIIPListLexerTokenBoolTrue,
     kASCIIPListLexerTokenNull,

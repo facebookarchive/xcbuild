@@ -21,13 +21,11 @@
  *
  *  JSON:     { <key> : <value>[, <key> : <value>[, ...]] }
  *  ASCII:    { <key> = <value>; [<key> = <value>; [...]] }
- *  Strings:  whole file
  *
  * Arrays
  *
  *  JSON:     [ <value>[, <value>[, ...]]] ]
  *  ASCII:    ( <value>[, <value>[, ...]]] )
- *  Strings:  n/a
  *
  * Strings
  *
@@ -35,50 +33,37 @@
  *            "..."  quoted chars like \', unicode chars, multiple-line
  *  ASCII:    '...'
  *            "..."  quoted chars like \', multiple-line
- *  Strings:  "..."  quoted chars like \', unicode chars, multiple-line
- *
- * Dates
- *
- *  JSON:     "YYYY-MM-ddTHH:mm:ssZ"
- *  ASCII:    "YYYY-MM-ddTHH:mm:ssZ"
- *  Strings:  n/a
  *
  * Data
  *
- *  JSON:     "\u0001\u0023\u0045..."
+ *  JSON:     n/a
  *  ASCII:    <0123456789ABCDEF...>
- *  Strings:  n/a
  *
  * Number
  *
  *  JSON:     1.234
  *            1.2e32
  *            1234
- *            0x112345
  *            .5
  *            .5e2
  *            0100644
  *            +123
  *            -555
  *  ASCII:    same
- *  Strings:  n/a
  *
  * Boolean
  *
  *  JSON:     true / false
- *  ASCII:    YES / NO / TRUE / FALSE
- *  Strings:  n/a
+ *  ASCII:    n/a
  *
  * Null value
  *
  *  JSON:     null
  *  ASCII:    ""
- *  Strings:  n/a
  *
  * Character Encoding
  *
  *  JSON:     UTF8 clean.
- *  Strings:  UTF8 clean.
  *  ASCII:    Not strictly ASCII 7-bit clean - can decode unicode.
  */
 
@@ -95,9 +80,7 @@ istokenseparator(char ch, ASCIIPListLexer *lexer)
             (lexer->style == kASCIIPListLexerStyleJSON &&
              (ch == ',' || ch == '}' || ch == ']' || ch == ':')) ||
             (lexer->style == kASCIIPListLexerStyleASCII &&
-             (ch == ',' || ch == ';' || ch == ')' || ch == '=')) ||
-            (lexer->style == kASCIIPListLexerStyleStrings &&
-             (ch == ';' || ch == '=')));
+             (ch == ',' || ch == ';' || ch == ')' || ch == '=')));
 }
 
 static inline bool
@@ -251,37 +234,6 @@ ASCIIPListLexerReadNumber(ASCIIPListLexer *lexer)
     if (*p == '+' || *p == '-')
         p++;
 
-    if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) {
-        p += 2;
-
-        while (isxdigit(*p))
-            p++;
-
-        lexer->tokenLength = p - b;
-        lexer->pointer = p;
-
-        return kASCIIPListLexerTokenHexNumber;
-    }
-
-    if (lexer->style == kASCIIPListLexerStyleJSON) {
-        if (*p == '0') {
-            p++;
-
-            if (!isdigit(*p)) {
-                lexer->tokenLength = 1;
-                return kASCIIPListLexerTokenNumber;
-            }
-
-            while (isdigit(*p) && *p <= '7')
-                p++;
-
-            lexer->tokenLength = p - b;
-            lexer->pointer = p;
-
-            return kASCIIPListLexerTokenOctNumber;
-        }
-    }
-
     if (!isdigit(*p))
         return kASCIIPListLexerInvalidToken;
 
@@ -336,40 +288,18 @@ ASCIIPListLexerReadKeyword(ASCIIPListLexer *lexer)
             rc = kASCIIPListLexerTokenNull;
         }
     } else if (lexer->style == kASCIIPListLexerStyleASCII) {
-        if (*p == 'Y' && strncmp(p, "YES", 3) == 0 &&
-            istokenseparator(*(p + 3), lexer)) {
-            p += 3;
-            rc = kASCIIPListLexerTokenBoolTrue;
-        } else if (*p == 'N' && strncmp(p, "NO", 2) == 0 &&
-                   istokenseparator(*(p + 2), lexer)) {
-            p += 2;
-            rc = kASCIIPListLexerTokenBoolFalse;
-        } else if (*p == 'T' && strncmp(p, "TRUE", 4) == 0 &&
-                   istokenseparator(*(p + 4), lexer)) {
-            p += 4;
-            rc = kASCIIPListLexerTokenBoolTrue;
-        } else if (*p == 'F' && strncmp(p, "FALSE", 5) == 0 &&
-                   istokenseparator(*(p + 5), lexer)) {
-            p += 5;
-            rc = kASCIIPListLexerTokenBoolFalse;
-        } else {
-            rc = kASCIIPListLexerTokenUnquotedString;
-            /*
-             * '$' is encountered in pbxproj files.
-             */
-            while (isalnum(*p) || *p == '_' || *p == '.' || *p == '$' ||
-                                  *p == '-' || *p == ':' || *p == '/') {
-                if (*p & 0x80) {
-                    rc = kASCIIPListLexerInvalidToken;
-                    break;
-                }
-                p++;
-            }
-        }
-    } else if (lexer->style == kASCIIPListLexerStyleStrings) {
         rc = kASCIIPListLexerTokenUnquotedString;
-        while (isalnum(*p) || *p == '_')
+        /*
+            * '$' is encountered in pbxproj files.
+            */
+        while (isalnum(*p) || *p == '_' || *p == '.' || *p == '$' ||
+                              *p == '-' || *p == ':' || *p == '/') {
+            if (*p & 0x80) {
+                rc = kASCIIPListLexerInvalidToken;
+                break;
+            }
             p++;
+        }
     } else {
         rc = kASCIIPListLexerInvalidToken;
     }
@@ -400,14 +330,11 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
                 break;
 
             case '{': case '}': /* Dictionaries */
-                if (lexer->style != kASCIIPListLexerStyleStrings) {
-                    lexer->tokenBegin = p - lexer->inputBuffer;
-                    lexer->tokenLength = 1;
-                    lexer->pointer = p + 1;
-                    return (*p == '{' ? kASCIIPListLexerTokenDictionaryStart :
-                            kASCIIPListLexerTokenDictionaryEnd);
-                }
-                return kASCIIPListLexerInvalidToken;
+                lexer->tokenBegin = p - lexer->inputBuffer;
+                lexer->tokenLength = 1;
+                lexer->pointer = p + 1;
+                return (*p == '{' ? kASCIIPListLexerTokenDictionaryStart :
+                        kASCIIPListLexerTokenDictionaryEnd);
 
             case '[': case ']': /* Arrays (JSON) */
                 if (lexer->style == kASCIIPListLexerStyleJSON) {
@@ -439,8 +366,7 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
                 return kASCIIPListLexerInvalidToken;
 
             case '=': /* Key = Value (ASCII) */
-                if (lexer->style == kASCIIPListLexerStyleASCII ||
-                        lexer->style == kASCIIPListLexerStyleStrings) {
+                if (lexer->style == kASCIIPListLexerStyleASCII) {
                     lexer->tokenBegin = p - lexer->inputBuffer;
                     lexer->tokenLength = 1;
                     lexer->pointer = p + 1;
@@ -458,9 +384,8 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
                 }
                 return kASCIIPListLexerInvalidToken;
 
-            case ';': /* Dictionary Entries (ASCII, Strings) */
-                if (lexer->style == kASCIIPListLexerStyleASCII ||
-                    lexer->style == kASCIIPListLexerStyleStrings) {
+            case ';': /* Dictionary Entries (ASCII) */
+                if (lexer->style == kASCIIPListLexerStyleASCII) {
                     lexer->tokenBegin = p - lexer->inputBuffer;
                     lexer->tokenLength = 1;
                     lexer->pointer = p + 1;
@@ -469,10 +394,6 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
                 return kASCIIPListLexerInvalidToken;
 
             case '\'':
-                if (lexer->style != kASCIIPListLexerStyleJSON &&
-                    lexer->style != kASCIIPListLexerStyleASCII)
-                    return kASCIIPListLexerInvalidToken;
-
             case '\"':
                 lexer->pointer = p;
                 return ASCIIPListLexerReadString(lexer);
@@ -485,7 +406,7 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
                 return kASCIIPListLexerInvalidToken;
 
             case '+': case '-': case '.':
-                if (lexer->style != kASCIIPListLexerStyleStrings) {
+                if (lexer->style == kASCIIPListLexerStyleJSON) {
                     lexer->pointer = p;
                     lexer->tokenBegin = p - lexer->inputBuffer;
                     lexer->tokenLength = 1;
@@ -493,9 +414,8 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
                     if (rc != kASCIIPListLexerInvalidToken) {
                         return rc;
                     }
-                    return ASCIIPListLexerReadKeyword(lexer);
                 }
-                return kASCIIPListLexerInvalidToken;
+                return ASCIIPListLexerReadKeyword(lexer);
 
             case ' ': case '\f': case '\t': case '\r':
                  p++;
@@ -508,9 +428,11 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
             default:
                  if (isdigit(*p)) {
                      lexer->pointer = p;
-                     int rc = ASCIIPListLexerReadNumber(lexer);
-                     if (rc != kASCIIPListLexerInvalidToken) {
-                         return rc;
+                     if (lexer->style == kASCIIPListLexerStyleJSON) {
+                         int rc = ASCIIPListLexerReadNumber(lexer);
+                         if (rc != kASCIIPListLexerInvalidToken) {
+                             return rc;
+                         }
                      }
                      return ASCIIPListLexerReadKeyword(lexer);
                  } else {
