@@ -137,7 +137,7 @@ ASCIIPListLexerReadLongComment(ASCIIPListLexer *lexer)
 }
 
 static int
-ASCIIPListLexerReadUnquotedString(ASCIIPListLexer *lexer)
+ASCIIPListLexerReadSingleQuotedString(ASCIIPListLexer *lexer)
 {
     char const *b, *p = lexer->pointer + 1;
 
@@ -149,17 +149,18 @@ ASCIIPListLexerReadUnquotedString(ASCIIPListLexer *lexer)
         }
     }
 
-    if (*p != '\'')
-        return kASCIIPListLexerUnterminatedUnquotedString;
+    if (*p != '\'') {
+        return kASCIIPListLexerUnterminatedQuotedString;
+    }
 
     lexer->tokenLength = p - b;
     lexer->pointer = p + 1;
 
-    return kASCIIPListLexerTokenUnquotedString;
+    return kASCIIPListLexerTokenQuotedString;
 }
 
 static int
-ASCIIPListLexerReadQuotedString(ASCIIPListLexer *lexer)
+ASCIIPListLexerReadDoubleQuotedString(ASCIIPListLexer *lexer)
 {
     char const *b, *p = lexer->pointer + 1;
 
@@ -215,17 +216,19 @@ ASCIIPListLexerReadData(ASCIIPListLexer *lexer)
 static int
 ASCIIPListLexerReadString(ASCIIPListLexer *lexer)
 {
-    if (lexer->pointer[0] == '\'')
-        return ASCIIPListLexerReadUnquotedString(lexer);
-    else if (lexer->pointer[0] == '\"')
-        return ASCIIPListLexerReadQuotedString(lexer);
-    else
+    if (lexer->pointer[0] == '\'') {
+        return ASCIIPListLexerReadSingleQuotedString(lexer);
+    } else if (lexer->pointer[0] == '\"') {
+        return ASCIIPListLexerReadDoubleQuotedString(lexer);
+    } else {
         return kASCIIPListLexerInvalidToken;
+    }
 }
 
 static int
 ASCIIPListLexerReadNumber(ASCIIPListLexer *lexer)
 {
+    bool integer = true;
     char const *p = lexer->pointer;
     char const *b = p;
 
@@ -241,24 +244,31 @@ ASCIIPListLexerReadNumber(ASCIIPListLexer *lexer)
         p++;
 
     if (*p == '.') {
+        integer = false;
+
         p++;
-        while (isdigit(*p))
+        while (isdigit(*p)) {
             p++;
+        }
     }
 
     if (*p == 'e' || *p == 'E') {
-        p++;
-        if (*p == '+' || *p == '-')
-            p++;
+        integer = false;
 
-        while (isdigit(*p))
+        p++;
+        if (*p == '+' || *p == '-') {
             p++;
+        }
+
+        while (isdigit(*p)) {
+            p++;
+        }
     }
 
     if (istokenseparator(*p, lexer)) {
         lexer->tokenLength = p - b;
         lexer->pointer = p;
-        return kASCIIPListLexerTokenNumber;
+        return (integer ? kASCIIPListLexerTokenNumberInteger : kASCIIPListLexerTokenNumberReal);
     }
 
     return kASCIIPListLexerInvalidToken;
