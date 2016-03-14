@@ -33,32 +33,6 @@ ASCIIParser() :
 ASCIIParser::
 ~ASCIIParser()
 {
-    while (!_containerStack.empty()) {
-        Object *container = _containerStack.top();
-        container->release();
-        _containerStack.pop();
-    }
-
-    if (_container != NULL) {
-        _container->release();
-        _container = NULL;
-    }
-
-    while (!_keyStack.empty()) {
-        String *key = _keyStack.top();
-        key->release();
-        _keyStack.pop();
-    }
-
-    if (_key != NULL) {
-        _key->release();
-        _key = NULL;
-    }
-
-    if (_root != NULL) {
-        _root->release();
-        _root = NULL;
-    }
 }
 
 bool ASCIIParser::
@@ -101,7 +75,7 @@ abort(std::string const &error)
 }
 
 bool ASCIIParser::
-push(ValueState state, Object *container, String *key)
+push(ValueState state, std::unique_ptr<plist::Object> container, std::unique_ptr<plist::String> key)
 {
     if (isAborted()) {
         return false;
@@ -110,23 +84,23 @@ push(ValueState state, Object *container, String *key)
     /* If valid state, push, otherwise just set the new state. */
     if (_state != ValueState::Init) {
         /* Push the old state */
-        _containerStack.push(_container);
-        _keyStack.push(_key);
+        _containerStack.push(std::move(_container));
+        _keyStack.push(std::move(_key));
         _stateStack.push(_state);
     }
 
     _state = state;
 
-    if (container != NULL) {
-        _container = container->copy().release();
+    if (container != nullptr) {
+        _container = std::move(container);
     } else {
-        _container = NULL;
+        _container = nullptr;
     }
 
-    if (key != NULL) {
-        _key = (String *)key->copy().release();
+    if (key != nullptr) {
+        _key = std::move(key);
     } else {
-        _key = NULL;
+        _key = nullptr;
     }
 
     return true;
@@ -142,34 +116,21 @@ pop()
             return false; /* Underflow! */
 
         /* Reset current state. */
-        if (_container != NULL) {
-            _container->release();
-            _container = NULL;
-        }
-
-        if (_key != NULL) {
-            _key->release();
-            _key = NULL;
-        }
+        _container = nullptr;
+        _key = nullptr;
 
         _state = ValueState::Init;
         return true;
     }
 
     /* Pop state */
-    _state = _stateStack.top();
+    _state = std::move(_stateStack.top());
     _stateStack.pop();
 
-    if (_container != NULL) {
-        _container->release();
-    }
-    _container = _containerStack.top();
+    _container = std::move(_containerStack.top());
     _containerStack.pop();
 
-    if (_key != NULL) {
-        _key->release();
-    }
-    _key = _keyStack.top();
+    _key = std::move(_keyStack.top());
     _keyStack.pop();
 
     return true;
@@ -179,7 +140,7 @@ pop()
  * Generic container handling.
  */
 bool ASCIIParser::
-beginContainer(Object *object)
+beginContainer(std::unique_ptr<plist::Object> object)
 {
     ValueState state;
 
@@ -189,7 +150,7 @@ beginContainer(Object *object)
         state = ValueState::Dictionary;
     }
 
-    if (!push(state, object, NULL)) {
+    if (!push(state, std::move(object), nullptr)) {
         abort("Cannot push the current state.");
         return false;
     }
@@ -198,31 +159,32 @@ beginContainer(Object *object)
 }
 
 bool ASCIIParser::
-storeKeyValue(String *key, Object *value)
+storeKeyValue(std::unique_ptr<plist::String> key, std::unique_ptr<plist::Object> value)
 {
-    if (_container == NULL) {
-        if (_key != NULL) {
+    if (_container == nullptr) {
+        if (_key != nullptr) {
             abort("Storing key/value pair with no container.");
             return false;
         }
 
         /* Make current value the root. */
-        if (_root != NULL) {
+        if (_root != nullptr) {
             abort("Double root.");
             return false;
         }
 
-        _root = value->copy().release();
+        _root = std::move(value);
         return true;
     }
 
-    if (key != NULL) {
+    if (key != nullptr) {
         if (_container->type() != Dictionary::Type()) {
             abort("Storing key/value with no dictionary container.");
             return false;
         }
 
-        ((Dictionary *)_container)->set(key->value(), value->copy());
+        plist::Dictionary *dict = static_cast<plist::Dictionary *>(_container.get());
+        dict->set(key->value(), std::move(value));
 
         _state = ValueState::Dictionary;
     } else {
@@ -231,7 +193,8 @@ storeKeyValue(String *key, Object *value)
             return false;
         }
 
-        ((Array *)_container)->append(value->copy());
+        plist::Array *array = static_cast<plist::Array *>(_container.get());
+        array->append(std::move(value));
 
         _state = ValueState::Array;
     }
@@ -242,9 +205,9 @@ storeKeyValue(String *key, Object *value)
 bool ASCIIParser::
 endContainer(bool isArray)
 {
-    String        *key;
-    Object        *value;
-    bool           success;
+    std::unique_ptr<plist::String> key;
+    std::unique_ptr<plist::Object> value;
+    bool success;
 
     /* Check state is consistant. */
     if (_state != (isArray ? ValueState::Array : ValueState::Dictionary)) {
@@ -252,13 +215,13 @@ endContainer(bool isArray)
         return false;
     }
 
-    if (_container == NULL) {
+    if (_container == nullptr) {
         abort("Closing non-opened container.");
         return false;
     }
 
-    value = _container->copy().release();
-    if (value == NULL) {
+    value = std::move(_container);
+    if (value == nullptr) {
         abort("Couldn't copy container.");
         return false;
     }
@@ -275,15 +238,10 @@ endContainer(bool isArray)
     }
 
     /* Take ownership of the saved key. */
-    key = _key;
-    _key = NULL;
+    key = std::move(_key);
+    _key = nullptr;
 
-    success = storeKeyValue(key, value);
-
-    if (key != NULL) {
-        key->release();
-    }
-    value->release();
+    success = storeKeyValue(std::move(key), std::move(value));
 
     return success;
 }
@@ -291,15 +249,13 @@ endContainer(bool isArray)
 bool ASCIIParser::
 beginArray()
 {
-    Array   *array;
-
-    array = Array::New().release();
-    if (array == NULL) {
+    std::unique_ptr<plist::Array> array = Array::New();
+    if (array == nullptr) {
         abort("Cannot create an array.");
         return false;
     }
 
-    bool success = beginContainer(array);
+    bool success = beginContainer(std::move(array));
     return success;
 }
 
@@ -312,15 +268,13 @@ endArray()
 bool ASCIIParser::
 beginDictionary()
 {
-    Dictionary  *dict;
-
-    dict = Dictionary::New().release();
-    if (dict == NULL) {
+    std::unique_ptr<plist::Dictionary> dict = Dictionary::New();
+    if (dict == nullptr) {
         abort("Cannot create a dictionary.");
         return false;
     }
 
-    bool success = beginContainer(dict);
+    bool success = beginContainer(std::move(dict));
     return success;
 }
 
@@ -334,19 +288,15 @@ endDictionary()
  * Store the key of the current dictionary.
  */
 bool ASCIIParser::
-storeKey(String *key)
+storeKey(std::unique_ptr<plist::String> key)
 {
-    String *copy;
+    if (key == nullptr) {
+        key = String::New();
 
-    if (key == NULL) {
-        copy = String::New().release();
-    } else {
-        copy = (String *)key->copy().release();
-    }
-
-    if (copy == NULL) {
-        abort("Cannot create copy of the key.");
-        return false;
+        if (key == nullptr) {
+            abort("Cannot create empty key.");
+            return false;
+        }
     }
 
     if (_state != ValueState::Dictionary) {
@@ -354,25 +304,19 @@ storeKey(String *key)
         return false;
     }
 
-    if (_key != NULL) {
-        _key->release();
-    }
-    _key = copy;
+    _key = std::move(key);
 
     _state = ValueState::DictionaryValue;
     return true;
 }
 
 bool ASCIIParser::
-storeValue(Object *value)
+storeValue(std::unique_ptr<plist::Object> value)
 {
     bool success;
 
-    success = storeKeyValue(_key, value);
-    if (_key != NULL) {
-        _key->release();
-        _key = NULL;
-    }
+    success = storeKeyValue(std::move(_key), std::move(value));
+    _key = nullptr;
 
     if (_state == ValueState::DictionaryValue) {
         _state = ValueState::Dictionary;
@@ -557,7 +501,7 @@ parse(ASCIIPListLexer *lexer, bool strings)
                         }
 
                         ASCIIDebug("Storing string as data");
-                        if (!storeValue(data.release())) {
+                        if (!storeValue(std::move(data))) {
                             return false;
                         }
                     } else {
@@ -573,12 +517,12 @@ parse(ASCIIPListLexer *lexer, bool strings)
                         /* Container context */
                         if (isDictionary) {
                             ASCIIDebug("Storing string %s as key", string->value().c_str());
-                            if (!storeKey(string.release())) {
+                            if (!storeKey(std::move(string))) {
                                 return false;
                             }
                         } else {
                             ASCIIDebug("Storing string %s", string->value().c_str());
-                            if (!storeValue(string.release())) {
+                            if (!storeValue(std::move(string))) {
                                 return false;
                             }
                         }

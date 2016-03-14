@@ -234,7 +234,7 @@ Deserialize(std::vector<uint8_t> const &contents, ASCII const &format)
     /* Parse contents. */
     ASCIIParser parser;
     if (parser.parse(&lexer, format.strings())) {
-        root = parser.root()->copy();
+        root = std::move(parser.root());
     } else {
         error = parser.error();
     }

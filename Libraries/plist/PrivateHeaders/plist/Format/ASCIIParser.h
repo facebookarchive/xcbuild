@@ -37,20 +37,20 @@ private:
     };
 
 private:
-    plist::Object              *_root;
-    int                         _level;
+    std::unique_ptr<plist::Object> _root;
+    int                            _level;
 
 private:
-    ValueState                  _state;
-    std::stack<ValueState>      _stateStack;
+    ValueState                     _state;
+    std::stack<ValueState>         _stateStack;
 
 private:
-    plist::Object              *_container;
-    std::stack<plist::Object *> _containerStack;
+    std::unique_ptr<plist::Object> _container;
+    std::stack<std::unique_ptr<plist::Object>> _containerStack;
 
 private:
-    plist::String              *_key;
-    std::stack<plist::String *> _keyStack;
+    std::unique_ptr<plist::String> _key;
+    std::stack<std::unique_ptr<plist::String>> _keyStack;
 
 private:
     ContextState                _contextState;
@@ -64,7 +64,7 @@ public:
     bool parse(ASCIIPListLexer *lexer, bool strings);
 
 public:
-    plist::Object *root() const
+    std::unique_ptr<plist::Object> &root()
     { return _root; }
     std::string error() const
     { return _error; }
@@ -83,12 +83,12 @@ private:
     void decrementLevel();
 
 private:
-    bool push(ValueState state, Object *container, String *key);
+    bool push(ValueState state, std::unique_ptr<plist::Object> container, std::unique_ptr<plist::String> key);
     bool pop();
 
 private:
-    bool beginContainer(Object *container);
-    bool storeKeyValue(String *key, Object *value);
+    bool beginContainer(std::unique_ptr<plist::Object> container);
+    bool storeKeyValue(std::unique_ptr<plist::String> key, std::unique_ptr<plist::Object> value);
     bool endContainer(bool isArray);
 
 private:
@@ -102,8 +102,8 @@ private:
     bool endDictionary();
 
 private:
-    bool storeKey(plist::String *key);
-    bool storeValue(plist::Object *value);
+    bool storeKey(std::unique_ptr<plist::String> key);
+    bool storeValue(std::unique_ptr<plist::Object> value);
 };
 
 }
