@@ -8,11 +8,13 @@
  */
 
 #include <plist/Format/JSON.h>
+#include <plist/Format/JSONParser.h>
 #include <plist/Format/JSONWriter.h>
 
 using plist::Format::Encoding;
 using plist::Format::Format;
 using plist::Format::JSON;
+using plist::Format::JSONParser;
 using plist::Format::JSONWriter;
 using plist::Object;
 
@@ -35,7 +37,22 @@ template<>
 std::pair<std::unique_ptr<Object>, std::string> Format<JSON>::
 Deserialize(std::vector<uint8_t> const &contents, JSON const &format)
 {
-    return std::make_pair(nullptr, "not yet implemented");
+    std::unique_ptr<Object> root = nullptr;
+    std::string             error;
+
+    /* Create lexer. */
+    ASCIIPListLexer lexer;
+    ASCIIPListLexerInit(&lexer, reinterpret_cast<char const *>(contents.data()), contents.size(), kASCIIPListLexerStyleJSON);
+
+    /* Parse contents. */
+    JSONParser parser;
+    if (parser.parse(&lexer)) {
+        root = std::move(parser.root());
+    } else {
+        error = parser.error();
+    }
+
+    return std::make_pair(std::move(root), error);
 }
 
 template<>

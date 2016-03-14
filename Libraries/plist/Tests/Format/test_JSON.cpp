@@ -56,3 +56,45 @@ TEST(JSON, SerializeCollections)
     ASSERT_NE(serialize.first, nullptr);
     EXPECT_EQ(*serialize.first, Contents("{\n\t\"dict\": {\n\t\t\"one\": \"1\",\n\t\t\"two\": 1\n\t},\n\t\"array\": [\n\t\t\"test\",\n\t\t99\n\t]\n}"));
 }
+
+TEST(JSON, String)
+{
+    auto contents = Contents("\"str*ng\"");
+
+    auto deserialize = JSON::Deserialize(contents, JSON::Create());
+    ASSERT_NE(deserialize.first, nullptr);
+
+    auto string = String::New("str*ng");
+    EXPECT_TRUE(deserialize.first->equals(string.get()));
+
+    auto serialize = JSON::Serialize(deserialize.first.get(), JSON::Create());
+    ASSERT_NE(serialize.first, nullptr);
+    EXPECT_EQ(*serialize.first, contents);
+}
+
+TEST(JSON, BooleanNumber)
+{
+    auto contents = Contents("{\n\t\"boolean\": true,\n\t\"integer\": 42,\n\t\"real\": 3.14\n}");
+
+    auto deserialize = JSON::Deserialize(contents, JSON::Create());
+    ASSERT_NE(deserialize.first, nullptr);
+
+    auto dictionary = Dictionary::New();
+    dictionary->set("boolean", Boolean::New(true));
+    dictionary->set("integer", Integer::New(42));
+    dictionary->set("real", Real::New(3.14));
+    EXPECT_TRUE(deserialize.first->equals(dictionary.get()));
+
+    auto serialize = JSON::Serialize(dictionary.get(), JSON::Create());
+    ASSERT_NE(serialize.first, nullptr);
+    EXPECT_EQ(*serialize.first, contents);
+}
+
+TEST(JSON, Empty)
+{
+    auto contents = Contents("\n\n");
+
+    auto deserialize = JSON::Deserialize(contents, JSON::Create());
+    ASSERT_EQ(deserialize.first, nullptr);
+}
+

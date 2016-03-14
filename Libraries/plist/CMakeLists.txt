@@ -48,6 +48,7 @@ add_library(plist SHARED
             Sources/Format/ASCIIWriter.cpp
             Sources/Format/ASCII.cpp
             #
+            Sources/Format/JSONParser.cpp
             Sources/Format/JSONWriter.cpp
             Sources/Format/JSON.cpp
             #
