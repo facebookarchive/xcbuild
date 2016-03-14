@@ -449,94 +449,12 @@ parse(ASCIIPListLexer *lexer, bool strings)
 
         switch (state) {
             case kASCIIParsePList:
-                if (token != kASCIIPListLexerTokenUnquotedString &&
-                    token != kASCIIPListLexerTokenQuotedString &&
-                    token != kASCIIPListLexerTokenData &&
-                    token != kASCIIPListLexerTokenDictionaryStart &&
-                    token != kASCIIPListLexerTokenArrayStart &&
-                    token != kASCIIPListLexerTokenDictionaryEnd &&
-                    token != kASCIIPListLexerTokenArrayEnd) {
-                    abort("Encountered unexpected token code");
-                    return false;
-                }
-
                 if (isDone()) {
                     abort("Encountered token when finished.");
                     return false;
                 }
 
-                if (token != kASCIIPListLexerTokenDictionaryStart &&
-                    token != kASCIIPListLexerTokenDictionaryEnd &&
-                    token != kASCIIPListLexerTokenArrayStart &&
-                    token != kASCIIPListLexerTokenArrayEnd) {
-                    /* Read all non-container tokens */
-                    bool topLevel     = getLevel() == 0;
-                    bool isDictionary = this->isDictionary();
-
-                    if (token == kASCIIPListLexerTokenData) {
-                        if (isDictionary) {
-                            abort("Data cannot be dictionary key");
-                            return false;
-                        }
-
-                        char   *contents = ASCIIPListCopyData(lexer);
-                        size_t  alength  = strlen(contents);
-                        size_t  length   = alength / 2;
-                        auto    bytes    = std::vector<uint8_t>(length, 0);
-
-                        for (size_t n = 0; n < alength; n += 2) {
-                            bytes[n >> 1] = hex_to_bin(contents + n);
-                        }
-
-                        std::unique_ptr<Data> data = Data::New(bytes);
-                        free(contents);
-
-                        if (data == NULL) {
-                            abort("OOM when copying data");
-                            return false;
-                        }
-
-                        ASCIIDebug("Storing string as data");
-                        if (!storeValue(std::move(data))) {
-                            return false;
-                        }
-                    } else {
-                        char *contents = ASCIIPListCopyUnquotedString(lexer, '?');
-                        std::unique_ptr<String> string = String::New(std::string(contents));
-                        free(contents);
-
-                        if (string == NULL) {
-                            abort("OOM when copying string");
-                            return false;
-                        }
-
-                        /* Container context */
-                        if (isDictionary) {
-                            ASCIIDebug("Storing string %s as key", string->value().c_str());
-                            if (!storeKey(std::move(string))) {
-                                return false;
-                            }
-                        } else {
-                            ASCIIDebug("Storing string %s", string->value().c_str());
-                            if (!storeValue(std::move(string))) {
-                                return false;
-                            }
-                        }
-                    }
-
-                    if (topLevel) {
-                        if (!finish()) {
-                            return false;
-                        }
-                        state = kASCIIParsePList;
-                    } else {
-                        if (isDictionary) {
-                            state = kASCIIParseKeyValSeparator;
-                        } else {
-                            state = kASCIIParseEntrySeparator;
-                        }
-                    }
-                } else if (token == kASCIIPListLexerTokenDictionaryStart) {
+                if (token == kASCIIPListLexerTokenDictionaryStart) {
                     ASCIIDebug("Starting dictionary");
                     if (!beginDictionary()) {
                         return false;
@@ -577,6 +495,78 @@ parse(ASCIIPListLexer *lexer, bool strings)
                             return false;
                         }
                         state = kASCIIParsePList;
+                    }
+                } else {
+                    /* Read all non-container tokens */
+                    bool topLevel     = getLevel() == 0;
+                    bool isDictionary = this->isDictionary();
+
+                    if (token == kASCIIPListLexerTokenUnquotedString ||
+                        token == kASCIIPListLexerTokenQuotedString) {
+                        char *contents = ASCIIPListCopyUnquotedString(lexer, '?');
+                        std::unique_ptr<String> string = String::New(std::string(contents));
+                        free(contents);
+
+                        if (string == NULL) {
+                            abort("OOM when copying string");
+                            return false;
+                        }
+
+                        /* Container context */
+                        if (isDictionary) {
+                            ASCIIDebug("Storing string %s as key", string->value().c_str());
+                            if (!storeKey(std::move(string))) {
+                                return false;
+                            }
+                        } else {
+                            ASCIIDebug("Storing string %s", string->value().c_str());
+                            if (!storeValue(std::move(string))) {
+                                return false;
+                            }
+                        }
+                    } else if (token == kASCIIPListLexerTokenData) {
+                        if (isDictionary) {
+                            abort("Data cannot be dictionary key");
+                            return false;
+                        }
+
+                        char   *contents = ASCIIPListCopyData(lexer);
+                        size_t  alength  = strlen(contents);
+                        size_t  length   = alength / 2;
+                        auto    bytes    = std::vector<uint8_t>(length, 0);
+
+                        for (size_t n = 0; n < alength; n += 2) {
+                            bytes[n >> 1] = hex_to_bin(contents + n);
+                        }
+
+                        std::unique_ptr<Data> data = Data::New(bytes);
+                        free(contents);
+
+                        if (data == NULL) {
+                            abort("OOM when copying data");
+                            return false;
+                        }
+
+                        ASCIIDebug("Storing string as data");
+                        if (!storeValue(std::move(data))) {
+                            return false;
+                        }
+                    } else {
+                        abort("Encountered unexpected token code");
+                        return false;
+                    }
+
+                    if (topLevel) {
+                        if (!finish()) {
+                            return false;
+                        }
+                        state = kASCIIParsePList;
+                    } else {
+                        if (isDictionary) {
+                            state = kASCIIParseKeyValSeparator;
+                        } else {
+                            state = kASCIIParseEntrySeparator;
+                        }
                     }
                 }
                 break;
