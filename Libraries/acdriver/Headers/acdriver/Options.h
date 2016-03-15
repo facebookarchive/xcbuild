@@ -60,7 +60,7 @@ public:
     bool version() const
     { return _version; }
 
-private:
+public:
     std::string const &outputFormat() const
     { return _outputFormat; }
     bool warnings() const
