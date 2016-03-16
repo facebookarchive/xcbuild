@@ -54,7 +54,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto DBS = unpack.cast <plist::Dictionary> ("DefaultBuildSettings");
 
     if (!unpack.complete(check)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (PR != nullptr) {
@@ -123,7 +123,7 @@ parse(plist::Dictionary const *dict)
     auto EB = unpack.cast <plist::String>("ENABLE_BITCODE");
 
     if (!unpack.complete(true)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (N != nullptr) {

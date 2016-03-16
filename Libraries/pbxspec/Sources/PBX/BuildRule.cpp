@@ -34,7 +34,7 @@ parse(plist::Dictionary const *dict)
     auto CS = unpack.cast <plist::String> ("CompilerSpec");
 
     if (!unpack.complete(true)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (N != nullptr) {

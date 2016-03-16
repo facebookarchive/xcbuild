@@ -30,7 +30,7 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto TW = unpack.coerce <plist::Integer> ("tabWidth");
 
     if (!unpack.complete(check)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (IW != nullptr) {

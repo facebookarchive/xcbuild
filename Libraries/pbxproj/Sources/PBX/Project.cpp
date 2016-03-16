@@ -73,7 +73,7 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto Ts   = unpack.cast <plist::Array> ("targets");
 
     if (!unpack.complete(check)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (BCL != nullptr) {
@@ -277,7 +277,7 @@ Open(std::string const &path)
     // Verify that all keys are parsed.
     //
     if (!unpack.complete(true)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     //
@@ -322,7 +322,7 @@ parse(Context &context, plist::Dictionary const *dict)
     auto PR = context.indirect <FileReference> (&unpack, "ProjectRef", &PRID);
 
     if (!unpack.complete(true)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (PG != nullptr) {

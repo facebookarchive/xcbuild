@@ -161,7 +161,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto IIUTD    = unpack.coerce <plist::Boolean> ("IncludeInUnionedToolDefaults");
 
     if (!unpack.complete(check)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (ECPPLP != nullptr) {

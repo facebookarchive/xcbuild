@@ -44,7 +44,7 @@ complete(bool check)
 }
 
 std::string Unpack::
-errors() const
+errorText() const
 {
     std::string result;
     for (std::string const &error : _errors) {

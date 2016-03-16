@@ -164,7 +164,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto VOC   = unpack.coerce <plist::Boolean> ("ValidateOnCopy");
 
     if (!unpack.complete(check)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (U != nullptr) {
@@ -479,7 +479,7 @@ parse(plist::Dictionary const *dict)
     auto DP     = unpack.cast <plist::String> ("DstPath");
 
     if (!unpack.complete(true)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (BP != nullptr) {

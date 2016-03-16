@@ -32,7 +32,7 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto VGT = unpack.cast <plist::String> ("versionGroupType");
 
     if (!unpack.complete(check)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (CV != nullptr) {

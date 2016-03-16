@@ -49,7 +49,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto Os = unpack.cast <plist::Array> ("Options");
 
     if (!unpack.complete(check)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (Os != nullptr) {

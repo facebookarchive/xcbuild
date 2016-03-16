@@ -69,7 +69,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto RSEF = unpack.coerce <plist::String> ("RunpathSearchPathForEmbeddedFrameworks");
 
     if (!unpack.complete(check)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (DTN != nullptr) {
@@ -222,7 +222,7 @@ parse(plist::Dictionary const *dict)
     auto Cs  = unpack.cast <plist::Dictionary> ("Checks");
 
     if (!unpack.complete(true)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (VTS != nullptr) {

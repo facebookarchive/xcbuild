@@ -65,7 +65,7 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
     auto SN  = unpack.coerce <plist::Integer> ("SortNumber");
 
     if (!unpack.complete(check)) {
-        fprintf(stderr, "%s", unpack.errors().c_str());
+        fprintf(stderr, "%s", unpack.errorText().c_str());
     }
 
     if (RAs != nullptr) {
