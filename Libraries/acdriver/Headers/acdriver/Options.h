@@ -15,21 +15,19 @@ namespace acdriver {
  */
 class Options {
 private:
-    bool _version;
+    bool        _version;
+    bool        _printContents;
+    std::string _input;
 
 private:
     std::string _outputFormat;
     bool        _warnings;
     bool        _errors;
     bool        _notices;
-    bool        _printContents;
-
-private:
-    std::string _exportDependencyInfo;
 
 private:
     std::string _compile;
-    std::string _input;
+    std::string _exportDependencyInfo;
 
 private:
     std::string _optimization;
@@ -59,6 +57,10 @@ public:
 public:
     bool version() const
     { return _version; }
+    bool printContents() const
+    { return _printContents; }
+    std::string const &compile() const
+    { return _compile; }
 
 public:
     std::string const &outputFormat() const
@@ -69,16 +71,10 @@ public:
     { return _errors; }
     bool notices() const
     { return _notices; }
-    bool printContents() const
-    { return _printContents; }
 
 public:
     std::string const &exportDependencyInfo() const
     { return _exportDependencyInfo; }
-
-public:
-    std::string const &compile() const
-    { return _compile; }
     std::string const &input() const
     { return _input; }
 

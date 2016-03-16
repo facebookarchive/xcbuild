@@ -5,6 +5,9 @@ add_library(acdriver SHARED
             Sources/Driver.cpp
             Sources/Output.cpp
             Sources/Result.cpp
+            Sources/VersionAction.cpp
+            Sources/CompileAction.cpp
+            Sources/ContentsAction.cpp
             )
 
 target_link_libraries(acdriver PUBLIC util plist ext)

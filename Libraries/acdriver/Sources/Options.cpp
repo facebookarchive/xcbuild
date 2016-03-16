@@ -7,10 +7,10 @@ using acdriver::Options;
 Options::
 Options() :
     _version(false),
+    _printContents(false),
     _warnings(false),
     _errors(false),
     _notices(false),
-    _printContents(false),
     _compressPNGs(false),
     _enableOnDemandResources(false),
     _enableIncrementalDistill(false)
@@ -29,6 +29,10 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 
     if (arg == "--version") {
         return libutil::Options::MarkBool(&_version, arg);
+    } else if (arg == "--print-contents") {
+        return libutil::Options::MarkBool(&_printContents, arg);
+    } else if (arg == "--compile") {
+        return libutil::Options::NextString(&_compile, args, it);
     } else if (arg == "--output-format") {
         return libutil::Options::NextString(&_outputFormat, args, it);
     } else if (arg == "--warnings") {
@@ -37,12 +41,8 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::MarkBool(&_errors, arg);
     } else if (arg == "--notices") {
         return libutil::Options::MarkBool(&_notices, arg);
-    } else if (arg == "--print-contents") {
-        return libutil::Options::MarkBool(&_printContents, arg);
     } else if (arg == "--export-dependency-info") {
         return libutil::Options::NextString(&_exportDependencyInfo, args, it);
-    } else if (arg == "--compile") {
-        return libutil::Options::NextString(&_compile, args, it);
     } else if (arg == "--optimization") {
         return libutil::Options::NextString(&_optimization, args, it);
     } else if (arg == "--compress-pngs") {

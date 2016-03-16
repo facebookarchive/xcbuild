@@ -4,6 +4,9 @@
 #include <acdriver/Options.h>
 #include <acdriver/Output.h>
 #include <acdriver/Result.h>
+#include <acdriver/VersionAction.h>
+#include <acdriver/CompileAction.h>
+#include <acdriver/ContentsAction.h>
 
 #include <iostream>
 
@@ -11,6 +14,9 @@ using acdriver::Driver;
 using acdriver::Options;
 using acdriver::Output;
 using acdriver::Result;
+using acdriver::VersionAction;
+using acdriver::CompileAction;
+using acdriver::ContentsAction;
 
 Driver::
 Driver()
@@ -23,27 +29,21 @@ Driver::
 }
 
 static void
-RunVersion(Options const &options, Output *output, Result *result)
-{
-    std::unique_ptr<plist::Dictionary> dict = plist::Dictionary::New();
-    dict->set("bundle-version", plist::String::New("1"));
-    dict->set("short-bundle-version", plist::String::New("1"));
-
-    std::string text;
-    text += "bundle-version: 1\n";
-    text += "short-bundle-version: 1\n";
-
-    output->add("com.apple.actool.version", std::move(dict), text);
-}
-
-static void
 RunInternal(Options const &options, Output *output, Result *result)
 {
     if (options.version()) {
-        RunVersion(options, output, result);
-    } else {
-        // TODO: Implement actool operations.
-        result->normal(Result::Severity::Warning, "actool not yet implemented");
+        VersionAction version;
+        version.run(options, output, result);
+    }
+
+    if (options.printContents()) {
+        ContentsAction contents;
+        contents.run(options, output, result);
+    }
+
+    if (!options.compile().empty()) {
+        CompileAction compile;
+        compile.run(options, output, result);
     }
 }
 
