@@ -15,7 +15,14 @@ parse(plist::Dictionary const *dict)
     auto unpack = plist::Keys::Unpack("ImageSetImage", dict, &seen);
 
     auto F  = unpack.cast <plist::String> ("filename");
-    // TODO: slot components
+    // TODO: graphics-feature-set
+    auto I  = unpack.cast <plist::String> ("idiom");
+    // TODO: memory
+    // TODO: scale
+    // TODO: subtype
+    // TODO: screen-width
+    // TODO: width-class
+    // TODO: height-class
     auto U  = unpack.cast <plist::Boolean> ("unassigned");
     auto AI = unpack.cast <plist::Dictionary> ("alignment-insets");
     auto R  = unpack.cast <plist::Dictionary> ("resizing");
@@ -26,6 +33,10 @@ parse(plist::Dictionary const *dict)
 
     if (F != nullptr) {
         _fileName = F->value();
+    }
+
+    if (I != nullptr) {
+        _idiom = Idioms::Parse(I->value());
     }
 
     if (U != nullptr) {
@@ -63,8 +74,8 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 
     auto unpack = plist::Keys::Unpack("ImageSet", dict, seen);
 
-    auto P = unpack.cast <plist::Dictionary> ("properties");
-    auto D = unpack.cast <plist::Array> ("images");
+    auto P  = unpack.cast <plist::Dictionary> ("properties");
+    auto Is = unpack.cast <plist::Array> ("images");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
@@ -92,11 +103,11 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         }
     }
 
-    if (D != nullptr) {
+    if (Is != nullptr) {
         _images = std::vector<Image>();
 
-        for (size_t n = 0; n < D->count(); ++n) {
-            if (auto dict = D->value<plist::Dictionary>(n)) {
+        for (size_t n = 0; n < Is->count(); ++n) {
+            if (auto dict = Is->value<plist::Dictionary>(n)) {
                 Image image;
                 if (image.parse(dict)) {
                     _images->push_back(image);

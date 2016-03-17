@@ -16,7 +16,10 @@ parse(plist::Dictionary const *dict)
     auto unpack = plist::Keys::Unpack("AppIconSetImage", dict, &seen);
 
     auto FN = unpack.cast <plist::String> ("filename");
-    // TODO: slot components
+    auto I  = unpack.cast <plist::String> ("idiom");
+    // TODO: size
+    // TODO: scale
+    // TODO: role
     auto U  = unpack.cast <plist::Boolean> ("unassigned");
     auto MS = unpack.cast <plist::String> ("matching-style");
 
@@ -26,6 +29,10 @@ parse(plist::Dictionary const *dict)
 
     if (FN != nullptr) {
         _fileName = FN->value();
+    }
+
+    if (I != nullptr) {
+        _idiom = Idioms::Parse(I->value());
     }
 
     if (U != nullptr) {

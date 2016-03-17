@@ -4,6 +4,7 @@
 #define __xcassets_AppIconSet_h
 
 #include <xcassets/Asset.h>
+#include <xcassets/Idiom.h>
 #include <xcassets/MatchingStyle.h>
 #include <plist/Dictionary.h>
 
@@ -22,7 +23,10 @@ public:
         ext::optional<MatchingStyle> _matchingStyle;
 
     private:
-        // TODO: slot components
+        ext::optional<Idiom>         _idiom;
+        // TODO: size
+        // TODO: scale
+        // TODO: role
 
     public:
         ext::optional<std::string> const &fileName() const
@@ -35,7 +39,11 @@ public:
         { return _matchingStyle; }
 
     public:
-        // TODO: slot components
+        ext::optional<Idiom> const &idiom() const
+        { return _idiom; }
+        // TODO: size
+        // TODO: scale
+        // TODO: role
 
     private:
         friend class AppIconSet;

@@ -4,6 +4,7 @@
 #define __xcassets_ImageSet_h
 
 #include <xcassets/Asset.h>
+#include <xcassets/Idiom.h>
 #include <xcassets/Insets.h>
 #include <xcassets/Resizing.h>
 #include <plist/Dictionary.h>
@@ -23,7 +24,14 @@ public:
         ext::optional<bool>        _unassigned;
 
     private:
-        // TODO: slot components
+        // TODO: graphics-feature-set
+        ext::optional<Idiom>       _idiom;
+        // TODO: memory
+        // TODO: scale
+        // TODO: subtype
+        // TODO: screen-width
+        // TODO: width-class
+        // TODO: height-class
 
     private:
         ext::optional<Insets>      _alignmentInsets;
@@ -38,7 +46,15 @@ public:
         { return _unassigned; }
 
     public:
-        // TODO: slot components
+        // TODO: graphics-feature-set
+        ext::optional<Idiom> const &idiom() const
+        { return _idiom; }
+        // TODO: memory
+        // TODO: scale
+        // TODO: subtype
+        // TODO: screen-width
+        // TODO: width-class
+        // TODO: height-class
 
     public:
         ext::optional<Insets> const &alignmentInsets() const

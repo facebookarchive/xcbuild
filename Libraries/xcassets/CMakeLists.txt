@@ -1,7 +1,9 @@
 # Copyright 2013-present Facebook. All Rights Reserved.
 
 add_library(xcassets SHARED
+            Sources/Idiom.cpp
             Sources/Insets.cpp
+            Sources/Orientation.cpp
             Sources/Resizing.cpp
             Sources/MatchingStyle.cpp
             Sources/Asset.cpp
