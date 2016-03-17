@@ -4,12 +4,14 @@
 #include <xcassets/AppIconSet.h>
 #include <xcassets/Catalog.h>
 #include <xcassets/Group.h>
+#include <xcassets/ImageSet.h>
 
 using xcassets::MatchingStyle;
 using xcassets::Asset;
 using xcassets::AppIconSet;
-using xcassets::Group;
 using xcassets::Catalog;
+using xcassets::Group;
+using xcassets::ImageSet;
 
 static void
 Print(std::string const &string, int indent)
@@ -83,6 +85,29 @@ DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
         for (std::shared_ptr<Asset> const &child : group->children()) {
             Print("", indent);
             DumpAsset(child, indent + 1);
+        }
+    } else if (asset->type() == ImageSet::Type()) {
+        auto imageSet = std::static_pointer_cast<ImageSet>(asset);
+        Print("type: ImageSet", indent);
+
+        if (imageSet->onDemandResourceTags()) {
+            Print("on-demand-asset-tags: " + std::to_string(imageSet->onDemandResourceTags()->size()), indent);
+        }
+
+        if (imageSet->images()) {
+            for (ImageSet::Image const &image : *imageSet->images()) {
+                Print("", indent + 1);
+                Print("image", indent + 1);
+
+                if (image.fileName()) {
+                    Print("file name: " + *image.fileName(), indent + 1);
+                }
+                if (image.unassignedOptional()) {
+                    Print("unassigned: " + std::to_string(image.unassigned()), indent + 1);
+                }
+
+                // TODO(grp): Print resizing.
+            }
         }
     } else {
         Print("unknown asset type", indent);

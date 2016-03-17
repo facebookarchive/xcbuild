@@ -4,6 +4,8 @@
 #define __xcassets_ImageSet_h
 
 #include <xcassets/Asset.h>
+#include <xcassets/Insets.h>
+#include <xcassets/Resizing.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -14,18 +16,50 @@
 namespace xcassets {
 
 class ImageSet : public Asset {
-private:
-    ext::optional<std::vector<std::string>> _onDemandResourceTags;
+public:
+    class Image {
+    private:
+        ext::optional<std::string> _fileName;
+        ext::optional<bool>        _unassigned;
+
+    private:
+        // TODO: slot components
+
+    private:
+        ext::optional<Insets>      _alignmentInsets;
+        ext::optional<Resizing>    _resizing;
+
+    public:
+        ext::optional<std::string> const &fileName() const
+        { return _fileName; }
+        bool unassigned() const
+        { return _unassigned.value_or(false); }
+        ext::optional<bool> const &unassignedOptional() const
+        { return _unassigned; }
+
+    public:
+        // TODO: slot components
+
+    public:
+        ext::optional<Insets> const &alignmentInsets() const
+        { return _alignmentInsets; }
+        ext::optional<Resizing> const &resizing() const
+        { return _resizing; }
+
+    private:
+        friend class ImageSet;
+        bool parse(plist::Dictionary const *dict);
+    };
 
 private:
-    // TODO images
+    ext::optional<std::vector<std::string>> _onDemandResourceTags;
+    ext::optional<std::vector<Image>>       _images;
 
 public:
     ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
     { return _onDemandResourceTags; }
-
-public:
-    // TODO images
+    ext::optional<std::vector<Image>> const &images() const
+    { return _images; }
 
 public:
     static AssetType Type()

@@ -10,9 +10,9 @@ Parse(std::string const &value)
 {
     if (value == "fully-qualified-name") {
         return MatchingStyle::FullyQualifiedName;
+    } else {
+        fprintf(stderr, "warning: unknown matching style %s\n", value.c_str());
+        return ext::nullopt;
     }
-
-    // TODO: warn about unknown styles
-    return ext::nullopt;
 }
 
