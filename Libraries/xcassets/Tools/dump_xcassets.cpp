@@ -1,10 +1,13 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
 #include <xcassets/Asset.h>
+#include <xcassets/AppIconSet.h>
 #include <xcassets/Catalog.h>
 #include <xcassets/Group.h>
 
+using xcassets::MatchingStyle;
 using xcassets::Asset;
+using xcassets::AppIconSet;
 using xcassets::Group;
 using xcassets::Catalog;
 
@@ -36,7 +39,31 @@ DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
         Print("version: " + std::to_string(*asset->version()), indent);
     }
 
-    if (asset->type() == Catalog::Type()) {
+    if (asset->type() == AppIconSet::Type()) {
+        auto appIconSet = std::static_pointer_cast<AppIconSet>(asset);
+        Print("type: AppIconSet", indent);
+        Print("pre-rendered: " + std::to_string(appIconSet->preRendered()), indent);
+
+        if (appIconSet->images()) {
+            for (AppIconSet::Image const &image : *appIconSet->images()) {
+                Print("", indent + 1);
+                Print("icon image", indent + 1);
+
+                if (image.fileName()) {
+                    Print("file name: " + *image.fileName(), indent + 1);
+                }
+                if (image.unassignedOptional()) {
+                    Print("unassigned: " + std::to_string(image.unassigned()), indent + 1);
+                }
+                if (image.matchingStyle()) {
+                    switch (*image.matchingStyle()) {
+                        case MatchingStyle::FullyQualifiedName:
+                            Print("matching-style: fully-qualified-name", indent + 1);
+                    }
+                }
+            }
+        }
+    } else if (asset->type() == Catalog::Type()) {
         auto catalog = std::static_pointer_cast<Catalog>(asset);
         Print("type: Catalog", indent);
 

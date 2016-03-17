@@ -4,6 +4,7 @@
 #define __xcassets_AppIconSet_h
 
 #include <xcassets/Asset.h>
+#include <xcassets/MatchingStyle.h>
 #include <plist/Dictionary.h>
 
 #include <string>
@@ -13,13 +14,45 @@
 namespace xcassets {
 
 class AppIconSet : public Asset {
+public:
+    class Image {
+    private:
+        ext::optional<std::string>   _fileName;
+        ext::optional<bool>          _unassigned;
+        ext::optional<MatchingStyle> _matchingStyle;
+
+    private:
+        // TODO: slot components
+
+    public:
+        ext::optional<std::string> const &fileName() const
+        { return _fileName; }
+        bool unassigned() const
+        { return _unassigned.value_or(false); }
+        ext::optional<bool> const &unassignedOptional() const
+        { return _unassigned; }
+        ext::optional<MatchingStyle> const &matchingStyle() const
+        { return _matchingStyle; }
+
+    public:
+        // TODO: slot components
+
+    private:
+        friend class AppIconSet;
+        bool parse(plist::Dictionary const *dict);
+    };
+
 private:
-    // TODO: pre-rendered
-    // TODO: images
+    ext::optional<bool>               _preRendered;
+    ext::optional<std::vector<Image>> _images;
 
 public:
-    // TODO: pre-rendered
-    // TODO: images
+    bool preRendered() const
+    { return _preRendered.value_or(false); }
+    ext::optional<bool> const &preRenderedOptional() const
+    { return _preRendered; }
+    ext::optional<std::vector<Image>> const &images() const
+    { return _images; }
 
 public:
     static AssetType Type()

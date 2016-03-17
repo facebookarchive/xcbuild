@@ -2,8 +2,42 @@
 
 #include <xcassets/AppIconSet.h>
 #include <plist/Keys/Unpack.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcassets::AppIconSet;
+
+bool AppIconSet::Image::
+parse(plist::Dictionary const *dict)
+{
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("AppIconSetImage", dict, &seen);
+
+    auto FN = unpack.cast <plist::String> ("filename");
+    // TODO: slot components
+    auto U  = unpack.cast <plist::Boolean> ("unassigned");
+    auto MS = unpack.cast <plist::String> ("matching-style");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
+
+    if (FN != nullptr) {
+        _fileName = FN->value();
+    }
+
+    if (U != nullptr) {
+        _unassigned = U->value();
+    }
+
+    if (MS != nullptr) {
+        _matchingStyle = MatchingStyles::Parse(MS->value());
+    }
+
+    return true;
+}
 
 bool AppIconSet::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
@@ -19,11 +53,39 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 
     auto unpack = plist::Keys::Unpack("AppIconSet", dict, seen);
 
-    // TODO: pre-rendered
-    // TODO: images
+    auto P = unpack.cast <plist::Dictionary> ("properties");
+    auto I = unpack.cast <plist::Array> ("images");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
+
+    if (P != nullptr) {
+        std::unordered_set<std::string> seen;
+        auto unpack = plist::Keys::Unpack("AppIconSet", P, &seen);
+
+        auto PR = unpack.cast <plist::Boolean> ("pre-rendered");
+
+        if (!unpack.complete(check)) {
+            fprintf(stderr, "%s", unpack.errorText().c_str());
+        }
+
+        if (PR != nullptr) {
+            _preRendered = PR->value();
+        }
+    }
+
+    if (I != nullptr) {
+        _images = std::vector<Image>();
+
+        for (size_t n = 0; n < I->count(); ++n) {
+            if (auto dict = I->value<plist::Dictionary>(n)) {
+                Image image;
+                if (image.parse(dict)) {
+                    _images->push_back(image);
+                }
+            }
+        }
     }
 
     // TODO: confirm no children

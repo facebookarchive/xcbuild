@@ -1,6 +1,7 @@
 # Copyright 2013-present Facebook. All Rights Reserved.
 
 add_library(xcassets SHARED
+            Sources/MatchingStyle.cpp
             Sources/Asset.cpp
             Sources/Group.cpp
             Sources/Catalog.cpp
