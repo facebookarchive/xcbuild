@@ -10,7 +10,7 @@ add_library(acdriver SHARED
             Sources/ContentsAction.cpp
             )
 
-target_link_libraries(acdriver PUBLIC util plist ext)
+target_link_libraries(acdriver PUBLIC xcassets util plist ext)
 target_include_directories(acdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 
 add_executable(actool Tools/actool.cpp)
