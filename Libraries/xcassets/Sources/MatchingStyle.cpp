@@ -16,3 +16,11 @@ Parse(std::string const &value)
     }
 }
 
+std::string MatchingStyles::
+String(MatchingStyle style)
+{
+    switch (style) {
+        case MatchingStyle::FullyQualifiedName:
+            return "fully-qualified-name";
+    }
+}

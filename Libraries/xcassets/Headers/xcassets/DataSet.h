@@ -4,6 +4,7 @@
 #define __xcassets_DataSet_h
 
 #include <xcassets/Asset.h>
+#include <xcassets/Idiom.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -14,18 +15,39 @@
 namespace xcassets {
 
 class DataSet : public Asset {
-private:
-    ext::optional<std::vector<std::string>> _onDemandResourceTags;
+public:
+    class Data {
+    private:
+        ext::optional<std::string> _fileName;
+        ext::optional<Idiom>       _idiom;
+        // TODO: graphics-feature-set
+        // TODO: memory
+        ext::optional<std::string> _UTI;
+
+    public:
+        ext::optional<std::string> const &fileName() const
+        { return _fileName; }
+        ext::optional<Idiom> const &idiom() const
+        { return _idiom; }
+        // TODO: graphics-feature-set
+        // TODO: memory
+        ext::optional<std::string> const &UTI() const
+        { return _UTI; }
+
+    private:
+        friend class DataSet;
+        bool parse(plist::Dictionary const *dict);
+    };
 
 private:
-    // TODO data
+    ext::optional<std::vector<std::string>> _onDemandResourceTags;
+    ext::optional<std::vector<Data>>        _data;
 
 public:
     ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
     { return _onDemandResourceTags; }
-
-public:
-    // TODO data
+    ext::optional<std::vector<Data>> const &data() const
+    { return _data; }
 
 public:
     static AssetType Type()

@@ -28,8 +28,12 @@ public:
     /*
      * Parse a matching style from a string, if valid.
      */
-    static ext::optional<MatchingStyle>
-    Parse(std::string const &value);
+    static ext::optional<MatchingStyle> Parse(std::string const &value);
+
+    /*
+     * Convert a style to a string.
+     */
+    static std::string String(MatchingStyle style);
 };
 
 }

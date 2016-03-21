@@ -26,3 +26,21 @@ Parse(std::string const &value)
     }
 }
 
+std::string Idioms::
+String(Idiom idiom)
+{
+    switch (idiom) {
+        case Idiom::Universal:
+            return "universal";
+        case Idiom::Phone:
+            return "iphone";
+        case Idiom::Pad:
+            return "ipad";
+        case Idiom::Desktop:
+            return "mac";
+        case Idiom::TV:
+            return "tv";
+        case Idiom::Watch:
+            return "watch";
+    }
+}

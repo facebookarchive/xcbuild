@@ -29,8 +29,12 @@ public:
     /*
      * Parse a matching idiom from a string, if valid.
      */
-    static ext::optional<Idiom>
-    Parse(std::string const &value);
+    static ext::optional<Idiom> Parse(std::string const &value);
+
+    /*
+     * Convert an idiom to a string.
+     */
+    static std::string String(Idiom idiom);
 };
 
 }

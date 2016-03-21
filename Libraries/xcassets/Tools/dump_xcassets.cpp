@@ -4,13 +4,16 @@
 #include <xcassets/AppIconSet.h>
 #include <xcassets/Catalog.h>
 #include <xcassets/Group.h>
+#include <xcassets/DataSet.h>
 #include <xcassets/ImageSet.h>
 
-using xcassets::MatchingStyle;
+using xcassets::Idioms;
+using xcassets::MatchingStyles;
 using xcassets::Asset;
 using xcassets::AppIconSet;
 using xcassets::Catalog;
 using xcassets::Group;
+using xcassets::DataSet;
 using xcassets::ImageSet;
 
 static void
@@ -54,14 +57,14 @@ DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
                 if (image.fileName()) {
                     Print("file name: " + *image.fileName(), indent + 1);
                 }
+                if (image.idiom()) {
+                    Print("idiom: " + Idioms::String(*image.idiom()), indent + 1);
+                }
                 if (image.unassignedOptional()) {
                     Print("unassigned: " + std::to_string(image.unassigned()), indent + 1);
                 }
                 if (image.matchingStyle()) {
-                    switch (*image.matchingStyle()) {
-                        case MatchingStyle::FullyQualifiedName:
-                            Print("matching-style: fully-qualified-name", indent + 1);
-                    }
+                    Print("matching-style: " + MatchingStyles::String(*image.matchingStyle()), indent + 1);
                 }
             }
         }
@@ -102,11 +105,37 @@ DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
                 if (image.fileName()) {
                     Print("file name: " + *image.fileName(), indent + 1);
                 }
+                if (image.idiom()) {
+                    Print("idiom: " + Idioms::String(*image.idiom()), indent + 1);
+                }
                 if (image.unassignedOptional()) {
                     Print("unassigned: " + std::to_string(image.unassigned()), indent + 1);
                 }
 
                 // TODO(grp): Print resizing.
+            }
+        }
+    } else if (asset->type() == DataSet::Type()) {
+        auto dataSet = std::static_pointer_cast<DataSet>(asset);
+        Print("type: DataSet", indent);
+
+        if (dataSet->onDemandResourceTags()) {
+            Print("on-demand-asset-tags: " + std::to_string(dataSet->onDemandResourceTags()->size()), indent);
+        }
+
+        if (dataSet->data()) {
+            for (DataSet::Data const &data : *dataSet->data()) {
+                Print("", indent + 1);
+                Print("data", indent + 1);
+
+                if (data.fileName()) {
+                    Print("file name: " + *data.fileName(), indent + 1);
+                }
+                if (data.idiom()) {
+                    Print("idiom: " + Idioms::String(*data.idiom()), indent + 1);
+                }
+
+                // TODO(grp): Print more info.
             }
         }
     } else {
