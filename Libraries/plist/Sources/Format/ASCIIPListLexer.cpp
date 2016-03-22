@@ -425,6 +425,7 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
                         return rc;
                     }
                 }
+                lexer->pointer = p;
                 return ASCIIPListLexerReadKeyword(lexer);
 
             case ' ': case '\f': case '\t': case '\r':
