@@ -27,7 +27,7 @@ public:
     private:
         ext::optional<Slot::Idiom>   _idiom;
         // TODO: size
-        ext::optional<double>        _scale;
+        ext::optional<Slot::Scale>   _scale;
         // TODO: role
         // TODO: subtype (watch)
 
@@ -45,7 +45,7 @@ public:
         ext::optional<Slot::Idiom> const &idiom() const
         { return _idiom; }
         // TODO: size
-        ext::optional<double> const &scale() const
+        ext::optional<Slot::Scale> const &scale() const
         { return _scale; }
         // TODO: role
         // TODO: subtype (watch)

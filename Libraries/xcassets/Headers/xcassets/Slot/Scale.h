@@ -9,21 +9,33 @@
 namespace xcassets {
 namespace Slot {
 
+/*
+ * The density ratio of a target device.
+ */
 class Scale {
 private:
-    Scale();
-    ~Scale();
+    double _value;
+
+private:
+    Scale(double scale);
+
+public:
+    /*
+     * The represented device scale.
+     */
+    double value() const
+    { return _value; }
 
 public:
     /*
      * Parse a matching scale from a string, if valid.
      */
-    static ext::optional<double> Parse(std::string const &value);
+    static ext::optional<Scale> Parse(std::string const &value);
 
     /*
      * Convert an scale to a string.
      */
-    static std::string String(double scale);
+    static std::string String(Scale scale);
 };
 
 }

@@ -6,6 +6,7 @@
 #include <xcassets/Asset/Asset.h>
 #include <xcassets/Slot/DeviceSubtype.h>
 #include <xcassets/Slot/Idiom.h>
+#include <xcassets/Slot/LaunchImageExtent.h>
 #include <xcassets/Slot/Orientation.h>
 #include <xcassets/Slot/Scale.h>
 #include <plist/Dictionary.h>
@@ -20,42 +21,16 @@ namespace Asset {
 class LaunchImage : public Asset {
 public:
     class Image {
-    public:
-        /*
-         * The visual extent of a launch image.
-         */
-        enum class Extent {
-            ToStatusBar,
-            FullScreen,
-        };
-
-        class Extents {
-        private:
-            Extents();
-            ~Extents();
-
-        public:
-            /*
-             * Parse an extent from a string.
-             */
-            static ext::optional<Extent> Parse(std::string const &value);
-
-            /*
-             * Convert an extent to a string.
-             */
-            static std::string String(Extent extent);
-        };
+    private:
+        ext::optional<std::string>             _fileName;
 
     private:
-        ext::optional<std::string>         _fileName;
-
-    private:
-        ext::optional<Slot::Idiom>         _idiom;
-        ext::optional<Slot::Orientation>   _orientation;
-        ext::optional<double>              _scale;
-        ext::optional<Slot::DeviceSubtype> _subtype;
+        ext::optional<Slot::Idiom>             _idiom;
+        ext::optional<Slot::Orientation>       _orientation;
+        ext::optional<Slot::Scale>             _scale;
+        ext::optional<Slot::DeviceSubtype>     _subtype;
         // TODO: minimum-system-version
-        ext::optional<Extent>              _extent;
+        ext::optional<Slot::LaunchImageExtent> _extent;
 
     public:
         ext::optional<std::string> const &fileName() const
@@ -66,12 +41,12 @@ public:
         { return _idiom; }
         ext::optional<Slot::Orientation> const &orientation() const
         { return _orientation; }
-        ext::optional<double> const &scale() const
+        ext::optional<Slot::Scale> const &scale() const
         { return _scale; }
         ext::optional<Slot::DeviceSubtype> const &subtype() const
         { return _subtype; }
         // TODO: minimum-system-version
-        ext::optional<Extent> const &extent() const
+        ext::optional<Slot::LaunchImageExtent> const &extent() const
         { return _extent; }
 
     private:

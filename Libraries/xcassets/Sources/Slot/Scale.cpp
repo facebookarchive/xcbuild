@@ -6,7 +6,13 @@
 
 using xcassets::Slot::Scale;
 
-ext::optional<double> Scale::
+Scale::
+Scale(double value) :
+    _value(value)
+{
+}
+
+ext::optional<Scale> Scale::
 Parse(std::string const &value)
 {
     /* Must end in 'x'. */
@@ -21,7 +27,7 @@ Parse(std::string const &value)
     char *end = NULL;
     double scale = std::strtod(number.c_str(), &end);
     if (end != number.c_str()) {
-        return scale;
+        return Scale(scale);
     } else {
         fprintf(stderr, "warning: scale not a number %s\n", value.c_str());
         return ext::nullopt;
@@ -29,10 +35,10 @@ Parse(std::string const &value)
 }
 
 std::string Scale::
-String(double scale)
+String(Scale scale)
 {
     std::ostringstream out;
-    out << scale;
+    out << scale.value();
     out << "x";
     return out.str();
 }

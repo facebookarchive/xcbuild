@@ -34,7 +34,7 @@ public:
         ext::optional<Slot::GraphicsFeatureSet> _graphicsFeatureSet;
         ext::optional<Slot::Idiom>              _idiom;
         ext::optional<Slot::MemoryRequirement>  _memory;
-        ext::optional<double>                   _scale;
+        ext::optional<Slot::Scale>              _scale;
         ext::optional<Slot::DeviceSubtype>      _subtype;
         // TODO: screen-width
         ext::optional<Slot::SizeClass>          _widthClass;
@@ -59,7 +59,7 @@ public:
         { return _idiom; }
         ext::optional<Slot::MemoryRequirement> const &memory() const
         { return _memory; }
-        ext::optional<double> const &scale() const
+        ext::optional<Slot::Scale> const &scale() const
         { return _scale; }
         ext::optional<Slot::DeviceSubtype> const &subtype() const
         { return _subtype; }
