@@ -1,20 +1,20 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
-#include <xcassets/Asset.h>
-#include <xcassets/AppIconSet.h>
-#include <xcassets/Catalog.h>
-#include <xcassets/Group.h>
-#include <xcassets/DataSet.h>
-#include <xcassets/ImageSet.h>
+#include <xcassets/Asset/Asset.h>
+#include <xcassets/Asset/AppIconSet.h>
+#include <xcassets/Asset/Catalog.h>
+#include <xcassets/Asset/Group.h>
+#include <xcassets/Asset/DataSet.h>
+#include <xcassets/Asset/ImageSet.h>
 
-using xcassets::Idioms;
 using xcassets::MatchingStyles;
-using xcassets::Asset;
-using xcassets::AppIconSet;
-using xcassets::Catalog;
-using xcassets::Group;
-using xcassets::DataSet;
-using xcassets::ImageSet;
+using xcassets::Asset::Asset;
+using xcassets::Asset::AppIconSet;
+using xcassets::Asset::Catalog;
+using xcassets::Asset::Group;
+using xcassets::Asset::DataSet;
+using xcassets::Asset::ImageSet;
+using xcassets::Slot::Idioms;
 
 static void
 Print(std::string const &string, int indent)

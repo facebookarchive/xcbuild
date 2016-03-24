@@ -1,33 +1,33 @@
 # Copyright 2013-present Facebook. All Rights Reserved.
 
 add_library(xcassets SHARED
-            Sources/DeviceSubtype.cpp
-            Sources/GraphicsFeatureSet.cpp
-            Sources/Idiom.cpp
             Sources/Insets.cpp
-            Sources/Orientation.cpp
             Sources/Resizing.cpp
             Sources/MatchingStyle.cpp
-            Sources/MemoryRequirement.cpp
-            Sources/Scale.cpp
-            Sources/SizeClass.cpp
             Sources/TemplateRenderingIntent.cpp
-            Sources/Asset.cpp
-            Sources/Group.cpp
-            Sources/Catalog.cpp
-            Sources/AppIconSet.cpp
-            Sources/BrandAssets.cpp
-            Sources/DataSet.cpp
-            Sources/GCDashboardImage.cpp
-            Sources/GCLeaderboardSet.cpp
-            Sources/GCLeaderboard.cpp
-            Sources/IconSet.cpp
-            Sources/ImageSet.cpp
-            Sources/ImageStack.cpp
-            Sources/ImageStackLayer.cpp
-            Sources/LaunchImage.cpp
-            Sources/SpriteAtlas.cpp
-            Sources/ComplicationSet.cpp
+            Sources/Slot/DeviceSubtype.cpp
+            Sources/Slot/GraphicsFeatureSet.cpp
+            Sources/Slot/Idiom.cpp
+            Sources/Slot/Orientation.cpp
+            Sources/Slot/MemoryRequirement.cpp
+            Sources/Slot/Scale.cpp
+            Sources/Slot/SizeClass.cpp
+            Sources/Asset/Asset.cpp
+            Sources/Asset/AppIconSet.cpp
+            Sources/Asset/BrandAssets.cpp
+            Sources/Asset/Catalog.cpp
+            Sources/Asset/ComplicationSet.cpp
+            Sources/Asset/DataSet.cpp
+            Sources/Asset/GCDashboardImage.cpp
+            Sources/Asset/GCLeaderboardSet.cpp
+            Sources/Asset/GCLeaderboard.cpp
+            Sources/Asset/Group.cpp
+            Sources/Asset/IconSet.cpp
+            Sources/Asset/ImageSet.cpp
+            Sources/Asset/ImageStack.cpp
+            Sources/Asset/ImageStackLayer.cpp
+            Sources/Asset/LaunchImage.cpp
+            Sources/Asset/SpriteAtlas.cpp
             )
 
 target_link_libraries(xcassets PUBLIC util plist ext)
