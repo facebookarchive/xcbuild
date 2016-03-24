@@ -4,10 +4,13 @@
 #define __xcassets_ImageSet_h
 
 #include <xcassets/Asset.h>
+#include <xcassets/DeviceSubtype.h>
 #include <xcassets/GraphicsFeatureSet.h>
 #include <xcassets/Idiom.h>
 #include <xcassets/Insets.h>
+#include <xcassets/MemoryRequirement.h>
 #include <xcassets/Resizing.h>
+#include <xcassets/Scale.h>
 #include <xcassets/SizeClass.h>
 #include <xcassets/TemplateRenderingIntent.h>
 #include <plist/Dictionary.h>
@@ -29,9 +32,9 @@ public:
     private:
         ext::optional<GraphicsFeatureSet> _graphicsFeatureSet;
         ext::optional<Idiom>              _idiom;
-        // TODO: memory
-        // TODO: scale
-        // TODO: subtype
+        ext::optional<MemoryRequirement>  _memory;
+        ext::optional<double>             _scale;
+        ext::optional<DeviceSubtype>      _subtype;
         // TODO: screen-width
         ext::optional<SizeClass>          _widthClass;
         ext::optional<SizeClass>          _heightClass;
@@ -53,9 +56,12 @@ public:
         { return _graphicsFeatureSet; }
         ext::optional<Idiom> const &idiom() const
         { return _idiom; }
-        // TODO: memory
-        // TODO: scale
-        // TODO: subtype
+        ext::optional<MemoryRequirement> const &memory() const
+        { return _memory; }
+        ext::optional<double> const &scale() const
+        { return _scale; }
+        ext::optional<DeviceSubtype> const &subtype() const
+        { return _subtype; }
         // TODO: screen-width
         ext::optional<SizeClass> const &widthClass() const;
         ext::optional<SizeClass> const &heightClass() const;

@@ -18,8 +18,9 @@ parse(plist::Dictionary const *dict)
     auto FN = unpack.cast <plist::String> ("filename");
     auto I  = unpack.cast <plist::String> ("idiom");
     // TODO: size
-    // TODO: scale
+    auto S  = unpack.cast <plist::String> ("scale");
     // TODO: role
+    // TODO: subtype (watch)
     auto U  = unpack.cast <plist::Boolean> ("unassigned");
     auto MS = unpack.cast <plist::String> ("matching-style");
 
@@ -33,6 +34,10 @@ parse(plist::Dictionary const *dict)
 
     if (I != nullptr) {
         _idiom = Idioms::Parse(I->value());
+    }
+
+    if (S != nullptr) {
+        _scale = Scale::Parse(S->value());
     }
 
     if (U != nullptr) {

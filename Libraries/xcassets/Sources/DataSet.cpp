@@ -16,7 +16,7 @@ parse(plist::Dictionary const *dict)
     auto F   = unpack.cast <plist::String> ("filename");
     auto I   = unpack.cast <plist::String> ("idiom");
     auto GFS = unpack.cast <plist::String> ("graphics-feature-set");
-    // TODO: memory
+    auto M   = unpack.cast <plist::String> ("memory");
     auto UTI = unpack.cast <plist::String> ("universal-type-identifier");
 
     if (!unpack.complete(true)) {
@@ -33,6 +33,10 @@ parse(plist::Dictionary const *dict)
 
     if (GFS != nullptr) {
         _graphicsFeatureSet = GraphicsFeatureSets::Parse(GFS->value());
+    }
+
+    if (M != nullptr) {
+        _memory = MemoryRequirements::Parse(M->value());
     }
 
     if (UTI != nullptr) {

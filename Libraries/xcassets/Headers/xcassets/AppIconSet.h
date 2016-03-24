@@ -6,6 +6,7 @@
 #include <xcassets/Asset.h>
 #include <xcassets/Idiom.h>
 #include <xcassets/MatchingStyle.h>
+#include <xcassets/Scale.h>
 #include <plist/Dictionary.h>
 
 #include <string>
@@ -25,8 +26,9 @@ public:
     private:
         ext::optional<Idiom>         _idiom;
         // TODO: size
-        // TODO: scale
+        ext::optional<double>        _scale;
         // TODO: role
+        // TODO: subtype (watch)
 
     public:
         ext::optional<std::string> const &fileName() const
@@ -42,8 +44,10 @@ public:
         ext::optional<Idiom> const &idiom() const
         { return _idiom; }
         // TODO: size
-        // TODO: scale
+        ext::optional<double> const &scale() const
+        { return _scale; }
         // TODO: role
+        // TODO: subtype (watch)
 
     private:
         friend class AppIconSet;

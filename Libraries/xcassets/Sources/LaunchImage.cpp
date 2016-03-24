@@ -7,19 +7,43 @@
 
 using xcassets::LaunchImage;
 
+ext::optional<LaunchImage::Image::Extent> LaunchImage::Image::Extents::
+Parse(std::string const &value)
+{
+    if (value == "to-status-bar") {
+        return Extent::ToStatusBar;
+    } else if (value == "regular") {
+        return Extent::FullScreen;
+    } else {
+        fprintf(stderr, "warning: unknown extent '%s'\n", value.c_str());
+        return ext::nullopt;
+    }
+}
+
+std::string LaunchImage::Image::Extents::
+String(Extent extent)
+{
+    switch (extent) {
+        case Extent::ToStatusBar:
+            return "to-status-bar";
+        case Extent::FullScreen:
+            return "regular";
+    }
+}
+
 bool LaunchImage::Image::
 parse(plist::Dictionary const *dict)
 {
     std::unordered_set<std::string> seen;
     auto unpack = plist::Keys::Unpack("LaunchImageImage", dict, &seen);
 
-    auto F = unpack.cast <plist::String> ("filename");
-    auto I = unpack.cast <plist::String> ("idiom");
-    auto O = unpack.cast <plist::String> ("orientation");
-    // TODO: scale
-    // TODO: subtype
+    auto F  = unpack.cast <plist::String> ("filename");
+    auto I  = unpack.cast <plist::String> ("idiom");
+    auto O  = unpack.cast <plist::String> ("orientation");
+    auto S  = unpack.cast <plist::String> ("scale");
+    auto ST = unpack.cast <plist::String> ("subtype");
     // TODO: minimum-system-version
-    // TODO: extent
+    auto E  = unpack.cast <plist::String> ("extent");
 
     if (!unpack.complete(true)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
@@ -35,6 +59,18 @@ parse(plist::Dictionary const *dict)
 
     if (O != nullptr) {
         _orientation = Orientations::Parse(O->value());
+    }
+
+    if (S != nullptr) {
+        _scale = Scale::Parse(S->value());
+    }
+
+    if (ST != nullptr) {
+        _subtype = DeviceSubtypes::Parse(ST->value());
+    }
+
+    if (E != nullptr) {
+        _extent = Extents::Parse(E->value());
     }
 
     return true;

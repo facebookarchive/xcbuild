@@ -17,9 +17,9 @@ parse(plist::Dictionary const *dict)
     auto F   = unpack.cast <plist::String> ("filename");
     auto GFS = unpack.cast <plist::String> ("graphics-feature-set");
     auto I   = unpack.cast <plist::String> ("idiom");
-    // TODO: memory
-    // TODO: scale
-    // TODO: subtype
+    auto M   = unpack.cast <plist::String> ("memory");
+    auto S   = unpack.cast <plist::String> ("scale");
+    auto ST  = unpack.cast <plist::String> ("subtype");
     // TODO: screen-width
     auto WC  = unpack.cast <plist::String> ("width-class");
     auto HC  = unpack.cast <plist::String> ("height-class");
@@ -41,6 +41,18 @@ parse(plist::Dictionary const *dict)
 
     if (I != nullptr) {
         _idiom = Idioms::Parse(I->value());
+    }
+
+    if (M != nullptr) {
+        _memory = MemoryRequirements::Parse(M->value());
+    }
+
+    if (S != nullptr) {
+        _scale = Scale::Parse(S->value());
+    }
+
+    if (ST != nullptr) {
+        _subtype = DeviceSubtypes::Parse(ST->value());
     }
 
     if (WC != nullptr) {

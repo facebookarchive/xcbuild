@@ -6,6 +6,7 @@
 #include <xcassets/Asset.h>
 #include <xcassets/Idiom.h>
 #include <xcassets/GraphicsFeatureSet.h>
+#include <xcassets/MemoryRequirement.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -22,7 +23,7 @@ public:
         ext::optional<std::string>        _fileName;
         ext::optional<Idiom>              _idiom;
         ext::optional<GraphicsFeatureSet> _graphicsFeatureSet;
-        // TODO: memory
+        ext::optional<MemoryRequirement>  _memory;
         ext::optional<std::string>        _UTI;
 
     public:
@@ -32,7 +33,8 @@ public:
         { return _idiom; }
         ext::optional<GraphicsFeatureSet> const &graphicsFeatureSet() const
         { return _graphicsFeatureSet; }
-        // TODO: memory
+        ext::optional<MemoryRequirement> const &memory() const
+        { return _memory; }
         ext::optional<std::string> const &UTI() const
         { return _UTI; }
 

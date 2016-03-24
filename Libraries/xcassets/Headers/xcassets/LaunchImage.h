@@ -4,8 +4,10 @@
 #define __xcassets_LaunchImage_h
 
 #include <xcassets/Asset.h>
+#include <xcassets/DeviceSubtype.h>
 #include <xcassets/Idiom.h>
 #include <xcassets/Orientation.h>
+#include <xcassets/Scale.h>
 #include <plist/Dictionary.h>
 
 #include <string>
@@ -17,14 +19,40 @@ namespace xcassets {
 class LaunchImage : public Asset {
 public:
     class Image {
+    public:
+        /*
+         * The visual extent of a launch image.
+         */
+        enum class Extent {
+            ToStatusBar,
+            FullScreen,
+        };
+
+        class Extents {
+        private:
+            Extents();
+            ~Extents();
+
+        public:
+            /*
+             * Parse an extent from a string.
+             */
+            static ext::optional<Extent> Parse(std::string const &value);
+
+            /*
+             * Convert an extent to a string.
+             */
+            static std::string String(Extent extent);
+        };
+
     private:
-        ext::optional<std::string> _fileName;
-        ext::optional<Idiom>       _idiom;
-        ext::optional<Orientation> _orientation;
-        // TODO: scale
-        // TODO: subtype
+        ext::optional<std::string>   _fileName;
+        ext::optional<Idiom>         _idiom;
+        ext::optional<Orientation>   _orientation;
+        ext::optional<double>        _scale;
+        ext::optional<DeviceSubtype> _subtype;
         // TODO: minimum-system-version
-        // TODO: extent
+        ext::optional<Extent>        _extent;
 
     public:
         ext::optional<std::string> const &fileName() const
@@ -33,10 +61,13 @@ public:
         { return _idiom; }
         ext::optional<Orientation> const &orientation() const
         { return _orientation; }
-        // TODO: scale
-        // TODO: subtype
+        ext::optional<double> const &scale() const
+        { return _scale; }
+        ext::optional<DeviceSubtype> const &subtype() const
+        { return _subtype; }
         // TODO: minimum-system-version
-        // TODO: extent
+        ext::optional<Extent> const &extent() const
+        { return _extent; }
 
     private:
         friend class LaunchImage;
