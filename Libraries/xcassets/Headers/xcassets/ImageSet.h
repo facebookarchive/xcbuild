@@ -4,9 +4,12 @@
 #define __xcassets_ImageSet_h
 
 #include <xcassets/Asset.h>
+#include <xcassets/GraphicsFeatureSet.h>
 #include <xcassets/Idiom.h>
 #include <xcassets/Insets.h>
 #include <xcassets/Resizing.h>
+#include <xcassets/SizeClass.h>
+#include <xcassets/TemplateRenderingIntent.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -20,22 +23,22 @@ class ImageSet : public Asset {
 public:
     class Image {
     private:
-        ext::optional<std::string> _fileName;
-        ext::optional<bool>        _unassigned;
+        ext::optional<std::string>        _fileName;
+        ext::optional<bool>               _unassigned;
 
     private:
-        // TODO: graphics-feature-set
-        ext::optional<Idiom>       _idiom;
+        ext::optional<GraphicsFeatureSet> _graphicsFeatureSet;
+        ext::optional<Idiom>              _idiom;
         // TODO: memory
         // TODO: scale
         // TODO: subtype
         // TODO: screen-width
-        // TODO: width-class
-        // TODO: height-class
+        ext::optional<SizeClass>          _widthClass;
+        ext::optional<SizeClass>          _heightClass;
 
     private:
-        ext::optional<Insets>      _alignmentInsets;
-        ext::optional<Resizing>    _resizing;
+        ext::optional<Insets>             _alignmentInsets;
+        ext::optional<Resizing>           _resizing;
 
     public:
         ext::optional<std::string> const &fileName() const
@@ -46,15 +49,16 @@ public:
         { return _unassigned; }
 
     public:
-        // TODO: graphics-feature-set
+        ext::optional<GraphicsFeatureSet> const &graphicsFeatureSet() const
+        { return _graphicsFeatureSet; }
         ext::optional<Idiom> const &idiom() const
         { return _idiom; }
         // TODO: memory
         // TODO: scale
         // TODO: subtype
         // TODO: screen-width
-        // TODO: width-class
-        // TODO: height-class
+        ext::optional<SizeClass> const &widthClass() const;
+        ext::optional<SizeClass> const &heightClass() const;
 
     public:
         ext::optional<Insets> const &alignmentInsets() const
@@ -70,12 +74,15 @@ public:
 private:
     ext::optional<std::vector<std::string>> _onDemandResourceTags;
     ext::optional<std::vector<Image>>       _images;
+    ext::optional<TemplateRenderingIntent>  _templateRenderingIntent;
 
 public:
     ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
     { return _onDemandResourceTags; }
     ext::optional<std::vector<Image>> const &images() const
     { return _images; }
+    ext::optional<TemplateRenderingIntent> const &templateRenderingIntent() const
+    { return _templateRenderingIntent; }
 
 public:
     static AssetType Type()

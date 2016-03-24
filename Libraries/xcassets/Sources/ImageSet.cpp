@@ -14,18 +14,18 @@ parse(plist::Dictionary const *dict)
     std::unordered_set<std::string> seen;
     auto unpack = plist::Keys::Unpack("ImageSetImage", dict, &seen);
 
-    auto F  = unpack.cast <plist::String> ("filename");
-    // TODO: graphics-feature-set
-    auto I  = unpack.cast <plist::String> ("idiom");
+    auto F   = unpack.cast <plist::String> ("filename");
+    auto GFS = unpack.cast <plist::String> ("graphics-feature-set");
+    auto I   = unpack.cast <plist::String> ("idiom");
     // TODO: memory
     // TODO: scale
     // TODO: subtype
     // TODO: screen-width
-    // TODO: width-class
-    // TODO: height-class
-    auto U  = unpack.cast <plist::Boolean> ("unassigned");
-    auto AI = unpack.cast <plist::Dictionary> ("alignment-insets");
-    auto R  = unpack.cast <plist::Dictionary> ("resizing");
+    auto WC  = unpack.cast <plist::String> ("width-class");
+    auto HC  = unpack.cast <plist::String> ("height-class");
+    auto U   = unpack.cast <plist::Boolean> ("unassigned");
+    auto AI  = unpack.cast <plist::Dictionary> ("alignment-insets");
+    auto R   = unpack.cast <plist::Dictionary> ("resizing");
 
     if (!unpack.complete(true)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
@@ -35,8 +35,20 @@ parse(plist::Dictionary const *dict)
         _fileName = F->value();
     }
 
+    if (GFS != nullptr) {
+        _graphicsFeatureSet = GraphicsFeatureSets::Parse(GFS->value());
+    }
+
     if (I != nullptr) {
         _idiom = Idioms::Parse(I->value());
+    }
+
+    if (WC != nullptr) {
+        _widthClass = SizeClasses::Parse(WC->value());
+    }
+
+    if (HC != nullptr) {
+        _heightClass = SizeClasses::Parse(HC->value());
     }
 
     if (U != nullptr) {
@@ -85,10 +97,15 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         std::unordered_set<std::string> seen;
         auto unpack = plist::Keys::Unpack("Properties", P, &seen);
 
+        auto TRI  = unpack.cast <plist::String> ("template-rendering-intent");
         auto ODRT = unpack.cast <plist::Array> ("on-demand-resource-tags");
 
         if (!unpack.complete(true)) {
             fprintf(stderr, "%s", unpack.errorText().c_str());
+        }
+
+        if (TRI != nullptr) {
+            _templateRenderingIntent = TemplateRenderingIntents::Parse(TRI->value());
         }
 
         if (ODRT != nullptr) {

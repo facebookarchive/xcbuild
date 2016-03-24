@@ -15,7 +15,7 @@ parse(plist::Dictionary const *dict)
 
     auto F   = unpack.cast <plist::String> ("filename");
     auto I   = unpack.cast <plist::String> ("idiom");
-    // TODO: graphics-feature-set
+    auto GFS = unpack.cast <plist::String> ("graphics-feature-set");
     // TODO: memory
     auto UTI = unpack.cast <plist::String> ("universal-type-identifier");
 
@@ -29,6 +29,10 @@ parse(plist::Dictionary const *dict)
 
     if (I != nullptr) {
         _idiom = Idioms::Parse(I->value());
+    }
+
+    if (GFS != nullptr) {
+        _graphicsFeatureSet = GraphicsFeatureSets::Parse(GFS->value());
     }
 
     if (UTI != nullptr) {
