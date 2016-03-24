@@ -138,35 +138,35 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (!_separator) {
-        if (arg == "-h" || arg == "--help") {
+        if (arg == "-h" || arg == "--help" || arg == "-help") {
             return libutil::Options::MarkBool(&_help, arg, it);
-        } else if (arg == "--version") {
+        } else if (arg == "--version" || arg == "-version") {
             return libutil::Options::MarkBool(&_version, arg, it);
-        } else if (arg == "-r" || arg == "--run") {
+        } else if (arg == "-r" || arg == "--run" || arg == "-run") {
             return libutil::Options::MarkBool(&_run, arg, it);
-        } else if (arg == "-f" || arg == "--find") {
+        } else if (arg == "-f" || arg == "--find" || arg == "-find") {
             return libutil::Options::MarkBool(&_find, arg, it);
-        } else if (arg == "--show-sdk-path") {
+        } else if (arg == "--show-sdk-path" || arg == "-show-sdk-path") {
             return libutil::Options::MarkBool(&_showSDKPath, arg, it);
-        } else if (arg == "--show-sdk-version") {
+        } else if (arg == "--show-sdk-version" || arg == "-show-sdk-version") {
             return libutil::Options::MarkBool(&_showSDKVersion, arg, it);
-        } else if (arg == "--show-sdk-build-version") {
+        } else if (arg == "--show-sdk-build-version" || arg == "-show-sdk-build-version") {
             return libutil::Options::MarkBool(&_showSDKBuildVersion, arg, it);
-        } else if (arg == "--show-sdk-platform-path") {
+        } else if (arg == "--show-sdk-platform-path" || arg == "-show-sdk-platform-path") {
             return libutil::Options::MarkBool(&_showSDKPlatformPath, arg, it);
-        } else if (arg == "--show-sdk-platform-version") {
+        } else if (arg == "--show-sdk-platform-version" || arg == "-show-sdk-platform-version") {
             return libutil::Options::MarkBool(&_showSDKPlatformVersion, arg, it);
-        } else if (arg == "-l" || arg == "--log") {
+        } else if (arg == "-l" || arg == "--log" || arg == "-log") {
             return libutil::Options::MarkBool(&_log, arg, it);
-        } else if (arg == "-v" || arg == "--verbose") {
+        } else if (arg == "-v" || arg == "--verbose" || arg == "-verbose") {
             return libutil::Options::MarkBool(&_verbose, arg, it);
-        } else if (arg == "-n" || arg == "--no-cache") {
+        } else if (arg == "-n" || arg == "--no-cache" || arg == "-no-cache") {
             return libutil::Options::MarkBool(&_noCache, arg, it);
-        } else if (arg == "-k" || arg == "--kill-cache") {
+        } else if (arg == "-k" || arg == "--kill-cache" || arg == "-kill-cache") {
             return libutil::Options::MarkBool(&_killCache, arg, it);
-        } else if (arg == "--sdk") {
+        } else if (arg == "--sdk" || arg == "-sdk") {
             return libutil::Options::NextString(&_SDK, args, it);
-        } else if (arg == "--toolchain") {
+        } else if (arg == "--toolchain" || arg == "-toolchain") {
             return libutil::Options::NextString(&_toolchain, args, it);
         } else if (arg == "--") {
             return libutil::Options::MarkBool(&_separator, arg, it);
