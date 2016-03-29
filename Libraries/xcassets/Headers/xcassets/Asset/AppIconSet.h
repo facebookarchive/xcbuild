@@ -5,8 +5,9 @@
 
 #include <xcassets/Asset/Asset.h>
 #include <xcassets/Slot/Idiom.h>
-#include <xcassets/MatchingStyle.h>
 #include <xcassets/Slot/Scale.h>
+#include <xcassets/Slot/WatchIconRole.h>
+#include <xcassets/MatchingStyle.h>
 #include <plist/Dictionary.h>
 
 #include <string>
@@ -20,15 +21,15 @@ class AppIconSet : public Asset {
 public:
     class Image {
     private:
-        ext::optional<std::string>   _fileName;
-        ext::optional<bool>          _unassigned;
-        ext::optional<MatchingStyle> _matchingStyle;
+        ext::optional<std::string>         _fileName;
+        ext::optional<bool>                _unassigned;
+        ext::optional<MatchingStyle>       _matchingStyle;
 
     private:
-        ext::optional<Slot::Idiom>   _idiom;
+        ext::optional<Slot::Idiom>         _idiom;
         // TODO: size
-        ext::optional<Slot::Scale>   _scale;
-        // TODO: role
+        ext::optional<Slot::Scale>         _scale;
+        ext::optional<Slot::WatchIconRole> _role;
         // TODO: subtype (watch)
 
     public:
@@ -47,7 +48,8 @@ public:
         // TODO: size
         ext::optional<Slot::Scale> const &scale() const
         { return _scale; }
-        // TODO: role
+        ext::optional<Slot::WatchIconRole> const &role() const
+        { return _role; }
         // TODO: subtype (watch)
 
     private:
