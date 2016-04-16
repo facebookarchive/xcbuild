@@ -2,6 +2,8 @@
 
 #include <xcassets/Slot/Orientation.h>
 
+#include <cstdlib>
+
 using xcassets::Slot::Orientation;
 using xcassets::Slot::Orientations;
 
@@ -18,3 +20,15 @@ Parse(std::string const &value)
     }
 }
 
+std::string Orientations::
+String(Orientation orientation)
+{
+    switch (orientation) {
+        case Orientation::Portrait:
+            return "portrait";
+        case Orientation::Landscape:
+            return "landscape";
+    }
+
+    abort();
+}

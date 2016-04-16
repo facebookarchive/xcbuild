@@ -3,6 +3,8 @@
 #include <acdriver/Result.h>
 #include <acdriver/Output.h>
 
+#include <cstdlib>
+
 using acdriver::Result;
 using acdriver::Output;
 
@@ -27,6 +29,8 @@ DocumentSeverityKey(Result::Severity severity)
         case Result::Severity::Notice:
             return "com.apple.actool.document.notices";
     }
+
+    abort();
 }
 
 static std::string
@@ -40,6 +44,8 @@ NormalSeverityKey(Result::Severity severity)
         case Result::Severity::Notice:
             return "com.apple.actool.notices";
     }
+
+    abort();
 }
 
 void Result::
@@ -97,6 +103,8 @@ SeverityText(Result::Severity severity)
         case Result::Severity::Notice:
             return "notice";
     }
+
+    abort();
 }
 
 std::unique_ptr<plist::Object> Result::

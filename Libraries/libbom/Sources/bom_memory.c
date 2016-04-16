@@ -1,5 +1,8 @@
 /* Copyright 2013-present Facebook. All Rights Reserved. */
 
+/* Enable access to ftruncate(). */
+#define _POSIX_C_SOURCE 200809L
+
 #include <bom/bom.h>
 
 #include <sys/mman.h>
@@ -55,7 +58,7 @@ _bom_context_memory_mremap(struct bom_context_memory *memory, size_t size)
 
     int prot = context->writeable ? PROT_READ | PROT_WRITE : PROT_READ;
     memory->data = mmap(NULL, size, prot, MAP_SHARED, context->fd, 0);
-    assert((int)memory->data != -1);
+    assert((intptr_t)memory->data != -1);
 }
 
 static void

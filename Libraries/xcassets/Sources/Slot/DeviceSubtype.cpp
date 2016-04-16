@@ -2,6 +2,8 @@
 
 #include <xcassets/Slot/DeviceSubtype.h>
 
+#include <cstdlib>
+
 using xcassets::Slot::DeviceSubtype;
 using xcassets::Slot::DeviceSubtypes;
 
@@ -31,5 +33,7 @@ String(DeviceSubtype deviceSubtype)
         case DeviceSubtype::Height736:
             return "736h";
     }
+
+    abort();
 }
 

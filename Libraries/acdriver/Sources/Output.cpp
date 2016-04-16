@@ -2,6 +2,8 @@
 
 #include <acdriver/Output.h>
 
+#include <cstdlib>
+
 using acdriver::Output;
 
 Output::
@@ -53,5 +55,7 @@ serialize(Format format) const
             return std::vector<uint8_t>(output.begin(), output.end());
         }
     }
+
+    abort();
 }
 

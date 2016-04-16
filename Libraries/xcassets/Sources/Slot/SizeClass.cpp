@@ -2,6 +2,8 @@
 
 #include <xcassets/Slot/SizeClass.h>
 
+#include <cstdlib>
+
 using xcassets::Slot::SizeClass;
 using xcassets::Slot::SizeClasses;
 
@@ -27,4 +29,6 @@ String(SizeClass sizeClass)
         case SizeClass::Regular:
             return "regular";
     }
+
+    abort();
 }

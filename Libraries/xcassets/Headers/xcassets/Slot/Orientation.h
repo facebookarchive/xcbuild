@@ -28,6 +28,11 @@ public:
      */
     static ext::optional<Orientation>
     Parse(std::string const &value);
+
+    /*
+     * Convert an orientation to a string.
+     */
+    static std::string String(Orientation orientation);
 };
 
 }

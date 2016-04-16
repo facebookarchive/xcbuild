@@ -2,6 +2,8 @@
 
 #include <xcassets/Slot/WatchIconRole.h>
 
+#include <cstdlib>
+
 using xcassets::Slot::WatchIconRole;
 using xcassets::Slot::WatchIconRoles;
 
@@ -39,4 +41,6 @@ String(WatchIconRole watchIconRole)
         case WatchIconRole::ShortLookNotification:
             return "quickLook";
     }
+
+    abort();
 }

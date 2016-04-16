@@ -4,6 +4,7 @@
 #define _BOM_H
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 #ifdef __cplusplus

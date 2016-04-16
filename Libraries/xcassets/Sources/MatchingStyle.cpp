@@ -2,6 +2,8 @@
 
 #include <xcassets/MatchingStyle.h>
 
+#include <cstdlib>
+
 using xcassets::MatchingStyle;
 using xcassets::MatchingStyles;
 
@@ -23,4 +25,6 @@ String(MatchingStyle style)
         case MatchingStyle::FullyQualifiedName:
             return "fully-qualified-name";
     }
+
+    abort();
 }

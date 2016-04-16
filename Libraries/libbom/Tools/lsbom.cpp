@@ -3,8 +3,11 @@
 #include <bom/bom.h>
 #include <libutil/Options.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
+
+#include <arpa/inet.h>
 
 class Options {
 private:
@@ -412,7 +415,8 @@ main(int argc, char **argv)
          * Store file information for computing full path.
          */
         struct file_info info = { file_key->parent, std::string(file_key->name) };
-        context->files->insert({ path_info_1_value->id, info });
+        uint32_t path_info_1_value_id = path_info_1_value->id;
+        context->files->insert({ path_info_1_value_id, info });
 
         /*
          * Extract the secondary information for the file. This information is structured differently

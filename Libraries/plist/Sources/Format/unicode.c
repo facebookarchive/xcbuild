@@ -243,7 +243,7 @@ utf16_to_utf8(char *dst, size_t dst_len, uint16_t const *src, size_t src_len,
             CHECK_LENGTH(4);
             c = (((src[spos]&0x3ff) << 10) | (src[spos+1]&0x3ff)) + 0x10000;
             spos++;
-            ADD_BYTE(0xf0 | (c>>18) & 0x7);
+            ADD_BYTE(0xf0 | ((c>>18) & 0x7));
             ADD_BYTE(0x80 | ((c>>12) & 0x3f));
             ADD_BYTE(0x80 | ((c>>6) & 0x3f));
             ADD_BYTE(0x80 | (c & 0x3f));
@@ -289,7 +289,7 @@ utf32_to_utf8(char *dst, size_t dst_len, uint32_t const *src, size_t src_len,
             ADD_BYTE(0x80 | (src[spos] & 0x3f));
         } else if (src[spos] < 0x200000) {
             CHECK_LENGTH(4);
-            ADD_BYTE(0xf0 | (src[spos]>>18) & 0x7);
+            ADD_BYTE(0xf0 | ((src[spos]>>18) & 0x7));
             ADD_BYTE(0x80 | ((src[spos]>>12) & 0x3f));
             ADD_BYTE(0x80 | ((src[spos]>>6) & 0x3f));
             ADD_BYTE(0x80 | (src[spos] & 0x3f));

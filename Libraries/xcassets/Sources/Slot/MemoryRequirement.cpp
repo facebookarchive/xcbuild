@@ -2,6 +2,8 @@
 
 #include <xcassets/Slot/MemoryRequirement.h>
 
+#include <cstdlib>
+
 using xcassets::Slot::MemoryRequirement;
 using xcassets::Slot::MemoryRequirements;
 
@@ -31,4 +33,6 @@ String(MemoryRequirement memoryRequirement)
         case MemoryRequirement::Minimum4GB:
             return "4GB";
     }
+
+    abort();
 }

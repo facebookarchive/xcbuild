@@ -2,6 +2,8 @@
 
 #include <xcassets/Slot/LaunchImageExtent.h>
 
+#include <cstdlib>
+
 using xcassets::Slot::LaunchImageExtent;
 using xcassets::Slot::LaunchImageExtents;
 
@@ -27,5 +29,7 @@ String(LaunchImageExtent extent)
         case LaunchImageExtent::FullScreen:
             return "regular";
     }
+
+    abort();
 }
 

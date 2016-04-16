@@ -5,10 +5,14 @@
 #include <car/Facet.h>
 #include <car/Rendition.h>
 
+#include <iterator>
 #include <string>
 #include <fstream>
-#include <cassert>
 
+#include <cassert>
+#include <cstring>
+
+#include <arpa/inet.h>
 #include <zlib.h>
 
 static ext::optional<std::vector<uint8_t>>

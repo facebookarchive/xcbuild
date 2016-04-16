@@ -210,7 +210,7 @@ bom_index_get(struct bom_context *context, uint32_t index, size_t *data_len)
     size_t ioffset = ntohl(iindex->address);
     size_t ilength = ntohl(iindex->length);
     if (ioffset + ilength > context->memory.size) {
-        printf("warning: %zd index length (%zd, %zd) extends outside buffer (%zx).\n", index, ioffset, ilength, context->memory.size);
+        printf("warning: %d index length (%zd, %zd) extends outside buffer (%zx).\n", index, ioffset, ilength, context->memory.size);
         return NULL;
     }
 

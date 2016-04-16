@@ -2,6 +2,8 @@
 
 #include <xcassets/Slot/Idiom.h>
 
+#include <cstdlib>
+
 using xcassets::Slot::Idiom;
 using xcassets::Slot::Idioms;
 
@@ -43,4 +45,6 @@ String(Idiom idiom)
         case Idiom::Watch:
             return "watch";
     }
+
+    abort();
 }

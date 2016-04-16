@@ -2,6 +2,8 @@
 
 #include <xcassets/TemplateRenderingIntent.h>
 
+#include <cstdlib>
+
 using xcassets::TemplateRenderingIntent;
 using xcassets::TemplateRenderingIntents;
 
@@ -27,4 +29,6 @@ String(TemplateRenderingIntent templateRenderingIntent)
         case TemplateRenderingIntent::Template:
             return "template";
     }
+
+    abort();
 }

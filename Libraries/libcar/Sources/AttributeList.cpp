@@ -80,7 +80,8 @@ Load(
 {
     std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
     for (size_t i = 0; i < count; ++i) {
-        attributes.insert({ (enum car_attribute_identifier)pairs[i].identifier, pairs[i].value });
+        uint16_t value = pairs[i].value;
+        attributes.insert({ (enum car_attribute_identifier)pairs[i].identifier, value });
     }
     return AttributeList(attributes);
 }

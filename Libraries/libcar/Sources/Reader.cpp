@@ -5,7 +5,11 @@
 #include <car/Rendition.h>
 #include <car/car_format.h>
 
+#include <limits>
+#include <random>
+
 #include <cassert>
+#include <cstring>
 
 using car::Reader;
 
@@ -171,7 +175,13 @@ Create(unique_ptr_bom bom)
     header->rendition_count = 0;
     strncpy(header->file_creator, "asset catalog compiler\n", sizeof(header->file_creator));
     strncpy(header->other_creator, "version 1.0", sizeof(header->other_creator));
-    arc4random_buf(&header->uuid, sizeof(header->uuid));
+
+    std::random_device device;
+    std::uniform_int_distribution<int> distribution = std::uniform_int_distribution<int>(std::numeric_limits<uint8_t>::min(), std::numeric_limits<uint8_t>::max());
+    for (size_t i = 0; i < sizeof(header->uuid); i++) {
+        header->uuid[i] = distribution(device);
+    }
+
     header->associated_checksum = 0; // todo
     header->schema_version = 4; // todo
     header->color_space_id = 1; // todo

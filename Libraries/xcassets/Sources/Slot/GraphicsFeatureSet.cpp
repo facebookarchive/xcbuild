@@ -2,6 +2,8 @@
 
 #include <xcassets/Slot/GraphicsFeatureSet.h>
 
+#include <cstdlib>
+
 using xcassets::Slot::GraphicsFeatureSet;
 using xcassets::Slot::GraphicsFeatureSets;
 
@@ -39,4 +41,6 @@ String(GraphicsFeatureSet graphicsFeatureSet)
         case GraphicsFeatureSet::MetalFamily3Version1:
             return "metal3v1";
     }
+
+    abort();
 }

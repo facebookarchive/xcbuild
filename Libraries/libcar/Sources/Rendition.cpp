@@ -35,6 +35,8 @@ FormatSize(Rendition::Data::Format format)
         case Format::Data:
             return 1;
     }
+
+    abort();
 }
 
 Rendition::
