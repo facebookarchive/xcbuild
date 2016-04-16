@@ -17,8 +17,6 @@ add_library(util SHARED
             Sources/Escape.cpp
             Sources/Wildcard.cpp
             #
-            Sources/bsd_glob.c
-            #
             Sources/md5.c
             )
 

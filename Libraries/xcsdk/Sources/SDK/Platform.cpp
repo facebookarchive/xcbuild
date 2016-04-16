@@ -282,14 +282,16 @@ Open(std::shared_ptr<Manager> manager, std::string const &path)
         // Lookup all the SDKs inside the platform
         //
         std::string sdksPath = platform->_path + "/Developer/SDKs";
-        FSUtil::EnumerateDirectory(sdksPath, "*.sdk",
-                [&](std::string const &filename) -> bool
-                {
-                    if (auto target = Target::Open(manager, platform, sdksPath + "/" + filename)) {
-                        platform->_targets.push_back(target);
-                    }
-                    return true;
-                });
+        FSUtil::EnumerateDirectory(sdksPath, [&](std::string const &filename) -> bool {
+            if (FSUtil::GetFileExtension(filename) != "sdk") {
+                return true;
+            }
+
+            if (auto target = Target::Open(manager, platform, sdksPath + "/" + filename)) {
+                platform->_targets.push_back(target);
+            }
+            return true;
+        });
 
         std::sort(platform->_targets.begin(), platform->_targets.end(),
                 [](Target::shared_ptr const &a, Target::shared_ptr const &b) -> bool

@@ -58,42 +58,46 @@ Open(std::string const &basePath, std::string const &path, std::string const &na
     std::string schemePath;
 
     schemePath = path + "/xcshareddata/xcschemes";
-    FSUtil::EnumerateDirectory(schemePath, "*.xcscheme",
-            [&](std::string const &filename) -> bool
-            {
-                std::string name = filename.substr(0, filename.find('.'));
-                auto scheme = Scheme::Open(name, std::string(), schemePath + "/" + filename);
-                if (!scheme) {
-                    fprintf(stderr, "warning: failed parsing shared scheme '%s'\n", name.c_str());
-                } else {
-                    group->_schemes.push_back(scheme);
-                }
+    FSUtil::EnumerateDirectory(schemePath, [&](std::string const &filename) -> bool {
+        if (FSUtil::GetFileExtension(filename) != "xcscheme") {
+            return true;
+        }
 
-                if (!group->_defaultScheme && name == group->name()) {
-                    group->_defaultScheme = scheme;
-                }
-                return true;
-            });
+        std::string name = filename.substr(0, filename.find('.'));
+        auto scheme = Scheme::Open(name, std::string(), schemePath + "/" + filename);
+        if (!scheme) {
+            fprintf(stderr, "warning: failed parsing shared scheme '%s'\n", name.c_str());
+        } else {
+            group->_schemes.push_back(scheme);
+        }
+
+        if (!group->_defaultScheme && name == group->name()) {
+            group->_defaultScheme = scheme;
+        }
+        return true;
+    });
 
     std::string userName = SysUtil::GetUserName();
     if (!userName.empty()) {
         schemePath = path + "/xcuserdata/" + userName + ".xcuserdatad/xcschemes";
-        FSUtil::EnumerateDirectory(schemePath, "*.xcscheme",
-                [&](std::string const &filename) -> bool
-                {
-                    std::string name = filename.substr(0, filename.find('.'));
-                    auto scheme = Scheme::Open(name, userName, schemePath + "/" + filename);
-                    if (!scheme) {
-                        fprintf(stderr, "warning: failed parsing user scheme '%s'\n", name.c_str());
-                    } else {
-                        group->_schemes.push_back(scheme);
-                    }
+        FSUtil::EnumerateDirectory(schemePath, [&](std::string const &filename) -> bool {
+            if (FSUtil::GetFileExtension(filename) != "xcscheme") {
+                return true;
+            }
 
-                    if (!group->_defaultScheme && name == group->name()) {
-                        group->_defaultScheme = scheme;
-                    }
-                    return true;
-                });
+            std::string name = filename.substr(0, filename.find('.'));
+            auto scheme = Scheme::Open(name, userName, schemePath + "/" + filename);
+            if (!scheme) {
+                fprintf(stderr, "warning: failed parsing user scheme '%s'\n", name.c_str());
+            } else {
+                group->_schemes.push_back(scheme);
+            }
+
+            if (!group->_defaultScheme && name == group->name()) {
+                group->_defaultScheme = scheme;
+            }
+            return true;
+        });
     }
 
     if (!group->_schemes.empty() && !group->_defaultScheme) {

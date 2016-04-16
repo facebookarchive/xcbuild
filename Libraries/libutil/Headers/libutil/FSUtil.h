@@ -54,25 +54,11 @@ public:
 
 public:
     static bool EnumerateDirectory(std::string const &path,
-            std::string const &pattern,
-            std::function <bool(std::string const &)> const &cb,
-            bool insensitive = false);
-
-    inline static bool EnumerateDirectory(std::string const &path,
-            std::function <bool(std::string const &)> const &cb,
-            bool insensitive = false)
-    { return EnumerateDirectory(path, std::string(), cb, insensitive); }
+            std::function <bool(std::string const &)> const &cb);
 
 public:
     static bool EnumerateRecursive(std::string const &path,
-            std::string const &pattern,
-            std::function <bool(std::string const &)> const &cb,
-            bool insensitive = false);
-
-    inline static bool EnumerateRecursive(std::string const &path,
-            std::function <bool(std::string const &)> const &cb,
-            bool insensitive = false)
-    { return EnumerateRecursive(path, std::string(), cb, insensitive); }
+            std::function <bool(std::string const &)> const &cb);
 
 public:
     static std::string GetCurrentDirectory();

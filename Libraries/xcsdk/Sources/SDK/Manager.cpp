@@ -113,7 +113,11 @@ Open(std::string const &path)
     std::vector<std::shared_ptr<Toolchain>> toolchains;
 
     std::string toolchainsPath = path + "/Toolchains";
-    FSUtil::EnumerateDirectory(toolchainsPath, "*.xctoolchain", [&](std::string const &filename) -> bool {
+    FSUtil::EnumerateDirectory(toolchainsPath, [&](std::string const &filename) -> bool {
+        if (FSUtil::GetFileExtension(filename) != "xctoolchain") {
+            return true;
+        }
+
         auto toolchain = SDK::Toolchain::Open(manager, toolchainsPath + "/" + filename);
         if (toolchain != nullptr) {
             toolchains.push_back(toolchain);
@@ -127,7 +131,11 @@ Open(std::string const &path)
     std::vector<std::shared_ptr<Platform>> platforms;
 
     std::string platformsPath = path + "/Platforms";
-    FSUtil::EnumerateDirectory(platformsPath, "*.platform", [&](std::string const &filename) -> bool {
+    FSUtil::EnumerateDirectory(platformsPath, [&](std::string const &filename) -> bool {
+        if (FSUtil::GetFileExtension(filename) != "platform") {
+            return true;
+        }
+
         auto platform = SDK::Platform::Open(manager, platformsPath + "/" + filename);
         if (platform != nullptr) {
             platforms.push_back(platform);

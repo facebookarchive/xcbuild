@@ -9,8 +9,6 @@
 
 #include <libutil/FSUtil.h>
 
-#include "bsd_glob.h"
-
 #include <climits>
 #include <cstdlib>
 #include <cstdio>
@@ -292,63 +290,40 @@ GetCurrentDirectory()
 }
 
 bool FSUtil::
-EnumerateDirectory(std::string const &path, std::string const &pattern,
-        std::function <bool(std::string const &)> const &cb, bool insensitive)
+EnumerateDirectory(std::string const &path, std::function <bool(std::string const &)> const &cb)
 {
-    bsd_glob_t  glob;
-    std::string matchPattern;
-
-    if (pattern.empty()) {
-        matchPattern = "*";
-    } else {
-        matchPattern = pattern;
-    }
-
-    if (::bsd_glob((path + "/" + matchPattern).c_str(),
-                BSD_GLOB_TILDE | BSD_GLOB_BRACE | BSD_GLOB_MARK |
-                BSD_GLOB_NOESCAPE | (insensitive ? BSD_GLOB_CASEFOLD : 0),
-                nullptr, &glob) != 0)
+    DIR *dp = opendir(path.c_str());
+    if (dp == NULL) {
         return false;
-
-    for (size_t n = 0; n < glob.gl_pathc; n++) {
-        std::string path = GetBaseName(glob.gl_pathv[n]);
-
-        // 
-        // Skip past . and ..
-        //
-        if (path == "." || path == "..")
-            continue;
-
-        if (!cb(path))
-            break;
     }
 
-    ::bsd_globfree(&glob);
+    while (struct dirent *entry = readdir(dp)) {
+        std::string name = entry->d_name;
+        if (name != "." && name != "..") {
+            cb(name);
+        }
+    }
 
+    closedir(dp);
     return true;
 }
 
 bool FSUtil::
-EnumerateRecursive(std::string const &path, std::string const &pattern,
-    std::function <bool(std::string const &)> const &cb, bool insensitive)
+EnumerateRecursive(std::string const &path, std::function <bool(std::string const &)> const &cb)
 {
-    EnumerateDirectory(path, pattern,
-        [&](std::string const &filename) -> bool
-        {
-            std::string full = path + "/" + filename;
-            cb(full);
-            return true;
-        }, insensitive);
+    EnumerateDirectory(path, [&](std::string const &filename) -> bool {
+        std::string full = path + "/" + filename;
+        cb(full);
+        return true;
+    });
 
-    EnumerateDirectory(path, std::string(),
-        [&](std::string const &filename) -> bool
-        {
-            std::string full = path + "/" + filename;
-            if (TestForDirectory(full) && !TestForSymlink(full)) {
-                EnumerateRecursive(full, pattern, cb, insensitive);
-            }
-            return true;
-        }, false);
+    EnumerateDirectory(path, [&](std::string const &filename) -> bool {
+        std::string full = path + "/" + filename;
+        if (TestForDirectory(full) && !TestForSymlink(full)) {
+            EnumerateRecursive(full, cb);
+        }
+        return true;
+    });
 
     return true;
 }
