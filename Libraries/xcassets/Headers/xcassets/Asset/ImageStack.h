@@ -25,6 +25,10 @@ private:
     // TODO canvasSize
     // TODO on-demand-resource-tags
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     std::vector<std::shared_ptr<ImageStackLayer>> children() const
     { return _children; }

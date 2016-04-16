@@ -18,10 +18,28 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
     if (dict != nullptr) {
         auto unpack = plist::Keys::Unpack("GCDashboardImage", dict, seen);
 
-        // TODO content-reference
+        auto P = unpack.cast <plist::Dictionary> ("properties");
 
         if (!unpack.complete(check)) {
             fprintf(stderr, "%s", unpack.errorText().c_str());
+        }
+
+        if (P != nullptr) {
+            std::unordered_set<std::string> seen;
+            auto unpack = plist::Keys::Unpack("Properties", P, &seen);
+
+            auto CR = unpack.cast <plist::Dictionary> ("content-reference");
+
+            if (!unpack.complete(true)) {
+                fprintf(stderr, "%s", unpack.errorText().c_str());
+            }
+
+            if (CR != nullptr) {
+                ContentReference contentReference;
+                if (contentReference.parse(CR)) {
+                    _contentReference = contentReference;
+                }
+            }
         }
     }
 

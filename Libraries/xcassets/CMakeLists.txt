@@ -3,6 +3,8 @@
 add_library(xcassets SHARED
             Sources/Insets.cpp
             Sources/Resizing.cpp
+            Sources/ContentReference.cpp
+            Sources/FullyQualifiedName.cpp
             Sources/MatchingStyle.cpp
             Sources/TemplateRenderingIntent.cpp
             Sources/Slot/DeviceSubtype.cpp

@@ -48,6 +48,10 @@ private:
     ext::optional<std::vector<std::string>> _onDemandResourceTags;
     ext::optional<std::vector<Data>>        _data;
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
     { return _onDemandResourceTags; }

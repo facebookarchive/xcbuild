@@ -55,6 +55,10 @@ public:
     };
 
 private:
+    friend class Asset;
+    using Asset::Asset;
+
+private:
     ext::optional<std::vector<Image>> _images;
 
 public:

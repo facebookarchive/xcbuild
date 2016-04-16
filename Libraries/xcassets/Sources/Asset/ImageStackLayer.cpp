@@ -19,12 +19,31 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 
     auto unpack = plist::Keys::Unpack("ImageStackLayer", dict, seen);
 
-    // TODO: content-reference
-    // TODO: frame-size
-    // TODO: frame-center
+    auto P = unpack.cast <plist::Dictionary> ("properties");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
+
+    if (P != nullptr) {
+        std::unordered_set<std::string> seen;
+        auto unpack = plist::Keys::Unpack("Properties", P, &seen);
+
+        auto CR = unpack.cast <plist::Dictionary> ("content-reference");
+        // TODO: content-reference
+        // TODO: frame-size
+        // TODO: frame-center
+
+        if (!unpack.complete(true)) {
+            fprintf(stderr, "%s", unpack.errorText().c_str());
+        }
+
+        if (CR != nullptr) {
+            ContentReference contentReference;
+            if (contentReference.parse(CR)) {
+                _contentReference = contentReference;
+            }
+        }
     }
 
     // TODO: children image set

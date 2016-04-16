@@ -17,6 +17,10 @@ class IconSet : public Asset {
 private:
     // TODO images
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     // TODO images
 

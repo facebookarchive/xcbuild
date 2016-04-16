@@ -28,14 +28,9 @@ Print(std::string const &string, int indent)
 static void
 DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
 {
-    Print("name: " + asset->name(), indent);
+    Print("name: " + asset->name().name(), indent);
+    Print("identifier: " + asset->name().string(), indent);
     Print("path: " + asset->path(), indent);
-    if (asset->group()) {
-        Print("group: " + *asset->group(), indent);
-    } else {
-        Print("group: <root>", indent);
-    }
-    Print("identifier: " + asset->identifier(), indent);
 
     if (asset->author()) {
         Print("author: " + *asset->author(), indent);
@@ -151,7 +146,7 @@ main(int argc, char **argv)
         return 1;
     }
 
-    std::shared_ptr<Asset> asset = Asset::Load(argv[1], ext::nullopt);
+    std::shared_ptr<Asset> asset = Asset::Load(argv[1], { });
     DumpAsset(asset);
 
     return 0;

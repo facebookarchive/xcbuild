@@ -22,6 +22,10 @@ private:
     ext::optional<std::vector<std::string>> _onDemandResourceTags;
     ext::optional<bool>                     _providesNamespace;
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     std::vector<std::shared_ptr<Asset>> children() const
     { return _children; }

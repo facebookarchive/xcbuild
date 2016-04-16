@@ -4,6 +4,7 @@
 #define __xcassets_Asset_GCDashboardImage_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/ContentReference.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -18,10 +19,16 @@ class ImageSet;
 
 class GCDashboardImage : public Asset {
 private:
+    ext::optional<ContentReference>        _contentReference;
     std::vector<std::shared_ptr<ImageSet>> _children;
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
-    // TODO: content-reference
+    ext::optional<ContentReference> const &contentReference() const
+    { return _contentReference; }
     std::vector<std::shared_ptr<ImageSet>> children() const
     { return _children; }
 

@@ -53,7 +53,7 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         }
     }
 
-    if (!loadChildren(&_children)) {
+    if (!loadChildren(&_children, _providesNamespace.value_or(false))) {
         fprintf(stderr, "error: failed to load children\n");
     }
 

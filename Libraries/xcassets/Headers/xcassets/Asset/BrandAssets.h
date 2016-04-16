@@ -24,6 +24,10 @@ private:
 private:
     // TODO: assets
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     // TODO: image set and image stack
     std::vector<std::shared_ptr<Asset>> children() const

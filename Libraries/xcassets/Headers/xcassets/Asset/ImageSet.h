@@ -83,6 +83,10 @@ private:
     ext::optional<std::vector<Image>>       _images;
     ext::optional<TemplateRenderingIntent>  _templateRenderingIntent;
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
     { return _onDemandResourceTags; }

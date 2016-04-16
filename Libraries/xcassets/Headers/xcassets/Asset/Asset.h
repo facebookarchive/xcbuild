@@ -4,6 +4,7 @@
 #define __xcassets_Asset_Asset_h
 
 #include <xcassets/Asset/AssetType.h>
+#include <xcassets/FullyQualifiedName.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -17,16 +18,15 @@ namespace Asset {
 
 class Asset {
 private:
+    FullyQualifiedName         _name;
     std::string                _path;
-    std::string                _name;
-    ext::optional<std::string> _group;
 
 private:
     ext::optional<std::string> _author;
     ext::optional<int>         _version;
 
 protected:
-    Asset();
+    Asset(FullyQualifiedName const &name, std::string const &path);
     virtual ~Asset();
 
 public:
@@ -45,20 +45,8 @@ public:
     /*
      * The name of the asset.
      */
-    std::string const &name()
+    FullyQualifiedName const &name()
     { return _name; }
-
-    /*
-     * The group containing the asset.
-     */
-    ext::optional<std::string> const &group() const
-    { return _group; }
-
-    /*
-     * The identifier of the asset within its group.
-     */
-    std::string identifier() const
-    { return (_group ? *_group + "/" : "") + _name; }
 
 public:
     ext::optional<std::string> const &author()
@@ -70,7 +58,7 @@ public:
     /*
      * Load an asset from a directory.
      */
-    static std::shared_ptr<Asset> Load(std::string const &path, ext::optional<std::string> const &group);
+    static std::shared_ptr<Asset> Load(std::string const &path, std::vector<std::string> const &groups);
 
 protected:
     /*
@@ -81,13 +69,13 @@ protected:
     /*
      * Iterate children of this asset and load them. If specified, must match types.
      */
-    bool loadChildren(std::vector<std::shared_ptr<Asset>> *children);
+    bool loadChildren(std::vector<std::shared_ptr<Asset>> *children, bool providesNamespace = false);
 
     /*
      * Load children of a specific type.
      */
     template<typename T>
-    bool loadChildren(std::vector<std::shared_ptr<T>> *children)
+    bool loadChildren(std::vector<std::shared_ptr<T>> *children, bool providesNamespace = false)
     {
         std::vector<std::shared_ptr<Asset>> assets;
         if (!loadChildren(&assets)) {

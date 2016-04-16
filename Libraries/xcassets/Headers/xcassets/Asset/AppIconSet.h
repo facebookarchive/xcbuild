@@ -61,6 +61,10 @@ private:
     ext::optional<bool>               _preRendered;
     ext::optional<std::vector<Image>> _images;
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     bool preRendered() const
     { return _preRendered.value_or(false); }

@@ -12,6 +12,10 @@ class Catalog : public Asset {
 private:
     std::vector<std::shared_ptr<Asset>> _children;
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     std::vector<std::shared_ptr<Asset>> children() const
     { return _children; }

@@ -4,6 +4,7 @@
 #define __xcassets_Asset_ImageStackLayer_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/ContentReference.h>
 #include <plist/Dictionary.h>
 
 #include <string>
@@ -15,13 +16,19 @@ namespace Asset {
 class ImageStackLayer : public Asset {
 private:
     // TODO: content (image set)
+    ext::optional<ContentReference> _contentReference;
     // TODO: content-reference
     // TODO: frame-size
     // TODO: frame-center
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     // TODO: content (image set)
-    // TODO: content-reference
+    ext::optional<ContentReference> const &contentReference() const
+    { return _contentReference; }
     // TODO: frame-size
     // TODO: frame-center
 

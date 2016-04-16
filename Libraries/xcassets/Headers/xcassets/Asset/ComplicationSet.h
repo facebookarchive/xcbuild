@@ -23,6 +23,10 @@ private:
 private:
     // TODO: assets
 
+private:
+    friend class Asset;
+    using Asset::Asset;
+
 public:
     std::vector<std::shared_ptr<ImageSet>> children() const
     { return _children; }
