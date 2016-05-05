@@ -18,6 +18,14 @@
 #include <zlib.h>
 
 #if defined(__APPLE__)
+#include <Availability.h>
+#include <TargetConditionals.h>
+#if (TARGET_OS_MAC && __MAC_10_11 && __MAC_OS_X_VERSION_MIN_REQUIRED > __MAC_10_11) || (TARGET_OS_IPHONE && __IPHONE_9_0 && __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_9_0)
+#define HAVE_LIBCOMPRESSION 1
+#endif
+#endif
+
+#if HAVE_LIBCOMPRESSION
 #include <compression.h>
 #define _COMPRESSION_LZVN 0x900
 #endif
@@ -178,7 +186,7 @@ _decode(struct car_rendition_value *value)
             fprintf(stderr, "error: unable to handle UNKNOWN\n");
             return ext::nullopt;
         } else if (header1->compression == car_rendition_data_compression_magic_lzvn || header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
-#if defined(__APPLE__)
+#if HAVE_LIBCOMPRESSION
             compression_algorithm algorithm;
             if (header1->compression == car_rendition_data_compression_magic_lzvn) {
                 algorithm = (compression_algorithm)_COMPRESSION_LZVN;
