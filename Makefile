@@ -8,17 +8,22 @@
 #
 
 build := build
+project := project
 
 cmake := cmake
-cmake_flags := -G Ninja
+cmake_flags := 
 
 ninja := $(if $(shell which llbuild),llbuild ninja build,ninja)
 ninja_flags := $(if $(shell echo "$$NINJA_JOBS"),-j$(shell echo "$$NINJA_JOBS"),)
 
 all:
 	mkdir -p $(build)
-	$(cmake) -B$(build) -H. $(cmake_flags)
+	$(cmake) -B$(build) -H. -G Ninja $(cmake_flags)
 	$(ninja) -C $(build) $(ninja_flags)
+
+project:
+	mkdir -p $(project)
+	$(cmake) -B$(project) -H. -G Xcode $(cmake_flags)
 
 test: all
 	set -e; for test in build/test_*; do echo; echo "$$test"; ./$$test; done
@@ -26,3 +31,4 @@ test: all
 clean:
 	rm -rf $(build)
 
+.PHONY: project
