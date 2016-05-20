@@ -331,28 +331,20 @@ EnumerateRecursive(std::string const &path, std::function <bool(std::string cons
 std::string FSUtil::
 FindExecutable(std::string const &name)
 {
-    if (name.empty())
-        return std::string();
+    std::vector<std::string>        vpaths;
+    std::unordered_set<std::string> seen;
+    std::string                     path;
+    std::istringstream              is(::getenv("PATH"));
 
-    char const *paths = ::getenv("PATH");
-    if (paths == nullptr)
-        return std::string();
+    while (std::getline(is, path, ':')) {
+        if (seen.find(path) != seen.end())
+            continue;
 
-    return FindExecutable(name, paths);
-}
+        vpaths.push_back(path);
+        seen.insert(path);
+    }
 
-std::string FSUtil::
-FindExecutable(std::string const &name, std::string const &paths)
-{
-    std::string exePath = FindFile(name, paths);
-
-    if (exePath.empty())
-        return std::string();
-
-    if (TestForExecute(exePath))
-        return ResolvePath(exePath);
-
-    return std::string();
+    return FindExecutable(name, vpaths);
 }
 
 std::string FSUtil::
@@ -368,28 +360,6 @@ FindExecutable(std::string const &name, std::vector<std::string> const &paths)
     }
 
     return std::string();
-}
-
-std::string FSUtil::
-FindFile(std::string const &name, std::string const &paths)
-{
-    if (name.empty())
-        return std::string();
-
-    std::vector<std::string>        vpaths;
-    std::unordered_set<std::string> seen;
-    std::string                     path;
-    std::istringstream              is(paths);
-
-    while (std::getline(is, path, ':')) {
-        if (seen.find(path) != seen.end())
-            continue;
-
-        vpaths.push_back(path);
-        seen.insert(path);
-    }
-
-    return FindFile(name, vpaths);
 }
 
 std::string FSUtil::

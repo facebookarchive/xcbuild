@@ -64,24 +64,9 @@ public:
     static std::string GetCurrentDirectory();
 
 public:
-    static std::string FindFile(std::string const &name, std::string const &paths);
     static std::string FindFile(std::string const &name, std::vector<std::string> const &paths);
-
-public:
-    static std::string FindExecutable(std::string const &name);
-    static std::string FindExecutable(std::string const &name, std::string const &paths);
     static std::string FindExecutable(std::string const &name, std::vector<std::string> const &paths);
-
-    template <typename... P>
-    static inline std::string FindExecutables(P const &... names)
-    {
-        for (auto name : { names... }) {
-            std::string path = FindExecutable(name);
-            if (!path.empty())
-                return path;
-        }
-        return std::string();
-    }
+    static std::string FindExecutable(std::string const &name);
 };
 
 }
