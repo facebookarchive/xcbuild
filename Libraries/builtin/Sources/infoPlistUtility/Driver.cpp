@@ -52,7 +52,7 @@ WritePkgInfo(plist::Dictionary const *root, std::string const &path)
         pkgInfo += "????";
     }
 
-    std::ofstream pkgInfoFile = std::ofstream(path, std::ios::binary);
+    std::ofstream pkgInfoFile(path, std::ios::binary);
     if (pkgInfoFile.fail()) {
         return std::make_pair(false, "could not open output path " + path + " to write");
     }
@@ -149,7 +149,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     pbxsetting::Environment settingsEnvironment = CreateBuildEnvironment(environment);
 
     /* Read in the input. */
-    std::ifstream inputFile = std::ifstream(FSUtil::ResolveRelativePath(options.input(), workingDirectory), std::ios::binary);
+    std::ifstream inputFile(FSUtil::ResolveRelativePath(options.input(), workingDirectory), std::ios::binary);
     if (inputFile.fail()) {
         fprintf(stderr, "error: unable to read input %s\n", options.input().c_str());
         return 1;
@@ -242,13 +242,13 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     if (!options.resourceRulesFile().empty()) {
         std::string resourceRulesInputPath = settingsEnvironment.resolve("CODE_SIGN_RESOURCE_RULES_PATH");
         if (!resourceRulesInputPath.empty()) {
-            std::ifstream resourceRulesInput = std::ifstream(FSUtil::ResolveRelativePath(resourceRulesInputPath, workingDirectory), std::ios::binary);
+            std::ifstream resourceRulesInput(FSUtil::ResolveRelativePath(resourceRulesInputPath, workingDirectory), std::ios::binary);
             if (resourceRulesInput.fail()) {
                 fprintf(stderr, "error: unable to read input %s\n", resourceRulesInputPath.c_str());
                 return 1;
             }
 
-            std::ofstream resourceRulesOutput = std::ofstream(FSUtil::ResolveRelativePath(options.resourceRulesFile(), workingDirectory), std::ios::binary);
+            std::ofstream resourceRulesOutput(FSUtil::ResolveRelativePath(options.resourceRulesFile(), workingDirectory), std::ios::binary);
             if (resourceRulesOutput.fail()) {
                 fprintf(stderr, "error: could not open output path %s to write\n", options.resourceRulesFile().c_str());
                 return 1;
@@ -288,7 +288,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     }
 
     /* Write out the output. */
-    std::ofstream outputFile = std::ofstream(FSUtil::ResolveRelativePath(options.output(), workingDirectory), std::ios::binary);
+    std::ofstream outputFile(FSUtil::ResolveRelativePath(options.output(), workingDirectory), std::ios::binary);
     if (outputFile.fail()) {
         fprintf(stderr, "error: could not open output path %s to write\n", options.output().c_str());
         return 1;

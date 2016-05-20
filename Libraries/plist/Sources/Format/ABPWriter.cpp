@@ -416,7 +416,7 @@ _ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *re
     if (it != context->references.end()) {
         *refno = it->second;
 
-        /* 
+        /*
          * Yes, invalidate newObject so the caller knows that this is
          * a reference.
          */

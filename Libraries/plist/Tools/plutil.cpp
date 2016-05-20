@@ -411,7 +411,7 @@ Read(std::string const &path = "-")
         contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
     } else {
         /* Read from file. */
-        std::ifstream file = std::ifstream(path, std::ios::binary);
+        std::ifstream file(path, std::ios::binary);
         if (file.fail()) {
             return std::make_pair(false, std::vector<uint8_t>());
         }
@@ -430,7 +430,7 @@ Write(std::vector<uint8_t> const &contents, std::string const &path = "-")
         std::copy(contents.begin(), contents.end(), std::ostream_iterator<char>(std::cout));
     } else {
         /* Read from file. */
-        std::ofstream file = std::ofstream(path, std::ios::binary);
+        std::ofstream file(path, std::ios::binary);
         if (file.fail()) {
             return false;
         }

@@ -134,7 +134,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     for (std::string const &inputPath : options.inputs()) {
         /* Read in the input. */
         std::string resolvedInputPath = FSUtil::ResolveRelativePath(inputPath, workingDirectory);
-        std::ifstream inputFile = std::ifstream(resolvedInputPath, std::ios::binary);
+        std::ifstream inputFile(resolvedInputPath, std::ios::binary);
         if (inputFile.fail()) {
             fprintf(stderr, "error: unable to read input %s\n", inputPath.c_str());
             return 1;

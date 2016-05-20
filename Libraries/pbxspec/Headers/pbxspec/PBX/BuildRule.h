@@ -42,7 +42,6 @@ public:
     { return _compilerSpec; }
 
 protected:
-    friend class pbxspec::Manager;
     bool parse(plist::Dictionary const *dict);
 };
 

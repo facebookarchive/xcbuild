@@ -144,7 +144,7 @@ static bool
 LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat format, std::vector<dependency::DependencyInfo> *dependencyInfo)
 {
     if (format == dependency::DependencyInfoFormat::Binary) {
-        std::ifstream input = std::ifstream(path, std::ios::binary);
+        std::ifstream input(path, std::ios::binary);
         if (input.fail()) {
             fprintf(stderr, "error: failed to open %s\n", path.c_str());
             return false;
@@ -170,7 +170,7 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
         dependencyInfo->push_back(directoryInfo->dependencyInfo());
         return true;
     } else if (format == dependency::DependencyInfoFormat::Makefile) {
-        std::ifstream input = std::ifstream(path, std::ios::binary);
+        std::ifstream input(path, std::ios::binary);
         if (input.fail()) {
             fprintf(stderr, "error: failed to open %s\n", path.c_str());
             return false;
@@ -264,7 +264,7 @@ main(int argc, char **argv)
     /*
      * Write out the output.
      */
-    std::ofstream output = std::ofstream(options.output(), std::ios::binary);
+    std::ofstream output(options.output(), std::ios::binary);
     if (output.fail()) {
         return false;
     }
