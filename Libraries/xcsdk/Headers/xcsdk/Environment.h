@@ -12,6 +12,10 @@
 
 #include <xcsdk/Base.h>
 
+#include <ext/optional>
+
+namespace libutil { class Filesystem; };
+
 namespace xcsdk {
 
 class Environment {
@@ -20,7 +24,7 @@ private:
     ~Environment();
 
 public:
-    static std::string DeveloperRoot(void);
+    static ext::optional<std::string> DeveloperRoot(libutil::Filesystem const *filesystem);
 };
 
 }

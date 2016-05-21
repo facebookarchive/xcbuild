@@ -12,6 +12,8 @@
 
 #include <xcsdk/Base.h>
 
+namespace libutil { class Filesystem; };
+
 namespace xcsdk { namespace SDK {
 
 class PlatformVersion {
@@ -38,7 +40,7 @@ public:
     { return _sourceVersion; }
 
 public:
-    static PlatformVersion::shared_ptr Open(std::string const &path);
+    static PlatformVersion::shared_ptr Open(libutil::Filesystem const *filesystem, std::string const &path);
 
 private:
     bool parse(plist::Dictionary const *dict);

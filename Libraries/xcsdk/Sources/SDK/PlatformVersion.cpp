@@ -8,10 +8,10 @@
  */
 
 #include <xcsdk/SDK/PlatformVersion.h>
-#include <libutil/FSUtil.h>
+#include <libutil/Filesystem.h>
 
 using xcsdk::SDK::PlatformVersion;
-using libutil::FSUtil;
+using libutil::Filesystem;
 
 PlatformVersion::PlatformVersion()
 {
@@ -45,7 +45,7 @@ parse(plist::Dictionary const *dict)
 }
 
 PlatformVersion::shared_ptr PlatformVersion::
-Open(std::string const &path)
+Open(Filesystem const *filesystem, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
@@ -53,17 +53,24 @@ Open(std::string const &path)
     }
 
     std::string versionFileName = path + "/version.plist";
-    if (!FSUtil::TestForRead(versionFileName.c_str()))
+    if (!filesystem->isReadable(versionFileName)) {
         return nullptr;
+    }
 
-    std::string realPath = FSUtil::ResolvePath(versionFileName);
-    if (realPath.empty())
+    std::string realPath = filesystem->resolvePath(versionFileName);
+    if (realPath.empty()) {
         return nullptr;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, versionFileName)) {
+        return nullptr;
+    }
 
     //
     // Parse property list
     //
-    auto result = plist::Format::Any::Read(versionFileName);
+    auto result = plist::Format::Any::Read(contents);
     if (result.first == nullptr) {
         return nullptr;
     }

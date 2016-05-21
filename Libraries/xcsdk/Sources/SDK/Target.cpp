@@ -9,11 +9,13 @@
 
 #include <xcsdk/SDK/Target.h>
 #include <xcsdk/SDK/Manager.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 using xcsdk::SDK::Target;
 using pbxsetting::Level;
 using pbxsetting::Setting;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Target::Target() :
@@ -168,7 +170,7 @@ parse(plist::Dictionary const *dict)
 }
 
 Target::shared_ptr Target::
-Open(std::shared_ptr<Manager> manager, std::shared_ptr<Platform> platform, std::string const &path)
+Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::shared_ptr<Platform> platform, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
@@ -176,21 +178,27 @@ Open(std::shared_ptr<Manager> manager, std::shared_ptr<Platform> platform, std::
     }
 
     std::string settingsFileName = path + "/SDKSettings.plist";
-    if (!FSUtil::TestForRead(settingsFileName.c_str())) {
+    if (!filesystem->isReadable(settingsFileName.c_str())) {
         settingsFileName = path + "/Info.plist";
-        if (!FSUtil::TestForRead(settingsFileName.c_str())) {
+        if (!filesystem->isReadable(settingsFileName.c_str())) {
             return nullptr;
         }
     }
 
-    std::string realPath = FSUtil::ResolvePath(settingsFileName);
-    if (realPath.empty())
+    std::string realPath = filesystem->resolvePath(settingsFileName);
+    if (realPath.empty()) {
         return nullptr;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, settingsFileName)) {
+        return nullptr;
+    }
 
     //
     // Parse property list
     //
-    auto result = plist::Format::Any::Read(settingsFileName);
+    auto result = plist::Format::Any::Read(contents);
     if (result.first == nullptr) {
         return nullptr;
     }
@@ -224,7 +232,7 @@ Open(std::shared_ptr<Manager> manager, std::shared_ptr<Platform> platform, std::
         //
         // Parse product information
         //
-        target->_product = Product::Open(target->_path);
+        target->_product = Product::Open(filesystem, target->_path);
     }
 
     return target;

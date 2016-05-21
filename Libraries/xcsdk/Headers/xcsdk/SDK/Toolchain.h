@@ -12,6 +12,8 @@
 
 #include <xcsdk/Base.h>
 
+namespace libutil { class Filesystem; };
+
 namespace xcsdk { namespace SDK {
 
 class Manager;
@@ -49,7 +51,7 @@ public:
     std::vector<std::string> executablePaths() const;
 
 public:
-    static Toolchain::shared_ptr Open(std::shared_ptr<Manager> manager, std::string const &path);
+    static Toolchain::shared_ptr Open(libutil::Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string const &path);
 
 public:
     static std::string DefaultIdentifier(void);

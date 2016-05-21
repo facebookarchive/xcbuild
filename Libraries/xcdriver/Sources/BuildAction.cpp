@@ -15,11 +15,15 @@
 #include <xcformatter/DefaultFormatter.h>
 #include <builtin/builtin.h>
 #include <libutil/Base.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 
 #include <unistd.h>
 
 using xcdriver::BuildAction;
 using xcdriver::Options;
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
 
 BuildAction::
 BuildAction()
@@ -101,6 +105,8 @@ VerifySupportedOptions(Options const &options)
 int BuildAction::
 Run(Options const &options)
 {
+    std::unique_ptr<Filesystem> filesystem = std::unique_ptr<Filesystem>(new DefaultFilesystem());
+
     // TODO(grp): Implement these options.
     if (!VerifySupportedOptions(options)) {
         return -1;
@@ -132,7 +138,7 @@ Run(Options const &options)
     /*
      * Use the default build environment. We don't need anything custom here.
      */
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default();
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(filesystem.get());
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;

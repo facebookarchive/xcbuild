@@ -8,8 +8,10 @@
  */
 
 #include <pbxbuild/Build/Environment.h>
+#include <libutil/Filesystem.h>
 
 namespace Build = pbxbuild::Build;
+using libutil::Filesystem;
 
 Build::Environment::
 Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment) :
@@ -20,10 +22,15 @@ Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcs
 }
 
 ext::optional<Build::Environment> Build::Environment::
-Default(void)
+Default(Filesystem const *filesystem)
 {
-    std::string developerRoot = xcsdk::Environment::DeveloperRoot();
-    std::shared_ptr<xcsdk::SDK::Manager> sdkManager = xcsdk::SDK::Manager::Open(developerRoot);
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem);
+    if (!developerRoot) {
+        fprintf(stderr, "error: couldn't find developer dir\n");
+        return ext::nullopt;
+    }
+
+    std::shared_ptr<xcsdk::SDK::Manager> sdkManager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot);
     if (sdkManager == nullptr) {
         fprintf(stderr, "error: couldn't create SDK manager\n");
         return ext::nullopt;
@@ -35,10 +42,10 @@ Default(void)
         return ext::nullopt;
     }
 
-    specManager->registerDomains(pbxspec::Manager::DefaultDomains(developerRoot));
-    specManager->registerDomains(pbxspec::Manager::EmbeddedDomains(developerRoot));
+    specManager->registerDomains(pbxspec::Manager::DefaultDomains(*developerRoot));
+    specManager->registerDomains(pbxspec::Manager::EmbeddedDomains(*developerRoot));
 
-    std::string buildRules = pbxspec::Manager::DeveloperBuildRules(developerRoot);
+    std::string buildRules = pbxspec::Manager::DeveloperBuildRules(*developerRoot);
     specManager->registerBuildRules(buildRules);
 
     pbxspec::PBX::BuildSystem::shared_ptr buildSystem = specManager->buildSystem("com.apple.build-system.core", { "default" });

@@ -10,11 +10,13 @@
 #include <xcdriver/FindAction.h>
 #include <xcdriver/Options.h>
 #include <xcsdk/xcsdk.h>
-#include <libutil/FSUtil.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 
 using xcdriver::FindAction;
 using xcdriver::Options;
-using libutil::FSUtil;
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
 
 FindAction::
 FindAction()
@@ -29,8 +31,15 @@ FindAction::
 int FindAction::
 Run(Options const &options)
 {
-    std::string developerRoot = xcsdk::Environment::DeveloperRoot();
-    std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(developerRoot);
+    std::unique_ptr<Filesystem> filesystem = std::unique_ptr<Filesystem>(new DefaultFilesystem());
+
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem.get());
+    if (!developerRoot) {
+        fprintf(stderr, "error: unable to find developer dir\n");
+        return 1;
+    }
+
+    std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(filesystem.get(), *developerRoot);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to open developer directory\n");
         return 1;
@@ -48,13 +57,13 @@ Run(Options const &options)
     }
 
     if (!options.findExecutable().empty()) {
-        std::string executable = FSUtil::FindExecutable(options.findExecutable(), target->executablePaths());
-        if (executable.empty()) {
+        ext::optional<std::string> executable = filesystem->findExecutable(options.findExecutable(), target->executablePaths());
+        if (!executable) {
             fprintf(stderr, "error: '%s' not found\n", options.findExecutable().c_str());
             return 1;
         }
 
-        printf("%s\n", executable.c_str());
+        printf("%s\n", executable->c_str());
         return 0;
     } else if (!options.findLibrary().empty()) {
         fprintf(stderr, "warning: finding libraries is not supported\n");

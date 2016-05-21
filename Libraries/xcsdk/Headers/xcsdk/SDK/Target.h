@@ -13,6 +13,8 @@
 #include <xcsdk/SDK/Product.h>
 #include <xcsdk/SDK/Toolchain.h>
 
+namespace libutil { class Filesystem; };
+
 namespace xcsdk { namespace SDK {
 
 class Manager;
@@ -109,7 +111,7 @@ public:
     std::vector<std::string> executablePaths(Toolchain::vector const &overrideToolchains = { }) const;
 
 public:
-    static Target::shared_ptr Open(std::shared_ptr<Manager> manager, std::shared_ptr<Platform>, std::string const &path);
+    static Target::shared_ptr Open(libutil::Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::shared_ptr<Platform>, std::string const &path);
 
 private:
     bool parse(plist::Dictionary const *dict);

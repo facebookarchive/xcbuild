@@ -8,10 +8,10 @@
  */
 
 #include <xcsdk/SDK/Product.h>
-#include <libutil/FSUtil.h>
+#include <libutil/Filesystem.h>
 
 using xcsdk::SDK::Product;
-using libutil::FSUtil;
+using libutil::Filesystem;
 
 Product::Product()
 {
@@ -50,7 +50,7 @@ parse(plist::Dictionary const *dict)
 }
 
 Product::shared_ptr Product::
-Open(std::string const &path)
+Open(Filesystem const *filesystem, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
@@ -58,17 +58,24 @@ Open(std::string const &path)
     }
 
     std::string settingsFileName = path + "/System/Library/CoreServices/SystemVersion.plist";
-    if (!FSUtil::TestForRead(settingsFileName.c_str()))
+    if (!filesystem->isReadable(settingsFileName)) {
         return nullptr;
+    }
 
-    std::string realPath = FSUtil::ResolvePath(settingsFileName);
-    if (realPath.empty())
+    std::string realPath = filesystem->resolvePath(settingsFileName);
+    if (realPath.empty()) {
         return nullptr;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, settingsFileName)) {
+        return nullptr;
+    }
 
     //
     // Parse property list
     //
-    auto result = plist::Format::Any::Read(settingsFileName);
+    auto result = plist::Format::Any::Read(contents);
     if (result.first == nullptr) {
         return nullptr;
     }

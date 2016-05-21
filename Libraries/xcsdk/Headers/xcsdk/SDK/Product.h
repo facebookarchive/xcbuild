@@ -12,6 +12,8 @@
 
 #include <xcsdk/Base.h>
 
+namespace libutil { class Filesystem; };
+
 namespace xcsdk { namespace SDK {
 
 class Product {
@@ -41,7 +43,7 @@ public:
     { return _productCopyright; }
 
 public:
-    static Product::shared_ptr Open(std::string const &path);
+    static Product::shared_ptr Open(libutil::Filesystem const *filesystem, std::string const &path);
 
 private:
     bool parse(plist::Dictionary const *dict);

@@ -9,6 +9,7 @@
 
 #include <xcsdk/SDK/Platform.h>
 #include <xcsdk/SDK/Manager.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 #include <algorithm>
@@ -16,6 +17,7 @@
 using xcsdk::SDK::Platform;
 using pbxsetting::Level;
 using pbxsetting::Setting;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Platform::Platform() :
@@ -229,7 +231,7 @@ parse(plist::Dictionary const *dict)
 }
 
 Platform::shared_ptr Platform::
-Open(std::shared_ptr<Manager> manager, std::string const &path)
+Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
@@ -237,17 +239,24 @@ Open(std::shared_ptr<Manager> manager, std::string const &path)
     }
 
     std::string settingsFileName = path + "/Info.plist";
-    if (!FSUtil::TestForRead(settingsFileName.c_str()))
+    if (!filesystem->isReadable(settingsFileName)) {
         return nullptr;
+    }
 
-    std::string realPath = FSUtil::ResolvePath(settingsFileName);
-    if (realPath.empty())
+    std::string realPath = filesystem->resolvePath(settingsFileName);
+    if (realPath.empty()) {
         return nullptr;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, settingsFileName)) {
+        return nullptr;
+    }
 
     //
     // Parse property list
     //
-    auto result = plist::Format::Any::Read(settingsFileName);
+    auto result = plist::Format::Any::Read(contents);
     if (result.first == nullptr) {
         return nullptr;
     }
@@ -276,18 +285,18 @@ Open(std::shared_ptr<Manager> manager, std::string const &path)
         //
         // Parse version information
         //
-        platform->_platformVersion = PlatformVersion::Open(platform->_path);
+        platform->_platformVersion = PlatformVersion::Open(filesystem, platform->_path);
 
         //
         // Lookup all the SDKs inside the platform
         //
         std::string sdksPath = platform->_path + "/Developer/SDKs";
-        FSUtil::EnumerateDirectory(sdksPath, [&](std::string const &filename) -> bool {
+        filesystem->enumerateDirectory(sdksPath, [&](std::string const &filename) -> bool {
             if (FSUtil::GetFileExtension(filename) != "sdk") {
                 return true;
             }
 
-            if (auto target = Target::Open(manager, platform, sdksPath + "/" + filename)) {
+            if (auto target = Target::Open(filesystem, manager, platform, sdksPath + "/" + filename)) {
                 platform->_targets.push_back(target);
             }
             return true;

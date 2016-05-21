@@ -13,6 +13,8 @@
 #include <xcsdk/SDK/Target.h>
 #include <xcsdk/SDK/PlatformVersion.h>
 
+namespace libutil { class Filesystem; };
+
 namespace xcsdk { namespace SDK {
 
 class Platform {
@@ -94,7 +96,7 @@ public:
     std::vector<std::string> executablePaths() const;
 
 public:
-    static Platform::shared_ptr Open(std::shared_ptr<Manager> manager, std::string const &path);
+    static Platform::shared_ptr Open(libutil::Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string const &path);
 
 private:
     bool parse(plist::Dictionary const *dict);

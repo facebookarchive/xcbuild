@@ -8,6 +8,7 @@
  */
 
 #include <xcsdk/SDK/Manager.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 using xcsdk::SDK::Manager;
@@ -15,6 +16,7 @@ using xcsdk::SDK::Target;
 using xcsdk::SDK::Toolchain;
 using pbxsetting::Setting;
 using pbxsetting::Level;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Manager::Manager()
@@ -100,7 +102,7 @@ executablePaths() const
 }
 
 std::shared_ptr<Manager> Manager::
-Open(std::string const &path)
+Open(Filesystem const *filesystem, std::string const &path)
 {
     if (path.empty()) {
         fprintf(stderr, "error: empty path for sdk manager\n");
@@ -113,12 +115,12 @@ Open(std::string const &path)
     std::vector<std::shared_ptr<Toolchain>> toolchains;
 
     std::string toolchainsPath = path + "/Toolchains";
-    FSUtil::EnumerateDirectory(toolchainsPath, [&](std::string const &filename) -> bool {
+    filesystem->enumerateDirectory(toolchainsPath, [&](std::string const &filename) -> bool {
         if (FSUtil::GetFileExtension(filename) != "xctoolchain") {
             return true;
         }
 
-        auto toolchain = SDK::Toolchain::Open(manager, toolchainsPath + "/" + filename);
+        auto toolchain = SDK::Toolchain::Open(filesystem, manager, toolchainsPath + "/" + filename);
         if (toolchain != nullptr) {
             toolchains.push_back(toolchain);
         }
@@ -131,12 +133,12 @@ Open(std::string const &path)
     std::vector<std::shared_ptr<Platform>> platforms;
 
     std::string platformsPath = path + "/Platforms";
-    FSUtil::EnumerateDirectory(platformsPath, [&](std::string const &filename) -> bool {
+    filesystem->enumerateDirectory(platformsPath, [&](std::string const &filename) -> bool {
         if (FSUtil::GetFileExtension(filename) != "platform") {
             return true;
         }
 
-        auto platform = SDK::Platform::Open(manager, platformsPath + "/" + filename);
+        auto platform = SDK::Platform::Open(filesystem, manager, platformsPath + "/" + filename);
         if (platform != nullptr) {
             platforms.push_back(platform);
         }

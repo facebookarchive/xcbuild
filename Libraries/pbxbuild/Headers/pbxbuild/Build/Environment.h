@@ -14,6 +14,8 @@
 
 #include <ext/optional>
 
+namespace libutil { class Filesystem; }
+
 namespace pbxbuild {
 namespace Build {
 
@@ -59,7 +61,7 @@ public:
      * of each of the build environment's subcomponents.
      */
     static ext::optional<Environment>
-    Default(void);
+    Default(libutil::Filesystem const *filesystem);
 };
 
 }

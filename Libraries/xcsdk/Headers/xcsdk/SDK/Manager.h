@@ -14,6 +14,8 @@
 #include <xcsdk/SDK/Toolchain.h>
 #include <xcsdk/SDK/Target.h>
 
+namespace libutil { class Filesystem; };
+
 namespace xcsdk { namespace SDK {
 
 /*
@@ -80,7 +82,7 @@ public:
     /*
      * Load from a developer root. Returns nullptr on error.
      */
-    static std::shared_ptr<Manager> Open(std::string const &path);
+    static std::shared_ptr<Manager> Open(libutil::Filesystem const *filesystem, std::string const &path);
 };
 
 } }

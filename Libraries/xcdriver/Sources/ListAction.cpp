@@ -10,10 +10,14 @@
 #include <xcdriver/ListAction.h>
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 using xcdriver::ListAction;
 using xcdriver::Options;
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 ListAction::
@@ -29,7 +33,9 @@ ListAction::
 int ListAction::
 Run(Options const &options)
 {
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default();
+    std::unique_ptr<Filesystem> filesystem = std::unique_ptr<Filesystem>(new DefaultFilesystem());
+
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(filesystem.get());
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;

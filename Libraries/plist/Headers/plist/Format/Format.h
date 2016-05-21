@@ -53,6 +53,17 @@ public:
         return Deserialize(contents, *format);
     }
 
+    static std::pair<std::unique_ptr<Object>, std::string>
+    Read(std::vector<uint8_t> const &contents)
+    {
+        std::unique_ptr<T> format = Identify(contents);
+        if (format == nullptr) {
+            return std::make_pair(nullptr, "couldn't identify format");
+        }
+
+        return Deserialize(contents, *format);
+    }
+
 public:
     static std::pair<bool, std::string>
     Write(std::string const &path, Object const *object, T const &format)

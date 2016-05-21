@@ -8,12 +8,14 @@
  */
 
 #include <xcsdk/xcsdk.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 #include <libutil/Options.h>
 #include <libutil/Subprocess.h>
-#include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 
-using libutil::FSUtil;
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
 using libutil::SysUtil;
 using libutil::Subprocess;
 
@@ -282,16 +284,21 @@ main(int argc, char **argv)
     }
 
     /*
+     * Create filesystem.
+     */
+    auto filesystem = std::unique_ptr<Filesystem>(new DefaultFilesystem());
+
+    /*
      * Load the SDK manager from the developer root.
      */
-    std::string developerRoot = xcsdk::Environment::DeveloperRoot();
-    if (developerRoot.empty()) {
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem.get());
+    if (!developerRoot) {
         fprintf(stderr, "error: unable to find developer root\n");
         return -1;
     }
-    std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(developerRoot);
+    std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(filesystem.get(), *developerRoot);
     if (manager == nullptr) {
-        fprintf(stderr, "error: unable to load manager from '%s'\n", developerRoot.c_str());
+        fprintf(stderr, "error: unable to load manager from '%s'\n", developerRoot->c_str());
         return -1;
     }
     if (verbose) {
@@ -375,20 +382,20 @@ main(int argc, char **argv)
          * Find the tool to execute in the SDK or toolchains.
          */
         std::vector<std::string> executablePaths = target->executablePaths(toolchains);
-        std::string executable = FSUtil::FindExecutable(options.tool(), executablePaths);
-        if (executable.empty()) {
+        ext::optional<std::string> executable = filesystem->findExecutable(options.tool(), executablePaths);
+        if (!executable) {
             fprintf(stderr, "error: tool '%s' not found\n", options.tool().c_str());
             return 1;
         }
         if (verbose) {
-            fprintf(stderr, "verbose: resolved tool '%s' to: %s\n", options.tool().c_str(), executable.c_str());
+            fprintf(stderr, "verbose: resolved tool '%s' to: %s\n", options.tool().c_str(), executable->c_str());
         }
 
         if (options.find()) {
             /*
              * Just find the tool; i.e. print its path.
              */
-            printf("%s\n", executable.c_str());
+            printf("%s\n", executable->c_str());
             return 0;
         } else {
             /* Run is the default. */
@@ -400,17 +407,17 @@ main(int argc, char **argv)
             environment["SYSROOT"] = target->path();
 
             if (log) {
-                printf("env SDKROOT=%s %s\n", target->path().c_str(), executable.c_str());
+                printf("env SDKROOT=%s %s\n", target->path().c_str(), executable->c_str());
             }
 
             /*
              * Execute the process!
              */
             if (verbose) {
-                printf("verbose: executing tool: %s\n", executable.c_str());
+                printf("verbose: executing tool: %s\n", executable->c_str());
             }
             Subprocess process;
-            if (!process.execute(executable, options.args(), environment)) {
+            if (!process.execute(*executable, options.args(), environment)) {
                 fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool().c_str());
                 return -1;
             }

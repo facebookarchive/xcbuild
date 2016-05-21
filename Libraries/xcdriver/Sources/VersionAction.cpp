@@ -11,9 +11,13 @@
 #include <xcdriver/Options.h>
 
 #include <xcsdk/xcsdk.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 
 using xcdriver::VersionAction;
 using xcdriver::Options;
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
 
 VersionAction::
 VersionAction()
@@ -28,13 +32,20 @@ VersionAction::
 int VersionAction::
 Run(Options const &options)
 {
+    std::unique_ptr<Filesystem> filesystem = std::unique_ptr<Filesystem>(new DefaultFilesystem());
+
     if (options.sdk().empty()) {
         // TODO(grp): Real version numbers.
         printf("xcbuild version 0.1\n");
         printf("Build version 1\n");
     } else {
-        std::string developerRoot = xcsdk::Environment::DeveloperRoot();
-        std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(developerRoot);
+        ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem.get());
+        if (!developerRoot) {
+            fprintf(stderr, "error: unable to find developer dir\n");
+            return 1;
+        }
+
+        std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(filesystem.get(), *developerRoot);
         if (manager == nullptr) {
             fprintf(stderr, "error: unable to open developer directory\n");
             return 1;

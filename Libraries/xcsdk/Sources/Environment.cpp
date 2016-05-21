@@ -9,20 +9,20 @@
 
 #include <xcsdk/Environment.h>
 #include <libutil/Base.h>
-#include <libutil/FSUtil.h>
+#include <libutil/Filesystem.h>
 #include <libutil/Subprocess.h>
 
 #include <sstream>
 
 using xcsdk::Environment;
-using libutil::FSUtil;
+using libutil::Filesystem;
 using libutil::Subprocess;
 
-std::string Environment::
-DeveloperRoot(void)
+ext::optional<std::string> Environment::
+DeveloperRoot(Filesystem const *filesystem)
 {
-    if (getenv("DEVELOPER_DIR")) {
-        return getenv("DEVELOPER_DIR");
+    if (char *path = getenv("DEVELOPER_DIR")) {
+        return std::string(path);
     }
 
 #if defined(__APPLE__)
@@ -38,9 +38,9 @@ DeveloperRoot(void)
 #endif
 
     std::string root = "/Developer";
-    if (FSUtil::TestForDirectory(root)) {
+    if (filesystem->isDirectory(root)) {
         return root;
     }
 
-    return std::string();
+    return ext::nullopt;
 }
