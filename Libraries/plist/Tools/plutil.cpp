@@ -9,9 +9,10 @@
 
 #include <plist/plist.h>
 #include <libutil/Options.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
-#include <fstream>
 #include <iostream>
 
 class Options {
@@ -402,7 +403,7 @@ Help(std::string const &error = std::string())
 }
 
 static std::pair<bool, std::vector<uint8_t>>
-Read(std::string const &path = "-")
+Read(libutil::Filesystem const *filesystem, std::string const &path = "-")
 {
     std::vector<uint8_t> contents;
 
@@ -411,31 +412,25 @@ Read(std::string const &path = "-")
         contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
     } else {
         /* Read from file. */
-        std::ifstream file(path, std::ios::binary);
-        if (file.fail()) {
+        if (!filesystem->read(&contents, path)) {
             return std::make_pair(false, std::vector<uint8_t>());
         }
-
-        contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
     }
 
     return std::make_pair(true, std::move(contents));
 }
 
 static bool
-Write(std::vector<uint8_t> const &contents, std::string const &path = "-")
+Write(libutil::Filesystem *filesystem, std::vector<uint8_t> const &contents, std::string const &path = "-")
 {
     if (path == "-") {
         /* - means write to stdout. */
         std::copy(contents.begin(), contents.end(), std::ostream_iterator<char>(std::cout));
     } else {
         /* Read from file. */
-        std::ofstream file(path, std::ios::binary);
-        if (file.fail()) {
+        if (!filesystem->write(contents, path)) {
             return false;
         }
-
-        std::copy(contents.begin(), contents.end(), std::ostream_iterator<char>(file));
     }
 
     return true;
@@ -453,7 +448,7 @@ Lint(Options const &options, std::string const &file)
 }
 
 static bool
-Print(Options const &options, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
+Print(libutil::Filesystem *filesystem, Options const &options, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
 {
     /* Convert to ASCII. */
     plist::Format::ASCII out = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
@@ -464,7 +459,7 @@ Print(Options const &options, std::unique_ptr<plist::Object> object, plist::Form
     }
 
     /* Print. */
-    if (!Write(*serialize.first)) {
+    if (!Write(filesystem, *serialize.first)) {
         fprintf(stderr, "error: unable to write\n");
         return false;
     }
@@ -548,7 +543,7 @@ PerformAdjustment(plist::Object *object, plist::Object **rootObject, std::string
 }
 
 static bool
-Modify(Options const &options, std::string const &file, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
+Modify(libutil::Filesystem *filesystem, Options const &options, std::string const &file, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
 {
     plist::Object *writeObject = object.get();
 
@@ -618,7 +613,7 @@ Modify(Options const &options, std::string const &file, std::unique_ptr<plist::O
 
     /* Write to output. */
     std::string output = OutputPath(options, file);
-    if (!Write(*serialize.first, output)) {
+    if (!Write(filesystem, *serialize.first, output)) {
         fprintf(stderr, "error: unable to write\n");
         return false;
     }
@@ -630,6 +625,7 @@ int
 main(int argc, char **argv)
 {
     std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+    auto filesystem = std::unique_ptr<libutil::Filesystem>(new libutil::DefaultFilesystem());
 
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -660,7 +656,7 @@ main(int argc, char **argv)
 
         /* Actions applied to each input file separately. */
         for (std::string const &file : options.inputs()) {
-            std::pair<bool, std::vector<uint8_t>> result = Read(file);
+            std::pair<bool, std::vector<uint8_t>> result = Read(filesystem.get(), file);
             if (!result.first) {
                 fprintf(stderr, "error: unable to read %s\n", file.c_str());
                 success = false;
@@ -683,9 +679,9 @@ main(int argc, char **argv)
 
             /* Perform the sepcific action. */
             if (modify) {
-                success = success && Modify(options, file, std::move(deserialize.first), *format);
+                success = success && Modify(filesystem.get(), options, file, std::move(deserialize.first), *format);
             } else if (options.print()) {
-                success = success && Print(options, std::move(deserialize.first), *format);
+                success = success && Print(filesystem.get(), options, std::move(deserialize.first), *format);
             } else if (options.lint() || true) {
                 success = success && Lint(options, file);
             }
