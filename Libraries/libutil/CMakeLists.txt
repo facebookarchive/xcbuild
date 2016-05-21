@@ -9,6 +9,9 @@
 
 add_library(util SHARED
             Sources/FSUtil.cpp
+            Sources/Filesystem.cpp
+            Sources/DefaultFilesystem.cpp
+            Sources/MemoryFilesystem.cpp
             Sources/SysUtil.cpp
             Sources/Options.cpp
             #
@@ -20,9 +23,10 @@ add_library(util SHARED
             Sources/md5.c
             )
 
-target_link_libraries(util PUBLIC)
+target_link_libraries(util PUBLIC ext)
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 
+ADD_UNIT_GTEST(util MemoryFilesystem Tests/test_MemoryFilesystem.cpp)
 ADD_UNIT_GTEST(util FSUtil Tests/test_FSUtil.cpp)
 ADD_UNIT_GTEST(util Wildcard Tests/test_Wildcard.cpp)
 ADD_UNIT_GTEST(util Escape Tests/test_Escape.cpp)
