@@ -26,11 +26,13 @@ public:
 
 public:
     virtual bool build(
+        libutil::Filesystem *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters);
 
 private:
     bool buildAction(
+        libutil::Filesystem *filesystem,
         Parameters const &buildParameters,
         pbxbuild::Build::Environment const &buildEnvironment,
         pbxbuild::Build::Context const &buildContext,
@@ -43,11 +45,13 @@ private:
         std::vector<pbxbuild::Tool::Invocation> const &invocations,
         std::unordered_set<std::string> *seenDirectories);
     bool buildTargetAuxiliaryFiles(
+        libutil::Filesystem *filesystem,
         ninja::Writer *writer,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
         std::vector<pbxbuild::Tool::Invocation> const &invocations);
     bool buildTargetInvocations(
+        libutil::Filesystem *filesystem,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
         std::vector<pbxbuild::Tool::Invocation> const &invocations);

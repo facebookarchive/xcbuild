@@ -29,20 +29,24 @@ public:
 
 public:
     virtual bool build(
+        libutil::Filesystem *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters);
 
 private:
     bool writeAuxiliaryFiles(
+        libutil::Filesystem *filesystem,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
         std::vector<pbxbuild::Tool::Invocation> const &invocations);
     std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> performInvocations(
+        libutil::Filesystem *filesystem,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
         std::vector<pbxbuild::Tool::Invocation> const &orderedInvocations,
         bool createProductStructure);
     std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> buildTarget(
+        libutil::Filesystem *filesystem,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
         std::vector<pbxbuild::Tool::Invocation> const &invocations);

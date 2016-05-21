@@ -13,15 +13,15 @@
 #include <builtin/Driver.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/PhaseInvocations.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/Subprocess.h>
-
-#include <fstream>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
 using xcexecution::SimpleExecutor;
+using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::Subprocess;
 
@@ -39,6 +39,7 @@ SimpleExecutor::
 
 bool SimpleExecutor::
 build(
+    libutil::Filesystem *filesystem,
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
 {
@@ -80,7 +81,7 @@ build(
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
         xcformatter::Formatter::Print(_formatter->finishCheckDependencies(target));
 
-        auto result = buildTarget(target, *targetEnvironment, phaseInvocations.invocations());
+        auto result = buildTarget(filesystem, target, *targetEnvironment, phaseInvocations.invocations());
         if (!result.first) {
             xcformatter::Formatter::Print(_formatter->finishTarget(*buildContext, target));
             xcformatter::Formatter::Print(_formatter->failure(*buildContext, result.second));
@@ -144,6 +145,7 @@ SortInvocations(std::vector<pbxbuild::Tool::Invocation> const &invocations)
 
 bool SimpleExecutor::
 writeAuxiliaryFiles(
+    Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
     std::vector<pbxbuild::Tool::Invocation> const &invocations)
@@ -152,11 +154,11 @@ writeAuxiliaryFiles(
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
         for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
             std::string directory = FSUtil::GetDirectoryName(auxiliaryFile.path());
-            if (!FSUtil::TestForDirectory(directory)) {
+            if (!filesystem->isDirectory(directory)) {
                 xcformatter::Formatter::Print(_formatter->createAuxiliaryDirectory(directory));
 
                 if (!_dryRun) {
-                    if (!FSUtil::CreateDirectory(directory)) {
+                    if (!filesystem->createDirectory(directory)) {
                         return false;
                     }
                 }
@@ -165,20 +167,16 @@ writeAuxiliaryFiles(
             xcformatter::Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
 
             if (!_dryRun) {
-                std::ofstream out;
-                out.open(auxiliaryFile.path(), std::ios::out | std::ios::trunc | std::ios::binary);
-                if (out.fail()) {
+                if (!filesystem->write(auxiliaryFile.contents(), auxiliaryFile.path())) {
                     return false;
                 }
-
-                std::copy(auxiliaryFile.contents().begin(), auxiliaryFile.contents().end(), std::ostream_iterator<char>(out));
-                out.close();
             }
 
-            if (auxiliaryFile.executable() && !FSUtil::TestForExecute(auxiliaryFile.path())) {
+            if (auxiliaryFile.executable() && !filesystem->isExecutable(auxiliaryFile.path())) {
                 xcformatter::Formatter::Print(_formatter->setAuxiliaryExecutable(auxiliaryFile.path()));
 
                 if (!_dryRun) {
+                    // FIXME: This should use the filesystem.
                     if (::chmod(auxiliaryFile.path().c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
                         return false;
                     }
@@ -193,6 +191,7 @@ writeAuxiliaryFiles(
 
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 performInvocations(
+    Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
     std::vector<pbxbuild::Tool::Invocation> const &orderedInvocations,
@@ -216,7 +215,7 @@ performInvocations(
             for (std::string const &output : invocation.outputs()) {
                 std::string directory = FSUtil::GetDirectoryName(output);
 
-                if (!FSUtil::CreateDirectory(directory)) {
+                if (!filesystem->createDirectory(directory)) {
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
             }
@@ -251,11 +250,12 @@ performInvocations(
 
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 buildTarget(
+    Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
     std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
-    if (!writeAuxiliaryFiles(target, targetEnvironment, invocations)) {
+    if (!writeAuxiliaryFiles(filesystem, target, targetEnvironment, invocations)) {
         return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>());
     }
 
@@ -266,13 +266,13 @@ buildTarget(
     }
 
     xcformatter::Formatter::Print(_formatter->beginCreateProductStructure(target));
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(target, targetEnvironment, *orderedInvocations, true);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(filesystem, target, targetEnvironment, *orderedInvocations, true);
     xcformatter::Formatter::Print(_formatter->finishCreateProductStructure(target));
     if (!structureResult.first) {
         return structureResult;
     }
 
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(target, targetEnvironment, *orderedInvocations, false);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(filesystem, target, targetEnvironment, *orderedInvocations, false);
     if (!invocationsResult.first) {
         return invocationsResult;
     }

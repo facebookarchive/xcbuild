@@ -156,7 +156,7 @@ Run(Options const &options)
     /*
      * Perform the build!
      */
-    bool success = executor->build(*buildEnvironment, parameters);
+    bool success = executor->build(filesystem.get(), *buildEnvironment, parameters);
     if (!success) {
         return 1;
     }

@@ -14,6 +14,8 @@
 #include <xcformatter/Formatter.h>
 #include <pbxbuild/DirectedGraph.h>
 
+namespace libutil { class Filesystem; }
+
 namespace pbxbuild {
 namespace Build { class Context; }
 namespace Build { class Environment; }
@@ -46,6 +48,7 @@ public:
      * Abstract build method. Override to implement the build.
      */
     virtual bool build(
+        libutil::Filesystem *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters) = 0;
 };
