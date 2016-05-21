@@ -35,7 +35,7 @@ public:
     inline std::string const &version() const
     { return _productBuildVersion; }
     inline std::string const &buildVersion() const
-    { return _productBuildVersion; }
+    { return _buildVersion; }
     inline std::string const &sourceVersion() const
     { return _sourceVersion; }
 

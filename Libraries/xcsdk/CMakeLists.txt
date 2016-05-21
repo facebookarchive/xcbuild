@@ -22,3 +22,5 @@ target_include_directories(xcsdk PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 
 add_executable(xcrun Tools/xcrun.cpp)
 target_link_libraries(xcrun xcsdk util)
+
+ADD_UNIT_GTEST(xcsdk PlatformVersion Tests/test_PlatformVersion.cpp)
