@@ -227,58 +227,6 @@ ResolvePath(std::string const &path)
         return realPath;
 }
 
-bool FSUtil::
-Touch(std::string const &path)
-{
-    if (TestForWrite(path))
-        return true;
-
-    FILE *fp = std::fopen(path.c_str(), "w");
-    if (fp == nullptr)
-        return false;
-
-    std::fclose(fp);
-    return true;
-}
-
-bool FSUtil::
-Remove(std::string const &path)
-{
-    if (::unlink(path.c_str()) < 0) {
-        if (::unlink(path.c_str()) < 0)
-            return false;
-    }
-    return true;
-}
-
-bool FSUtil::
-CreateDirectory(std::string const &path)
-{
-    std::vector<std::string> components;
-
-    std::string current = path;
-    while (current != GetDirectoryName(current)) {
-        std::string component = GetBaseName(current);
-        components.push_back(component);
-
-        current = GetDirectoryName(current);
-    }
-
-    for (auto it = components.rbegin(); it != components.rend(); ++it) {
-        std::string const &component = *it;
-        if (it != components.rbegin()) {
-            current += "/";
-        }
-        current += component;
-
-        if (::mkdir(current.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0 && errno != EEXIST) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 std::string FSUtil::
 GetCurrentDirectory()
 {

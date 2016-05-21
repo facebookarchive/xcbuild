@@ -48,11 +48,6 @@ public:
     static std::string NormalizePath(std::string const &path);
 
 public:
-    static bool Touch(std::string const &path);
-    static bool Remove(std::string const &path);
-    static bool CreateDirectory(std::string const &path);
-
-public:
     static bool EnumerateDirectory(std::string const &path,
             std::function <bool(std::string const &)> const &cb);
 
