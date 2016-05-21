@@ -10,6 +10,7 @@
 #include <builtin/copy/Driver.h>
 #include <builtin/copy/Options.h>
 
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/Subprocess.h>
 
@@ -17,6 +18,7 @@
 
 using builtin::copy::Driver;
 using builtin::copy::Options;
+using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::Subprocess;
 
@@ -37,9 +39,9 @@ name()
 }
 
 static bool
-CopyPath(std::string const &inputPath, std::string const &outputPath)
+CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const &outputPath)
 {
-    if (!FSUtil::CreateDirectory(FSUtil::GetDirectoryName(outputPath))) {
+    if (!filesystem->createDirectory(FSUtil::GetDirectoryName(outputPath))) {
         return false;
     }
 
@@ -58,7 +60,7 @@ CopyPath(std::string const &inputPath, std::string const &outputPath)
 }
 
 static int
-Run(Options const &options, std::string const &workingDirectory)
+Run(Filesystem *filesystem, Options const &options, std::string const &workingDirectory)
 {
     if (options.stripDebugSymbols() || options.bitcodeStrip() != Options::BitcodeStripMode::None) {
         // TODO(grp): Implement strip support when copying.
@@ -78,10 +80,10 @@ Run(Options const &options, std::string const &workingDirectory)
         input = FSUtil::ResolveRelativePath(input, workingDirectory);
 
         if (options.resolveSrcSymlinks()) {
-            input = FSUtil::ResolvePath(input);
+            input = filesystem->resolvePath(input);
         }
 
-        if (!FSUtil::TestForDirectory(input) && !FSUtil::TestForRead(input)) {
+        if (!filesystem->isDirectory(input) && !filesystem->isReadable(input)) {
             if (options.ignoreMissingInputs()) {
                 continue;
             } else {
@@ -95,7 +97,7 @@ Run(Options const &options, std::string const &workingDirectory)
         }
 
         std::string outputPath = output + "/" + FSUtil::GetBaseName(input);
-        if (!CopyPath(input, outputPath)) {
+        if (!CopyPath(filesystem, input, outputPath)) {
             return 1;
         }
     }
@@ -104,7 +106,7 @@ Run(Options const &options, std::string const &workingDirectory)
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -113,5 +115,5 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         return 1;
     }
 
-    return Run(options, workingDirectory);
+    return Run(filesystem, options, workingDirectory);
 }

@@ -15,6 +15,8 @@
 #include <vector>
 #include <unordered_map>
 
+namespace libutil { class Filesystem; }
+
 namespace builtin {
 
 class Driver {
@@ -26,7 +28,7 @@ public:
     virtual std::string name() = 0;
 
 public:
-    virtual int run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory) = 0;
+    virtual int run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, libutil::Filesystem *filesystem, std::string const &workingDirectory) = 0;
 
 public:
     int runc(int argc, char **argv, char **envp);

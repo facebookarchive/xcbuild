@@ -11,10 +11,12 @@
 #include <builtin/copyPlist/Options.h>
 #include <plist/Object.h>
 #include <plist/Format/Any.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 using builtin::copyPlist::Driver;
 using builtin::copyPlist::Options;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Driver::
@@ -34,7 +36,7 @@ name()
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -88,13 +90,12 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      */
     for (std::string const &inputPath : options.inputs()) {
         /* Read in the input. */
-        std::ifstream inputFile(FSUtil::ResolveRelativePath(inputPath, workingDirectory), std::ios::binary);
-        if (inputFile.fail()) {
+        std::vector<uint8_t> inputContents;
+        if (!filesystem->read(&inputContents, FSUtil::ResolveRelativePath(inputPath, workingDirectory))) {
             fprintf(stderr, "error: unable to read input %s\n", inputPath.c_str());
             return 1;
         }
 
-        std::vector<uint8_t> inputContents = std::vector<uint8_t>(std::istreambuf_iterator<char>(inputFile), std::istreambuf_iterator<char>());
         std::vector<uint8_t> outputContents;
 
         if (convertFormat == nullptr && !options.validate()) {
@@ -134,13 +135,10 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         std::string outputPath = FSUtil::ResolveRelativePath(options.outputDirectory(), workingDirectory) + "/" + FSUtil::GetBaseName(inputPath);
 
         /* Write out the output. */
-        std::ofstream outputFile(outputPath, std::ios::binary);
-        if (outputFile.fail()) {
+        if (!filesystem->write(outputContents, outputPath)) {
             fprintf(stderr, "error: could not open output path %s to write\n", outputPath.c_str());
             return 1;
         }
-
-        std::copy(outputContents.begin(), outputContents.end(), std::ostream_iterator<char>(outputFile));
     }
 
     return 0;

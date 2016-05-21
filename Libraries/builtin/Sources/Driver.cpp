@@ -8,9 +8,13 @@
  */
 
 #include <builtin/Driver.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 using builtin::Driver;
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Driver::
@@ -26,6 +30,7 @@ Driver::
 int Driver::
 runc(int argc, char **argv, char **envp)
 {
+    DefaultFilesystem filesystem = DefaultFilesystem();
     std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
 
     std::unordered_map<std::string, std::string> environment;
@@ -40,5 +45,5 @@ runc(int argc, char **argv, char **envp)
         }
     }
 
-    return run(args, environment, FSUtil::GetCurrentDirectory());
+    return run(args, environment, &filesystem, FSUtil::GetCurrentDirectory());
 }

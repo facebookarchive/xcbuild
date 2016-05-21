@@ -228,7 +228,7 @@ performInvocations(
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
 
-                if (driver->run(invocation.arguments(), invocation.environment(), invocation.workingDirectory()) != 0) {
+                if (driver->run(invocation.arguments(), invocation.environment(), filesystem, invocation.workingDirectory()) != 0) {
                     xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }

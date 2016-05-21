@@ -10,6 +10,8 @@
 #include <builtin/lsRegisterURL/Driver.h>
 #include <builtin/lsRegisterURL/Options.h>
 
+#include <libutil/Filesystem.h>
+
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
 #if TARGET_OS_MAC && !TARGET_OS_IPHONE
@@ -20,6 +22,7 @@
 
 using builtin::lsRegisterURL::Driver;
 using builtin::lsRegisterURL::Options;
+using libutil::Filesystem;
 
 Driver::
 Driver()
@@ -38,7 +41,7 @@ name()
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);

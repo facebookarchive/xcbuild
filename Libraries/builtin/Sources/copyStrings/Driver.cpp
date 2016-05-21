@@ -10,10 +10,12 @@
 #include <builtin/copyStrings/Driver.h>
 #include <builtin/copyStrings/Options.h>
 #include <plist/plist.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 using builtin::copyStrings::Driver;
 using builtin::copyStrings::Options;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Driver::
@@ -103,7 +105,7 @@ ValidateOptions(Options const &options)
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -134,12 +136,11 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     for (std::string const &inputPath : options.inputs()) {
         /* Read in the input. */
         std::string resolvedInputPath = FSUtil::ResolveRelativePath(inputPath, workingDirectory);
-        std::ifstream inputFile(resolvedInputPath, std::ios::binary);
-        if (inputFile.fail()) {
+        std::vector<uint8_t> inputContents;
+        if (!filesystem->read(&inputContents, resolvedInputPath)) {
             fprintf(stderr, "error: unable to read input %s\n", inputPath.c_str());
             return 1;
         }
-        std::vector<uint8_t> inputContents = std::vector<uint8_t>(std::istreambuf_iterator<char>(inputFile), std::istreambuf_iterator<char>());
 
         /* Determine the input format. */
         std::unique_ptr<plist::Format::Any> inputFormat = plist::Format::Any::Identify(inputContents);
@@ -175,9 +176,14 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         std::string outputPath = FSUtil::ResolveRelativePath(options.outputDirectory(), workingDirectory) + "/" + FSUtil::GetBaseName(inputPath);
 
         /* Write out the output. */
-        auto serialize = plist::Format::Any::Write(outputPath, deserialize.first.get(), outputFormat);
-        if (!serialize.first) {
+        auto serialize = plist::Format::Any::Serialize(deserialize.first.get(), outputFormat);
+        if (serialize.first == nullptr) {
             fprintf(stderr, "error: %s: %s\n", inputPath.c_str(), serialize.second.c_str());
+            return 1;
+        }
+
+        if (!filesystem->write(*serialize.first, outputPath)) {
+            fprintf(stderr, "error: %s: could not write output\n", inputPath.c_str());
             return 1;
         }
     }

@@ -9,9 +9,11 @@
 
 #include <builtin/productPackagingUtility/Driver.h>
 #include <builtin/productPackagingUtility/Options.h>
+#include <libutil/Filesystem.h>
 
 using builtin::productPackagingUtility::Driver;
 using builtin::productPackagingUtility::Options;
+using libutil::Filesystem;
 
 Driver::
 Driver()
@@ -30,7 +32,7 @@ name()
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);

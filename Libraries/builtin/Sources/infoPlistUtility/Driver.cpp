@@ -9,12 +9,14 @@
 
 #include <builtin/infoPlistUtility/Driver.h>
 #include <builtin/infoPlistUtility/Options.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <plist/plist.h>
 #include <pbxsetting/pbxsetting.h>
 
 using builtin::infoPlistUtility::Driver;
 using builtin::infoPlistUtility::Options;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Driver::
@@ -34,7 +36,7 @@ name()
 }
 
 static std::pair<bool, std::string>
-WritePkgInfo(plist::Dictionary const *root, std::string const &path)
+WritePkgInfo(Filesystem *filesystem, plist::Dictionary const *root, std::string const &path)
 {
     std::string pkgInfo;
 
@@ -52,12 +54,11 @@ WritePkgInfo(plist::Dictionary const *root, std::string const &path)
         pkgInfo += "????";
     }
 
-    std::ofstream pkgInfoFile(path, std::ios::binary);
-    if (pkgInfoFile.fail()) {
-        return std::make_pair(false, "could not open output path " + path + " to write");
+    auto pkgInfoContents = std::vector<uint8_t>(pkgInfo.begin(), pkgInfo.end());
+    if (!filesystem->write(pkgInfoContents, path)) {
+        return std::make_pair(false, "could write to " + path);
     }
 
-    std::copy(pkgInfo.begin(), pkgInfo.end(), std::ostream_iterator<char>(pkgInfoFile));
     return std::make_pair(true, std::string());
 }
 
@@ -137,7 +138,7 @@ CreateBuildEnvironment(std::unordered_map<std::string, std::string> const &envir
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -149,13 +150,11 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     pbxsetting::Environment settingsEnvironment = CreateBuildEnvironment(environment);
 
     /* Read in the input. */
-    std::ifstream inputFile(FSUtil::ResolveRelativePath(options.input(), workingDirectory), std::ios::binary);
-    if (inputFile.fail()) {
+    std::vector<uint8_t> inputContents;
+    if (!filesystem->read(&inputContents, FSUtil::ResolveRelativePath(options.input(), workingDirectory))) {
         fprintf(stderr, "error: unable to read input %s\n", options.input().c_str());
         return 1;
     }
-
-    std::vector<uint8_t> inputContents = std::vector<uint8_t>(std::istreambuf_iterator<char>(inputFile), std::istreambuf_iterator<char>());
 
     /* Determine the input format. */
     std::unique_ptr<plist::Format::Any> inputFormat = plist::Format::Any::Identify(inputContents);
@@ -229,7 +228,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      * Write the PkgInfo file. This is just the package type and signature.
      */
     if (!options.genPkgInfo().empty()) {
-        auto result = WritePkgInfo(root, FSUtil::ResolveRelativePath(options.genPkgInfo(), workingDirectory));
+        auto result = WritePkgInfo(filesystem, root, FSUtil::ResolveRelativePath(options.genPkgInfo(), workingDirectory));
         if (!result.first) {
             fprintf(stderr, "error: %s\n", result.second.c_str());
             return 1;
@@ -242,19 +241,16 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     if (!options.resourceRulesFile().empty()) {
         std::string resourceRulesInputPath = settingsEnvironment.resolve("CODE_SIGN_RESOURCE_RULES_PATH");
         if (!resourceRulesInputPath.empty()) {
-            std::ifstream resourceRulesInput(FSUtil::ResolveRelativePath(resourceRulesInputPath, workingDirectory), std::ios::binary);
-            if (resourceRulesInput.fail()) {
+            std::vector<uint8_t> contents;
+            if (!filesystem->read(&contents, FSUtil::ResolveRelativePath(resourceRulesInputPath, workingDirectory))) {
                 fprintf(stderr, "error: unable to read input %s\n", resourceRulesInputPath.c_str());
                 return 1;
             }
 
-            std::ofstream resourceRulesOutput(FSUtil::ResolveRelativePath(options.resourceRulesFile(), workingDirectory), std::ios::binary);
-            if (resourceRulesOutput.fail()) {
+            if (!filesystem->write(contents, FSUtil::ResolveRelativePath(options.resourceRulesFile(), workingDirectory))) {
                 fprintf(stderr, "error: could not open output path %s to write\n", options.resourceRulesFile().c_str());
                 return 1;
             }
-
-            std::copy(std::istreambuf_iterator<char>(resourceRulesInput), std::istreambuf_iterator<char>(), std::ostream_iterator<char>(resourceRulesOutput));
         }
     }
 
@@ -288,13 +284,10 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     }
 
     /* Write out the output. */
-    std::ofstream outputFile(FSUtil::ResolveRelativePath(options.output(), workingDirectory), std::ios::binary);
-    if (outputFile.fail()) {
+    if (!filesystem->write(*serialize.first, FSUtil::ResolveRelativePath(options.output(), workingDirectory))) {
         fprintf(stderr, "error: could not open output path %s to write\n", options.output().c_str());
         return 1;
     }
-
-    std::copy(serialize.first->begin(), serialize.first->end(), std::ostream_iterator<char>(outputFile));
 
     return 0;
 }

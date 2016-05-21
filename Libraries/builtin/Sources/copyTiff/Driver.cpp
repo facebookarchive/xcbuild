@@ -9,11 +9,11 @@
 
 #include <builtin/copyTiff/Driver.h>
 #include <builtin/copyTiff/Options.h>
-#include <libutil/FSUtil.h>
+#include <libutil/Filesystem.h>
 
 using builtin::copyTiff::Driver;
 using builtin::copyTiff::Options;
-using libutil::FSUtil;
+using libutil::Filesystem;
 
 Driver::
 Driver()
@@ -32,7 +32,7 @@ name()
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, std::string const &workingDirectory)
+run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, libutil::Filesystem *filesystem, std::string const &workingDirectory)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
