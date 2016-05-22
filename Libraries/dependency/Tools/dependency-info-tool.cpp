@@ -9,6 +9,8 @@
 
 #include <libutil/Options.h>
 #include <libutil/Escape.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 #include <dependency/DependencyInfo.h>
@@ -16,14 +18,12 @@
 #include <dependency/DirectoryDependencyInfo.h>
 #include <dependency/MakefileDependencyInfo.h>
 
-#include <sstream>
-#include <fstream>
-#include <iterator>
-
 #include <cassert>
 
-using libutil::FSUtil;
 using libutil::Escape;
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
+using libutil::FSUtil;
 
 class Options {
 private:
@@ -141,16 +141,14 @@ Version()
 }
 
 static bool
-LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat format, std::vector<dependency::DependencyInfo> *dependencyInfo)
+LoadDependencyInfo(Filesystem const *filesystem, std::string const &path, dependency::DependencyInfoFormat format, std::vector<dependency::DependencyInfo> *dependencyInfo)
 {
     if (format == dependency::DependencyInfoFormat::Binary) {
-        std::ifstream input(path, std::ios::binary);
-        if (input.fail()) {
+        std::vector<uint8_t> contents;
+        if (!filesystem->read(&contents, path)) {
             fprintf(stderr, "error: failed to open %s\n", path.c_str());
             return false;
         }
-
-        std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
 
         auto binaryInfo = dependency::BinaryDependencyInfo::Deserialize(contents);
         if (!binaryInfo) {
@@ -170,15 +168,14 @@ LoadDependencyInfo(std::string const &path, dependency::DependencyInfoFormat for
         dependencyInfo->push_back(directoryInfo->dependencyInfo());
         return true;
     } else if (format == dependency::DependencyInfoFormat::Makefile) {
-        std::ifstream input(path, std::ios::binary);
-        if (input.fail()) {
+        std::vector<uint8_t> contents;
+        if (!filesystem->read(&contents, path)) {
             fprintf(stderr, "error: failed to open %s\n", path.c_str());
             return false;
         }
 
-        std::string contents = std::string(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
-
-        auto makefileInfo = dependency::MakefileDependencyInfo::Deserialize(contents);
+        std::string makefileContents = std::string(contents.begin(), contents.end());
+        auto makefileInfo = dependency::MakefileDependencyInfo::Deserialize(makefileContents);
         if (!makefileInfo) {
             fprintf(stderr, "error: invalid makefile dependency info\n");
             return false;
@@ -214,6 +211,7 @@ SerializeMakefileDependencyInfo(std::string const &output, std::vector<std::stri
 int
 main(int argc, char **argv)
 {
+    DefaultFilesystem filesystem = DefaultFilesystem();
     std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
 
     /*
@@ -247,7 +245,7 @@ main(int argc, char **argv)
          * Load the dependency info.
          */
         std::vector<dependency::DependencyInfo> info;
-        if (!LoadDependencyInfo(input.second, input.first, &info)) {
+        if (!LoadDependencyInfo(&filesystem, input.second, input.first, &info)) {
             return -1;
         }
 
@@ -264,14 +262,10 @@ main(int argc, char **argv)
     /*
      * Write out the output.
      */
-    std::ofstream output(options.output(), std::ios::binary);
-    if (output.fail()) {
+    std::vector<uint8_t> makefileContents = std::vector<uint8_t>(contents.begin(), contents.end());
+    if (!filesystem.write(makefileContents, options.output())) {
         return false;
     }
 
-    std::copy(contents.begin(), contents.end(), std::ostream_iterator<char>(output));
-
     return 0;
 }
-
-
