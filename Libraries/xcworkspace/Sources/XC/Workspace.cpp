@@ -9,14 +9,17 @@
 
 #include <xcworkspace/XC/Workspace.h>
 #include <xcworkspace/XC/Group.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 
 using xcworkspace::XC::Workspace;
+using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
-Workspace::Workspace()
+Workspace::
+Workspace()
 {
 }
 
@@ -54,7 +57,7 @@ parse(plist::Dictionary const *dict)
 }
 
 Workspace::shared_ptr Workspace::
-Open(std::string const &path)
+Open(Filesystem const *filesystem, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
@@ -62,17 +65,24 @@ Open(std::string const &path)
     }
 
     std::string projectFileName = path + "/contents.xcworkspacedata";
-    if (!FSUtil::TestForRead(projectFileName))
+    if (!filesystem->isReadable(projectFileName)) {
         return nullptr;
+    }
 
-    std::string realPath = FSUtil::ResolvePath(projectFileName);
-    if (realPath.empty())
+    std::string realPath = filesystem->resolvePath(projectFileName);
+    if (realPath.empty()) {
         return nullptr;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, realPath)) {
+        return nullptr;
+    }
 
     //
     // Parse property list
     //
-    std::unique_ptr<plist::Object> root = plist::Format::SimpleXML::Read(projectFileName).first;
+    std::unique_ptr<plist::Object> root = plist::Format::SimpleXML::Deserialize(contents).first;
     if (root == nullptr) {
         return nullptr;
     }

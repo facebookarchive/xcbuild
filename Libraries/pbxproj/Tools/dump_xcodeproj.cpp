@@ -10,7 +10,8 @@
 #include <pbxproj/pbxproj.h>
 #include <pbxsetting/pbxsetting.h>
 #include <xcscheme/xcscheme.h>
-#include <libutil/FSUtil.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 
 #include <cstring>
 #include <cerrno>
@@ -64,7 +65,8 @@ MakePath(PBX::Project const &P, PBX::FileReference const &FR)
 }
 
 std::unique_ptr<plist::Dictionary>
-GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
+GenerateConfigurationSettings(Filesystem const *filesystem,
+                              PBX::Project::shared_ptr const &project,
                               XC::BuildConfiguration const &BC,
                               bool isProjectBC = false)
 {
@@ -73,7 +75,7 @@ GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
     if (!isProjectBC) {
         for (auto PBC : *project->buildConfigurationList()) {
             if (BC.name() == PBC->name()) {
-                settings = GenerateConfigurationSettings(project, *PBC, true);
+                settings = GenerateConfigurationSettings(filesystem, project, *PBC, true);
                 break;
             }
         }
@@ -91,9 +93,9 @@ GenerateConfigurationSettings(PBX::Project::shared_ptr const &project,
 
     if (auto baseConfigurationReference = BC.baseConfigurationReference()) {
         auto path = MakePath(*project, *baseConfigurationReference);
-        if (!FSUtil::TestForRead(path)) {
+        if (!filesystem->isReadable(path)) {
             path = MakePath(*project, "Configurations", *baseConfigurationReference);
-            if (!FSUtil::TestForRead(path)) {
+            if (!filesystem->isReadable(path)) {
                 fprintf(stderr, "The file \"%s\" couldn't be opened because its "
                         "path couldn't be resolved.  It may be missing.\n",
                         baseConfigurationReference->path().c_str());
@@ -216,14 +218,14 @@ GetHeaderFilePaths(PBX::Project::shared_ptr const &project,
 }
 
 void
-CompleteDump(PBX::Project::shared_ptr const &project)
+CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &project)
 {
     printf("Project File: %s\n", project->projectFile().c_str());
     printf("Base Path:    %s\n", project->basePath().c_str());
     printf("Name:         %s\n", project->name().c_str());
 
     printf("Schemes:\n");
-    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
+    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(filesystem, project->basePath(), project->projectFile(), project->name());
     for (auto &I : group->schemes()) {
         printf("\t%s [%s]%s\n", I->name().c_str(),
                 I->shared() ? "Shared" : I->owner().c_str(),
@@ -414,12 +416,14 @@ CompleteDump(PBX::Project::shared_ptr const &project)
 int
 main(int argc, char **argv)
 {
+    DefaultFilesystem filesystem = DefaultFilesystem();
+
     if (argc < 2) {
         fprintf(stderr, "usage: %s filename.xcodeproj\n", argv[0]);
         return -1;
     }
 
-    auto project = PBX::Project::Open(argv[1]);
+    auto project = PBX::Project::Open(&filesystem, argv[1]);
     if (!project) {
         fprintf(stderr, "error opening project (%s)\n",
                 strerror(errno));
@@ -428,7 +432,7 @@ main(int argc, char **argv)
 
     //fprintf(stderr, "parse ok\n");
 
-    CompleteDump(project);
+    CompleteDump(&filesystem, project);
 
     printf("Information about project \"%s\":\n",
             project->name().c_str());
@@ -456,7 +460,7 @@ main(int argc, char **argv)
     }
     printf("\n");
 
-    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
+    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(&filesystem, project->basePath(), project->projectFile(), project->name());
     if (!group->schemes().empty()) {
         printf("%4sSchemes:\n", "");
         for (auto scheme : group->schemes()) {

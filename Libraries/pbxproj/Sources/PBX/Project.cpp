@@ -12,10 +12,12 @@
 #include <pbxproj/PBX/LegacyTarget.h>
 #include <pbxproj/PBX/NativeTarget.h>
 #include <pbxproj/Context.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 
 using pbxproj::PBX::Project;
+using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
@@ -178,7 +180,7 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
 }
 
 Project::shared_ptr Project::
-Open(std::string const &path)
+Open(Filesystem const *filesystem, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
@@ -187,21 +189,27 @@ Open(std::string const &path)
     }
 
     std::string projectFileName = path + "/project.pbxproj";
-    if (!FSUtil::TestForRead(projectFileName.c_str())) {
+    if (!filesystem->isReadable(projectFileName)) {
         fprintf(stderr, "error: project file %s is not readable\n", projectFileName.c_str());
         return nullptr;
     }
 
-    std::string realPath = FSUtil::ResolvePath(projectFileName);
+    std::string realPath = filesystem->resolvePath(projectFileName);
     if (realPath.empty()) {
         fprintf(stderr, "error: project file %s is not resolvable\n", projectFileName.c_str());
+        return nullptr;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, realPath)) {
+        fprintf(stderr, "error: project file %s is not readable\n", projectFileName.c_str());
         return nullptr;
     }
 
     //
     // Parse property list
     //
-    auto result = plist::Format::Any::Read(projectFileName);
+    auto result = plist::Format::Any::Deserialize(contents);
     if (result.first == nullptr) {
         fprintf(stderr, "error: project file %s is not parseable: %s\n", projectFileName.c_str(), result.second.c_str());
         return nullptr;

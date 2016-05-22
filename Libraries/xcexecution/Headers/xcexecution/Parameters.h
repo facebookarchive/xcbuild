@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+namespace libutil { class Filesystem; }
+
 namespace xcexecution {
 
 /*
@@ -115,6 +117,7 @@ public:
      * Loads the workspace from the build parameters.
      */
     ext::optional<pbxbuild::WorkspaceContext> loadWorkspace(
+        libutil::Filesystem const *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         std::string const &workingDirectory) const;
 

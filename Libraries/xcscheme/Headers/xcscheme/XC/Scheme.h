@@ -12,6 +12,8 @@
 
 #include <xcscheme/XC/Actions.h>
 
+namespace libutil { class Filesystem; }
+
 namespace xcscheme { namespace PBX {
 
 class Project;
@@ -107,8 +109,11 @@ public:
     bool parse(plist::Dictionary const *dict);
 
 public:
-    static shared_ptr Open(std::string const &name, std::string const &owner,
-            std::string const &path);
+    static shared_ptr Open(
+        libutil::Filesystem const *filesystem,
+        std::string const &name,
+        std::string const &owner,
+        std::string const &path);
 };
 
 } }

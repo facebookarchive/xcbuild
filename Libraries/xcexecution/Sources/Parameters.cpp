@@ -10,6 +10,7 @@
 #include <xcexecution/Parameters.h>
 
 #include <pbxbuild/Build/DependencyResolver.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/md5.h>
 
@@ -17,6 +18,7 @@
 #include <iomanip>
 
 using xcexecution::Parameters;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Parameters::
@@ -111,15 +113,15 @@ canonicalHash() const
 }
 
 static pbxproj::PBX::Project::shared_ptr
-OpenProject(ext::optional<std::string> const &projectPath, std::string const &directory)
+OpenProject(Filesystem const *filesystem, ext::optional<std::string> const &projectPath, std::string const &directory)
 {
     if (projectPath) {
-        return pbxproj::PBX::Project::Open(*projectPath);
+        return pbxproj::PBX::Project::Open(filesystem, *projectPath);
     } else {
         bool multiple = false;
         std::string projectName;
 
-        FSUtil::EnumerateDirectory(directory, [&](std::string const &filename) -> bool {
+        filesystem->enumerateDirectory(directory, [&](std::string const &filename) -> bool {
             if (FSUtil::GetFileExtension(filename) != "xcodeproj") {
                 return true;
             }
@@ -139,7 +141,7 @@ OpenProject(ext::optional<std::string> const &projectPath, std::string const &di
             fprintf(stderr, "error: no project found\n");
             return nullptr;
         } else {
-            pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(directory + "/" + projectName);
+            pbxproj::PBX::Project::shared_ptr project = pbxproj::PBX::Project::Open(filesystem, directory + "/" + projectName);
             if (project == nullptr) {
                 fprintf(stderr, "error: unable to open project '%s'\n", projectName.c_str());
             }
@@ -149,23 +151,23 @@ OpenProject(ext::optional<std::string> const &projectPath, std::string const &di
 }
 
 ext::optional<pbxbuild::WorkspaceContext> Parameters::
-loadWorkspace(pbxbuild::Build::Environment const &buildEnvironment, std::string const &workingDirectory) const
+loadWorkspace(Filesystem const *filesystem, pbxbuild::Build::Environment const &buildEnvironment, std::string const &workingDirectory) const
 {
     if (_workspace) {
-        xcworkspace::XC::Workspace::shared_ptr workspace = xcworkspace::XC::Workspace::Open(*_workspace);
+        xcworkspace::XC::Workspace::shared_ptr workspace = xcworkspace::XC::Workspace::Open(filesystem, *_workspace);
         if (workspace == nullptr) {
             fprintf(stderr, "error: unable to open workspace '%s'\n", _workspace->c_str());
             return ext::nullopt;
         }
 
-        return pbxbuild::WorkspaceContext::Workspace(buildEnvironment.baseEnvironment(), workspace);
+        return pbxbuild::WorkspaceContext::Workspace(filesystem, buildEnvironment.baseEnvironment(), workspace);
     } else {
-        pbxproj::PBX::Project::shared_ptr project = OpenProject(_project, workingDirectory);
+        pbxproj::PBX::Project::shared_ptr project = OpenProject(filesystem, _project, workingDirectory);
         if (project == nullptr) {
             return ext::nullopt;
         }
 
-        return pbxbuild::WorkspaceContext::Project(buildEnvironment.baseEnvironment(), project);
+        return pbxbuild::WorkspaceContext::Project(filesystem, buildEnvironment.baseEnvironment(), project);
     }
 }
 

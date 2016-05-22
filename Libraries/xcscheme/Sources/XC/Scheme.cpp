@@ -9,12 +9,13 @@
 
 #include <xcscheme/XC/Scheme.h>
 #include <xcscheme/XC/Actions.h>
-#include <libutil/FSUtil.h>
+#include <libutil/Filesystem.h>
 
 using xcscheme::XC::Scheme;
-using libutil::FSUtil;
+using libutil::Filesystem;
 
-Scheme::Scheme(std::string const &name, std::string const &owner) :
+Scheme::
+Scheme(std::string const &name, std::string const &owner) :
     _name              (name),
     _owner             (owner),
     _lastUpgradeVersion(0)
@@ -85,24 +86,31 @@ parse(plist::Dictionary const *dict)
 }
 
 Scheme::shared_ptr Scheme::
-Open(std::string const &name, std::string const &owner, std::string const &path)
+Open(Filesystem const *filesystem, std::string const &name, std::string const &owner, std::string const &path)
 {
     if (path.empty()) {
         errno = EINVAL;
         return nullptr;
     }
 
-    if (!FSUtil::TestForRead(path.c_str()))
+    if (!filesystem->isReadable(path)) {
         return nullptr;
+    }
 
-    std::string realPath = FSUtil::ResolvePath(path);
-    if (realPath.empty())
+    std::string realPath = filesystem->resolvePath(path);
+    if (realPath.empty()) {
         return nullptr;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, realPath)) {
+        return nullptr;
+    }
 
     //
     // Parse simple XML
     //
-    std::unique_ptr<plist::Object> root = plist::Format::SimpleXML::Read(path).first;
+    std::unique_ptr<plist::Object> root = plist::Format::SimpleXML::Deserialize(contents).first;
     if (root == nullptr) {
         return nullptr;
     }

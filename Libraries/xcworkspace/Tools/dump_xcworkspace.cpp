@@ -10,7 +10,8 @@
 #include <xcscheme/xcscheme.h>
 #include <pbxproj/pbxproj.h>
 #include <xcworkspace/xcworkspace.h>
-#include <libutil/FSUtil.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 
 #include <cstring>
 #include <cerrno>
@@ -22,7 +23,7 @@ void DumpItem(xcworkspace::XC::Workspace::shared_ptr const &W, xcworkspace::XC::
 void DumpItems(xcworkspace::XC::Workspace::shared_ptr const &W, xcworkspace::XC::GroupItem::vector const &items, size_t indent);
 
 std::string
-MakePath(xcworkspace::XC::Workspace const &W, xcworkspace::XC::Group const *group,
+MakePath(Filesystem const *filesystem, xcworkspace::XC::Workspace const &W, xcworkspace::XC::Group const *group,
         std::string const &location, bool real = true)
 {
     std::string GL;
@@ -32,7 +33,7 @@ MakePath(xcworkspace::XC::Workspace const &W, xcworkspace::XC::Group const *grou
     }
 
     if (real) {
-        return FSUtil::ResolvePath(W.basePath() + "/" + GL + "/" + location);
+        return filesystem->resolvePath(W.basePath() + "/" + GL + "/" + location);
     } else {
         if (GL.empty()) {
             return W.basePath() + "/" + location;
@@ -148,12 +149,14 @@ ForEachFileRef(xcworkspace::XC::Workspace::shared_ptr const &W,
 int
 main(int argc, char **argv)
 {
+    DefaultFilesystem filesystem = DefaultFilesystem();
+
     if (argc < 2) {
         fprintf(stderr, "usage: %s filename.xcworkspace\n", argv[0]);
         return -1;
     }
 
-    auto workspace = xcworkspace::XC::Workspace::Open(argv[1]);
+    auto workspace = xcworkspace::XC::Workspace::Open(&filesystem, argv[1]);
     if (!workspace) {
         fprintf(stderr, "error opening workspace (%s)\n",
                 strerror(errno));
@@ -166,7 +169,7 @@ main(int argc, char **argv)
     printf("Base Path:      %s\n", workspace->basePath().c_str());
     printf("Name:           %s\n", workspace->name().c_str());
 
-    auto workspaceGroup = xcscheme::SchemeGroup::Open(workspace->basePath(), workspace->projectFile(), workspace->name());
+    auto workspaceGroup = xcscheme::SchemeGroup::Open(&filesystem, workspace->basePath(), workspace->projectFile(), workspace->name());
 
     printf("Schemes:\n");
     if (workspaceGroup) {
@@ -183,10 +186,10 @@ main(int argc, char **argv)
     ForEachFileRef(workspace,
             [&](xcworkspace::XC::Group const *g, xcworkspace::XC::FileRef const &fref)
             {
-                std::string path = MakePath(*workspace, g, fref.location(), false);
+                std::string path = MakePath(&filesystem, *workspace, g, fref.location(), false);
                 printf("opening %s\n", path.c_str());
 
-                auto project = PBX::Project::Open(path);
+                auto project = PBX::Project::Open(&filesystem, path);
                 if (!project) {
                     printf("couldn't open %s\n", path.c_str());
                 }
@@ -208,10 +211,10 @@ main(int argc, char **argv)
     ForEachFileRef(workspace,
             [&](xcworkspace::XC::Group const *g, xcworkspace::XC::FileRef const &fref)
             {
-                std::string path = MakePath(*workspace, g, fref.location(), false);
-                auto project = PBX::Project::Open(path);
+                std::string path = MakePath(&filesystem, *workspace, g, fref.location(), false);
+                auto project = PBX::Project::Open(&filesystem, path);
                 if (project) {
-                    auto projectGroup = xcscheme::SchemeGroup::Open(project->basePath(), project->projectFile(), project->name());
+                    auto projectGroup = xcscheme::SchemeGroup::Open(&filesystem, project->basePath(), project->projectFile(), project->name());
                     if (projectGroup) {
                         schemes.insert(schemes.end(),
                                        projectGroup->schemes().begin(),

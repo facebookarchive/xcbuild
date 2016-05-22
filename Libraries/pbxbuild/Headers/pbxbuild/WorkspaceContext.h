@@ -13,6 +13,8 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/DerivedDataHash.h>
 
+namespace libutil { class Filesystem; }
+
 namespace pbxbuild {
 
 /*
@@ -110,13 +112,13 @@ public:
      * Creates a workspace context from a real workspace.
      */
     static WorkspaceContext
-    Workspace(pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace);
+    Workspace(libutil::Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace);
 
     /*
      * Creates a workspace context for a legacy project-only build.
      */
     static WorkspaceContext
-    Project(pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project);
+    Project(libutil::Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project);
 };
 
 }

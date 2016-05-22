@@ -13,6 +13,8 @@
 #include <xcscheme/Base.h>
 #include <xcscheme/XC/Scheme.h>
 
+namespace libutil { class Filesystem; }
+
 namespace xcscheme {
 
 class SchemeGroup {
@@ -54,7 +56,7 @@ public:
     xcscheme::XC::Scheme::shared_ptr scheme(std::string const &name) const;
 
 public:
-    static SchemeGroup::shared_ptr Open(std::string const &basePath, std::string const &path, std::string const &name);
+    static SchemeGroup::shared_ptr Open(libutil::Filesystem const *filesystem, std::string const &basePath, std::string const &path, std::string const &name);
 };
 
 }

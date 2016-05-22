@@ -6,6 +6,8 @@
 #include <pbxproj/PBX/Target.h>
 #include <pbxproj/XC/ConfigurationList.h>
 
+namespace libutil { class Filesystem; }
+
 namespace pbxproj { namespace PBX {
 
 class Project : public Object {
@@ -58,7 +60,7 @@ public:
     Project();
 
 public:
-    static shared_ptr Open(std::string const &path);
+    static shared_ptr Open(libutil::Filesystem const *filesystem, std::string const &path);
 
 public:
     inline XC::ConfigurationList::shared_ptr const &buildConfigurationList() const

@@ -9,15 +9,18 @@
 
 #include <xcscheme/SchemeGroup.h>
 
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 
 using xcscheme::SchemeGroup;
 using xcscheme::XC::Scheme;
+using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
-SchemeGroup::SchemeGroup()
+SchemeGroup::
+SchemeGroup()
 {
 }
 
@@ -34,18 +37,18 @@ scheme(std::string const &name) const
 }
 
 SchemeGroup::shared_ptr SchemeGroup::
-Open(std::string const &basePath, std::string const &path, std::string const &name)
+Open(Filesystem const *filesystem, std::string const &basePath, std::string const &path, std::string const &name)
 {
     if (path.empty() || basePath.empty()) {
         errno = EINVAL;
         return nullptr;
     }
 
-    if (!FSUtil::TestForDirectory(basePath) || !FSUtil::TestForDirectory(path)) {
+    if (!filesystem->isDirectory(basePath) || !filesystem->isDirectory(path)) {
         return nullptr;
     }
 
-    std::string realPath = FSUtil::ResolvePath(path);
+    std::string realPath = filesystem->resolvePath(path);
     if (realPath.empty()) {
         return nullptr;
     }
@@ -58,13 +61,13 @@ Open(std::string const &basePath, std::string const &path, std::string const &na
     std::string schemePath;
 
     schemePath = path + "/xcshareddata/xcschemes";
-    FSUtil::EnumerateDirectory(schemePath, [&](std::string const &filename) -> bool {
+    filesystem->enumerateDirectory(schemePath, [&](std::string const &filename) -> bool {
         if (FSUtil::GetFileExtension(filename) != "xcscheme") {
             return true;
         }
 
         std::string name = filename.substr(0, filename.find('.'));
-        auto scheme = Scheme::Open(name, std::string(), schemePath + "/" + filename);
+        auto scheme = Scheme::Open(filesystem, name, std::string(), schemePath + "/" + filename);
         if (!scheme) {
             fprintf(stderr, "warning: failed parsing shared scheme '%s'\n", name.c_str());
         } else {
@@ -80,13 +83,13 @@ Open(std::string const &basePath, std::string const &path, std::string const &na
     std::string userName = SysUtil::GetUserName();
     if (!userName.empty()) {
         schemePath = path + "/xcuserdata/" + userName + ".xcuserdatad/xcschemes";
-        FSUtil::EnumerateDirectory(schemePath, [&](std::string const &filename) -> bool {
+        filesystem->enumerateDirectory(schemePath, [&](std::string const &filename) -> bool {
             if (FSUtil::GetFileExtension(filename) != "xcscheme") {
                 return true;
             }
 
             std::string name = filename.substr(0, filename.find('.'));
-            auto scheme = Scheme::Open(name, userName, schemePath + "/" + filename);
+            auto scheme = Scheme::Open(filesystem, name, userName, schemePath + "/" + filename);
             if (!scheme) {
                 fprintf(stderr, "warning: failed parsing user scheme '%s'\n", name.c_str());
             } else {

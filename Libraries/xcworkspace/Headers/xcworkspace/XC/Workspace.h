@@ -12,6 +12,8 @@
 
 #include <xcworkspace/XC/GroupItem.h>
 
+namespace libutil { class Filesystem; }
+
 namespace xcworkspace { namespace XC {
 
 class Workspace {
@@ -31,7 +33,7 @@ public:
     Workspace();
 
 public:
-    static shared_ptr Open(std::string const &path);
+    static shared_ptr Open(libutil::Filesystem const *filesystem, std::string const &path);
 
 public:
     inline std::string const &projectFile() const

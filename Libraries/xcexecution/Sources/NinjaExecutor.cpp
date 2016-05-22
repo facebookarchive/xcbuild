@@ -294,7 +294,7 @@ build(
          * Load the workspace. This can be quite slow, so only do it if it's needed to generate
          * the Ninja file. Similarly, only resolve dependencies in that case.
          */
-        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(buildEnvironment, FSUtil::GetCurrentDirectory());
+        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, FSUtil::GetCurrentDirectory());
         if (!workspaceContext) {
             fprintf(stderr, "error: unable to load workspace\n");
             return false;
