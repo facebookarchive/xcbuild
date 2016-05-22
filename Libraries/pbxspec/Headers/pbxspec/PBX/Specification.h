@@ -15,6 +15,8 @@
 
 #include <ext/optional>
 
+namespace libutil { class Filesystem; }
+
 namespace pbxspec { class Manager; }
 
 namespace pbxspec { namespace PBX {
@@ -88,7 +90,7 @@ protected:
     static bool ParseType(Context *context, plist::Dictionary const *dict, std::string const &expectedType, std::string *determinedType = nullptr);
 
 public:
-    static ext::optional<Specification::vector> Open(Context *context, std::string const &filename);
+    static ext::optional<Specification::vector> Open(libutil::Filesystem const *filesystem, Context *context, std::string const &filename);
 
 private:
     static Specification::shared_ptr Parse(Context *context, plist::Dictionary const *dict);

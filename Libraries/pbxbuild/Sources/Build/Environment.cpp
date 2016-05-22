@@ -30,23 +30,46 @@ Default(Filesystem const *filesystem)
         return ext::nullopt;
     }
 
-    std::shared_ptr<xcsdk::SDK::Manager> sdkManager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot);
-    if (sdkManager == nullptr) {
-        fprintf(stderr, "error: couldn't create SDK manager\n");
-        return ext::nullopt;
-    }
-
     auto specManager = pbxspec::Manager::Create();
     if (specManager == nullptr) {
         fprintf(stderr, "error: couldn't create spec manager\n");
         return ext::nullopt;
     }
 
-    specManager->registerDomains(pbxspec::Manager::DefaultDomains(*developerRoot));
-    specManager->registerDomains(pbxspec::Manager::EmbeddedDomains(*developerRoot));
-
+    /*
+     * Register global build rules.
+     */
     std::string buildRules = pbxspec::Manager::DeveloperBuildRules(*developerRoot);
     specManager->registerBuildRules(buildRules);
+
+    /*
+     * Register global specifications.
+     */
+    specManager->registerDomains(filesystem, pbxspec::Manager::DefaultDomains(*developerRoot));
+    specManager->registerDomains(filesystem, pbxspec::Manager::EmbeddedDomains(*developerRoot));
+
+    std::shared_ptr<xcsdk::SDK::Manager> sdkManager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot);
+    if (sdkManager == nullptr) {
+        fprintf(stderr, "error: couldn't create SDK manager\n");
+        return ext::nullopt;
+    }
+
+    /*
+     * Register platform-specific specifications.
+     */
+    for (xcsdk::SDK::Platform::shared_ptr const &platform : sdkManager->platforms()) {
+        specManager->registerDomains(
+            filesystem,
+            pbxspec::Manager::PlatformDomains(
+                sdkManager->path(),
+                platform->name(),
+                platform->path()));
+    }
+
+    /*
+     * Register global specifications, but depend on platform-specific specifications.
+     */
+    specManager->registerDomains(filesystem, pbxspec::Manager::PlatformDependentDomains(*developerRoot));
 
     pbxspec::PBX::BuildSystem::shared_ptr buildSystem = specManager->buildSystem("com.apple.build-system.core", { "default" });
     if (buildSystem == nullptr) {

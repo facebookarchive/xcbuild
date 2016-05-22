@@ -8,6 +8,8 @@
  */
 
 #include <pbxspec/pbxspec.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 
 #include <cstdio>
 
@@ -17,6 +19,8 @@ using pbxspec::PBX::Specification;
 int
 main(int argc, char **argv)
 {
+    libutil::DefaultFilesystem filesystem = libutil::DefaultFilesystem();
+
     if (argc < 2) {
         fprintf(stderr, "usage: %s path\n", argv[0]);
         return -1;
@@ -24,7 +28,7 @@ main(int argc, char **argv)
 
     std::string path = argv[1];
     Manager::shared_ptr manager = Manager::Create();
-    manager->registerDomains({ { "xcspec", path } });
+    manager->registerDomains(&filesystem, { { "xcspec", path } });
 
     return 0;
 }

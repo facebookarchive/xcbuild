@@ -20,11 +20,11 @@
 #include <pbxspec/Context.h>
 #include <pbxspec/Inherit.h>
 #include <pbxspec/Manager.h>
-#include <libutil/FSUtil.h>
+#include <libutil/Filesystem.h>
 
 using pbxspec::PBX::Specification;
 using pbxspec::Manager;
-using libutil::FSUtil;
+using libutil::Filesystem;
 
 Specification::
 Specification()
@@ -186,25 +186,31 @@ Parse(Context *context, plist::Dictionary const *dict)
 }
 
 ext::optional<Specification::vector> Specification::
-Open(Context *context, std::string const &filename)
+Open(Filesystem const *filesystem, Context *context, std::string const &filename)
 {
     if (filename.empty()) {
         fprintf(stderr, "error: empty specification path\n");
         return ext::nullopt;
     }
 
-    std::string realPath = FSUtil::ResolvePath(filename);
+    std::string realPath = filesystem->resolvePath(filename);
     if (realPath.empty()) {
         fprintf(stderr, "stderr: invalid specification path\n");
+        return ext::nullopt;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, realPath)) {
+        fprintf(stderr, "stderr: unable to read specification plist\n");
         return ext::nullopt;
     }
 
     //
     // Parse property list
     //
-    std::unique_ptr<plist::Object> plist = plist::Format::Any::Read(filename).first;
+    std::unique_ptr<plist::Object> plist = plist::Format::Any::Deserialize(contents).first;
     if (plist == nullptr) {
-        fprintf(stderr, "stderr: unable to read specification plist\n");
+        fprintf(stderr, "stderr: unable to parse specification plist\n");
         return ext::nullopt;
     }
 

@@ -28,6 +28,8 @@
 
 #include <map>
 
+namespace libutil { class Filesystem; }
+
 namespace pbxspec {
 
 class Manager {
@@ -127,7 +129,7 @@ public:
     PBX::BuildRule::vector synthesizedBuildRules(std::vector<std::string> const &domains) const;
 
 public:
-    void registerDomains(std::vector<std::pair<std::string, std::string>> const &domains);
+    void registerDomains(libutil::Filesystem const *filesystem, std::vector<std::pair<std::string, std::string>> const &domains);
     void registerBuildRules(std::string const &path);
 
 private:
@@ -157,6 +159,8 @@ public:
     EmbeddedDomains(std::string const &developerRoot);
     static std::vector<std::pair<std::string, std::string>>
     PlatformDomains(std::string const &developerRoot, std::string const &platformName, std::string const &platformPath);
+    static std::vector<std::pair<std::string, std::string>>
+    PlatformDependentDomains(std::string const &developerRoot);
 
 public:
     static std::string

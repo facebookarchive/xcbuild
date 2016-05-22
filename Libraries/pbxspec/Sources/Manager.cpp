@@ -9,6 +9,7 @@
 
 #include <pbxspec/Manager.h>
 #include <pbxspec/Context.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 using pbxspec::Manager;
@@ -27,6 +28,7 @@ using pbxspec::PBX::PackageType;
 using pbxspec::PBX::ProductType;
 using pbxspec::PBX::PropertyConditionFlavor;
 using pbxspec::PBX::Tool;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Manager::Manager()
@@ -343,7 +345,7 @@ inheritSpecification(PBX::Specification::shared_ptr const &specification)
 }
 
 void Manager::
-registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
+registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string, std::string>> const &domains)
 {
     PBX::Specification::vector specifications;
 
@@ -359,8 +361,8 @@ registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
             .domain = domain.first,
         };
 
-        if (FSUtil::TestForDirectory(domain.second)) {
-            FSUtil::EnumerateRecursive(domain.second, [&](std::string const &filename) -> bool {
+        if (filesystem->isDirectory(domain.second)) {
+            filesystem->enumerateRecursive(domain.second, [&](std::string const &filename) -> bool {
                 /* Support both *.xcspec and *.pbfilespec as a few of the latter remain in use. */
                 if (FSUtil::GetFileExtension(filename) != "xcspec" && FSUtil::GetFileExtension(filename) != "pbfilespec") {
                     return true;
@@ -370,12 +372,12 @@ registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
                 bool file = FSUtil::GetFileExtension(filename) == "pbfilespec";
                 context.defaultType = (file ? "FileType" : std::string());
 
-                if (!FSUtil::TestForDirectory(filename)) {
+                if (!filesystem->isDirectory(filename)) {
 #if 0
                     fprintf(stderr, "importing specification '%s'\n", filename.c_str());
 #endif
 
-                    ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(&context, filename);
+                    ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(filesystem, &context, filename);
                     if (fileSpecifications) {
                         specifications.insert(specifications.end(), fileSpecifications->begin(), fileSpecifications->end());
                     } else {
@@ -388,7 +390,7 @@ registerDomains(std::vector<std::pair<std::string, std::string>> const &domains)
 #if 0
             fprintf(stderr, "importing specification '%s'\n", domain.second.c_str());
 #endif
-            ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(&context, domain.second);
+            ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(filesystem, &context, domain.second);
             if (fileSpecifications) {
                 specifications.insert(specifications.end(), fileSpecifications->begin(), fileSpecifications->end());
             } else {
@@ -494,20 +496,47 @@ PlatformDomains(std::string const &developerRoot, std::string const &platformNam
 {
     std::vector<std::pair<std::string, std::string>> domains;
 
-    std::string root = developerRoot + "/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources";
-    if (platformName == "iphoneos" || platformName == "watchos" || platformName == "appletvos") {
-        domains.push_back({ platformName, root + "/" + "Device.xcspec" });
-    } else if (platformName == "iphonesimulator" || platformName == "watchsimulator" || platformName == "appletvsimulator") {
-        domains.push_back({ platformName, root + "/" + "Simulator.xcspec" });
+    if (platformName == "iphoneos" || platformName == "iphonesimulator") {
+        std::string root = developerRoot + "/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources";
+
+        if (platformName == "iphonesimulator") {
+            domains.push_back({ platformName, root + "/" + "Simulator.xcspec" });
+        } else {
+            domains.push_back({ platformName, root + "/" + "Device.xcspec" });
+        }
+    } else if (platformName == "appletvos" || platformName == "appletvsimulator") {
+        std::string root = developerRoot + "/Platforms/AppleTVOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEAppleTVSupportCore.ideplugin/Contents/Resources";
+
+        domains.push_back({ platformName, root + "/" + "Shared.xcspec" });
+        if (platformName == "appletvsimulator") {
+            domains.push_back({ platformName, root + "/" + "Simulator.xcspec" });
+        } else {
+            domains.push_back({ platformName, root + "/" + "Device.xcspec" });
+        }
+    } else if (platformName == "watchos" || platformName == "watchsimulator") {
+        std::string root = developerRoot + "/Platforms/WatchOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEWatchSupportCore.ideplugin/Contents/Resources";
+
+        domains.push_back({ platformName, root + "/" + "Shared.xcspec" });
+        if (platformName == "watchsimulator") {
+            domains.push_back({ platformName, root + "/" + "Simulator.xcspec" });
+        } else {
+            domains.push_back({ platformName, root + "/" + "Device.xcspec" });
+        }
     } else {
         /* The standard platform specifications directory. */
         domains.push_back({ platformName, platformPath + "/Developer/Library/Xcode/Specifications" });
     }
 
-    if (platformName == "iphoneos" || platformName == "iphonesimulator") {
-        std::string path = developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer/Library/Xcode/Plug-ins/XCWatchKit1Support.xcplugin";
-        domains.push_back({ platformName, path });
-    }
+    return domains;
+}
+
+std::vector<std::pair<std::string, std::string>> Manager::
+PlatformDependentDomains(std::string const &developerRoot)
+{
+    std::vector<std::pair<std::string, std::string>> domains;
+
+    std::string path = developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer/Library/Xcode/Plug-ins/XCWatchKit1Support.xcplugin";
+    domains.push_back({ "default", path });
 
     return domains;
 }

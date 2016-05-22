@@ -302,11 +302,6 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
             return ext::nullopt;
         }
 
-        buildEnvironment.specManager()->registerDomains(
-            pbxspec::Manager::PlatformDomains(
-                buildEnvironment.sdkManager()->path(),
-                sdk->platform()->name(),
-                sdk->platform()->path()));
         specDomains = SDKSpecificationDomains(sdk);
     }
 
