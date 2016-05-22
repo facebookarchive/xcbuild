@@ -189,9 +189,15 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      * main Info.plist at the top level.
      */
     for (std::string const &additionalContentFile : options.additionalContentFiles()) {
-        auto additionalContent = plist::Format::Any::Read(FSUtil::ResolveRelativePath(additionalContentFile, workingDirectory));
+        std::vector<uint8_t> contents;
+        if (!filesystem->read(&contents, FSUtil::ResolveRelativePath(additionalContentFile, workingDirectory))) {
+            fprintf(stderr, "error: unable to read additional content file: %s\n", additionalContentFile.c_str());
+            return 1;
+        }
+
+        auto additionalContent = plist::Format::Any::Deserialize(contents);
         if (additionalContent.first == nullptr) {
-            fprintf(stderr, "error: unable to open additional content file %s: %s\n", additionalContentFile.c_str(), additionalContent.second.c_str());
+            fprintf(stderr, "error: unable to parse additional content file %s: %s\n", additionalContentFile.c_str(), additionalContent.second.c_str());
             return 1;
         }
 

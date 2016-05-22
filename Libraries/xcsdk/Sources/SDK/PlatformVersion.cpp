@@ -70,7 +70,7 @@ Open(Filesystem const *filesystem, std::string const &path)
     //
     // Parse property list
     //
-    auto result = plist::Format::Any::Read(contents);
+    auto result = plist::Format::Any::Deserialize(contents);
     if (result.first == nullptr) {
         return nullptr;
     }

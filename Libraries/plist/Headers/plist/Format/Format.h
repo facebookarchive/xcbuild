@@ -34,6 +34,17 @@ public:
     static std::pair<std::unique_ptr<Object>, std::string>
     Deserialize(std::vector<uint8_t> const &contents, T const &format);
 
+    static std::pair<std::unique_ptr<Object>, std::string>
+    Deserialize(std::vector<uint8_t> const &contents)
+    {
+        std::unique_ptr<T> format = Identify(contents);
+        if (format == nullptr) {
+            return std::make_pair(nullptr, "couldn't identify format");
+        }
+
+        return Deserialize(contents, *format);
+    }
+
 public:
     static std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string>
     Serialize(Object const *object, T const &format);
@@ -45,17 +56,6 @@ public:
         std::ifstream file(path, std::ios::binary);
         std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 
-        std::unique_ptr<T> format = Identify(contents);
-        if (format == nullptr) {
-            return std::make_pair(nullptr, "couldn't identify format");
-        }
-
-        return Deserialize(contents, *format);
-    }
-
-    static std::pair<std::unique_ptr<Object>, std::string>
-    Read(std::vector<uint8_t> const &contents)
-    {
         std::unique_ptr<T> format = Identify(contents);
         if (format == nullptr) {
             return std::make_pair(nullptr, "couldn't identify format");
