@@ -12,6 +12,8 @@
 
 #include <xcdriver/Base.h>
 
+namespace libutil { class Filesystem; }
+
 namespace xcdriver {
 
 class Options;
@@ -23,7 +25,7 @@ private:
 
 public:
     static int
-    Run(Options const &options);
+    Run(libutil::Filesystem *filesystem, Options const &options);
 };
 
 }

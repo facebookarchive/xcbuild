@@ -7,11 +7,13 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <xcdriver/xcdriver.h>
+#include <xcdriver/Driver.h>
+#include <libutil/DefaultFilesystem.h>
 
 int
 main(int argc, char **argv)
 {
+    libutil::DefaultFilesystem filesystem = libutil::DefaultFilesystem();
     std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-    return xcdriver::Driver::Run(args);
+    return xcdriver::Driver::Run(&filesystem, args);
 }

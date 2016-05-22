@@ -16,10 +16,12 @@
 #include <xcdriver/ShowSDKsAction.h>
 #include <xcdriver/ShowBuildSettingsAction.h>
 #include <xcdriver/VersionAction.h>
+#include <libutil/Filesystem.h>
 
 using xcdriver::Driver;
 using xcdriver::Action;
 using xcdriver::Options;
+using libutil::Filesystem;
 
 Driver::
 Driver()
@@ -32,7 +34,7 @@ Driver::
 }
 
 int Driver::
-Run(std::vector<std::string> const &args)
+Run(Filesystem *filesystem, std::vector<std::string> const &args)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -44,13 +46,13 @@ Run(std::vector<std::string> const &args)
     Action::Type action = Action::Determine(options);
     switch (action) {
         case Action::Build:
-            return BuildAction::Run(options);
+            return BuildAction::Run(filesystem, options);
         case Action::ShowBuildSettings:
-            return ShowBuildSettingsAction::Run(options);
+            return ShowBuildSettingsAction::Run(filesystem, options);
         case Action::List:
-            return ListAction::Run(options);
+            return ListAction::Run(filesystem, options);
         case Action::Version:
-            return VersionAction::Run(options);
+            return VersionAction::Run(filesystem, options);
         case Action::Usage:
             fprintf(stderr, "warning: usage not implemented\n");
             break;
@@ -64,9 +66,9 @@ Run(std::vector<std::string> const &args)
             fprintf(stderr, "warning: check first launch not implemented\n");
             break;
         case Action::ShowSDKs:
-            return ShowSDKsAction::Run(options);
+            return ShowSDKsAction::Run(filesystem, options);
         case Action::Find:
-            return FindAction::Run(options);
+            return FindAction::Run(filesystem, options);
         case Action::ExportArchive:
             fprintf(stderr, "warning: export archive not implemented\n");
             break;

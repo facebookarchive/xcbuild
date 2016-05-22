@@ -10,13 +10,11 @@
 #include <xcdriver/ListAction.h>
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
-#include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 using xcdriver::ListAction;
 using xcdriver::Options;
-using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -31,11 +29,9 @@ ListAction::
 }
 
 int ListAction::
-Run(Options const &options)
+Run(Filesystem const *filesystem, Options const &options)
 {
-    std::unique_ptr<Filesystem> filesystem = std::unique_ptr<Filesystem>(new DefaultFilesystem());
-
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(filesystem.get());
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(filesystem);
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
@@ -44,7 +40,7 @@ Run(Options const &options)
     std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(options, buildEnvironment->baseEnvironment());
     xcexecution::Parameters parameters = Action::CreateParameters(options, overrideLevels);
 
-    ext::optional<pbxbuild::WorkspaceContext> context = parameters.loadWorkspace(filesystem.get(), *buildEnvironment, FSUtil::GetCurrentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> context = parameters.loadWorkspace(filesystem, *buildEnvironment, FSUtil::GetCurrentDirectory());
     if (!context) {
         return -1;
     }

@@ -12,6 +12,8 @@
 
 #include <xcdriver/Base.h>
 
+namespace libutil { class Filesystem; }
+
 namespace xcdriver {
 
 class Driver {
@@ -21,7 +23,7 @@ private:
 
 public:
     static int
-    Run(std::vector<std::string> const &args);
+    Run(libutil::Filesystem *filesystem, std::vector<std::string> const &args);
 };
 
 }
