@@ -12,6 +12,7 @@ add_library(pbxspec SHARED
             Sources/Types.cpp
             Sources/PBX/Architecture.cpp
             Sources/PBX/BuildPhase.cpp
+            Sources/PBX/BuildPhaseInjection.cpp
             Sources/PBX/BuildRule.cpp
             Sources/PBX/BuildSettings.cpp
             Sources/PBX/BuildStep.cpp

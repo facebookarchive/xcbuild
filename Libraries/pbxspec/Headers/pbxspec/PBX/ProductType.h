@@ -10,8 +10,9 @@
 #ifndef __pbxspec_PBX_ProductType_h
 #define __pbxspec_PBX_ProductType_h
 
-#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
+#include <pbxspec/PBX/BuildPhaseInjection.h>
+#include <pbxsetting/Level.h>
 
 #include <ext/optional>
 
@@ -87,6 +88,9 @@ protected:
     ext::optional<bool>                     _supportsOnDemandResources;
     ext::optional<bool>                     _canEmbedAddressSanitizerLibraries;
     ext::optional<std::string>              _runpathSearchPathForEmbeddedFrameworks;
+    ext::optional<bool>                     _isEmbeddable;
+    ext::optional<std::vector<BuildPhaseInjection>> _buildPhaseInjectionsWhenEmbedding;
+    ext::optional<std::string>              _requiredBuiltProductsDir;
 
 protected:
     ProductType();
@@ -201,6 +205,16 @@ public:
 public:
     inline ext::optional<std::string> const &runpathSearchPathForEmbeddedFrameworks() const
     { return _runpathSearchPathForEmbeddedFrameworks; }
+
+public:
+    inline bool isEmbeddable() const
+    { return _isEmbeddable.value_or(false); }
+    inline ext::optional<bool> isEmbeddableOptional() const
+    { return _isEmbeddable; }
+    inline ext::optional<std::vector<BuildPhaseInjection>> const &buildPhaseInjectionsWhenEmbedding() const
+    { return _buildPhaseInjectionsWhenEmbedding; }
+    inline ext::optional<std::string> const &requiredBuiltProductsDir() const
+    { return _requiredBuiltProductsDir; }
 
 protected:
     friend class Specification;

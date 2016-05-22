@@ -12,6 +12,7 @@
 
 #include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
+#include <pbxspec/PBX/BuildPhaseInjection.h>
 
 #include <ext/optional>
 
@@ -59,49 +60,8 @@ public:
         bool parse(std::string const &identifier, plist::Array const *array);
     };
 
-public:
-    class BuildPhaseInjection {
-    protected:
-        ext::optional<std::string>       _buildPhase;
-        ext::optional<std::string>       _name;
-        ext::optional<bool>              _runOnlyForDeploymentPostprocessing;
-        ext::optional<bool>              _needsRunpathSearchPathForFrameworks;
-        ext::optional<int>               _dstSubfolderSpec;
-        ext::optional<pbxsetting::Value> _dstPath;
-
-    protected:
-        friend class FileType;
-        BuildPhaseInjection();
-
-    public:
-        inline ext::optional<std::string> const &buildPhase() const
-        { return _buildPhase; }
-        inline ext::optional<std::string> const &name() const
-        { return _name; }
-
-    public:
-        inline bool runOnlyForDeploymentPostprocessing() const
-        { return _runOnlyForDeploymentPostprocessing.value_or(false); }
-        inline ext::optional<bool> runOnlyForDeploymentPostprocessingOptional() const
-        { return _runOnlyForDeploymentPostprocessing; }
-        inline bool needsRunpathSearchPathForFrameworks() const
-        { return _needsRunpathSearchPathForFrameworks.value_or(false); }
-        inline ext::optional<bool> needsRunpathSearchPathForFrameworksOptional() const
-        { return _needsRunpathSearchPathForFrameworks; }
-
-    public:
-        inline ext::optional<int> dstSubfolderSpec() const
-        { return _dstSubfolderSpec; }
-        inline ext::optional<pbxsetting::Value> const &dstPath() const
-        { return _dstPath; }
-
-    protected:
-        bool parse(plist::Dictionary const *dict);
-    };
-
 protected:
     friend class ComponentPart;
-    friend class BuildPhaseInjection;
 
 protected:
     ext::optional<std::string>              _uti;
