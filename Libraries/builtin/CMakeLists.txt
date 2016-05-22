@@ -79,3 +79,4 @@ target_link_libraries(builtin-validationUtility builtin)
 add_executable(builtin-embeddedBinaryValidationUtility Tools/embeddedBinaryValidationUtility.cpp)
 target_link_libraries(builtin-embeddedBinaryValidationUtility builtin)
 
+ADD_UNIT_GTEST(builtin copyStrings Tests/test_copyStrings.cpp)
