@@ -173,7 +173,6 @@ Target::shared_ptr Target::
 Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::shared_ptr<Platform> platform, std::string const &path)
 {
     if (path.empty()) {
-        errno = EINVAL;
         return nullptr;
     }
 

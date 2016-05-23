@@ -89,7 +89,6 @@ Scheme::shared_ptr Scheme::
 Open(Filesystem const *filesystem, std::string const &name, std::string const &owner, std::string const &path)
 {
     if (path.empty()) {
-        errno = EINVAL;
         return nullptr;
     }
 

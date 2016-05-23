@@ -13,6 +13,8 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
+#include <algorithm>
+#include <iterator>
 #include <iostream>
 
 class Options {

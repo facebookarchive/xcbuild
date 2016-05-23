@@ -48,7 +48,6 @@ PlatformVersion::shared_ptr PlatformVersion::
 Open(Filesystem const *filesystem, std::string const &path)
 {
     if (path.empty()) {
-        errno = EINVAL;
         return nullptr;
     }
 

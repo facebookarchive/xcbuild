@@ -60,7 +60,6 @@ Workspace::shared_ptr Workspace::
 Open(Filesystem const *filesystem, std::string const &path)
 {
     if (path.empty()) {
-        errno = EINVAL;
         return nullptr;
     }
 

@@ -183,7 +183,6 @@ Project::shared_ptr Project::
 Open(Filesystem const *filesystem, std::string const &path)
 {
     if (path.empty()) {
-        errno = EINVAL;
         fprintf(stderr, "error: project path is empty\n");
         return nullptr;
     }
@@ -262,8 +261,6 @@ Open(Filesystem const *filesystem, std::string const &path)
     if (Os == nullptr) {
         return nullptr;
     }
-
-    errno = 0;
 
     //
     // Initialize context

@@ -40,7 +40,6 @@ SchemeGroup::shared_ptr SchemeGroup::
 Open(Filesystem const *filesystem, std::string const &basePath, std::string const &path, std::string const &name)
 {
     if (path.empty() || basePath.empty()) {
-        errno = EINVAL;
         return nullptr;
     }
 
