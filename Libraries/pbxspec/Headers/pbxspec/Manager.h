@@ -130,7 +130,7 @@ public:
 
 public:
     void registerDomains(libutil::Filesystem const *filesystem, std::vector<std::pair<std::string, std::string>> const &domains);
-    void registerBuildRules(std::string const &path);
+    bool registerBuildRules(libutil::Filesystem const *filesystem, std::string const &path);
 
 private:
     void addSpecification(PBX::Specification::shared_ptr const &specification);

@@ -40,7 +40,12 @@ Default(Filesystem const *filesystem)
      * Register global build rules.
      */
     std::string buildRules = pbxspec::Manager::DeveloperBuildRules(*developerRoot);
-    specManager->registerBuildRules(buildRules);
+    if (filesystem->isReadable(buildRules)) {
+        if (!specManager->registerBuildRules(filesystem, buildRules)) {
+            fprintf(stderr, "error: couldn't register build rules\n");
+            return ext::nullopt;
+        }
+    }
 
     /*
      * Register global specifications.

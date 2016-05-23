@@ -427,12 +427,17 @@ registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string,
     }
 }
 
-void Manager::
-registerBuildRules(std::string const &path)
+bool Manager::
+registerBuildRules(Filesystem const *filesystem, std::string const &path)
 {
-    std::unique_ptr<plist::Object> plist = plist::Format::Any::Read(path).first;
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, path)) {
+        return false;
+    }
+
+    std::unique_ptr<plist::Object> plist = plist::Format::Any::Deserialize(contents).first;
     if (plist == nullptr) {
-        return;
+        return false;
     }
 
     if (auto array = plist::CastTo <plist::Array> (plist.get())) {
@@ -446,6 +451,8 @@ registerBuildRules(std::string const &path)
             }
         }
     }
+
+    return true;
 }
 
 Manager::shared_ptr Manager::
