@@ -158,6 +158,16 @@ namespace std { namespace experimental { inline namespace fundamentals_v1 {
 #include <functional>
 #include <stdexcept>
 
+#if defined(__clang__)
+#if !(__has_feature(cxx_exceptions))
+#define _EXT_NO_EXCEPTIONS
+#endif
+#elif defined(__GNUC__)
+#if !__EXCEPTIONS
+#define _EXT_NO_EXCEPTIONS
+#endif
+#endif
+
 namespace ext {
 
 template<typename, typename _Tp> struct __select_2nd { typedef _Tp type; };
@@ -611,7 +621,11 @@ public:
     constexpr value_type const& value() const
     {
         return (!this->__engaged_) ?
+#if !defined(_EXT_NO_EXCEPTIONS)
             throw bad_optional_access() :
+#else
+            abort() :
+#endif
         this->__val_;
     }
 
@@ -619,7 +633,11 @@ public:
     value_type& value()
     {
         return (!this->__engaged_) ?
+#if !defined(_EXT_NO_EXCEPTIONS)
             throw bad_optional_access() :
+#else
+            abort() :
+#endif
         this->__val_;
     }
 
