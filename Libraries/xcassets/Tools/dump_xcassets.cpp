@@ -13,6 +13,8 @@
 #include <xcassets/Asset/Group.h>
 #include <xcassets/Asset/DataSet.h>
 #include <xcassets/Asset/ImageSet.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
 
 using xcassets::MatchingStyles;
 using xcassets::Asset::Asset;
@@ -22,6 +24,8 @@ using xcassets::Asset::Group;
 using xcassets::Asset::DataSet;
 using xcassets::Asset::ImageSet;
 using xcassets::Slot::Idioms;
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
 
 static void
 Print(std::string const &string, int indent)
@@ -148,12 +152,14 @@ DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
 int
 main(int argc, char **argv)
 {
+    DefaultFilesystem filesystem = DefaultFilesystem();
+
     if (argc < 2) {
         fprintf(stderr, "error: missing input\n");
         return 1;
     }
 
-    std::shared_ptr<Asset> asset = Asset::Load(argv[1], { });
+    std::shared_ptr<Asset> asset = Asset::Load(&filesystem, argv[1], { });
     DumpAsset(asset);
 
     return 0;

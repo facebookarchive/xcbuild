@@ -20,6 +20,8 @@
 #include <unordered_set>
 #include <ext/optional>
 
+namespace libutil { class Filesystem; }
+
 namespace xcassets {
 namespace Asset {
 
@@ -65,27 +67,33 @@ public:
     /*
      * Load an asset from a directory.
      */
-    static std::shared_ptr<Asset> Load(std::string const &path, std::vector<std::string> const &groups);
+    static std::shared_ptr<Asset> Load(libutil::Filesystem const *filesystem, std::string const &path, std::vector<std::string> const &groups);
 
 protected:
+    /*
+     * Load the asset from the filesystem. Default implementation calls parse; override to load children.
+     */
+    virtual bool load(libutil::Filesystem const *filesystem);
+
     /*
      * Override to parse the contents, which can be null.
      */
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 
+protected:
     /*
      * Iterate children of this asset and load them. If specified, must match types.
      */
-    bool loadChildren(std::vector<std::shared_ptr<Asset>> *children, bool providesNamespace = false);
+    bool loadChildren(libutil::Filesystem const *filesystem, std::vector<std::shared_ptr<Asset>> *children, bool providesNamespace = false);
 
     /*
      * Load children of a specific type.
      */
     template<typename T>
-    bool loadChildren(std::vector<std::shared_ptr<T>> *children, bool providesNamespace = false)
+    bool loadChildren(libutil::Filesystem const *filesystem, std::vector<std::shared_ptr<T>> *children, bool providesNamespace = false)
     {
         std::vector<std::shared_ptr<Asset>> assets;
-        if (!loadChildren(&assets)) {
+        if (!loadChildren(filesystem, &assets)) {
             return false;
         }
 

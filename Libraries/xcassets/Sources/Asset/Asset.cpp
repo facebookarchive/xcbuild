@@ -27,11 +27,11 @@
 #include <plist/Format/JSON.h>
 #include <plist/String.h>
 #include <plist/Integer.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
-#include <fstream>
-
 using xcassets::Asset::Asset;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Asset::
@@ -91,21 +91,21 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 }
 
 bool Asset::
-loadChildren(std::vector<std::shared_ptr<Asset>> *children, bool providesNamespace)
+loadChildren(Filesystem const *filesystem, std::vector<std::shared_ptr<Asset>> *children, bool providesNamespace)
 {
     bool error = false;
 
-    FSUtil::EnumerateDirectory(_path, [&](std::string const &fileName) -> bool {
+    filesystem->enumerateDirectory(_path, [&](std::string const &fileName) -> bool {
         std::string path = _path + "/" + fileName;
 
-        if (FSUtil::TestForDirectory(path)) {
+        if (filesystem->isDirectory(path)) {
             std::vector<std::string> groups = _name.groups();
             if (providesNamespace) {
                 // TODO: Should fully qualified names include extensions?
                 groups.push_back(_name.name());
             }
 
-            std::shared_ptr<Asset> asset = Asset::Load(path, groups);
+            std::shared_ptr<Asset> asset = Asset::Load(filesystem, path, groups);
             if (asset == nullptr) {
                 fprintf(stderr, "error: failed to load asset: %s\n", path.c_str());
                 error = true;
@@ -122,15 +122,15 @@ loadChildren(std::vector<std::shared_ptr<Asset>> *children, bool providesNamespa
 }
 
 std::shared_ptr<Asset> Asset::
-Load(std::string const &path, std::vector<std::string> const &groups)
+Load(Filesystem const *filesystem, std::string const &path, std::vector<std::string> const &groups)
 {
-    std::string resolvedPath = FSUtil::ResolvePath(path);
+    std::string resolvedPath = filesystem->resolvePath(path);
     FullyQualifiedName name = FullyQualifiedName(groups, FSUtil::GetBaseNameWithoutExtension(path));
 
     /*
      * Assets are always in directories.
      */
-    if (!FSUtil::TestForDirectory(resolvedPath)) {
+    if (!filesystem->isDirectory(resolvedPath)) {
         return nullptr;
     }
 
@@ -196,33 +196,47 @@ Load(std::string const &path, std::vector<std::string> const &groups)
         return nullptr;
     }
 
+    if (!asset->load(filesystem)) {
+        return nullptr;
+    }
+
+    return asset;
+}
+
+bool Asset::
+load(Filesystem const *filesystem)
+{
     /*
      * Configure the asset with the contents.
      */
     std::unique_ptr<plist::Dictionary> contentsDictionary;
-    std::string contentsPath = path + "/" + "Contents.json";
+    std::string contentsPath = _path + "/" + "Contents.json";
 
     /*
      * Check if the contents file exists. Not existing is valid for some asset types.
      */
-    std::ifstream contentsFile;
-    contentsFile.open(contentsPath, std::ios::binary);
-    if (!contentsFile.fail()) {
-        std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(contentsFile), std::istreambuf_iterator<char>());
+    if (filesystem->isReadable(contentsPath)) {
+        /*
+         * Read in the contents file.
+         */
+        std::vector<uint8_t> contents;
+        if (!filesystem->read(&contents, contentsPath)) {
+            return false;
+        }
 
         /*
          * If the Contents.json file exists, it must be JSON.
          */
         auto deserialized = plist::Format::JSON::Deserialize(contents, plist::Format::JSON::Create());
         if (!deserialized.first) {
-            return nullptr;
+            return false;
         }
 
         /*
          * If the Contents.json file exists, it must be a dictionary.
          */
         if (deserialized.first->type() != plist::Dictionary::Type()) {
-            return nullptr;
+            return false;
         }
 
         contentsDictionary = plist::static_unique_pointer_cast<plist::Dictionary>(std::move(deserialized.first));
@@ -232,9 +246,9 @@ Load(std::string const &path, std::vector<std::string> const &groups)
      * Parse the contents dictionary.
      */
     std::unordered_set<std::string> seen;
-    if (!asset->parse(contentsDictionary.get(), &seen, true)) {
-        return nullptr;
+    if (!this->parse(contentsDictionary.get(), &seen, true)) {
+        return false;
     }
 
-    return asset;
+    return true;
 }

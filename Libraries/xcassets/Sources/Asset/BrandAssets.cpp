@@ -11,6 +11,21 @@
 #include <plist/Keys/Unpack.h>
 
 using xcassets::Asset::BrandAssets;
+using libutil::Filesystem;
+
+bool BrandAssets::
+load(Filesystem const *filesystem)
+{
+    if (!Asset::load(filesystem)) {
+        return false;
+    }
+
+    if (!loadChildren(filesystem, &_children)) {
+        fprintf(stderr, "error: failed to load children\n");
+    }
+
+    return true;
+}
 
 bool BrandAssets::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
@@ -30,10 +45,6 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
-    }
-
-    if (!loadChildren(&_children)) {
-        fprintf(stderr, "error: failed to load children\n");
     }
 
     return true;
