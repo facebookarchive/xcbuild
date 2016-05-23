@@ -73,6 +73,7 @@ primitiveWriteEscapedString(std::string const &string)
             char buf[64];
             int rc = snprintf(buf, sizeof(buf), "\\%04x", c);
             assert(rc < (int)sizeof(buf));
+            (void)rc;
 
             if (!primitiveWriteString(buf)) {
                 return false;
@@ -289,8 +290,9 @@ handleData(Data const *data, bool root)
     std::vector<uint8_t> const &value = data->value();
     for (auto it : value) {
         char buf[3];
-        int  rc = snprintf(buf, sizeof(buf), "%02x", it);
+        int rc = snprintf(buf, sizeof(buf), "%02x", it);
         assert(rc < (int)sizeof(buf));
+        (void)rc;
 
         if (!writeString(buf, false)) {
             return false;
@@ -306,6 +308,7 @@ handleReal(Real const *real, bool root)
     char buf[64];
     int rc = snprintf(buf, sizeof(buf), "%g", real->value());
     assert(rc < (int)sizeof(buf));
+    (void)rc;
 
     if (!writeString(buf, !_lastKey)) {
         return false;
@@ -324,6 +327,7 @@ handleInteger(Integer const *integer, bool root)
 
     rc = snprintf(buf, sizeof(buf), "%" PRId64, integer->value());
     assert(rc < (int)sizeof(buf));
+    (void)rc;
 
     if (!writeString(buf, !_lastKey)) {
         return false;
