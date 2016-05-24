@@ -151,7 +151,7 @@ png_encode(uint32_t width, uint32_t height, int depth, std::vector<uint8_t> cons
 static void
 rendition_dump(car::Rendition const &rendition, std::string const &path)
 {
-    ext::optional<car::Rendition::Data> data = rendition.decode();
+    ext::optional<car::Rendition::Data> data = rendition.data();
     if (data) {
         uint32_t depth = car::Rendition::Data::FormatSize(data->format());
         std::vector<uint8_t> buffer = data->data();

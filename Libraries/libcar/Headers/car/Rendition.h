@@ -72,20 +72,49 @@ public:
         { return _format; }
     };
 
+public:
+    enum resize_mode {
+        resize_mode_fixed_size = 0,
+        resize_mode_tile = 1,
+        resize_mode_scale = 2,
+        resize_mode_uniform = 3,
+        resize_mode_horizontal_uniform_vertical_scale = 4,
+        resize_mode_horizontal_scale_vertical_uniform = 5,
+    };
+
+public:
+    typedef struct {
+        uint32_t x;
+        uint32_t y;
+        uint32_t width;
+        uint32_t height;
+    } slice;
+
 private:
     AttributeList  _attributes;
 
 private:
-    std::function<ext::optional<Data>(Rendition const *)> _data;
+    std::function<ext::optional<Data>(Rendition const *)> _deferredData;
+    ext::optional<Data> _data;
 
 private:
     std::string _fileName;
     int         _width;
     int         _height;
     float       _scale;
+    bool        _is_vector;
+    bool        _is_opaque;
+    bool        _is_resizable;
+    enum resize_mode _resize_mode;
+    std::vector<slice> _slices;
+
+    enum car_rendition_value_layout _layout;
+
+    ext::optional<std::string> _uti;
 
 private:
     Rendition(AttributeList const &attributes, std::function<ext::optional<Data>(Rendition const *)> const &data);
+    Rendition(AttributeList const &attributes, ext::optional<Data> const &data);
 
 public:
     /*
@@ -127,11 +156,68 @@ public:
     float &scale()
     { return _scale; }
 
+    /*
+     * Is vector
+     */
+    bool is_vector() const
+    { return _is_vector; }
+    bool &is_vector()
+    { return _is_vector; }
+
+    /*
+     * Is opaque
+     */
+    bool is_opaque() const
+    { return _is_opaque; }
+    bool &is_opaque()
+    { return _is_opaque; }
+
+    /*
+     * layout
+     */
+    enum car_rendition_value_layout layout() const
+    { return _layout; }
+    enum car_rendition_value_layout &layout()
+    { return _layout; }
+
+    /*
+     * Is resizeable
+     */
+    bool is_resizable() const
+    { return _is_resizable; }
+    bool &is_resizable()
+    { return _is_resizable; }
+
+    /*
+     * resize_mode
+     */
+
+    enum resize_mode resize_mode() const
+    { return _resize_mode; }
+    enum resize_mode &resize_mode()
+    { return _resize_mode; }
+
+    /*
+     * slices
+     */
+    std::vector<slice> slices() const
+    { return _slices; }
+    std::vector<slice> &slices()
+    { return _slices; }
+
+    /*
+     * uti
+     */
+    ext::optional<std::string> uti() const
+    { return _uti; }
+    ext::optional<std::string> &uti()
+    { return _uti; }
+
 public:
     /*
      * The rendition pixel data. May incur expensive decoding.
      */
-    ext::optional<Data> decode() const;
+    ext::optional<Data> data() const;
 
 public:
     /*
@@ -153,6 +239,18 @@ public:
     static Rendition Create(
         AttributeList const &attributes,
         std::function<ext::optional<Data>(Rendition const *)> const &data);
+
+    static Rendition Create(
+        AttributeList const &attributes,
+        ext::optional<Data> const &data);
+
+public:
+
+    /*
+     * Serialize the rendition for writing to a file.
+     */
+    std::vector<uint8_t> Write();
+
 };
 
 }
