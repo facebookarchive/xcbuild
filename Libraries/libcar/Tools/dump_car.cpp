@@ -213,7 +213,7 @@ main(int argc, char **argv)
         output = argv[2];
     }
 
-    struct bom_context_memory memory = bom_context_memory_file(argv[1], false);
+    struct bom_context_memory memory = bom_context_memory_file(argv[1], false, 0);
     auto bom = std::unique_ptr<struct bom_context, decltype(&bom_free)>(bom_alloc_load(memory), bom_free);
     if (bom == nullptr) {
         fprintf(stderr, "error: unable to load BOM\n");
