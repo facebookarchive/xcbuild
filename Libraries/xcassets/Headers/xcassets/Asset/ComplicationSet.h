@@ -35,7 +35,7 @@ private:
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<ImageSet>> children() const
+    std::vector<std::shared_ptr<ImageSet>> const &children() const
     { return _children; }
 
 public:

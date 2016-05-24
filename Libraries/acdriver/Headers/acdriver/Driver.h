@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+namespace libutil { class Filesystem; }
+
 namespace acdriver {
 
 /*
@@ -25,7 +27,7 @@ private:
 
 public:
     static int
-    Run(std::vector<std::string> const &args);
+    Run(libutil::Filesystem *filesystem, std::vector<std::string> const &args);
 };
 
 }

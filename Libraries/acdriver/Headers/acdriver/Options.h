@@ -24,7 +24,7 @@ class Options {
 private:
     bool        _version;
     bool        _printContents;
-    std::string _input;
+    std::vector<std::string> _inputs;
 
 private:
     std::string _outputFormat;
@@ -82,8 +82,8 @@ public:
 public:
     std::string const &exportDependencyInfo() const
     { return _exportDependencyInfo; }
-    std::string const &input() const
-    { return _input; }
+    std::vector<std::string> const &inputs() const
+    { return _inputs; }
 
 public:
     std::string const &optimization() const

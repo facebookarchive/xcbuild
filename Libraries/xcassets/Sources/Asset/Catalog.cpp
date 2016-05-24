@@ -10,9 +10,11 @@
 #include <xcassets/Asset/Catalog.h>
 #include <plist/Keys/Unpack.h>
 #include <libutil/Filesystem.h>
+#include <libutil/FSUtil.h>
 
 using xcassets::Asset::Catalog;
 using libutil::Filesystem;
+using libutil::FSUtil;
 
 bool Catalog::
 load(Filesystem const *filesystem)
@@ -47,5 +49,12 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
     }
 
     return true;
+}
+
+std::shared_ptr<Catalog> Catalog::
+Load(libutil::Filesystem const *filesystem, std::string const &path)
+{
+    auto asset = Asset::Load(filesystem, path, { }, Catalog::Extension());
+    return std::static_pointer_cast<Catalog>(asset);
 }
 

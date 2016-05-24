@@ -67,7 +67,11 @@ public:
     /*
      * Load an asset from a directory.
      */
-    static std::shared_ptr<Asset> Load(libutil::Filesystem const *filesystem, std::string const &path, std::vector<std::string> const &groups);
+    static std::shared_ptr<Asset> Load(
+        libutil::Filesystem const *filesystem,
+        std::string const &path,
+        std::vector<std::string> const &groups,
+        ext::optional<std::string> const &overrideExtension = ext::nullopt);
 
 protected:
     /*

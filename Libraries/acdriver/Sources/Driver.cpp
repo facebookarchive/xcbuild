@@ -14,6 +14,7 @@
 #include <acdriver/VersionAction.h>
 #include <acdriver/CompileAction.h>
 #include <acdriver/ContentsAction.h>
+#include <libutil/Filesystem.h>
 
 #include <algorithm>
 #include <iterator>
@@ -26,6 +27,7 @@ using acdriver::Result;
 using acdriver::VersionAction;
 using acdriver::CompileAction;
 using acdriver::ContentsAction;
+using libutil::Filesystem;
 
 Driver::
 Driver()
@@ -38,7 +40,7 @@ Driver::
 }
 
 static void
-RunInternal(Options const &options, Output *output, Result *result)
+RunInternal(Filesystem *filesystem, Options const &options, Output *output, Result *result)
 {
     if (options.version()) {
         VersionAction version;
@@ -47,7 +49,7 @@ RunInternal(Options const &options, Output *output, Result *result)
 
     if (options.printContents()) {
         ContentsAction contents;
-        contents.run(options, output, result);
+        contents.run(filesystem, options, output, result);
     }
 
     if (!options.compile().empty()) {
@@ -72,7 +74,7 @@ OptionsOutputFormat(Options const &options, Result *result)
 }
 
 int Driver::
-Run(std::vector<std::string> const &args)
+Run(Filesystem *filesystem, std::vector<std::string> const &args)
 {
     Result result;
     Output output;
@@ -95,7 +97,7 @@ Run(std::vector<std::string> const &args)
         /*
          * Perform actions specified by options.
          */
-        RunInternal(options, &output, &result);
+        RunInternal(filesystem, options, &output, &result);
     }
 
     /*

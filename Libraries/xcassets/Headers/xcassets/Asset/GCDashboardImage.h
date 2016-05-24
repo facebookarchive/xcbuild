@@ -36,7 +36,7 @@ private:
 public:
     ext::optional<ContentReference> const &contentReference() const
     { return _contentReference; }
-    std::vector<std::shared_ptr<ImageSet>> children() const
+    std::vector<std::shared_ptr<ImageSet>> const &children() const
     { return _children; }
 
 public:

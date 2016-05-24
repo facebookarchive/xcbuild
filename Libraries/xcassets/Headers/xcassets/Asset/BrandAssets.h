@@ -37,7 +37,7 @@ private:
 
 public:
     // TODO: image set and image stack
-    std::vector<std::shared_ptr<Asset>> children() const
+    std::vector<std::shared_ptr<Asset>> const &children() const
     { return _children; }
 
 public:

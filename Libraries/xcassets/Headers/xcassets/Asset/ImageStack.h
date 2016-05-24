@@ -37,7 +37,7 @@ private:
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<ImageStackLayer>> children() const
+    std::vector<std::shared_ptr<ImageStackLayer>> const &children() const
     { return _children; }
 
 public:

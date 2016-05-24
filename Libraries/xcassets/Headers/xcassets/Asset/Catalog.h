@@ -24,7 +24,7 @@ private:
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<Asset>> children() const
+    std::vector<std::shared_ptr<Asset>> const &children() const
     { return _children; }
 
 public:
@@ -36,6 +36,12 @@ public:
 public:
     static ext::optional<std::string> Extension()
     { return std::string("xcassets"); }
+
+public:
+    /*
+     * Load an asset catalog from a directory.
+     */
+    static std::shared_ptr<Catalog> Load(libutil::Filesystem const *filesystem, std::string const &path);
 
 protected:
     virtual bool load(libutil::Filesystem const *filesystem);

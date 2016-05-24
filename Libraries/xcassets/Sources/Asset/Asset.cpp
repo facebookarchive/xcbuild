@@ -139,7 +139,7 @@ hasChildren(libutil::Filesystem const *filesystem)
 }
 
 std::shared_ptr<Asset> Asset::
-Load(Filesystem const *filesystem, std::string const &path, std::vector<std::string> const &groups)
+Load(Filesystem const *filesystem, std::string const &path, std::vector<std::string> const &groups, ext::optional<std::string> const &overrideExtension)
 {
     std::string resolvedPath = filesystem->resolvePath(path);
     FullyQualifiedName name = FullyQualifiedName(groups, FSUtil::GetBaseNameWithoutExtension(path));
@@ -154,9 +154,12 @@ Load(Filesystem const *filesystem, std::string const &path, std::vector<std::str
     /*
      * Get the file extension.
      */
-    ext::optional<std::string> extension = FSUtil::GetFileExtension(resolvedPath);
-    if (extension->empty()) {
-        extension = ext::nullopt;
+    ext::optional<std::string> extension = overrideExtension;
+    if (!extension) {
+        std::string fileExtension = FSUtil::GetFileExtension(resolvedPath);
+        if (!fileExtension.empty()) {
+            extension = fileExtension;
+        }
     }
 
     /*
@@ -209,7 +212,11 @@ Load(Filesystem const *filesystem, std::string const &path, std::vector<std::str
         auto spriteAtlas = std::shared_ptr<SpriteAtlas>(new SpriteAtlas(name, resolvedPath));
         asset = std::static_pointer_cast<Asset>(spriteAtlas);
     } else {
-        return nullptr;
+        /*
+         * Directories with unknown extensions are treated as groups.
+         */
+        auto group = std::shared_ptr<Group>(new Group(name, resolvedPath));
+        asset = std::static_pointer_cast<Asset>(group);
     }
 
     if (!asset->load(filesystem)) {

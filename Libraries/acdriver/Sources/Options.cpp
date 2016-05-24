@@ -77,12 +77,8 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     } else if (arg == "--filter-for-device-os-version") {
         return libutil::Options::NextString(&_filterForDeviceOsVersion, args, it);
     } else if (!arg.empty() && arg[0] != '-') {
-        if (_input.empty()) {
-            _input = arg;
-            return std::make_pair(true, std::string());
-        } else {
-            return std::make_pair(false, "too many inputs " + arg);
-        }
+        _inputs.push_back(arg);
+        return std::make_pair(true, std::string());
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }

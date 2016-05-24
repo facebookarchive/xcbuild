@@ -8,10 +8,17 @@
  */
 
 #include <acdriver/Driver.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
+
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
 
 int
 main(int argc, char **argv)
 {
+    DefaultFilesystem filesystem = DefaultFilesystem();
+
     std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-    return acdriver::Driver::Run(args);
+    return acdriver::Driver::Run(&filesystem, args);
 }

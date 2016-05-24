@@ -10,6 +10,8 @@
 #ifndef __acdriver_ContentsAction_h
 #define __acdriver_ContentsAction_h
 
+namespace libutil { class Filesystem; }
+
 namespace acdriver {
 
 class Options;
@@ -25,7 +27,7 @@ public:
     ~ContentsAction();
 
 public:
-    void run(Options const &options, Output *output, Result *result);
+    void run(libutil::Filesystem const *filesystem, Options const &options, Output *output, Result *result);
 };
 
 }
