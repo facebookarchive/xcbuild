@@ -6,6 +6,7 @@ add_library(car SHARED
             Sources/Facet.cpp
             Sources/Rendition.cpp
             Sources/car_format.c
+            Sources/Writer.cpp
             )
 
 find_package(ZLIB REQUIRED)
@@ -26,3 +27,4 @@ target_link_libraries(dump_car PRIVATE ${ZLIB_LIBRARIES})
 ADD_UNIT_GTEST(car Facet Tests/test_Facet.cpp)
 ADD_UNIT_GTEST(car Rendition Tests/test_Rendition.cpp)
 ADD_UNIT_GTEST(car AttributeList Tests/test_AttributeList.cpp)
+ADD_UNIT_GTEST(car Writer Tests/test_Writer.cpp)
