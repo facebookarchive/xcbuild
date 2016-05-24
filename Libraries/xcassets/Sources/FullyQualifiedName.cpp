@@ -39,7 +39,9 @@ Parse(std::string const &string)
     std::vector<std::string> groups;
     while (pos != std::string::npos) {
         std::string group = string.substr(prev, pos - prev);
-        groups.push_back(group);
+        if (!group.empty()) {
+            groups.push_back(group);
+        }
 
         prev = pos + 1;
         pos = string.find('/', prev);
