@@ -106,7 +106,8 @@ SortInvocations(std::vector<pbxbuild::Tool::Invocation> const &invocations)
 
     pbxbuild::DirectedGraph<pbxbuild::Tool::Invocation const *> graph;
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
-        graph.insert(&invocation, { });
+        std::unordered_set<pbxbuild::Tool::Invocation const *> emptySet;
+        graph.insert(&invocation, emptySet);
 
         for (std::string const &input : invocation.inputs()) {
             auto it = outputToInvocation.find(input);

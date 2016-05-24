@@ -244,7 +244,7 @@ ShouldGenerateNinja(bool generate, Parameters const &buildParameters, std::strin
      * If the contents of the configration hash doesn't match, need to update for
      * the new configuration.
      */
-    std::ifstream file = std::ifstream(configurationHashPath, std::ios::binary);
+    std::ifstream file(configurationHashPath, std::ios::binary);
     if (file.fail()) {
         /* Can't be read, same as not existing. */
         return true;

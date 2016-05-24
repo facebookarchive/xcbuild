@@ -88,7 +88,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      */
     for (std::string const &inputPath : options.inputs()) {
         /* Read in the input. */
-        std::ifstream inputFile = std::ifstream(FSUtil::ResolveRelativePath(inputPath, workingDirectory), std::ios::binary);
+        std::ifstream inputFile(FSUtil::ResolveRelativePath(inputPath, workingDirectory), std::ios::binary);
         if (inputFile.fail()) {
             fprintf(stderr, "error: unable to read input %s\n", inputPath.c_str());
             return 1;
@@ -134,7 +134,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         std::string outputPath = FSUtil::ResolveRelativePath(options.outputDirectory(), workingDirectory) + "/" + FSUtil::GetBaseName(inputPath);
 
         /* Write out the output. */
-        std::ofstream outputFile = std::ofstream(outputPath, std::ios::binary);
+        std::ofstream outputFile(outputPath, std::ios::binary);
         if (outputFile.fail()) {
             fprintf(stderr, "error: could not open output path %s to write\n", outputPath.c_str());
             return 1;

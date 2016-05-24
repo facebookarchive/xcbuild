@@ -41,7 +41,7 @@ public:
         std::string const &workingDirectory,
         std::vector<pbxspec::PBX::PropertyOption::shared_ptr> const &options,
         pbxspec::PBX::FileType::shared_ptr const &fileType,
-        std::unordered_set<std::string> const &deletedSettings = { });
+        std::unordered_set<std::string> const &deletedSettings = std::unordered_set<std::string>());
 
     static OptionsResult Create(
         Tool::Environment const &toolEnvironment,

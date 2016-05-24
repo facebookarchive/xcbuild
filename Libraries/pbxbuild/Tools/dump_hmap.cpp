@@ -22,7 +22,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    std::ifstream file = std::ifstream(argv[1], std::ios::binary);
+    std::ifstream file(argv[1], std::ios::binary);
     std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 
     HeaderMap hmap;

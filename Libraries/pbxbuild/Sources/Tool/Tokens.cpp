@@ -28,7 +28,7 @@ Expand(
      * Split the tokens on spaces.
      */
     std::vector<std::string> tokens;
-    std::stringstream sstream = std::stringstream(tokenized);
+    std::stringstream sstream(tokenized);
     std::copy(std::istream_iterator<std::string>(sstream), std::istream_iterator<std::string>(), std::back_inserter(tokens));
 
     /*

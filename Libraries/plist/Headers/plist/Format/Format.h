@@ -42,7 +42,7 @@ public:
     static std::pair<std::unique_ptr<Object>, std::string>
     Read(std::string const &path)
     {
-        std::ifstream file = std::ifstream(path, std::ios::binary);
+        std::ifstream file(path, std::ios::binary);
         std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 
         std::unique_ptr<T> format = Identify(contents);
@@ -62,7 +62,7 @@ public:
             return std::make_pair(false, result.second);
         }
 
-        std::ofstream file = std::ofstream(path, std::ios::binary);
+        std::ofstream file(path, std::ios::binary);
         std::copy(result.first->begin(), result.first->end(), std::ostream_iterator<char>(file));
 
         return std::make_pair(true, std::string());

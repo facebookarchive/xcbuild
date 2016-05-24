@@ -28,7 +28,8 @@ SortedFileTypes(std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes
         if (fileType->base() != nullptr) {
             graph.insert(fileType->base(), { fileType });
         }
-        graph.insert(fileType, { });
+        const std::unordered_set<pbxspec::PBX::FileType::shared_ptr> emptySet;
+        graph.insert(fileType, emptySet);
     }
 
     return graph.ordered();

@@ -133,7 +133,7 @@ ParseValue(std::string const &value, size_t from, ValueDelimiter end = kDelimite
     size_t append_offset = from;
 
     do {
-        size_t to;
+        size_t to = 0;
         switch (end) {
             case kDelimiterNone: {
                 to = value.size();

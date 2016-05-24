@@ -33,7 +33,9 @@ public:
                  std::ostream *output = nullptr,
                  std::ostream *error = nullptr)
     {
-        return execute(path, { }, { }, "", input, output, error);
+        std::vector<std::string> emptyVector;
+        std::unordered_map<std::string, std::string> emptyMap;
+        return execute(path, emptyVector, emptyMap, "", input, output, error);
     }
 
     bool execute(std::string const &path,
@@ -42,7 +44,8 @@ public:
                  std::ostream *output = nullptr,
                  std::ostream *error = nullptr)
     {
-        return execute(path, arguments, { }, "", input, output, error);
+        std::unordered_map<std::string, std::string> emptyMap;
+        return execute(path, arguments, emptyMap, "", input, output, error);
     }
 
     bool execute(std::string const &path,

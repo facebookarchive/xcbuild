@@ -45,6 +45,7 @@ match(Condition const &condition) const
 Condition const &Condition::
 Empty(void)
 {
-    static Condition *condition = new Condition({ });
+    std::unordered_map<std::string, std::string> emptyMap;
+    static Condition *condition = new Condition(emptyMap);
     return *condition;
 }

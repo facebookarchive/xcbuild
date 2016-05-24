@@ -28,7 +28,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 # Enable all warnings.
 add_compile_options(-Wall -Werror)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  add_compile_options(-Wno-multichar -Wno-sign-compare)
+  add_compile_options(-Wno-multichar -Wno-sign-compare -fno-strict-aliasing)
 endif ()
 
 # Enable color diagnostics.
