@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#import <experimental/string_view>
 
 namespace car {
 
@@ -34,10 +35,20 @@ public:
     typedef std::unique_ptr<struct bom_tree_context, decltype(&bom_tree_free)> unique_ptr_bom_tree;
 
 private:
+    typedef struct {
+        void *key; size_t key_len; void *value; size_t value_len;
+    } KeyValuePair;
+
+private:
     unique_ptr_bom _bom;
+    ext::optional<struct car_key_format*> _keyfmt;
+    std::unordered_map<std::experimental::string_view, void*> _facetValues;
+    std::unordered_multimap<uint16_t, KeyValuePair> _renditionValues;
 
 private:
     Reader(unique_ptr_bom bom);
+    void facetFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &facet) const;
+    void renditionFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &iterator) const;
 
 public:
     /*
@@ -45,6 +56,12 @@ public:
      */
     struct bom_context *bom() const
     { return _bom.get(); }
+
+    /*
+     * The key format
+     */
+    struct car_key_format *keyfmt() const
+    { return *_keyfmt; }
 
 public:
     /*
@@ -59,6 +76,17 @@ public:
 
 public:
     /*
+     * Lookup a Facet by name
+     */
+    ext::optional<car::Facet> lookupFacet(std::string name) const;
+
+    /*
+     * Lookup Rendition list for a Facet
+     */
+    std::vector<car::Rendition> lookupRenditions(Facet const &) const;
+
+public:
+    /*
      * Print debug information about the archive.
      */
     void dump() const;
@@ -68,11 +96,6 @@ public:
      * Load an existing archive from a BOM.
      */
     static ext::optional<Reader> Load(unique_ptr_bom bom);
-
-    /*
-     * Create a new archive inside a BOM.
-     */
-    static ext::optional<Reader> Create(unique_ptr_bom bom);
 };
 
 }

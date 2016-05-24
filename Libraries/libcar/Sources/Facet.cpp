@@ -8,6 +8,7 @@
  */
 
 #include <car/Facet.h>
+#include <car/AttributeList.h>
 #include <car/Rendition.h>
 #include <car/Reader.h>
 
@@ -42,13 +43,24 @@ renditionIterate(Reader const *archive, std::function<void(Rendition const &)> c
         return;
     }
 
-    archive->renditionIterate([&](Rendition const &rendition) {
-        ext::optional<uint16_t> facet_identifier = attributes->get(car_attribute_identifier_identifier);
-        ext::optional<uint16_t> rendition_identifier = rendition.attributes().get(car_attribute_identifier_identifier);
-        if (rendition_identifier && facet_identifier && *rendition_identifier == *facet_identifier) {
-            iterator(rendition);
-        }
-    });
+    ext::optional<uint16_t> facet_identifier = attributes->get(car_attribute_identifier_identifier);
+    if (facet_identifier) {
+        archive->renditionIterate([&facet_identifier, &iterator](Rendition const &rendition) {
+            ext::optional<uint16_t> rendition_identifier = rendition.attributes().get(car_attribute_identifier_identifier);
+            if (rendition_identifier && *rendition_identifier == *facet_identifier) {
+                iterator(rendition);
+            }
+        });
+    }
+}
+
+Facet Facet::
+Load(
+    std::string const &name,
+    struct car_facet_value *value)
+{
+    AttributeList attributes = car::AttributeList::Load(value->attributes_count, value->attributes);
+    return Facet(name, attributes);
 }
 
 Facet Facet::
