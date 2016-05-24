@@ -91,6 +91,14 @@ public:
     static AttributeList Load(
         size_t count,
         struct car_attribute_pair *pairs);
+
+    /*
+     * Write an attribute list into an a vector of bytes using the identifier
+     * order provided.
+     */
+    std::vector<uint8_t> Write(
+        size_t count,
+        uint32_t *identifiers) const;
 };
 
 }
