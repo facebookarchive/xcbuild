@@ -69,3 +69,19 @@ Create(std::string const &name, AttributeList const &attributes)
     return Facet(name, attributes);
 }
 
+std::vector<uint8_t> Facet::Write() const
+{
+    size_t attributes_count = _attributes.count();
+    size_t facet_value_size = sizeof(struct car_facet_value) + (sizeof(struct car_attribute_pair) * attributes_count);
+    std::vector<uint8_t> output = std::vector<uint8_t>(facet_value_size);
+    struct car_facet_value *facet_value = (struct car_facet_value *)&output[0];
+    facet_value->attributes_count = 0;
+    _attributes.iterate([&attributes_count, &facet_value](enum car_attribute_identifier identifier, uint16_t value) {
+        if (facet_value->attributes_count < attributes_count) {
+            facet_value->attributes[facet_value->attributes_count].identifier = identifier;
+            facet_value->attributes[facet_value->attributes_count].value = value;
+            facet_value->attributes_count += 1;
+        }
+    });
+    return output;
+}

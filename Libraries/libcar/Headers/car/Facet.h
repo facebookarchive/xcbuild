@@ -70,6 +70,13 @@ public:
      * Create a facet with the provided name and attributes
      */
     static Facet Create(std::string const &name, AttributeList const &attributes);
+
+public:
+
+    /*
+     * Serialize the rendition for writing to a file.
+     */
+    std::vector<uint8_t> Write() const;
 };
 
 }
