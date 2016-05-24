@@ -39,3 +39,5 @@ target_include_directories(xcassets PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers"
 
 add_executable(dump_xcassets Tools/dump_xcassets.cpp)
 target_link_libraries(dump_xcassets PRIVATE xcassets)
+
+ADD_UNIT_GTEST(xcassets IconSet Tests/test_IconSet.cpp)

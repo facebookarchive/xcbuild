@@ -11,6 +11,7 @@
 #define __xcassets_Asset_IconSet_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Slot/Scale.h>
 #include <plist/Dictionary.h>
 
 #include <string>
@@ -21,15 +22,45 @@ namespace xcassets {
 namespace Asset {
 
 class IconSet : public Asset {
+public:
+    class Icon {
+    private:
+        std::string                _path;
+        double                     _width;
+        double                     _height;
+
+    private:
+        ext::optional<Slot::Scale> _scale;
+
+    private:
+        Icon(std::string const &path, double width, double height, ext::optional<Slot::Scale> const &scale);
+
+    public:
+        std::string const &path() const
+        { return _path; }
+        double const &width() const
+        { return _width; }
+        double const &height() const
+        { return _height; }
+
+    public:
+        ext::optional<Slot::Scale> const &scale() const
+        { return _scale; }
+
+    public:
+        static ext::optional<Icon> Parse(std::string const &path);
+    };
+
 private:
-    // TODO images
+    std::vector<Icon> _icons;
 
 private:
     friend class Asset;
     using Asset::Asset;
 
 public:
-    // TODO images
+    std::vector<Icon> const &icons() const
+    { return _icons; }
 
 public:
     static AssetType Type()
@@ -42,6 +73,7 @@ public:
     { return std::string("iconset"); }
 
 protected:
+    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 
