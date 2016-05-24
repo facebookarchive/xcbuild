@@ -82,7 +82,12 @@ protected:
 
 protected:
     /*
-     * Iterate children of this asset and load them. If specified, must match types.
+     * Without loading, checks for child assets.
+     */
+    bool hasChildren(libutil::Filesystem const *filesystem);
+
+    /*
+     * Iterate children of this asset and load them.
      */
     bool loadChildren(libutil::Filesystem const *filesystem, std::vector<std::shared_ptr<Asset>> *children, bool providesNamespace = false);
 

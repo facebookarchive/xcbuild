@@ -13,8 +13,24 @@
 #include <plist/Boolean.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
+#include <libutil/Filesystem.h>
 
 using xcassets::Asset::AppIconSet;
+using libutil::Filesystem;
+
+bool AppIconSet::
+load(Filesystem const *filesystem)
+{
+    if (!Asset::load(filesystem)) {
+        return false;
+    }
+
+    if (this->hasChildren(filesystem)) {
+        fprintf(stderr, "warning: unexpected child assets\n");
+    }
+
+    return true;
+}
 
 bool AppIconSet::Image::
 parse(plist::Dictionary const *dict)
@@ -111,9 +127,6 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         }
     }
 
-    // TODO: confirm no children
-
     return true;
 }
-
 

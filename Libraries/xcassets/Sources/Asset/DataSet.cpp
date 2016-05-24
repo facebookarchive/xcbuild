@@ -11,8 +11,10 @@
 #include <plist/Keys/Unpack.h>
 #include <plist/Array.h>
 #include <plist/String.h>
+#include <libutil/Filesystem.h>
 
 using xcassets::Asset::DataSet;
+using libutil::Filesystem;
 
 bool DataSet::Data::
 parse(plist::Dictionary const *dict)
@@ -48,6 +50,20 @@ parse(plist::Dictionary const *dict)
 
     if (UTI != nullptr) {
         _UTI = UTI->value();
+    }
+
+    return true;
+}
+
+bool DataSet::
+load(Filesystem const *filesystem)
+{
+    if (!Asset::load(filesystem)) {
+        return false;
+    }
+
+    if (this->hasChildren(filesystem)) {
+        fprintf(stderr, "warning: unexpected child assets\n");
     }
 
     return true;
@@ -109,10 +125,6 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         }
     }
 
-    // TODO: confirm no children
-
     return true;
 }
-
-
 

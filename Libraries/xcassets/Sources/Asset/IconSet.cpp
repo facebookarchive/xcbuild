@@ -98,6 +98,10 @@ load(Filesystem const *filesystem)
         return false;
     }
 
+    if (this->hasChildren(filesystem)) {
+        fprintf(stderr, "warning: unexpected child assets\n");
+    }
+
     filesystem->enumerateDirectory(this->path(), [this](std::string const &name) {
         std::string path = this->path() + "/" + name;
         if (ext::optional<Icon> icon = Icon::Parse(path)) {
@@ -125,8 +129,6 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
             fprintf(stderr, "%s", unpack.errorText().c_str());
         }
     }
-
-    // TODO: confirm no children
 
     return true;
 }

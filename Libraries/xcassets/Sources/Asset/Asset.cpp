@@ -121,6 +121,23 @@ loadChildren(Filesystem const *filesystem, std::vector<std::shared_ptr<Asset>> *
     return !error;
 }
 
+bool Asset::
+hasChildren(libutil::Filesystem const *filesystem)
+{
+    bool hasChildren = false;
+
+    filesystem->enumerateDirectory(_path, [this, filesystem, &hasChildren](std::string const &fileName) -> bool {
+        std::string path = _path + "/" + fileName;
+        if (filesystem->isDirectory(path)) {
+            hasChildren = true;
+        }
+
+        return true;
+    });
+
+    return hasChildren;
+}
+
 std::shared_ptr<Asset> Asset::
 Load(Filesystem const *filesystem, std::string const &path, std::vector<std::string> const &groups)
 {
@@ -139,7 +156,6 @@ Load(Filesystem const *filesystem, std::string const &path, std::vector<std::str
      */
     ext::optional<std::string> extension = FSUtil::GetFileExtension(resolvedPath);
     if (extension->empty()) {
-        // TODO(grp): Remove when FSUtil returns an optional.
         extension = ext::nullopt;
     }
 
