@@ -41,3 +41,4 @@ add_executable(dump_xcassets Tools/dump_xcassets.cpp)
 target_link_libraries(dump_xcassets PRIVATE xcassets)
 
 ADD_UNIT_GTEST(xcassets IconSet Tests/test_IconSet.cpp)
+ADD_UNIT_GTEST(xcassets Scale Tests/test_Scale.cpp)

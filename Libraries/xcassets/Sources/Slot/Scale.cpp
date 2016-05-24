@@ -33,7 +33,7 @@ Parse(std::string const &value)
 
     char *end = NULL;
     double scale = std::strtod(number.c_str(), &end);
-    if (end != number.c_str()) {
+    if (end == &number[number.size()]) {
         return Scale(scale);
     } else {
         fprintf(stderr, "warning: scale not a number %s\n", value.c_str());
