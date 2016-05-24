@@ -11,6 +11,8 @@
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Environment.h>
 
+#include <algorithm>
+#include <iterator>
 #include <sstream>
 
 namespace Tool = pbxbuild::Tool;

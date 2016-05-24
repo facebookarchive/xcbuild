@@ -15,6 +15,8 @@
 #include <acdriver/CompileAction.h>
 #include <acdriver/ContentsAction.h>
 
+#include <algorithm>
+#include <iterator>
 #include <iostream>
 
 using acdriver::Driver;
