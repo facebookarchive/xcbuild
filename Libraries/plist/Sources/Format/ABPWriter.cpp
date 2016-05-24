@@ -90,13 +90,16 @@ __ABPWriteDate(ABPContext *context, Date const *date)
     /* Reference time is 2001/1/1 */
     static uint64_t const ReferenceTimestamp = 978307200;
     double at;
+    uint64_t value;
 
     /* Write object type. */
     if (!__ABPWriteByte(context, __ABPRecordTypeToByte(kABPRecordTypeDate, 0)))
         return false;
 
     at = date->unixTimeValue() - ReferenceTimestamp;
-    return __ABPWriteWord(context, 8, *(uint64_t const *)&at);
+    /* HACK(strager): We should not rely on C's representation of double. */
+    memcpy(&value, &at, 8);
+    return __ABPWriteWord(context, 8, value);
 }
 
 static bool
@@ -131,10 +134,12 @@ __ABPWriteReal(ABPContext *context, Real *real)
     float       value32 = value;
 
     if ((double)value32 == value) {
-        uvalue = *(uint32_t const *)&value32;
+        /* HACK(strager): We should not rely on C's representation of float. */
+        memcpy(&uvalue, &value32, 4);
         nbits = 2;
     } else {
-        uvalue = *(uint64_t const *)&value;
+        /* HACK(strager): We should not rely on C's representation of double. */
+        memcpy(&uvalue, &value, 8);
         nbits = 3;
     }
 

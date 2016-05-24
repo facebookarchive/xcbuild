@@ -40,18 +40,12 @@ overrideSettings() const
 }
 
 static uint64_t
-hton64(uint64_t v)
+ReadBigEndian8(uint8_t bytes[8])
 {
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    v = ((v & 0x00000000000000FFULL) << 56) |
-        ((v & 0x000000000000FF00ULL) << 40) |
-        ((v & 0x0000000000FF0000ULL) << 24) |
-        ((v & 0x00000000FF000000ULL) <<  8) |
-        ((v & 0x000000FF00000000ULL) >>  8) |
-        ((v & 0x0000FF0000000000ULL) >> 24) |
-        ((v & 0x00FF000000000000ULL) >> 40) |
-        ((v & 0xFF00000000000000ULL) >> 56);
-#endif
+    uint64_t v = 0;
+    for (unsigned i = 0; i < 8; ++i) {
+        v |= static_cast<uint64_t>(bytes[8 - i - 1]) << (i * 8);
+    }
     return v;
 }
 
@@ -73,7 +67,7 @@ ComputeDerivedDataHash(std::string const &path)
     char hash_path[28];
     int counter;
 
-    uint64_t first_value = hton64(*reinterpret_cast<uint64_t *>(&digest[0]));
+    uint64_t first_value = ReadBigEndian8(digest);
     counter = 13;
     while (counter >= 0) {
         hash_path[counter] = 'a' + (first_value % 26);
@@ -81,7 +75,7 @@ ComputeDerivedDataHash(std::string const &path)
         counter--;
     }
 
-    uint64_t second_value = hton64(*reinterpret_cast<uint64_t *>(&digest[8]));
+    uint64_t second_value = ReadBigEndian8(&digest[8]);
     counter = 27;
     while (counter > 13) {
         hash_path[counter] = 'a' + (second_value % 26);

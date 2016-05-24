@@ -54,8 +54,9 @@ findSpecifications(std::vector<std::string> const &domains, char const *type) co
             for (auto const &entry : _specifications) {
                 auto const &it = entry.second.find(type);
                 if (it != entry.second.end()) {
-                    typename T::vector domainSpecifications = reinterpret_cast <typename T::vector const &> (it->second);
-                    specifications.insert(specifications.end(), domainSpecifications.begin(), domainSpecifications.end());
+                    for (auto const &s : it->second) {
+                        specifications.emplace_back(std::static_pointer_cast<T>(s));
+                    }
                 }
             }
         } else {
@@ -63,8 +64,9 @@ findSpecifications(std::vector<std::string> const &domains, char const *type) co
             if (doit != _specifications.end()) {
                 auto const &it = doit->second.find(type);
                 if (it != doit->second.end()) {
-                    typename T::vector domainSpecifications = reinterpret_cast <typename T::vector const &> (it->second);
-                    specifications.insert(specifications.end(), domainSpecifications.begin(), domainSpecifications.end());
+                    for (auto const &s : it->second) {
+                        specifications.emplace_back(std::static_pointer_cast<T>(s));
+                    }
                 }
             }
         }

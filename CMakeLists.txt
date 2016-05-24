@@ -37,7 +37,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions")
 # Enable all warnings.
 add_compile_options(-Wall -Werror)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  add_compile_options(-Wno-multichar -Wno-sign-compare -fno-strict-aliasing)
+  add_compile_options(-Wno-multichar -Wno-sign-compare)
 endif ()
 
 # Enable color diagnostics.
