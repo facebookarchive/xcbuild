@@ -140,6 +140,19 @@ write(std::vector<uint8_t> const &contents, std::string const &path)
     return true;
 }
 
+ext::optional<std::string> DefaultFilesystem::
+readSymbolicLink(std::string const &path) const
+{
+    char buffer[PATH_MAX];
+    ssize_t len = ::readlink(path.c_str(), buffer, sizeof(buffer) - 1);
+    if (len == -1) {
+        return ext::nullopt;
+    }
+
+    buffer[len] = '\0';
+    return std::string(buffer);
+}
+
 bool DefaultFilesystem::
 removeFile(std::string const &path)
 {

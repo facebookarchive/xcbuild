@@ -73,6 +73,11 @@ public:
      */
     virtual bool write(std::vector<uint8_t> const &contents, std::string const &path) = 0;
 
+    /*
+     * Read the destination of the symbolic link, relative to its containing directory.
+     */
+    virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const = 0;
+
 public:
     /*
      * Delete a file.

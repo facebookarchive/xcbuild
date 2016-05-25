@@ -18,28 +18,50 @@ using xcsdk::Environment;
 using libutil::Filesystem;
 using libutil::Subprocess;
 
-ext::optional<std::string> Environment::
-DeveloperRoot(Filesystem const *filesystem)
+static ext::optional<std::string>
+SpecifiedDeveloperRoot(Filesystem const *filesystem)
 {
     if (char *path = getenv("DEVELOPER_DIR")) {
         return std::string(path);
     }
 
-#if defined(__APPLE__)
-    std::ostringstream oss;
-    Subprocess subprocess;
-    if (subprocess.execute("/usr/bin/xcode-select", { "--print-path" }, nullptr, &oss, nullptr)) {
-        std::string output = oss.str();
-        libutil::trim(output);
-        if (!output.empty()) {
-            return output;
-        }
+    if (auto path = filesystem->readSymbolicLink("/var/db/xcode_select_link")) {
+        return path;
     }
-#endif
 
-    std::string root = "/Developer";
-    if (filesystem->isDirectory(root)) {
-        return root;
+    if (auto path = filesystem->readSymbolicLink("/usr/share/xcode-select/xcode_dir_path")) {
+        return path;
+    }
+
+    return ext::nullopt;
+}
+
+ext::optional<std::string> Environment::
+DeveloperRoot(Filesystem const *filesystem)
+{
+    if (ext::optional<std::string> specified = SpecifiedDeveloperRoot(filesystem)) {
+        /*
+         * Support finding the developer directory inside an application directory.
+         */
+        std::string application = *specified + "/Contents/Developer";
+        if (filesystem->isDirectory(application)) {
+            return application;
+        }
+
+        return specified;
+    }
+
+    /*
+     * Fall back to a set of known directories.
+     */
+    std::vector<std::string> defaults = {
+        "/Applications/Xcode.app/Contents/Developer",
+        "/Developer",
+    };
+    for (std::string const &path : defaults) {
+        if (filesystem->isDirectory(path)) {
+            return path;
+        }
     }
 
     return ext::nullopt;

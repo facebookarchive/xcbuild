@@ -251,6 +251,12 @@ write(std::vector<uint8_t> const &contents, std::string const &path)
     });
 }
 
+ext::optional<std::string> MemoryFilesystem::
+readSymbolicLink(std::string const &path) const
+{
+    return ext::nullopt;
+}
+
 bool MemoryFilesystem::
 removeFile(std::string const &path)
 {
