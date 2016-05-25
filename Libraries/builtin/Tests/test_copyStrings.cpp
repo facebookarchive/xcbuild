@@ -46,7 +46,7 @@ TEST(copyStrings, CopyMultiple)
         "in2.strings",
         "--outdir", "output",
         "--outputencoding", "utf-8",
-    }, { }, &filesystem, "/"));
+    }, std::unordered_map<std::string, std::string>(), &filesystem, "/"));
 
     contents.clear();
     EXPECT_TRUE(filesystem.read(&contents, "output/in1.strings"));
@@ -83,7 +83,7 @@ TEST(copyStrings, InputOutputEncoding)
                 "--outdir", "output",
                 "--inputencoding", entry1.first,
                 "--outputencoding", entry2.first,
-            }, { }, &filesystem, "/"));
+            }, std::unordered_map<std::string, std::string>(), &filesystem, "/"));
 
             std::vector<uint8_t> contents;
             EXPECT_TRUE(filesystem.read(&contents, "output/in.strings"));
