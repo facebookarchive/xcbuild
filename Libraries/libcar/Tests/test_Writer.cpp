@@ -63,9 +63,24 @@ static test_car_key_format keyfmt_s = {
 
 static struct car_key_format *keyfmt = &keyfmt_s.keyfmt;
 
-TEST(Writer, TestWriter)
+class WriterTest : public testing::Test {
+
+protected:
+    std::string tmpfilename;
+
+    virtual void SetUp() {
+        std::ostringstream stream;
+        stream << "/tmp/test_car_Writer_output." <<  ::getpid() << ".car";
+        tmpfilename = stream.str();
+    }
+
+    virtual void TearDown() {
+        std::remove(tmpfilename.c_str());
+    }
+};
+
+TEST_F(WriterTest, TestWriter)
 {
-    std::string tmpfilename = std::string("/tmp/test_car_Writer_output.car");
     int width = 8;
     int height = 8;
 
