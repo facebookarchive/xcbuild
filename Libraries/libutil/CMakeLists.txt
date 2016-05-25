@@ -25,6 +25,7 @@ add_library(util SHARED
 
 target_link_libraries(util PUBLIC ext)
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
+install(TARGETS util DESTINATION lib)
 
 ADD_UNIT_GTEST(util MemoryFilesystem Tests/test_MemoryFilesystem.cpp)
 ADD_UNIT_GTEST(util FSUtil Tests/test_FSUtil.cpp)

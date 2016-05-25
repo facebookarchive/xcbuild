@@ -51,32 +51,42 @@ endif ()
 
 target_link_libraries(builtin PUBLIC util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
 target_include_directories(builtin PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
+install(TARGETS builtin DESTINATION lib)
 
 add_executable(builtin-copy Tools/copy.cpp)
 target_link_libraries(builtin-copy builtin)
+install(TARGETS builtin-copy DESTINATION bin)
 
 add_executable(builtin-copyPlist Tools/copyPlist.cpp)
 target_link_libraries(builtin-copyPlist builtin)
+install(TARGETS builtin-copyPlist DESTINATION bin)
 
 add_executable(builtin-copyStrings Tools/copyStrings.cpp)
 target_link_libraries(builtin-copyStrings builtin)
+install(TARGETS builtin-copyStrings DESTINATION bin)
 
 add_executable(builtin-copyTiff Tools/copyTiff.cpp)
 target_link_libraries(builtin-copyTiff builtin)
+install(TARGETS builtin-copyTiff DESTINATION bin)
 
 add_executable(builtin-infoPlistUtility Tools/infoPlistUtility.cpp)
 target_link_libraries(builtin-infoPlistUtility builtin)
+install(TARGETS builtin-infoPlistUtility DESTINATION bin)
 
 add_executable(builtin-lsRegisterURL Tools/lsRegisterURL.cpp)
 target_link_libraries(builtin-lsRegisterURL builtin)
+install(TARGETS builtin-lsRegisterURL DESTINATION bin)
 
 add_executable(builtin-productPackagingUtility Tools/productPackagingUtility.cpp)
 target_link_libraries(builtin-productPackagingUtility builtin)
+install(TARGETS builtin-productPackagingUtility DESTINATION bin)
 
 add_executable(builtin-validationUtility Tools/validationUtility.cpp)
 target_link_libraries(builtin-validationUtility builtin)
+install(TARGETS builtin-validationUtility DESTINATION bin)
 
 add_executable(builtin-embeddedBinaryValidationUtility Tools/embeddedBinaryValidationUtility.cpp)
 target_link_libraries(builtin-embeddedBinaryValidationUtility builtin)
+install(TARGETS builtin-embeddedBinaryValidationUtility DESTINATION bin)
 
 ADD_UNIT_GTEST(builtin copyStrings Tests/test_copyStrings.cpp)

@@ -12,9 +12,11 @@ add_library(acdriver SHARED
 
 target_link_libraries(acdriver PUBLIC xcassets util plist ext)
 target_include_directories(acdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
+install(TARGETS acdriver DESTINATION lib)
 
 add_executable(actool Tools/actool.cpp)
 target_link_libraries(actool PRIVATE acdriver)
+install(TARGETS actool DESTINATION bin)
 
 ADD_UNIT_GTEST(acdriver Options Tests/test_Options.cpp)
 ADD_UNIT_GTEST(acdriver Output Tests/test_Output.cpp)

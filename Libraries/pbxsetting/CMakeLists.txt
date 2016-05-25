@@ -23,6 +23,7 @@ add_library(pbxsetting SHARED
 target_link_libraries(pbxsetting PUBLIC util plist)
 target_include_directories(pbxsetting PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(pbxsetting PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
+install(TARGETS pbxsetting DESTINATION lib)
 
 add_executable(dump_xcconfig Tools/dump_xcconfig.cpp)
 target_link_libraries(dump_xcconfig pbxsetting util)
