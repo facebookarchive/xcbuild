@@ -57,7 +57,7 @@ void Reader::
 facetIterate(std::function<void(Facet const &)> const &iterator) const
 {
     for( const auto& item : _facetValues ) {
-        car::Facet facet = car::Facet::Load(item.first.to_string(), (struct car_facet_value *)item.second);
+        car::Facet facet = car::Facet::Load(item.first, (struct car_facet_value *)item.second);
         iterator(facet);
     }
 }
@@ -176,7 +176,7 @@ Load(unique_ptr_bom bom)
     // Iterate through the facets as fast as possible
     // just save the name and value pointer for lookups later
     reader.facetFastIterate([&reader](void *key, size_t key_len, void *value, size_t value_len) {
-        auto name = std::experimental::string_view((char *)key, key_len);
+        auto name = std::string((char *)key, key_len);
         reader._facetValues.insert ( {name, value} );
     });
 

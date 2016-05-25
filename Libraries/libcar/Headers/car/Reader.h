@@ -19,7 +19,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#import <experimental/string_view>
 
 namespace car {
 
@@ -42,7 +41,7 @@ private:
 private:
     unique_ptr_bom _bom;
     ext::optional<struct car_key_format*> _keyfmt;
-    std::unordered_map<std::experimental::string_view, void*> _facetValues;
+    std::unordered_map<std::string, void*> _facetValues;
     std::unordered_multimap<uint16_t, KeyValuePair> _renditionValues;
 
 private:
