@@ -1,0 +1,183 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+#include <xcsdk/Environment.h>
+#include <libutil/DefaultFilesystem.h>
+#include <libutil/Filesystem.h>
+#include <libutil/Options.h>
+#include <ext/optional>
+
+using libutil::DefaultFilesystem;
+using libutil::Filesystem;
+
+class Options {
+private:
+    bool _help;
+    bool _version;
+
+private:
+    bool _printPath;
+    bool _resetPath;
+    ext::optional<std::string> _switchPath;
+
+private:
+    bool _install;
+
+public:
+    Options();
+    ~Options();
+
+public:
+    bool help() const
+    { return _help; }
+    bool version() const
+    { return _version; }
+
+public:
+    bool printPath() const
+    { return _printPath; }
+    bool resetPath() const
+    { return _resetPath; }
+    ext::optional<std::string> const &switchPath() const
+    { return _switchPath; }
+
+public:
+    bool install() const
+    { return _install; }
+
+private:
+    friend class libutil::Options;
+    std::pair<bool, std::string>
+    parseArgument(std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it);
+};
+
+Options::
+Options() :
+    _help                  (false),
+    _version               (false),
+    _printPath             (false),
+    _resetPath             (false),
+    _install               (false)
+{
+}
+
+Options::
+~Options()
+{
+}
+
+std::pair<bool, std::string> Options::
+parseArgument(std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it)
+{
+    std::string const &arg = **it;
+
+    if (arg == "-h" || arg == "--help") {
+        return libutil::Options::MarkBool(&_help, arg, it);
+    } else if (arg == "-v" || arg == "--version") {
+        return libutil::Options::MarkBool(&_version, arg, it);
+    } else if (arg == "-p" || arg == "--print-path") {
+        return libutil::Options::MarkBool(&_printPath, arg, it);
+    } else if (arg == "-r" || arg == "--reset") {
+        return libutil::Options::MarkBool(&_resetPath, arg, it);
+    } else if (arg == "-s" || arg == "--switch-path") {
+        std::string switchPath;
+
+        auto result = libutil::Options::NextString(&switchPath, args, it);
+        if (!result.first) {
+            return result;
+        }
+
+        _switchPath = switchPath;
+        return result;
+    } else if (arg == "--install" || arg == "-install") {
+        return libutil::Options::MarkBool(&_install, arg, it);
+    } else {
+        return std::make_pair(false, "unknown argument " + arg);
+    }
+}
+
+static int
+Help(ext::optional<std::string> const &error = ext::nullopt)
+{
+    if (error) {
+        fprintf(stderr, "error: %s\n", error->c_str());
+        fprintf(stderr, "\n");
+    }
+
+    fprintf(stderr, "Usage: xcode-select [action]\n\n");
+    fprintf(stderr, "Manipulate default developer directory.\n\n");
+
+#define INDENT "  "
+    fprintf(stderr, "Actions:\n");
+    fprintf(stderr, INDENT "-p, --print-path\n");
+    fprintf(stderr, INDENT "-r, --reset\n");
+    fprintf(stderr, INDENT "-s <path>, --switch <path>\n");
+    fprintf(stderr, INDENT "--install\n");
+    fprintf(stderr, "\n");
+
+    fprintf(stderr, "More information:\n");
+    fprintf(stderr, INDENT "-h, --help (this message)\n");
+    fprintf(stderr, INDENT "-v, --version\n");
+    fprintf(stderr, "\n");
+#undef INDENT
+
+    return (!error ? 0 : -1);
+}
+
+static int
+Version()
+{
+    printf("xcode-select version 1 (xcbuild)\n");
+    return 0;
+}
+
+int
+main(int argc, char **argv)
+{
+    DefaultFilesystem filesystem = DefaultFilesystem();
+    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+
+    /*
+     * Parse out the options, or print help & exit.
+     */
+    Options options;
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    if (!result.first) {
+        return Help(result.second);
+    }
+
+    /*
+     * Handle the various actions.
+     */
+    if (options.help()) {
+        return Help();
+    } else if (options.version()) {
+        return Version();
+    } else if (options.printPath()) {
+        ext::optional<std::string> developer = xcsdk::Environment::DeveloperRoot(&filesystem);
+        if (!developer) {
+            fprintf(stderr, "error: no developer directory found\n");
+            return 1;
+        }
+
+        fprintf(stdout, "%s\n", developer->c_str());
+        return 0;
+    } else if (options.resetPath()) {
+        fprintf(stderr, "error: reset not implemented\n");
+        return 1;
+    } else if (options.switchPath()) {
+        fprintf(stderr, "error: switch not implemented\n");
+        return 1;
+    } else if (options.install()) {
+        fprintf(stderr, "error: install not implemented\n");
+        return 1;
+    } else {
+        return Help(std::string("no actions provided"));
+    }
+}
