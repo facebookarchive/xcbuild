@@ -14,6 +14,7 @@ add_library(ninja SHARED
 
 target_link_libraries(ninja PUBLIC)
 target_include_directories(ninja PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
+install(TARGETS ninja DESTINATION lib)
 
 ADD_UNIT_GTEST(ninja Value Tests/test_Value.cpp)
 ADD_UNIT_GTEST(ninja Writer Tests/test_Writer.cpp)

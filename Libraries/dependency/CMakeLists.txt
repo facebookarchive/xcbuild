@@ -17,9 +17,11 @@ add_library(dependency SHARED
 
 target_link_libraries(dependency PUBLIC util ext)
 target_include_directories(dependency PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
+install(TARGETS dependency DESTINATION lib)
 
 add_executable(dependency-info-tool Tools/dependency-info-tool.cpp)
 target_link_libraries(dependency-info-tool dependency util)
+install(TARGETS dependency-info-tool DESTINATION bin)
 
 ADD_UNIT_GTEST(dependency BinaryDependencyInfo Tests/test_BinaryDependencyInfo.cpp)
 ADD_UNIT_GTEST(dependency MakefileDependencyInfo Tests/test_MakefileDependencyInfo.cpp)

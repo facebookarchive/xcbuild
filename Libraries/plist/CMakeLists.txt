@@ -58,12 +58,14 @@ add_library(plist SHARED
 find_package(LibXml2 REQUIRED)
 target_include_directories(plist PRIVATE "${LIBXML2_INCLUDE_DIR}")
 target_link_libraries(plist PUBLIC xml2)
+install(TARGETS plist DESTINATION lib)
 
 target_include_directories(plist PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
 
 add_executable(plutil Tools/plutil.cpp)
 target_link_libraries(plutil plist util)
+install(TARGETS plutil DESTINATION bin)
 
 ADD_UNIT_GTEST(plist Boolean Tests/test_Boolean.cpp)
 ADD_UNIT_GTEST(plist String Tests/test_String.cpp)

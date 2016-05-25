@@ -19,8 +19,10 @@ add_library(xcsdk SHARED
 
 target_link_libraries(xcsdk PUBLIC pbxsetting util plist)
 target_include_directories(xcsdk PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
+install(TARGETS xcsdk DESTINATION lib)
 
 add_executable(xcrun Tools/xcrun.cpp)
 target_link_libraries(xcrun xcsdk util)
+install(TARGETS xcrun DESTINATION bin)
 
 ADD_UNIT_GTEST(xcsdk PlatformVersion Tests/test_PlatformVersion.cpp)

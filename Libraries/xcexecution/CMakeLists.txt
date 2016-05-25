@@ -17,3 +17,4 @@ add_library(xcexecution SHARED
 
 target_link_libraries(xcexecution PUBLIC xcformatter pbxbuild xcscheme xcworkspace pbxproj pbxsetting util dependency ninja builtin)
 target_include_directories(xcexecution PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
+install(TARGETS xcexecution DESTINATION lib)
