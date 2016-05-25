@@ -239,23 +239,22 @@ main(int argc, char **argv)
     car->dump();
     printf("\n");
 
-    car->facetIterate([&car](car::Facet const &facet) {
+    int facet_count = 0;
+    int rendition_count = 0;
+
+    car->facetIterate([&car, &facet_count, &rendition_count, output](car::Facet const &facet) {
+        facet_count++;
         facet.dump();
 
-        int rendition_count = 0;
-        facet.renditionIterate(&*car, [&rendition_count](car::Rendition const &rendition) {
+        auto renditions = car->lookupRenditions(facet);
+        for (auto & rendition : renditions) {
+            rendition.dump();
+            rendition_dump(rendition, output + "/" + rendition.fileName());
             rendition_count++;
-        });
-        printf("Rendition count: %d\n", rendition_count);
-        printf("\n");
+        }
     });
 
-    car->renditionIterate([&](car::Rendition const &rendition) {
-        rendition.dump();
-        rendition_dump(rendition, output + "/" + rendition.fileName());
-        printf("\n");
-    });
-
+    printf("Found %d facets and %d renditions\n", facet_count, rendition_count);
     return 0;
 }
 
