@@ -230,7 +230,8 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     EXPECT_TRUE(0 == memcmp(rendition_value, &new_rendition_value[0], rendition_len));
 
     // Decode the serialized copy of new_rendition 
-    car::Rendition new_rendition_check = car::Rendition::Load(attributes, (struct car_rendition_value *)&new_rendition_value[0]);
+    car::Rendition new_rendition_check = car::Rendition::Load(attributes,
+        reinterpret_cast<struct car_rendition_value *>(new_rendition_value.data()));
     auto check_data = new_rendition_check.data();
 
     // Check that the encoded and decoded data is the same length

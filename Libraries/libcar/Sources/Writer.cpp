@@ -44,27 +44,11 @@ addFacet(Facet const &facet)
 }
 
 void Writer::
-addRendition(Rendition &rendition)
+addRendition(Rendition const &rendition)
 {
     auto identifier = rendition.attributes().get(car_attribute_identifier_identifier);
     if (identifier != ext::nullopt) {
         _renditionValues.insert({*identifier, rendition});
-    }
-}
-
-void Writer::
-facetIterate(std::function<void(Facet const &)> const &iterator) const
-{
-    for( const auto& item : _facetValues ) {
-        iterator(item.second);
-    }
-}
-
-void Writer::
-renditionIterate(std::function<void(Rendition const &)> const &iterator) const
-{
-    for( const auto& item : _renditionValues ) {
-        iterator(item.second);
     }
 }
 
@@ -109,11 +93,13 @@ Write()
     // Write FACETKEYS
     struct bom_tree_context *facets_tree_context = bom_tree_alloc_empty(_bom.get(), car_facet_keys_variable);
     if (facets_tree_context != NULL) {
-       for ( auto& item : _facetValues ) {
+        for (auto const &item : _facetValues ) {
             auto facet_value = item.second.Write();
             bom_tree_add(facets_tree_context,
-                (void *)item.first.c_str(), item.first.size(),
-                (void*)&facet_value[0], facet_value.size());
+                reinterpret_cast<const void *>(item.first.c_str()),
+                item.first.size(),
+                reinterpret_cast<const void *>(facet_value.data()),
+                facet_value.size());
         }
         bom_tree_free(facets_tree_context);
     }
@@ -121,12 +107,14 @@ Write()
     // Write RENDITIONS
     struct bom_tree_context *renditions_tree_context = bom_tree_alloc_empty(_bom.get(), car_renditions_variable);
     if (renditions_tree_context != NULL) {
-       for ( auto& item : _renditionValues ) {
+        for (auto const &item : _renditionValues ) {
             auto attributes_value = item.second.attributes().Write(keyfmt->num_identifiers, keyfmt->identifier_list);
             auto rendition_value = item.second.Write();
             bom_tree_add(renditions_tree_context,
-                (void*)&attributes_value[0], attributes_value.size(),
-                (void*)&rendition_value[0], rendition_value.size());
+                reinterpret_cast<const void *>(attributes_value.data()),
+                attributes_value.size(),
+                reinterpret_cast<const void *>(rendition_value.data()),
+                rendition_value.size());
         }
         bom_tree_free(renditions_tree_context);
     }

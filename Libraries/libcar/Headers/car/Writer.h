@@ -37,7 +37,7 @@ private:
     unique_ptr_bom _bom;
     ext::optional<struct car_key_format*> _keyfmt;
     std::unordered_map<std::string, Facet const &> _facetValues;
-    std::unordered_multimap<uint16_t, Rendition &> _renditionValues;
+    std::unordered_multimap<uint16_t, Rendition const &> _renditionValues;
 
 private:
     Writer(unique_ptr_bom bom);
@@ -66,18 +66,7 @@ public:
     /*
      * Add a Rendition for a Facet, allow lazy loading of data
      */
-    void addRendition(Rendition &);
-
-public:
-    /*
-     * Iterate all facets.
-     */
-    void facetIterate(std::function<void(Facet const &)> const &facet) const;
-
-    /*
-     * Iterate all renditions.
-     */
-    void renditionIterate(std::function<void(Rendition const &)> const &iterator) const;
+    void addRendition(Rendition const &);
 
 public:
     /*

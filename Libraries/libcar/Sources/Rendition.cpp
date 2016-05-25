@@ -61,9 +61,9 @@ Rendition(AttributeList const &attributes, std::function<ext::optional<Data>(Ren
     _width     (0),
     _height    (0),
     _scale     (1.0),
-    _is_vector (false),
-    _is_opaque (false),
-    _is_resizable (false)
+    _isVector (false),
+    _isOpaque (false),
+    _isResizable (false)
 {
 }
 
@@ -74,9 +74,9 @@ Rendition(AttributeList const &attributes, ext::optional<Data> const &data) :
     _width     (0),
     _height    (0),
     _scale     (1.0),
-    _is_vector (false),
-    _is_opaque (false),
-    _is_resizable (false)
+    _isVector (false),
+    _isOpaque (false),
+    _isResizable (false)
 {
 }
 
@@ -89,32 +89,32 @@ dump() const
     printf("Scale: %f\n", _scale);
     printf("Layout: %d\n", _layout);
 
-    printf("Resizable: %d\n", _is_resizable);
-    if (_is_resizable) {
+    printf("Resizable: %d\n", _isResizable);
+    if (_isResizable) {
         int i = 0;
         for (auto slice : _slices) {
             printf("slice %d (%u, %u) %u x %u \n", i++, slice.x, slice.y, slice.width, slice.height);
         }
     }
 
-    switch(_resize_mode) {
-        case resize_mode_fixed_size:
-            printf("Resize mode: resize_mode_fixed_size\n");
+    switch(_resizeMode) {
+        case resizeMode::fixedSize:
+            printf("Resize mode: resizeMode::fixedSize\n");
             break;
-        case resize_mode_tile:
-            printf("Resize mode: resize_mode_tile\n");
+        case resizeMode::tile:
+            printf("Resize mode: resizeMode::tile\n");
             break;
-        case resize_mode_scale:
-            printf("Resize mode: resize_mode_scale\n");
+        case resizeMode::scale:
+            printf("Resize mode: resizeMode::scale\n");
             break;
-        case resize_mode_uniform:
-            printf("Resize mode: resize_mode_uniform\n");
+        case resizeMode::uniform:
+            printf("Resize mode: resizeMode::uniform\n");
             break;
-        case resize_mode_horizontal_uniform_vertical_scale:
-            printf("Resize mode: resize_mode_horizontal_uniform_vertical_scale\n");
+        case resizeMode::horizontalUniformVerticalScale:
+            printf("Resize mode: resizeMode::horizontal_uniform_vertical_scale\n");
             break;
-        case resize_mode_horizontal_scale_vertical_uniform:
-            printf("Resize mode: resize_mode_horizontal_scale_vertical_uniform\n");
+        case resizeMode::horizontalScaleVerticalUniform:
+            printf("Resize mode: resizeMode::horizontal_scale_vertical_uniform\n");
             break;
     }
 
@@ -123,7 +123,7 @@ dump() const
 }
 
 static ext::optional<Rendition::Data> _decode(struct car_rendition_value *value);
-static ext::optional<std::vector<uint8_t>> _encode(Rendition *rendition);
+static ext::optional<std::vector<uint8_t>> _encode(Rendition const *rendition);
 
 static int number_slices_from_layout(enum car_rendition_value_layout layout)
 {
@@ -163,27 +163,27 @@ static int number_slices_from_layout(enum car_rendition_value_layout layout)
     return 0;
 }
 
-static enum car::Rendition::resize_mode resize_mode_from_layout(enum car_rendition_value_layout layout)
+static enum car::Rendition::resizeMode resizeMode_from_layout(enum car_rendition_value_layout layout)
 {
     switch(layout) {
     case car_rendition_value_layout_one_part_fixed_size:
     case car_rendition_value_layout_three_part_horizontal_uniform:
     case car_rendition_value_layout_three_part_vertical_uniform:
-        return car::Rendition::resize_mode_fixed_size;
+        return car::Rendition::resizeMode::fixedSize;
     case car_rendition_value_layout_one_part_tile:
     case car_rendition_value_layout_three_part_horizontal_tile:
     case car_rendition_value_layout_three_part_vertical_tile:
     case car_rendition_value_layout_nine_part_tile:
-        return car::Rendition::resize_mode_tile;
+        return car::Rendition::resizeMode::tile;
     case car_rendition_value_layout_one_part_scale:
     case car_rendition_value_layout_three_part_horizontal_scale:
     case car_rendition_value_layout_three_part_vertical_scale:
     case car_rendition_value_layout_nine_part_scale:
-        return car::Rendition::resize_mode_scale;
+        return car::Rendition::resizeMode::scale;
     case car_rendition_value_layout_nine_part_horizontal_uniform_vertical_scale:
-        return car::Rendition::resize_mode_horizontal_uniform_vertical_scale;
+        return car::Rendition::resizeMode::horizontalUniformVerticalScale;
     case car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform:
-        return car::Rendition::resize_mode_horizontal_scale_vertical_uniform;
+        return car::Rendition::resizeMode::horizontalScaleVerticalUniform;
     case car_rendition_value_layout_six_part:
     case car_rendition_value_layout_gradient:
     case car_rendition_value_layout_effect:
@@ -195,7 +195,7 @@ static enum car::Rendition::resize_mode resize_mode_from_layout(enum car_renditi
     case car_rendition_value_layout_asset_pack:
         break;
     }
-    return car::Rendition::resize_mode_fixed_size;
+    return car::Rendition::resizeMode::fixedSize;
 }
 
 Rendition const Rendition::
@@ -279,17 +279,17 @@ Load(
     rendition.width() = value->width;
     rendition.height() = value->height;
     rendition.scale() = (float)value->scale_factor / 100.0;
-    rendition.is_vector() = (int)value->flags.is_vector;
-    rendition.is_opaque() = (int)value->flags.is_opaque;
+    rendition.isVector() = (int)value->flags.is_vector;
+    rendition.isOpaque() = (int)value->flags.is_opaque;
 
     enum car_rendition_value_layout layout = (enum car_rendition_value_layout)value->metadata.layout;
     rendition.layout() = layout;
-    rendition.resize_mode() = resize_mode_from_layout(layout);
+    rendition.resizeMode() = resizeMode_from_layout(layout);
 
     if (layout >= car_rendition_value_layout_three_part_horizontal_tile &&
         layout <= car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform &&
         rendition.slices().size() > 0) {
-        rendition.is_resizable() = true;
+        rendition.isResizable() = true;
     }
     return rendition;
 }
@@ -311,6 +311,10 @@ data() const
 static ext::optional<Rendition::Data>
 _decode(struct car_rendition_value *value)
 {
+    if (strncmp(value->magic, "ISTC", 4) != 0) {
+        return ext::nullopt;
+    }
+
     Rendition::Data::Format format;
     if (value->pixel_format == car_rendition_value_pixel_format_argb) {
         format = Rendition::Data::Format::PremultipliedBGRA8;
@@ -432,7 +436,7 @@ _decode(struct car_rendition_value *value)
 }
 
 static ext::optional<std::vector<uint8_t>>
-_encode(Rendition *rendition)
+_encode(Rendition const *rendition)
 {
     ext::optional<Rendition::Data> data = rendition->data();
     if (!data || data->data().size() == 0) {
@@ -490,7 +494,7 @@ _encode(Rendition *rendition)
 
     std::vector<uint8_t> output = std::vector<uint8_t>(sizeof(struct car_rendition_data_header1));
 
-    struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *) &output[0];
+    struct car_rendition_data_header1 *header1 = reinterpret_cast<struct car_rendition_data_header1 *>(output.data());
     memcpy(header1->magic, "MLEC", sizeof(header1->magic));
     header1->length = compressed_vector.size();
     header1->compression = compression_magic;
@@ -515,20 +519,17 @@ Create(
     return Rendition(attributes, data);
 }
 
-std::vector<uint8_t> Rendition::Write()
+std::vector<uint8_t> Rendition::Write() const
 {
     // Create header
     struct car_rendition_value header;
     bzero(&header, sizeof(struct car_rendition_value));
-    header.magic[3] = 'C';
-    header.magic[2] = 'T';
-    header.magic[1] = 'S';
-    header.magic[0] = 'I';
+    strncpy(header.magic, "ISTC", 4);
     header.version = 1;
     // header.flags.is_header_flagged_fpo = 0;
     // header.flags.is_excluded_from_contrast_filter = 0;
-    header.flags.is_vector = _is_vector;
-    header.flags.is_opaque = _is_opaque;
+    header.flags.is_vector = _isVector;
+    header.flags.is_opaque = _isOpaque;
     header.flags.bitmap_encoding = 1;
     // header.flags.reserved = 0;
 
@@ -553,8 +554,8 @@ std::vector<uint8_t> Rendition::Write()
     if (nslices == 1) {
         info_slices->slices[0].x = 0;
         info_slices->slices[0].y = 0;
-        info_slices->slices[0].width = _width; // XXX FIXME
-        info_slices->slices[0].height = _height; // XXX FIXME
+        info_slices->slices[0].width = _width;
+        info_slices->slices[0].height = _height;
     }
 
     struct car_rendition_info_metrics info_metrics;
@@ -604,7 +605,7 @@ std::vector<uint8_t> Rendition::Write()
     }
 
     size_t compressed_data_length = data->size();
-    uint8_t *compressed_data = &data->data()[0];
+    uint8_t *compressed_data = reinterpret_cast<uint8_t *>(data->data());
 
     // Assemble Header and info segments
     size_t total_header_size = sizeof(struct car_rendition_value) + info_slices_size + \
@@ -614,7 +615,7 @@ std::vector<uint8_t> Rendition::Write()
          sizeof(struct car_rendition_info_header) + info_bytes_per_row.header.length;
 
     std::vector<uint8_t> output = std::vector<uint8_t>(total_header_size + compressed_data_length);
-    uint8_t *output_bytes = &output[0];
+    uint8_t *output_bytes = reinterpret_cast<uint8_t *>(output.data());;
 
     header.info_len = total_header_size - sizeof(struct car_rendition_value);
     header.bitmaps.bitmap_count = 1;

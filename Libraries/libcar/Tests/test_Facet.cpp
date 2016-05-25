@@ -43,8 +43,8 @@ TEST(Facet, TestFacetDeSerialize)
 
 TEST(Facet, TestFacetSerialize)
 {
-    std::vector<uint8_t> test_facet_value_vector((uint8_t*)test_facet_value,
-        (uint8_t*)test_facet_value + sizeof(test_facet_value_s));
+    std::vector<uint8_t> test_facet_value_vector(reinterpret_cast<uint8_t*>(test_facet_value),
+        reinterpret_cast<uint8_t*>(test_facet_value) + sizeof(test_facet_value_s));
 
     car::AttributeList attributes = car::AttributeList({});
     attributes.set(car_attribute_identifier_element, 85);

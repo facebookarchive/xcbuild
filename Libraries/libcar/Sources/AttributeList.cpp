@@ -68,10 +68,7 @@ dump() const
 }
 
 AttributeList AttributeList::
-Load(
-    size_t count,
-    uint32_t *identifiers,
-    uint16_t *values)
+Load(size_t count, uint32_t *identifiers, uint16_t *values)
 {
     std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
     for (size_t i = 0; i < count; ++i) {
@@ -81,9 +78,7 @@ Load(
 }
 
 AttributeList AttributeList::
-Load(
-    size_t count,
-    struct car_attribute_pair *pairs)
+Load(size_t count, struct car_attribute_pair *pairs)
 {
     std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
     for (size_t i = 0; i < count; ++i) {
@@ -102,11 +97,10 @@ operator()(AttributeList const &attributes) const
 
 
 std::vector<uint8_t> AttributeList::
-Write(size_t count,
-    uint32_t *identifiers) const
+Write(size_t count, uint32_t *identifiers) const
 {
     std::vector<uint8_t> output = std::vector<uint8_t>(sizeof(uint16_t)*count);
-    uint16_t *values = (uint16_t *) &output[0];
+    uint16_t *values = reinterpret_cast<uint16_t *>(output.data());
     std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
     for (size_t i = 0; i < count; ++i) {
         enum car_attribute_identifier identifier = (enum car_attribute_identifier) identifiers[i];

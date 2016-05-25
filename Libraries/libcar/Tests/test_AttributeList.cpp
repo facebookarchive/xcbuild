@@ -13,29 +13,29 @@
 
 
 struct test_car_key_format {
-	struct car_key_format keyfmt;
-	uint32_t identifier_list[13];
+    struct car_key_format keyfmt;
+    uint32_t identifier_list[13];
 } __attribute__((packed));
 
 static struct test_car_key_format keyfmt_s = {
-	{
-		{'k', 'f', 'm', 't'}, 0, 13
-	},
-	{
-		car_attribute_identifier_scale,
-		car_attribute_identifier_idiom,
-		car_attribute_identifier_subtype,
-		car_attribute_identifier_graphics_class,
-		car_attribute_identifier_memory_class,
-		car_attribute_identifier_size_class_horizontal,
-		car_attribute_identifier_size_class_vertical,
-		car_attribute_identifier_identifier,
-		car_attribute_identifier_element,
-		car_attribute_identifier_part,
-		car_attribute_identifier_state,
-		car_attribute_identifier_value,
-		car_attribute_identifier_dimension1
-	}
+    {
+        {'k', 'f', 'm', 't'}, 0, 13
+    },
+    {
+        car_attribute_identifier_scale,
+        car_attribute_identifier_idiom,
+        car_attribute_identifier_subtype,
+        car_attribute_identifier_graphics_class,
+        car_attribute_identifier_memory_class,
+        car_attribute_identifier_size_class_horizontal,
+        car_attribute_identifier_size_class_vertical,
+        car_attribute_identifier_identifier,
+        car_attribute_identifier_element,
+        car_attribute_identifier_part,
+        car_attribute_identifier_state,
+        car_attribute_identifier_value,
+        car_attribute_identifier_dimension1
+    }
 };
 
 static struct car_key_format *keyfmt = &keyfmt_s.keyfmt;
@@ -43,21 +43,21 @@ static struct car_key_format *keyfmt = &keyfmt_s.keyfmt;
 
 TEST(AttributeList, TestAttributeListDeSerialize)
 {
-	uint16_t rendition_key[13] = {
-		1,                                        // scale
-		car_attribute_identifier_idiom_value_pad, // idiom
-		3,                                        // subtype
-		4,                                        // graphics_class
-		5,                                        // memory_class
-		car_attribute_identifier_size_class_value_compact, // size_class_horizontal
-		car_attribute_identifier_size_class_value_regular, // size_class_vertical
-		8,                                        // identifier
-		9,                                        // element
-		10,                                       // part
-		11,                                       // state
-		12,                                       // value
-		13                                        // dimension1
-	};
+    uint16_t rendition_key[13] = {
+        1,                                        // scale
+        car_attribute_identifier_idiom_value_pad, // idiom
+        3,                                        // subtype
+        4,                                        // graphics_class
+        5,                                        // memory_class
+        car_attribute_identifier_size_class_value_compact, // size_class_horizontal
+        car_attribute_identifier_size_class_value_regular, // size_class_vertical
+        8,                                        // identifier
+        9,                                        // element
+        10,                                       // part
+        11,                                       // state
+        12,                                       // value
+        13                                        // dimension1
+    };
 
     car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
 
@@ -81,9 +81,9 @@ TEST(AttributeList, TestAttributeListDeSerialize)
     EXPECT_TRUE(size_class_vertical);
     EXPECT_TRUE(*size_class_vertical == car_attribute_identifier_size_class_value_regular);
 
-	auto output = attributes.Write(keyfmt->num_identifiers, keyfmt->identifier_list);
-	uint16_t *attributes_out = (uint16_t *) &output[0];
+    auto output = attributes.Write(keyfmt->num_identifiers, keyfmt->identifier_list);
+    uint16_t *attributes_out = reinterpret_cast<uint16_t *>(output.data());
 
-	EXPECT_TRUE(0 == memcmp(rendition_key, attributes_out, sizeof(uint16_t) * keyfmt->num_identifiers));
+    EXPECT_TRUE(0 == memcmp(rendition_key, attributes_out, sizeof(uint16_t) * keyfmt->num_identifiers));
 }
 

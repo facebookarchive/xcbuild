@@ -247,7 +247,7 @@ main(int argc, char **argv)
         facet.dump();
 
         auto renditions = car->lookupRenditions(facet);
-        for (auto & rendition : renditions) {
+        for (auto const &rendition : renditions) {
             rendition.dump();
             rendition_dump(rendition, output + "/" + rendition.fileName());
             rendition_count++;

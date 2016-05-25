@@ -73,13 +73,13 @@ public:
     };
 
 public:
-    enum resize_mode {
-        resize_mode_fixed_size = 0,
-        resize_mode_tile = 1,
-        resize_mode_scale = 2,
-        resize_mode_uniform = 3,
-        resize_mode_horizontal_uniform_vertical_scale = 4,
-        resize_mode_horizontal_scale_vertical_uniform = 5,
+    enum class resizeMode {
+        fixedSize = 0,
+        tile = 1,
+        scale = 2,
+        uniform = 3,
+        horizontalUniformVerticalScale = 4,
+        horizontalScaleVerticalUniform = 5,
     };
 
 public:
@@ -102,10 +102,10 @@ private:
     int         _width;
     int         _height;
     float       _scale;
-    bool        _is_vector;
-    bool        _is_opaque;
-    bool        _is_resizable;
-    enum resize_mode _resize_mode;
+    bool        _isVector;
+    bool        _isOpaque;
+    bool        _isResizable;
+    enum resizeMode _resizeMode;
     std::vector<slice> _slices;
 
     enum car_rendition_value_layout _layout;
@@ -159,18 +159,18 @@ public:
     /*
      * Is vector
      */
-    bool is_vector() const
-    { return _is_vector; }
-    bool &is_vector()
-    { return _is_vector; }
+    bool isVector() const
+    { return _isVector; }
+    bool &isVector()
+    { return _isVector; }
 
     /*
      * Is opaque
      */
-    bool is_opaque() const
-    { return _is_opaque; }
-    bool &is_opaque()
-    { return _is_opaque; }
+    bool isOpaque() const
+    { return _isOpaque; }
+    bool &isOpaque()
+    { return _isOpaque; }
 
     /*
      * layout
@@ -183,19 +183,19 @@ public:
     /*
      * Is resizeable
      */
-    bool is_resizable() const
-    { return _is_resizable; }
-    bool &is_resizable()
-    { return _is_resizable; }
+    bool isResizable() const
+    { return _isResizable; }
+    bool &isResizable()
+    { return _isResizable; }
 
     /*
-     * resize_mode
+     * resizeMode
      */
 
-    enum resize_mode resize_mode() const
-    { return _resize_mode; }
-    enum resize_mode &resize_mode()
-    { return _resize_mode; }
+    enum resizeMode resizeMode() const
+    { return _resizeMode; }
+    enum resizeMode &resizeMode()
+    { return _resizeMode; }
 
     /*
      * slices
@@ -249,7 +249,7 @@ public:
     /*
      * Serialize the rendition for writing to a file.
      */
-    std::vector<uint8_t> Write();
+    std::vector<uint8_t> Write() const;
 
 };
 
