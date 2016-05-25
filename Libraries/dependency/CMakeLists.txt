@@ -25,3 +25,4 @@ install(TARGETS dependency-info-tool DESTINATION bin)
 
 ADD_UNIT_GTEST(dependency BinaryDependencyInfo Tests/test_BinaryDependencyInfo.cpp)
 ADD_UNIT_GTEST(dependency MakefileDependencyInfo Tests/test_MakefileDependencyInfo.cpp)
+ADD_UNIT_GTEST(dependency DirectoryDependencyInfo Tests/test_DirectoryDependencyInfo.cpp)

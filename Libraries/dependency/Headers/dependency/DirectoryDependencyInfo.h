@@ -17,6 +17,8 @@
 #include <string>
 #include <ext/optional>
 
+namespace libutil { class Filesystem; }
+
 namespace dependency {
 
 /*
@@ -53,7 +55,7 @@ public:
      * Create dependency info for a directory.
      */
     static ext::optional<DirectoryDependencyInfo>
-    Deserialize(std::string const &directory);
+    Deserialize(libutil::Filesystem const *filesystem, std::string const &directory);
 
 public:
     /*

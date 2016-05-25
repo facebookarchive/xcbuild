@@ -9,11 +9,11 @@
 
 #include <dependency/DirectoryDependencyInfo.h>
 #include <dependency/DependencyInfo.h>
-#include <libutil/FSUtil.h>
+#include <libutil/Filesystem.h>
 
 using dependency::DirectoryDependencyInfo;
 using dependency::DependencyInfo;
-using libutil::FSUtil;
+using libutil::Filesystem;
 
 DirectoryDependencyInfo::
 DirectoryDependencyInfo(std::string const &directory, DependencyInfo const &dependencyInfo) :
@@ -23,12 +23,12 @@ DirectoryDependencyInfo(std::string const &directory, DependencyInfo const &depe
 }
 
 ext::optional<DirectoryDependencyInfo> DirectoryDependencyInfo::
-Deserialize(std::string const &directory)
+Deserialize(Filesystem const *filesystem, std::string const &directory)
 {
     std::vector<std::string> inputs;
 
     /* Recursively add all paths under this directory. */
-    FSUtil::EnumerateRecursive(directory, [&](std::string const &path) -> bool {
+    filesystem->enumerateRecursive(directory, [&](std::string const &path) -> bool {
         inputs.push_back(path);
         return true;
     });
