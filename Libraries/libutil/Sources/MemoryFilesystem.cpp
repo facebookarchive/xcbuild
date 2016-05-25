@@ -258,6 +258,12 @@ readSymbolicLink(std::string const &path) const
 }
 
 bool MemoryFilesystem::
+writeSymbolicLink(std::string const &target, std::string const &path)
+{
+    return false;
+}
+
+bool MemoryFilesystem::
 removeFile(std::string const &path)
 {
     return WalkPath<MemoryFilesystem::Entry>(this, path, false, [](MemoryFilesystem::Entry *parent, std::string const &name, MemoryFilesystem::Entry *entry) -> MemoryFilesystem::Entry * {

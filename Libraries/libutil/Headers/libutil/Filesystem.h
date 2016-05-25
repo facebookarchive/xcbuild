@@ -78,6 +78,11 @@ public:
      */
     virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const = 0;
 
+    /*
+     * Write a symbolic link to a target, relative to the containing directory.
+     */
+    virtual bool writeSymbolicLink(std::string const &target, std::string const &path) = 0;
+
 public:
     /*
      * Delete a file.

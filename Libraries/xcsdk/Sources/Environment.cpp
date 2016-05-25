@@ -10,45 +10,51 @@
 #include <xcsdk/Environment.h>
 #include <libutil/Base.h>
 #include <libutil/Filesystem.h>
-#include <libutil/Subprocess.h>
-
-#include <sstream>
+#include <libutil/FSUtil.h>
 
 using xcsdk::Environment;
 using libutil::Filesystem;
-using libutil::Subprocess;
+using libutil::FSUtil;
 
-static ext::optional<std::string>
-SpecifiedDeveloperRoot(Filesystem const *filesystem)
+static std::string
+PrimaryDeveloperRootLink()
 {
-    if (char *path = getenv("DEVELOPER_DIR")) {
-        return std::string(path);
+    return "/var/db/xcode_select_link";
+}
+
+static std::string
+SecondaryDeveloperRootLink()
+{
+    return "/usr/share/xcode-select/xcode_dir_path";
+}
+
+static std::string
+ResolveDeveloperRoot(Filesystem const *filesystem, std::string const &path)
+{
+    /*
+     * Support finding the developer directory inside an application directory.
+     */
+    std::string application = path + "/Contents/Developer";
+    if (filesystem->isDirectory(application)) {
+        return application;
     }
 
-    if (auto path = filesystem->readSymbolicLink("/var/db/xcode_select_link")) {
-        return path;
-    }
-
-    if (auto path = filesystem->readSymbolicLink("/usr/share/xcode-select/xcode_dir_path")) {
-        return path;
-    }
-
-    return ext::nullopt;
+    return path;
 }
 
 ext::optional<std::string> Environment::
 DeveloperRoot(Filesystem const *filesystem)
 {
-    if (ext::optional<std::string> specified = SpecifiedDeveloperRoot(filesystem)) {
-        /*
-         * Support finding the developer directory inside an application directory.
-         */
-        std::string application = *specified + "/Contents/Developer";
-        if (filesystem->isDirectory(application)) {
-            return application;
-        }
+    if (char *path = getenv("DEVELOPER_DIR")) {
+        return ResolveDeveloperRoot(filesystem, path);
+    }
 
-        return specified;
+    if (auto path = filesystem->readSymbolicLink(PrimaryDeveloperRootLink())) {
+        return path;
+    }
+
+    if (auto path = filesystem->readSymbolicLink(SecondaryDeveloperRootLink())) {
+        return path;
     }
 
     /*
@@ -66,3 +72,30 @@ DeveloperRoot(Filesystem const *filesystem)
 
     return ext::nullopt;
 }
+
+bool Environment::
+WriteDeveloperRoot(libutil::Filesystem *filesystem, ext::optional<std::string> const &path)
+{
+    /*
+     * Remove any existing link.
+     */
+    if (filesystem->exists(PrimaryDeveloperRootLink())) {
+        if (!filesystem->removeFile(PrimaryDeveloperRootLink())) {
+            return false;
+        }
+    }
+
+    if (path) {
+        /*
+         * Write the new link.
+         */
+        std::string normalized = FSUtil::NormalizePath(*path);
+        std::string resolved = ResolveDeveloperRoot(filesystem, normalized);
+        if (!filesystem->writeSymbolicLink(normalized, PrimaryDeveloperRootLink())) {
+            return false;
+        }
+    }
+
+    return true;
+}
+

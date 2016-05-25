@@ -154,6 +154,16 @@ readSymbolicLink(std::string const &path) const
 }
 
 bool DefaultFilesystem::
+writeSymbolicLink(std::string const &target, std::string const &path)
+{
+    if (symlink(target.c_str(), path.c_str())) {
+        return false;
+    }
+
+    return true;
+}
+
+bool DefaultFilesystem::
 removeFile(std::string const &path)
 {
     if (::unlink(path.c_str()) < 0) {

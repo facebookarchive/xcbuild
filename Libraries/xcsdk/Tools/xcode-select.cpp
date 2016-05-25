@@ -169,11 +169,19 @@ main(int argc, char **argv)
         fprintf(stdout, "%s\n", developer->c_str());
         return 0;
     } else if (options.resetPath()) {
-        fprintf(stderr, "error: reset not implemented\n");
-        return 1;
+        if (!xcsdk::Environment::WriteDeveloperRoot(&filesystem, ext::nullopt)) {
+            fprintf(stderr, "error: failed to reset developer root. are you root?\n");
+            return 1;
+        }
+
+        return 0;
     } else if (options.switchPath()) {
-        fprintf(stderr, "error: switch not implemented\n");
-        return 1;
+        if (!xcsdk::Environment::WriteDeveloperRoot(&filesystem, *options.switchPath())) {
+            fprintf(stderr, "error: failed to set developer root. are you root?\n");
+            return 1;
+        }
+
+        return 0;
     } else if (options.install()) {
         fprintf(stderr, "error: install not implemented\n");
         return 1;
