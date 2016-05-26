@@ -73,7 +73,7 @@ public:
     };
 
 public:
-    enum class resizeMode {
+    enum class ResizeMode {
         fixedSize = 0,
         tile = 1,
         scale = 2,
@@ -105,7 +105,7 @@ private:
     bool        _isVector;
     bool        _isOpaque;
     bool        _isResizable;
-    enum resizeMode _resizeMode;
+    ResizeMode _resizeMode;
     std::vector<slice> _slices;
 
     enum car_rendition_value_layout _layout;
@@ -192,9 +192,9 @@ public:
      * resizeMode
      */
 
-    enum resizeMode resizeMode() const
+    ResizeMode resizeMode() const
     { return _resizeMode; }
-    enum resizeMode &resizeMode()
+    ResizeMode &resizeMode()
     { return _resizeMode; }
 
     /*

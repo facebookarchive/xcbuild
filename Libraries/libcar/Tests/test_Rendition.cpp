@@ -205,7 +205,7 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     }
 
     // Construct an identical Rendition instance using test_bitmap_bytes
-    auto new_rendition_data = ext::optional<car::Rendition::Data>(car::Rendition::Data::Data(test_bitmap_bytes, format));
+    auto new_rendition_data = ext::optional<car::Rendition::Data>(car::Rendition::Data(test_bitmap_bytes, format));
     car::Rendition new_rendition = car::Rendition::Create(attributes, new_rendition_data);
     new_rendition.width() = 16;
     new_rendition.height() = 16;

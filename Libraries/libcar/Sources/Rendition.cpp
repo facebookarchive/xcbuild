@@ -98,23 +98,23 @@ dump() const
     }
 
     switch(_resizeMode) {
-        case resizeMode::fixedSize:
-            printf("Resize mode: resizeMode::fixedSize\n");
+        case ResizeMode::fixedSize:
+            printf("Resize mode: ResizeMode::fixedSize\n");
             break;
-        case resizeMode::tile:
-            printf("Resize mode: resizeMode::tile\n");
+        case ResizeMode::tile:
+            printf("Resize mode: ResizeMode::tile\n");
             break;
-        case resizeMode::scale:
-            printf("Resize mode: resizeMode::scale\n");
+        case ResizeMode::scale:
+            printf("Resize mode: ResizeMode::scale\n");
             break;
-        case resizeMode::uniform:
-            printf("Resize mode: resizeMode::uniform\n");
+        case ResizeMode::uniform:
+            printf("Resize mode: ResizeMode::uniform\n");
             break;
-        case resizeMode::horizontalUniformVerticalScale:
-            printf("Resize mode: resizeMode::horizontal_uniform_vertical_scale\n");
+        case ResizeMode::horizontalUniformVerticalScale:
+            printf("Resize mode: ResizeMode::horizontal_uniform_vertical_scale\n");
             break;
-        case resizeMode::horizontalScaleVerticalUniform:
-            printf("Resize mode: resizeMode::horizontal_scale_vertical_uniform\n");
+        case ResizeMode::horizontalScaleVerticalUniform:
+            printf("Resize mode: ResizeMode::horizontal_scale_vertical_uniform\n");
             break;
     }
 
@@ -163,27 +163,27 @@ static int number_slices_from_layout(enum car_rendition_value_layout layout)
     return 0;
 }
 
-static enum car::Rendition::resizeMode resizeMode_from_layout(enum car_rendition_value_layout layout)
+static car::Rendition::ResizeMode resizeMode_from_layout(enum car_rendition_value_layout layout)
 {
     switch(layout) {
     case car_rendition_value_layout_one_part_fixed_size:
     case car_rendition_value_layout_three_part_horizontal_uniform:
     case car_rendition_value_layout_three_part_vertical_uniform:
-        return car::Rendition::resizeMode::fixedSize;
+        return car::Rendition::ResizeMode::fixedSize;
     case car_rendition_value_layout_one_part_tile:
     case car_rendition_value_layout_three_part_horizontal_tile:
     case car_rendition_value_layout_three_part_vertical_tile:
     case car_rendition_value_layout_nine_part_tile:
-        return car::Rendition::resizeMode::tile;
+        return car::Rendition::ResizeMode::tile;
     case car_rendition_value_layout_one_part_scale:
     case car_rendition_value_layout_three_part_horizontal_scale:
     case car_rendition_value_layout_three_part_vertical_scale:
     case car_rendition_value_layout_nine_part_scale:
-        return car::Rendition::resizeMode::scale;
+        return car::Rendition::ResizeMode::scale;
     case car_rendition_value_layout_nine_part_horizontal_uniform_vertical_scale:
-        return car::Rendition::resizeMode::horizontalUniformVerticalScale;
+        return car::Rendition::ResizeMode::horizontalUniformVerticalScale;
     case car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform:
-        return car::Rendition::resizeMode::horizontalScaleVerticalUniform;
+        return car::Rendition::ResizeMode::horizontalScaleVerticalUniform;
     case car_rendition_value_layout_six_part:
     case car_rendition_value_layout_gradient:
     case car_rendition_value_layout_effect:
@@ -195,7 +195,7 @@ static enum car::Rendition::resizeMode resizeMode_from_layout(enum car_rendition
     case car_rendition_value_layout_asset_pack:
         break;
     }
-    return car::Rendition::resizeMode::fixedSize;
+    return car::Rendition::ResizeMode::fixedSize;
 }
 
 Rendition const Rendition::

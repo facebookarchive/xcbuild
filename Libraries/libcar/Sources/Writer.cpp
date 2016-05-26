@@ -12,6 +12,8 @@
 #include <car/Rendition.h>
 #include <car/car_format.h>
 
+#include <string.h>
+
 #include <random>
 
 using car::Writer;
