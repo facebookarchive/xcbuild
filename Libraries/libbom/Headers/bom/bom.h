@@ -33,7 +33,7 @@ struct bom_context_memory
 bom_context_memory(void);
 
 struct bom_context_memory
-bom_context_memory_file(const char *fn, bool writeable);
+bom_context_memory_file(const char *fn, bool writeable, size_t minimum_size);
 
 
 struct bom_context;

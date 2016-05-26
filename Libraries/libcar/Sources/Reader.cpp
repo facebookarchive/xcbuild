@@ -22,7 +22,10 @@ using car::Reader;
 
 Reader::
 Reader(unique_ptr_bom bom) :
-    _bom(std::move(bom))
+    _bom(std::move(bom)),
+    _keyfmt(ext::nullopt),
+    _facetValues({}),
+    _renditionValues({})
 {
 }
 
@@ -50,48 +53,52 @@ _car_tree_iterator(Reader const *reader, const char *tree_variable, bom_tree_ite
     bom_tree_free(tree);
 }
 
-static void
-_car_facet_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
-{
-    struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
-
-    car_facet_key *facet_key = (car_facet_key *)key;
-    struct car_facet_value *facet_value = (struct car_facet_value *)value;
-
-    std::string name = std::string(facet_key, key_len);
-    car::AttributeList attributes = car::AttributeList::Load(facet_value->attributes_count, facet_value->attributes);
-    car::Facet facet = car::Facet::Create(name, attributes);
-
-    (*reinterpret_cast<std::function<void(car::Facet const &)> const *>(iterator_ctx->iterator))(facet);
-}
-
 void Reader::
 facetIterate(std::function<void(Facet const &)> const &iterator) const
 {
-    _car_tree_iterator(this, car_facet_keys_variable, _car_facet_iterator, const_cast<void *>(reinterpret_cast<void const *>(&iterator)));
+    for( const auto& item : _facetValues ) {
+        car::Facet facet = car::Facet::Load(item.first, (struct car_facet_value *)item.second);
+        iterator(facet);
+    }
 }
 
 static void
-_car_rendition_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
+_car_facet_fast_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
 {
     struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
-
-    car_rendition_key *rendition_key = (car_rendition_key *)key;
-    struct car_rendition_value *rendition_value = (struct car_rendition_value *)value;
-
-    int key_format_index = bom_variable_get(iterator_ctx->reader->bom(), car_key_format_variable);
-    struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(iterator_ctx->reader->bom(), key_format_index, NULL);
-
-    car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
-    car::Rendition rendition = car::Rendition::Load(attributes, rendition_value);
-
-    (*reinterpret_cast<std::function<void(car::Rendition const &)> const *>(iterator_ctx->iterator))(rendition);
+    (*reinterpret_cast<std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const *>(iterator_ctx->iterator))(key, key_len, value, value_len);
+}
+void Reader::
+facetFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &iterator) const
+{
+    _car_tree_iterator(this, car_facet_keys_variable, _car_facet_fast_iterator, const_cast<void *>(reinterpret_cast<void const *>(&iterator)));
 }
 
 void Reader::
 renditionIterate(std::function<void(Rendition const &)> const &iterator) const
 {
-    _car_tree_iterator(this, car_renditions_variable, _car_rendition_iterator, const_cast<void *>(reinterpret_cast<void const *>(&iterator)));
+    auto keyfmt = *_keyfmt;
+    for( const auto& it : _renditionValues ) {
+        KeyValuePair kv = (KeyValuePair)it.second;
+        car_rendition_key *rendition_key = (car_rendition_key *)kv.key;
+        struct car_rendition_value *rendition_value = (struct car_rendition_value *)kv.value;
+        car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
+        car::Rendition rendition = car::Rendition::Load(attributes, rendition_value);
+        iterator(rendition);
+    }
+}
+
+static void
+_car_rendition_fast_iterator(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
+{
+    struct _car_iterator_ctx *iterator_ctx = (struct _car_iterator_ctx *)ctx;
+    (*reinterpret_cast<std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const *>(iterator_ctx->iterator))(key, key_len, value, value_len);
+}
+
+void Reader::
+renditionFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &iterator) const
+{
+    _car_tree_iterator(this, car_renditions_variable, _car_rendition_fast_iterator, const_cast<void *>(reinterpret_cast<void const *>(&iterator)));
 }
 
 void Reader::
@@ -164,59 +171,93 @@ Load(unique_ptr_bom bom)
         return ext::nullopt;
     }
 
-    return Reader(std::move(bom));
+    auto reader = Reader(std::move(bom));
+
+    // Iterate through the facets as fast as possible
+    // just save the name and value pointer for lookups later
+    reader.facetFastIterate([&reader](void *key, size_t key_len, void *value, size_t value_len) {
+        auto name = std::string((char *)key, key_len);
+        reader._facetValues.insert ( {name, value} );
+    });
+
+    // Load the key format from the BOM
+    int key_format_index = bom_variable_get(reader.bom(), car_key_format_variable);
+    struct car_key_format *keyfmt = (struct car_key_format*)bom_index_get(reader.bom(), key_format_index, NULL);
+    if (!keyfmt) {
+        return ext::nullopt;
+    }
+
+    reader._keyfmt = ext::optional<struct car_key_format*>(keyfmt);
+
+    // The index into the attribute list for the identifer for the matching facet.
+    // The attribute list is a list of uint16_t in the key portion of the entry for the rendition
+    size_t identifier_index = 0;
+
+    // Scan the key format for the facet identifier index
+    for (size_t i = 0; i < keyfmt->num_identifiers; i++) {
+        if (keyfmt->identifier_list[i] == car_attribute_identifier_identifier) {
+            identifier_index = i;
+            break;
+        }
+    }
+
+    // Iterate through the renditions as fast as possible. Save the key and value pointers, indexed by the Facet identifier
+    reader.renditionFastIterate([identifier_index,&reader](void *key, size_t key_len, void *value, size_t value_len) {
+        KeyValuePair kv;
+        kv.key = key;
+        kv.key_len = key_len;
+        kv.value = value;
+        kv.value_len = value_len;
+        car_rendition_key *rendition_key = (car_rendition_key *)key;
+        reader._renditionValues.insert( {rendition_key[identifier_index], kv} );
+
+    });
+
+    return std::move(reader);
 }
 
-ext::optional<Reader> Reader::
-Create(unique_ptr_bom bom)
+ext::optional<car::Facet>
+Reader::lookupFacet(std::string name) const
 {
-    struct car_header *header = (struct car_header *)malloc(sizeof(struct car_header));
-    if (header == NULL) {
-        return ext::nullopt;
+    ext::optional<car::Facet> result;
+
+    auto lookup = _facetValues.find(name);
+
+    if ( lookup == _facetValues.end() ) {
+        return result;
     }
 
-    strncpy(header->magic, "RATC", 4);
-    header->ui_version = 0x131; // todo
-    header->storage_version = 0xC; // todo
-    header->storage_timestamp = time(NULL); // todo
-    header->rendition_count = 0;
-    strncpy(header->file_creator, "asset catalog compiler\n", sizeof(header->file_creator));
-    strncpy(header->other_creator, "version 1.0", sizeof(header->other_creator));
+    struct car_facet_value *facet_value = (struct car_facet_value *)lookup->second;
+    AttributeList attributes = car::AttributeList::Load(facet_value->attributes_count, facet_value->attributes);
+    result = car::Facet::Create(name, attributes);
 
-    std::random_device device;
-    std::uniform_int_distribution<int> distribution = std::uniform_int_distribution<int>(std::numeric_limits<uint8_t>::min(), std::numeric_limits<uint8_t>::max());
-    for (size_t i = 0; i < sizeof(header->uuid); i++) {
-        header->uuid[i] = distribution(device);
+    return result;
+}
+
+std::vector<car::Rendition> Reader::lookupRenditions(car::Facet const &facet) const
+{
+    std::vector<car::Rendition> result;
+    ext::optional<uint16_t> facet_identifier = facet.attributes().get(car_attribute_identifier_identifier);
+
+    if (!facet_identifier) {
+        return result;
     }
 
-    header->associated_checksum = 0; // todo
-    header->schema_version = 4; // todo
-    header->color_space_id = 1; // todo
-    header->key_semantics = 1; // todo
-
-    int header_index = bom_index_add(bom.get(), header, sizeof(struct car_header));
-    bom_variable_add(bom.get(), car_header_variable, header_index);
-    free(header);
-
-    struct car_key_format *keyfmt = (struct car_key_format *)malloc(sizeof(struct car_key_format));
-    if (keyfmt == NULL) {
-        return ext::nullopt;
+    if (!_keyfmt) {
+        // Expected to be ready
+        return result;
     }
 
-    strncpy(keyfmt->magic, "tmfk", 4);
-    keyfmt->reserved = 0;
-    keyfmt->num_identifiers = 0;
-
-    int key_format_index = bom_index_add(bom.get(), keyfmt, sizeof(struct car_key_format));
-    bom_variable_add(bom.get(), car_key_format_variable, key_format_index);
-    free(keyfmt);
-
-    struct bom_tree_context *facet_tree = bom_tree_alloc_empty(bom.get(), car_facet_keys_variable);
-    bom_tree_free(facet_tree);
-
-    struct bom_tree_context *rendition_tree = bom_tree_alloc_empty(bom.get(), car_renditions_variable);
-    bom_tree_free(rendition_tree);
-
-    return Reader(std::move(bom));
+    auto keyfmt = *_keyfmt;
+    auto lookupRendition = _renditionValues.equal_range(*facet_identifier);
+    for (auto it = lookupRendition.first; it != lookupRendition.second; ++it) {
+        KeyValuePair value = (KeyValuePair)it->second;
+        car_rendition_key *rendition_key = (car_rendition_key *)value.key;
+        struct car_rendition_value *rendition_value = (struct car_rendition_value *)value.value;
+        car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
+        car::Rendition rendition = car::Rendition::Load(attributes, rendition_value);
+        result.push_back(rendition);
+    }
+    return result;
 }
 

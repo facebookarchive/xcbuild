@@ -8,11 +8,13 @@
  */
 
 #include <car/Facet.h>
+#include <car/AttributeList.h>
 #include <car/Rendition.h>
 #include <car/Reader.h>
 
 #include <cstring>
 #include <cstdlib>
+#include <map>
 
 using car::Facet;
 
@@ -42,13 +44,24 @@ renditionIterate(Reader const *archive, std::function<void(Rendition const &)> c
         return;
     }
 
-    archive->renditionIterate([&](Rendition const &rendition) {
-        ext::optional<uint16_t> facet_identifier = attributes->get(car_attribute_identifier_identifier);
-        ext::optional<uint16_t> rendition_identifier = rendition.attributes().get(car_attribute_identifier_identifier);
-        if (rendition_identifier && facet_identifier && *rendition_identifier == *facet_identifier) {
-            iterator(rendition);
-        }
-    });
+    ext::optional<uint16_t> facet_identifier = attributes->get(car_attribute_identifier_identifier);
+    if (facet_identifier) {
+        archive->renditionIterate([&facet_identifier, &iterator](Rendition const &rendition) {
+            ext::optional<uint16_t> rendition_identifier = rendition.attributes().get(car_attribute_identifier_identifier);
+            if (rendition_identifier && *rendition_identifier == *facet_identifier) {
+                iterator(rendition);
+            }
+        });
+    }
+}
+
+Facet Facet::
+Load(
+    std::string const &name,
+    struct car_facet_value *value)
+{
+    AttributeList attributes = car::AttributeList::Load(value->attributes_count, value->attributes);
+    return Facet(name, attributes);
 }
 
 Facet Facet::
@@ -57,3 +70,25 @@ Create(std::string const &name, AttributeList const &attributes)
     return Facet(name, attributes);
 }
 
+std::vector<uint8_t> Facet::Write() const
+{
+    std::map<enum car_attribute_identifier, uint16_t> ordered_attributes;
+    size_t attributes_count = _attributes.count();
+    size_t facet_value_size = sizeof(struct car_facet_value) + (sizeof(struct car_attribute_pair) * attributes_count);
+    std::vector<uint8_t> output = std::vector<uint8_t>(facet_value_size);
+    struct car_facet_value *facet_value = reinterpret_cast<struct car_facet_value *>(output.data());
+    facet_value->attributes_count = 0;
+
+    _attributes.iterate([&ordered_attributes](enum car_attribute_identifier identifier, uint16_t value) {
+        ordered_attributes[identifier] = value;
+    });
+
+    for (auto const &pair : ordered_attributes) {
+        if (facet_value->attributes_count < attributes_count) {
+            facet_value->attributes[facet_value->attributes_count].identifier = pair.first;
+            facet_value->attributes[facet_value->attributes_count].value = pair.second;
+            facet_value->attributes_count += 1;
+        }
+    }
+    return output;
+}

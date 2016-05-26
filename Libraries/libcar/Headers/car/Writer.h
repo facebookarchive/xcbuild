@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef _LIBCAR_READER_H
-#define _LIBCAR_READER_H
+#ifndef _LIBCAR_WRITER_H
+#define _LIBCAR_WRITER_H
 
 #include <car/AttributeList.h>
 #include <bom/bom.h>
@@ -28,26 +28,19 @@ class Rendition;
 /*
  * An archive within a BOM file holding facets and their renditions.
  */
-class Reader {
+class Writer {
 public:
     typedef std::unique_ptr<struct bom_context, decltype(&bom_free)> unique_ptr_bom;
     typedef std::unique_ptr<struct bom_tree_context, decltype(&bom_tree_free)> unique_ptr_bom_tree;
 
 private:
-    typedef struct {
-        void *key; size_t key_len; void *value; size_t value_len;
-    } KeyValuePair;
-
-private:
     unique_ptr_bom _bom;
     ext::optional<struct car_key_format*> _keyfmt;
-    std::unordered_map<std::string, void*> _facetValues;
-    std::unordered_multimap<uint16_t, KeyValuePair> _renditionValues;
+    std::unordered_map<std::string, Facet const &> _facetValues;
+    std::unordered_multimap<uint16_t, Rendition const &> _renditionValues;
 
 private:
-    Reader(unique_ptr_bom bom);
-    void facetFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &facet) const;
-    void renditionFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &iterator) const;
+    Writer(unique_ptr_bom bom);
 
 public:
     /*
@@ -59,19 +52,21 @@ public:
     /*
      * The key format
      */
-    struct car_key_format *keyfmt() const
+    struct car_key_format * keyfmt() const
+    { return *_keyfmt; }
+    struct car_key_format * &keyfmt()
     { return *_keyfmt; }
 
 public:
     /*
-     * Iterate all facets.
+     * Add a Facet
      */
-    void facetIterate(std::function<void(Facet const &)> const &facet) const;
+    void addFacet(Facet const &);
 
     /*
-     * Iterate all renditions.
+     * Add a Rendition for a Facet, allow lazy loading of data
      */
-    void renditionIterate(std::function<void(Rendition const &)> const &iterator) const;
+    void addRendition(Rendition const &);
 
 public:
     /*
@@ -92,11 +87,17 @@ public:
 
 public:
     /*
-     * Load an existing archive from a BOM.
+     * Create a new archive inside a BOM.
      */
-    static ext::optional<Reader> Load(unique_ptr_bom bom);
+    static ext::optional<Writer> Create(Writer::unique_ptr_bom bom);
+
+public:
+    /*
+     * Serialize and write to BOM
+     */
+     void Write();
 };
 
 }
 
-#endif /* _LIBCAR_READER_H */
+#endif /* _LIBCAR_WRITER_H */

@@ -368,7 +368,7 @@ main(int argc, char **argv)
     /*
      * Load the BOM file.
      */
-    struct bom_context_memory memory = bom_context_memory_file(options.input().c_str(), false);
+    struct bom_context_memory memory = bom_context_memory_file(options.input().c_str(), false, 0);
     auto bom = std::unique_ptr<struct bom_context, decltype(&bom_free)>(bom_alloc_load(memory), bom_free);
     if (bom == nullptr) {
         fprintf(stderr, "error: failed to load BOM\n");

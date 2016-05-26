@@ -151,7 +151,7 @@ png_encode(uint32_t width, uint32_t height, int depth, std::vector<uint8_t> cons
 static void
 rendition_dump(car::Rendition const &rendition, std::string const &path)
 {
-    ext::optional<car::Rendition::Data> data = rendition.decode();
+    ext::optional<car::Rendition::Data> data = rendition.data();
     if (data) {
         uint32_t depth = car::Rendition::Data::FormatSize(data->format());
         std::vector<uint8_t> buffer = data->data();
@@ -213,7 +213,7 @@ main(int argc, char **argv)
         output = argv[2];
     }
 
-    struct bom_context_memory memory = bom_context_memory_file(argv[1], false);
+    struct bom_context_memory memory = bom_context_memory_file(argv[1], false, 0);
     auto bom = std::unique_ptr<struct bom_context, decltype(&bom_free)>(bom_alloc_load(memory), bom_free);
     if (bom == nullptr) {
         fprintf(stderr, "error: unable to load BOM\n");
@@ -239,23 +239,22 @@ main(int argc, char **argv)
     car->dump();
     printf("\n");
 
-    car->facetIterate([&car](car::Facet const &facet) {
+    int facet_count = 0;
+    int rendition_count = 0;
+
+    car->facetIterate([&car, &facet_count, &rendition_count, output](car::Facet const &facet) {
+        facet_count++;
         facet.dump();
 
-        int rendition_count = 0;
-        facet.renditionIterate(&*car, [&rendition_count](car::Rendition const &rendition) {
+        auto renditions = car->lookupRenditions(facet);
+        for (auto const &rendition : renditions) {
+            rendition.dump();
+            rendition_dump(rendition, output + "/" + rendition.fileName());
             rendition_count++;
-        });
-        printf("Rendition count: %d\n", rendition_count);
-        printf("\n");
+        }
     });
 
-    car->renditionIterate([&](car::Rendition const &rendition) {
-        rendition.dump();
-        rendition_dump(rendition, output + "/" + rendition.fileName());
-        printf("\n");
-    });
-
+    printf("Found %d facets and %d renditions\n", facet_count, rendition_count);
     return 0;
 }
 

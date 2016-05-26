@@ -59,9 +59,24 @@ public:
 
 public:
     /*
+     * Load an existing rendition matching the provided attributes.
+     */
+    static Facet Load(
+        std::string const &name,
+        struct car_facet_value *value);
+
+public:
+    /*
      * Create a facet with the provided name and attributes
      */
     static Facet Create(std::string const &name, AttributeList const &attributes);
+
+public:
+
+    /*
+     * Serialize the rendition for writing to a file.
+     */
+    std::vector<uint8_t> Write() const;
 };
 
 }
