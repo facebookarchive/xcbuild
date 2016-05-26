@@ -36,6 +36,10 @@ serialize(Format format) const
 {
     switch (format) {
         case Format::XML: {
+            if (_values->empty()) {
+                return std::vector<uint8_t>();
+            }
+
             auto serialize = plist::Format::XML::Serialize(_values.get(), plist::Format::XML::Create(plist::Format::Encoding::UTF8));
             if (serialize.first == nullptr) {
                 return ext::nullopt;
@@ -43,6 +47,10 @@ serialize(Format format) const
             return *serialize.first;
         }
         case Format::Binary: {
+            if (_values->empty()) {
+                return std::vector<uint8_t>();
+            }
+
             auto serialize = plist::Format::Binary::Serialize(_values.get(), plist::Format::Binary::Create());
             if (serialize.first == nullptr) {
                 return ext::nullopt;

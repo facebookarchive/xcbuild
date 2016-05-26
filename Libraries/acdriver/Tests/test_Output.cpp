@@ -25,3 +25,10 @@ TEST(Output, Text)
     EXPECT_EQ(value, "/* output.test1 */\ntext-output1\n/* output.test2 */\ntext-output2\n");
 }
 
+TEST(Output, Empty)
+{
+    Output output;
+    EXPECT_EQ(output.serialize(Output::Format::Text), std::vector<uint8_t>());
+    EXPECT_EQ(output.serialize(Output::Format::XML), std::vector<uint8_t>());
+    EXPECT_EQ(output.serialize(Output::Format::Binary), std::vector<uint8_t>());
+}
