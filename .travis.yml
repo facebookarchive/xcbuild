@@ -25,6 +25,7 @@ matrix:
           packages:
             - gcc-4.8
             - g++-4.8
+            - pkg-config
             - libxml2-dev
             - ninja-build
             - cmake
