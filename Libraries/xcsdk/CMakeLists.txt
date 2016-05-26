@@ -29,4 +29,6 @@ add_executable(xcode-select Tools/xcode-select.cpp)
 target_link_libraries(xcode-select xcsdk util)
 install(TARGETS xcode-select DESTINATION bin)
 
-ADD_UNIT_GTEST(xcsdk PlatformVersion Tests/test_PlatformVersion.cpp)
+if (BUILD_TESTING)
+  ADD_UNIT_GTEST(xcsdk PlatformVersion Tests/test_PlatformVersion.cpp)
+endif ()

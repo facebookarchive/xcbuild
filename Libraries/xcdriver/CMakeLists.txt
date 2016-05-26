@@ -32,6 +32,8 @@ add_custom_command(TARGET xcbuild
                    DEPENDS $<TARGET_FILE:xcbuild>)
 install(FILES $<TARGET_FILE_DIR:xcbuild>/xcodebuild DESTINATION bin)
 
-ADD_UNIT_GTEST(xcdriver Options Tests/test_Options.cpp)
-ADD_UNIT_GTEST(xcdriver Action Tests/test_Action.cpp)
+if (BUILD_TESTING)
+  ADD_UNIT_GTEST(xcdriver Options Tests/test_Options.cpp)
+  ADD_UNIT_GTEST(xcdriver Action Tests/test_Action.cpp)
+endif ()
 
