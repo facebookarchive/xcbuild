@@ -58,7 +58,7 @@ if (BUILD_TESTING)
     add_executable("${TARGET_NAME}" ${SOURCES})
     target_link_libraries("${TARGET_NAME}" PRIVATE "${LIBRARY}" gtest gtest_main)
     target_include_directories("${TARGET_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/ThirdParty/googletest/googletest/include")
-    add_test("${TARGET_NAME}" "${TARGET_NAME}")
+    add_test(NAME "${TARGET_NAME}" COMMAND "${TARGET_NAME}")
   endfunction ()
 endif ()
 
