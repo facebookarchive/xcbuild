@@ -21,18 +21,16 @@ enumerateRecursive(
     std::string const &path,
     std::function<bool(std::string const &)> const &cb) const
 {
-    this->enumerateDirectory(path, [&](std::string const &filename) -> bool {
+    this->enumerateDirectory(path, [&](std::string const &filename) -> void {
         std::string full = path + "/" + filename;
         cb(full);
-        return true;
     });
 
-    this->enumerateDirectory(path, [&](std::string const &filename) -> bool {
+    this->enumerateDirectory(path, [&](std::string const &filename) -> void {
         std::string full = path + "/" + filename;
         if (this->isDirectory(full) && !this->isSymbolicLink(full)) {
             this->enumerateRecursive(full, cb);
         }
-        return true;
     });
 
     return true;

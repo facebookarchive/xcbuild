@@ -60,9 +60,9 @@ Open(Filesystem const *filesystem, std::string const &basePath, std::string cons
     std::string schemePath;
 
     schemePath = path + "/xcshareddata/xcschemes";
-    filesystem->enumerateDirectory(schemePath, [&](std::string const &filename) -> bool {
+    filesystem->enumerateDirectory(schemePath, [&](std::string const &filename) -> void {
         if (FSUtil::GetFileExtension(filename) != "xcscheme") {
-            return true;
+            return;
         }
 
         std::string name = filename.substr(0, filename.find('.'));
@@ -76,15 +76,14 @@ Open(Filesystem const *filesystem, std::string const &basePath, std::string cons
         if (!group->_defaultScheme && name == group->name()) {
             group->_defaultScheme = scheme;
         }
-        return true;
     });
 
     std::string userName = SysUtil::GetUserName();
     if (!userName.empty()) {
         schemePath = path + "/xcuserdata/" + userName + ".xcuserdatad/xcschemes";
-        filesystem->enumerateDirectory(schemePath, [&](std::string const &filename) -> bool {
+        filesystem->enumerateDirectory(schemePath, [&](std::string const &filename) -> void {
             if (FSUtil::GetFileExtension(filename) != "xcscheme") {
-                return true;
+                return;
             }
 
             std::string name = filename.substr(0, filename.find('.'));
@@ -98,7 +97,6 @@ Open(Filesystem const *filesystem, std::string const &basePath, std::string cons
             if (!group->_defaultScheme && name == group->name()) {
                 group->_defaultScheme = scheme;
             }
-            return true;
         });
     }
 
