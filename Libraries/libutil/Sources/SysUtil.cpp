@@ -56,13 +56,15 @@ static char initialWorkingDirectory[PATH_MAX] = { 0 };
 __attribute__((constructor))
 static void InitializeInitialWorkingDirectory()
 {
-    getcwd(initialWorkingDirectory, sizeof(initialWorkingDirectory));
+    if (getcwd(initialWorkingDirectory, sizeof(initialWorkingDirectory)) == NULL) {
+        abort();
+    }
 }
 
 #if !(__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16)
 static char initialExecutablePath[PATH_MAX] = { 0 };
 __attribute__((constructor))
-static void GetExecutablePathInitialize(int argc, char **argv)
+static void InitialExecutablePathInitialize(int argc, char **argv)
 {
     strncpy(initialExecutablePath, argv[0], sizeof(initialExecutablePath));
 }
