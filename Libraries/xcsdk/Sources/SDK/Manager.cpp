@@ -115,17 +115,15 @@ Open(Filesystem const *filesystem, std::string const &path)
     std::vector<std::shared_ptr<Toolchain>> toolchains;
 
     std::string toolchainsPath = path + "/Toolchains";
-    filesystem->enumerateDirectory(toolchainsPath, [&](std::string const &filename) -> bool {
+    filesystem->enumerateDirectory(toolchainsPath, [&](std::string const &filename) -> void {
         if (FSUtil::GetFileExtension(filename) != "xctoolchain") {
-            return true;
+            return;
         }
 
         auto toolchain = SDK::Toolchain::Open(filesystem, manager, toolchainsPath + "/" + filename);
         if (toolchain != nullptr) {
             toolchains.push_back(toolchain);
         }
-
-        return true;
     });
 
     manager->_toolchains = toolchains;
@@ -133,17 +131,15 @@ Open(Filesystem const *filesystem, std::string const &path)
     std::vector<std::shared_ptr<Platform>> platforms;
 
     std::string platformsPath = path + "/Platforms";
-    filesystem->enumerateDirectory(platformsPath, [&](std::string const &filename) -> bool {
+    filesystem->enumerateDirectory(platformsPath, [&](std::string const &filename) -> void {
         if (FSUtil::GetFileExtension(filename) != "platform") {
-            return true;
+            return;
         }
 
         auto platform = SDK::Platform::Open(filesystem, manager, platformsPath + "/" + filename);
         if (platform != nullptr) {
             platforms.push_back(platform);
         }
-
-        return true;
     });
 
     std::sort(platforms.begin(), platforms.end(), [](Platform::shared_ptr const &a, Platform::shared_ptr const &b) -> bool {

@@ -272,7 +272,6 @@ TEST(MemoryFilesystem, EnumerateDirectory)
     std::vector<std::string> files;
     auto accumulate = [&files](std::string const &name) {
         files.push_back(name);
-        return true;
     };
 
     /* List root contents. */

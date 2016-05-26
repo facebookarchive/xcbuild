@@ -95,7 +95,7 @@ loadChildren(Filesystem const *filesystem, std::vector<std::shared_ptr<Asset>> *
 {
     bool error = false;
 
-    filesystem->enumerateDirectory(_path, [&](std::string const &fileName) -> bool {
+    filesystem->enumerateDirectory(_path, [&](std::string const &fileName) -> void {
         std::string path = _path + "/" + fileName;
 
         if (filesystem->isDirectory(path)) {
@@ -109,13 +109,11 @@ loadChildren(Filesystem const *filesystem, std::vector<std::shared_ptr<Asset>> *
             if (asset == nullptr) {
                 fprintf(stderr, "error: failed to load asset: %s\n", path.c_str());
                 error = true;
-                return true;
+                return;
             }
 
             children->push_back(asset);
         }
-
-        return true;
     });
 
     return !error;
@@ -126,13 +124,11 @@ hasChildren(libutil::Filesystem const *filesystem)
 {
     bool hasChildren = false;
 
-    filesystem->enumerateDirectory(_path, [this, filesystem, &hasChildren](std::string const &fileName) -> bool {
+    filesystem->enumerateDirectory(_path, [this, filesystem, &hasChildren](std::string const &fileName) -> void {
         std::string path = _path + "/" + fileName;
         if (filesystem->isDirectory(path)) {
             hasChildren = true;
         }
-
-        return true;
     });
 
     return hasChildren;

@@ -121,9 +121,9 @@ OpenProject(Filesystem const *filesystem, ext::optional<std::string> const &proj
         bool multiple = false;
         std::string projectName;
 
-        filesystem->enumerateDirectory(directory, [&](std::string const &filename) -> bool {
+        filesystem->enumerateDirectory(directory, [&](std::string const &filename) -> void {
             if (FSUtil::GetFileExtension(filename) != "xcodeproj") {
-                return true;
+                return;
             }
 
             if (!projectName.empty()) {
@@ -131,7 +131,6 @@ OpenProject(Filesystem const *filesystem, ext::optional<std::string> const &proj
             }
 
             projectName = filename;
-            return true;
         });
 
         if (multiple) {
