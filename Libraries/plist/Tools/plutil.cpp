@@ -681,14 +681,14 @@ main(int argc, char **argv)
 
             /* Perform the sepcific action. */
             if (modify) {
-                success = success && Modify(filesystem.get(), options, file, std::move(deserialize.first), *format);
+                success &= Modify(filesystem.get(), options, file, std::move(deserialize.first), *format);
             } else if (options.print()) {
-                success = success && Print(filesystem.get(), options, std::move(deserialize.first), *format);
+                success &= Print(filesystem.get(), options, std::move(deserialize.first), *format);
             } else if (options.lint() || true) {
-                success = success && Lint(options, file);
+                success &= Lint(options, file);
             }
         }
 
-        return (success ? 1 : 0);
+        return (success ? 0 : 1);
     }
 }
