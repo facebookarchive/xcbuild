@@ -52,12 +52,7 @@ EnvironmentVariables()
 }
 
 #if defined(__linux__)
-static char initialWorkingDirectory[PATH_MAX] = { 0 };
-__attribute__((constructor))
-static void InitializeInitialWorkingDirectory()
-{
-    getcwd(initialWorkingDirectory, sizeof(initialWorkingDirectory));
-}
+static std::string initialWorkingDirectory = FSUtil::GetCurrentDirectory();
 
 #if !(__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16)
 static char initialExecutablePath[PATH_MAX] = { 0 };
@@ -98,7 +93,7 @@ GetExecutablePath()
 #error Unsupported platform.
 #endif
 
-    std::string absolutePath = FSUtil::ResolveRelativePath(std::string(path), std::string(initialWorkingDirectory));
+    std::string absolutePath = FSUtil::ResolveRelativePath(std::string(path), initialWorkingDirectory);
     return FSUtil::NormalizePath(absolutePath);
 #else
 #error Unsupported platform.

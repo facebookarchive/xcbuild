@@ -97,7 +97,11 @@ execute(
         }
 
         if (work_dir != nullptr) {
-            ::chdir(work_dir);
+            int rc = ::chdir(work_dir);
+            if (rc == -1) {
+                ::perror("chdir");
+                ::_exit(1);
+            }
         }
 
         ::execve(path.c_str(), (char *const *)exec_args.data(), (char *const *)exec_env.data());
