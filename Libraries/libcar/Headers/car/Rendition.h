@@ -74,21 +74,21 @@ public:
 
 public:
     enum class ResizeMode {
-        fixedSize = 0,
-        tile = 1,
-        scale = 2,
-        uniform = 3,
-        horizontalUniformVerticalScale = 4,
-        horizontalScaleVerticalUniform = 5,
+        FixedSize,
+        Tile,
+        Scale,
+        Uniform,
+        HorizontalUniformVerticalScale,
+        HorizontalScaleVerticalUniform,
     };
 
 public:
-    typedef struct {
+    struct Slice {
         uint32_t x;
         uint32_t y;
         uint32_t width;
         uint32_t height;
-    } slice;
+    };
 
 private:
     AttributeList  _attributes;
@@ -98,19 +98,17 @@ private:
     ext::optional<Data> _data;
 
 private:
-    std::string _fileName;
-    int         _width;
-    int         _height;
-    float       _scale;
-    bool        _isVector;
-    bool        _isOpaque;
-    bool        _isResizable;
-    ResizeMode _resizeMode;
-    std::vector<slice> _slices;
-
+    std::string                     _fileName;
+    int                             _width;
+    int                             _height;
+    float                           _scale;
+    bool                            _isVector;
+    bool                            _isOpaque;
+    bool                            _isResizable;
+    ResizeMode                      _resizeMode;
+    std::vector<Slice>              _slices;
     enum car_rendition_value_layout _layout;
-
-    ext::optional<std::string> _uti;
+    ext::optional<std::string>      _uti;
 
 private:
     Rendition(AttributeList const &attributes, std::function<ext::optional<Data>(Rendition const *)> const &data);
@@ -200,9 +198,9 @@ public:
     /*
      * slices
      */
-    std::vector<slice> slices() const
+    std::vector<Slice> slices() const
     { return _slices; }
-    std::vector<slice> &slices()
+    std::vector<Slice> &slices()
     { return _slices; }
 
     /*

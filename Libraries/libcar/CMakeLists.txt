@@ -1,4 +1,11 @@
-# Copyright 2013-present Facebook. All Rights Reserved.
+#
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree. An additional grant
+# of patent rights can be found in the PATENTS file in the same directory.
+#
 
 add_library(car SHARED
             Sources/Reader.cpp
@@ -25,6 +32,7 @@ install(TARGETS car DESTINATION lib)
 add_executable(dump_car Tools/dump_car.cpp)
 target_link_libraries(dump_car PRIVATE car)
 target_link_libraries(dump_car PRIVATE ${ZLIB_LIBRARIES})
+
 ADD_UNIT_GTEST(car Facet Tests/test_Facet.cpp)
 ADD_UNIT_GTEST(car Rendition Tests/test_Rendition.cpp)
 ADD_UNIT_GTEST(car AttributeList Tests/test_AttributeList.cpp)

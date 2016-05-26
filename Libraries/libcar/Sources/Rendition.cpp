@@ -56,27 +56,27 @@ FormatSize(Rendition::Data::Format format)
 
 Rendition::
 Rendition(AttributeList const &attributes, std::function<ext::optional<Data>(Rendition const *)> const &data) :
-    _attributes(attributes),
-    _deferredData (data),
-    _width     (0),
-    _height    (0),
-    _scale     (1.0),
-    _isVector (false),
-    _isOpaque (false),
+    _attributes  (attributes),
+    _deferredData(data),
+    _width       (0),
+    _height      (0),
+    _scale       (1.0),
+    _isVector    (false),
+    _isOpaque    (false),
     _isResizable (false)
 {
 }
 
 Rendition::
 Rendition(AttributeList const &attributes, ext::optional<Data> const &data) :
-    _attributes(attributes),
-    _data (data),
-    _width     (0),
-    _height    (0),
-    _scale     (1.0),
-    _isVector (false),
-    _isOpaque (false),
-    _isResizable (false)
+    _attributes (attributes),
+    _data       (data),
+    _width      (0),
+    _height     (0),
+    _scale      (1.0),
+    _isVector   (false),
+    _isOpaque   (false),
+    _isResizable(false)
 {
 }
 
@@ -92,28 +92,28 @@ dump() const
     printf("Resizable: %d\n", _isResizable);
     if (_isResizable) {
         int i = 0;
-        for (auto slice : _slices) {
+        for (auto const &slice : _slices) {
             printf("slice %d (%u, %u) %u x %u \n", i++, slice.x, slice.y, slice.width, slice.height);
         }
     }
 
     switch(_resizeMode) {
-        case ResizeMode::fixedSize:
+        case ResizeMode::FixedSize:
             printf("Resize mode: ResizeMode::fixedSize\n");
             break;
-        case ResizeMode::tile:
+        case ResizeMode::Tile:
             printf("Resize mode: ResizeMode::tile\n");
             break;
-        case ResizeMode::scale:
+        case ResizeMode::Scale:
             printf("Resize mode: ResizeMode::scale\n");
             break;
-        case ResizeMode::uniform:
+        case ResizeMode::Uniform:
             printf("Resize mode: ResizeMode::uniform\n");
             break;
-        case ResizeMode::horizontalUniformVerticalScale:
+        case ResizeMode::HorizontalUniformVerticalScale:
             printf("Resize mode: ResizeMode::horizontal_uniform_vertical_scale\n");
             break;
-        case ResizeMode::horizontalScaleVerticalUniform:
+        case ResizeMode::HorizontalScaleVerticalUniform:
             printf("Resize mode: ResizeMode::horizontal_scale_vertical_uniform\n");
             break;
     }
@@ -122,80 +122,82 @@ dump() const
     _attributes.dump();
 }
 
-static ext::optional<Rendition::Data> _decode(struct car_rendition_value *value);
-static ext::optional<std::vector<uint8_t>> _encode(Rendition const *rendition);
+static ext::optional<Rendition::Data> Decode(struct car_rendition_value *value);
+static ext::optional<std::vector<uint8_t>> Encode(Rendition const *rendition);
 
-static int number_slices_from_layout(enum car_rendition_value_layout layout)
+static int
+SliceCountForLayout(enum car_rendition_value_layout layout)
 {
-    switch(layout) {
-    case car_rendition_value_layout_one_part_fixed_size:
-    case car_rendition_value_layout_one_part_tile:
-    case car_rendition_value_layout_one_part_scale:
-        return 1;
+    switch (layout) {
+        case car_rendition_value_layout_one_part_fixed_size:
+        case car_rendition_value_layout_one_part_tile:
+        case car_rendition_value_layout_one_part_scale:
+            return 1;
 
-    case car_rendition_value_layout_three_part_horizontal_tile:
-    case car_rendition_value_layout_three_part_horizontal_scale:
-    case car_rendition_value_layout_three_part_horizontal_uniform:
-    case car_rendition_value_layout_three_part_vertical_tile:
-    case car_rendition_value_layout_three_part_vertical_scale:
-    case car_rendition_value_layout_three_part_vertical_uniform:
-        return 3;
+        case car_rendition_value_layout_three_part_horizontal_tile:
+        case car_rendition_value_layout_three_part_horizontal_scale:
+        case car_rendition_value_layout_three_part_horizontal_uniform:
+        case car_rendition_value_layout_three_part_vertical_tile:
+        case car_rendition_value_layout_three_part_vertical_scale:
+        case car_rendition_value_layout_three_part_vertical_uniform:
+            return 3;
 
-    case car_rendition_value_layout_nine_part_tile:
-    case car_rendition_value_layout_nine_part_scale:
-    case car_rendition_value_layout_nine_part_horizontal_uniform_vertical_scale:
-    case car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform:
-        return 9;
+        case car_rendition_value_layout_nine_part_tile:
+        case car_rendition_value_layout_nine_part_scale:
+        case car_rendition_value_layout_nine_part_horizontal_uniform_vertical_scale:
+        case car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform:
+            return 9;
 
-    case car_rendition_value_layout_six_part:
-        return 6;
+        case car_rendition_value_layout_six_part:
+            return 6;
 
-    case car_rendition_value_layout_gradient:
-    case car_rendition_value_layout_effect:
-    case car_rendition_value_layout_animation_filmstrip:
-    case car_rendition_value_layout_raw_data:
-    case car_rendition_value_layout_external_link:
-    case car_rendition_value_layout_layer_stack:
-    case car_rendition_value_layout_internal_link:
-    case car_rendition_value_layout_asset_pack:
-        break;
+        case car_rendition_value_layout_gradient:
+        case car_rendition_value_layout_effect:
+        case car_rendition_value_layout_animation_filmstrip:
+        case car_rendition_value_layout_raw_data:
+        case car_rendition_value_layout_external_link:
+        case car_rendition_value_layout_layer_stack:
+        case car_rendition_value_layout_internal_link:
+        case car_rendition_value_layout_asset_pack:
+            break;
     }
     return 0;
 }
 
-static car::Rendition::ResizeMode resizeMode_from_layout(enum car_rendition_value_layout layout)
+static Rendition::ResizeMode
+ResizeModeFromLayout(enum car_rendition_value_layout layout)
 {
     switch(layout) {
-    case car_rendition_value_layout_one_part_fixed_size:
-    case car_rendition_value_layout_three_part_horizontal_uniform:
-    case car_rendition_value_layout_three_part_vertical_uniform:
-        return car::Rendition::ResizeMode::fixedSize;
-    case car_rendition_value_layout_one_part_tile:
-    case car_rendition_value_layout_three_part_horizontal_tile:
-    case car_rendition_value_layout_three_part_vertical_tile:
-    case car_rendition_value_layout_nine_part_tile:
-        return car::Rendition::ResizeMode::tile;
-    case car_rendition_value_layout_one_part_scale:
-    case car_rendition_value_layout_three_part_horizontal_scale:
-    case car_rendition_value_layout_three_part_vertical_scale:
-    case car_rendition_value_layout_nine_part_scale:
-        return car::Rendition::ResizeMode::scale;
-    case car_rendition_value_layout_nine_part_horizontal_uniform_vertical_scale:
-        return car::Rendition::ResizeMode::horizontalUniformVerticalScale;
-    case car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform:
-        return car::Rendition::ResizeMode::horizontalScaleVerticalUniform;
-    case car_rendition_value_layout_six_part:
-    case car_rendition_value_layout_gradient:
-    case car_rendition_value_layout_effect:
-    case car_rendition_value_layout_animation_filmstrip:
-    case car_rendition_value_layout_raw_data:
-    case car_rendition_value_layout_external_link:
-    case car_rendition_value_layout_layer_stack:
-    case car_rendition_value_layout_internal_link:
-    case car_rendition_value_layout_asset_pack:
-        break;
+        case car_rendition_value_layout_one_part_fixed_size:
+        case car_rendition_value_layout_three_part_horizontal_uniform:
+        case car_rendition_value_layout_three_part_vertical_uniform:
+            return Rendition::ResizeMode::FixedSize;
+        case car_rendition_value_layout_one_part_tile:
+        case car_rendition_value_layout_three_part_horizontal_tile:
+        case car_rendition_value_layout_three_part_vertical_tile:
+        case car_rendition_value_layout_nine_part_tile:
+            return Rendition::ResizeMode::Tile;
+        case car_rendition_value_layout_one_part_scale:
+        case car_rendition_value_layout_three_part_horizontal_scale:
+        case car_rendition_value_layout_three_part_vertical_scale:
+        case car_rendition_value_layout_nine_part_scale:
+            return Rendition::ResizeMode::Scale;
+        case car_rendition_value_layout_nine_part_horizontal_uniform_vertical_scale:
+            return Rendition::ResizeMode::HorizontalUniformVerticalScale;
+        case car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform:
+            return Rendition::ResizeMode::HorizontalScaleVerticalUniform;
+        case car_rendition_value_layout_six_part:
+        case car_rendition_value_layout_gradient:
+        case car_rendition_value_layout_effect:
+        case car_rendition_value_layout_animation_filmstrip:
+        case car_rendition_value_layout_raw_data:
+        case car_rendition_value_layout_external_link:
+        case car_rendition_value_layout_layer_stack:
+        case car_rendition_value_layout_internal_link:
+        case car_rendition_value_layout_asset_pack:
+            break;
     }
-    return car::Rendition::ResizeMode::fixedSize;
+    return Rendition::ResizeMode::FixedSize;
 }
 
 Rendition const Rendition::
@@ -204,28 +206,30 @@ Load(
     struct car_rendition_value *value)
 {
     Rendition rendition = Rendition(attributes, [value](Rendition const *rendition) -> ext::optional<Data> {
-        return _decode(value);
+        return Decode(value);
     });
 
     for (struct car_rendition_info_header *info_header = (struct car_rendition_info_header *)value->info;
         ((uintptr_t)info_header - (uintptr_t)value->info) < value->info_len;
         info_header = (struct car_rendition_info_header *)((intptr_t)info_header + sizeof(struct car_rendition_info_header) + info_header->length)) {
         switch(info_header->magic) {
-            case car_rendition_info_magic_slices:
-            {
-                std::vector<slice> slices;
-                int count = number_slices_from_layout((enum car_rendition_value_layout)value->metadata.layout);
+            case car_rendition_info_magic_slices: {
+                std::vector<Slice> slices;
+                int count = SliceCountForLayout((enum car_rendition_value_layout)value->metadata.layout);
                 struct car_rendition_info_slices *info_slices = (struct car_rendition_info_slices *)info_header;
                 for(int i = 0; i < count; i++) {
-                        car::Rendition::slice slice = {info_slices->slices[i].x, info_slices->slices[i].y,
-                            info_slices->slices[i].width, info_slices->slices[i].height};
+                        Slice slice = {
+                            info_slices->slices[i].x,
+                            info_slices->slices[i].y,
+                            info_slices->slices[i].width,
+                            info_slices->slices[i].height,
+                        };
                         slices.push_back(slice);
                 }
                 rendition.slices() = std::move(slices);
+                break;
             }
-            break;
-            case car_rendition_info_magic_metrics:
-            {
+            case car_rendition_info_magic_metrics: {
                 // Alignment options
                 // struct car_rendition_info_metrics *metric = (struct car_rendition_info_metrics *)info_header;
                 // metric->nmetrics
@@ -235,30 +239,26 @@ Load(
                 // metric->bottom_left_inset.height
                 // metric->image_size.width
                 // metric->image_size.height
+                break;
             }
-            break;
-            case car_rendition_info_magic_composition:
-            {
+            case car_rendition_info_magic_composition: {
                 // struct car_rendition_info_composition *composition = (struct car_rendition_info_composition *)info_header;
                 // composition->blend_mode
                 // composition->opacity
+                break;
             }
-            break;
-            case car_rendition_info_magic_uti:
-            {
+            case car_rendition_info_magic_uti: {
                 struct car_rendition_info_uti *uti = (struct car_rendition_info_uti *)info_header;
                 rendition.uti() = std::string(uti->uti, uti->uti_length);
+                break;
             }
-            break;
-            case car_rendition_info_magic_bitmap_info:
-            break;
-            case car_rendition_info_magic_bytes_per_row:
-            {
-
+            case car_rendition_info_magic_bitmap_info: {
+                break;
             }
-            break;
-            case car_rendition_info_magic_reference:
-            {
+            case car_rendition_info_magic_bytes_per_row: {
+                break;
+            }
+            case car_rendition_info_magic_reference: {
                 // struct car_rendition_info_reference *reference = (struct car_rendition_info_reference *)info_header;
                 // reference->x
                 // reference->y
@@ -267,12 +267,12 @@ Load(
                 // reference->layout
                 // reference->key_length
                 // reference->key[]
-            }
-            break;
-            case car_rendition_info_magic_alpha_cropped_frame:
                 break;
+            }
+            case car_rendition_info_magic_alpha_cropped_frame: {
+                break;
+            }
         }
-
     }
 
     rendition.fileName() = std::string(value->metadata.name, sizeof(value->metadata.name));
@@ -284,7 +284,7 @@ Load(
 
     enum car_rendition_value_layout layout = (enum car_rendition_value_layout)value->metadata.layout;
     rendition.layout() = layout;
-    rendition.resizeMode() = resizeMode_from_layout(layout);
+    rendition.resizeMode() = ResizeModeFromLayout(layout);
 
     if (layout >= car_rendition_value_layout_three_part_horizontal_tile &&
         layout <= car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform &&
@@ -309,7 +309,7 @@ data() const
 }
 
 static ext::optional<Rendition::Data>
-_decode(struct car_rendition_value *value)
+Decode(struct car_rendition_value *value)
 {
     if (strncmp(value->magic, "ISTC", 4) != 0) {
         return ext::nullopt;
@@ -436,7 +436,7 @@ _decode(struct car_rendition_value *value)
 }
 
 static ext::optional<std::vector<uint8_t>>
-_encode(Rendition const *rendition)
+Encode(Rendition const *rendition)
 {
     ext::optional<Rendition::Data> data = rendition->data();
     if (!data || data->data().size() == 0) {
@@ -544,7 +544,7 @@ std::vector<uint8_t> Rendition::Write() const
 
     // Create info segments
 
-    int nslices = number_slices_from_layout(_layout);
+    int nslices = SliceCountForLayout(_layout);
     size_t info_slices_size = sizeof(car_rendition_info_slices) + sizeof(struct car_rendition_info_slice) * nslices;
     struct car_rendition_info_slices *info_slices = (struct car_rendition_info_slices *)malloc(info_slices_size);
     info_slices->header.magic = car_rendition_info_magic_slices;
@@ -598,7 +598,7 @@ std::vector<uint8_t> Rendition::Write() const
     info_bytes_per_row.bytes_per_row = _width * bytes_per_pixel;
 
     // Write bitmap data
-    ext::optional<std::vector<uint8_t>> data = _encode(this);
+    ext::optional<std::vector<uint8_t>> data = Encode(this);
     if (!data) {
         printf("Error: no bitmap data\n");
         data = ext::optional<std::vector<uint8_t>>(std::vector<uint8_t>());

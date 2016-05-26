@@ -20,17 +20,8 @@ using car::Writer;
 
 Writer::
 Writer(unique_ptr_bom bom) :
-    _bom(std::move(bom)),
-    _keyfmt(ext::nullopt),
-    _facetValues({}),
-    _renditionValues({})
+    _bom(std::move(bom))
 {
-}
-
-void Writer::
-dump() const
-{
-    printf("???");
 }
 
 ext::optional<Writer> Writer::

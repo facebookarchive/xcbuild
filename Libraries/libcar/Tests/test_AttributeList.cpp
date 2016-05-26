@@ -19,7 +19,7 @@ struct test_car_key_format {
 
 static struct test_car_key_format keyfmt_s = {
     {
-        {'k', 'f', 'm', 't'}, 0, 13
+        { 'k', 'f', 'm', 't' }, 0, 13,
     },
     {
         car_attribute_identifier_scale,
@@ -34,12 +34,11 @@ static struct test_car_key_format keyfmt_s = {
         car_attribute_identifier_part,
         car_attribute_identifier_state,
         car_attribute_identifier_value,
-        car_attribute_identifier_dimension1
+        car_attribute_identifier_dimension1,
     }
 };
 
 static struct car_key_format *keyfmt = &keyfmt_s.keyfmt;
-
 
 TEST(AttributeList, TestAttributeListDeSerialize)
 {
@@ -56,7 +55,7 @@ TEST(AttributeList, TestAttributeListDeSerialize)
         10,                                       // part
         11,                                       // state
         12,                                       // value
-        13                                        // dimension1
+        13,                                       // dimension1
     };
 
     car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);

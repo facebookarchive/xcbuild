@@ -70,7 +70,8 @@ Create(std::string const &name, AttributeList const &attributes)
     return Facet(name, attributes);
 }
 
-std::vector<uint8_t> Facet::Write() const
+std::vector<uint8_t> Facet::
+Write() const
 {
     std::map<enum car_attribute_identifier, uint16_t> ordered_attributes;
     size_t attributes_count = _attributes.count();

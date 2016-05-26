@@ -35,7 +35,7 @@ public:
 
 private:
     unique_ptr_bom _bom;
-    ext::optional<struct car_key_format*> _keyfmt;
+    ext::optional<struct car_key_format *> _keyfmt;
     std::unordered_map<std::string, Facet const &> _facetValues;
     std::unordered_multimap<uint16_t, Rendition const &> _renditionValues;
 
@@ -52,9 +52,9 @@ public:
     /*
      * The key format
      */
-    struct car_key_format * keyfmt() const
+    struct car_key_format *keyfmt() const
     { return *_keyfmt; }
-    struct car_key_format * &keyfmt()
+    struct car_key_format *&keyfmt()
     { return *_keyfmt; }
 
 public:
@@ -67,23 +67,6 @@ public:
      * Add a Rendition for a Facet, allow lazy loading of data
      */
     void addRendition(Rendition const &);
-
-public:
-    /*
-     * Lookup a Facet by name
-     */
-    ext::optional<car::Facet> lookupFacet(std::string name) const;
-
-    /*
-     * Lookup Rendition list for a Facet
-     */
-    std::vector<car::Rendition> lookupRenditions(Facet const &) const;
-
-public:
-    /*
-     * Print debug information about the archive.
-     */
-    void dump() const;
 
 public:
     /*

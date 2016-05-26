@@ -11,7 +11,7 @@
 #include <car/Facet.h>
 #include <car/AttributeList.h>
 #include <car/car_format.h>
- 
+
 struct test_car_facet_value {
     struct car_facet_value header;
     struct car_attribute_pair attributes[3];
@@ -23,9 +23,9 @@ static struct test_car_facet_value test_facet_value_s = {
         3,
     },
     {
-        { car_attribute_identifier_element, 85},
-        { car_attribute_identifier_part, 181},
-        { car_attribute_identifier_identifier, 4258}
+        { car_attribute_identifier_element, 85 },
+        { car_attribute_identifier_part, 181 },
+        { car_attribute_identifier_identifier, 4258 },
     }
 };
 
@@ -33,7 +33,6 @@ static struct car_facet_value *test_facet_value = &(test_facet_value_s.header);
 
 TEST(Facet, TestFacetDeSerialize)
 {
-
     auto facet = car::Facet::Load(std::string("somename"), test_facet_value);
     EXPECT_TRUE(facet.name() == std::string("somename"));
     EXPECT_TRUE(*(facet.attributes().get(car_attribute_identifier_element)) == 85);
@@ -56,5 +55,4 @@ TEST(Facet, TestFacetSerialize)
 
     EXPECT_TRUE(facet_value == test_facet_value_vector);
 }
-
 

@@ -20,7 +20,7 @@ struct test_car_key_format {
 
 static struct test_car_key_format keyfmt_s = {
     {
-        {'k', 'f', 'm', 't'}, 0, 13
+        { 'k', 'f', 'm', 't' }, 0, 13,
     },
     {
         car_attribute_identifier_scale,
@@ -35,7 +35,7 @@ static struct test_car_key_format keyfmt_s = {
         car_attribute_identifier_part,
         car_attribute_identifier_state,
         car_attribute_identifier_value,
-        car_attribute_identifier_dimension1
+        car_attribute_identifier_dimension1,
     }
 };
 
@@ -43,7 +43,6 @@ static struct car_key_format *keyfmt = &keyfmt_s.keyfmt;
 
 TEST(Rendition, TestRenditionDeSerializeSerialize)
 {
-
     uint16_t rendition_key[13] = {
         1,                                        // scale
         car_attribute_identifier_idiom_value_pad, // idiom
@@ -57,8 +56,9 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
         10,                                       // part
         11,                                       // state
         12,                                       // value
-        13                                        // dimension1
+        13,                                       // dimension1
     };
+
     size_t rendition_len = 598;
     const unsigned char rendition_value[598] = {
         0x49, 0x53, 0x54, 0x43, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
@@ -98,7 +98,7 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
         0xea, 0x1f, 0xf5, 0x44, 0x98, 0xfe, 0x11, 0x63, 0x62, 0xaf, 0xf6, 0xaf, 0x39, 0xe3, 0xf6, 0xff,
         0xa8, 0x36, 0x3b, 0x86, 0xad, 0xb8, 0xe6, 0x7f, 0xfd, 0x9f, 0x5b, 0xa9, 0x27, 0xe5, 0xcb, 0xb6,
         0xc3, 0xf6, 0xda, 0xe3, 0x7a, 0xf2, 0x39, 0xc9, 0x67, 0xe3, 0xd5, 0xe3, 0xfe, 0x5f, 0x50, 0x6c,
-        0x83, 0xa9, 0x00, 0x04, 0x00, 0x00
+        0x83, 0xa9, 0x00, 0x04, 0x00, 0x00,
     };
 
     car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
@@ -193,7 +193,7 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x2b, 0x16, 0x00, 0x2b, 0x90, 0x4b, 0x00, 0x90, 0xd8, 0x70, 0x00, 0xd8, 0xfa, 0x81, 0x00, 0xfa,
         0xf4, 0x7e, 0x00, 0xf4, 0xd4, 0x6e, 0x00, 0xd4, 0x90, 0x4b, 0x00, 0x90, 0x2c, 0x17, 0x00, 0x2c,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     };
 
     // Check the data decoded from rendition_value, and check that it matches test_bitmap_bytes
@@ -223,13 +223,13 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     auto new_rendition_key = new_rendition.attributes().Write(keyfmt->num_identifiers, keyfmt->identifier_list);
     EXPECT_TRUE(0 == memcmp(&new_rendition_key[0], rendition_key, sizeof(uint16_t) * keyfmt->num_identifiers));
 
-    // Serialise new_rendition
+    // Serialise new_rendition.
     auto new_rendition_value = new_rendition.Write();
 
-    // Check that rendition_value matches the serialized rendition created using test_bitmap_bytes 
+    // Check that rendition_value matches the serialized rendition created using test_bitmap_bytes.
     EXPECT_TRUE(0 == memcmp(rendition_value, &new_rendition_value[0], rendition_len));
 
-    // Decode the serialized copy of new_rendition 
+    // Decode the serialized copy of new_rendition.
     car::Rendition new_rendition_check = car::Rendition::Load(attributes,
         reinterpret_cast<struct car_rendition_value *>(new_rendition_value.data()));
     auto check_data = new_rendition_check.data();
