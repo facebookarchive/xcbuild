@@ -14,6 +14,7 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <map>
 
 using car::Facet;
 
@@ -71,17 +72,23 @@ Create(std::string const &name, AttributeList const &attributes)
 
 std::vector<uint8_t> Facet::Write() const
 {
+    std::map<enum car_attribute_identifier, uint16_t> ordered_attributes;
     size_t attributes_count = _attributes.count();
     size_t facet_value_size = sizeof(struct car_facet_value) + (sizeof(struct car_attribute_pair) * attributes_count);
     std::vector<uint8_t> output = std::vector<uint8_t>(facet_value_size);
-    struct car_facet_value *facet_value = (struct car_facet_value *)&output[0];
+    struct car_facet_value *facet_value = reinterpret_cast<struct car_facet_value *>(output.data());
     facet_value->attributes_count = 0;
-    _attributes.iterate([&attributes_count, &facet_value](enum car_attribute_identifier identifier, uint16_t value) {
+
+    _attributes.iterate([&ordered_attributes](enum car_attribute_identifier identifier, uint16_t value) {
+        ordered_attributes[identifier] = value;
+    });
+
+    for (auto const &pair : ordered_attributes) {
         if (facet_value->attributes_count < attributes_count) {
-            facet_value->attributes[facet_value->attributes_count].identifier = identifier;
-            facet_value->attributes[facet_value->attributes_count].value = value;
+            facet_value->attributes[facet_value->attributes_count].identifier = pair.first;
+            facet_value->attributes[facet_value->attributes_count].value = pair.second;
             facet_value->attributes_count += 1;
         }
-    });
+    }
     return output;
 }
