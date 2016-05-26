@@ -89,4 +89,6 @@ add_executable(builtin-embeddedBinaryValidationUtility Tools/embeddedBinaryValid
 target_link_libraries(builtin-embeddedBinaryValidationUtility builtin)
 install(TARGETS builtin-embeddedBinaryValidationUtility DESTINATION bin)
 
-ADD_UNIT_GTEST(builtin copyStrings Tests/test_copyStrings.cpp)
+if (BUILD_TESTING)
+  ADD_UNIT_GTEST(builtin copyStrings Tests/test_copyStrings.cpp)
+endif ()

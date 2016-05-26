@@ -48,16 +48,19 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_CXX_COMPILER_VERS
 endif ()
 
 # Enable unit testing.
-enable_testing()
-add_subdirectory(ThirdParty/googletest/googletest)
+include(CTest)
 
-function (ADD_UNIT_GTEST LIBRARY NAME SOURCES)
-  set(TARGET_NAME "test_${LIBRARY}_${NAME}")
-  add_executable("${TARGET_NAME}" ${SOURCES})
-  target_link_libraries("${TARGET_NAME}" PRIVATE "${LIBRARY}" gtest gtest_main)
-  target_include_directories("${TARGET_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/ThirdParty/googletest/googletest/include")
-  add_test("${TARGET_NAME}" "${TARGET_NAME}")
-endfunction ()
+if (BUILD_TESTING)
+  add_subdirectory(ThirdParty/googletest/googletest)
+
+  function (ADD_UNIT_GTEST LIBRARY NAME SOURCES)
+    set(TARGET_NAME "test_${LIBRARY}_${NAME}")
+    add_executable("${TARGET_NAME}" ${SOURCES})
+    target_link_libraries("${TARGET_NAME}" PRIVATE "${LIBRARY}" gtest gtest_main)
+    target_include_directories("${TARGET_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/ThirdParty/googletest/googletest/include")
+    add_test("${TARGET_NAME}" "${TARGET_NAME}")
+  endfunction ()
+endif ()
 
 add_subdirectory(Libraries)
 
