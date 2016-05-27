@@ -97,7 +97,7 @@ bom_context_memory_file(const char *fn, bool writeable, size_t minimum_size)
     fstat(fd, &st);
 
     // Expand file to minimum_size
-    if (st.st_size < minimum_size) {
+    if (st.st_size < (off_t)minimum_size) {
         int result = ftruncate(fd, minimum_size);
         if (result != 0) {
             close(fd);
@@ -116,7 +116,7 @@ bom_context_memory_file(const char *fn, bool writeable, size_t minimum_size)
     context->writeable = writeable;
 
     int prot = context->writeable ? PROT_READ | PROT_WRITE : PROT_READ;
-    size_t size = st.st_size < minimum_size ? minimum_size : st.st_size;
+    size_t size = st.st_size < (off_t)minimum_size ? minimum_size : st.st_size;
     void *data = mmap(NULL, size, prot, (writeable ? MAP_SHARED : MAP_PRIVATE), context->fd, 0);
 
     return (struct bom_context_memory) {
