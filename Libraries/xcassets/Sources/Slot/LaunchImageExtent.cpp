@@ -19,7 +19,7 @@ Parse(std::string const &value)
 {
     if (value == "to-status-bar") {
         return LaunchImageExtent::ToStatusBar;
-    } else if (value == "regular") {
+    } else if (value == "full-screen") {
         return LaunchImageExtent::FullScreen;
     } else {
         fprintf(stderr, "warning: unknown extent '%s'\n", value.c_str());
@@ -34,7 +34,7 @@ String(LaunchImageExtent extent)
         case LaunchImageExtent::ToStatusBar:
             return "to-status-bar";
         case LaunchImageExtent::FullScreen:
-            return "regular";
+            return "full-screen";
     }
 
     abort();
