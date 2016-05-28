@@ -59,11 +59,11 @@ private:
 
 Options::
 Options() :
-    _help                  (false),
-    _version               (false),
-    _printPath             (false),
-    _resetPath             (false),
-    _install               (false)
+    _help     (false),
+    _version  (false),
+    _printPath(false),
+    _resetPath(false),
+    _install  (false)
 {
 }
 
@@ -79,13 +79,13 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 
     if (arg == "-h" || arg == "--help") {
         return libutil::Options::MarkBool(&_help, arg, it);
-    } else if (arg == "-v" || arg == "--version") {
+    } else if (arg == "-v" || arg == "--version" || arg == "-version") {
         return libutil::Options::MarkBool(&_version, arg, it);
-    } else if (arg == "-p" || arg == "--print-path") {
+    } else if (arg == "-p" || arg == "--print-path" || arg == "-print-path") {
         return libutil::Options::MarkBool(&_printPath, arg, it);
     } else if (arg == "-r" || arg == "--reset") {
         return libutil::Options::MarkBool(&_resetPath, arg, it);
-    } else if (arg == "-s" || arg == "--switch-path") {
+    } else if (arg == "-s" || arg == "--switch" || arg == "-switch") {
         std::string switchPath;
 
         auto result = libutil::Options::NextString(&switchPath, args, it);
@@ -95,7 +95,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 
         _switchPath = switchPath;
         return result;
-    } else if (arg == "--install" || arg == "-install") {
+    } else if (arg == "--install") {
         return libutil::Options::MarkBool(&_install, arg, it);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
