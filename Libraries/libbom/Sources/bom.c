@@ -127,6 +127,12 @@ bom_alloc_load(struct bom_context_memory memory)
     return context;
 }
 
+struct bom_context_memory const *
+bom_memory(struct bom_context const *context)
+{
+    return &context->memory;
+}
+
 void
 bom_free(struct bom_context *context)
 {

@@ -63,88 +63,68 @@ static test_car_key_format keyfmt_s = {
 
 static struct car_key_format *keyfmt = &keyfmt_s.keyfmt;
 
-class WriterTest : public testing::Test {
-protected:
-    std::string tmpfilename;
-
-    virtual void SetUp() {
-        std::ostringstream stream;
-        stream << "/tmp/test_car_Writer_output." <<  ::getpid() << ".car";
-        tmpfilename = stream.str();
-    }
-
-    virtual void TearDown() {
-        std::remove(tmpfilename.c_str());
-    }
-};
-
-TEST_F(WriterTest, TestWriter)
+TEST(Writer, TestWriter)
 {
     int width = 8;
     int height = 8;
 
-    // Write to test tmpfilename
-    {
-        struct bom_context_memory memory = bom_context_memory_file(tmpfilename.c_str(), true, sizeof(struct bom_header));
-        auto bom = car::Writer::unique_ptr_bom(bom_alloc_empty(memory), bom_free);
-        EXPECT_TRUE(bom != nullptr);
+    /* Write out. */
+    auto writer_bom = car::Writer::unique_ptr_bom(bom_alloc_empty(bom_context_memory(NULL, 0)), bom_free);
+    EXPECT_NE(writer_bom, nullptr);
 
-        auto writer = car::Writer::Create(std::move(bom));
-        EXPECT_TRUE(writer != ext::nullopt);
+    auto writer = car::Writer::Create(std::move(writer_bom));
+    EXPECT_NE(writer, ext::nullopt);
 
-        // Add key format
-        writer->keyfmt() = keyfmt;
+    writer->keyfmt() = keyfmt;
 
-        car::AttributeList attributes = car::AttributeList({
-            {car_attribute_identifier_idiom, car_attribute_identifier_idiom_value_universal},
-            {car_attribute_identifier_scale, 2},
-            {car_attribute_identifier_identifier, 1},
-        });
+    car::AttributeList attributes = car::AttributeList({
+        { car_attribute_identifier_idiom, car_attribute_identifier_idiom_value_universal },
+        { car_attribute_identifier_scale, 2 },
+        { car_attribute_identifier_identifier, 1 },
+    });
 
-        car::Rendition::Data::Format format = car::Rendition::Data::Format::PremultipliedBGRA8;
-        auto data = ext::optional<car::Rendition::Data>(car::Rendition::Data(test_pixels, format));
-        car::Rendition rendition = car::Rendition::Create(attributes, data);
-        rendition.width() = width;
-        rendition.height() = height;
-        rendition.scale() = 2;
-        rendition.fileName() = std::string("testpattern.png");
-        rendition.layout() = car_rendition_value_layout_one_part_scale;
+    car::Facet facet = car::Facet::Create("testpattern", attributes);
+    writer->addFacet(facet);
 
-        car::Facet facet = car::Facet::Create(std::string("testpattern"), attributes);
+    car::Rendition::Data::Format format = car::Rendition::Data::Format::PremultipliedBGRA8;
+    auto data = ext::optional<car::Rendition::Data>(car::Rendition::Data(test_pixels, format));
+    car::Rendition rendition = car::Rendition::Create(attributes, data);
+    rendition.width() = width;
+    rendition.height() = height;
+    rendition.scale() = 2;
+    rendition.fileName() = "testpattern.png";
+    rendition.layout() = car_rendition_value_layout_one_part_scale;
+    writer->addRendition(rendition);
 
-        writer->addFacet(facet);
-        writer->addRendition(rendition);
-        writer->Write();
-    }
+    writer->Write();
 
-    // Read back from test tmpfilename
-    {
-        struct bom_context_memory memory = bom_context_memory_file(tmpfilename.c_str(), false, 0);
-        auto bom = std::unique_ptr<struct bom_context, decltype(&bom_free)>(bom_alloc_load(memory), bom_free);
-        EXPECT_TRUE(bom != nullptr);
+    /* Read back. */
+    struct bom_context_memory const *writer_memory = bom_memory(writer->bom());
+    struct bom_context_memory reader_memory = bom_context_memory(writer_memory->data, writer_memory->size);
+    auto reader_bom = std::unique_ptr<struct bom_context, decltype(&bom_free)>(bom_alloc_load(reader_memory), bom_free);
+    EXPECT_NE(reader_bom, nullptr);
 
-        ext::optional<car::Reader> reader = car::Reader::Load(std::move(bom));
-        EXPECT_TRUE(reader != ext::nullopt);
+    ext::optional<car::Reader> reader = car::Reader::Load(std::move(reader_bom));
+    EXPECT_NE(reader, ext::nullopt);
 
-        int facet_count = 0;
-        int rendition_count = 0;
+    int facet_count = 0;
+    int rendition_count = 0;
 
-        reader->facetIterate([&reader, &facet_count, &rendition_count](car::Facet const &facet) {
-            facet_count++;
+    reader->facetIterate([&reader, &facet_count, &rendition_count](car::Facet const &facet) {
+        facet_count++;
 
-            EXPECT_TRUE(facet.name() == std::string("testpattern"));
+        EXPECT_EQ(facet.name(), "testpattern");
 
-            auto renditions = reader->lookupRenditions(facet);
-            for (auto & rendition : renditions) {
-                rendition_count++;
+        auto renditions = reader->lookupRenditions(facet);
+        for (auto const &rendition : renditions) {
+            rendition_count++;
 
-                auto data = rendition.data()->data();
-                EXPECT_TRUE(data == test_pixels);
-            }
-        });
+            auto data = rendition.data()->data();
+            EXPECT_EQ(data, test_pixels);
+        }
+    });
 
-        EXPECT_TRUE(facet_count == 1);
-        EXPECT_TRUE(rendition_count == 1);
-    }
+    EXPECT_EQ(facet_count, 1);
+    EXPECT_EQ(rendition_count, 1);
 }
 

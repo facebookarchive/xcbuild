@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
 #include <unistd.h>
 #include <assert.h>
 
@@ -33,11 +34,19 @@ _bom_context_memory_free(struct bom_context_memory *memory)
 }
 
 struct bom_context_memory
-bom_context_memory(void)
+bom_context_memory(void const *data, size_t size)
 {
+    void *new = malloc(size);
+
+    if (data != NULL) {
+        memcpy(new, data, size);
+    } else {
+        memset(new, 0, size);
+    }
+
     return (struct bom_context_memory){
-        .data = malloc(0),
-        .size = 0,
+        .data = new,
+        .size = size,
         .resize = _bom_context_memory_realloc,
         .free = _bom_context_memory_free,
         .ctx = NULL,

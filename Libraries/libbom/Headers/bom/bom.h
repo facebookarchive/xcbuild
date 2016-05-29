@@ -30,7 +30,7 @@ struct bom_context_memory {
 };
 
 struct bom_context_memory
-bom_context_memory(void);
+bom_context_memory(void const *data, size_t size);
 
 struct bom_context_memory
 bom_context_memory_file(const char *fn, bool writeable, size_t minimum_size);
@@ -43,6 +43,9 @@ bom_alloc_empty(struct bom_context_memory memory);
 
 struct bom_context *
 bom_alloc_load(struct bom_context_memory memory);
+
+struct bom_context_memory const *
+bom_memory(struct bom_context const *context);
 
 void
 bom_free(struct bom_context *context);
