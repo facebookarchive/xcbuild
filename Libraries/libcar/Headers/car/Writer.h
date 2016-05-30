@@ -11,14 +11,16 @@
 #define _LIBCAR_WRITER_H
 
 #include <car/AttributeList.h>
+#include <car/Facet.h>
+#include <car/Rendition.h>
 #include <bom/bom.h>
-#include <ext/optional>
 
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <ext/optional>
 
 namespace car {
 

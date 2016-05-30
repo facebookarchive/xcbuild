@@ -8,8 +8,6 @@
  */
 
 #include <car/Writer.h>
-#include <car/Facet.h>
-#include <car/Rendition.h>
 #include <car/car_format.h>
 
 #include <random>
