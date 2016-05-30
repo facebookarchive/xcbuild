@@ -76,7 +76,7 @@ public:
     /*
      * Serialize the rendition for writing to a file.
      */
-    std::vector<uint8_t> Write() const;
+    std::vector<uint8_t> write() const;
 };
 
 }

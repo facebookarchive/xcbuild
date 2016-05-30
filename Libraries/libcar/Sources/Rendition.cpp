@@ -519,7 +519,8 @@ Create(
     return Rendition(attributes, data);
 }
 
-std::vector<uint8_t> Rendition::Write() const
+std::vector<uint8_t> Rendition::
+write() const
 {
     // Create header
     struct car_rendition_value header;

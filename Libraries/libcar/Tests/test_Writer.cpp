@@ -96,7 +96,7 @@ TEST(Writer, TestWriter)
     rendition.layout() = car_rendition_value_layout_one_part_scale;
     writer->addRendition(rendition);
 
-    writer->Write();
+    writer->write();
 
     /* Read back. */
     struct bom_context_memory const *writer_memory = bom_memory(writer->bom());

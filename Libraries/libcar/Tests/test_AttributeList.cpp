@@ -80,7 +80,7 @@ TEST(AttributeList, TestAttributeListDeSerialize)
     EXPECT_TRUE(size_class_vertical);
     EXPECT_TRUE(*size_class_vertical == car_attribute_identifier_size_class_value_regular);
 
-    auto output = attributes.Write(keyfmt->num_identifiers, keyfmt->identifier_list);
+    auto output = attributes.write(keyfmt->num_identifiers, keyfmt->identifier_list);
     uint16_t *attributes_out = reinterpret_cast<uint16_t *>(output.data());
 
     EXPECT_TRUE(0 == memcmp(rendition_key, attributes_out, sizeof(uint16_t) * keyfmt->num_identifiers));

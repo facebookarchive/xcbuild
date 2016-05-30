@@ -96,7 +96,7 @@ public:
      * Write an attribute list into an a vector of bytes using the identifier
      * order provided.
      */
-    std::vector<uint8_t> Write(
+    std::vector<uint8_t> write(
         size_t count,
         uint32_t *identifiers) const;
 };

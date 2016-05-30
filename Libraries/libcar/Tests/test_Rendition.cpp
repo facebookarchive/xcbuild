@@ -123,7 +123,7 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     EXPECT_TRUE(size_class_vertical);
     EXPECT_TRUE(*size_class_vertical == car_attribute_identifier_size_class_value_regular);
 
-    auto attributes_out = attributes.Write(keyfmt->num_identifiers, keyfmt->identifier_list);
+    auto attributes_out = attributes.write(keyfmt->num_identifiers, keyfmt->identifier_list);
     EXPECT_TRUE(0 == memcmp(rendition_key, (uint16_t *)&attributes_out[0], sizeof(uint16_t) * keyfmt->num_identifiers));
 
     car::Rendition rendition = car::Rendition::Load(attributes, (struct car_rendition_value *)rendition_value);
@@ -220,11 +220,11 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     EXPECT_TRUE(rendition.layout() == new_rendition.layout());
 
     // Check that serialized attributes match the rendition_key
-    auto new_rendition_key = new_rendition.attributes().Write(keyfmt->num_identifiers, keyfmt->identifier_list);
+    auto new_rendition_key = new_rendition.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);
     EXPECT_TRUE(0 == memcmp(&new_rendition_key[0], rendition_key, sizeof(uint16_t) * keyfmt->num_identifiers));
 
     // Serialise new_rendition.
-    auto new_rendition_value = new_rendition.Write();
+    auto new_rendition_value = new_rendition.write();
 
     // Check that rendition_value matches the serialized rendition created using test_bitmap_bytes.
     EXPECT_TRUE(0 == memcmp(rendition_value, &new_rendition_value[0], rendition_len));

@@ -51,7 +51,7 @@ TEST(Facet, TestFacetSerialize)
     attributes.set(car_attribute_identifier_identifier, 4258);
 
     car::Facet facet = car::Facet::Create(std::string("somename"), attributes);
-    auto facet_value = facet.Write();
+    auto facet_value = facet.write();
 
     EXPECT_TRUE(facet_value == test_facet_value_vector);
 }

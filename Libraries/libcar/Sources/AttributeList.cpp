@@ -97,7 +97,7 @@ operator()(AttributeList const &attributes) const
 
 
 std::vector<uint8_t> AttributeList::
-Write(size_t count, uint32_t *identifiers) const
+write(size_t count, uint32_t *identifiers) const
 {
     std::vector<uint8_t> output = std::vector<uint8_t>(sizeof(uint16_t)*count);
     uint16_t *values = reinterpret_cast<uint16_t *>(output.data());

@@ -46,7 +46,7 @@ addRendition(Rendition const &rendition)
 }
 
 void Writer::
-Write()
+write()
 {
     // Write CARHEADER
     struct car_header *header = (struct car_header *)malloc(sizeof(struct car_header));
@@ -86,8 +86,8 @@ Write()
     // Write FACETKEYS
     struct bom_tree_context *facets_tree_context = bom_tree_alloc_empty(_bom.get(), car_facet_keys_variable);
     if (facets_tree_context != NULL) {
-        for (auto const &item : _facetValues ) {
-            auto facet_value = item.second.Write();
+        for (auto const &item : _facetValues) {
+            auto facet_value = item.second.write();
             bom_tree_add(facets_tree_context,
                 reinterpret_cast<const void *>(item.first.c_str()),
                 item.first.size(),
@@ -100,9 +100,9 @@ Write()
     // Write RENDITIONS
     struct bom_tree_context *renditions_tree_context = bom_tree_alloc_empty(_bom.get(), car_renditions_variable);
     if (renditions_tree_context != NULL) {
-        for (auto const &item : _renditionValues ) {
-            auto attributes_value = item.second.attributes().Write(keyfmt->num_identifiers, keyfmt->identifier_list);
-            auto rendition_value = item.second.Write();
+        for (auto const &item : _renditionValues) {
+            auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);
+            auto rendition_value = item.second.write();
             bom_tree_add(renditions_tree_context,
                 reinterpret_cast<const void *>(attributes_value.data()),
                 attributes_value.size(),

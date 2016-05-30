@@ -78,7 +78,7 @@ public:
     /*
      * Serialize and write to BOM
      */
-     void Write();
+     void write();
 };
 
 }
