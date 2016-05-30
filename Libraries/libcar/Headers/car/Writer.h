@@ -35,9 +35,8 @@ public:
 
 private:
     unique_ptr_bom _bom;
-    ext::optional<struct car_key_format *> _keyfmt;
-    std::unordered_map<std::string, Facet const &> _facetValues;
-    std::unordered_multimap<uint16_t, Rendition const &> _renditionValues;
+    std::unordered_map<std::string, Facet> _facets;
+    std::unordered_multimap<uint16_t, Rendition> _renditions;
 
 private:
     Writer(unique_ptr_bom bom);
@@ -48,14 +47,6 @@ public:
      */
     struct bom_context *bom() const
     { return _bom.get(); }
-
-    /*
-     * The key format
-     */
-    struct car_key_format *keyfmt() const
-    { return *_keyfmt; }
-    struct car_key_format *&keyfmt()
-    { return *_keyfmt; }
 
 public:
     /*

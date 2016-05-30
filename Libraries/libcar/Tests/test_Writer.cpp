@@ -35,34 +35,6 @@ static std::vector<uint8_t> test_pixels = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-struct test_car_key_format {
-    struct car_key_format keyfmt;
-    uint32_t identifier_list[13];
-} __attribute__((packed));
-
-static test_car_key_format keyfmt_s = {
-    {
-        {'k', 'f', 'm', 't'}, 0, 13,
-    },
-    {
-        car_attribute_identifier_scale,
-        car_attribute_identifier_idiom,
-        car_attribute_identifier_subtype,
-        car_attribute_identifier_graphics_class,
-        car_attribute_identifier_memory_class,
-        car_attribute_identifier_size_class_horizontal,
-        car_attribute_identifier_size_class_vertical,
-        car_attribute_identifier_identifier,
-        car_attribute_identifier_element,
-        car_attribute_identifier_part,
-        car_attribute_identifier_state,
-        car_attribute_identifier_value,
-        car_attribute_identifier_dimension1,
-    }
-};
-
-static struct car_key_format *keyfmt = &keyfmt_s.keyfmt;
-
 TEST(Writer, TestWriter)
 {
     int width = 8;
@@ -74,8 +46,6 @@ TEST(Writer, TestWriter)
 
     auto writer = car::Writer::Create(std::move(writer_bom));
     EXPECT_NE(writer, ext::nullopt);
-
-    writer->keyfmt() = keyfmt;
 
     car::AttributeList attributes = car::AttributeList({
         { car_attribute_identifier_idiom, car_attribute_identifier_idiom_value_universal },
