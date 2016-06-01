@@ -1,0 +1,7 @@
+{
+    Type = FileType;
+    Identifier = archive;
+    BasedOn = file;
+
+    UTI = "public.archive";
+}

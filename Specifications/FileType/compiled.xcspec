@@ -1,0 +1,7 @@
+{
+    Type = FileType;
+    Identifier = compiled;
+    BasedOn = file;
+
+    UTI = "public.data";
+}

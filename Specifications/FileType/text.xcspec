@@ -1,0 +1,15 @@
+{
+    Type = FileType;
+    Identifier = text;
+    BasedOn = file;
+
+    UTI = "public.plain-text";
+    Extensions = (
+        txt,
+        "",
+    );
+    MIMETypes = (
+        "text/plain",
+    );
+    IsTextFile = YES;
+}

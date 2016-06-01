@@ -1,0 +1,8 @@
+{
+    Type = FileType;
+    Identifier = sourcecode;
+    BasedOn = text;
+
+    UTI = "public.source-code";
+    IsSourceCode = YES;
+}

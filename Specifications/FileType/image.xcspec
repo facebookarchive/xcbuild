@@ -1,0 +1,7 @@
+{
+    Type = FileType;
+    Identifier = image;
+    BasedOn = file;
+
+    UTI = "public.image";
+}

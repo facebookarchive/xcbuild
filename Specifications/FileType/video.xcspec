@@ -1,0 +1,7 @@
+{
+    Type = FileType;
+    Identifier = video;
+    BasedOn = file;
+
+    UTI = "public.video";
+}

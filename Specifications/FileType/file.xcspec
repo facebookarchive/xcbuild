@@ -1,0 +1,9 @@
+{
+    Type = FileType;
+    Identifier = file;
+
+    UTI = "public.data";
+    MIMETypes = (
+        "application/octet-stream",
+    );
+}

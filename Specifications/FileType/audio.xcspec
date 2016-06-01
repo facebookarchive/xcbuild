@@ -1,0 +1,7 @@
+{
+    Type = FileType;
+    Identifier = audio;
+    BasedOn = file;
+
+    UTI = "public.audio";
+}

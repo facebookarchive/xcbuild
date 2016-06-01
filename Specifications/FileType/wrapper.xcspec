@@ -1,0 +1,8 @@
+{
+    Type = FileType;
+    Identifier = wrapper;
+    BasedOn = folder;
+
+    IsWrapperFolder = YES;
+    UTI = "com.apple.package";
+}

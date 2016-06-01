@@ -1,0 +1,7 @@
+{
+    Type = FileType;
+    Identifier = folder;
+
+    UTI = "public.directory";
+    IsFolder = YES;
+}
