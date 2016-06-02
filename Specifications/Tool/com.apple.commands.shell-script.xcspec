@@ -1,0 +1,5 @@
+{
+    Type = Tool;
+    Identifier = com.apple.commands.shell-script;
+    Name = "Shell Script";
+}

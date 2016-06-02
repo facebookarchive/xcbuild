@@ -1,0 +1,5 @@
+{
+    Type = Tool;
+    Identifier = com.apple.commands.built-in.compilation-database-generator;
+    Name = "Compilation Database Generator";
+}
