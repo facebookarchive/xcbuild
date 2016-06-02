@@ -1,0 +1,46 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = FileType;
+    Identifier = text.xml;
+    BasedOn = text;
+
+    UTI = "public.xml";
+    MIMETypes = (
+        "text/xml",
+    );
+    Extensions = (
+        "xml",
+        "dtd",
+        "xslt",
+        "xhtml",
+    );
+    MagicWord = (
+        /* UTF-8 */
+        <3C3F786D6C>,
+        <EFBBBF3C3F786D6C>,
+
+        /* UTF-16 LE */
+        <3C003F0078006D006C00>,
+        <FFFE3C003F0078006D006C00>,
+
+        /* UTF-16 BE */
+        <003C003F0078006D006C>,
+        <FEFF003C003F0078006D006C>,
+
+        /* UTF-32 LE */
+        <3C0000003F000000780000006D0000006C000000>,
+        <FFFE3C0000003F000000780000006D0000006C000000>,
+
+        /* UTF-32 BE */
+        <0000003C0000003F000000780000006D0000006C>,
+        <FEFF0000003C0000003F000000780000006D0000006C>,
+    );
+}
