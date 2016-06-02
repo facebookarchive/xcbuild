@@ -1,0 +1,5 @@
+{
+    Type = Tool;
+    Identifier = com.apple.tools.plutil;
+    Name = "Property List Utility";
+}
