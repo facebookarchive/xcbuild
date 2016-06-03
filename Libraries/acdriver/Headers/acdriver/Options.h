@@ -43,7 +43,7 @@ private:
 private:
     std::string _platform;
     std::string _minimumDeploymentTarget;
-    std::string _targetDevice;
+    std::vector<std::string> _targetDevice;
 
 private:
     std::string _outputPartialInfoPlist;
@@ -96,7 +96,7 @@ public:
     { return _platform; }
     std::string const &minimumDeploymentTarget() const
     { return _minimumDeploymentTarget; }
-    std::string const &targetDevice() const
+    std::vector<std::string> const &targetDevice() const
     { return _targetDevice; }
 
 public:

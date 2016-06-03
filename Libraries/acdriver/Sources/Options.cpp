@@ -59,7 +59,12 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     } else if (arg == "--minimum-deployment-target") {
         return libutil::Options::NextString(&_minimumDeploymentTarget, args, it);
     } else if (arg == "--target-device") {
-        return libutil::Options::NextString(&_targetDevice, args, it);
+        std::string targetDevice;
+        auto result = libutil::Options::NextString(&targetDevice, args, it);
+        if (result.first) {
+            _targetDevice.push_back(targetDevice);
+        }
+        return result;
     } else if (arg == "--output-partial-info-plist") {
         return libutil::Options::NextString(&_outputPartialInfoPlist, args, it);
     } else if (arg == "--app-icon") {
