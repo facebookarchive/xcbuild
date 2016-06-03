@@ -12,6 +12,7 @@
 
 #include <libutil/Options.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -43,7 +44,7 @@ private:
 private:
     std::string _platform;
     std::string _minimumDeploymentTarget;
-    std::string _targetDevice;
+    std::set<std::string> _targetDevice;
 
 private:
     std::string _outputPartialInfoPlist;
@@ -96,7 +97,7 @@ public:
     { return _platform; }
     std::string const &minimumDeploymentTarget() const
     { return _minimumDeploymentTarget; }
-    std::string const &targetDevice() const
+    std::set<std::string> const &targetDevice() const
     { return _targetDevice; }
 
 public:
