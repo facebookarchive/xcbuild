@@ -9,11 +9,14 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
-    BasedOn = wrapper;
+    Identifier = wrapper.xcdatamodel;
+    BasedOn = sourcecode;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.xcode.model.data";
     Extensions = (
-        "xcassets",
+        "xcdatamodel",
     );
+    IsFolder = NO;
+    IsWrapperFolder = YES;
+    IsTextFile = NO;
 }

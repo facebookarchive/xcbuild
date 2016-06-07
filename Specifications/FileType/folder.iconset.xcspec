@@ -16,5 +16,4 @@
     Extensions = (
         "iconset",
     );
-    IsTransparent = NO;
 }

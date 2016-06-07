@@ -9,11 +9,11 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
+    Identifier = wrapper.rtfd;
     BasedOn = wrapper;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.rtfd";
     Extensions = (
-        "xcassets",
+        "rtfd",
     );
 }

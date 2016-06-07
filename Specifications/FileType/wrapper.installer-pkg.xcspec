@@ -9,11 +9,11 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
+    Identifier = wrapper.installer-pkg;
     BasedOn = wrapper;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.installer-package";
     Extensions = (
-        "xcassets",
+        "pkg",
     );
 }

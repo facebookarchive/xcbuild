@@ -9,11 +9,8 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
+    Identifier = wrapper.java-classfolder;
     BasedOn = wrapper;
 
-    UTI = "com.apple.dt.assetcatalog";
-    Extensions = (
-        "xcassets",
-    );
+    UTI = "com.apple.java-class-folder";
 }

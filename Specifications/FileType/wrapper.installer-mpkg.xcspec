@@ -9,11 +9,11 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
+    Identifier = wrapper.installer-mpkg;
     BasedOn = wrapper;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.installer-meta-package";
     Extensions = (
-        "xcassets",
+        "mpkg",
     );
 }

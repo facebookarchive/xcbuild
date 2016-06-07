@@ -9,11 +9,12 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
-    BasedOn = wrapper;
+    Identifier = wrapper.pb-target;
+    BasedOn = wrapper.pb-project;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.xcode.target";
     Extensions = (
-        "xcassets",
+        "xctarget",
     );
+    IsTargetWrapper = YES;
 }

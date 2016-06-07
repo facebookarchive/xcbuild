@@ -9,11 +9,13 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
+    Identifier = wrapper.storyboardc;
     BasedOn = wrapper;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.dt.interfacebuilder.document.storyboard.package";
     Extensions = (
-        "xcassets",
+        "storyboardc",
     );
+    IsFolder = NO;
+    IsWrapperFolder = YES;
 }

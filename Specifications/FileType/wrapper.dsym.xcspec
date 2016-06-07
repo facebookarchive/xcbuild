@@ -9,11 +9,12 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
+    Identifier = wrapper.dsym;
     BasedOn = wrapper;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.xcode.dsym";
     Extensions = (
-        "xcassets",
+        "dSYM",
+        "dsym",
     );
 }

@@ -16,5 +16,4 @@
     Extensions = (
         "atlas",
     );
-    IsTransparent = NO;
 }

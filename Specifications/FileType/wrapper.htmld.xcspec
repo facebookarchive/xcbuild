@@ -9,11 +9,11 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
+    Identifier = wrapper.htmld;
     BasedOn = wrapper;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.htmld";
     Extensions = (
-        "xcassets",
+        "htmld",
     );
 }

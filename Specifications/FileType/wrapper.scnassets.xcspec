@@ -9,11 +9,13 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
+    Identifier = wrapper.scnassets;
     BasedOn = wrapper;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.scenekit.assetcatalog";
     Extensions = (
-        "xcassets",
+        "scnassets",
     );
+    IsTransparent = YES;
+    IsWrapperFolder = YES;
 }

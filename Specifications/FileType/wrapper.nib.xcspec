@@ -9,11 +9,12 @@
 
 {
     Type = FileType;
-    Identifier = folder.assetcatalog;
+    Identifier = wrapper.nib;
     BasedOn = wrapper;
 
-    UTI = "com.apple.dt.assetcatalog";
+    UTI = "com.apple.interfacebuilder.document";
     Extensions = (
-        "xcassets",
+        "nib",
+        "nib~",
     );
 }
