@@ -17,6 +17,7 @@ add_library(xcassets SHARED
             Sources/Slot/DeviceSubtype.cpp
             Sources/Slot/GraphicsFeatureSet.cpp
             Sources/Slot/Idiom.cpp
+            Sources/Slot/ImageSize.cpp
             Sources/Slot/Orientation.cpp
             Sources/Slot/LaunchImageExtent.cpp
             Sources/Slot/MemoryRequirement.cpp

@@ -12,6 +12,7 @@
 
 #include <xcassets/Asset/Asset.h>
 #include <xcassets/Slot/Idiom.h>
+#include <xcassets/Slot/ImageSize.h>
 #include <xcassets/Slot/Scale.h>
 #include <xcassets/Slot/WatchIconRole.h>
 #include <xcassets/MatchingStyle.h>
@@ -34,7 +35,7 @@ public:
 
     private:
         ext::optional<Slot::Idiom>         _idiom;
-        // TODO: size
+        ext::optional<Slot::ImageSize>     _imageSize;
         ext::optional<Slot::Scale>         _scale;
         ext::optional<Slot::WatchIconRole> _role;
         // TODO: subtype (watch)
@@ -52,7 +53,8 @@ public:
     public:
         ext::optional<Slot::Idiom> const &idiom() const
         { return _idiom; }
-        // TODO: size
+        ext::optional<Slot::ImageSize> const &imageSize() const
+        { return _imageSize; }
         ext::optional<Slot::Scale> const &scale() const
         { return _scale; }
         ext::optional<Slot::WatchIconRole> const &role() const
