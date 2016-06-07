@@ -8,6 +8,7 @@
  */
 
 #include <plist/Real.h>
+#include <plist/Integer.h>
 #include <plist/String.h>
 
 #include <cstdlib>
@@ -33,6 +34,8 @@ Coerce(Object const *obj)
 {
     if (Real const *real = CastTo<Real>(obj)) {
         return real->copy();
+    } else if (Integer const *integer = CastTo<Integer>(obj)) {
+        return Real::New(static_cast<double>(integer->value()));
     } else if (String const *string = CastTo<String>(obj)) {
         char *end = NULL;
         double real = std::strtod(string->value().c_str(), &end);
