@@ -161,7 +161,6 @@ AppendContents(plist::Dictionary *dict, std::string *text, int indent, std::shar
     switch (asset->type()) {
         case xcassets::Asset::AssetType::AppIconSet: {
             auto appIconSet = std::static_pointer_cast<xcassets::Asset::AppIconSet>(asset);
-            // TODO: App icon set details.
             break;
         }
         case xcassets::Asset::AssetType::BrandAssets: {

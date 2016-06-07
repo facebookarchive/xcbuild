@@ -17,6 +17,7 @@ add_library(xcassets SHARED
             Sources/Slot/DeviceSubtype.cpp
             Sources/Slot/GraphicsFeatureSet.cpp
             Sources/Slot/Idiom.cpp
+            Sources/Slot/ImageSize.cpp
             Sources/Slot/Orientation.cpp
             Sources/Slot/LaunchImageExtent.cpp
             Sources/Slot/MemoryRequirement.cpp
@@ -52,4 +53,5 @@ if (BUILD_TESTING)
   ADD_UNIT_GTEST(xcassets FullyQualifiedName Tests/test_FullyQualifiedName.cpp)
   ADD_UNIT_GTEST(xcassets IconSet Tests/test_IconSet.cpp)
   ADD_UNIT_GTEST(xcassets Scale Tests/test_Scale.cpp)
+  ADD_UNIT_GTEST(xcassets ImageSize Tests/test_ImageSize.cpp)
 endif ()

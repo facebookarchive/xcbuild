@@ -40,7 +40,7 @@ parse(plist::Dictionary const *dict)
 
     auto FN = unpack.cast <plist::String> ("filename");
     auto I  = unpack.cast <plist::String> ("idiom");
-    // TODO: size
+    auto Z  = unpack.cast <plist::String> ("size");
     auto S  = unpack.cast <plist::String> ("scale");
     auto R  = unpack.cast <plist::String> ("role");
     // TODO: subtype (watch)
@@ -57,6 +57,10 @@ parse(plist::Dictionary const *dict)
 
     if (I != nullptr) {
         _idiom = Slot::Idioms::Parse(I->value());
+    }
+
+    if (Z != nullptr) {
+        _imageSize = Slot::ImageSize::Parse(Z->value());
     }
 
     if (S != nullptr) {
