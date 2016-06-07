@@ -9,12 +9,12 @@
 
 {
     Type = FileType;
-    Identifier = text.plist.info;
-    BasedOn = text.plist.xml;
+    Identifier = text.script;
+    BasedOn = text;
 
-    UTI = "com.apple.xml-property-list.info";
-    FilenamePatterns = (
-        "*Info*.plist",
+    UTI = "public.shell-script";
+    Permissions = "executable";
+    MIMETypes = (
+        "text/x-script",
     );
-    ChangesCauseDependencyGraphInvalidation = YES;
 }

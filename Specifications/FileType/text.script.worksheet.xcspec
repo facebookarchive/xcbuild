@@ -9,12 +9,11 @@
 
 {
     Type = FileType;
-    Identifier = text.plist.info;
-    BasedOn = text.plist.xml;
+    Identifier = text.script.worksheet;
+    BasedOn = text.script;
 
-    UTI = "com.apple.xml-property-list.info";
-    FilenamePatterns = (
-        "*Info*.plist",
+    UTI = "com.apple.worksheet-script";
+    Extensions = (
+        "worksheet",
     );
-    ChangesCauseDependencyGraphInvalidation = YES;
 }

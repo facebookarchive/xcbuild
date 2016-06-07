@@ -9,12 +9,13 @@
 
 {
     Type = FileType;
-    Identifier = text.plist.info;
-    BasedOn = text.plist.xml;
+    Identifier = text.xcconfig;
+    BasedOn = text;
 
-    UTI = "com.apple.xml-property-list.info";
-    FilenamePatterns = (
-        "*Info*.plist",
+    UTI = "com.apple.xcode.configsettings";
+    Extensions = (
+        "xcconfig",
     );
+    IsBuildPropertiesFile = YES;
     ChangesCauseDependencyGraphInvalidation = YES;
 }

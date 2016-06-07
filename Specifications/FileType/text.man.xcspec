@@ -9,12 +9,11 @@
 
 {
     Type = FileType;
-    Identifier = text.plist.info;
-    BasedOn = text.plist.xml;
+    Identifier = text.man;
+    BasedOn = text;
 
-    UTI = "com.apple.xml-property-list.info";
-    FilenamePatterns = (
-        "*Info*.plist",
+    UTI = "com.apple.xcode.manualpage";
+    Extensions = (
+        "1",
     );
-    ChangesCauseDependencyGraphInvalidation = YES;
 }
