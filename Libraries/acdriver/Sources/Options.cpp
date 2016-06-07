@@ -73,7 +73,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     } else if (arg == "--launch-image") {
         return libutil::Options::NextString(&_launchImage, args, it);
     } else if (arg == "--enable-on-demand-resources") {
-        return libutil::Options::MarkBool(&_enableOnDemandResources, arg);
+        return libutil::Options::NextBool(&_enableOnDemandResources, args, it, true);
     } else if (arg == "--enable-incremental-distill") {
         return libutil::Options::MarkBool(&_enableIncrementalDistill, arg);
     } else if (arg == "--target-name") {
