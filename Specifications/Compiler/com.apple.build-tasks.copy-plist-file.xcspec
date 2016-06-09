@@ -1,0 +1,50 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Compiler;
+    Identifier = com.apple.build-tasks.copy-plist-file;
+    Name = "Copy Property List Utility";
+
+    CommandLine = "builtin-copyPlist [options] --outdir $(ProductResourcesDir)/$(InputFileName) -- $(InputFileRelativePath)";
+    RuleName = "CopyPlistFile $(ProductResourcesDir)/$(InputFileName) $(InputFileRelativePath)";
+    InputFileTypes = (
+        "file.bplist",
+        "text.plist",
+    );
+    Outputs = (
+        /* Always place outputs in $(ProductResourcesDir) in case
+         * this tool is used from outside a Copy Resources phase. */
+        "$(ProductResourcesDir)/$(InputFileName)",
+    );
+    SynthesizeBuildRule = YES;
+
+    Options = (
+        {
+            Name = "PLIST_FILE_OUTPUT_FORMAT";
+            Type = Enumeration;
+            DefaultValue = "same-as-input";
+            CommandLineArgs = {
+                "" = ( );
+                "same-as-input" = ( );
+                "SameAsInput" = ( );
+                "binary" = ( "--convert", "binary1" );
+                "Binary" = ( "--convert", "binary1" );
+                "XML" = ( "--convert", "xml1" );
+                "xml" = ( "--convert", "xml1" );
+                "<<otherwise>>" = ( "--convert", "$(value)" );
+            };
+        },
+        {
+            Name = "VALIDATE_PLIST_FILES_WHILE_COPYING";
+            Type = Boolean;
+            CommandLineFlag = "--validate";
+        },
+    );
+}

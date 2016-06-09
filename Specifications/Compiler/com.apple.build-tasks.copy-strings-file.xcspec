@@ -1,0 +1,54 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Compiler;
+    Identifier = com.apple.build-tasks.copy-strings-file;
+    Name = "Copy Strings Utility";
+
+    CommandLine = "builtin-copyStrings [options] --outdir $(ProductResourcesDir)/$(InputFileName) -- $(InputFileRelativePath)";
+    RuleName = "CopyStringsFile $(ProductResourcesDir)/$(InputFileName) $(InputFileRelativePath)";
+    InputFileTypes = (
+        "text.strings",
+        "text.stringsdict",
+    );
+    Outputs = (
+        /* Always place outputs in $(ProductResourcesDir) in case
+         * this tool is used from outside a Copy Resources phase. */
+        "$(ProductResourcesDir)/$(InputFileName)",
+    );
+    SynthesizeBuildRule = YES;
+
+    Options = (
+        {
+            Name = "STRINGS_FILE_INPUT_ENCODING";
+            Type = Enumeration;
+            DefaultValue = "$(InputFileTextEncoding)";
+            CommandLineArgs = {
+                "" = ( );
+                "UTF-8" = ( "--inputencoding", "UTF-8" );
+                "UTF-16" = ( "--inputencoding", "UTF-16" );
+                "binary" = ( "--inputencoding", "binary" );
+                "<<otherwise>>" = ( "--inputencoding", "$(value)" );
+            };
+        },
+        {
+            Name = "STRINGS_FILE_OUTPUT_ENCODING";
+            Type = Enumeration;
+            DefaultValue = "UTF-16";
+            CommandLineArgs = {
+                "" = ( );
+                "UTF-8" = ( "--outputencoding", "UTF-8" );
+                "UTF-16" = ( "--outputencoding", "UTF-16" );
+                "binary" = ( "--outputencoding", "binary" );
+                "<<otherwise>>" = ( "--outputencoding", "$(value)" );
+            };
+        },
+    );
+}
