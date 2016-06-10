@@ -195,13 +195,13 @@ Open(Filesystem const *filesystem, Context *context, std::string const &filename
 
     std::string realPath = filesystem->resolvePath(filename);
     if (realPath.empty()) {
-        fprintf(stderr, "stderr: invalid specification path\n");
+        fprintf(stderr, "error: invalid specification path\n");
         return ext::nullopt;
     }
 
     std::vector<uint8_t> contents;
     if (!filesystem->read(&contents, realPath)) {
-        fprintf(stderr, "stderr: unable to read specification plist\n");
+        fprintf(stderr, "error: unable to read specification plist\n");
         return ext::nullopt;
     }
 
@@ -210,7 +210,7 @@ Open(Filesystem const *filesystem, Context *context, std::string const &filename
     //
     std::unique_ptr<plist::Object> plist = plist::Format::Any::Deserialize(contents).first;
     if (plist == nullptr) {
-        fprintf(stderr, "stderr: unable to parse specification plist\n");
+        fprintf(stderr, "error: unable to parse specification plist\n");
         return ext::nullopt;
     }
 

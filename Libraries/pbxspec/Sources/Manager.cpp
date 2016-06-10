@@ -392,7 +392,7 @@ registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string,
                 }
                 return true;
             });
-        } else {
+        } else if (filesystem->exists(domain.second)) {
 #if 0
             fprintf(stderr, "importing specification '%s'\n", domain.second.c_str());
 #endif
@@ -479,8 +479,10 @@ DefaultDomains(std::string const &developerRoot)
     std::string root       = developerRoot + "/../PlugIns/Xcode3Core.ideplugin";
     std::string frameworks = root + "/Contents/Frameworks";
     std::string plugins    = root + "/Contents/SharedSupport/Developer/Library/Xcode/Plug-ins";
+    std::string embedded   = developerRoot + "/../PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources";
 
     return {
+        { "default", developerRoot + "/Library/Xcode/Specifications" },
         { "default", frameworks + "/" + "DevToolsCore.framework" },
         { "default", plugins + "/" + "Clang LLVM 1.0.xcplugin" },
         { "default", plugins + "/" + "Core Data.xcplugin" },
@@ -490,54 +492,45 @@ DefaultDomains(std::string const &developerRoot)
         { "default", plugins + "/" + "SceneKit.xcplugin" },
         { "default", plugins + "/" + "SpriteKit.xcplugin" },
         { "default", plugins + "/" + "XCLanguageSupport.xcplugin" },
+        { "embedded-shared", embedded + "/" + "Embedded-Shared.xcspec" },
+        { "embedded", embedded + "/" + "Embedded-Device.xcspec" },
+        { "embedded-simulator", embedded + "/" + "Embedded-Simulator.xcspec" },
     };
 }
 
 std::vector<std::pair<std::string, std::string>> Manager::
-EmbeddedDomains(std::string const &developerRoot)
-{
-    std::string root = developerRoot + "/../PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources";
-    return {
-        { "embedded-shared", root + "/" + "Embedded-Shared.xcspec" },
-        { "embedded", root + "/" + "Embedded-Device.xcspec" },
-        { "embedded-simulator", root + "/" + "Embedded-Simulator.xcspec" },
-    };
-}
-
-std::vector<std::pair<std::string, std::string>> Manager::
-PlatformDomains(std::string const &developerRoot, std::string const &platformName, std::string const &platformPath)
+PlatformDomains(std::unordered_map<std::string, std::string> const &platforms)
 {
     std::vector<std::pair<std::string, std::string>> domains;
 
-    if (platformName == "iphoneos" || platformName == "iphonesimulator") {
-        std::string root = developerRoot + "/Platforms/iPhoneOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources";
+    auto iphoneos = platforms.find("iphoneos");
+    if (iphoneos != platforms.end()) {
+        std::string root = iphoneos->second + "/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources";
+        domains.push_back({ "iphoneos", root + "/" + "Device.xcspec" });
+        domains.push_back({ "iphonesimulator", root + "/" + "Simulator.xcspec" });
+    }
 
-        if (platformName == "iphonesimulator") {
-            domains.push_back({ platformName, root + "/" + "Simulator.xcspec" });
-        } else {
-            domains.push_back({ platformName, root + "/" + "Device.xcspec" });
-        }
-    } else if (platformName == "appletvos" || platformName == "appletvsimulator") {
-        std::string root = developerRoot + "/Platforms/AppleTVOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEAppleTVSupportCore.ideplugin/Contents/Resources";
+    auto appletvos = platforms.find("appletvos");
+    if (appletvos != platforms.end()) {
+        std::string root = appletvos->second + "/Developer/Library/Xcode/PrivatePlugIns/IDEAppleTVSupportCore.ideplugin/Contents/Resources";
+        domains.push_back({ "appletvos", root + "/" + "Shared.xcspec" });
+        domains.push_back({ "appletvos", root + "/" + "Device.xcspec" });
+        domains.push_back({ "appletvsimulator", root + "/" + "Shared.xcspec" });
+        domains.push_back({ "appletvsimulator", root + "/" + "Simulator.xcspec" });
+    }
 
-        domains.push_back({ platformName, root + "/" + "Shared.xcspec" });
-        if (platformName == "appletvsimulator") {
-            domains.push_back({ platformName, root + "/" + "Simulator.xcspec" });
-        } else {
-            domains.push_back({ platformName, root + "/" + "Device.xcspec" });
-        }
-    } else if (platformName == "watchos" || platformName == "watchsimulator") {
-        std::string root = developerRoot + "/Platforms/WatchOS.platform/Developer/Library/Xcode/PrivatePlugIns/IDEWatchSupportCore.ideplugin/Contents/Resources";
+    auto watchos = platforms.find("watchos");
+    if (watchos != platforms.end()) {
+        std::string root = watchos->second + "/Developer/Library/Xcode/PrivatePlugIns/IDEWatchSupportCore.ideplugin/Contents/Resources";
+        domains.push_back({ "watchos", root + "/" + "Shared.xcspec" });
+        domains.push_back({ "watchos", root + "/" + "Device.xcspec" });
+        domains.push_back({ "watchsimulator", root + "/" + "Shared.xcspec" });
+        domains.push_back({ "watchsimulator", root + "/" + "Simulator.xcspec" });
+    }
 
-        domains.push_back({ platformName, root + "/" + "Shared.xcspec" });
-        if (platformName == "watchsimulator") {
-            domains.push_back({ platformName, root + "/" + "Simulator.xcspec" });
-        } else {
-            domains.push_back({ platformName, root + "/" + "Device.xcspec" });
-        }
-    } else {
-        /* The standard platform specifications directory. */
-        domains.push_back({ platformName, platformPath + "/Developer/Library/Xcode/Specifications" });
+    /* The standard platform specifications directory. */
+    for (auto const &platform : platforms) {
+        domains.push_back({ platform.first, platform.second + "/Developer/Library/Xcode/Specifications" });
     }
 
     return domains;
