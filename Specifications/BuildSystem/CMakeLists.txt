@@ -7,11 +7,10 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(ext SHARED
-            Sources/optional.cpp
-            )
-
-target_link_libraries(ext PUBLIC)
-target_include_directories(ext PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-install(TARGETS ext DESTINATION usr/lib)
-
+install(FILES
+        com.apple.build-system.core.xcspec
+        com.apple.build-system.external.xcspec
+        com.apple.build-system.jam.xcspec
+        com.apple.build-system.native.xcspec
+        com.apple.buildsettings.standard.xcspec
+        DESTINATION Library/Xcode/Specifications)
