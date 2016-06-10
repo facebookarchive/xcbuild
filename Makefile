@@ -11,7 +11,7 @@ build := build
 project := project
 
 cmake := cmake
-cmake_flags := 
+cmake_flags := -DCMAKE_INSTALL_PREFIX=
 
 ninja := $(if $(shell which llbuild),llbuild ninja build,ninja)
 ninja_flags := $(if $(shell echo "$$NINJA_JOBS"),-j$(shell echo "$$NINJA_JOBS"),)
@@ -20,6 +20,10 @@ all:
 	mkdir -p $(build)
 	$(cmake) -B$(build) -H. -G Ninja $(cmake_flags)
 	$(ninja) -C $(build) $(ninja_flags)
+
+install: all
+	@DESTDIR=$(realpath $(PREFIX)) \
+	$(ninja) -C $(build) $(ninja_flags) install
 
 project:
 	mkdir -p $(project)
