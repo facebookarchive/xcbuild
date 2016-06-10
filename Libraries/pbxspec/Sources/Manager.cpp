@@ -328,6 +328,10 @@ inheritSpecification(PBX::Specification::shared_ptr const &specification)
             return false;
         }
 
+#if 0
+        fprintf(stderr, "debug: inheriting %s:%s (%s) from %s:%s (%s)\n", specification->domain().c_str(), specification->identifier().c_str(), specification->type(), base->domain().c_str(), base->identifier().c_str(), base->type());
+#endif
+
         /*
          * Ensure the base specification itself has been inherited. Since inheritance
          * copies values from the base, the base must have its own values set first.
