@@ -46,7 +46,7 @@ public:
     virtual char const *type() const = 0;
 
 public:
-    inline Specification::shared_ptr const &base() const
+    inline Specification::shared_ptr base() const
     { return _base; }
 
 public:

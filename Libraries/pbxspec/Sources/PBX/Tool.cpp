@@ -324,7 +324,7 @@ inherit(Specification::shared_ptr const &base)
     if (base->type() != Tool::Type())
         return false;
 
-    return inherit(reinterpret_cast <Tool::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<Tool>(base));
 }
 
 bool Tool::

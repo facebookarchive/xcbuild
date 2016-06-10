@@ -123,8 +123,8 @@ public:
     { return FileType::Type(); }
 
 public:
-    inline FileType::shared_ptr const &base() const
-    { return reinterpret_cast <FileType::shared_ptr const &> (Specification::base()); }
+    inline FileType::shared_ptr base() const
+    { return std::static_pointer_cast<FileType>(Specification::base()); }
 
 public:
     inline ext::optional<std::string> const &UTI() const

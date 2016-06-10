@@ -199,7 +199,7 @@ inherit(Specification::shared_ptr const &base)
     if (base->type() != ProductType::Type())
         return false;
 
-    return inherit(reinterpret_cast <ProductType::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<ProductType>(base));
 }
 
 bool ProductType::

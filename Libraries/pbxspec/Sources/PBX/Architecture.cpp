@@ -106,7 +106,7 @@ inherit(Specification::shared_ptr const &base)
     if (base->type() != Architecture::Type())
         return false;
 
-    return inherit(reinterpret_cast <Architecture::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<Architecture>(base));
 }
 
 bool Architecture::

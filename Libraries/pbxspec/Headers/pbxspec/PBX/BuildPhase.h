@@ -30,8 +30,8 @@ public:
     { return BuildPhase::Type(); }
 
 public:
-    inline BuildPhase::shared_ptr const &base() const
-    { return reinterpret_cast <BuildPhase::shared_ptr const &> (Specification::base()); }
+    inline BuildPhase::shared_ptr base() const
+    { return std::static_pointer_cast<BuildPhase>(Specification::base()); }
 
 protected:
     friend class Specification;

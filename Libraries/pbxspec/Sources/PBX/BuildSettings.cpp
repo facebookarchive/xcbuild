@@ -74,7 +74,7 @@ inherit(Specification::shared_ptr const &base)
     if (base->type() != BuildSettings::Type())
         return false;
 
-    return inherit(reinterpret_cast <BuildSettings::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<BuildSettings>(base));
 }
 
 bool BuildSettings::

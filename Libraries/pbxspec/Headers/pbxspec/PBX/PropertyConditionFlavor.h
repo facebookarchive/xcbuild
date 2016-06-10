@@ -36,8 +36,8 @@ public:
     { return PropertyConditionFlavor::Type(); }
 
 public:
-    inline PropertyConditionFlavor::shared_ptr const &base() const
-    { return reinterpret_cast <PropertyConditionFlavor::shared_ptr const &> (Specification::base()); }
+    inline PropertyConditionFlavor::shared_ptr base() const
+    { return std::static_pointer_cast<PropertyConditionFlavor>(Specification::base()); }
 
 public:
     inline ext::optional<int> precedence() const

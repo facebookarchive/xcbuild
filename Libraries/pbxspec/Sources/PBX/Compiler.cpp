@@ -29,7 +29,7 @@ inherit(Specification::shared_ptr const &base)
     if (base->type() != Compiler::Type())
         return false;
 
-    return inherit(reinterpret_cast <Compiler::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<Compiler>(base));
 }
 
 bool Compiler::
@@ -38,13 +38,13 @@ inherit(Tool::shared_ptr const &base)
     if (base->type() != Compiler::Type())
         return false;
 
-    return inherit(reinterpret_cast <Compiler::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<Compiler>(base));
 }
 
 bool Compiler::
 inherit(Compiler::shared_ptr const &b)
 {
-    if (!Tool::inherit(reinterpret_cast <Tool::shared_ptr const &> (b)))
+    if (!Tool::inherit(std::static_pointer_cast<Tool>(b)))
         return false;
 
     auto base = this->base();
