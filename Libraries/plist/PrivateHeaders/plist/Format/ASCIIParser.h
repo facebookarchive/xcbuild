@@ -71,7 +71,7 @@ public:
 
 private:
     bool isAborted() const;
-    void abort(std::string const &error);
+    void abort(std::string const &error, int line = -1);
 
 private:
     bool isDone() const;
