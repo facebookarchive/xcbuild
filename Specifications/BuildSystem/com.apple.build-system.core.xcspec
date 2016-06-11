@@ -538,6 +538,19 @@
         },
 
 
+        /* Jam Build System */
+        {
+            Name = "DO_HEADER_SCANNING_IN_JAM";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "FILE_LIST";
+            Type = Path;
+            DefaultValue = "$(OBJECT_FILE_DIR)/LinkFileList";
+        },
+
+
         /* com.apple.compilers.pbxcp */
         {
             Name = "COPY_PHASE_STRIP";
@@ -588,11 +601,6 @@
             DefaultValue = YES;
         },
         {
-            Name = "DO_HEADER_SCANNING_IN_JAM";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-        {
             Name = "ENABLE_HEADER_DEPENDENCIES";
             Type = Boolean;
             DefaultValue = YES;
@@ -601,11 +609,6 @@
             Name = "ENABLE_TESTABILITY";
             Type = Boolean;
             DefaultValue = NO;
-        },
-        {
-            Name = "FILE_LIST";
-            Type = Path;
-            DefaultValue = "$(OBJECT_FILE_DIR)/LinkFileList";
         },
         {
             Name = "LIBRARY_FLAG_NOSPACE";

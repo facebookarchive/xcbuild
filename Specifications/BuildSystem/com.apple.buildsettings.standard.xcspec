@@ -165,11 +165,6 @@
             DefaultValue = YES;
         },
         {
-            Name = "PRECOMP_DESTINATION_DIR";
-            Type = Path;
-            DefaultValue = "$(TEMP_DIR)/PrefixHeaders";
-        },
-        {
             Name = "SHARED_PRECOMPS_DIR";
             Type = Path;
             DefaultValue = "$(CACHE_ROOT)/SharedPrecompiledHeaders";
@@ -377,6 +372,14 @@
             Type = Path;
             DefaultValue = "";
             /* Set in code. */
+        },
+
+
+        /* Jam Build System */
+        {
+            Name = "PRECOMP_DESTINATION_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/PrefixHeaders";
         },
 
 
