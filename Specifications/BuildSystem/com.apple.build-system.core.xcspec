@@ -291,6 +291,7 @@
         {
             Name = "USE_HEADER_SYMLINKS";
             Type = Boolean;
+            DefaultValue = NO;
         },
 
 
@@ -394,7 +395,7 @@
         {
             Name = "STRIP_INSTALLED_PRODUCT";
             Type = Boolean;
-            DefaultValue = YES;
+            DefaultValue = "";
         },
 
 

@@ -13,5 +13,514 @@
     BasedOn = com.apple.build-system.core;
 
     Options = (
+        /* Build */
+        {
+            Name = "CURRENT_ARCH";
+            Type = String;
+            DefaultValue = "$(arch)";
+        },
+        {
+            Name = "CURRENT_VARIANT";
+            Type = String;
+            DefaultValue = "$(variant)";
+        },
+
+
+        /* Compiler */
+        {
+            Name = "GCC_PREFIX_HEADER";
+            Type = Path;
+            DefaultValue = "$(PREFIX_HEADER)";
+        },
+        {
+            Name = "GCC_TREAT_WARNINGS_AS_ERRORS";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "GCC_VERSION_IDENTIFIER";
+            Type = String;
+            DefaultValue = "$(GCC_VERSION:identifier)";
+        },
+        {
+            Name = "GLOBAL_CFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "OPTIMIZATION_CFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* Precompiled Headers */
+        {
+            Name = "CLEAN_PRECOMPS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "GCC_PRECOMPILE_PREFIX_HEADER";
+            Type = Boolean;
+            DefaultValue = "$(PRECOMPILE_PREFIX_HEADER)";
+        },
+        {
+            Name = "OTHER_PRECOMP_CFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* Product Structure */
+        {
+            Name = "CONTENTS_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "DOCUMENTATION_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXECUTABLES_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXECUTABLE_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXECUTABLE_NAME";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXECUTABLE_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXECUTABLE_SUFFIX";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXECUTABLE_VARIANT_SUFFIX";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "FRAMEWORKS_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "INFOPLIST_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "INFOSTRINGS_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "JAVA_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "LOCALIZED_RESOURCES_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "PKGINFO_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "PLUGINS_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "PRODUCT_TYPE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "PACKAGE_TYPE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "RESOURCE_RULES_PLIST_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "SHALLOW_BUNDLE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "SCRIPTS_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "SHARED_FRAMEWORKS_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "SHARED_SUPPORT_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "UNLOCALIZED_RESOURCES_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSIONPLIST_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "WRAPPER_NAME";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "WRAPPER_PREFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "WRAPPER_SUFFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "XPCSERVICES_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "$(CONTENTS_FOLDER_PATH)/XPCServices";
+        },
+
+
+        /* Tools */
+        {
+            Name = "CHMOD";
+            Type = Path;
+            DefaultValue = "/bin/chmod";
+        },
+        {
+            Name = "CHOWN";
+            Type = Path;
+            DefaultValue = "/usr/sbin/chown";
+        },
+        {
+            Name = "CP";
+            Type = Path;
+            DefaultValue = "/bin/cp";
+        },
+        {
+            Name = "ICONV";
+            Type = Path;
+            DefaultValue = "/usr/bin/iconv";
+        },
+        {
+            Name = "SED";
+            Type = Path;
+            DefaultValue = "/usr/bin/sed";
+        },
+
+
+        /* Java */
+        {
+            Name = "JAVAC_DEFAULT_FLAGS";
+            Type = StringList;
+            DefaultValue = "-J-Xms64m -J-XX:NewSize=4M -J-Dfile.encoding=UTF8";
+        },
+        {
+            Name = "JIKES_DEFAULT_FLAGS";
+            Type = StringList;
+            DefaultValue = "+E +OLDCSO";
+        },
+
+
+        /* com.apple.compilers.pbxcp */
+        {
+            Name = "VERBOSE_PBXCP";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+
+
+        /* com.apple.compilers.osacompile */
+        {
+            Name = "OTHER_OSAFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "OSAC";
+            Type = Path;
+            DefaultValue = "/usr/bin/osacompile";
+        },
+
+
+        /* com.apple.compilers.lex */
+        {
+            Name = "LEX";
+            Type = Path;
+            DefaultValue = "lex";
+        },
+        {
+            Name = "LEXFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* com.apple.compilers.yacc */
+        {
+            Name = "YACC";
+            Type = Path;
+            DefaultValue = "yacc";
+        },
+        {
+            Name = "YACCFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* com.apple.compilers.rez */
+        {
+            Name = "OTHER_REZFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "REZ_COLLECTOR_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)/ResourceManagerResources";
+        },
+        {
+            Name = "REZ_OBJECTS_DIR";
+            Type = Path;
+            DefaultValue = "$(REZ_COLLECTOR_DIR)/Objects";
+        },
+
+
+        /* com.apple.pbx.linkers.resmerger */
+        {
+            Name = "MACOS_CREATOR";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "MACOS_CREATOR_ARG";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "MACOS_TYPE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "MACOS_TYPE_ARG";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "OTHER_RESMERGERFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* Deprecated */
+        {
+            Name = "GCC_USE_GCC3_PFE_SUPPORT";
+            Type = Boolean;
+            DefaultValue = "$(USE_GCC3_PFE_SUPPORT)";
+        },
+        {
+            Name = "GCC_PFE_FILE_C_DIALECTS";
+            Type = StringList;
+            DefaultValue = "c objective-c c++ objective-c++";
+        },
+        {
+            Name = "NO_COMMON";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "PASCAL_STRINGS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "PBDEVELOPMENTPLIST_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "PRECOMPILE_PREFIX_HEADER";
+            Type = Boolean;
+            DefaultValue = "";
+        },
+        {
+            Name = "PREFIX_CFLAG_BASE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "PREFIX_REFERENCE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "PFE_FILE_C_DIALECTS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "PREFIX_FLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "PREFIX_HEADER";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "USE_GCC3_PFE_SUPPORT";
+            Type = Boolean;
+            DefaultValue = "";
+        },
+
+
+        /* Unsorted */
+        {
+            Name = "ALWAYS_USE_SEPARATE_HEADERMAPS";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "CCHROOT";
+            Type = Path;
+            DefaultValue = "$(CACHE_ROOT)";
+        },
+        {
+            Name = "CODESIGNING_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "$(TARGET_BUILD_DIR)/$(FULL_PRODUCT_NAME)";
+        },
+        {
+            Name = "COMBINE_HIDPI_IMAGES";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "COMPOSITE_SDK_DIRS";
+            Type = PathList;
+            DefaultValue = "$(CACHE_ROOT)/CompositeSDKs";
+        },
+        {
+            Name = "COPY_RESOURCES_FROM_STATIC_FRAMEWORKS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "DERIVED_FILES_DIR";
+            Type = Path;
+            DefaultValue = "$(DERIVED_FILE_DIR)";
+        },
+        {
+            Name = "DERIVED_PATHS";
+            Type = PathList;
+        },
+        {
+            Name = "FIXED_FILES_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)/FixedFiles";
+        },
+        {
+            Name = "LD_FLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "LINKER_LIBRARY_FLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "OTHER_MIGFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "RECURSIVE_SEARCH_PATHS_FOLLOW_SYMLINKS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "RETAIN_RAW_BINARIES";
+            Type = Boolean;
+            DefaultValue = "$(INSTALLED_PRODUCT_ASIDES)";
+        },
+        {
+            Name = "SET_DIR_MODE_OWNER_GROUP";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "SET_FILE_MODE_OWNER_GROUP";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "SYMBOL_HEADER";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "UNSTRIPPED_PRODUCT";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "USE_DYNAMIC_NO_PIC";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "VALIDATE_PRODUCT";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "VERSIONING_STUB";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_STRING";
+            Type = String;
+            DefaultValue = "\"@(#)PROGRAM:$(PRODUCT_NAME)  PROJECT:$(PROJECT_NAME)-$(CURRENT_PROJECT_VERSION)\"";
+        },
     );
 }
