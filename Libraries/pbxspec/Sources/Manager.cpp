@@ -547,10 +547,12 @@ PlatformDependentDomains(std::string const &developerRoot)
     return domains;
 }
 
-std::string Manager::
+std::vector<std::string> Manager::
 DeveloperBuildRules(std::string const &developerRoot)
 {
-    std::string root = developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents/Frameworks/DevToolsCore.framework/Resources";
-    return root + "/" + "BuiltInBuildRules.plist";
+    return {
+        developerRoot + "/../PlugIns/Xcode3Core.ideplugin/Contents/Frameworks/DevToolsCore.framework/Resources/BuiltInBuildRules.plist",
+        developerRoot + "/Library/Xcode/Specifications/BuiltInBuildRules.plist",
+    };
 }
 

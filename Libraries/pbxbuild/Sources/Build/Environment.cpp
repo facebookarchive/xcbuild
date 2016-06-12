@@ -39,9 +39,9 @@ Default(Filesystem const *filesystem)
     /*
      * Register global build rules.
      */
-    std::string buildRules = pbxspec::Manager::DeveloperBuildRules(*developerRoot);
-    if (filesystem->isReadable(buildRules)) {
-        if (!specManager->registerBuildRules(filesystem, buildRules)) {
+    std::vector<std::string> buildRules = pbxspec::Manager::DeveloperBuildRules(*developerRoot);
+    for (std::string const &path : buildRules) {
+        if (filesystem->isReadable(path) && !specManager->registerBuildRules(filesystem, path)) {
             fprintf(stderr, "error: couldn't register build rules\n");
             return ext::nullopt;
         }

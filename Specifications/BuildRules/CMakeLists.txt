@@ -7,10 +7,6 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_subdirectory(BuildPhase)
-add_subdirectory(BuildRules)
-add_subdirectory(BuildSystem)
-add_subdirectory(Compiler)
-add_subdirectory(FileType)
-add_subdirectory(Linker)
-add_subdirectory(Tool)
+install(FILES
+        BuiltInBuildRules.plist
+        DESTINATION Library/Xcode/Specifications)

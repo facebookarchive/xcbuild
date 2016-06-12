@@ -161,7 +161,7 @@ public:
     PlatformDependentDomains(std::string const &developerRoot);
 
 public:
-    static std::string
+    static std::vector<std::string>
     DeveloperBuildRules(std::string const &developerRoot);
 };
 
