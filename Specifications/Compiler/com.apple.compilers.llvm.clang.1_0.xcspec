@@ -1,0 +1,1486 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Compiler;
+    Identifier = com.apple.compilers.llvm.clang.1_0;
+    BasedOn = com.apple.compilers.gcc;
+    Name = "LLVM Clang";
+
+    SupportsHeadermaps = YES;
+    DashIFlagAcceptsHeadermaps = YES;
+    SupportsSeparateUserHeaderPaths = YES;
+    SupportsIsysroot = YES;
+    ExecPath = "clang";
+
+    PatternsOfFlagsNotAffectingPrecomps = (
+        /* Output */
+        "-v",
+        "-###",
+        "-H",
+
+        /* Diagnostics */
+        "-fcolor-diagnostics",
+        "-fdiagnostics-show-note-include-stack",
+        "-fmessage-length=*",
+        "-fmacro-backtrace-limit=*",
+
+        /* Warnings */
+        "-w",
+        "-W*",
+    );
+
+    Options = (
+        {
+            Name = "arch";
+            Type = String;
+            CommandLineFlag = "-arch";
+        },
+        {
+            Name = "SDKROOT";
+            Type = Path;
+            CommandLineFlag = "-isysroot";
+        },
+        {
+            Name = "GCC_OPERATION";
+            Type = Enumeration;
+            Values = (
+                "compile",
+                "generate-preprocessed",
+                "generate-assembler",
+                "precompile",
+                "separate-symbols",
+            );
+            DefaultValue = "compile";
+        },
+        {
+            Name = "GCC_MACOSX_VERSION_MIN";
+            Type = String;
+            DefaultValue = "$($(DEPLOYMENT_TARGET_SETTING_NAME))";
+            CommandLineArgs = {
+                "" = ( );
+                "<<otherwise>>" = ( "-$(DEPLOYMENT_TARGET_CLANG_FLAG_NAME)=$(value)" );
+            };
+        },
+
+
+        /* Diagnostics */
+        {
+            Name = "diagnostic_message_length";
+            Type = String;
+            DefaultValue = "0";
+            CommandLinePrefixFlag = "-fmessage-length=";
+        },
+        {
+            Name = "print_note_include_stack";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-fdiagnostics-show-note-include-stack";
+        },
+        {
+            Name = "CLANG_MACRO_BACKTRACE_LIMIT";
+            Type = String;
+            DefaultValue = "0";
+            CommandLinePrefixFlag = "-fmacro-backtrace-limit=";
+        },
+        {
+            Name = "CLANG_COLOR_DIAGNOSTICS";
+            Type = Boolean;
+            DefaultValue = "$(COLOR_DIAGNOSTICS)";
+            CommandLineFlag = "-fcolor-diagnostics";
+        },
+
+
+        /* Language */
+        {
+            Name = "GCC_INPUT_FILETYPE";
+            Type = Enumeration;
+            DefaultValue = "automatic";
+            /* Added by code. */
+        },
+        {
+            Name = "GCC_C_LANGUAGE_STANDARD";
+            Type = Enumeration;
+            DefaultValue = "compiler-default";
+            CommandLineArgs = {
+                "compiler-default" = ( );
+                "ansi" = ( "-ansi" );
+                "c89" = ( "-std=c89" );
+                "gnu89" = ( "-std=gnu89" );
+                "c99" = ( "-std=gnu99" );
+                "gnu99" = ( "-std=gnu99" );
+                "c11" = ( "-std=c11" );
+                "gnu11" = ( "-std=gnu11" );
+                "<<otherwise>>" = ( "-std=$(value)" );
+            };
+            FileTypes = (
+                "sourcecode.c.c",
+                "sourcecode.c.objc",
+            );
+        },
+        {
+            Name = "CLANG_CXX_LANGUAGE_STANDARD";
+            Type = Enumeration;
+            DefaultValue = "compiler-default";
+            CommandLineArgs = {
+                "compiler-default" = ( );
+                "c++98" = ( "-std=c++98" );
+                "gnu++98" = ( "-std=gnu++98" );
+                "c++0x" = ( "-std=c++0x" );
+                "gnu++0x" = ( "-std=gnu++0x" );
+                "c++11" = ( "-std=c++11" );
+                "gnu++11" = ( "-std=gnu++11" );
+                "c++14" = ( "-std=c++14" );
+                "gnu++14" = ( "-std=gnu++14" );
+                "<<otherwise>>" = ( "-std=$(value)" );
+            };
+            FileTypes = (
+                "sourcecode.cpp.cpp",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_CXX_LIBRARY";
+            Type = Enumeration;
+            DefaultValue = "compiler-default";
+            CommandLineArgs = {
+                "compiler-default" = ( );
+                "libstdc++" = ( "-stdlib=libstdc++" );
+                "libc++" = ( "-stdlib=libc++" );
+                "<<otherwise>>" = ( "-stdlib=$(value) ");
+            };
+            AdditionalLinkerArgs = {
+                "compiler-default" = ( );
+                "libstdc++" = ( "-stdlib=libstdc++" );
+                "libc++" = ( "-stdlib=libc++" );
+                "<<otherwise>>" = ( "-stdlib=$(value) ");
+            };
+            FileTypes = (
+                "sourcecode.cpp.cpp",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+
+
+        /* Search Paths */
+        {
+            Name = "GCC_USE_STANDARD_INCLUDE_SEARCHING";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-nostdinc";
+        },
+
+
+        /* Prefix Header */
+        {
+            Name = "GCC_PREFIX_HEADER";
+            Type = Path;
+            DefaultValue = "$(PREFIX_HEADER)";
+            /* Added in code. */
+        },
+        {
+            Name = "GCC_PRECOMPILE_PREFIX_HEADER";
+            Type = Boolean;
+            DefaultValue = YES;
+            /* Added in code. */
+        },
+        {
+            Name = "GCC_INCREASE_PRECOMPILED_HEADER_SHARING";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "GCC_PFE_FILE_C_DIALECTS";
+            Type = StringList;
+            DefaultValue = "c objective-c c++ objective-c++";
+        },
+        {
+            Name = "GCC_USE_GCC3_PFE_SUPPORT";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+
+
+        /* Header Map */
+        {
+            Name = "USE_HEADERMAP";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "USE_HEADER_SYMLINKS";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "HEADERMAP_FILE_FORMAT";
+            Type = Enumeration;
+            Values = (
+                "traditional",
+                "plaintext",
+            );
+            DefaultValue = "traditional";
+        },
+        {
+            Name = "CPP_HEADERMAP_FILE";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/$(PRODUCT_NAME).hmap";
+        },
+        {
+            Name = "CPP_HEADERMAP_FILE_FOR_ALL_NON_FRAMEWORK_TARGET_HEADERS";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/$(PRODUCT_NAME)-all-non-framework-target-headers.hmap";
+        },
+        {
+            Name = "CPP_HEADERMAP_FILE_FOR_ALL_TARGET_HEADERS";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/$(PRODUCT_NAME)-all-target-headers.hmap";
+        },
+        {
+            Name = "CPP_HEADERMAP_FILE_FOR_GENERATED_FILES";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/$(PRODUCT_NAME)-generated-files.hmap";
+        },
+        {
+            Name = "CPP_HEADERMAP_FILE_FOR_OWN_TARGET_HEADERS";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/$(PRODUCT_NAME)-own-target-headers.hmap";
+        },
+        {
+            Name = "CPP_HEADERMAP_FILE_FOR_PROJECT_FILES";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/$(PRODUCT_NAME)-project-headers.hmap";
+        },
+        {
+            Name = "CPP_HEADERMAP_PRODUCT_HEADERS_VFS_FILE";
+            Type = Path;
+            DefaultValue = "$(PROJECT_TEMP_DIR)/all-product-headers.yaml";
+        },
+        {
+            Name = "CPP_HEADER_SYMLINKS_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/$(PRODUCT_NAME).hdrs";
+        },
+
+
+        /* Modules */
+        {
+            Name = "CLANG_ENABLE_MODULES";
+            Type = Boolean;
+            CommandLineFlag = "-fmodules";
+        },
+        {
+            Name = "CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES";
+            Type = Boolean;
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLineArgs = {
+                NO = (
+                    "-Wnon-modular-include-in-framework-module",
+                    "-Werror=non-modular-include-in-framework-module",
+                );
+            };
+        },
+        {
+            Name = "CLANG_ENABLE_MODULE_IMPLEMENTATION_OF";
+            Type = Boolean;
+            DefaultValue = YES;
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLineArgs = {
+                YES = ( "-Xclang", "-fmodule-implementation-of", "-Xclang", "$(PRODUCT_MODULE_NAME)" );
+            };
+        },
+        {
+            Name = "CLANG_MODULES_AUTOLINK";
+            Type = Boolean;
+            DefaultValue = YES;
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLineFlagIfFalse = "-fno-autolink";
+        },
+        {
+            Name = "CLANG_MODULES_IGNORE_MACROS";
+            Type = StringList;
+            DefaultValue = "$(GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS)";
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLinePrefixFlag = "-fmodules-ignore-macro=";
+        },
+        {
+            Name = "CLANG_MODULES_VALIDATE_SYSTEM_HEADERS";
+            Type = Boolean;
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLineFlag = "-fmodules-validate-system-headers";
+        },
+        {
+            Name = "CLANG_MODULES_VALIDATION_TIMESTAMP";
+            Type = String;
+            DefaultValue = "";
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLineArgs = {
+                "" = ( );
+                "<<otherwise>>" = (
+                    "-fbuild-session-timestamp=$(value)",
+                    "-fmodules-validate-once-per-build-session",
+                );
+            };
+        },
+        {
+            Name = "CLANG_MODULES_BUILD_SESSION_FILE";
+            Type = Path;
+            DefaultValue = "";
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLineArgs = {
+                YES = (
+                    "-fbuild-session-file=$(value)",
+                    "-fmodules-validate-once-per-build-session",
+                );
+            };
+        },
+        {
+            Name = "CLANG_MODULES_PRUNE_AFTER";
+            Type = String;
+            DefaultValue = "345600";
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLineArgs = {
+                "" = ( );
+                "<<otherwise>>" = ( "-fmodules-prune-after=$(value)" );
+            };
+        },
+        {
+            Name = "CLANG_MODULES_PRUNE_INTERVAL";
+            Type = String;
+            DefaultValue = "86400";
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLineArgs = {
+                "" = ( );
+                "<<otherwise>>" = ( "-fmodules-prune-interval=$(value)" );
+            };
+        },
+        {
+            Name = "CLANG_MODULES_IGNORE_MACROS";
+            Type = StringList;
+            DefaultValue = "$(GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS)";
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLinePrefixFlag = "-fmodules-ignore-macro=";
+        },
+        {
+            Name = "CLANG_MODULE_CACHE_PATH";
+            Type = Path;
+            DefaultValue = "$(MODULE_CACHE_DIR)";
+            Condition = "$(CLANG_ENABLE_MODULES) == YES";
+            CommandLinePrefixFlag = "-fmodules-cache-path=";
+        },
+
+
+        /* Preprocessor Definitions */
+        {
+            Name = "GCC_PREPROCESSOR_DEFINITIONS";
+            Type = StringList;
+            /* Added in code. */
+        },
+        {
+            Name = "GCC_PRODUCT_TYPE_PREPROCESSOR_DEFINITIONS";
+            Type = StringList;
+            /* Added in code. */
+        },
+        {
+            Name = "GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS";
+            Type = StringList;
+            /* Added in code. */
+        },
+        {
+            Name = "ENABLE_NS_ASSERTIONS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-DNS_BLOCK_ASSERTIONS=1";
+        },
+
+
+        /* Language Options */
+        {
+            Name = "GCC_FAST_MATH";
+            Type = Boolean;
+            CommandLineFlag = "-ffast-math";
+        },
+        {
+            Name = "GCC_UNROLL_LOOPS";
+            Type = Boolean;
+            CommandLineFlag = "-funroll-loops";
+        },
+        {
+            Name = "GCC_CW_ASM_SYNTAX";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-fasm-blocks";
+            Architectures = (
+                "i386",
+                "x86_64",
+            );
+        },
+        {
+            Name = "GCC_CHAR_IS_UNSIGNED_CHAR";
+            Type = Boolean;
+            CommandLineFlag = "-funsigned-char";
+        },
+        {
+            Name = "GCC_NO_COMMON_BLOCKS";
+            Type = Boolean;
+            CommandLineFlag = "-fno-common";
+        },
+        {
+            Name = "GCC_THREADSAFE_STATICS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-fno-threadsafe-statics";
+        },
+        {
+            Name = "CLANG_RETAIN_COMMENTS_FROM_SYSTEM_HEADERS";
+            Type = Boolean;
+            CommandLineFlag = "-fretain-comments-from-system-headers";
+        },
+        {
+            Name = "GCC_SYMBOLS_PRIVATE_EXTERN";
+            Type = Boolean;
+            CommandLineFlag = "-fvisibility=hidden";
+        },
+        {
+            Name = "CLANG_ENABLE_APP_EXTENSION";
+            Type = Boolean;
+            DefaultValue = "$(APPLICATION_EXTENSION_API_ONLY)";
+            CommandLineArgs = {
+                YES = ( "-fapplication-extension" );
+            };
+            AdditionalLinkerArgs = {
+                YES = ( "-fapplication-extension" );
+            };
+        },
+        {
+            Name = "GCC_INLINES_ARE_PRIVATE_EXTERN";
+            Type = Boolean;
+            CommandLineFlag = "-fvisibility-inlines-hidden";
+        },
+        {
+            Name = "GCC_GENERATE_TEST_COVERAGE_FILES";
+            Type = Boolean;
+            CommandLineFlag = "-ftest-coverage";
+        },
+        {
+            Name = "GCC_STRICT_ALIASING";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-fstrict-aliasing";
+            CommandLineFlagIfFalse = "-fno-strict-aliasing";
+        },
+        {
+            Name = "GCC_SHORT_ENUMS";
+            Type = Boolean;
+            CommandLineFlag = "-fshort-enums";
+        },
+        {
+            Name = "GCC_REUSE_STRINGS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-fwritable-strings";
+        },
+        {
+            Name = "GCC_ENABLE_PASCAL_STRINGS";
+            Type = Boolean;
+            CommandLineFlag = "-fpascal-strings";
+        },
+        {
+            Name = "GCC_ENABLE_BUILTIN_FUNCTIONS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-fno-builtin";
+        },
+        {
+            Name = "GCC_ENABLE_EXCEPTIONS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-fexceptions";
+        },
+        {
+            Name = "GCC_ENABLE_ASM_KEYWORD";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-fno-asm";
+        },
+
+
+        /* Objective-C Language Options */
+        {
+            Name = "CLANG_LINK_OBJC_RUNTIME";
+            Type = Boolean;
+            DefaultValue = YES;
+            AdditionalLinkerArgs = {
+                YES = ( "-fobjc-link-runtime" );
+            };
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_ENABLE_OBJC_ARC";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineArgs = {
+                YES = ( "-fobjc-arc" );
+            };
+            AdditionalLinkerArgs = {
+                YES = ( "-fobjc-arc" );
+            };
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_ENABLE_OBJC_WEAK";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-fobjc-weak";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_OBJC_ABI_VERSION";
+            Type = Enumeration;
+            DefaultValue = "$(OBJC_ABI_VERSION)";
+            CommandLinePrefixFlag = "-fobjc-abi-version=";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_OBJC_LEGACY_DISPATCH";
+            Type = Boolean;
+            CommandLineFlag = "-fobjc-legacy-dispatch";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_ENABLE_OBJC_EXCEPTIONS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-fno-objc-exceptions";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_ENABLE_OBJC_GC";
+            Type = Enumeration;
+            DefaultValue = "unsupported";
+            CommandLineArgs = {
+                "unsupported" = ( );
+                "supported" = ( "-fobjc-gc" );
+                "required" = ( "-fobjc-gc-only" );
+            };
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "ENABLE_STRICT_OBJC_MSGSEND";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-DOBJC_OLD_DISPATCH_PROTOTYPES=0";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+
+
+        /* C++ Language Options */
+        {
+            Name = "GCC_ENABLE_CPP_EXCEPTIONS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-fno-exceptions";
+            FileTypes = (
+                "sourcecode.cpp.cpp",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_ENABLE_CPP_RTTI";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-fno-rtti";
+            FileTypes = (
+                "sourcecode.cpp.cpp",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+
+
+        /* Machine Options */
+        {
+            Name = "GCC_ENABLE_FLOATING_POINT_LIBRARY_CALLS";
+            Type = Boolean;
+            CommandLineFlag = "-msoft-float";
+        },
+        {
+            Name = "GCC_DYNAMIC_NO_PIC";
+            Type = Boolean;
+            CommandLineFlag = "-mdynamic-no-pic";
+        },
+        {
+            Name = "DEFAULT_SSE_LEVEL_3_NO";
+            Type = String;
+            DefaultValue = "default";
+        },
+        {
+            Name = "DEFAULT_SSE_LEVEL_3_YES";
+            Type = String;
+            DefaultValue = "sss3";
+        },
+        {
+            Name = "DEFAULT_SSE_LEVEL_3_SUPPLEMENTAL_NO";
+            Type = String;
+            DefaultValue = "$(DEFAULT_SSE_LEVEL_3_$(GCC_ENABLE_SSE3_EXTENSIONS))";
+        },
+        {
+            Name = "DEFAULT_SSE_LEVEL_3_SUPPLEMENTAL_YES";
+            Type = String;
+            DefaultValue = "ssse3";
+        },
+        {
+            Name = "DEFAULT_SSE_LEVEL_4_1_NO";
+            Type = String;
+            DefaultValue = "$(DEFAULT_SSE_LEVEL_3_SUPPLEMENTAL_$(GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS))";
+        },
+        {
+            Name = "DEFAULT_SSE_LEVEL_4_1_YES";
+            Type = String;
+            DefaultValue = "sse4.1";
+        },
+        {
+            Name = "DEFAULT_SSE_LEVEL_4_2_NO";
+            Type = String;
+            DefaultValue = "$(DEFAULT_SSE_LEVEL_4_1_$(GCC_ENABLE_SSE41_EXTENSIONS))";
+        },
+        {
+            Name = "DEFAULT_SSE_LEVEL_4_2_YES";
+            Type = String;
+            DefaultValue = "sse4.2";
+        },
+        {
+            Name = "GCC_ENABLE_SSE3_EXTENSIONS";
+            Type = Boolean;
+            DefaultValue = NO;
+            Architectures = (
+                "i386",
+                "x86_64",
+            );
+        },
+        {
+            Name = "GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS";
+            Type = Boolean;
+            DefaultValue = NO;
+            Architectures = (
+                "i386",
+                "x86_64",
+            );
+        },
+        {
+            Name = "GCC_ENABLE_SSE41_EXTENSIONS";
+            Type = Boolean;
+            DefaultValue = NO;
+            Architectures = (
+                "i386",
+                "x86_64",
+            );
+        },
+        {
+            Name = "GCC_ENABLE_SSE42_EXTENSIONS";
+            Type = Boolean;
+            DefaultValue = NO;
+            Architectures = (
+                "i386",
+                "x86_64",
+            );
+        },
+        {
+            Name = "CLANG_X86_VECTOR_INSTRUCTIONS";
+            Type = Enumeration;
+            DefaultValue = "$(DEFAULT_SSE_LEVEL_4_2_$(GCC_ENABLE_SSE42_EXTENSIONS))";
+            CommandLineArgs = {
+                "" = ( );
+                "default" = ( );
+                "<<otherwise>>" = ( "-m$(value)" );
+            };
+            Architectures = (
+                "i386",
+                "x86_64",
+            );
+        },
+
+
+        /* Code Generation */
+        {
+            Name = "GCC_LINK_WITH_DYNAMIC_LIBRARIES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-static";
+        },
+        {
+            Name = "CLANG_BITCODE_GENERATION_MODE";
+            Type = Enumeration;
+            DefaultValue = "$(BITCODE_GENERATION_MODE)";
+            Condition = "$(ENABLE_BITCODE) == YES";
+            CommandLineArgs = {
+                "marker" = ( "-fembed-bitcode-marker" );
+                "bitcode" = ( "-fembed-bitcode" );
+            };
+            Architectures = (
+                "armv7",
+                "armv7s",
+                "armv7k",
+                "armhf",
+                "armeabi",
+                "arm64",
+            );
+        },
+
+
+        /* Optimization */
+        {
+            Name = "GCC_OPTIMIZATION_LEVEL";
+            Type = Enumeration;
+            DefaultValue = "s";
+            CommandLinePrefixFlag = "-O";
+        },
+        {
+            Name = "CLANG_OPTIMIZATION_PROFILE_FILE";
+            Type = Path;
+            DefaultValue = "$(SRCROOT)/OptimizationProfiles/$(PROJECT_NAME).profdata";
+        },
+        {
+            Name = "CLANG_USE_OPTIMIZATION_PROFILE";
+            Type = Boolean;
+            CommandLineFlag = "-fprofile-instr-use=$(CLANG_OPTIMIZATION_PROFILE_FILE)";
+        },
+        {
+            Name = "LLVM_LTO";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineArgs = {
+                YES = ( "-flto" );
+            };
+            AdditionalLinkerArgs = {
+                YES = ( "-flto" );
+            };
+        },
+        {
+            Name = "LLVM_IMPLICIT_AGGRESSIVE_OPTIMIZATIONS";
+            Type = Boolean;
+            DefaultValue = "$(LLVM_OPTIMIZATION_LEVEL_VAL_$(GCC_OPTIMIZATION_LEVEL))";
+        },
+        {
+            Name = "LLVM_OPTIMIZATION_LEVEL_VAL_0";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "LLVM_OPTIMIZATION_LEVEL_VAL_1";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "LLVM_OPTIMIZATION_LEVEL_VAL_2";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "LLVM_OPTIMIZATION_LEVEL_VAL_3";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "LLVM_OPTIMIZATION_LEVEL_VAL_fast";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "LLVM_OPTIMIZATION_LEVEL_VAL_s";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+
+
+        /* Debugging */
+        {
+            Name = "GCC_GENERATE_DEBUGGING_SYMBOLS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "GCC_DEBUG_INFORMATION_FORMAT";
+            Type = Enumeration;
+            DefaultValue = "$(DEBUG_INFORMATION_FORMAT)";
+            Condition = "$(GCC_GENERATE_DEBUGGING_SYMBOLS) == YES";
+            CommandLineArgs = {
+                "dwarf" = ( "-g" );
+                "dwarf-with-dsym" = ( "-g" );
+            };
+        },
+        {
+            Name = "CLANG_DEBUG_INFORMATION_LEVEL";
+            Type = Enumeration;
+            DefaultValue = "default";
+            CommandLineArgs = {
+                "default" = ( );
+                "line-tables-only" = ( "-gline-tables-only" );
+            };
+        },
+        {
+            Name = "CLANG_ENABLE_MODULE_DEBUGGING";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "CLANG_DEBUG_MODULES";
+            Type = Boolean;
+            DefaultValue = "$(CLANG_ENABLE_MODULE_DEBUGGING)";
+            Condition = "$(GCC_GENERATE_DEBUGGING_SYMBOLS) == YES && $(CLANG_ENABLE_MODULES) == YES";
+            CommandLineFlag = "-gmodules";
+        },
+
+
+        /* Profiling */
+        {
+            Name = "GCC_INSTRUMENT_PROGRAM_FLOW_ARCS";
+            Type = Boolean;
+            CommandLineFlag = "-fprofile-arcs";
+        },
+        {
+            Name = "CLANG_INSTRUMENT_FOR_OPTIMIZATION_PROFILING";
+            Type = Boolean;
+            CommandLineArgs = {
+                YES = ( "-fprofile-instr-generate" );
+            };
+            AdditionalLinkerArgs = {
+                YES = ( "-fprofile-instr-generate" );
+            };
+        },
+
+
+        /* Address Sanitizer */
+        {
+            Name = "CLANG_ADDRESS_SANITIZER";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineArgs = {
+                YES = ( "-fsanitize=address" );
+            };
+            AdditionalLinkerArgs = {
+                YES = ( "-fsanitize=address" );
+            };
+        },
+        {
+            Name = "CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW";
+            Type = Boolean;
+            DefaultValue = NO;
+            Condition = "$(CLANG_ADDRESS_SANITIZER) == YES";
+            CommandLineFlagIfFalse = "-D_LIBCPP_HAS_NO_ASAN";
+        },
+
+
+        /* Code Coverage */
+        {
+            Name = "CLANG_ENABLE_CODE_COVERAGE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "CLANG_COVERAGE_MAPPING";
+            Type = Boolean;
+            Condition = "$(CLANG_ENABLE_CODE_COVERAGE) == YES";
+            CommandLineArgs = {
+                YES = (
+                    "-fprofile-instr-generate",
+                    "-fcoverage-mapping",
+                );
+            };
+        },
+        {
+            Name = "CLANG_COVERAGE_MAPPING_LINKER_ARGS";
+            Type = StringList;
+            DefaultValue = "$(CLANG_COVERAGE_MAPPING)";
+            AdditionalLinkerArgs = {
+                YES = ( "-fprofile-instr-generate" );
+            };
+        },
+
+
+        /* Migration */
+        {
+            Name = "CLANG_ARC_MIGRATE_DIR";
+            Type = Path;
+            CommandLineFlag = "-ccc-arcmt-migrate";
+        },
+        {
+            Name = "CLANG_ARC_MIGRATE_EMIT_ERROR";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-arcmt-migrate-emit-errors";
+        },
+        {
+            Name = "CLANG_ARC_MIGRATE_REPORT_OUTPUT";
+            Type = Path;
+            CommandLineFlag = "-arcmt-migrate-report-output";
+        },
+        {
+            Name = "CLANG_OBJC_MIGRATE_DIR";
+            Type = Path;
+            CommandLineFlag = "-ccc-objcmt-migrate";
+        },
+
+
+        /* Kernel */
+        {
+            Name = "GCC_ENABLE_KERNEL_DEVELOPMENT";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-mkernel";
+        },
+        {
+            Name = "ENABLE_APPLE_KEXT_CODE_GENERATION";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-fapple-kext";
+        },
+
+
+        /* Warnings */
+        {
+            Name = "GCC_ENABLE_TRIGRAPHS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-trigraphs";
+            CommandLineFlagIfFalse = "-Wno-trigraphs";
+        },
+        {
+            Name = "CLANG_WARN_ASSIGN_ENUM";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wassign-enum";
+        },
+        {
+            Name = "CLANG_WARN_DOCUMENTATION_COMMENTS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wdocumentation";
+        },
+        {
+            Name = "CLANG_WARN_EMPTY_BODY";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wempty-body";
+            CommandLineFlagIfFalse = "-Wno-empty-body";
+        },
+        {
+            Name = "CLANG_WARN_UNREACHABLE_CODE";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wunreachable-code";
+        },
+        {
+            Name = "CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wnullable-to-nonnull-conversion";
+        },
+        {
+            Name = "GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-Wdeprecated-declarations";
+            CommandLineFlagIfFalse = "-Wno-deprecated-declarations";
+        },
+        {
+            Name = "GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wmissing-field-initializers";
+            CommandLineFlagIfFalse = "-Wno-missing-field-initializers";
+        },
+        {
+            Name = "GCC_WARN_ABOUT_MISSING_NEWLINE";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wnewline-eof";
+            CommandLineFlagIfFalse = "-Wno-newline-eof";
+        },
+        {
+            Name = "GCC_WARN_ABOUT_MISSING_PROTOTYPES";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wmissing-prototypes";
+            CommandLineFlagIfFalse = "-Wno-missing-prototypes";
+        },
+        {
+            Name = "GCC_WARN_ABOUT_POINTER_SIGNEDNESS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-Wpointer-sign";
+            CommandLineFlagIfFalse = "-Wno-pointer-sign";
+        },
+        {
+            Name = "GCC_WARN_ABOUT_RETURN_TYPE";
+            Type = Enumeration;
+            DefaultValue = "YES_ERROR";
+            CommandLineArgs = {
+                "YES_ERROR" = ( "-Werror=return-type" );
+                "YES" = ( );
+                "NO" = ( "-Wno-return-type" );
+            };
+        },
+        {
+            Name = "GCC_WARN_CHECK_SWITCH_STATEMENTS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-Wswitch";
+            CommandLineFlagIfFalse = "-Wno-switch";
+        },
+        {
+            Name = "GCC_WARN_FOUR_CHARACTER_CONSTANTS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wfour-char-constants";
+            CommandLineFlagIfFalse = "-Wno-four-char-constants";
+        },
+
+
+        /* Implicit Conversion Warnings */
+        {
+            Name = "CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wconversion";
+            CommandLineFlagIfFalse = "-Wno-conversion";
+            /* Must be before the specific conversion settings to avoid overwriting them. */
+        },
+        {
+            Name = "CLANG_WARN_BOOL_CONVERSION";
+            Type = Boolean;
+            DefaultValue = "$(CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION)";
+            CommandLineFlag = "-Wbool-conversion";
+            CommandLineFlagIfFalse = "-Wno-bool-conversion";
+        },
+        {
+            Name = "CLANG_WARN_CONSTANT_CONVERSION";
+            Type = Boolean;
+            DefaultValue = "$(CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION)";
+            CommandLineFlag = "-Wconstant-conversion";
+            CommandLineFlagIfFalse = "-Wno-constant-conversion";
+        },
+        {
+            Name = "CLANG_WARN_ENUM_CONVERSION";
+            Type = Boolean;
+            DefaultValue = "$(CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION)";
+            CommandLineFlag = "-Wenum-conversion";
+            CommandLineFlagIfFalse = "-Wno-enum-conversion";
+        },
+        {
+            Name = "CLANG_WARN_INT_CONVERSION";
+            Type = Boolean;
+            DefaultValue = "$(CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION)";
+            CommandLineFlag = "-Wint-conversion";
+            CommandLineFlagIfFalse = "-Wno-int-conversion";
+        },
+        {
+            Name = "CLANG_WARN_IMPLICIT_SIGN_CONVERSION";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wsign-conversion";
+            CommandLineFlagIfFalse = "-Wno-sign-conversion";
+        },
+        {
+            Name = "GCC_WARN_64_TO_32_BIT_CONVERSION";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wshorten-64-to-32";
+            CommandLineFlagIfFalse = "-Wno-shorten-64-to-32";
+        },
+        {
+            Name = "GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wmissing-braces";
+            CommandLineFlagIfFalse = "-Wno-missing-braces";
+        },
+        {
+            Name = "GCC_WARN_MISSING_PARENTHESES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-Wparentheses";
+            CommandLineFlagIfFalse = "-Wno-parentheses";
+        },
+        {
+            Name = "GCC_WARN_PEDANTIC";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-pedantic";
+        },
+        {
+            Name = "GCC_WARN_SHADOW";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wshadow";
+            CommandLineFlagIfFalse = "-Wno-shadow";
+        },
+        {
+            Name = "GCC_WARN_SIGN_COMPARE";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wsign-compare";
+        },
+        {
+            Name = "GCC_WARN_TYPECHECK_CALLS_TO_PRINTF";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-Wno-format";
+        },
+        {
+            Name = "GCC_WARN_UNINITIALIZED_AUTOS";
+            Type = Enumeration;
+            DefaultValue = "NO";
+            CommandLineArgs = {
+                "YES" = ( "-Wuninitialized" );
+                "YES_AGGRESSIVE" = ( "-Wconditional-uninitialized" );
+                "NO" = ( "-Wno-uninitialized" );
+            };
+        },
+        {
+            Name = "GCC_WARN_UNKNOWN_PRAGMAS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wunknown-pragmas";
+            CommandLineFlagIfFalse = "-Wno-unknown-pragmas";
+        },
+        {
+            Name = "GCC_WARN_UNUSED_FUNCTION";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wunused-function";
+            CommandLineFlagIfFalse = "-Wno-unused-function";
+        },
+        {
+            Name = "GCC_WARN_UNUSED_LABEL";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wunused-label";
+            CommandLineFlagIfFalse = "-Wno-unused-label";
+        },
+        {
+            Name = "GCC_WARN_UNUSED_PARAMETER";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wunused-parameter";
+            CommandLineFlagIfFalse = "-Wno-unused-parameter";
+        },
+        {
+            Name = "GCC_WARN_UNUSED_VALUE";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wunused-value";
+            CommandLineFlagIfFalse = "-Wno-unused-value";
+        },
+        {
+            Name = "GCC_WARN_UNUSED_VARIABLE";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wunused-variable";
+            CommandLineFlagIfFalse = "-Wno-unused-variable";
+        },
+
+
+        /* C++ Warnings */
+        {
+            Name = "CLANG_WARN_CXX0X_EXTENSIONS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wc++11-extensions";
+            CommandLineFlagIfFalse = "-Wno-c++11-extensions";
+            FileTypes = (
+                "sourcecode.cpp.cpp",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN__EXIT_TIME_DESTRUCTORS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-Wexit-time-destructors";
+            CommandLineFlagIfFalse = "-Wno-exit-time-destructors";
+            FileTypes = (
+                "sourcecode.cpp.cpp",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-Winvalid-offsetof";
+            CommandLineFlagIfFalse = "-Wno-invalid-offsetof";
+            FileTypes = (
+                "sourcecode.cpp.cpp",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Woverloaded-virtual";
+            CommandLineFlagIfFalse = "-Wno-overloaded-virtual";
+            FileTypes = (
+                "sourcecode.cpp.cpp",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_WARN_NON_VIRTUAL_DESTRUCTOR";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wnon-virtual-dtor";
+            CommandLineFlagIfFalse = "-Wno-non-virtual-dtor";
+            FileTypes = (
+                "sourcecode.cpp.cpp",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+
+
+        /* Objective-C Warnings */
+        {
+            Name = "CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wdeprecated-implementations";
+            CommandLineFlagIfFalse = "-Wno-deprecated-implementations";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wimplicit-retain-self";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN_OBJC_RECEIVER_WEAK";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wreceiver-is-weak";
+            CommandLineFlagIfFalse = "-Wno-receiver-is-weak";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN_OBJC_REPEATED_USE_OF_WEAK";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Warc-repeated-use-of-weak";
+            CommandLineFlagIfFalse = "-Wno-arc-repeated-use-of-weak";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN_OBJC_ROOT_CLASS";
+            Type = Enumeration;
+            DefaultValue = "YES_ERROR";
+            CommandLineArgs = {
+                "YES_ERROR" = ( "-Werror=objc-root-class" );
+                "YES" = ( );
+                "NO" = ( "-Wno-objc-root-class" );
+            };
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wobjc-missing-property-synthesis";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES";
+            Type = Boolean;
+            CommandLineFlag = "-Wimplicit-atomic-properties";
+            CommandLineFlagIfFalse = "-Wno-implicit-atomic-properties";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN_OBJC_EXPLICIT_OWNERSHIP_TYPE";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wexplicit-ownership-type";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN_DIRECT_OBJC_ISA_USAGE";
+            Type = Enumeration;
+            DefaultValue = "YES_ERROR";
+            CommandLineArgs = {
+                "YES_ERROR" = ( "-Werror=deprecated-objc-isa-usage" );
+                "YES" = ( );
+                "NO" = ( "-Wno-deprecated-objc-isa-usage" );
+            };
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN__ARC_BRIDGE_CAST_NONARC";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-Wno-arc-bridge-casts-disallowed-in-nonarc";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "CLANG_WARN__DUPLICATE_METHOD_MATCH";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-Wduplicate-method-match";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-Wprotocol";
+            CommandLineFlagIfFalse = "-Wno-protocol";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wselector";
+            CommandLineFlagIfFalse = "-Wno-selector";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_WARN_STRICT_SELECTOR_MATCH";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wstrict-selector-match";
+            CommandLineFlagIfFalse = "-Wno-strict-selector-match";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+        {
+            Name = "GCC_WARN_UNDECLARED_SELECTOR";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Wundeclared-selector";
+            CommandLineFlagIfFalse = "-Wno-undeclared-selector";
+            FileTypes = (
+                "sourcecode.c.objc",
+                "sourcecode.cpp.objcpp",
+            );
+        },
+
+
+        /* Warnings as Errors */
+        {
+            Name = "GCC_TREAT_WARNINGS_AS_ERRORS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Werror";
+        },
+        {
+            Name = "GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Werror=incompatible-pointer-types";
+        },
+        {
+            Name = "GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-Werror-implicit-function-declaration";
+        },
+
+
+        /* Disable Warnings */
+        {
+            Name = "GCC_WARN_INHIBIT_ALL_WARNINGS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-w";
+        },
+
+
+        /* Custom Flags */
+        {
+            Name = "OTHER_CFLAGS";
+            Type = StringList;
+            /* Added in code. */
+        },
+        {
+            Name = "WARNING_CFLAGS";
+            Type = StringList;
+            /* Added in code. */
+        },
+        {
+            Name = "OTHER_CPLUSPLUSFLAGS";
+            Type = StringList;
+            /* Added in code. */
+        },
+    );
+}
