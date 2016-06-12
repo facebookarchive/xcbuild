@@ -45,40 +45,52 @@
             Name = "_exclude_ds_store_files_";
             Type = Boolean;
             DefaultValue = YES;
-            CommandLineArgs = ( "-exclude", ".DS_Store" );
+            CommandLineArgs = {
+                YES = ( "-exclude", ".DS_Store" );
+            };
         },
         {
             Name = "REMOVE_CVS_FROM_RESOURCES";
             Type = Boolean;
             DefaultValue = YES;
-            CommandLineArgs = ( "-exclude", "CVS" );
+            CommandLineArgs = {
+                YES = ( "-exclude", "CVS" );
+            };
         },
         {
             Name = "REMOVE_SVN_FROM_RESOURCES";
             Type = Boolean;
             DefaultValue = YES;
-            CommandLineArgs = ( "-exclude", ".svn" );
+            CommandLineArgs = {
+                YES = ( "-exclude", ".svn" );
+            };
         },
         {
             Name = "REMOVE_GIT_FROM_RESOURCES";
             Type = Boolean;
             DefaultValue = YES;
-            CommandLineArgs = ( "-exclude", ".git" );
+            CommandLineArgs = {
+                YES = ( "-exclude", ".git" );
+            };
         },
         {
             Name = "REMOVE_HG_FROM_RESOURCES";
             Type = Boolean;
             DefaultValue = YES;
-            CommandLineArgs = ( "-exclude", ".hg" );
+            CommandLineArgs = {
+                YES = ( "-exclude", ".hg" );
+            };
         },
         {
             Name = "REMOVE_HEADER_DIRECTORIES";
             Type = Boolean;
-            CommandLineArgs = (
-                "-exclude", "Headers",
-                "-exclude", "PrivateHeaders",
-                "-exclude", "Modules",
-            );
+            CommandLineArgs = {
+                YES = (
+                    "-exclude", "Headers",
+                    "-exclude", "PrivateHeaders",
+                    "-exclude", "Modules",
+                );
+            };
         },
 
         /* Strip on copy. */
