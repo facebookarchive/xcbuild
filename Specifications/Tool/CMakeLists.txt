@@ -13,6 +13,7 @@ install(FILES
         com.apple.commands.shell-script.xcspec
         com.apple.compilers.pbxcp.xcspec
         com.apple.tools.ditto.xcspec
+        com.apple.tools.dsymutil.xcspec
         com.apple.tools.info-plist-utility.xcspec
         com.apple.tools.mkdir.xcspec
         com.apple.tools.plutil.xcspec
