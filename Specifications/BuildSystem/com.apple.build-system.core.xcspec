@@ -580,6 +580,21 @@
         },
 
 
+        /* com.apple.pbx.linkers.ld */
+        {
+            Name = "REEXPORTED_FRAMEWORK_NAMES";
+            Type = StringList;
+        },
+        {
+            Name = "REEXPORTED_LIBRARY_NAMES";
+            Type = StringList;
+        },
+        {
+            Name = "REEXPORTED_LIBRARY_PATHS";
+            Type = PathList;
+        },
+
+
         /* Unsorted */
         {
             Name = "CLONE_HEADERS";
@@ -654,20 +669,8 @@
             Type = StringList;
         },
         {
-            Name = "REEXPORTED_FRAMEWORK_NAMES";
-            Type = StringList;
-        },
-        {
             Name = "REEXPORTED_LIBRARY_INSTALL_NAMES";
             Type = StringList;
-        },
-        {
-            Name = "REEXPORTED_LIBRARY_NAMES";
-            Type = StringList;
-        },
-        {
-            Name = "REEXPORTED_LIBRARY_PATHS";
-            Type = PathList;
         },
         {
             Name = "RESOURCES_TARGETED_DEVICE_FAMILY";
