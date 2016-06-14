@@ -1,0 +1,165 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Compiler;
+    Identifier = com.apple.compilers.assetcatalog;
+    Name = "Asset Catalog Compiler";
+
+    CommandLine = "actool [options] [special-args] [inputs] --compile $(ProductResourcesDir)";
+    RuleName = "CompileAssetCatalog $(ProductResourcesDir) [inputs]";
+
+    InputFileGroupings = ( "tool" );
+    InputFileTypes = (
+        "folder.assetcatalog",
+        "folder.imagecatalog",
+    );
+    Outputs = ( ); /* Dynamic based on inputs. */
+    DeeplyStatInputDirectories = YES;
+    DependencyInfoFile = "$(ASSETCATALOG_COMPILER_DEPENDENCY_INFO_FILE)";
+    GeneratedInfoPlistContentFilePath = "$(ASSETCATALOG_COMPILER_INFOPLIST_CONTENT_FILE)";
+    SynthesizeBuildRule = YES;
+
+    Options = (
+        /* Output */
+        {
+            Name = "ASSETCATALOG_OUTPUT_FORMAT";
+            Type = Enumeration;
+            Values = (
+                "human-readable-text",
+                "binary1",
+                "xml1",
+            );
+            DefaultValue = "human-readable-text";
+            CommandLineFlag = "--output-format";
+        },
+        {
+            Name = "ASSETCATALOG_NOTICES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "--notices";
+        },
+        {
+            Name = "ASSETCATALOG_WARNINGS";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "--warnings";
+        },
+
+
+        /* Output Files */
+        {
+            Name = "ASSETCATALOG_COMPILER_DEPENDENCY_INFO_FILE";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)/assetcatalog_dependencies";
+            CommandLineFlag = "--export-dependency-info";
+        },
+        {
+            Name = "ASSETCATALOG_COMPILER_INFOPLIST_CONTENT_FILE";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)/assetcatalog_generated_info.plist";
+            CommandLineFlag = "--output-partial-info-plist";
+        },
+
+
+        /* Target */
+        {
+            Name = "RESOURCES_TARGETED_DEVICE_FAMILY";
+            Type = StringList;
+            DefaultValue = "$(TARGETED_DEVICE_FAMILY)";
+            CommandLineFlag = "--target-device";
+        },
+
+
+        /* Specific Images */
+        {
+            Name = "ASSETCATALOG_COMPILER_APPICON_NAME";
+            Type = String;
+            DefaultValue = "";
+            CommandLineFlag = "--app-icon";
+        },
+        {
+            Name = "ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME";
+            Type = String;
+            DefaultValue = "";
+            CommandLineFlag = "--launch-image";
+        },
+
+
+        /* Features */
+        {
+            Name = "ASSETCATALOG_COMPILER_ENABLE_ON_DEMAND_RESOURCES";
+            Type = Boolean;
+            DefaultValue = "$(ENABLE_ON_DEMAND_RESOURCES)";
+            CommandLineFlag = "--enable-on-demand-resources";
+        },
+        {
+            Name = "ENABLE_INCREMENTAL_DISTILL";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineArgs = {
+                YES = (
+                    "--enable-incremental-distill", "YES",
+                    "--target-name", "$(TARGET_NAME)",
+                );
+            };
+        },
+
+
+        /* Only Active Resources */
+        {
+            Name = "ENABLE_ONLY_ACTIVE_RESOURCES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "ASSETCATALOG_FILTER_FOR_DEVICE_MODEL";
+            Type = String;
+            DefaultValue = "$(TARGET_DEVICE_MODEL)";
+            Condition = "$(ENABLE_ONLY_ACTIVE_RESOURCES) == YES && $(BUILD_ACTIVE_RESOURCES_ONLY) == YES";
+            CommandLineFlag = "--filter-for-device-model";
+        },
+        {
+            Name = "ASSETCATALOG_FILTER_FOR_DEVICE_OS_VERSION";
+            Type = String;
+            DefaultValue = "$(TARGET_DEVICE_OS_VERSION)";
+            Condition = "$(ENABLE_ONLY_ACTIVE_RESOURCES) == YES && $(BUILD_ACTIVE_RESOURCES_ONLY) == YES";
+            CommandLineFlag = "--filter-for-device-os-version";
+        },
+
+
+        /* Optimization */
+        {
+            Name = "ASSETCATALOG_COMPILER_COMPRESS_PNGS";
+            Type = Boolean;
+            DefaultValue = "$(COMPRESS_PNG_FILES)";
+            CommandLineFlag = "--compress-pngs";
+        },
+        {
+            Name = "ASSETCATALOG_COMPILER_OPTIMIZATION";
+            Type = Enumeration;
+            Values = (
+                "",
+                "time",
+                "space",
+            );
+            DefaultValue = "";
+            CommandLineFlag = "--optimization";
+        },
+
+
+        /* Other */
+        {
+            Name = "ASSETCATALOG_OTHER_FLAGS";
+            Type = StringList;
+            DefaultValue = "";
+            CommandLinePrefixFlag = "";
+        },
+    );
+}
