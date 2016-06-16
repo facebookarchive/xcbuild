@@ -179,6 +179,20 @@ rendition_dump(car::Rendition const &rendition, std::string const &path)
                     buffer[j + 1] = a * 255;
                 }
                 break;
+
+            case car::Rendition::Data::Format::JPEG:
+            case car::Rendition::Data::Format::Data:
+                {
+                    std::ofstream file;
+                    file.open(path, std::ios::out | std::ios::trunc | std::ios::binary);
+                    if (file.fail()) {
+                        fprintf(stderr, "error: failed to open file\n");
+                        return;
+                    }
+                    std::copy(buffer.begin(), buffer.end(), std::ostream_iterator<char>(file));
+                    file.close();
+                    return;
+                }
             default:
                 fprintf(stderr, "error: unknown color format\n");
                 return;
