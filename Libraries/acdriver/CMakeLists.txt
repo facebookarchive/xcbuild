@@ -14,10 +14,11 @@ add_library(acdriver SHARED
             Sources/Result.cpp
             Sources/VersionAction.cpp
             Sources/CompileAction.cpp
+            Sources/CompileOutput.cpp
             Sources/ContentsAction.cpp
             )
 
-target_link_libraries(acdriver PUBLIC xcassets util plist ext)
+target_link_libraries(acdriver PUBLIC xcassets util plist dependency car ext)
 target_include_directories(acdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS acdriver DESTINATION lib)
 

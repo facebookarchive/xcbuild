@@ -71,7 +71,7 @@ public:
     /*
      * Serialize and write to BOM
      */
-     void write();
+     void write() const;
 };
 
 }
