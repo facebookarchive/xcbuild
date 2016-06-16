@@ -61,7 +61,14 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     } else if (arg == "-project") {
         return libutil::Options::NextString(&_project, args, it);
     } else if (arg == "-target") {
-        return libutil::Options::NextString(&_target, args, it);
+        std::string target;
+        auto result = libutil::Options::NextString(&target, args, it);
+        if (!result.first) {
+            return result;
+        }
+
+        _target.push_back(target);
+        return result;
     } else if (arg == "-alltargets") {
         return libutil::Options::MarkBool(&_allTargets, arg);
     } else if (arg == "-workspace") {

@@ -331,7 +331,7 @@ resolveSchemeDependencies(Build::Context const &context) const
 }
 
 DirectedGraph<pbxproj::PBX::Target::shared_ptr> Build::DependencyResolver::
-resolveLegacyDependencies(Build::Context const &context, bool allTargets, ext::optional<std::string> const &targetName) const
+resolveLegacyDependencies(Build::Context const &context, bool allTargets, ext::optional<std::vector<std::string>> const &targetNames) const
 {
     DirectedGraph<pbxproj::PBX::Target::shared_ptr> graph;
 
@@ -346,10 +346,10 @@ resolveLegacyDependencies(Build::Context const &context, bool allTargets, ext::o
     std::unordered_set<pbxproj::PBX::Target::shared_ptr> positional;
     for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
         if (!allTargets) {
-            if (targetName && target->name() != *targetName) {
-                /* Building a specific target, and not this one. */
+            if (targetNames && std::find(targetNames->begin(), targetNames->end(), target->name()) == targetNames->end()) {
+                /* Building specific targets, and not this one. */
                 continue;
-            } else if (!targetName && target != project->targets().front()) {
+            } else if (!targetNames && target != project->targets().front()) {
                 /* No specific target, build whatever the first target is. */
                 continue;
             }

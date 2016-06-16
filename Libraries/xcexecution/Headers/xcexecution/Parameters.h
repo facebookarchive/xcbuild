@@ -35,7 +35,7 @@ private:
     ext::optional<std::string>     _workspace;
     ext::optional<std::string>     _project;
     ext::optional<std::string>     _scheme;
-    ext::optional<std::string>     _target;
+    ext::optional<std::vector<std::string>> _target;
     bool                           _allTargets;
     std::vector<std::string>       _actions;
     ext::optional<std::string>     _configuration;
@@ -46,7 +46,7 @@ public:
         ext::optional<std::string> const &workspace,
         ext::optional<std::string> const &project,
         ext::optional<std::string> const &scheme,
-        ext::optional<std::string> const &target,
+        ext::optional<std::vector<std::string>> const &target,
         bool allTargets,
         std::vector<std::string> const &actions,
         ext::optional<std::string> const &configuration,
@@ -74,7 +74,7 @@ public:
     /*
      * The target to build.
      */
-    ext::optional<std::string> const &target() const
+    ext::optional<std::vector<std::string>> const &target() const
     { return _target; }
 
     /*

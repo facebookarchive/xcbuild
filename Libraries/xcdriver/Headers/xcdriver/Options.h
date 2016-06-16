@@ -26,7 +26,7 @@ private:
 
 private:
     std::string _project;
-    std::string _target;
+    std::vector<std::string> _target;
     bool        _allTargets;
     std::string _workspace;
     std::string _scheme;
@@ -107,7 +107,7 @@ public:
 public:
     std::string const &project() const
     { return _project; }
-    std::string const &target() const
+    std::vector<std::string> const &target() const
     { return _target; }
     bool allTargets() const
     { return _allTargets; }

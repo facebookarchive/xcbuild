@@ -26,7 +26,7 @@ Parameters(
     ext::optional<std::string> const &workspace,
     ext::optional<std::string> const &project,
     ext::optional<std::string> const &scheme,
-    ext::optional<std::string> const &target,
+    ext::optional<std::vector<std::string>> const &target,
     bool allTargets,
     std::vector<std::string> const &actions,
     ext::optional<std::string> const &configuration,
@@ -63,8 +63,10 @@ canonicalArguments() const
     }
 
     if (_target) {
-        arguments.push_back("-target");
-        arguments.push_back(*_target);
+        for (std::string const &target : *_target) {
+            arguments.push_back("-target");
+            arguments.push_back(target);
+        }
     }
 
     if (_allTargets) {
