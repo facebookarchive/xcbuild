@@ -126,44 +126,6 @@ dump() const
 static ext::optional<Rendition::Data> Decode(struct car_rendition_value *value);
 static ext::optional<std::vector<uint8_t>> Encode(Rendition const *rendition, ext::optional<Rendition::Data> data);
 
-static int
-SliceCountForLayout(enum car_rendition_value_layout layout)
-{
-    switch (layout) {
-        case car_rendition_value_layout_one_part_fixed_size:
-        case car_rendition_value_layout_one_part_tile:
-        case car_rendition_value_layout_one_part_scale:
-            return 1;
-
-        case car_rendition_value_layout_three_part_horizontal_tile:
-        case car_rendition_value_layout_three_part_horizontal_scale:
-        case car_rendition_value_layout_three_part_horizontal_uniform:
-        case car_rendition_value_layout_three_part_vertical_tile:
-        case car_rendition_value_layout_three_part_vertical_scale:
-        case car_rendition_value_layout_three_part_vertical_uniform:
-            return 3;
-
-        case car_rendition_value_layout_nine_part_tile:
-        case car_rendition_value_layout_nine_part_scale:
-        case car_rendition_value_layout_nine_part_horizontal_uniform_vertical_scale:
-        case car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform:
-            return 9;
-
-        case car_rendition_value_layout_six_part:
-            return 6;
-
-        case car_rendition_value_layout_gradient:
-        case car_rendition_value_layout_effect:
-        case car_rendition_value_layout_animation_filmstrip:
-        case car_rendition_value_layout_raw_data:
-        case car_rendition_value_layout_external_link:
-        case car_rendition_value_layout_layer_stack:
-        case car_rendition_value_layout_internal_link:
-        case car_rendition_value_layout_asset_pack:
-            break;
-    }
-    return 0;
-}
 
 static Rendition::ResizeMode
 ResizeModeFromLayout(enum car_rendition_value_layout layout)
@@ -216,9 +178,8 @@ Load(
         switch(info_header->magic) {
             case car_rendition_info_magic_slices: {
                 std::vector<Slice> slices;
-                int count = SliceCountForLayout((enum car_rendition_value_layout)value->metadata.layout);
                 struct car_rendition_info_slices *info_slices = (struct car_rendition_info_slices *)info_header;
-                for(int i = 0; i < count; i++) {
+                for(int i = 0; i < info_slices->nslices; i++) {
                         Slice slice = {
                             info_slices->slices[i].x,
                             info_slices->slices[i].y,
@@ -227,7 +188,9 @@ Load(
                         };
                         slices.push_back(slice);
                 }
-                rendition.slices() = std::move(slices);
+                if (slices.size() > 0) {
+                    rendition.slices() = std::move(slices);                    
+                }
                 break;
             }
             case car_rendition_info_magic_metrics: {
@@ -289,7 +252,7 @@ Load(
 
     if (layout >= car_rendition_value_layout_three_part_horizontal_tile &&
         layout <= car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform &&
-        rendition.slices().size() > 0) {
+        rendition.slices().size() > 1) {
         rendition.isResizable() = true;
     }
     return rendition;
@@ -564,15 +527,23 @@ write() const
     strncpy(header.metadata.name, _fileName.c_str(), 128);
 
     // Create info segments
-
-    int nslices = SliceCountForLayout(_layout);
+    size_t nslices = _slices.size() > 0 ? _slices.size() : 1;
     size_t info_slices_size = sizeof(car_rendition_info_slices) + sizeof(struct car_rendition_info_slice) * nslices;
     struct car_rendition_info_slices *info_slices = (struct car_rendition_info_slices *)malloc(info_slices_size);
     info_slices->header.magic = car_rendition_info_magic_slices;
     info_slices->header.length = info_slices_size - sizeof(car_rendition_info_header);
-    // FIXME write slices
-    info_slices->nslices = nslices;
-    if (nslices == 1) {
+    if (_slices.size() > 0) {
+        int index = 0;
+        info_slices->nslices = _slices.size();
+        for (auto const &slice : _slices) {
+            info_slices->slices[index].x = slice.x;
+            info_slices->slices[index].y = slice.y;
+            info_slices->slices[index].width = slice.width;
+            info_slices->slices[index].height = slice.height;
+            index += 1;
+        }
+    } else {
+        info_slices->nslices = 1;
         info_slices->slices[0].x = 0;
         info_slices->slices[0].y = 0;
         info_slices->slices[0].width = _width;
