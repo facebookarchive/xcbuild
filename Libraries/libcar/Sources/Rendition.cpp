@@ -47,6 +47,7 @@ FormatSize(Rendition::Data::Format format)
             return 4;
         case Format::PremultipliedGA8:
             return 2;
+        case Format::JPEG:
         case Format::Data:
             return 1;
     }
@@ -123,7 +124,7 @@ dump() const
 }
 
 static ext::optional<Rendition::Data> Decode(struct car_rendition_value *value);
-static ext::optional<std::vector<uint8_t>> Encode(Rendition const *rendition);
+static ext::optional<std::vector<uint8_t>> Encode(Rendition const *rendition, ext::optional<Rendition::Data> data);
 
 static int
 SliceCountForLayout(enum car_rendition_value_layout layout)
@@ -320,10 +321,30 @@ Decode(struct car_rendition_value *value)
         format = Rendition::Data::Format::PremultipliedBGRA8;
     } else if (value->pixel_format == car_rendition_value_pixel_format_ga8) {
         format = Rendition::Data::Format::PremultipliedGA8;
+    } else if (value->pixel_format == car_rendition_value_pixel_format_raw_data) {
+        format = Rendition::Data::Format::Data;
+    } else if (value->pixel_format == car_rendition_value_pixel_format_jpeg) {
+        format = Rendition::Data::Format::JPEG;
     } else {
         format = Rendition::Data::Format::Data;
         fprintf(stderr, "error: unsupported pixel format %.4s\n", (char const *)&value->pixel_format);
         return ext::nullopt;
+    }
+
+    /* JPEG format embeds the file with another header */
+    if (format == Rendition::Data::Format::JPEG ||
+        format == Rendition::Data::Format::Data) {
+        struct car_rendition_data_header_raw *header_raw = (struct car_rendition_data_header_raw *)((uintptr_t)value + sizeof(struct car_rendition_value) + value->info_len);
+
+        if (strncmp(header_raw->magic, "DWAR", sizeof(header_raw->magic)) != 0) {
+            fprintf(stderr, "error: header_raw magic is wrong, can't possibly decode\n");
+            return ext::nullopt;
+        }
+
+        Rendition::Data data = Rendition::Data(std::vector<uint8_t>(header_raw->length), format);
+        void *raw_data = static_cast<void *>(data.data().data());
+        memcpy(raw_data, header_raw->data, header_raw->length);
+        return data;
     }
 
     size_t bytes_per_pixel = Rendition::Data::FormatSize(format);
@@ -436,9 +457,8 @@ Decode(struct car_rendition_value *value)
 }
 
 static ext::optional<std::vector<uint8_t>>
-Encode(Rendition const *rendition)
+Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
 {
-    ext::optional<Rendition::Data> data = rendition->data();
     if (!data || data->data().size() == 0) {
         return ext::nullopt;
     }
@@ -453,8 +473,9 @@ Encode(Rendition const *rendition)
         case Rendition::Data::Format::PremultipliedGA8:
             bytes_per_pixel = 2;
             break;
+        case Rendition::Data::Format::JPEG:
         case Rendition::Data::Format::Data:
-            return ext::nullopt;
+            return ext::optional<std::vector<uint8_t>>(data->data());
     }
 
     size_t uncompressed_length = rendition->width() * rendition->height() * bytes_per_pixel;
@@ -537,7 +558,6 @@ write() const
     header.width = _width;
     header.height = _height;
     header.scale_factor = (uint32_t)(_scale * 100);
-    header.pixel_format = 1095911234;
     header.color_space_id = 1;
 
     header.metadata.layout = _layout;
@@ -582,14 +602,21 @@ write() const
     info_bitmap_info.exif_orientation = 1; // XXX FIXME
 
     int bytes_per_pixel = 0;
-    switch(this->data()->format()) {
+    auto renditionData = this->data();
+    switch(renditionData->format()) {
         case Rendition::Data::Format::PremultipliedBGRA8:
             bytes_per_pixel = 4;
+            header.pixel_format = car_rendition_value_pixel_format_argb;
             break;
         case Rendition::Data::Format::PremultipliedGA8:
             bytes_per_pixel = 2;
+            header.pixel_format = car_rendition_value_pixel_format_ga8;
             break;
+        case Rendition::Data::Format::JPEG:
+            header.pixel_format = car_rendition_value_pixel_format_jpeg;
+            break;       
         case Rendition::Data::Format::Data:
+            header.pixel_format = car_rendition_value_pixel_format_raw_data;
             break;
     }
 
@@ -599,9 +626,9 @@ write() const
     info_bytes_per_row.bytes_per_row = _width * bytes_per_pixel;
 
     // Write bitmap data
-    ext::optional<std::vector<uint8_t>> data = Encode(this);
+    ext::optional<std::vector<uint8_t>> data = Encode(this, renditionData);
     if (!data) {
-        printf("Error: no bitmap data\n");
+        printf("Error: no bitmap data for %s\n", this->fileName().c_str());
         data = ext::optional<std::vector<uint8_t>>(std::vector<uint8_t>());
     }
 
@@ -609,18 +636,24 @@ write() const
     uint8_t *compressed_data = reinterpret_cast<uint8_t *>(data->data());
 
     // Assemble Header and info segments
-    size_t total_header_size = sizeof(struct car_rendition_value) + info_slices_size + \
+    size_t rendition_header_size = sizeof(struct car_rendition_value) + info_slices_size + \
          sizeof(struct car_rendition_info_header) + info_metrics.header.length + \
          sizeof(struct car_rendition_info_header) + info_composition.header.length + \
          sizeof(struct car_rendition_info_header) + info_bitmap_info.header.length + \
          sizeof(struct car_rendition_info_header) + info_bytes_per_row.header.length;
+    size_t extra_headers_size = 0;
 
-    std::vector<uint8_t> output = std::vector<uint8_t>(total_header_size + compressed_data_length);
-    uint8_t *output_bytes = reinterpret_cast<uint8_t *>(output.data());;
-
-    header.info_len = total_header_size - sizeof(struct car_rendition_value);
+    header.info_len = rendition_header_size - sizeof(struct car_rendition_value);
     header.bitmaps.bitmap_count = 1;
     header.bitmaps.payload_size = compressed_data_length;
+
+    if (header.pixel_format == car_rendition_value_pixel_format_jpeg ||
+        header.pixel_format == car_rendition_value_pixel_format_raw_data) {
+        extra_headers_size += sizeof(struct car_rendition_data_header_raw);
+    }
+
+    std::vector<uint8_t> output = std::vector<uint8_t>(rendition_header_size + extra_headers_size + compressed_data_length);
+    uint8_t *output_bytes = reinterpret_cast<uint8_t *>(output.data());;
 
     memcpy(output_bytes, &header, sizeof(struct car_rendition_value));
     output_bytes += sizeof(struct car_rendition_value);
@@ -639,6 +672,16 @@ write() const
 
     memcpy(output_bytes, &info_bytes_per_row, sizeof(struct car_rendition_info_bytes_per_row));
     output_bytes += sizeof(struct car_rendition_info_bytes_per_row);
+
+    /* JPEG/RAW format adds one more header at the end */
+    if (header.pixel_format == car_rendition_value_pixel_format_jpeg ||
+        header.pixel_format == car_rendition_value_pixel_format_raw_data) {
+        struct car_rendition_data_header_raw raw_header;
+        strncpy(raw_header.magic, "DWAR", 4);
+        raw_header.length = compressed_data_length;
+        memcpy(output_bytes, &raw_header, sizeof(struct car_rendition_data_header_raw));
+        output_bytes += sizeof(struct car_rendition_data_header_raw);
+    }
 
     memcpy(output_bytes, compressed_data, compressed_data_length);
 

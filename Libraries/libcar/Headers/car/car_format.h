@@ -401,6 +401,13 @@ struct car_rendition_data_header2 {
     uint8_t data[0];
 };
 
+struct car_rendition_data_header_raw {
+    char magic[4]; // DWAR
+    uint32_t unknown1;
+    uint32_t length; // length of data
+    uint8_t data[0];
+};
+
 enum car_rendition_data_compression_magic {
     car_rendition_data_compression_magic_rle = 0,
     car_rendition_data_compression_magic_unk1 = 1, // LZW?
