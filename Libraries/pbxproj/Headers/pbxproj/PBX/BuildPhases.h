@@ -17,5 +17,6 @@
 #include <pbxproj/PBX/CopyFilesBuildPhase.h>
 #include <pbxproj/PBX/ShellScriptBuildPhase.h>
 #include <pbxproj/PBX/AppleScriptBuildPhase.h>
+#include <pbxproj/PBX/RezBuildPhase.h>
 
 #endif  // !__pbxproj_PBX_BuildPhases_h

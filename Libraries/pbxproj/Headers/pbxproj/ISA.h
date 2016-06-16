@@ -27,6 +27,7 @@ extern char const * const PBXNativeTarget;
 extern char const * const PBXProject;
 extern char const * const PBXReferenceProxy;
 extern char const * const PBXResourcesBuildPhase;
+extern char const * const PBXRezBuildPhase;
 extern char const * const PBXShellScriptBuildPhase;
 extern char const * const PBXSourcesBuildPhase;
 extern char const * const PBXTargetDependency;

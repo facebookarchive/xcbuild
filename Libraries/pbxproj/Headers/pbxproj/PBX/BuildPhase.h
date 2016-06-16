@@ -28,6 +28,7 @@ public:
         kTypeCopyFiles,
         kTypeShellScript,
         kTypeAppleScript,
+        kTypeRez,
     };
 
     enum ActionMask {

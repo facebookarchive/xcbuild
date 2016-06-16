@@ -29,6 +29,7 @@ add_library(pbxproj SHARED
             Sources/PBX/Project.cpp
             Sources/PBX/ReferenceProxy.cpp
             Sources/PBX/ResourcesBuildPhase.cpp
+            Sources/PBX/RezBuildPhase.cpp
             Sources/PBX/ShellScriptBuildPhase.cpp
             Sources/PBX/SourcesBuildPhase.cpp
             Sources/PBX/Target.cpp

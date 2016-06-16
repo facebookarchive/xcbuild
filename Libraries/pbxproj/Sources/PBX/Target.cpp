@@ -143,6 +143,14 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
                 }
 
                 _buildPhases.push_back(O);
+            } else if (auto BPd = context.get <RezBuildPhase> (ID)) {
+                auto O = context.parseObject(context.rezBuildPhases, ID->value(), BPd);
+                if (!O) {
+                    abort();
+                    return false;
+                }
+
+                _buildPhases.push_back(O);
             } else {
                 fprintf(stderr, "warning: target '%s' contains unsupported build phase reference to '%s'\n",
                         _name.c_str(), ID->value().c_str());

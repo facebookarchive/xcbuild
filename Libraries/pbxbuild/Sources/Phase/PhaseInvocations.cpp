@@ -109,6 +109,10 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         switch (buildPhase->type()) {
+            case pbxproj::PBX::BuildPhase::kTypeSources:
+            case pbxproj::PBX::BuildPhase::kTypeFrameworks:
+                /* Handled above. */
+                break;
             case pbxproj::PBX::BuildPhase::kTypeShellScript: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
 
@@ -150,7 +154,11 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 auto BP = std::static_pointer_cast <pbxproj::PBX::AppleScriptBuildPhase> (buildPhase);
                 break;
             }
-            default: break;
+            case pbxproj::PBX::BuildPhase::kTypeRez: {
+                // TODO: Compile Rez
+                auto BP = std::static_pointer_cast <pbxproj::PBX::RezBuildPhase> (buildPhase);
+                break;
+            }
         }
     }
 

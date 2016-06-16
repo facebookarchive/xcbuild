@@ -407,6 +407,22 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
                         }
                     }
                     break;
+                case PBX::BuildPhase::kTypeRez:
+                    {
+                        auto BP = static_cast <PBX::RezBuildPhase *> (J.get());
+                        printf("\t\t\tRez Build Phase:\n");
+                        printf("\t\t\t\tBuild Action Mask                      = %#x\n",
+                                BP->buildActionMask());
+                        printf("\t\t\t\tRun Only For Deployment Postprocessing = %s\n",
+                                BP->runOnlyForDeploymentPostprocessing() ? "YES" : "NO");
+                        printf("\t\t\t\tFiles:\n");
+                        for (auto K : BP->files()) {
+                            if (auto FR = K->fileRef()) {
+                                printf("\t\t\t\t\t%s\n", FR->resolve().raw().c_str());
+                            }
+                        }
+                    }
+                    break;
             }
         }
     }

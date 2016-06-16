@@ -40,6 +40,7 @@ class FrameworksBuildPhase;
 class CopyFilesBuildPhase;
 class ShellScriptBuildPhase;
 class AppleScriptBuildPhase;
+class RezBuildPhase;
 
 }
 
@@ -85,6 +86,7 @@ public:
     std::unordered_map <std::string, std::shared_ptr <PBX::CopyFilesBuildPhase>>   copyFilesBuildPhases;
     std::unordered_map <std::string, std::shared_ptr <PBX::ShellScriptBuildPhase>> shellScriptBuildPhases;
     std::unordered_map <std::string, std::shared_ptr <PBX::AppleScriptBuildPhase>> appleScriptBuildPhases;
+    std::unordered_map <std::string, std::shared_ptr <PBX::RezBuildPhase>>         rezBuildPhases;
 
     std::unordered_map <std::string, std::shared_ptr <XC::BuildConfiguration>>     buildConfigurations;
     std::unordered_map <std::string, std::shared_ptr <XC::ConfigurationList>>      configurationLists;
@@ -116,6 +118,7 @@ public:
         copyFilesBuildPhases.clear();
         shellScriptBuildPhases.clear();
         appleScriptBuildPhases.clear();
+        rezBuildPhases.clear();
 
         buildConfigurations.clear();
         configurationLists.clear();
