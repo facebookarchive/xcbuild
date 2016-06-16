@@ -54,7 +54,7 @@ RunInternal(Filesystem *filesystem, Options const &options, Output *output, Resu
 
     if (!options.compile().empty()) {
         CompileAction compile;
-        compile.run(options, output, result);
+        compile.run(filesystem, options, output, result);
     }
 }
 
