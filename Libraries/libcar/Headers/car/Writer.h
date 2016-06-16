@@ -33,7 +33,6 @@ class Rendition;
 class Writer {
 public:
     typedef std::unique_ptr<struct bom_context, decltype(&bom_free)> unique_ptr_bom;
-    typedef std::unique_ptr<struct bom_tree_context, decltype(&bom_tree_free)> unique_ptr_bom_tree;
 
 private:
     unique_ptr_bom _bom;
