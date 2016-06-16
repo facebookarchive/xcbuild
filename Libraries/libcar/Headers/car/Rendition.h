@@ -127,7 +127,7 @@ public:
 
 public:
     /*
-     * The file name of the rendition
+     * The file name of the rendition.
      */
     std::string const &fileName() const
     { return _fileName; }
@@ -200,9 +200,9 @@ public:
     { return _resizeMode; }
 
     /*
-     * slices
+     * Slices.
      */
-    std::vector<Slice> slices() const
+    std::vector<Slice> const &slices() const
     { return _slices; }
     std::vector<Slice> &slices()
     { return _slices; }
@@ -210,7 +210,7 @@ public:
     /*
      * uti
      */
-    ext::optional<std::string> uti() const
+    ext::optional<std::string> const &uti() const
     { return _uti; }
     ext::optional<std::string> &uti()
     { return _uti; }

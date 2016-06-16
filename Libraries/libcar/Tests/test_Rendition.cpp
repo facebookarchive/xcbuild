@@ -290,4 +290,59 @@ TEST(Rendition, TestRenditionJPEG)
     EXPECT_TRUE(deserialized_bytes == test_data);
 }
 
+TEST(Rendition, TestRenditionSlices)
+{
+    uint16_t rendition_key[13] = {
+        1,                                        // scale
+        car_attribute_identifier_idiom_value_pad, // idiom
+        3,                                        // subtype
+        4,                                        // graphics_class
+        5,                                        // memory_class
+        car_attribute_identifier_size_class_value_compact, // size_class_horizontal
+        car_attribute_identifier_size_class_value_regular, // size_class_vertical
+        8,                                        // identifier
+        9,                                        // element
+        10,                                       // part
+        11,                                       // state
+        12,                                       // value
+        13,                                       // dimension1
+    };
+    car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
+
+    size_t width = 100;
+    size_t height = 100;
+
+    car::Rendition::Data::Format format = car::Rendition::Data::Format::PremultipliedBGRA8;
+    std::vector<uint8_t> test_bitmap_bytes(width*height*4);
+
+    // Construct a Rendition using test_bitmap_bytes and slices
+    auto data = ext::optional<car::Rendition::Data>(car::Rendition::Data(test_bitmap_bytes, format));
+    car::Rendition rendition = car::Rendition::Create(attributes, data);
+    rendition.width() = width;
+    rendition.height() = height;
+    rendition.scale() = 1.0;
+    rendition.fileName() = std::string("test.png");
+    rendition.layout() = car_rendition_value_layout_nine_part_tile;
+
+    // Add slices
+    uint32_t slice_value = 0;
+    for (size_t i = 0; i < 9; i++) {
+        Rendition::Slice slice = { ++slice_value, ++slice_value, ++slice_value, ++slice_value };
+        rendition.slices().push_back(slice);
+    }
+
+    // Serialise rendition.
+    std::vector<uint8_t> rendition_value = rendition.write();
+
+    // deserialize and compare
+    car::Rendition deserialized_rendition = car::Rendition::Load(attributes, reinterpret_cast<struct car_rendition_value *>(rendition_value.data()));
+    EXPECT_TRUE(deserialized_rendition.slices().size() == rendition.slices().size());
+
+    for (size_t i = 0; i < rendition.slices().size(); i++) {
+        EXPECT_TRUE(deserialized_rendition.slices()[i].x == rendition.slices()[i].x);
+        EXPECT_TRUE(deserialized_rendition.slices()[i].y == rendition.slices()[i].y);
+        EXPECT_TRUE(deserialized_rendition.slices()[i].width == rendition.slices()[i].width);
+        EXPECT_TRUE(deserialized_rendition.slices()[i].height == rendition.slices()[i].height);
+    }
+}
 
