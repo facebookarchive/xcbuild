@@ -126,7 +126,7 @@ CompileContents(ext::optional<car::Writer> &writer, std::string ns, std::shared_
         case xcassets::Asset::AssetType::Group: {
             auto group = std::static_pointer_cast<xcassets::Asset::Group>(asset);
             if (group->providesNamespace()) {
-            	ns = ns + std::string("/") + name;
+                ns = ns + std::string("/") + name;
             }
             CompileChildren(writer, ns, asset, group->children(), result);
             break;
@@ -161,7 +161,7 @@ CompileContents(ext::optional<car::Writer> &writer, std::string ns, std::shared_
         case xcassets::Asset::AssetType::SpriteAtlas: {
             auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
             if (spriteAtlas->providesNamespace()) {
-            	ns = ns + std::string("/") + name;
+                ns = ns + std::string("/") + name;
             }
             CompileChildren(writer, ns, asset, spriteAtlas->children(), result);
             break;

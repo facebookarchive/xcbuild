@@ -225,9 +225,9 @@ static bool readPNGFile(const char *filename, std::vector<unsigned char> &pixels
 
 static uint16_t
 GenerateIdentifier(void) {
-	static uint16_t last = 0;
-	last = last + 1;
-	return last;
+    static uint16_t last = 0;
+    last = last + 1;
+    return last;
 }
 
 bool
