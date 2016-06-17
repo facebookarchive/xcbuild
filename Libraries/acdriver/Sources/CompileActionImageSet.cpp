@@ -230,20 +230,6 @@ GenerateIdentifier(void) {
 	return last;
 }
 
-static bool ends_with(const std::string &str, const std::set<std::string> &endings)
-{
-    std::string lower(str.size(), '\0');
-    std::transform(str.begin(), str.end(), lower.begin(), ::tolower);
-
-    for (auto ending : endings) {
-        if (lower.size() >= ending.size() &&
-            lower.substr(lower.size()-ending.size(), lower.size()-1) == ending) {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool
 CompileContents(ext::optional<car::Writer> &writer, std::string ns, std::shared_ptr<xcassets::Asset::Asset> const &parent, xcassets::Asset::ImageSet::Image const &image, Result *result)
 {
@@ -297,14 +283,18 @@ CompileContents(ext::optional<car::Writer> &writer, std::string ns, std::shared_
     size_t channels = 0;
     car::Rendition::Data::Format format;
 
-    if (ends_with(filename, {std::string("png")})) {
+    std::string filenameLowerCase(filename.size(), '\0');
+    std::transform(filename.begin(), filename.end(), filenameLowerCase.begin(), ::tolower);
+
+    if (FSUtil::GetFileExtension(filenameLowerCase) == "png") {
         if(!readPNGFile(filename.c_str(), pixels, &width, &height, &channels, result)) {
             return false;
         }
         format = channels == 4 ?
         car::Rendition::Data::Format::PremultipliedBGRA8 :
         car::Rendition::Data::Format::PremultipliedGA8;
-    } else if (ends_with(filename, {std::string("jpg"), std::string("jpeg")})) {
+    } else if (FSUtil::GetFileExtension(filenameLowerCase) == "jpg" ||
+        FSUtil::GetFileExtension(filenameLowerCase) == "jpeg") {
         std::ifstream inputFile = std::ifstream(filename.c_str(), std::ios::binary);
         if (inputFile.is_open()) {
             inputFile.seekg(0, std::ios::end);   
