@@ -13,6 +13,9 @@
 #include <plist/Base.h>
 #include <plist/Objects.h>
 
+#include <plist/Operations/Adjustment.h>
+#include <plist/Operations/Operations.h>
+
 #include <plist/Keys/Unpack.h>
 
 #include <plist/Format/Encoding.h>
