@@ -533,14 +533,12 @@ write() const
     info_slices->header.magic = car_rendition_info_magic_slices;
     info_slices->header.length = info_slices_size - sizeof(car_rendition_info_header);
     if (_slices.size() > 0) {
-        int index = 0;
         info_slices->nslices = _slices.size();
-        for (auto const &slice : _slices) {
-            info_slices->slices[index].x = slice.x;
-            info_slices->slices[index].y = slice.y;
-            info_slices->slices[index].width = slice.width;
-            info_slices->slices[index].height = slice.height;
-            index += 1;
+        for (size_t i = 0; i < _slices.size(); i++) {
+            info_slices->slices[i].x = _slices[i].x;
+            info_slices->slices[i].y = _slices[i].y;
+            info_slices->slices[i].width = _slices[i].width;
+            info_slices->slices[i].height = _slices[i].height;
         }
     } else {
         info_slices->nslices = 1;
