@@ -563,7 +563,7 @@ write() const
 
     struct car_rendition_info_composition info_composition;
     info_composition.header.magic = car_rendition_info_magic_composition;
-    info_composition.header.length = sizeof(struct car_rendition_info_composition) - sizeof(struct car_rendition_info_header);;
+    info_composition.header.length = sizeof(struct car_rendition_info_composition) - sizeof(struct car_rendition_info_header);
     info_composition.blend_mode = 0;
     info_composition.opacity = 1;
 
@@ -624,7 +624,7 @@ write() const
     }
 
     std::vector<uint8_t> output = std::vector<uint8_t>(rendition_header_size + extra_headers_size + compressed_data_length);
-    uint8_t *output_bytes = reinterpret_cast<uint8_t *>(output.data());;
+    uint8_t *output_bytes = reinterpret_cast<uint8_t *>(output.data());
 
     memcpy(output_bytes, &header, sizeof(struct car_rendition_value));
     output_bytes += sizeof(struct car_rendition_value);

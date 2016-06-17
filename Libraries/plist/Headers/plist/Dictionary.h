@@ -116,7 +116,7 @@ public:
 
     inline void remove(std::string const &key)
     {
-        auto it = _map.find(key);;
+        auto it = _map.find(key);
 
         if (it != _map.end()) {
             _map.erase(it);
