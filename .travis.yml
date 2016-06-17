@@ -9,7 +9,7 @@ sudo: false
 matrix:
   include:
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc4.8
       env:
         - CC=gcc-4.8
