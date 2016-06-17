@@ -179,7 +179,7 @@ Load(
             case car_rendition_info_magic_slices: {
                 std::vector<Slice> slices;
                 struct car_rendition_info_slices *info_slices = (struct car_rendition_info_slices *)info_header;
-                for(int i = 0; i < info_slices->nslices; i++) {
+                for(unsigned int i = 0; i < info_slices->nslices; i++) {
                         Slice slice = {
                             info_slices->slices[i].x,
                             info_slices->slices[i].y,
