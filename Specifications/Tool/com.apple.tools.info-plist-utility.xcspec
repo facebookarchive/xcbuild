@@ -1,0 +1,73 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Tool;
+    Identifier = com.apple.tools.info-plist-utility;
+    Name = "Info Property List Utility";
+    CommandLine = "builtin-infoPlistUtility [input] [options] -o [output]";
+    AdditionalInputFiles = "$(AdditionalContentFilePaths)";
+
+    Options = (
+        {
+            Name = "GeneratedPkgInfoFile";
+            Type = String;
+            CommandLineFlag = "-genpkginfo";
+            OutputDependencies = "$(GeneratedPkgInfoFile)";
+        },
+        {
+            Name = "ExpandBuildSettings";
+            Type = Boolean;
+            CommandLineFlag = "-expandbuildsettings";
+        },
+        {
+            Name = "PLATFORM_NAME";
+            Type = String;
+            CommandLineFlag = "-platform";
+        },
+        {
+            Name = "CODE_SIGN_RESOURCE_RULES_IN_BUNDLE";
+            Type = String;
+            CommandLineFlag = "-resourcerulesfile";
+        },
+        {
+            Name = "OutputFormat";
+            Type = Enumeration;
+            DefaultValue = "same-as-input";
+            CommandLineArgs = {
+                "same-as-input" = ( );
+                "binary" = ( "-format", "binary" );
+                "xml" = ( "-format", "xml" );
+                "XML" = ( "-format", "xml" );
+                "openstep" = ( "-format", "openstep" );
+                "<<otherwise>>" = ( "-format", "$(value)" );
+            };
+        },
+        {
+            Name = "AdditionalContentFilePaths";
+            Type = PathList;
+            CommandLineFlag = "-additionalcontentfile";
+        },
+        {
+            Name = "RequiredArchitectures";
+            Type = StringList;
+            CommandLineFlag = "-requiredArchitecture";
+        },
+        {
+            Name = "AdditionalInfoFileKeys";
+            Type = StringList;
+            CommandLineFlag = "-infofilekeys";
+        },
+        {
+            Name = "AdditionalInfoFileValues";
+            Type = StringList;
+            CommandLineFlag = "-infofilevalues";
+        },
+    );
+}

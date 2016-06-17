@@ -58,7 +58,7 @@ inherit(Specification::shared_ptr const &base)
     if (base->type() != BuildPhase::Type())
         return false;
 
-    return inherit(reinterpret_cast <BuildPhase::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<BuildPhase>(base));
 }
 
 bool BuildPhase::

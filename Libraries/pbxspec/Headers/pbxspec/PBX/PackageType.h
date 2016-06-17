@@ -64,8 +64,8 @@ public:
     { return PackageType::Type(); }
 
 public:
-    inline PackageType::shared_ptr const &base() const
-    { return reinterpret_cast <PackageType::shared_ptr const &> (Specification::base()); }
+    inline PackageType::shared_ptr base() const
+    { return std::static_pointer_cast<PackageType>(Specification::base()); }
 
 public:
     inline ext::optional<ProductReference> const &productReference() const

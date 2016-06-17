@@ -37,8 +37,8 @@ public:
     { return Linker::Type(); }
 
 public:
-    inline Linker::shared_ptr const &base() const
-    { return reinterpret_cast <Linker::shared_ptr const &> (Tool::base()); }
+    inline Linker::shared_ptr base() const
+    { return std::static_pointer_cast<Linker>(Tool::base()); }
 
 public:
     inline ext::optional<std::vector<std::string>> const &binaryFormats() const

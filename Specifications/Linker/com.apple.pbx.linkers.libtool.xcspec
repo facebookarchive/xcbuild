@@ -1,0 +1,102 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Linker;
+    Identifier = com.apple.pbx.linkers.libtool;
+    Name = "Create Static Library Tool";
+
+    CommandLine = "$(LIBTOOL) $(arch) [options] [special-args] -o $(OutputPath)";
+    RuleName = "Libtool $(OutputPath) $(variant) $(arch)";
+
+    SupportsInputFileList = YES;
+    InputFileTypes = (
+        "compiled.mach-o.objfile",
+    );
+    Outputs = (
+        "$(OutputPath)",
+    );
+
+    Options = (
+        {
+            Name = "LIBTOOL_DEPLOYMENT_TARGET";
+            Type = String;
+            DefaultValue = "$($(DEPLOYMENT_TARGET_SETTING_NAME))";
+            SetValueInEnvironmentVariable = "$(DEPLOYMENT_TARGET_CLANG_ENV_NAME)";
+        },
+        {
+            Name = "LIBTOOL";
+            Type = Path;
+            DefaultValue = "libtool";
+        },
+        {
+            Name = "__LIBTOOL_FORMAT__";
+            Type = String;
+            DefaultValue = "staticlib";
+            CommandLineArgs = {
+                "staticlib" = ( "-static" );
+                "mh_dylib" = ( "-dynamic" );
+            };
+        },
+        {
+            Name = "__LIBTOOL_ARCH__";
+            Type = String;
+            DefaultValue = "$(arch)";
+            CommandLineFlag = "-arch_only";
+        },
+        {
+            Name = "__LIBTOOL_FILELIST__";
+            Type = String;
+            DefaultValue = "$(LINK_FILE_LIST_$(variant)_$(arch))";
+            CommandLineFlag = "-filelist";
+            IsInputDependency = YES;
+        },
+
+        /* Built-in flags. */
+        {
+            Name = "SDKROOT";
+            Type = String;
+            CommandLineFlag = "-syslibroot";
+            IsInputDependency = YES;
+        },
+        {
+            Name = "LIBRARY_SEARCH_PATHS";
+            Type = PathList;
+            FlattenRecursiveSearchPathsInValue = YES;
+            CommandLinePrefixFlag = "-L";
+        },
+        {
+            Name = "EXPORTED_SYMBOLS_FILE";
+            Type = Path;
+            Condition = "$(SEPARATE_SYMBOL_EDIT) == NO";
+            CommandLineFlag = "-exported_symbols_list";
+            IsInputDependency = YES;
+        },
+        {
+            Name = "UNEXPORTED_SYMBOLS_FILE";
+            Type = Path;
+            Condition = "$(SEPARATE_SYMBOL_EDIT) == NO";
+            CommandLineFlag = "-unexported_symbols_list";
+            IsInputDependency = YES;
+        },
+
+        /* Custom flags. */
+        {
+            Name = "OTHER_LIBTOOLFLAGS";
+            Type = StringList;
+            /* Used in ALL_OTHER_LIBTOOLFLAGS. */
+        },
+        {
+            Name = "ALL_OTHER_LIBTOOLFLAGS";
+            Type = StringList;
+            DefaultValue = "$(OTHER_LIBTOOLFLAGS) $(OTHER_LIBTOOLFLAGS_$(variant)) $(OTHER_LIBTOOLFLAGS_$(arch)) $(OTHER_LIBTOOLFLAGS_$(variant)_$(arch)) $(PRODUCT_SPECIFIC_LIBTOOLFLAGS)";
+            CommandLinePrefixFlag = "";
+        },
+    );
+}

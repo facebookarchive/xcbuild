@@ -30,4 +30,4 @@ add_library(xcscheme SHARED
 
 target_link_libraries(xcscheme PUBLIC pbxsetting util plist)
 target_include_directories(xcscheme PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-install(TARGETS xcscheme DESTINATION lib)
+install(TARGETS xcscheme DESTINATION usr/lib)

@@ -324,7 +324,7 @@ inherit(Specification::shared_ptr const &base)
     if (base->type() != Tool::Type())
         return false;
 
-    return inherit(reinterpret_cast <Tool::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<Tool>(base));
 }
 
 bool Tool::
@@ -360,7 +360,7 @@ inherit(Tool::shared_ptr const &b)
     _deletedProperties                   = Inherit::Combine(_deletedProperties, base->_deletedProperties);
     _environmentVariables                = Inherit::Combine(_environmentVariables, base->_environmentVariables);
     _successExitCodes                    = Inherit::Combine(_successExitCodes, base->_successExitCodes);
-    _commandOutputParser                 = _commandOutputParser ?: base->_commandOutputParser->copy().release();
+    _commandOutputParser                 = _commandOutputParser ?: (base->_commandOutputParser ? base->_commandOutputParser->copy().release() : nullptr);
     _isAbstract                          = Inherit::Override(_isAbstract, base->_isAbstract);
     _isArchitectureNeutral               = Inherit::Override(_isArchitectureNeutral, base->_isArchitectureNeutral);
     _caresAboutInclusionDependencies     = Inherit::Override(_caresAboutInclusionDependencies, base->_caresAboutInclusionDependencies);

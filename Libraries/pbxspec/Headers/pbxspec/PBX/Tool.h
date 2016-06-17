@@ -71,8 +71,8 @@ public:
     { return Tool::Type(); }
 
 public:
-    inline Tool::shared_ptr const &base() const
-    { return reinterpret_cast <Tool::shared_ptr const &> (Specification::base()); }
+    inline Tool::shared_ptr base() const
+    { return std::static_pointer_cast<Tool>(Specification::base()); }
 
 public:
     inline ext::optional<pbxsetting::Value> const &execPath() const

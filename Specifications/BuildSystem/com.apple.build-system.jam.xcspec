@@ -13,5 +13,35 @@
     BasedOn = com.apple.build-system.core;
 
     Options = (
+        {
+            Name = "DO_HEADER_SCANNING_IN_JAM";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "FILE_LIST";
+            Type = Path;
+            DefaultValue = "$(OBJECT_FILE_DIR)/LinkFileList";
+        },
+        {
+            Name = "PER_STYLE_BUILD_DIRECTORIES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "PRECOMP_DESTINATION_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/PrefixHeaders";
+        },
+        {
+            Name = "PREFIX_CFLAG_BASE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "PREFIX_REFERENCE";
+            Type = String;
+            DefaultValue = "";
+        },
     );
 }

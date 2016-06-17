@@ -103,8 +103,8 @@ public:
     { return ProductType::Type(); }
 
 public:
-    inline ProductType::shared_ptr const &base() const
-    { return reinterpret_cast <ProductType::shared_ptr const &> (Specification::base()); }
+    inline ProductType::shared_ptr base() const
+    { return std::static_pointer_cast<ProductType>(Specification::base()); }
 
 public:
     inline ext::optional<std::string> const &defaultTargetName() const

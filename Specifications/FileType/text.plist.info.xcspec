@@ -16,4 +16,5 @@
     FilenamePatterns = (
         "*Info*.plist",
     );
+    ChangesCauseDependencyGraphInvalidation = YES;
 }

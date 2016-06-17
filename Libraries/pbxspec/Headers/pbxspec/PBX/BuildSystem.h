@@ -40,8 +40,8 @@ public:
     { return BuildSystem::Type(); }
 
 public:
-    inline BuildSystem::shared_ptr const &base() const
-    { return reinterpret_cast <BuildSystem::shared_ptr const &> (Specification::base()); }
+    inline BuildSystem::shared_ptr base() const
+    { return std::static_pointer_cast<BuildSystem>(Specification::base()); }
 
 public:
     inline ext::optional<PropertyOption::vector> const &options() const

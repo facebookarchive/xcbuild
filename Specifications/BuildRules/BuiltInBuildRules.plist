@@ -1,0 +1,51 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+(
+    {
+        Name = "Compile C";
+        FileType = "sourcecode.c";
+        CompilerSpec = "com.apple.compilers.gcc";
+    },
+    {
+        Name = "Assemble Nasm";
+        FileType = "sourcecode.nasm";
+        CompilerSpec = "com.apple.compilers.nasm";
+    },
+    {
+        Name = "Assemble";
+        FileType = "sourcecode.asm";
+        CompilerSpec = "com.apple.compilers.gcc";
+    },
+    {
+        Name = "Lex";
+        FileType = "sourcecode.lex";
+        CompilerSpec = "com.apple.compilers.lex";
+    },
+    {
+        Name = "Yacc";
+        FileType = "sourcecode.yacc";
+        CompilerSpec = "com.apple.compilers.yacc";
+    },
+    {
+        Name = "Rez";
+        FileType = "sourcecode.rez";
+        CompilerSpec = "com.apple.compilers.rez";
+    },
+    {
+        Name = "MiG";
+        FileType = "sourcecode.mig";
+        CompilerSpec = "com.apple.compilers.mig";
+    },
+    {
+        Name = "Compile DTrace";
+        FileType = "sourcecode.dtrace";
+        CompilerSpec = "com.apple.compilers.dtrace";
+    },
+)

@@ -29,7 +29,7 @@ inherit(Specification::shared_ptr const &base)
     if (base->type() != FileType::Type())
         return false;
 
-    return inherit(reinterpret_cast <FileType::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<FileType>(base));
 }
 
 bool FileType::

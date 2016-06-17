@@ -12,6 +12,7 @@
 #include <libutil/FSUtil.h>
 
 using xcsdk::SDK::Manager;
+using xcsdk::SDK::Platform;
 using xcsdk::SDK::Target;
 using xcsdk::SDK::Toolchain;
 using pbxsetting::Setting;
@@ -58,6 +59,21 @@ findToolchain(std::string const &name) const
     }
 
     return nullptr;
+}
+
+std::vector<Platform::shared_ptr> Manager::
+findPlatformFamily(std::string const &identifier)
+{
+    std::vector<Platform::shared_ptr> platforms;
+
+    for (Platform::shared_ptr const &platform : _platforms) {
+        /* Match by family identifier. */
+        if (platform->familyIdentifier() == identifier) {
+            platforms.push_back(platform);
+        }
+    }
+
+    return platforms;
 }
 
 pbxsetting::Level Manager::

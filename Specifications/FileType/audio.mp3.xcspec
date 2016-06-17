@@ -1,0 +1,37 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = FileType;
+    Identifier = audio.mp3;
+    BasedOn = audio;
+
+    UTI = "public.mp3";
+    Extensions = (
+        "mp3",
+    );
+    TypeCodes = (
+        "MPG3",
+        "mpg3",
+        "Mp3 ",
+        "MP3 ",
+        "mp3!",
+        "MP3!",
+    );
+    MIMETypes = (
+        "audio/mpeg",
+        "audio/mpeg3",
+        "audio/mpg",
+        "audio/mp3",
+        "audio/x-mpeg",
+        "audio/x-mpeg3",
+        "audio/x-mpg",
+        "audio/x-mp3",
+    );
+}

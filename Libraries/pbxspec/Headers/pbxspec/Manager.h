@@ -156,14 +156,12 @@ public:
     static std::vector<std::pair<std::string, std::string>>
     DefaultDomains(std::string const &developerRoot);
     static std::vector<std::pair<std::string, std::string>>
-    EmbeddedDomains(std::string const &developerRoot);
-    static std::vector<std::pair<std::string, std::string>>
-    PlatformDomains(std::string const &developerRoot, std::string const &platformName, std::string const &platformPath);
+    PlatformDomains(std::unordered_map<std::string, std::string> const &platform);
     static std::vector<std::pair<std::string, std::string>>
     PlatformDependentDomains(std::string const &developerRoot);
 
 public:
-    static std::string
+    static std::vector<std::string>
     DeveloperBuildRules(std::string const &developerRoot);
 };
 

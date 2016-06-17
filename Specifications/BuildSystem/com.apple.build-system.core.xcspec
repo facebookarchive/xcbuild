@@ -13,5 +13,673 @@
     BasedOn = com.apple.buildsettings.standard;
 
     Options = (
+        /* Build */
+        {
+            Name = "BUILD_STYLE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "BUILD_VARIANTS";
+            Type = StringList;
+            DefaultValue = "normal";
+        },
+        {
+            Name = "CONFIGURATION";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "TOOLCHAINS";
+            Type = StringList;
+            DefaultValue = "";
+            /* Set in code. */
+        },
+
+
+        /* Source Paths */
+        {
+            Name = "PROJECT_DIR";
+            Type = Path;
+            DefaultValue = "$(SRCROOT)";
+            /* Overridden in code. */
+        },
+        {
+            Name = "SOURCE_ROOT";
+            Type = Path;
+            DefaultValue = "$(SRCROOT)";
+        },
+        {
+            Name = "SRCROOT";
+            Type = Path;
+            DefaultValue = ".";
+        },
+
+
+
+        /* Build Paths */
+        {
+            Name = "BUILD_DIR";
+            Type = Path;
+            DefaultValue = "$(SYMROOT)";
+        },
+        {
+            Name = "BUILD_ROOT";
+            Type = Path;
+            DefaultValue = "$(SYMROOT)";
+        },
+        {
+            Name = "BUILT_PRODUCTS_DIR";
+            Type = Path;
+            DefaultValue = "$(CONFIGURATION_BUILD_DIR)";
+        },
+        {
+            Name = "CONFIGURATION_BUILD_DIR";
+            Type = Path;
+            DefaultValue = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+        },
+        {
+            Name = "TARGET_BUILD_DIR";
+            Type = Path;
+            DefaultValue = "$(CONFIGURATION_BUILD_DIR)";
+        },
+        {
+            Name = "SYMROOT";
+            Type = Path;
+            DefaultValue = "build";
+            /* Overridden in code. */
+        },
+
+
+        /* Intermediate Paths */
+        {
+            Name = "CONFIGURATION_TEMP_DIR";
+            Type = Path;
+            DefaultValue = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+        },
+        {
+            Name = "OBJECT_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)/Objects";
+        },
+        {
+            Name = "OBJROOT";
+            Type = Path;
+            DefaultValue = "$(SYMROOT)";
+            /* Overridden in code. */
+        },
+        {
+            Name = "PROJECT_TEMP_DIR";
+            Type = Path;
+            DefaultValue = "$(PROJECT_TEMP_ROOT)/$(PROJECT_NAME).build";
+        },
+        {
+            Name = "PROJECT_TEMP_ROOT";
+            Type = Path;
+            DefaultValue = "$(OBJROOT)";
+        },
+        {
+            Name = "TARGET_TEMP_DIR";
+            Type = Path;
+            DefaultValue = "$(CONFIGURATION_TEMP_DIR)/$(TARGET_NAME).build";
+        },
+        {
+            Name = "TEMP_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)";
+        },
+        {
+            Name = "TEMP_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)";
+        },
+        {
+            Name = "TEMP_ROOT";
+            Type = Path;
+            DefaultValue = "$(OBJROOT)";
+        },
+
+
+        /* Derived Paths */
+        {
+            Name = "PROJECT_DERIVED_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(OBJROOT)/$(PROJECT_NAME).build/DerivedSources";
+        },
+        {
+            Name = "DERIVED_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/DerivedSources";
+        },
+        {
+            Name = "DERIVED_SOURCES_DIR";
+            Type = Path;
+            DefaultValue = "$(DERIVED_FILE_DIR)";
+        },
+        {
+            Name = "SHARED_DERIVED_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(BUILT_PRODUCTS_DIR)/DerivedSources";
+        },
+
+
+        /* Architectures */
+        {
+            Name = "ARCHS";
+            Type = StringList;
+            DefaultValue = "$(ARCHS_STANDARD)";
+        },
+        {
+            Name = "ARCHS_STANDARD_32_BIT";
+            Type = StringList;
+            /* Set by platform. */
+        },
+        {
+            Name = "ARCHS_STANDARD_64_BIT";
+            Type = StringList;
+            /* Set by platform. */
+        },
+        {
+            Name = "ARCHS_STANDARD_32_64_BIT";
+            Type = StringList;
+            /* Set by platform. */
+        },
+        {
+            Name = "NATIVE_ARCH";
+            Type = String;
+            /* Set in code. */
+        },
+        {
+            Name = "NATIVE_ARCH_32_BIT";
+            Type = String;
+            /* Set in code. */
+        },
+        {
+            Name = "NATIVE_ARCH_64_BIT";
+            Type = String;
+            /* Set in code. */
+        },
+        {
+            Name = "NATIVE_ARCH_ACTUAL";
+            Type = String;
+            /* Set in code. */
+        },
+        {
+            Name = "ONLY_ACTIVE_ARCH";
+            Type = Boolean;
+        },
+        {
+            Name = "VALID_ARCHS";
+            Type = StringList;
+            /* Set in code. */
+        },
+
+
+        /* Compilation */
+        {
+            Name = "APPLICATION_EXTENSION_API_ONLY";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "CC";
+            Type = Path;
+        },
+        {
+            Name = "DEFAULT_COMPILER";
+            Type = String;
+            DefaultValue = "";
+            /* Set in code. */
+        },
+        {
+            Name = "GCC3_VERSION";
+            Type = String;
+            DefaultValue = "3.3";
+        },
+        {
+            Name = "GCC_VERSION";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "OTHER_CFLAGS";
+            Type = StringList;
+        },
+        {
+            Name = "OTHER_CPLUSPLUSFLAGS";
+            Type = StringList;
+            DefaultValue = "$(OTHER_CFLAGS)";
+        },
+
+
+        /* Header Map */
+        {
+            Name = "HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "HEADERMAP_INCLUDES_NONPUBLIC_NONPRIVATE_HEADERS";
+            Type = Boolean;
+            DefaultValue = "$(HEADERMAP_INCLUDES_PROJECT_HEADERS)";
+        },
+        {
+            Name = "HEADERMAP_INCLUDES_PROJECT_HEADERS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "HEADERMAP_USES_FRAMEWORK_PREFIX_ENTRIES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "HEADERMAP_USES_VFS";
+            Type = Boolean;
+            DefaultValue = "$(DEFINES_MODULE)";
+        },
+        {
+            Name = "USE_HEADERMAP";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "USE_HEADER_SYMLINKS";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+
+
+        /* Modules */
+        {
+            Name = "DEFINES_MODULE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "MODULE_CACHE_DIR";
+            Type = Path;
+            DefaultValue = "$(DERIVED_DATA_DIR)/ModuleCache";
+        },
+        {
+            Name = "MODULEMAP_FILE";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "MODULEMAP_PRIVATE_FILE";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "PRODUCT_MODULE_NAME";
+            Type = String;
+            DefaultValue = "$(PRODUCT_NAME:c99extidentifier)";
+        },
+
+
+        /* Code Signing */
+        {
+            Name = "CODE_SIGNING_ALLOWED";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "CODE_SIGN_ENTITLEMENTS";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "CODE_SIGN_IDENTITY";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "CODE_SIGN_RESOURCE_RULES_PATH";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "EMBEDDED_PROFILE_NAME";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "OTHER_CODE_SIGN_FLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "PROVISIONING_PROFILE";
+            Type = String;
+            DefaultValue = "";
+        },
+
+
+        /* Installation */
+        {
+            Name = "DSTROOT";
+            Type = Path;
+            DefaultValue = "/tmp/$(PROJECT_NAME).dst";
+        },
+        {
+            Name = "INSTALL_DIR";
+            Type = Path;
+            DefaultValue = "$(DSTROOT)$(INSTALL_PATH)";
+        },
+        {
+            Name = "INSTALL_GROUP";
+            Type = String;
+            DefaultValue = "$(GROUP)";
+        },
+        {
+            Name = "INSTALL_MODE_FLAG";
+            Type = String;
+            DefaultValue = "u+w,go-w,a+rX";
+        },
+        {
+            Name = "INSTALL_OWNER";
+            Type = String;
+            DefaultValue = "$(USER)";
+        },
+        {
+            Name = "INSTALL_ROOT";
+            Type = Path;
+            DefaultValue = "$(DSTROOT)";
+        },
+        {
+            Name = "STRIP_INSTALLED_PRODUCT";
+            Type = Boolean;
+            DefaultValue = "";
+        },
+
+
+        /* Product Structure */
+        {
+            Name = "FRAMEWORK_VERSION";
+            Type = String;
+            DefaultValue = "A";
+        },
+        {
+            Name = "FULL_PRODUCT_NAME";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "LOCALIZABLE_CONTENT_DIR";
+            Type = Path;
+            DefaultValue = "";
+        },
+
+
+        /* On-Demand Resources */
+        {
+            Name = "ASSET_PACK_MANIFEST_URL_PREFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "BUILD_ACTIVE_RESOURCES_ONLY";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "ENABLE_ON_DEMAND_RESOURCES";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "ON_DEMAND_RESOURCES_INITIAL_INSTALL_TAGS";
+            Type = StringList;
+        },
+        {
+            Name = "ON_DEMAND_RESOURCES_PREFETCH_ORDER";
+            Type = StringList;
+        },
+        {
+            Name = "WRAP_ASSET_PACKS_IN_SEPARATE_DIRECTORIES";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+
+
+        /* TAPI */
+        {
+            Name = "OTHER_TAPI_FLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "SUPPORTS_TEXT_BASED_API";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "TAPI_VERIFY_MODE";
+            Type = Enumeration;
+            Values = (
+                "ErrorsOnly",
+                "ErrorsAndWarnings",
+                "Pedantic",
+            );
+            DefaultValue = "ErrorsOnly";
+        },
+        {
+            Name = "TEXT_BASED_API_FILE";
+            Type = Path;
+            DefaultValue = "";
+        },
+
+
+        /* Java */
+        {
+            Name = "CLASS_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/JavaClasses";
+        },
+        {
+            Name = "JAVA_APP_STUB";
+            Type = Path;
+            DefaultValue = "$(SYSTEM_LIBRARY_DIR)/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub";
+        },
+        {
+            Name = "JAVA_ARCHIVE_CLASSES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "JAVA_ARCHIVE_TYPE";
+            Type = String;
+            DefaultValue = "JAR";
+        },
+        {
+            Name = "JAVA_COMPILER";
+            Type = String;
+            DefaultValue = "/usr/bin/javac";
+        },
+        {
+            Name = "JAVA_FRAMEWORK_JARS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+        {
+            Name = "JAVA_FRAMEWORK_RESOURCES_DIRS";
+            Type = PathList;
+            DefaultValue = "Resources";
+        },
+        {
+            Name = "JAVA_JAR_FLAGS";
+            Type = StringList;
+            DefaultValue = "cv";
+        },
+        {
+            Name = "JAVA_SOURCE_SUBDIR";
+            Type = Path;
+            DefaultValue = ".";
+        },
+        {
+            Name = "JAVA_USE_DEPENDENCIES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "JAVA_ZIP_FLAGS";
+            Type = StringList;
+            DefaultValue = "-urg";
+        },
+
+
+        /* Jam Build System */
+        {
+            Name = "DO_HEADER_SCANNING_IN_JAM";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "FILE_LIST";
+            Type = Path;
+            DefaultValue = "$(OBJECT_FILE_DIR)/LinkFileList";
+        },
+
+
+        /* com.apple.compilers.pbxcp */
+        {
+            Name = "COPY_PHASE_STRIP";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "REMOVE_CVS_FROM_RESOURCES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "REMOVE_GIT_FROM_RESOURCES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "REMOVE_HG_FROM_RESOURCES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "REMOVE_SVN_FROM_RESOURCES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+
+
+        /* com.apple.pbx.linkers.ld */
+        {
+            Name = "REEXPORTED_FRAMEWORK_NAMES";
+            Type = StringList;
+        },
+        {
+            Name = "REEXPORTED_LIBRARY_NAMES";
+            Type = StringList;
+        },
+        {
+            Name = "REEXPORTED_LIBRARY_PATHS";
+            Type = PathList;
+        },
+
+
+        /* Unsorted */
+        {
+            Name = "CLONE_HEADERS";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "COPY_HEADERS_RUN_UNIFDEF";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "COPY_HEADERS_UNIFDEF_FLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "DEBUGGING_SYMBOLS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "ENABLE_HEADER_DEPENDENCIES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "ENABLE_TESTABILITY";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "LIBRARY_FLAG_NOSPACE";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "LIBRARY_FLAG_PREFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "LOCROOT";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "LOCSYMROOT";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "MAC_OS_X_VERSION_MAX_ALLOWED";
+            Type = String;
+        },
+        {
+            Name = "MAC_OS_X_VERSION_MIN_REQUIRED";
+            Type = String;
+        },
+        {
+            Name = "PATH_PREFIXES_EXCLUDED_FROM_HEADER_DEPENDENCIES";
+            Type = PathList;
+            DefaultValue = "/usr/include /usr/local/include /System/Library/Frameworks /System/Library/PrivateFrameworks $(SYSTEM_DEVELOPER_DIR)/Headers $(SYSTEM_DEVELOPER_DIR)/SDKs $(SYSTEM_DEVELOPER_DIR)/Platforms";
+        },
+        {
+            Name = "PROFILING_CODE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "REEXPORTED_FRAMEWORK_INSTALL_NAMES";
+            Type = StringList;
+        },
+        {
+            Name = "REEXPORTED_LIBRARY_INSTALL_NAMES";
+            Type = StringList;
+        },
+        {
+            Name = "RESOURCES_TARGETED_DEVICE_FAMILY";
+            Type = StringList;
+        },
+        {
+            Name = "REZ_EXECUTABLE";
+            Type = Path;
+            DefaultValue = "";
+        },
     );
 }

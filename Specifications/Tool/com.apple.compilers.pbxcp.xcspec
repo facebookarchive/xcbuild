@@ -1,0 +1,130 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Tool;
+    Identifier = com.apple.compilers.pbxcp;
+    Name = "Copy Utility";
+    CommandLine = "builtin-copy [options] [inputs] [output]";
+    RuleName = "$(pbxcp_rule_name) $(OutputFile:quote) $(InputFile:quote)";
+    DeeplyStatInputDirectories = YES;
+
+    Options = (
+        {
+            Name = "VERBOSE_PBXCP";
+            Type = Boolean;
+            CommandLineFlag = "-V";
+        },
+
+        /* Behavioral options. */
+        {
+            Name = "_resolve_src_symlinks_";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-resolve-src-symlinks";
+        },
+        {
+            Name = "COPYING_PRESERVES_HFS_DATA";
+            Type = Boolean;
+            CommandLineFlag = "-preserve-hfs-data";
+        },
+        {
+            Name = "PBXCP_IGNORE_MISSING_INPUTS";
+            Type = Boolean;
+            CommandLineFlag = "-ignore-missing-inputs";
+        },
+
+        /* Excluded files. */
+        {
+            Name = "_exclude_ds_store_files_";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineArgs = {
+                YES = ( "-exclude", ".DS_Store" );
+            };
+        },
+        {
+            Name = "REMOVE_CVS_FROM_RESOURCES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineArgs = {
+                YES = ( "-exclude", "CVS" );
+            };
+        },
+        {
+            Name = "REMOVE_SVN_FROM_RESOURCES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineArgs = {
+                YES = ( "-exclude", ".svn" );
+            };
+        },
+        {
+            Name = "REMOVE_GIT_FROM_RESOURCES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineArgs = {
+                YES = ( "-exclude", ".git" );
+            };
+        },
+        {
+            Name = "REMOVE_HG_FROM_RESOURCES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineArgs = {
+                YES = ( "-exclude", ".hg" );
+            };
+        },
+        {
+            Name = "REMOVE_HEADER_DIRECTORIES";
+            Type = Boolean;
+            CommandLineArgs = {
+                YES = (
+                    "-exclude", "Headers",
+                    "-exclude", "PrivateHeaders",
+                    "-exclude", "Modules",
+                );
+            };
+        },
+
+        /* Strip on copy. */
+        {
+            Name = "COPY_PHASE_STRIP";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-strip-debug-symbols";
+        },
+        {
+            Name = "PBXCP_STRIP_TOOL";
+            Type = Path;
+            CommandLineFlag = "-strip-tool";
+        },
+        {
+            Name = "PBXCP_STRIP_BITCODE";
+            Type = Boolean;
+        },
+        {
+            Name = "PBXCP_BITCODE_STRIP_MODE";
+            Type = Enumeration;
+            Condition = "$(PBXCP_STRIP_BITCODE) == YES";
+            CommandLineArgs = {
+                "" = ( );
+                "none" = ( );
+                "replace-with-marker" = ( "-bitcode-strip", "replace-with-marker" );
+                "all" = ( "-bitcode-strip", "all" );
+                "<<otherwise>>" = ( "-bitcode-strip", "$(value)" );
+            };
+        },
+        {
+            Name = "PBXCP_BITCODE_STRIP_TOOL";
+            Type = Path;
+            CommandLineFlag = "-bitcode-strip-tool";
+        },
+    );
+}

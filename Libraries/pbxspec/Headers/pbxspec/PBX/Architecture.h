@@ -41,8 +41,8 @@ public:
     { return Architecture::Type(); }
 
 public:
-    inline Architecture::shared_ptr const &base() const
-    { return reinterpret_cast <Architecture::shared_ptr const &> (Specification::base()); }
+    inline Architecture::shared_ptr base() const
+    { return std::static_pointer_cast<Architecture>(Specification::base()); }
 
 public:
     inline ext::optional<std::vector<std::string>> const &realArchitectures() const

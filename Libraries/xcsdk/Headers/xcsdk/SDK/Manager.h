@@ -67,6 +67,12 @@ public:
 
 public:
     /*
+     * Finds all platforms in a platform family.
+     */
+    std::vector<Platform::shared_ptr> findPlatformFamily(std::string const &identifier);
+
+public:
+    /*
      * Default settings for the contents of the developer root.
      */
     pbxsetting::Level computedSettings(void) const;

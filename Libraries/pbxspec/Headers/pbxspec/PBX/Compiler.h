@@ -75,8 +75,8 @@ public:
     { return Compiler::Type(); }
 
 public:
-    inline Compiler::shared_ptr const &base() const
-    { return reinterpret_cast <Compiler::shared_ptr const &> (Tool::base()); }
+    inline Compiler::shared_ptr base() const
+    { return std::static_pointer_cast<Compiler>(Tool::base()); }
 
 public:
     inline ext::optional<std::string> const &execCPlusPlusLinkerPath() const

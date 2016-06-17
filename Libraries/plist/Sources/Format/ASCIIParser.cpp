@@ -68,9 +68,12 @@ decrementLevel()
 }
 
 void ASCIIParser::
-abort(std::string const &error)
+abort(std::string const &error, int line)
 {
     _error = error;
+    if (line != -1) {
+        _error = "[line " + std::to_string(line) + "] " + _error;
+    }
     _contextState = ContextState::Aborted;
 }
 
@@ -408,7 +411,7 @@ parse(ASCIIPListLexer *lexer, bool strings)
                 decrementLevel();
 
                 if (getLevel()) {
-                    abort("Encountered premature EOF");
+                    abort("Encountered premature EOF", lexer->line);
                     return false;
                 } else {
                     if (!finish()) {
@@ -419,25 +422,25 @@ parse(ASCIIPListLexer *lexer, bool strings)
                     return true;
                 }
             } else if (token == kASCIIPListLexerEndOfFile) {
-                abort("Encountered premature EOF");
+                abort("Encountered premature EOF", lexer->line);
                 return false;
             } else if (token == kASCIIPListLexerInvalidToken) {
-                abort("Encountered invalid token");
+                abort("Encountered invalid token", lexer->line);
                 return false;
             } else if (token == kASCIIPListLexerUnterminatedLongComment) {
-                abort("Encountered unterminated long comment");
+                abort("Encountered unterminated long comment", lexer->line);
                 return false;
             } else if (token == kASCIIPListLexerUnterminatedUnquotedString) {
-                abort("Encountered unterminated unquoted string");
+                abort("Encountered unterminated unquoted string", lexer->line);
                 return false;
             } else if (token == kASCIIPListLexerUnterminatedQuotedString) {
-                abort("Encountered unterminated quoted string");
+                abort("Encountered unterminated quoted string", lexer->line);
                 return false;
             } else if (token == kASCIIPListLexerUnterminatedData) {
-                abort("Encountered unterminated data");
+                abort("Encountered unterminated data", lexer->line);
                 return false;
             } else {
-                abort("Encountered unrecognized token error code");
+                abort("Encountered unrecognized token error code", lexer->line);
                 return false;
             }
         }
@@ -450,7 +453,7 @@ parse(ASCIIPListLexer *lexer, bool strings)
         switch (state) {
             case kASCIIParsePList:
                 if (isDone()) {
-                    abort("Encountered token when finished.");
+                    abort("Encountered token when finished.", lexer->line);
                     return false;
                 }
 
@@ -508,7 +511,7 @@ parse(ASCIIPListLexer *lexer, bool strings)
                         free(contents);
 
                         if (string == NULL) {
-                            abort("OOM when copying string");
+                            abort("OOM when copying string", lexer->line);
                             return false;
                         }
 
@@ -526,7 +529,7 @@ parse(ASCIIPListLexer *lexer, bool strings)
                         }
                     } else if (token == kASCIIPListLexerTokenData) {
                         if (isDictionary) {
-                            abort("Data cannot be dictionary key");
+                            abort("Data cannot be dictionary key", lexer->line);
                             return false;
                         }
 
@@ -543,7 +546,7 @@ parse(ASCIIPListLexer *lexer, bool strings)
                         free(contents);
 
                         if (data == NULL) {
-                            abort("OOM when copying data");
+                            abort("OOM when copying data", lexer->line);
                             return false;
                         }
 
@@ -552,7 +555,7 @@ parse(ASCIIPListLexer *lexer, bool strings)
                             return false;
                         }
                     } else {
-                        abort("Encountered unexpected token code");
+                        abort("Encountered unexpected token code", lexer->line);
                         return false;
                     }
 
@@ -573,7 +576,7 @@ parse(ASCIIPListLexer *lexer, bool strings)
 
             case kASCIIParseKeyValSeparator:
                 if (token != kASCIIPListLexerTokenDictionaryKeyValSeparator) {
-                    abort("Expected key-value separator; found something else");
+                    abort("Expected key-value separator; found something else", lexer->line);
                     return false;
                 }
                 ASCIIDebug("Found keyval separator");
@@ -586,25 +589,25 @@ parse(ASCIIPListLexer *lexer, bool strings)
                      * Arrays do not require a final separator. Dictionaries do.
                      */
                     token != kASCIIPListLexerTokenArrayEnd) {
-                    abort("Expected entry separator or array end; found something else");
+                    abort("Expected entry separator or array end; found something else", lexer->line);
                     return false;
                 }
 
                 if (isDictionary() && token != ';') {
-                    abort("Expected ';'");
+                    abort("Expected ';'", lexer->line);
                     return false;
                 }
 
                 if (isArray() &&
                     token != ',' &&
                     token != kASCIIPListLexerTokenArrayEnd) {
-                    abort("Expected ',' or ')'");
+                    abort("Expected ',' or ')'", lexer->line);
                     return false;
                 }
 
                 if (token == kASCIIPListLexerTokenArrayEnd) {
                     if (isDictionary()) {
-                        abort(NULL);
+                        abort(NULL, lexer->line);
                         return false;
                     }
                     ASCIIDebug("Found array end");
@@ -627,7 +630,7 @@ parse(ASCIIPListLexer *lexer, bool strings)
                 }
                 break;
             default:
-                abort("Unexpected state");
+                abort("Unexpected state", lexer->line);
                 return false;
         }
     }

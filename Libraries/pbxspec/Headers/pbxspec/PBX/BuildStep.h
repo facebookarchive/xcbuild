@@ -35,8 +35,8 @@ public:
     { return BuildStep::Type(); }
 
 public:
-    inline BuildStep::shared_ptr const &base() const
-    { return reinterpret_cast <BuildStep::shared_ptr const &> (Specification::base()); }
+    inline BuildStep::shared_ptr base() const
+    { return std::static_pointer_cast<BuildStep>(Specification::base()); }
 
 public:
     inline ext::optional<std::string> const &buildStepType() const

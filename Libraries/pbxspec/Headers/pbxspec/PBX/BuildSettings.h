@@ -37,8 +37,8 @@ public:
     { return BuildSettings::Type(); }
 
 public:
-    inline BuildSettings::shared_ptr const &base() const
-    { return reinterpret_cast <BuildSettings::shared_ptr const &> (Specification::base()); }
+    inline BuildSettings::shared_ptr base() const
+    { return std::static_pointer_cast<BuildSettings>(Specification::base()); }
 
 public:
     inline ext::optional<PropertyOption::vector> const &options() const

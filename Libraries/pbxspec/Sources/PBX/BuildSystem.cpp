@@ -119,7 +119,7 @@ inherit(Specification::shared_ptr const &base)
     if (base->type() != BuildSystem::Type())
         return false;
 
-    return inherit(reinterpret_cast <BuildSystem::shared_ptr const &> (base));
+    return inherit(std::static_pointer_cast<BuildSystem>(base));
 }
 
 bool BuildSystem::

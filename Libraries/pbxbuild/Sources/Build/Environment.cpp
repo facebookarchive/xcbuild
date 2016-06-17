@@ -39,9 +39,9 @@ Default(Filesystem const *filesystem)
     /*
      * Register global build rules.
      */
-    std::string buildRules = pbxspec::Manager::DeveloperBuildRules(*developerRoot);
-    if (filesystem->isReadable(buildRules)) {
-        if (!specManager->registerBuildRules(filesystem, buildRules)) {
+    std::vector<std::string> buildRules = pbxspec::Manager::DeveloperBuildRules(*developerRoot);
+    for (std::string const &path : buildRules) {
+        if (filesystem->isReadable(path) && !specManager->registerBuildRules(filesystem, path)) {
             fprintf(stderr, "error: couldn't register build rules\n");
             return ext::nullopt;
         }
@@ -51,7 +51,6 @@ Default(Filesystem const *filesystem)
      * Register global specifications.
      */
     specManager->registerDomains(filesystem, pbxspec::Manager::DefaultDomains(*developerRoot));
-    specManager->registerDomains(filesystem, pbxspec::Manager::EmbeddedDomains(*developerRoot));
 
     std::shared_ptr<xcsdk::SDK::Manager> sdkManager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot);
     if (sdkManager == nullptr) {
@@ -62,14 +61,11 @@ Default(Filesystem const *filesystem)
     /*
      * Register platform-specific specifications.
      */
+    std::unordered_map<std::string, std::string> platforms;
     for (xcsdk::SDK::Platform::shared_ptr const &platform : sdkManager->platforms()) {
-        specManager->registerDomains(
-            filesystem,
-            pbxspec::Manager::PlatformDomains(
-                sdkManager->path(),
-                platform->name(),
-                platform->path()));
+        platforms.insert({ platform->name(), platform->path() });
     }
+    specManager->registerDomains(filesystem, pbxspec::Manager::PlatformDomains(platforms));
 
     /*
      * Register global specifications, but depend on platform-specific specifications.
