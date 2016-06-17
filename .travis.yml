@@ -30,6 +30,7 @@ matrix:
             - ninja-build
             - cmake
             - cmake-data
+            - libpng16
     - os: osx
       osx_image: xcode7.2
       compiler: clang
@@ -38,3 +39,4 @@ matrix:
       install:
         - brew reinstall cmake
         - brew reinstall ninja
+        - brew reinstall libpng
