@@ -7,19 +7,23 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+#include <acdriver/CompileOutput.h>
+#include <acdriver/Result.h>
+
 #include <ext/optional>
 #include <car/Writer.h>
 
+#include <xcassets/Asset/Catalog.h>
 #include <xcassets/Asset/ImageSet.h>
-
-#include <acdriver/Result.h>
 
 #include <string>
 
-
 bool
-CompileContents(ext::optional<car::Writer> &writer,
-	std::string ns,
-	std::shared_ptr<xcassets::Asset::Asset> const &parent,
-	xcassets::Asset::ImageSet::Image const &image,
-	acdriver::Result *result);
+CompileAsset(
+    std::shared_ptr<xcassets::Asset::Catalog> const &catalog,
+    std::string ns,
+    acdriver::Options const &options,
+    acdriver::CompileOutput *compileOutput,
+    acdriver::Result *result,
+    std::shared_ptr<xcassets::Asset::Asset> const &parent,
+	xcassets::Asset::ImageSet::Image const &image);

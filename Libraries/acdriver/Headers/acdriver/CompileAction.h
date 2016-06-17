@@ -27,7 +27,7 @@ public:
     ~CompileAction();
 
 public:
-    void run(libutil::Filesystem const *filesystem, Options const &options, Output *output, Result *result);
+    void run(libutil::Filesystem *filesystem, Options const &options, Output *output, Result *result);
 };
 
 }

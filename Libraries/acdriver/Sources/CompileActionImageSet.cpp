@@ -7,6 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+#include <acdriver/CompileActionImageSet.h>
 #include <acdriver/CompileAction.h>
 #include <acdriver/Result.h>
 #include <xcassets/Asset/ImageSet.h>
@@ -28,6 +29,8 @@
 #include <png.h>
 
 using acdriver::CompileAction;
+using acdriver::CompileOutput;
+using acdriver::Options;
 using acdriver::Result;
 
 using libutil::FSUtil;
@@ -231,7 +234,14 @@ GenerateIdentifier(void) {
 }
 
 bool
-CompileContents(ext::optional<car::Writer> &writer, std::string ns, std::shared_ptr<xcassets::Asset::Asset> const &parent, xcassets::Asset::ImageSet::Image const &image, Result *result)
+CompileAsset(
+    std::shared_ptr<xcassets::Asset::Catalog> const &catalog,
+    std::string ns,
+    Options const &options,
+    CompileOutput *compileOutput,
+    Result *result,
+    std::shared_ptr<xcassets::Asset::Asset> const &parent,
+    xcassets::Asset::ImageSet::Image const &image)
 {
     static std::map<std::string, uint16_t> idMap = {};
     std::string name = FSUtil::GetBaseNameWithoutExtension(parent->path());
@@ -246,6 +256,11 @@ CompileContents(ext::optional<car::Writer> &writer, std::string ns, std::shared_
     /* An image without an idiom is considered unassigned */
     if (!image.idiom()) {
         return false;
+    }
+
+    /* Add namespace to name */
+    if (ns.size() > 0) {
+        name = ns + std::string("/") + name;        
     }
 
     /* scale defaults to 0 / all */
@@ -334,7 +349,7 @@ CompileContents(ext::optional<car::Writer> &writer, std::string ns, std::shared_
         });
 
         car::Facet facet = car::Facet::Create(name, attributes);
-        writer->addFacet(facet);
+        compileOutput->car()->addFacet(facet);
     }
 
     car::AttributeList attributes = car::AttributeList({
@@ -475,6 +490,6 @@ CompileContents(ext::optional<car::Writer> &writer, std::string ns, std::shared_
         rendition.layout() = layout;
     }
 
-    writer->addRendition(std::move(rendition));
+    compileOutput->car()->addRendition(std::move(rendition));
     return true;
 }
