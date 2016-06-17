@@ -14,8 +14,9 @@
 using xcassets::Slot::ImageSize;
 
 ImageSize::
-ImageSize(std::vector<double> value) :
-    _value(value)
+ImageSize(double width, double height) :
+    _width(width),
+    _height(height)
 {
 }
 
@@ -43,20 +44,18 @@ Parse(std::string const &value)
         return ext::nullopt;
     }
 
-    double w = std::strtod(seglist[0].c_str(), NULL);
-    double h = std::strtod(seglist[1].c_str(), NULL);
-    std::vector<double> v = {w, h};
+    double width = std::strtod(seglist[0].c_str(), NULL);
+    double height = std::strtod(seglist[1].c_str(), NULL);
 
-    return ImageSize(v);
+    return ImageSize(width, height);
 }
 
 std::string ImageSize::
 String(ImageSize scale)
 {
     std::ostringstream out;
-    auto v = scale.value();
-    out << v[0];
+    out << scale.width();
     out << "x";
-    out << v[1];
+    out << scale.height();
     return out.str();
 }

@@ -18,21 +18,28 @@ namespace xcassets {
 namespace Slot {
 
 /*
- * The density ratio of a target device.
+ * The size of an image.
  */
 class ImageSize {
 private:
-    std::vector<double> _value;
+    double _width;
+    double _height;
 
 private:
-    ImageSize(std::vector<double> imageSize);
+    ImageSize(double width, double height);
 
 public:
     /*
-     * The represented image size.
+     * The represented image width.
      */
-    std::vector<double> value() const
-    { return _value; }
+    double width() const
+    { return _width; }
+
+    /*
+     * The represented image height.
+     */
+    double height() const
+    { return _height; }
 
 public:
     /*
