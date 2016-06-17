@@ -63,7 +63,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         std::string targetDevice;
         auto result = libutil::Options::NextString(&targetDevice, args, it);
         if (result.first) {
-            _targetDevice.insert(targetDevice);
+            _targetDevice.push_back(targetDevice);
         }
         return result;
     } else if (arg == "--output-partial-info-plist") {
