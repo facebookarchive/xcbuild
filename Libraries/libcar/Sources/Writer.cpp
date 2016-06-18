@@ -72,7 +72,7 @@ DetermineKeyFormat(
 }
 
 void Writer::
-write()
+write() const
 {
     /* Write header. */
     struct car_header *header = (struct car_header *)malloc(sizeof(struct car_header));
