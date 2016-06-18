@@ -417,64 +417,6 @@ OutputPath(Options const &options, std::string const &file)
     return file;
 }
 
-static void
-PerformAdjustment(plist::Object *object, plist::Object **rootObject, std::string const &key, plist::Adjustment const &adjustment)
-{
-    if (plist::Dictionary *dict = plist::CastTo<plist::Dictionary>(object)) {
-        switch (adjustment.type()) {
-            case plist::Adjustment::Type::Insert:
-                /* Only insert if doesn't already exist. */
-                if (dict->value(key) == nullptr) {
-                    dict->set(key, adjustment.value()->copy());
-                }
-                break;
-            case plist::Adjustment::Type::Replace:
-                /* Insert or replace as needed. */
-                dict->set(key, adjustment.value()->copy());
-                break;
-            case plist::Adjustment::Type::Remove:
-                dict->remove(key);
-                break;
-            case plist::Adjustment::Type::Extract:
-                *rootObject = dict->value(key);
-                break;
-        }
-    } else if (plist::Array *array = plist::CastTo<plist::Array>(object)) {
-        uint64_t index = std::stoull(key.c_str(), NULL, 0);
-
-        switch (adjustment.type()) {
-            case plist::Adjustment::Type::Insert: {
-                /* Insert within the array, otherwise append. */
-                if (index < array->count()) {
-                    array->insert(index, adjustment.value()->copy());
-                } else {
-                    array->append(adjustment.value()->copy());
-                }
-                break;
-            }
-            case plist::Adjustment::Type::Replace: {
-                /* Replace within the array, otherwise append. */
-                if (index < array->count()) {
-                    array->set(index, adjustment.value()->copy());
-                } else {
-                    array->append(adjustment.value()->copy());
-                }
-                break;
-            }
-            case plist::Adjustment::Type::Remove: {
-                if (index < array->count()) {
-                    array->remove(index);
-                }
-                break;
-            }
-            case plist::Adjustment::Type::Extract: {
-                *rootObject = array->value(index);
-                break;
-            }
-        }
-    }
-}
-
 static bool
 Modify(libutil::Filesystem *filesystem, Options const &options, std::string const &file, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
 {
@@ -482,36 +424,7 @@ Modify(libutil::Filesystem *filesystem, Options const &options, std::string cons
 
     /* Apply requested adjustments. */
     for (plist::Adjustment const &adjustment : options.adjustments()) {
-        plist::Object *currentObject = writeObject;
-
-        std::string path = adjustment.path();
-        std::string::size_type start = 0;
-        std::string::size_type end = 0;
-
-        do {
-            end = path.find('.', end);
-            std::string key = (end != std::string::npos ? path.substr(start, end - start) : path.substr(start));
-
-            if (end != std::string::npos) {
-                /* Intermediate key path: continue iterating. */
-                if (plist::Dictionary *dict = plist::CastTo<plist::Dictionary>(currentObject)) {
-                    currentObject = dict->value(key);
-                } else if (plist::Array *array = plist::CastTo<plist::Array>(currentObject)) {
-                    uint64_t index = std::stoull(key.c_str(), NULL, 0);
-                    currentObject = array->value(index);
-                }
-            } else {
-                /* Final key path: perform the action. */
-                PerformAdjustment(currentObject, &writeObject, key, adjustment);
-            }
-
-            if (currentObject == nullptr) {
-                fprintf(stderr, "error: invalid key path\n");
-                return false;
-            }
-
-            start = end + 1;
-        } while (end != std::string::npos);
+        writeObject = plist::PerformAdjustment(writeObject, adjustment);
     }
 
     /* Find output format. */
