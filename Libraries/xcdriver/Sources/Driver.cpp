@@ -15,6 +15,7 @@
 #include <xcdriver/ListAction.h>
 #include <xcdriver/ShowSDKsAction.h>
 #include <xcdriver/ShowBuildSettingsAction.h>
+#include <xcdriver/UsageAction.h>
 #include <xcdriver/VersionAction.h>
 #include <libutil/Filesystem.h>
 
@@ -54,8 +55,7 @@ Run(Filesystem *filesystem, std::vector<std::string> const &args)
         case Action::Version:
             return VersionAction::Run(filesystem, options);
         case Action::Usage:
-            fprintf(stderr, "warning: usage not implemented\n");
-            break;
+            return UsageAction::Run(filesystem, options);
         case Action::Help:
             fprintf(stderr, "warning: help not implemented\n");
             break;
