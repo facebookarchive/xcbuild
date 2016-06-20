@@ -10,6 +10,7 @@
 add_subdirectory(acdriver)
 add_subdirectory(builtin)
 add_subdirectory(dependency)
+add_subdirectory(config)
 add_subdirectory(ext)
 add_subdirectory(libcar)
 add_subdirectory(libbom)
