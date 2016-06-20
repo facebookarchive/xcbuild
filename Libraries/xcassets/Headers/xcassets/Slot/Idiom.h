@@ -26,6 +26,7 @@ enum class Idiom {
     Desktop,
     TV,
     Watch,
+    Car,
 };
 
 class Idioms {
