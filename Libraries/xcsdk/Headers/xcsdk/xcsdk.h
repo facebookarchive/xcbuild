@@ -10,6 +10,7 @@
 #ifndef __xcsdk_xcsdk_h
 #define __xcsdk_xcsdk_h
 
+#include <xcsdk/Configuration.h>
 #include <xcsdk/Environment.h>
 #include <xcsdk/SDK/Manager.h>
 #include <xcsdk/SDK/Platform.h>

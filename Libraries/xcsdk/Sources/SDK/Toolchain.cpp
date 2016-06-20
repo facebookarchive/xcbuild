@@ -15,11 +15,13 @@ using xcsdk::SDK::Toolchain;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
-Toolchain::Toolchain()
+Toolchain::
+Toolchain()
 {
 }
 
-Toolchain::~Toolchain()
+Toolchain::
+~Toolchain()
 {
 }
 

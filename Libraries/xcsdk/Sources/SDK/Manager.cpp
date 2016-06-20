@@ -8,9 +8,12 @@
  */
 
 #include <xcsdk/SDK/Manager.h>
+#include <xcsdk/Configuration.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <plist/plist.h>
 
+using xcsdk::Configuration;
 using xcsdk::SDK::Manager;
 using xcsdk::SDK::Platform;
 using xcsdk::SDK::Target;
@@ -20,11 +23,13 @@ using pbxsetting::Level;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
-Manager::Manager()
+Manager::
+Manager()
 {
 }
 
-Manager::~Manager()
+Manager::
+~Manager()
 {
 }
 
@@ -118,7 +123,7 @@ executablePaths() const
 }
 
 std::shared_ptr<Manager> Manager::
-Open(Filesystem const *filesystem, std::string const &path)
+Open(Filesystem const *filesystem, std::string const &path, ext::optional<Configuration> const &configuration)
 {
     if (path.empty()) {
         fprintf(stderr, "error: empty path for sdk manager\n");
@@ -128,40 +133,49 @@ Open(Filesystem const *filesystem, std::string const &path)
     auto manager = std::make_shared <Manager> ();
     manager->_path = path;
 
+    std::vector<std::string> toolchainsPaths = { path + "/" + "Toolchains" };
+    if (configuration) {
+        std::vector<std::string> const &extraToolchainsPaths = configuration->extraToolchainsPaths();
+        toolchainsPaths.insert(toolchainsPaths.end(), extraToolchainsPaths.begin(), extraToolchainsPaths.end());
+    }
+
     std::vector<std::shared_ptr<Toolchain>> toolchains;
+    for (std::string const &toolchainsPath : toolchainsPaths) {
+        filesystem->enumerateDirectory(toolchainsPath, [&](std::string const &filename) -> void {
+            if (FSUtil::GetFileExtension(filename) != "xctoolchain") {
+                return;
+            }
 
-    std::string toolchainsPath = path + "/Toolchains";
-    filesystem->enumerateDirectory(toolchainsPath, [&](std::string const &filename) -> void {
-        if (FSUtil::GetFileExtension(filename) != "xctoolchain") {
-            return;
-        }
-
-        auto toolchain = SDK::Toolchain::Open(filesystem, manager, toolchainsPath + "/" + filename);
-        if (toolchain != nullptr) {
-            toolchains.push_back(toolchain);
-        }
-    });
-
+            auto toolchain = SDK::Toolchain::Open(filesystem, manager, toolchainsPath + "/" + filename);
+            if (toolchain != nullptr) {
+                toolchains.push_back(toolchain);
+            }
+        });
+    }
     manager->_toolchains = toolchains;
 
+    std::vector<std::string> platformsPaths = { path + "/" + "Platforms" };
+    if (configuration) {
+        std::vector<std::string> const &extraPlatformsPaths = configuration->extraPlatformsPaths();
+        platformsPaths.insert(platformsPaths.end(), extraPlatformsPaths.begin(), extraPlatformsPaths.end());
+    }
+
     std::vector<std::shared_ptr<Platform>> platforms;
+    for (std::string const &platformsPath : platformsPaths) {
+        filesystem->enumerateDirectory(platformsPath, [&](std::string const &filename) -> void {
+            if (FSUtil::GetFileExtension(filename) != "platform") {
+                return;
+            }
 
-    std::string platformsPath = path + "/Platforms";
-    filesystem->enumerateDirectory(platformsPath, [&](std::string const &filename) -> void {
-        if (FSUtil::GetFileExtension(filename) != "platform") {
-            return;
-        }
-
-        auto platform = SDK::Platform::Open(filesystem, manager, platformsPath + "/" + filename);
-        if (platform != nullptr) {
-            platforms.push_back(platform);
-        }
-    });
-
+            auto platform = SDK::Platform::Open(filesystem, manager, platformsPath + "/" + filename);
+            if (platform != nullptr) {
+                platforms.push_back(platform);
+            }
+        });
+    }
     std::sort(platforms.begin(), platforms.end(), [](Platform::shared_ptr const &a, Platform::shared_ptr const &b) -> bool {
         return (a->description() < b->description());
     });
-
     manager->_platforms = platforms;
 
     return manager;

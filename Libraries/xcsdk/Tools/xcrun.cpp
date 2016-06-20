@@ -296,7 +296,8 @@ main(int argc, char **argv)
         fprintf(stderr, "error: unable to find developer root\n");
         return -1;
     }
-    std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(filesystem.get(), *developerRoot);
+    auto configuration = xcsdk::Configuration::Load(filesystem.get(), xcsdk::Configuration::DefaultPath());
+    auto manager = xcsdk::SDK::Manager::Open(filesystem.get(), *developerRoot, configuration);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to load manager from '%s'\n", developerRoot->c_str());
         return -1;
