@@ -20,7 +20,7 @@ config::readDefaults(libutil::Filesystem const *filesystem) {
 
     std::pair<bool, std::vector<uint8_t>> result = plist::Read(filesystem, defaultConfigPath);
     if (!result.first) {
-        fprintf(stderr, "error: unable to read defaults\n");
+        // There isn't a defaults file.
         return nullptr;
     }
 
