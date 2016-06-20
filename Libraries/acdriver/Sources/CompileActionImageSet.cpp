@@ -310,7 +310,7 @@ CompileAsset(
         car::Rendition::Data::Format::PremultipliedGA8;
     } else if (FSUtil::GetFileExtension(filenameLowerCase) == "jpg" ||
         FSUtil::GetFileExtension(filenameLowerCase) == "jpeg") {
-        std::ifstream inputFile = std::ifstream(filename.c_str(), std::ios::binary);
+        std::ifstream inputFile(filename.c_str(), std::ios::binary);
         if (inputFile.is_open()) {
             inputFile.seekg(0, std::ios::end);   
             pixels.reserve(inputFile.tellg());
