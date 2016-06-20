@@ -9,8 +9,11 @@ sudo: false
 matrix:
   include:
     - os: linux
-      dist: xenial
+      dist: trusty
       compiler: gcc4.8
+      before_install:
+        - sudo apt-get install -y zlib1g-dev
+        - sudo bash .travis.linux.trusty.sh
       env:
         - CC=gcc-4.8
         - CXX=g++-4.8
@@ -30,7 +33,6 @@ matrix:
             - ninja-build
             - cmake
             - cmake-data
-            - libpng16
     - os: osx
       osx_image: xcode7.2
       compiler: clang
