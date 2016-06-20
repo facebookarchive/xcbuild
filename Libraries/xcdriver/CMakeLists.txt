@@ -16,6 +16,7 @@ add_library(xcdriver SHARED
             Sources/ListAction.cpp
             Sources/ShowBuildSettingsAction.cpp
             Sources/ShowSDKsAction.cpp
+            Sources/UsageAction.cpp
             Sources/VersionAction.cpp
             )
 
