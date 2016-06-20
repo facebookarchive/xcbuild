@@ -70,6 +70,7 @@ install(TARGETS plutil DESTINATION usr/bin)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(plist Boolean Tests/test_Boolean.cpp)
+  ADD_UNIT_GTEST(plist Real Tests/test_Real.cpp)
   ADD_UNIT_GTEST(plist String Tests/test_String.cpp)
   ADD_UNIT_GTEST(plist Encoding Tests/Format/test_Encoding.cpp)
   ADD_UNIT_GTEST(plist ASCII Tests/Format/test_ASCII.cpp)
