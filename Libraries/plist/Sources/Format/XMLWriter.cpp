@@ -305,6 +305,7 @@ handleReal(Real const *real)
 
     rc = snprintf(buf, sizeof(buf), "%.17g", real->value());
     assert(rc < (int)sizeof(buf));
+    (void)rc;
 
     /* Write '<real>number</real>'. */
     if (!writeString("<real>", true)) {
@@ -326,6 +327,7 @@ handleInteger(Integer const *integer)
 
     rc = snprintf(buf, sizeof(buf), "%" PRId64, integer->value());
     assert(rc < (int)sizeof(buf));
+    (void)rc;
 
     /* Write '<integer>number</integer>'. */
     if (!writeString("<integer>", true)) {
