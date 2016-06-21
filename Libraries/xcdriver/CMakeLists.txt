@@ -13,12 +13,19 @@ add_library(xcdriver SHARED
             Sources/Options.cpp
             Sources/BuildAction.cpp
             Sources/FindAction.cpp
+            Sources/LicenseAction.cpp
             Sources/ListAction.cpp
             Sources/ShowBuildSettingsAction.cpp
             Sources/ShowSDKsAction.cpp
             Sources/UsageAction.cpp
             Sources/VersionAction.cpp
             )
+
+# Copy project LICENSE into build directory as a header.
+file(READ "${PROJECT_SOURCE_DIR}/LICENSE" LICENSE_CONTENTS HEX)
+string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1, " LICENSE_CONTENTS "${LICENSE_CONTENTS}")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/LICENSE.h" "static char const LICENSE[] = { ${LICENSE_CONTENTS} };\n")
+target_include_directories(xcdriver PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
 target_link_libraries(xcdriver PUBLIC xcexecution xcformatter pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
 target_include_directories(xcdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")

@@ -12,6 +12,7 @@
 #include <xcdriver/Options.h>
 #include <xcdriver/BuildAction.h>
 #include <xcdriver/FindAction.h>
+#include <xcdriver/LicenseAction.h>
 #include <xcdriver/ListAction.h>
 #include <xcdriver/ShowSDKsAction.h>
 #include <xcdriver/ShowBuildSettingsAction.h>
@@ -60,8 +61,7 @@ Run(Filesystem *filesystem, std::vector<std::string> const &args)
             fprintf(stderr, "warning: help not implemented\n");
             break;
         case Action::License:
-            fprintf(stderr, "warning: license not implemented\n");
-            break;
+            return LicenseAction::Run();
         case Action::CheckFirstLaunch:
             fprintf(stderr, "warning: check first launch not implemented\n");
             break;
