@@ -8,10 +8,12 @@
  */
 
 #include <xcdriver/UsageAction.h>
+#include <xcdriver/Usage.h>
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 
 using xcdriver::UsageAction;
+using xcdriver::usage;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
@@ -28,95 +30,7 @@ UsageAction::
 int UsageAction::
 Run()
 {
-    std::string executable = FSUtil::GetBaseName(SysUtil::GetExecutablePath());
-
-    fprintf(
-        stdout,
-        "Usage: %s [-project <projectname>] "
-        "[[-target <targetname>]...|-alltargets] "
-        "[-configuration <configurationname>] "
-        "[-arch <architecture>]... "
-        "[-sdk [<sdkname>|<sdkpath>]] "
-        "[-showBuildSettings] [<buildsetting>=<value>]... "
-        "[-formatter [default]] "
-        "[-executor [simple|ninja]] "
-        "[-generate] "
-        "[<buildaction>]...\n",
-        executable.c_str());
-
-    fprintf(
-        stdout,
-        "       %s [-project <projectname>] -scheme <schemeName> "
-        "[-destination <destinationspecifier>]... "
-        "[-configuration <configurationname>] "
-        "[-arch <architecture>]... "
-        "[-sdk [<sdkname>|<sdkpath>]] "
-        "[-showBuildSettings] "
-        "[<buildsetting>=<value>]... "
-        "[-formatter [default]] "
-        "[-executor [simple|ninja]] "
-        "[-generate] "
-        "[<buildaction>]...\n",
-        executable.c_str());
-
-    fprintf(
-        stdout,
-        "       %s -workspace <workspacename> -scheme <schemeName> "
-        "[-destination <destinationspecifier>]... "
-        "[-configuration <configurationname>] "
-        "[-arch <architecture>]... "
-        "[-sdk [<sdkname>|<sdkpath>]] "
-        "[-showBuildSettings] "
-        "[<buildsetting>=<value>]... "
-        "[-formatter [default]] "
-        "[-executor [simple|ninja]] "
-        "[-generate] "
-        "[<buildaction>]...\n",
-        executable.c_str());
-
-    fprintf(
-        stdout,
-        "       %s -version "
-        "[-sdk [<sdkfullpath>|<sdkname>] "
-        "[<infoitem>] ]\n",
-        executable.c_str());
-
-    fprintf(
-        stdout,
-        "       %s -list "
-        "[[-project <projectname>]|[-workspace <workspacename>]]\n",
-        executable.c_str());
-
-    fprintf(
-        stdout,
-        "       %s -showsdks\n",
-        executable.c_str());
-
-    fprintf(
-        stdout,
-        "       %s -exportArchive "
-        "-archivePath <xcarchivepath> "
-        "-exportPath <destinationpath> "
-        "-exportOptionsPlist <plistpath>\n",
-        executable.c_str());
-
-    fprintf(
-        stdout,
-        "       %s -exportLocalizations "
-        "-localizationPath <path> "
-        "-project <projectname> "
-        "[-exportLanguage <targetlanguage>...]\n",
-        executable.c_str());
-
-    fprintf(
-        stdout,
-        "       %s -importLocalizations "
-        "-localizationPath <path> "
-        "-project <projectname>\n",
-        executable.c_str());
-
-    fprintf(stdout, "\n");
-
+    fprintf(stdout, "%s", usage().c_str());
     return 0;
 }
 
