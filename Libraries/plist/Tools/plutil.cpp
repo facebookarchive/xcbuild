@@ -18,33 +18,6 @@
 #include <iostream>
 
 class Options {
-public:
-    class Adjustment {
-    public:
-        enum class Type {
-            Extract,
-            Replace,
-            Insert,
-            Remove,
-        };
-
-    private:
-        Type                                 _type;
-        std::string                          _path;
-        std::unique_ptr<plist::Object const> _value;
-
-    public:
-        Adjustment(Type type, std::string const &path, std::unique_ptr<plist::Object const> value);
-
-    public:
-        Type type() const
-        { return _type; }
-        std::string const &path() const
-        { return _path; }
-        plist::Object const *value() const
-        { return _value.get(); }
-    };
-
 private:
     bool                     _help;
     bool                     _print;
@@ -54,7 +27,7 @@ private:
     std::shared_ptr<plist::Format::Type> _convert;
 
 public:
-    std::vector<Adjustment>  _adjustments;
+    std::vector<plist::Adjustment>  _adjustments;
 
 private:
     std::vector<std::string> _inputs;
@@ -83,7 +56,7 @@ public:
     { return _convert; }
 
 public:
-    std::vector<Adjustment> const &adjustments() const
+    std::vector<plist::Adjustment> const &adjustments() const
     { return _adjustments; }
 
 public:
@@ -119,14 +92,6 @@ Options() :
 
 Options::
 ~Options()
-{
-}
-
-Options::Adjustment::
-Adjustment(Type type, std::string const &path, std::unique_ptr<plist::Object const> value) :
-    _type (type),
-    _path (path),
-    _value(std::move(value))
 {
 }
 
@@ -205,7 +170,7 @@ SanitizeXMLFormat(std::string *value)
 }
 
 static std::pair<bool, std::string>
-NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it)
+NextAdjustment(plist::Adjustment *adjustment, plist::Adjustment::Type type, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it)
 {
     std::pair<bool, std::string> result;
 
@@ -277,7 +242,7 @@ NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, 
         return std::make_pair(false, "unknown type option " + arg);
     }
 
-    *adjustment = Options::Adjustment(type, path, std::move(object));
+    *adjustment = plist::Adjustment(type, path, std::move(object));
 
     return result;
 }
@@ -306,15 +271,15 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         }
         return result;
     } else if (arg == "-insert") {
-        Options::Adjustment adjustment = Options::Adjustment(Options::Adjustment::Type::Insert, std::string(), nullptr);
-        std::pair<bool, std::string> result = NextAdjustment(&adjustment, Options::Adjustment::Type::Insert, args, it);
+        plist::Adjustment adjustment = plist::Adjustment(plist::Adjustment::Type::Insert, std::string(), nullptr);
+        std::pair<bool, std::string> result = NextAdjustment(&adjustment, plist::Adjustment::Type::Insert, args, it);
         if (result.first) {
             _adjustments.emplace_back(std::move(adjustment));
         }
         return result;
     } else if (arg == "-replace") {
-        Options::Adjustment adjustment = Options::Adjustment(Options::Adjustment::Type::Replace, std::string(), nullptr);
-        std::pair<bool, std::string> result = NextAdjustment(&adjustment, Options::Adjustment::Type::Replace, args, it);
+        plist::Adjustment adjustment = plist::Adjustment(plist::Adjustment::Type::Replace, std::string(), nullptr);
+        std::pair<bool, std::string> result = NextAdjustment(&adjustment, plist::Adjustment::Type::Replace, args, it);
         if (result.first) {
             _adjustments.emplace_back(std::move(adjustment));
         }
@@ -323,7 +288,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         std::string remove;
         std::pair<bool, std::string> result = libutil::Options::NextString(&remove, args, it);
         if (result.first) {
-            Options::Adjustment adjustment = Options::Adjustment(Options::Adjustment::Type::Remove, remove, nullptr);
+            plist::Adjustment adjustment = plist::Adjustment(plist::Adjustment::Type::Remove, remove, nullptr);
             _adjustments.emplace_back(std::move(adjustment));
         }
         return result;
@@ -334,7 +299,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
             return result;
         }
 
-        Options::Adjustment adjustment = Options::Adjustment(Options::Adjustment::Type::Extract, path, nullptr);
+        plist::Adjustment adjustment = plist::Adjustment(plist::Adjustment::Type::Extract, path, nullptr);
         _adjustments.emplace_back(std::move(adjustment));
 
         plist::Format::Type type;
@@ -404,40 +369,6 @@ Help(std::string const &error = std::string())
     return (error.empty() ? 0 : -1);
 }
 
-static std::pair<bool, std::vector<uint8_t>>
-Read(libutil::Filesystem const *filesystem, std::string const &path = "-")
-{
-    std::vector<uint8_t> contents;
-
-    if (path == "-") {
-        /* - means read from stdin. */
-        contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
-    } else {
-        /* Read from file. */
-        if (!filesystem->read(&contents, path)) {
-            return std::make_pair(false, std::vector<uint8_t>());
-        }
-    }
-
-    return std::make_pair(true, std::move(contents));
-}
-
-static bool
-Write(libutil::Filesystem *filesystem, std::vector<uint8_t> const &contents, std::string const &path = "-")
-{
-    if (path == "-") {
-        /* - means write to stdout. */
-        std::copy(contents.begin(), contents.end(), std::ostream_iterator<char>(std::cout));
-    } else {
-        /* Read from file. */
-        if (!filesystem->write(contents, path)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 static bool
 Lint(Options const &options, std::string const &file)
 {
@@ -461,7 +392,7 @@ Print(libutil::Filesystem *filesystem, Options const &options, std::unique_ptr<p
     }
 
     /* Print. */
-    if (!Write(filesystem, *serialize.first)) {
+    if (!plist::Write(filesystem, *serialize.first)) {
         fprintf(stderr, "error: unable to write\n");
         return false;
     }
@@ -486,101 +417,14 @@ OutputPath(Options const &options, std::string const &file)
     return file;
 }
 
-static void
-PerformAdjustment(plist::Object *object, plist::Object **rootObject, std::string const &key, Options::Adjustment const &adjustment)
-{
-    if (plist::Dictionary *dict = plist::CastTo<plist::Dictionary>(object)) {
-        switch (adjustment.type()) {
-            case Options::Adjustment::Type::Insert:
-                /* Only insert if doesn't already exist. */
-                if (dict->value(key) == nullptr) {
-                    dict->set(key, adjustment.value()->copy());
-                }
-                break;
-            case Options::Adjustment::Type::Replace:
-                /* Insert or replace as needed. */
-                dict->set(key, adjustment.value()->copy());
-                break;
-            case Options::Adjustment::Type::Remove:
-                dict->remove(key);
-                break;
-            case Options::Adjustment::Type::Extract:
-                *rootObject = dict->value(key);
-                break;
-        }
-    } else if (plist::Array *array = plist::CastTo<plist::Array>(object)) {
-        uint64_t index = std::stoull(key.c_str(), NULL, 0);
-
-        switch (adjustment.type()) {
-            case Options::Adjustment::Type::Insert: {
-                /* Insert within the array, otherwise append. */
-                if (index < array->count()) {
-                    array->insert(index, adjustment.value()->copy());
-                } else {
-                    array->append(adjustment.value()->copy());
-                }
-                break;
-            }
-            case Options::Adjustment::Type::Replace: {
-                /* Replace within the array, otherwise append. */
-                if (index < array->count()) {
-                    array->set(index, adjustment.value()->copy());
-                } else {
-                    array->append(adjustment.value()->copy());
-                }
-                break;
-            }
-            case Options::Adjustment::Type::Remove: {
-                if (index < array->count()) {
-                    array->remove(index);
-                }
-                break;
-            }
-            case Options::Adjustment::Type::Extract: {
-                *rootObject = array->value(index);
-                break;
-            }
-        }
-    }
-}
-
 static bool
 Modify(libutil::Filesystem *filesystem, Options const &options, std::string const &file, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
 {
     plist::Object *writeObject = object.get();
 
     /* Apply requested adjustments. */
-    for (Options::Adjustment const &adjustment : options.adjustments()) {
-        plist::Object *currentObject = writeObject;
-
-        std::string path = adjustment.path();
-        std::string::size_type start = 0;
-        std::string::size_type end = 0;
-
-        do {
-            end = path.find('.', end);
-            std::string key = (end != std::string::npos ? path.substr(start, end - start) : path.substr(start));
-
-            if (end != std::string::npos) {
-                /* Intermediate key path: continue iterating. */
-                if (plist::Dictionary *dict = plist::CastTo<plist::Dictionary>(currentObject)) {
-                    currentObject = dict->value(key);
-                } else if (plist::Array *array = plist::CastTo<plist::Array>(currentObject)) {
-                    uint64_t index = std::stoull(key.c_str(), NULL, 0);
-                    currentObject = array->value(index);
-                }
-            } else {
-                /* Final key path: perform the action. */
-                PerformAdjustment(currentObject, &writeObject, key, adjustment);
-            }
-
-            if (currentObject == nullptr) {
-                fprintf(stderr, "error: invalid key path\n");
-                return false;
-            }
-
-            start = end + 1;
-        } while (end != std::string::npos);
+    for (plist::Adjustment const &adjustment : options.adjustments()) {
+        writeObject = plist::PerformAdjustment(writeObject, adjustment);
     }
 
     /* Find output format. */
@@ -615,7 +459,7 @@ Modify(libutil::Filesystem *filesystem, Options const &options, std::string cons
 
     /* Write to output. */
     std::string output = OutputPath(options, file);
-    if (!Write(filesystem, *serialize.first, output)) {
+    if (!plist::Write(filesystem, *serialize.first, output)) {
         fprintf(stderr, "error: unable to write\n");
         return false;
     }
@@ -658,7 +502,7 @@ main(int argc, char **argv)
 
         /* Actions applied to each input file separately. */
         for (std::string const &file : options.inputs()) {
-            std::pair<bool, std::vector<uint8_t>> result = Read(filesystem.get(), file);
+            std::pair<bool, std::vector<uint8_t>> result = plist::Read(filesystem.get(), file);
             if (!result.first) {
                 fprintf(stderr, "error: unable to read %s\n", file.c_str());
                 success = false;

@@ -86,6 +86,12 @@ public:
 
 public:
     /*
+     * Load extra paths configured in xcbuild's defaults configuration plist.
+     */
+    std::vector<std::string> extraPaths(plist::Object *config, std::string const &configKey);
+
+public:
+    /*
      * Load from a developer root. Returns nullptr on error.
      */
     static std::shared_ptr<Manager> Open(libutil::Filesystem const *filesystem, std::string const &path);

@@ -8,8 +8,10 @@
  */
 
 #include <xcsdk/SDK/Manager.h>
+#include <config/config.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <plist/plist.h>
 
 using xcsdk::SDK::Manager;
 using xcsdk::SDK::Platform;
@@ -117,6 +119,31 @@ executablePaths() const
     };
 }
 
+std::vector<std::string> Manager::
+extraPaths(plist::Object *config, std::string const &configKey)
+{
+    std::vector<std::string> extraPlatformPaths;
+
+    if (config == nullptr) {
+        return extraPlatformPaths;
+    }
+
+    auto extract = plist::Extract(config, configKey);
+    plist::Array *array;
+    if (extract != nullptr && (array = plist::CastTo<plist::Array>(extract))) {
+        for (auto iter = array->begin(); iter != array->end(); iter++) {
+            auto pathValue = plist::CastTo<plist::String>(iter->get());
+
+            Platform::shared_ptr platform = nullptr;
+            if (pathValue != nullptr) {
+                extraPlatformPaths.push_back(pathValue->value());
+            }
+        }
+    }
+
+    return extraPlatformPaths;
+}
+
 std::shared_ptr<Manager> Manager::
 Open(Filesystem const *filesystem, std::string const &path)
 {
@@ -128,35 +155,45 @@ Open(Filesystem const *filesystem, std::string const &path)
     auto manager = std::make_shared <Manager> ();
     manager->_path = path;
 
+    std::unique_ptr<plist::Object> defaultConfig = config::readDefaults(filesystem);
+
     std::vector<std::shared_ptr<Toolchain>> toolchains;
+    std::vector<std::string> toolchainPaths = manager->extraPaths(defaultConfig.get(), "ExtraToolchainPaths");
+    toolchainPaths.push_back(path + "/Toolchains");
 
-    std::string toolchainsPath = path + "/Toolchains";
-    filesystem->enumerateDirectory(toolchainsPath, [&](std::string const &filename) -> void {
-        if (FSUtil::GetFileExtension(filename) != "xctoolchain") {
-            return;
-        }
+    for (auto iter = toolchainPaths.begin(); iter != toolchainPaths.end(); iter++) {
+        auto toolchainsPath = *iter;
+        filesystem->enumerateDirectory(toolchainsPath, [&](std::string const &filename) -> void {
+            if (FSUtil::GetFileExtension(filename) != "xctoolchain") {
+                return;
+            }
 
-        auto toolchain = SDK::Toolchain::Open(filesystem, manager, toolchainsPath + "/" + filename);
-        if (toolchain != nullptr) {
-            toolchains.push_back(toolchain);
-        }
-    });
+            auto toolchain = SDK::Toolchain::Open(filesystem, manager, toolchainsPath + "/" + filename);
+            if (toolchain != nullptr) {
+                toolchains.push_back(toolchain);
+            }
+        });
+    }
 
     manager->_toolchains = toolchains;
 
     std::vector<std::shared_ptr<Platform>> platforms;
+    std::vector<std::string> platformPaths = manager->extraPaths(defaultConfig.get(), "ExtraPlatformPaths");
+    platformPaths.push_back(path + "/Platforms");
 
-    std::string platformsPath = path + "/Platforms";
-    filesystem->enumerateDirectory(platformsPath, [&](std::string const &filename) -> void {
-        if (FSUtil::GetFileExtension(filename) != "platform") {
-            return;
-        }
+    for (auto iter = platformPaths.begin(); iter != platformPaths.end(); iter++) {
+        auto platformPath = *iter;
+        filesystem->enumerateDirectory(platformPath, [&](std::string const &filename) -> void {
+            if (FSUtil::GetFileExtension(filename) != "platform") {
+                return;
+            }
 
-        auto platform = SDK::Platform::Open(filesystem, manager, platformsPath + "/" + filename);
-        if (platform != nullptr) {
-            platforms.push_back(platform);
-        }
-    });
+            auto platform = SDK::Platform::Open(filesystem, manager, platformPath + "/" + filename);
+            if (platform != nullptr) {
+                platforms.push_back(platform);
+            }
+        });
+    }
 
     std::sort(platforms.begin(), platforms.end(), [](Platform::shared_ptr const &a, Platform::shared_ptr const &b) -> bool {
         return (a->description() < b->description());
