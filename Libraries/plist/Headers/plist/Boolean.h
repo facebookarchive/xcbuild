@@ -38,14 +38,14 @@ public:
     static std::unique_ptr<Boolean> Coerce(Object const *obj);
 
 public:
-    virtual enum Object::Type type() const
+    virtual ObjectType type() const
     {
         return Boolean::Type();
     }
 
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::Type::Boolean;
+        return ObjectType::Boolean;
     }
 
 protected:

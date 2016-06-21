@@ -11,6 +11,7 @@
 #define __plist_Object_h
 
 #include <plist/Base.h>
+#include <plist/ObjectType.h>
 
 #include <memory>
 #include <string>
@@ -18,24 +19,6 @@
 namespace plist {
 
 class Object {
-public:
-    typedef std::unique_ptr <Object> UniquePtr;
-
-public:
-    enum class Type {
-        None,
-        Integer,
-        Real,
-        String,
-        Boolean,
-        Null,
-        Array,
-        Dictionary,
-        Data,
-        Date,
-        UID,
-    };
-
 protected:
     Object()
     {
@@ -47,7 +30,7 @@ public:
     }
 
 public:
-    virtual Type type() const = 0;
+    virtual ObjectType type() const = 0;
 
 public:
     virtual void release() const
@@ -72,31 +55,22 @@ public:
     static std::unique_ptr<Object> Coerce(Object const *obj);
 
 public:
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::Type::None;
+        return ObjectType::None;
     }
-
-public:
-    inline char const *typeName() const
-    {
-        return GetTypeName(type());
-    }
-
-public:
-    static char const *GetTypeName(enum Object::Type type);
 };
 
 template <typename T>
 static inline T *CastTo(Object *obj)
 {
-    return (obj != nullptr && (obj->type() == T::Type() || T::Type() == Object::Type())) ? static_cast <T *> (obj) : nullptr;
+    return (obj != nullptr && (obj->type() == T::Type() || T::Type() == ObjectType())) ? static_cast <T *> (obj) : nullptr;
 }
 
 template <typename T>
 static inline T const *CastTo(Object const *obj)
 {
-    return (obj != nullptr && (obj->type() == T::Type() || T::Type() == Object::Type())) ? static_cast <T const *> (obj) : nullptr;
+    return (obj != nullptr && (obj->type() == T::Type() || T::Type() == ObjectType())) ? static_cast <T const *> (obj) : nullptr;
 }
 
 }

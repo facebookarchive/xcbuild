@@ -28,14 +28,14 @@ public:
     static std::unique_ptr<Null> Coerce(Object const *obj);
 
 public:
-    virtual enum Object::Type type() const
+    virtual ObjectType type() const
     {
         return Null::Type();
     }
 
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::Type::Null;
+        return ObjectType::Null;
     }
 
 protected:

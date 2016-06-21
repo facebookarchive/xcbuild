@@ -114,14 +114,14 @@ public:
     static std::unique_ptr<Array> Coerce(Object const *obj);
 
 public:
-    virtual enum Object::Type type() const
+    virtual ObjectType type() const
     {
         return Array::Type();
     }
 
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::Type::Array;
+        return ObjectType::Array;
     }
 
 protected:
