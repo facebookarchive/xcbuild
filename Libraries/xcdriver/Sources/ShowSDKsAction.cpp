@@ -10,6 +10,7 @@
 #include <xcdriver/ShowSDKsAction.h>
 #include <xcdriver/Options.h>
 
+#include <config/Config.h>
 #include <xcsdk/xcsdk.h>
 #include <libutil/Filesystem.h>
 
@@ -36,7 +37,8 @@ Run(Filesystem const *filesystem, Options const &options)
         return 1;
     }
 
-    std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot);
+    auto config = config::Config::Open(filesystem, config::Config::DefaultPath());
+    std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, config);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to open developer directory\n");
         return 1;

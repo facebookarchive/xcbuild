@@ -44,38 +44,15 @@ FindTargets(plist::Object *currentObject, plist::Adjustment const &adjustment)
     return std::pair<plist::Object *, std::string>(nullptr, nullptr);
 }
 
-std::pair<bool, std::vector<uint8_t>>
+std::unique_ptr<plist::Object>
 plist::Read(libutil::Filesystem const *filesystem, std::string const &path)
 {
     std::vector<uint8_t> contents;
-
-    if (path == "-") {
-        /* - means read from stdin. */
-        contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
-    } else {
-        /* Read from file. */
-        if (!filesystem->read(&contents, path)) {
-            return std::make_pair(false, std::vector<uint8_t>());
-        }
+    if (filesystem->read(&contents, path)) {
+        std::unique_ptr<plist::Object> plist = plist::Format::Any::Deserialize(contents).first;
+        return std::move(plist);
     }
-
-    return std::make_pair(true, std::move(contents));
-}
-
-bool
-plist::Write(libutil::Filesystem *filesystem, std::vector<uint8_t> const &contents, std::string const &path)
-{
-    if (path == "-") {
-        /* - means write to stdout. */
-        std::copy(contents.begin(), contents.end(), std::ostream_iterator<char>(std::cout));
-    } else {
-        /* Read from file. */
-        if (!filesystem->write(contents, path)) {
-            return false;
-        }
-    }
-
-    return true;
+    return nullptr;
 }
 
 plist::Object *

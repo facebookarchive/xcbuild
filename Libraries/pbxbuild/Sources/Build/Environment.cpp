@@ -8,6 +8,7 @@
  */
 
 #include <pbxbuild/Build/Environment.h>
+#include <config/Config.h>
 #include <libutil/Filesystem.h>
 
 namespace Build = pbxbuild::Build;
@@ -52,7 +53,8 @@ Default(Filesystem const *filesystem)
      */
     specManager->registerDomains(filesystem, pbxspec::Manager::DefaultDomains(*developerRoot));
 
-    std::shared_ptr<xcsdk::SDK::Manager> sdkManager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot);
+    auto config = config::Config::Open(filesystem, config::Config::DefaultPath());
+    std::shared_ptr<xcsdk::SDK::Manager> sdkManager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, config);
     if (sdkManager == nullptr) {
         fprintf(stderr, "error: couldn't create SDK manager\n");
         return ext::nullopt;

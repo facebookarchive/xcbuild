@@ -369,6 +369,40 @@ Help(std::string const &error = std::string())
     return (error.empty() ? 0 : -1);
 }
 
+static std::pair<bool, std::vector<uint8_t>>       
+Read(libutil::Filesystem const *filesystem, std::string const &path = "-")        
+{     
+    std::vector<uint8_t> contents;        
+      
+    if (path == "-") {        
+        /* - means read from stdin. */        
+        contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());      
+    } else {      
+        /* Read from file. */     
+        if (!filesystem->read(&contents, path)) {     
+            return std::make_pair(false, std::vector<uint8_t>());     
+        }     
+    }     
+      
+    return std::make_pair(true, std::move(contents));     
+}     
+      
+static bool       
+Write(libutil::Filesystem *filesystem, std::vector<uint8_t> const &contents, std::string const &path = "-")       
+{     
+    if (path == "-") {        
+        /* - means write to stdout. */        
+        std::copy(contents.begin(), contents.end(), std::ostream_iterator<char>(std::cout));      
+    } else {      
+        /* Write to file. */     
+        if (!filesystem->write(contents, path)) {     
+            return false;     
+        }     
+    }     
+      
+    return true;      
+}
+
 static bool
 Lint(Options const &options, std::string const &file)
 {
@@ -392,7 +426,7 @@ Print(libutil::Filesystem *filesystem, Options const &options, std::unique_ptr<p
     }
 
     /* Print. */
-    if (!plist::Write(filesystem, *serialize.first)) {
+    if (!Write(filesystem, *serialize.first)) {
         fprintf(stderr, "error: unable to write\n");
         return false;
     }
@@ -459,7 +493,7 @@ Modify(libutil::Filesystem *filesystem, Options const &options, std::string cons
 
     /* Write to output. */
     std::string output = OutputPath(options, file);
-    if (!plist::Write(filesystem, *serialize.first, output)) {
+    if (!Write(filesystem, *serialize.first, output)) {
         fprintf(stderr, "error: unable to write\n");
         return false;
     }
@@ -502,7 +536,7 @@ main(int argc, char **argv)
 
         /* Actions applied to each input file separately. */
         for (std::string const &file : options.inputs()) {
-            std::pair<bool, std::vector<uint8_t>> result = plist::Read(filesystem.get(), file);
+            std::pair<bool, std::vector<uint8_t>> result = Read(filesystem.get(), file);
             if (!result.first) {
                 fprintf(stderr, "error: unable to read %s\n", file.c_str());
                 success = false;

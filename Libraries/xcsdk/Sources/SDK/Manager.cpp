@@ -8,7 +8,7 @@
  */
 
 #include <xcsdk/SDK/Manager.h>
-#include <config/config.h>
+#include <config/Config.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <plist/plist.h>
@@ -17,6 +17,7 @@ using xcsdk::SDK::Manager;
 using xcsdk::SDK::Platform;
 using xcsdk::SDK::Target;
 using xcsdk::SDK::Toolchain;
+using config::Config;
 using pbxsetting::Setting;
 using pbxsetting::Level;
 using libutil::Filesystem;
@@ -119,33 +120,8 @@ executablePaths() const
     };
 }
 
-std::vector<std::string> Manager::
-extraPaths(plist::Object *config, std::string const &configKey)
-{
-    std::vector<std::string> extraPlatformPaths;
-
-    if (config == nullptr) {
-        return extraPlatformPaths;
-    }
-
-    auto extract = plist::Extract(config, configKey);
-    plist::Array *array;
-    if (extract != nullptr && (array = plist::CastTo<plist::Array>(extract))) {
-        for (auto iter = array->begin(); iter != array->end(); iter++) {
-            auto pathValue = plist::CastTo<plist::String>(iter->get());
-
-            Platform::shared_ptr platform = nullptr;
-            if (pathValue != nullptr) {
-                extraPlatformPaths.push_back(pathValue->value());
-            }
-        }
-    }
-
-    return extraPlatformPaths;
-}
-
 std::shared_ptr<Manager> Manager::
-Open(Filesystem const *filesystem, std::string const &path)
+Open(Filesystem const *filesystem, std::string const &path, config::Config const &config)
 {
     if (path.empty()) {
         fprintf(stderr, "error: empty path for sdk manager\n");
@@ -155,10 +131,8 @@ Open(Filesystem const *filesystem, std::string const &path)
     auto manager = std::make_shared <Manager> ();
     manager->_path = path;
 
-    std::unique_ptr<plist::Object> defaultConfig = config::readDefaults(filesystem);
-
     std::vector<std::shared_ptr<Toolchain>> toolchains;
-    std::vector<std::string> toolchainPaths = manager->extraPaths(defaultConfig.get(), "ExtraToolchainPaths");
+    std::vector<std::string> toolchainPaths = config.extraToolchainPaths();
     toolchainPaths.push_back(path + "/Toolchains");
 
     for (auto iter = toolchainPaths.begin(); iter != toolchainPaths.end(); iter++) {
@@ -178,7 +152,7 @@ Open(Filesystem const *filesystem, std::string const &path)
     manager->_toolchains = toolchains;
 
     std::vector<std::shared_ptr<Platform>> platforms;
-    std::vector<std::string> platformPaths = manager->extraPaths(defaultConfig.get(), "ExtraPlatformPaths");
+    std::vector<std::string> platformPaths = config.extraPlatformPaths();
     platformPaths.push_back(path + "/Platforms");
 
     for (auto iter = platformPaths.begin(); iter != platformPaths.end(); iter++) {

@@ -8,7 +8,7 @@
 #
 
 add_library(config SHARED
-            Sources/config.cpp
+            Sources/Config.cpp
             )
 
 target_link_libraries(config PUBLIC plist util)

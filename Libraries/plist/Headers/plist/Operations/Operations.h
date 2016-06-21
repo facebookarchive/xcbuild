@@ -17,11 +17,8 @@
 
 namespace plist {
 
-std::pair<bool, std::vector<uint8_t>>
-Read(libutil::Filesystem const *filesystem, std::string const &path = "-");
-
-bool
-Write(libutil::Filesystem *filesystem, std::vector<uint8_t> const &contents, std::string const &path = "-");
+std::unique_ptr<plist::Object>
+Read(libutil::Filesystem const *filesystem, std::string const &path);
 
 plist::Object *
 PerformAdjustment(plist::Object *object, plist::Adjustment const &adjustment);

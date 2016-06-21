@@ -8,12 +8,14 @@
  */
 
 #include <xcsdk/xcsdk.h>
+#include <config/Config.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/Options.h>
 #include <libutil/Subprocess.h>
 #include <libutil/SysUtil.h>
 
+using config::Config;
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::SysUtil;
@@ -287,7 +289,8 @@ main(int argc, char **argv)
      * Create filesystem.
      */
     auto filesystem = std::unique_ptr<Filesystem>(new DefaultFilesystem());
-
+    auto config = Config::Open(filesystem.get(), Config::DefaultPath());
+    
     /*
      * Load the SDK manager from the developer root.
      */
@@ -296,7 +299,7 @@ main(int argc, char **argv)
         fprintf(stderr, "error: unable to find developer root\n");
         return -1;
     }
-    std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(filesystem.get(), *developerRoot);
+    std::shared_ptr<xcsdk::SDK::Manager> manager = xcsdk::SDK::Manager::Open(filesystem.get(), *developerRoot, config);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to load manager from '%s'\n", developerRoot->c_str());
         return -1;
