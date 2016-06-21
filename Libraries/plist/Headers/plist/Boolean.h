@@ -45,7 +45,7 @@ public:
 
     static inline enum Object::Type Type()
     {
-        return Object::kTypeBoolean;
+        return Object::Type::Boolean;
     }
 
 protected:

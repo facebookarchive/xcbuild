@@ -61,7 +61,7 @@ public:
 
     static inline enum Object::Type Type()
     {
-        return Object::kTypeString;
+        return Object::Type::String;
     }
 
 protected:

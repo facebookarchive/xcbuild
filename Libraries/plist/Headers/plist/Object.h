@@ -22,18 +22,18 @@ public:
     typedef std::unique_ptr <Object> UniquePtr;
 
 public:
-    enum Type {
-        kTypeNone,
-        kTypeInteger,
-        kTypeReal,
-        kTypeString,
-        kTypeBoolean,
-        kTypeNull,
-        kTypeArray,
-        kTypeDictionary,
-        kTypeData,
-        kTypeDate,
-        kTypeUID,
+    enum class Type {
+        None,
+        Integer,
+        Real,
+        String,
+        Boolean,
+        Null,
+        Array,
+        Dictionary,
+        Data,
+        Date,
+        UID,
     };
 
 protected:
@@ -74,7 +74,7 @@ public:
 public:
     static inline enum Object::Type Type()
     {
-        return Object::kTypeNone;
+        return Object::Type::None;
     }
 
 public:

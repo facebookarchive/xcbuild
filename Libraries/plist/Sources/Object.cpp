@@ -15,16 +15,16 @@ char const *Object::
 GetTypeName(enum Object::Type type)
 {
     switch (type) {
-        case kTypeNone:       return "object";
-        case kTypeInteger:    return "integer";
-        case kTypeReal:       return "real";
-        case kTypeString:     return "string";
-        case kTypeBoolean:    return "boolean";
-        case kTypeNull:       return "null";
-        case kTypeArray:      return "array";
-        case kTypeDictionary: return "dictionary";
-        case kTypeData:       return "data";
-        case kTypeDate:       return "date";
+        case Type::None:       return "object";
+        case Type::Integer:    return "integer";
+        case Type::Real:       return "real";
+        case Type::String:     return "string";
+        case Type::Boolean:    return "boolean";
+        case Type::Null:       return "null";
+        case Type::Array:      return "array";
+        case Type::Dictionary: return "dictionary";
+        case Type::Data:       return "data";
+        case Type::Date:       return "date";
         default:              break;
     }
     return "unknown";

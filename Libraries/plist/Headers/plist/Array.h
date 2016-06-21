@@ -121,7 +121,7 @@ public:
 
     static inline enum Object::Type Type()
     {
-        return Object::kTypeArray;
+        return Object::Type::Array;
     }
 
 protected:

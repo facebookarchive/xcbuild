@@ -524,7 +524,7 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
     type = object->type();
     offset = __ABPTell(context);
 
-    static const struct { enum Object::Type type; void *cb; } kTypeToCB[] = {
+    static const struct { enum Object::Type type; void *cb; } typeToCB[] = {
         { Array::Type(), (void *)__ABPWriteArray },
         { Dictionary::Type(), (void *)__ABPWriteDictionary },
         { Integer::Type(), (void *)__ABPWriteInteger },
@@ -538,7 +538,7 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
     };
 
     bool (*writer)(ABPContext *, Object const *) = nullptr;
-    for (auto const &it : kTypeToCB) {
+    for (auto const &it : typeToCB) {
         if (it.type == type) {
             writer = (bool(*)(ABPContext *, Object const *))it.cb;
             break;

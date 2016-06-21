@@ -50,7 +50,7 @@ public:
 
     static inline enum Object::Type Type()
     {
-        return Object::kTypeReal;
+        return Object::Type::Real;
     }
 
 protected:

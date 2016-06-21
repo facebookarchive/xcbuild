@@ -65,7 +65,7 @@ public:
 
     static inline enum Object::Type Type()
     {
-        return Object::kTypeDate;
+        return Object::Type::Date;
     }
 
 protected:

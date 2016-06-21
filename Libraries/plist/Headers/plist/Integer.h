@@ -50,7 +50,7 @@ public:
 
     static inline enum Object::Type Type()
     {
-        return Object::kTypeInteger;
+        return Object::Type::Integer;
     }
 
 protected:

@@ -146,7 +146,7 @@ public:
 
     static inline enum Object::Type Type()
     {
-        return Object::kTypeDictionary;
+        return Object::Type::Dictionary;
     }
 
 protected:

@@ -35,7 +35,7 @@ public:
 
     static inline enum Object::Type Type()
     {
-        return Object::kTypeNull;
+        return Object::Type::Null;
     }
 
 protected:
