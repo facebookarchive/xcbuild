@@ -68,10 +68,10 @@ void
 DumpItem(xcworkspace::XC::Workspace::shared_ptr const &W, xcworkspace::XC::GroupItem const *item, size_t indent)
 {
     switch (item->type()) {
-        case xcworkspace::XC::GroupItem::kTypeGroup:
+        case xcworkspace::XC::GroupItem::Type::Group:
             DumpGroup(W, static_cast <xcworkspace::XC::Group const *> (item), indent);
             break;
-        case xcworkspace::XC::GroupItem::kTypeFileRef:
+        case xcworkspace::XC::GroupItem::Type::FileRef:
             DumpFileRef(W, static_cast <xcworkspace::XC::FileRef const *> (item), indent);
             break;
         default:
@@ -118,10 +118,10 @@ ForEachItem(xcworkspace::XC::Workspace::shared_ptr const &W, xcworkspace::XC::Gr
         std::function<void(xcworkspace::XC::Group const *, xcworkspace::XC::FileRef const &)> const &cb)
 {
     switch (item->type()) {
-        case xcworkspace::XC::GroupItem::kTypeGroup:
+        case xcworkspace::XC::GroupItem::Type::Group:
             ForEachGroup(W, static_cast <xcworkspace::XC::Group const *> (item), cb);
             break;
-        case xcworkspace::XC::GroupItem::kTypeFileRef:
+        case xcworkspace::XC::GroupItem::Type::FileRef:
             ForEachFileRef(W, group, static_cast <xcworkspace::XC::FileRef const *> (item), cb);
             break;
         default:

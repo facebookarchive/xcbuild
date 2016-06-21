@@ -12,7 +12,8 @@
 
 using pbxproj::XC::BuildConfiguration;
 
-BuildConfiguration::BuildConfiguration() :
+BuildConfiguration::
+BuildConfiguration() :
     Object        (Isa()),
     _buildSettings(pbxsetting::Level({ }))
 {
@@ -25,8 +26,9 @@ BuildConfiguration::~BuildConfiguration()
 bool BuildConfiguration::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Object::parse(context, dict, seen, false))
+    if (!Object::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("BuildConfiguration", dict, seen);
 

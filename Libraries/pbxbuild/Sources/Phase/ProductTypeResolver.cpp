@@ -184,7 +184,7 @@ ResolveFrameworkStructure(Phase::Environment const &phaseEnvironment, Phase::Con
 
     /* Build phase contents affect other symlinks. */
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
-        if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeCopyFiles) {
+        if (buildPhase->type() == pbxproj::PBX::BuildPhase::Type::CopyFiles) {
             auto copyFiles = std::static_pointer_cast<pbxproj::PBX::CopyFilesBuildPhase>(buildPhase);
 
             /* Has copy files into XPC services: needs XPC services. */
@@ -193,17 +193,17 @@ ResolveFrameworkStructure(Phase::Environment const &phaseEnvironment, Phase::Con
                 copyFiles->dstPath() == pbxsetting::Value::Parse("$(CONTENTS_FOLDER_PATH)/" + XPCServices)) {
                 symlinks.insert(Symlink::XPCServices);
             }
-        } else if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
+        } else if (buildPhase->type() == pbxproj::PBX::BuildPhase::Type::Sources) {
             /* Has sources: needs executable. */
             if (!buildPhase->files().empty()) {
                 symlinks.insert(Symlink::Executable);
             }
-        } else if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeResources) {
+        } else if (buildPhase->type() == pbxproj::PBX::BuildPhase::Type::Resources) {
             /* Has copy resources: needs resources. */
             if (!buildPhase->files().empty()) {
                 symlinks.insert(Symlink::Resources);
             }
-        } else if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeHeaders) {
+        } else if (buildPhase->type() == pbxproj::PBX::BuildPhase::Type::Headers) {
             if (symlinks.find(Symlink::PublicHeaders) == symlinks.end() && symlinks.find(Symlink::PrivateHeaders) == symlinks.end()) {
                 for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
                     std::vector<std::string> const &attributes = buildFile->attributes();

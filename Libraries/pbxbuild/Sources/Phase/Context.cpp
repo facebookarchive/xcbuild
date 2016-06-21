@@ -362,9 +362,9 @@ resolveBuildFiles(
             } else if (toolIdentifier == Tool::CopyResolver::ToolIdentifier()) {
                 std::string logMessageTitle;
                 switch (buildPhase->type()) {
-                    case pbxproj::PBX::BuildPhase::kTypeHeaders:
+                    case pbxproj::PBX::BuildPhase::Type::Headers:
                         logMessageTitle = "CpHeader";
-                    case pbxproj::PBX::BuildPhase::kTypeResources:
+                    case pbxproj::PBX::BuildPhase::Type::Resources:
                         logMessageTitle = "CpResource";
                     default:
                         logMessageTitle = "PBXCp";

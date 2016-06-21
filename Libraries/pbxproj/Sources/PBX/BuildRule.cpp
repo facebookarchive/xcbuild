@@ -19,8 +19,9 @@ BuildRule::BuildRule() :
 bool BuildRule::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Object::parse(context, dict, seen, false))
+    if (!Object::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("BuildRule", dict, seen);
 

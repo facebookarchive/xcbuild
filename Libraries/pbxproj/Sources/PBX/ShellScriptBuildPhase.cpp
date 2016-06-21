@@ -11,8 +11,9 @@
 
 using pbxproj::PBX::ShellScriptBuildPhase;
 
-ShellScriptBuildPhase::ShellScriptBuildPhase() :
-    BuildPhase       (Isa(), kTypeShellScript),
+ShellScriptBuildPhase::
+ShellScriptBuildPhase() :
+    BuildPhase       (Isa(), Type::ShellScript),
     _showEnvVarsInLog(true)
 {
 }
@@ -20,8 +21,9 @@ ShellScriptBuildPhase::ShellScriptBuildPhase() :
 bool ShellScriptBuildPhase::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!BuildPhase::parse(context, dict, seen, false))
+    if (!BuildPhase::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("ShellScriptBuildPhase", dict, seen);
 

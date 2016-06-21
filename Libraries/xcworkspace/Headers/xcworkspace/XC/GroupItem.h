@@ -22,9 +22,9 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 public:
-    enum Type {
-        kTypeGroup,
-        kTypeFileRef
+    enum class Type {
+        Group,
+        FileRef,
     };
 
 private:

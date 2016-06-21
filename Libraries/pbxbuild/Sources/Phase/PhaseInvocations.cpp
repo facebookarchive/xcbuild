@@ -71,7 +71,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
 
     pbxproj::PBX::SourcesBuildPhase::shared_ptr sourcesPhase = nullptr;
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
-        if (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeSources) {
+        if (buildPhase->type() == pbxproj::PBX::BuildPhase::Type::Sources) {
             auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
             sourcesPhase = BP;
 
@@ -88,7 +88,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
         pbxproj::PBX::FrameworksBuildPhase::shared_ptr frameworksPhase;
 
         auto it = std::find_if(buildPhases.begin(), buildPhases.end(), [](pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase) -> bool {
-            return (buildPhase->type() == pbxproj::PBX::BuildPhase::kTypeFrameworks);
+            return (buildPhase->type() == pbxproj::PBX::BuildPhase::Type::Frameworks);
         });
 
         if (it == buildPhases.end()) {
@@ -109,11 +109,11 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
         switch (buildPhase->type()) {
-            case pbxproj::PBX::BuildPhase::kTypeSources:
-            case pbxproj::PBX::BuildPhase::kTypeFrameworks:
+            case pbxproj::PBX::BuildPhase::Type::Sources:
+            case pbxproj::PBX::BuildPhase::Type::Frameworks:
                 /* Handled above. */
                 break;
-            case pbxproj::PBX::BuildPhase::kTypeShellScript: {
+            case pbxproj::PBX::BuildPhase::Type::ShellScript: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
 
                 Phase::ShellScriptResolver shellScript = Phase::ShellScriptResolver(BP);
@@ -122,7 +122,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 }
                 break;
             }
-            case pbxproj::PBX::BuildPhase::kTypeCopyFiles: {
+            case pbxproj::PBX::BuildPhase::Type::CopyFiles: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::CopyFilesBuildPhase> (buildPhase);
 
                 Phase::CopyFilesResolver copyFiles = Phase::CopyFilesResolver(BP);
@@ -131,7 +131,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 }
                 break;
             }
-            case pbxproj::PBX::BuildPhase::kTypeHeaders: {
+            case pbxproj::PBX::BuildPhase::Type::Headers: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::HeadersBuildPhase> (buildPhase);
 
                 Phase::HeadersResolver headers = Phase::HeadersResolver(BP);
@@ -140,7 +140,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 }
                 break;
             }
-            case pbxproj::PBX::BuildPhase::kTypeResources: {
+            case pbxproj::PBX::BuildPhase::Type::Resources: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ResourcesBuildPhase> (buildPhase);
 
                 Phase::ResourcesResolver resources = Phase::ResourcesResolver(BP);
@@ -149,12 +149,12 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 }
                 break;
             }
-            case pbxproj::PBX::BuildPhase::kTypeAppleScript: {
+            case pbxproj::PBX::BuildPhase::Type::AppleScript: {
                 // TODO: Compile AppleScript
                 auto BP = std::static_pointer_cast <pbxproj::PBX::AppleScriptBuildPhase> (buildPhase);
                 break;
             }
-            case pbxproj::PBX::BuildPhase::kTypeRez: {
+            case pbxproj::PBX::BuildPhase::Type::Rez: {
                 // TODO: Compile Rez
                 auto BP = std::static_pointer_cast <pbxproj::PBX::RezBuildPhase> (buildPhase);
                 break;
@@ -168,7 +168,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
      * on all previous invocations that created the output bundle.
      */
     switch (target->type()) {
-        case pbxproj::PBX::Target::kTypeNative: {
+        case pbxproj::PBX::Target::Type::Native: {
             /*
              * Various product types have special (post-)processing. For example, bundles have
              * have info plist processing and applications additionally have a validation step.
@@ -189,7 +189,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
             }
             break;
         }
-        case pbxproj::PBX::Target::kTypeLegacy: {
+        case pbxproj::PBX::Target::Type::Legacy: {
             /*
              * Run the script to build the legacy target.
              */
@@ -202,7 +202,7 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
 
             break;
         }
-        case pbxproj::PBX::Target::kTypeAggregate:
+        case pbxproj::PBX::Target::Type::Aggregate:
             break;
     }
 

@@ -11,16 +11,18 @@
 
 using pbxproj::PBX::AppleScriptBuildPhase;
 
-AppleScriptBuildPhase::AppleScriptBuildPhase() :
-    BuildPhase(Isa(), kTypeAppleScript)
+AppleScriptBuildPhase::
+AppleScriptBuildPhase() :
+    BuildPhase(Isa(), Type::AppleScript)
 {
 }
 
 bool AppleScriptBuildPhase::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!BuildPhase::parse(context, dict, seen, false))
+    if (!BuildPhase::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("AppleScriptBuildPhase", dict, seen);
 

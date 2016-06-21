@@ -99,7 +99,7 @@ CollectScanDirectories(
      * binaries that the libraries link and that might contain Swift.
      */
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
-        if (buildPhase->type() != pbxproj::PBX::BuildPhase::kTypeFrameworks) {
+        if (buildPhase->type() != pbxproj::PBX::BuildPhase::Type::Frameworks) {
             continue;
         }
 

@@ -52,8 +52,9 @@ sourceRoot() const
 bool Project::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Object::parse(context, dict, seen, false))
+    if (!Object::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("Project", dict, seen);
 
@@ -79,10 +80,8 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (BCL != nullptr) {
-        _buildConfigurationList =
-          context.parseObject(context.configurationLists, BCLID, BCL);
+        _buildConfigurationList = context.parseObject(context.configurationLists, BCLID, BCL);
         if (!_buildConfigurationList) {
-            abort();
             return false;
         }
     }
@@ -116,7 +115,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     if (MG != nullptr) {
         _mainGroup = context.parseObject(context.groups, MGID, MG);
         if (!_mainGroup) {
-            abort();
             return false;
         }
     }
@@ -151,7 +149,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             if (auto Td = context.get <NativeTarget> (Ts->value(n), &TID)) {
                 auto T = context.parseObject(context.nativeTargets, TID, Td);
                 if (!T) {
-                    abort();
                     return false;
                 }
 
@@ -159,7 +156,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto Td = context.get <LegacyTarget> (Ts->value(n), &TID)) {
                 auto T = context.parseObject(context.legacyTargets, TID, Td);
                 if (!T) {
-                    abort();
                     return false;
                 }
 
@@ -167,7 +163,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto Td = context.get <AggregateTarget> (Ts->value(n), &TID)) {
                 auto T = context.parseObject(context.aggregateTargets, TID, Td);
                 if (!T) {
-                    abort();
                     return false;
                 }
 

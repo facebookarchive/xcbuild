@@ -13,16 +13,18 @@
 
 using pbxproj::PBX::NativeTarget;
 
-NativeTarget::NativeTarget() :
-    Target(Isa(), kTypeNative)
+NativeTarget::
+NativeTarget() :
+    Target(Isa(), Type::Native)
 {
 }
 
 bool NativeTarget::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Target::parse(context, dict, seen, false))
+    if (!Target::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("NativeTarget", dict, seen);
 
@@ -42,10 +44,8 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (PR != nullptr) {
-        _productReference =
-          context.parseObject(context.fileReferences, PRID, PR);
+        _productReference = context.parseObject(context.fileReferences, PRID, PR);
         if (!_productReference) {
-            abort();
             return false;
         }
     }
@@ -61,7 +61,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             if (BRd != nullptr) {
                 auto BR = context.parseObject(context.buildRules, BRID, BRd);
                 if (!BR) {
-                    abort();
                     return false;
                 }
 

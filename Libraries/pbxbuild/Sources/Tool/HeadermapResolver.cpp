@@ -36,7 +36,7 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
     std::vector<std::string> orderedHeaderSearchPaths;
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
-        if (buildPhase->type() != pbxproj::PBX::BuildPhase::kTypeSources) {
+        if (buildPhase->type() != pbxproj::PBX::BuildPhase::Type::Sources) {
             continue;
         }
 
@@ -135,12 +135,12 @@ resolve(
 
     for (pbxproj::PBX::Target::shared_ptr const &projectTarget : project->targets()) {
        for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : projectTarget->buildPhases()) {
-            if (buildPhase->type() != pbxproj::PBX::BuildPhase::kTypeHeaders) {
+            if (buildPhase->type() != pbxproj::PBX::BuildPhase::Type::Headers) {
                 continue;
             }
 
             for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
-                if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::kTypeFileReference) {
+                if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::Type::FileReference) {
                     continue;
                 }
 
@@ -177,7 +177,7 @@ resolve(
                     }
 
                     // TODO(grp): This is a little messy. Maybe check the product type specification, or the product reference's file type?
-                    if (projectTarget->type() == pbxproj::PBX::Target::kTypeNative && std::static_pointer_cast<pbxproj::PBX::NativeTarget>(projectTarget)->productType().find("framework") == std::string::npos) {
+                    if (projectTarget->type() == pbxproj::PBX::Target::Type::Native && std::static_pointer_cast<pbxproj::PBX::NativeTarget>(projectTarget)->productType().find("framework") == std::string::npos) {
                         allNonFrameworkTargetHeaders.add(frameworkName, fileDirectory, fileName);
                         if (!includeFrameworkEntriesForAllProductTypes) {
                             targetName.add(frameworkName, fileDirectory, fileName);

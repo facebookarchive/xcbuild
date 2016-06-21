@@ -12,7 +12,8 @@
 
 using xcworkspace::XC::GroupItem;
 
-GroupItem::GroupItem(Type type) :
+GroupItem::
+GroupItem(Type type) :
     _type(type)
 {
 }

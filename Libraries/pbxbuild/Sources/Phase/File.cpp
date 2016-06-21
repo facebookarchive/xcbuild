@@ -64,7 +64,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
         }
 
         switch (buildFile->fileRef()->type()) {
-            case pbxproj::PBX::GroupItem::kTypeFileReference: {
+            case pbxproj::PBX::GroupItem::Type::FileReference: {
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
 
                 std::string path = environment.expand(fileReference->resolve());
@@ -75,7 +75,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                 result.push_back(file);
                 break;
             }
-            case pbxproj::PBX::GroupItem::kTypeReferenceProxy: {
+            case pbxproj::PBX::GroupItem::Type::ReferenceProxy: {
                 pbxproj::PBX::ReferenceProxy::shared_ptr const &referenceProxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (buildFile->fileRef());
 
                 pbxproj::PBX::ContainerItemProxy::shared_ptr const &proxy = referenceProxy->remoteRef();
@@ -103,10 +103,10 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                 result.push_back(file);
                 break;
             }
-            case pbxproj::PBX::GroupItem::kTypeVariantGroup: {
+            case pbxproj::PBX::GroupItem::Type::VariantGroup: {
                 pbxproj::PBX::VariantGroup::shared_ptr const &variantGroup = std::static_pointer_cast <pbxproj::PBX::VariantGroup> (buildFile->fileRef());
                 for (pbxproj::PBX::GroupItem::shared_ptr const &child : variantGroup->children()) {
-                    if (child->type() != pbxproj::PBX::GroupItem::kTypeFileReference) {
+                    if (child->type() != pbxproj::PBX::GroupItem::Type::FileReference) {
                         continue;
                     }
 
@@ -122,7 +122,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                 }
                 break;
             }
-            case pbxproj::PBX::GroupItem::kTypeVersionGroup: {
+            case pbxproj::PBX::GroupItem::Type::VersionGroup: {
                 pbxproj::XC::VersionGroup::shared_ptr const &versionGroup = std::static_pointer_cast <pbxproj::XC::VersionGroup> (buildFile->fileRef());
 
                 std::string path = environment.expand(versionGroup->resolve());
@@ -134,7 +134,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                 break;
 
             }
-            case pbxproj::PBX::GroupItem::kTypeGroup: {
+            case pbxproj::PBX::GroupItem::Type::Group: {
                 fprintf(stderr, "warning: unhandled group item type %lu\n", static_cast<unsigned long>(buildFile->fileRef()->type()));
                 break;
             }

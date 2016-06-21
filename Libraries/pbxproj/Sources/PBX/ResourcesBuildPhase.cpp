@@ -11,7 +11,8 @@
 
 using pbxproj::PBX::ResourcesBuildPhase;
 
-ResourcesBuildPhase::ResourcesBuildPhase() :
-    BuildPhase(Isa(), kTypeResources)
+ResourcesBuildPhase::
+ResourcesBuildPhase() :
+    BuildPhase(Isa(), Type::Resources)
 {
 }

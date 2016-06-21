@@ -10,42 +10,43 @@
 #include <pbxproj/PBX/GroupItem.h>
 
 using pbxproj::PBX::GroupItem;
-using pbxsetting::Value;
 
-GroupItem::GroupItem(std::string const &isa, Type type) :
+GroupItem::
+GroupItem(std::string const &isa, Type type) :
     Object (isa),
     _type  (type),
     _parent(nullptr)
 {
 }
 
-Value GroupItem::
+pbxsetting::Value GroupItem::
 resolve(void) const
 {
     std::string path = _path;
-    if (_type != kTypeGroup && _type != kTypeVariantGroup) {
+    if (_type != Type::Group && _type != Type::VariantGroup) {
         path = path.empty() ? _name : path;
     }
     path = path.empty() ? path : "/" + path;
 
     if (_sourceTree.empty() || _sourceTree == "<absolute>") {
-        return Value::String(path);
+        return pbxsetting::Value::String(path);
     } else if (_sourceTree == "<group>") {
         if (_parent != nullptr) {
-            return _parent->resolve() + Value::String(path);
+            return _parent->resolve() + pbxsetting::Value::String(path);
         } else {
-            return Value::Variable("SOURCE_ROOT") + Value::String(path);
+            return pbxsetting::Value::Variable("SOURCE_ROOT") + pbxsetting::Value::String(path);
         }
     } else {
-        return Value::Variable(_sourceTree) + Value::String(path);
+        return pbxsetting::Value::Variable(_sourceTree) + pbxsetting::Value::String(path);
     }
 }
 
 bool GroupItem::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Object::parse(context, dict, seen, false))
+    if (!Object::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("GroupItem", dict, seen);
 

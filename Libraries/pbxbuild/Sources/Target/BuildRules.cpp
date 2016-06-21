@@ -142,7 +142,7 @@ Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string>
 {
     Target::BuildRules::BuildRule::vector buildRules;
 
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+    if (target->type() == pbxproj::PBX::Target::Type::Native) {
         pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast <pbxproj::PBX::NativeTarget> (target);
         for (pbxproj::PBX::BuildRule::shared_ptr const &projBuildRule : nativeTarget->buildRules()) {
             if (Target::BuildRules::BuildRule::shared_ptr buildRule = ProjectBuildRule(specManager, domains, projBuildRule)) {

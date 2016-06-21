@@ -21,12 +21,12 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 public:
-    enum Type {
-        kTypeGroup,
-        kTypeVariantGroup,
-        kTypeVersionGroup,
-        kTypeFileReference,
-        kTypeReferenceProxy
+    enum class Type {
+        Group,
+        VariantGroup,
+        VersionGroup,
+        FileReference,
+        ReferenceProxy
     };
 
 private:

@@ -23,18 +23,18 @@ using namespace libutil;
 void
 DumpGroup(PBX::BaseGroup const *group, size_t indent = 0)
 {
-    bool IsVariant = group->type() == PBX::GroupItem::kTypeVariantGroup;
+    bool IsVariant = group->type() == PBX::GroupItem::Type::VariantGroup;
     printf("%*s%c%s%c\n", (int)(indent * 2), "",
             IsVariant ? '{' : '[',
             group->name().c_str(),
             IsVariant ? '}' : ']');
     indent++;
     for (auto child : group->children()) {
-        if (child->type() == PBX::GroupItem::kTypeFileReference) {
+        if (child->type() == PBX::GroupItem::Type::FileReference) {
             printf("%*s%s [%s]\n", (int)(indent * 2), "",
                     child->name().c_str(),
                     child->path().c_str());
-        } else if (child->type() == PBX::GroupItem::kTypeReferenceProxy) {
+        } else if (child->type() == PBX::GroupItem::Type::ReferenceProxy) {
             printf("%*s%s [proxy]\n", (int)(indent * 2), "",
                     child->name().c_str());
         } else {
@@ -140,13 +140,13 @@ GetSourceFileReferences(PBX::Project::shared_ptr const &project,
 
         for (auto const &J : I->buildPhases()) {
             switch (J->type()) {
-                case PBX::BuildPhase::kTypeSources:
+                case PBX::BuildPhase::Type::Sources:
                     {
                         auto BP = static_cast <PBX::SourcesBuildPhase *> (J.get());
                         if (BP) {
                             for (auto const &K : BP->files()) {
                                 if (auto const &FR = K->fileRef()) {
-                                    if (FR->type() == PBX::GroupItem::kTypeFileReference) {
+                                    if (FR->type() == PBX::GroupItem::Type::FileReference) {
                                         refs.push_back(std::static_pointer_cast <PBX::FileReference> (FR));
                                     }
                                 }
@@ -184,13 +184,13 @@ GetHeaderFileReferences(PBX::Project::shared_ptr const &project,
 
         for (auto const &J : I->buildPhases()) {
             switch (J->type()) {
-                case PBX::BuildPhase::kTypeHeaders:
+                case PBX::BuildPhase::Type::Headers:
                     {
                         auto BP = static_cast <PBX::HeadersBuildPhase *> (J.get());
                         if (BP) {
                             for (auto const &K : BP->files()) {
                                 if (auto const &FR = K->fileRef()) {
-                                    if (FR->type() == PBX::GroupItem::kTypeFileReference) {
+                                    if (FR->type() == PBX::GroupItem::Type::FileReference) {
                                         refs.push_back(std::static_pointer_cast <PBX::FileReference> (FR));
                                     }
                                 }
@@ -250,7 +250,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
     for (auto I : project->targets()) {
         printf("\t%s\n", I->name().c_str());
         printf("\t\tProduct Name = %s\n", I->productName().c_str());
-        if (I->type() == PBX::Target::kTypeNative) {
+        if (I->type() == PBX::Target::Type::Native) {
             auto NT = static_cast <PBX::NativeTarget const *> (I.get());
             printf("\t\tProduct Type = %s\n", NT->productType().c_str());
         }
@@ -273,7 +273,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
         printf("\t\tBuild Phases:\n");
         for (auto J : I->buildPhases()) {
             switch (J->type()) {
-                case PBX::BuildPhase::kTypeHeaders:
+                case PBX::BuildPhase::Type::Headers:
                     {
                         auto BP = static_cast <PBX::HeadersBuildPhase *> (J.get());
                         printf("\t\t\tHeaders Build Phase:\n");
@@ -289,7 +289,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
                         }
                     }
                     break;
-                case PBX::BuildPhase::kTypeSources:
+                case PBX::BuildPhase::Type::Sources:
                     {
                         auto BP = static_cast <PBX::SourcesBuildPhase *> (J.get());
                         printf("\t\t\tSources Build Phase:\n");
@@ -305,7 +305,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
                         }
                     }
                     break;
-                case PBX::BuildPhase::kTypeResources:
+                case PBX::BuildPhase::Type::Resources:
                     {
                         auto BP = static_cast <PBX::ResourcesBuildPhase *> (J.get());
                         printf("\t\t\tResources Build Phase:\n");
@@ -321,7 +321,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
                         }
                     }
                     break;
-                case PBX::BuildPhase::kTypeCopyFiles:
+                case PBX::BuildPhase::Type::CopyFiles:
                     {
                         auto BP = static_cast <PBX::CopyFilesBuildPhase *> (J.get());
                         printf("\t\t\tCopy Files Build Phase:\n");
@@ -341,7 +341,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
                         }
                     }
                     break;
-                case PBX::BuildPhase::kTypeFrameworks:
+                case PBX::BuildPhase::Type::Frameworks:
                     {
                         auto BP = static_cast <PBX::FrameworksBuildPhase *> (J.get());
                         printf("\t\t\tFrameworks Build Phase:\n");
@@ -357,7 +357,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
                         }
                     }
                     break;
-                case PBX::BuildPhase::kTypeShellScript:
+                case PBX::BuildPhase::Type::ShellScript:
                     {
                         auto BP = static_cast <PBX::ShellScriptBuildPhase *> (J.get());
                         printf("\t\t\tShell Script Build Phase:\n");
@@ -387,7 +387,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
                         }
                     }
                     break;
-                case PBX::BuildPhase::kTypeAppleScript:
+                case PBX::BuildPhase::Type::AppleScript:
                     {
                         auto BP = static_cast <PBX::AppleScriptBuildPhase *> (J.get());
                         printf("\t\t\tApple Script Build Phase:\n");
@@ -407,7 +407,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
                         }
                     }
                     break;
-                case PBX::BuildPhase::kTypeRez:
+                case PBX::BuildPhase::Type::Rez:
                     {
                         auto BP = static_cast <PBX::RezBuildPhase *> (J.get());
                         printf("\t\t\tRez Build Phase:\n");

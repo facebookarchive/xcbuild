@@ -12,7 +12,8 @@
 
 using pbxproj::PBX::ContainerItemProxy;
 
-ContainerItemProxy::ContainerItemProxy() :
+ContainerItemProxy::
+ContainerItemProxy() :
     Object    (Isa()),
     _proxyType(0)
 {
@@ -21,8 +22,9 @@ ContainerItemProxy::ContainerItemProxy() :
 bool ContainerItemProxy::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Object::parse(context, dict, seen, false))
+    if (!Object::parse(context, dict, seen, false)) {
         return false;
+    }
 
     std::string CPID;
 
@@ -40,7 +42,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     if (CP != nullptr) {
         auto portal = context.parseObject(context.fileReferences, CPID, CP);
         if (!portal) {
-            abort();
             return false;
         }
 

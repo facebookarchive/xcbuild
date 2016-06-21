@@ -14,7 +14,8 @@
 
 using pbxproj::XC::ConfigurationList;
 
-ConfigurationList::ConfigurationList() :
+ConfigurationList::
+ConfigurationList() :
     Object                        (Isa()),
     _defaultConfigurationIsVisible(false)
 {
@@ -23,8 +24,9 @@ ConfigurationList::ConfigurationList() :
 bool ConfigurationList::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Object::parse(context, dict, seen, false))
+    if (!Object::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("ConfigurationList", dict, seen);
 

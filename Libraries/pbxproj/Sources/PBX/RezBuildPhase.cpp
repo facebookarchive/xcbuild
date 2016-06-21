@@ -11,7 +11,8 @@
 
 using pbxproj::PBX::RezBuildPhase;
 
-RezBuildPhase::RezBuildPhase() :
-    BuildPhase(Isa(), kTypeRez)
+RezBuildPhase::
+RezBuildPhase() :
+    BuildPhase(Isa(), Type::Rez)
 {
 }

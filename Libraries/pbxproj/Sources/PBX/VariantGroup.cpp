@@ -11,7 +11,8 @@
 
 using pbxproj::PBX::VariantGroup;
 
-VariantGroup::VariantGroup() :
-    BaseGroup(Isa(), GroupItem::kTypeVariantGroup)
+VariantGroup::
+VariantGroup() :
+    BaseGroup(Isa(), GroupItem::Type::VariantGroup)
 {
 }

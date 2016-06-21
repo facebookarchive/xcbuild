@@ -12,16 +12,18 @@
 
 using xcworkspace::XC::Group;
 
-Group::Group() :
-    GroupItem(kTypeGroup)
+Group::
+Group() :
+    GroupItem(Type::Group)
 {
 }
 
 bool Group::
 parse(plist::Dictionary const *dict)
 {
-    if (!GroupItem::parse(dict))
+    if (!GroupItem::parse(dict)) {
         return false;
+    }
 
     auto N = dict->value <plist::String> ("name");
     if (N != nullptr) {

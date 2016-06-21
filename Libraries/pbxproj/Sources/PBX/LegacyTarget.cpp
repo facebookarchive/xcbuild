@@ -12,8 +12,9 @@
 
 using pbxproj::PBX::LegacyTarget;
 
-LegacyTarget::LegacyTarget() :
-    Target                         (Isa(), kTypeLegacy),
+LegacyTarget::
+LegacyTarget() :
+    Target                         (Isa(), Type::Legacy),
     _buildArgumentsString          (pbxsetting::Value::Empty()),
     _passBuildSettingsInEnvironment(false)
 {
