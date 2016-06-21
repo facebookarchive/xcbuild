@@ -14,8 +14,12 @@
  * in that it fails if __has_include is not available (even though the
  * header may be), since the mechanism is more complex than a usual include.
  */
-#if defined(__has_include) && __has_include("LICENSE.h")
+#if defined(__has_include)
+#if __has_include("LICENSE.h")
 #include "LICENSE.h"
+#else
+static char const LICENSE[] = "<unavailable>";
+#endif
 #else
 static char const LICENSE[] = "<unavailable>";
 #endif
