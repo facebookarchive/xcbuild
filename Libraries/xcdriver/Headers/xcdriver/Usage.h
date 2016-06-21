@@ -7,27 +7,25 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <xcdriver/UsageAction.h>
-#include <xcdriver/Usage.h>
+#ifndef __xcdriver_Usage_h
+#define __xcdriver_Usage_h
 
-using xcdriver::UsageAction;
-using xcdriver::Usage;
+#include <xcdriver/Base.h>
 
-UsageAction::
-UsageAction()
-{
+namespace xcdriver {
+
+class Usage {
+private:
+    Usage();
+    ~Usage();
+
+public:
+    /*
+     * Text explaining the usage of the driver.
+     */
+    static std::string Text();
+};
+
 }
 
-UsageAction::
-~UsageAction()
-{
-}
-
-int UsageAction::
-Run()
-{
-    fprintf(stdout, "%s", Usage::Text().c_str());
-
-    return 0;
-}
-
+#endif // !__xcdriver_Usage_h
