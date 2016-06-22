@@ -13,6 +13,10 @@
 #include <xcscheme/XC/Action.h>
 #include <xcscheme/XC/TestableReference.h>
 
+#include <string>
+
+namespace plist { class Dictionary; }
+
 namespace xcscheme { namespace XC {
 
 class TestAction : public Action {

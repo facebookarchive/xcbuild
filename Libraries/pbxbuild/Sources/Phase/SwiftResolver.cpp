@@ -12,6 +12,8 @@
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/Tool/SwiftStandardLibraryResolver.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Type.h>
 #include <libutil/FSUtil.h>
 
 namespace Target = pbxbuild::Target;

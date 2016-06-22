@@ -7,7 +7,20 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <plist/plist.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Data.h>
+#include <plist/Date.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/Real.h>
+#include <plist/String.h>
+#include <plist/Object.h>
+#include <plist/Format/Any.h>
+#include <plist/Format/ASCII.h>
+#include <plist/Format/Binary.h>
+#include <plist/Format/Encoding.h>
+#include <plist/Format/XML.h>
 #include <libutil/Options.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>

@@ -8,15 +8,19 @@
  */
 
 #include <pbxspec/PBX/BuildPhase.h>
+#include <plist/Dictionary.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::BuildPhase;
 
-BuildPhase::BuildPhase() :
+BuildPhase::
+BuildPhase() :
     Specification()
 {
 }
 
-BuildPhase::~BuildPhase()
+BuildPhase::
+~BuildPhase()
 {
 }
 

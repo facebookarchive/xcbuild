@@ -9,15 +9,24 @@
 
 #include <pbxspec/PBX/Architecture.h>
 #include <pbxspec/Inherit.h>
+#include <pbxsetting/Type.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Integer.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::Architecture;
 
-Architecture::Architecture() :
+Architecture::
+Architecture() :
     Specification()
 {
 }
 
-Architecture::~Architecture()
+Architecture::
+~Architecture()
 {
 }
 

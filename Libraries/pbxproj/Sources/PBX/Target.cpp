@@ -11,6 +11,10 @@
 #include <pbxproj/PBX/NativeTarget.h>
 #include <pbxproj/PBX/BuildPhases.h>
 #include <pbxproj/Context.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::Target;
 using pbxproj::PBX::NativeTarget;

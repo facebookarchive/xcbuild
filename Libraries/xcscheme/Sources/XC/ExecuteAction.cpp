@@ -8,10 +8,13 @@
  */
 
 #include <xcscheme/XC/ExecuteAction.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::ExecuteAction;
 
-ExecuteAction::ExecuteAction()
+ExecuteAction::
+ExecuteAction()
 {
 }
 

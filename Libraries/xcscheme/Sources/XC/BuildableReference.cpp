@@ -9,11 +9,14 @@
 
 #include <xcscheme/XC/BuildableReference.h>
 #include <xcscheme/SchemeGroup.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::BuildableReference;
 using xcscheme::SchemeGroup;
 
-BuildableReference::BuildableReference()
+BuildableReference::
+BuildableReference()
 {
 }
 

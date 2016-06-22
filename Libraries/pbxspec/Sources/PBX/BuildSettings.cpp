@@ -9,15 +9,20 @@
 
 #include <pbxspec/PBX/BuildSettings.h>
 #include <pbxspec/Inherit.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::BuildSettings;
 
-BuildSettings::BuildSettings() :
+BuildSettings::
+BuildSettings() :
     Specification()
 {
 }
 
-BuildSettings::~BuildSettings()
+BuildSettings::
+~BuildSettings()
 {
 }
 

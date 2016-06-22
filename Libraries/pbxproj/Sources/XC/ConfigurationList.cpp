@@ -9,6 +9,11 @@
 
 #include <pbxproj/XC/ConfigurationList.h>
 #include <pbxproj/Context.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 #include <cassert>
 

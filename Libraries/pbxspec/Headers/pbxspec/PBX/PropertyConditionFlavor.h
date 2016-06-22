@@ -10,10 +10,13 @@
 #ifndef __pbxspec_PBX_PropertyConditionFlavor_h
 #define __pbxspec_PBX_PropertyConditionFlavor_h
 
-#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 
+#include <memory>
+#include <vector>
 #include <ext/optional>
+
+namespace plist { class Dictionary; }
 
 namespace pbxspec { namespace PBX {
 

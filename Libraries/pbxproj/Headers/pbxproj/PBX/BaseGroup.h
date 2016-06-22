@@ -12,6 +12,12 @@
 
 #include <pbxproj/PBX/GroupItem.h>
 
+#include <memory>
+#include <string>
+#include <unordered_set>
+
+namespace plist { class Dictionary; }
+
 namespace pbxproj { namespace PBX {
 
 class BaseGroup : public GroupItem {

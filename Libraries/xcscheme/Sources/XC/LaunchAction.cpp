@@ -8,10 +8,15 @@
  */
 
 #include <xcscheme/XC/LaunchAction.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::LaunchAction;
 
-LaunchAction::LaunchAction() :
+LaunchAction::
+LaunchAction() :
     _allowLocationSimulation       (false),
     _debugDocumentVersioning       (false),
     _ignoresPersistentStateOnLaunch(false),

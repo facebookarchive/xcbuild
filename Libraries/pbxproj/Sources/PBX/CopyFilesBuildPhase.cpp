@@ -8,6 +8,10 @@
  */
 
 #include <pbxproj/PBX/CopyFilesBuildPhase.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::CopyFilesBuildPhase;
 

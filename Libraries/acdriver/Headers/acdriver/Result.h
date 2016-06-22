@@ -10,12 +10,13 @@
 #ifndef __acdriver_Result_h
 #define __acdriver_Result_h
 
-#include <plist/plist.h>
-
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <ext/optional>
+
+namespace plist { class Array; }
+namespace plist { class Object; }
 
 namespace acdriver {
 

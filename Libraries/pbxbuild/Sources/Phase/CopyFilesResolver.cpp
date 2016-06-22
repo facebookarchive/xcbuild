@@ -12,6 +12,9 @@
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/File.h>
 #include <pbxbuild/Tool/CopyResolver.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Type.h>
+#include <pbxsetting/Value.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;

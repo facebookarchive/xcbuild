@@ -8,6 +8,9 @@
  */
 
 #include <pbxbuild/Tool/InterfaceBuilderCommon.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Setting.h>
+#include <pbxsetting/Type.h>
 
 namespace Tool = pbxbuild::Tool;
 

@@ -13,6 +13,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/DerivedDataHash.h>
 
+namespace pbxsetting { class Environment; }
 namespace libutil { class Filesystem; }
 
 namespace pbxbuild {

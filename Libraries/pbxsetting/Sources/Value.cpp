@@ -9,7 +9,11 @@
 
 #include <pbxsetting/Value.h>
 #include <pbxsetting/Type.h>
-#include <plist/plist.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Integer.h>
+#include <plist/Real.h>
+#include <plist/String.h>
 
 #include <cassert>
 

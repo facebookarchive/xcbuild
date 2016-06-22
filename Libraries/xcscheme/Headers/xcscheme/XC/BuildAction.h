@@ -13,6 +13,10 @@
 #include <xcscheme/XC/Action.h>
 #include <xcscheme/XC/BuildActionEntry.h>
 
+#include <memory>
+
+namespace plist { class Dictionary; }
+
 namespace xcscheme { namespace XC {
 
 class BuildAction : public Action {

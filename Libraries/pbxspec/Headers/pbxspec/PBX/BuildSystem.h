@@ -13,7 +13,13 @@
 #include <pbxspec/PBX/Specification.h>
 #include <pbxspec/PBX/PropertyOption.h>
 
+#include <memory>
+#include <string>
+#include <unordered_set>
+#include <vector>
 #include <ext/optional>
+
+namespace pbxsetting { class Level; }
 
 namespace pbxspec { namespace PBX {
 

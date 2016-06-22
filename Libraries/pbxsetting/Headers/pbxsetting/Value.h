@@ -10,9 +10,9 @@
 #ifndef __pbxsetting_Value_h
 #define __pbxsetting_Value_h
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace plist { class Object; }
 

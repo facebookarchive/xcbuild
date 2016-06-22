@@ -10,7 +10,11 @@
 #ifndef __xcscheme_XC_CommandLineArgument_h
 #define __xcscheme_XC_CommandLineArgument_h
 
-#include <xcscheme/Base.h>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace plist { class Dictionary; }
 
 namespace xcscheme { namespace XC {
 

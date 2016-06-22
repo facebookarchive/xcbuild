@@ -10,7 +10,11 @@
 #ifndef __xcworkspace_XC_GroupItem_h
 #define __xcworkspace_XC_GroupItem_h
 
-#include <xcworkspace/Base.h>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace plist { class Dictionary; }
 
 namespace xcworkspace { namespace XC {
 

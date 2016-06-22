@@ -9,6 +9,9 @@
 
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Setting.h>
+#include <pbxsetting/Type.h>
 #include <libutil/Escape.h>
 #include <libutil/FSUtil.h>
 

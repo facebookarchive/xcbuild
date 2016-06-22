@@ -16,6 +16,9 @@
 #include <pbxbuild/Tool/SymlinkResolver.h>
 #include <pbxbuild/Tool/TouchResolver.h>
 #include <pbxbuild/Tool/ToolResolver.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Type.h>
+#include <pbxsetting/Value.h>
 #include <libutil/FSUtil.h>
 
 namespace Target = pbxbuild::Target;

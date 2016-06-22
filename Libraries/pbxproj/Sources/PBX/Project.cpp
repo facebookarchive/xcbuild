@@ -12,6 +12,12 @@
 #include <pbxproj/PBX/LegacyTarget.h>
 #include <pbxproj/PBX/NativeTarget.h>
 #include <pbxproj/Context.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Format/Any.h>
+#include <plist/Keys/Unpack.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>

@@ -9,15 +9,21 @@
 
 #include <pbxspec/PBX/BuildSystem.h>
 #include <pbxspec/Inherit.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::BuildSystem;
 
-BuildSystem::BuildSystem() :
+BuildSystem::
+BuildSystem() :
     Specification()
 {
 }
 
-BuildSystem::~BuildSystem()
+BuildSystem::
+~BuildSystem()
 {
 }
 

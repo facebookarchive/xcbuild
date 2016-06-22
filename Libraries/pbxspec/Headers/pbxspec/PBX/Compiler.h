@@ -11,6 +11,8 @@
 #define __pbxspec_PBX_Compiler_h
 
 #include <pbxspec/PBX/Tool.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Value.h>
 
 #include <ext/optional>
 

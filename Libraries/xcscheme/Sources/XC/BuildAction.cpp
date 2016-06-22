@@ -8,10 +8,14 @@
  */
 
 #include <xcscheme/XC/BuildAction.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
 
 using xcscheme::XC::BuildAction;
 
-BuildAction::BuildAction() :
+BuildAction::
+BuildAction() :
     _buildImplicitDependencies(false),
     _parallelizeBuildables    (false)
 {

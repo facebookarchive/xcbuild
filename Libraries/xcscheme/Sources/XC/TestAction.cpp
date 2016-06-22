@@ -8,10 +8,15 @@
  */
 
 #include <xcscheme/XC/TestAction.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::TestAction;
 
-TestAction::TestAction() :
+TestAction::
+TestAction() :
     _shouldUseLaunchSchemeArgsEnv(false)
 {
 }

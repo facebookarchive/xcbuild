@@ -10,14 +10,18 @@
 #ifndef __pbxspec_PBX_Specification_h
 #define __pbxspec_PBX_Specification_h
 
-#include <pbxspec/Base.h>
 #include <pbxspec/Types.h>
 
+#include <memory>
+#include <string>
+#include <unordered_set>
+#include <vector>
 #include <ext/optional>
 
 namespace libutil { class Filesystem; }
-
+namespace plist { class Dictionary; }
 namespace pbxspec { class Manager; }
+namespace pbxspec { class Context; }
 
 namespace pbxspec { namespace PBX {
 

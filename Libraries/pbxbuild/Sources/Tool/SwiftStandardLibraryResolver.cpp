@@ -12,6 +12,10 @@
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Setting.h>
+#include <pbxsetting/Type.h>
 
 namespace Tool = pbxbuild::Tool;
 

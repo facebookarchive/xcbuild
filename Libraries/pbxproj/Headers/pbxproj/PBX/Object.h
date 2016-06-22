@@ -11,12 +11,13 @@
 #define __pbxproj_PBX_Object_h
 
 #include <pbxproj/ISA.h>
-#include <plist/plist.h>
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
+namespace plist { class Dictionary; }
 namespace pbxproj { class Context; }
 
 namespace pbxproj { namespace PBX {

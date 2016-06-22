@@ -20,6 +20,8 @@
 #include <pbxbuild/Phase/ShellScriptResolver.h>
 #include <pbxbuild/Phase/SwiftResolver.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Type.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;

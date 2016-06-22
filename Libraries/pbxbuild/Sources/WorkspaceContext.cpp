@@ -8,6 +8,7 @@
  */
 
 #include <pbxbuild/WorkspaceContext.h>
+#include <pbxsetting/Environment.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 

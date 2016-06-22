@@ -8,10 +8,14 @@
  */
 
 #include <xcscheme/XC/ProfileAction.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::ProfileAction;
 
-ProfileAction::ProfileAction() :
+ProfileAction::
+ProfileAction() :
     _debugDocumentVersioning     (false),
     _shouldUseLaunchSchemeArgsEnv(false),
     _useCustomWorkingDirectory   (false)
@@ -23,7 +27,7 @@ parse(plist::Dictionary const *dict)
 {
     if (!Action::parse(dict))
         return false;
-    
+
     auto DDV    = dict->value <plist::Boolean> ("debugDocumentVersioning");
     auto SULSAE = dict->value <plist::Boolean> ("shouldUseLaunchSchemeArgsEnv");
     auto UCWD   = dict->value <plist::Boolean> ("useCustomWorkingDirectory");

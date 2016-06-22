@@ -10,7 +10,10 @@
 #ifndef __xcscheme_XC_LocationScenarioReference_h
 #define __xcscheme_XC_LocationScenarioReference_h
 
-#include <xcscheme/Base.h>
+#include <memory>
+#include <string>
+
+namespace plist { class Dictionary; }
 
 namespace xcscheme { namespace XC {
 

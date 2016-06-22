@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <acdriver/Output.h>
+#include <plist/String.h>
 
 using acdriver::Output;
 

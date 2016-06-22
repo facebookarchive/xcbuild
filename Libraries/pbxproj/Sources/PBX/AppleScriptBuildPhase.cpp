@@ -8,6 +8,10 @@
  */
 
 #include <pbxproj/PBX/AppleScriptBuildPhase.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::AppleScriptBuildPhase;
 

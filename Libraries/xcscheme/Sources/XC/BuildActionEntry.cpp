@@ -8,10 +8,14 @@
  */
 
 #include <xcscheme/XC/BuildActionEntry.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
 
 using xcscheme::XC::BuildActionEntry;
 
-BuildActionEntry::BuildActionEntry() :
+BuildActionEntry::
+BuildActionEntry() :
     _buildForAnalyzing(false),
     _buildForArchiving(false),
     _buildForProfiling(false),

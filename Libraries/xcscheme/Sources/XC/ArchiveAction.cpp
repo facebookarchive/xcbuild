@@ -8,10 +8,13 @@
  */
 
 #include <xcscheme/XC/ArchiveAction.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
 
 using xcscheme::XC::ArchiveAction;
 
-ArchiveAction::ArchiveAction() :
+ArchiveAction::
+ArchiveAction() :
     _revealArchiveInOrganizer(false)
 {
 }
@@ -23,7 +26,7 @@ parse(plist::Dictionary const *dict)
         return false;
 
     auto RAIO = dict->value <plist::Boolean> ("revealArchiverInOrganize");
-    
+
     if (RAIO != nullptr) {
         _revealArchiveInOrganizer = RAIO->value();
     }

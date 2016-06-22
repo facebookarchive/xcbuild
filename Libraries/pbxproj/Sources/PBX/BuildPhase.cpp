@@ -9,6 +9,12 @@
 
 #include <pbxproj/PBX/BuildPhase.h>
 #include <pbxproj/Context.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BuildPhase;
 

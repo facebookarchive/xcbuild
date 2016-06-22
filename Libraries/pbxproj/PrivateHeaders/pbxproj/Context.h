@@ -12,6 +12,14 @@
 
 #include <pbxproj/PlistHelpers.h>
 #include <pbxproj/ISA.h>
+#include <plist/Dictionary.h>
+#include <plist/Object.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
+
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace pbxproj {
 
@@ -170,7 +178,7 @@ private:
     inline plist::Dictionary const *indirect(plist::Keys::Unpack *unpack,
                                              std::string const &key,
                                              std::string const &isa,
-                                            std::string *id = nullptr) const
+                                             std::string *id = nullptr) const
     {
         return PlistDictionaryGetIndirectPBXObject(objects, unpack, key, isa, id);
     }

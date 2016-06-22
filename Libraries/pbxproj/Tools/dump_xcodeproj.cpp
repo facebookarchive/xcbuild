@@ -8,7 +8,11 @@
  */
 
 #include <pbxproj/pbxproj.h>
-#include <pbxsetting/pbxsetting.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Setting.h>
+#include <pbxsetting/XC/Config.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 #include <xcscheme/xcscheme.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>

@@ -9,6 +9,9 @@
 
 #include <pbxproj/PBX/ContainerItemProxy.h>
 #include <pbxproj/Context.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::ContainerItemProxy;
 

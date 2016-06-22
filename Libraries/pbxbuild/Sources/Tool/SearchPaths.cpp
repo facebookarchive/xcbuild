@@ -9,6 +9,8 @@
 
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Type.h>
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;

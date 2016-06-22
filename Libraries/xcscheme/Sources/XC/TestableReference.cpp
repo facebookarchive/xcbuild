@@ -8,6 +8,9 @@
  */
 
 #include <xcscheme/XC/TestableReference.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
 
 using xcscheme::XC::TestableReference;
 

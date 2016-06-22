@@ -8,6 +8,11 @@
  */
 
 #include <acdriver/Output.h>
+#include <plist/Object.h>
+#include <plist/Dictionary.h>
+#include <plist/Format/Binary.h>
+#include <plist/Format/Encoding.h>
+#include <plist/Format/XML.h>
 
 #include <cstdlib>
 

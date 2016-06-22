@@ -14,6 +14,11 @@
 #include <pbxproj/PBX/VariantGroup.h>
 #include <pbxproj/XC/VersionGroup.h>
 #include <pbxproj/Context.h>
+#include <pbxsetting/Type.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BuildFile;
 

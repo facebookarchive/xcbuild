@@ -8,8 +8,13 @@
  */
 
 #include <gtest/gtest.h>
-#include <plist/plist.h>
 #include <pbxbuild/Tool/OptionsResult.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Setting.h>
+#include <plist/Dictionary.h>
+#include <plist/Format/ASCII.h>
+#include <plist/Format/Encoding.h>
 
 namespace Tool = pbxbuild::Tool;
 

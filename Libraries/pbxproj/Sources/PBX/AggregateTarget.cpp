@@ -9,6 +9,8 @@
 
 #include <pbxproj/PBX/AggregateTarget.h>
 #include <pbxproj/PBX/BuildPhases.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::AggregateTarget;
 

@@ -8,10 +8,13 @@
  */
 
 #include <xcscheme/XC/Test.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::Test;
 
-Test::Test()
+Test::
+Test()
 {
 }
 

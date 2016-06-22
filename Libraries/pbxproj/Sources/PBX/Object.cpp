@@ -8,6 +8,9 @@
  */
 
 #include <pbxproj/PBX/Object.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::Object;
 

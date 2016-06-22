@@ -13,7 +13,7 @@
 #include <xcexecution/NinjaExecutor.h>
 #include <xcexecution/SimpleExecutor.h>
 #include <xcformatter/DefaultFormatter.h>
-#include <builtin/builtin.h>
+#include <builtin/Registry.h>
 #include <libutil/Base.h>
 #include <libutil/Filesystem.h>
 

@@ -13,6 +13,7 @@
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/FileTypeResolver.h>
 #include <pbxbuild/HeaderMap.h>
+#include <pbxsetting/Type.h>
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;

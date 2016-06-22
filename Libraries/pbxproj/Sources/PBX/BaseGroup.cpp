@@ -14,6 +14,10 @@
 #include <pbxproj/PBX/FileReference.h>
 #include <pbxproj/PBX/ReferenceProxy.h>
 #include <pbxproj/Context.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BaseGroup;
 

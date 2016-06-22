@@ -11,6 +11,8 @@
 #include <acdriver/Options.h>
 #include <acdriver/Output.h>
 #include <acdriver/Result.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using acdriver::VersionAction;
 using acdriver::Options;

@@ -9,6 +9,9 @@
 
 #include <xcworkspace/XC/Group.h>
 #include <xcworkspace/XC/FileRef.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcworkspace::XC::Group;
 

@@ -10,12 +10,14 @@
 #ifndef __acdriver_Output_h
 #define __acdriver_Output_h
 
-#include <plist/plist.h>
-#include <ext/optional>
-
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
+#include <ext/optional>
+
+namespace plist { class Dictionary; }
+namespace plist { class Object; }
 
 namespace acdriver {
 

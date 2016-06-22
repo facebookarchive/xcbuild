@@ -10,8 +10,11 @@
 #ifndef __xcscheme_XC_BuildableReference_h
 #define __xcscheme_XC_BuildableReference_h
 
-#include <xcscheme/Base.h>
+#include <memory>
+#include <string>
+#include <vector>
 
+namespace plist { class Dictionary; }
 namespace xcscheme { class SchemeGroup; }
 
 namespace xcscheme { namespace XC {

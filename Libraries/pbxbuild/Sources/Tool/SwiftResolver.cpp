@@ -13,6 +13,11 @@
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Type.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Format/JSON.h>
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;

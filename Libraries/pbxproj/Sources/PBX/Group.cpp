@@ -8,6 +8,9 @@
  */
 
 #include <pbxproj/PBX/Group.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::Group;
 

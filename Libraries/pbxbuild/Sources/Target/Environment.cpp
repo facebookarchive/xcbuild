@@ -9,6 +9,11 @@
 
 #include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/Build/Context.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Setting.h>
+#include <pbxsetting/Type.h>
+#include <pbxsetting/XC/Config.h>
 #include <libutil/FSUtil.h>
 
 #include <algorithm>
