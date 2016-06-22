@@ -9,6 +9,14 @@
 
 #include <pbxspec/PBX/Tool.h>
 #include <pbxspec/Inherit.h>
+#include <pbxsetting/Type.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/Object.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::Tool;
 

@@ -11,7 +11,8 @@
 
 using xcworkspace::XC::FileRef;
 
-FileRef::FileRef() :
-    GroupItem(kTypeFileRef)
+FileRef::
+FileRef() :
+    GroupItem(Type::FileRef)
 {
 }

@@ -78,14 +78,14 @@ public:
     static std::unique_ptr<Data> Coerce(Object const *obj);
 
 public:
-    virtual enum Object::Type type() const
+    virtual ObjectType type() const
     {
         return Data::Type();
     }
 
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::kTypeData;
+        return ObjectType::Data;
     }
 
 protected:

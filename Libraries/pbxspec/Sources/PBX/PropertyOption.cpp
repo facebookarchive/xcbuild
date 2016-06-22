@@ -8,6 +8,12 @@
  */
 
 #include <pbxspec/PBX/PropertyOption.h>
+#include <pbxsetting/Setting.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Object.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::PropertyOption;
 

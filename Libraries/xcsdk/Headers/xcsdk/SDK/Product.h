@@ -10,9 +10,11 @@
 #ifndef __xcsdk_SDK_Product_h
 #define __xcsdk_SDK_Product_h
 
-#include <xcsdk/Base.h>
+#include <memory>
+#include <string>
 
 namespace libutil { class Filesystem; };
+namespace plist { class Dictionary; }
 
 namespace xcsdk { namespace SDK {
 

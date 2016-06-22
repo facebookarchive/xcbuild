@@ -12,6 +12,12 @@
 
 #include <xcscheme/XC/ActionContent.h>
 
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace plist { class Dictionary; }
+
 namespace xcscheme { namespace XC {
 
 class ExecuteAction {

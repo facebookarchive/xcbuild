@@ -11,25 +11,6 @@
 
 using plist::Object;
 
-char const *Object::
-GetTypeName(enum Object::Type type)
-{
-    switch (type) {
-        case kTypeNone:       return "object";
-        case kTypeInteger:    return "integer";
-        case kTypeReal:       return "real";
-        case kTypeString:     return "string";
-        case kTypeBoolean:    return "boolean";
-        case kTypeNull:       return "null";
-        case kTypeArray:      return "array";
-        case kTypeDictionary: return "dictionary";
-        case kTypeData:       return "data";
-        case kTypeDate:       return "date";
-        default:              break;
-    }
-    return "unknown";
-}
-
 std::unique_ptr<Object> Object::
 Coerce(Object const *obj)
 {

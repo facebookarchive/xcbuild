@@ -10,8 +10,6 @@
 #ifndef __pbxsetting_Type_h
 #define __pbxsetting_Type_h
 
-#include <pbxsetting/Base.h>
-
 #include <string>
 #include <vector>
 

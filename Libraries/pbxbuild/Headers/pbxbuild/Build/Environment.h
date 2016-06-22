@@ -11,6 +11,8 @@
 #define __pbxbuild_Build_Environment_h
 
 #include <pbxbuild/Base.h>
+#include <pbxsetting/Environment.h>
+#include <xcsdk/SDK/Manager.h>
 
 #include <ext/optional>
 

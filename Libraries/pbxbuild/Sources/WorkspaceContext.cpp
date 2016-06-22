@@ -8,6 +8,7 @@
  */
 
 #include <pbxbuild/WorkspaceContext.h>
+#include <pbxsetting/Environment.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
@@ -102,14 +103,14 @@ static void
 IterateWorkspaceItem(xcworkspace::XC::GroupItem::shared_ptr const &item, std::function<void(xcworkspace::XC::FileRef::shared_ptr const &)> const &cb)
 {
     switch (item->type()) {
-        case xcworkspace::XC::GroupItem::kTypeGroup: {
+        case xcworkspace::XC::GroupItem::Type::Group: {
             xcworkspace::XC::Group::shared_ptr group = std::static_pointer_cast<xcworkspace::XC::Group>(item);
             for (xcworkspace::XC::GroupItem::shared_ptr const &child : group->items()) {
                 IterateWorkspaceItem(child, cb);
             }
             break;
         }
-        case xcworkspace::XC::GroupItem::kTypeFileRef: {
+        case xcworkspace::XC::GroupItem::Type::FileRef: {
             xcworkspace::XC::FileRef::shared_ptr fileRef = std::static_pointer_cast<xcworkspace::XC::FileRef>(item);
             cb(fileRef);
             break;

@@ -11,7 +11,8 @@
 
 using pbxproj::PBX::SourcesBuildPhase;
 
-SourcesBuildPhase::SourcesBuildPhase() :
-    BuildPhase(Isa(), kTypeSources)
+SourcesBuildPhase::
+SourcesBuildPhase() :
+    BuildPhase(Isa(), Type::Sources)
 {
 }

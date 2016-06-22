@@ -9,10 +9,13 @@
 
 #include <xcworkspace/XC/GroupItem.h>
 #include <xcworkspace/XC/Workspace.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcworkspace::XC::GroupItem;
 
-GroupItem::GroupItem(Type type) :
+GroupItem::
+GroupItem(Type type) :
     _type(type)
 {
 }

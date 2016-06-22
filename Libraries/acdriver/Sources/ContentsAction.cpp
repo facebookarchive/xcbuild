@@ -26,6 +26,11 @@
 #include <xcassets/Asset/ImageStackLayer.h>
 #include <xcassets/Asset/LaunchImage.h>
 #include <xcassets/Asset/SpriteAtlas.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/Object.h>
+#include <plist/String.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 

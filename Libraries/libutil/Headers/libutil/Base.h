@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <string>
 
 namespace libutil {

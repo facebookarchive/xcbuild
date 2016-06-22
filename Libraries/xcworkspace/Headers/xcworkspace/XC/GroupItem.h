@@ -10,7 +10,11 @@
 #ifndef __xcworkspace_XC_GroupItem_h
 #define __xcworkspace_XC_GroupItem_h
 
-#include <xcworkspace/Base.h>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace plist { class Dictionary; }
 
 namespace xcworkspace { namespace XC {
 
@@ -22,9 +26,9 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 public:
-    enum Type {
-        kTypeGroup,
-        kTypeFileRef
+    enum class Type {
+        Group,
+        FileRef,
     };
 
 private:

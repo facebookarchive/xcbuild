@@ -11,7 +11,8 @@
 
 using pbxproj::PBX::FrameworksBuildPhase;
 
-FrameworksBuildPhase::FrameworksBuildPhase() :
-    BuildPhase(Isa(), kTypeFrameworks)
+FrameworksBuildPhase::
+FrameworksBuildPhase() :
+    BuildPhase(Isa(), Type::Frameworks)
 {
 }

@@ -43,14 +43,14 @@ public:
     static std::unique_ptr<Real> Coerce(Object const *obj);
 
 public:
-    virtual enum Object::Type type() const
+    virtual ObjectType type() const
     {
         return Real::Type();
     }
 
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::kTypeReal;
+        return ObjectType::Real;
     }
 
 protected:

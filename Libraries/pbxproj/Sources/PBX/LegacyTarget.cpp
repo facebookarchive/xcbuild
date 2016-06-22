@@ -9,11 +9,16 @@
 
 #include <pbxproj/PBX/LegacyTarget.h>
 #include <pbxproj/PBX/BuildPhases.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::LegacyTarget;
 
-LegacyTarget::LegacyTarget() :
-    Target                         (Isa(), kTypeLegacy),
+LegacyTarget::
+LegacyTarget() :
+    Target                         (Isa(), Type::Legacy),
     _buildArgumentsString          (pbxsetting::Value::Empty()),
     _passBuildSettingsInEnvironment(false)
 {

@@ -10,7 +10,10 @@
 #ifndef __pbxproj_JSHelpers_h
 #define __pbxproj_JSHelpers_h
 
-#include <pbxproj/Base.h>
+#include <string>
+
+namespace plist { class Dictionary; }
+namespace plist { namespace Keys { class Unpack; } }
 
 namespace pbxproj {
 

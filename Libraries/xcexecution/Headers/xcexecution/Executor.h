@@ -10,9 +10,10 @@
 #ifndef __xcexecution_Executor_h
 #define __xcexecution_Executor_h
 
-#include <xcexecution/Base.h>
 #include <xcformatter/Formatter.h>
 #include <pbxbuild/DirectedGraph.h>
+
+#include <memory>
 
 namespace libutil { class Filesystem; }
 

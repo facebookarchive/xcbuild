@@ -43,14 +43,14 @@ public:
     static std::unique_ptr<UID> Coerce(Object const *obj);
 
 public:
-    virtual enum Object::Type type() const
+    virtual ObjectType type() const
     {
         return UID::Type();
     }
 
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::kTypeUID;
+        return ObjectType::UID;
     }
 
 protected:

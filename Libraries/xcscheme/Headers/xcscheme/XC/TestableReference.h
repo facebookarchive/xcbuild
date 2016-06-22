@@ -13,6 +13,8 @@
 #include <xcscheme/XC/BuildableReference.h>
 #include <xcscheme/XC/Test.h>
 
+namespace plist { class Dictionary; }
+
 namespace xcscheme { namespace XC {
 
 class TestableReference {

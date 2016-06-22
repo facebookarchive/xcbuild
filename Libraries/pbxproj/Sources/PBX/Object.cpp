@@ -8,10 +8,14 @@
  */
 
 #include <pbxproj/PBX/Object.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::Object;
 
-Object::Object(std::string const &isa) :
+Object::
+Object(std::string const &isa) :
     _isa(isa)
 {
 }

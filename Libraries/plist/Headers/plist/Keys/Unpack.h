@@ -67,7 +67,7 @@ public:
             return value;
         }
 
-        _errors.push_back(_name + " key " + key + " was type " + object->typeName() + "; expected " + Object::GetTypeName(T::Type()));
+        _errors.push_back(_name + " key " + key + " was type " + ObjectTypes::Name(object->type()) + "; expected " + ObjectTypes::Name(T::Type()));
         return nullptr;
     }
 
@@ -86,7 +86,7 @@ public:
             return value;
         }
 
-        _errors.push_back(_name + " key " + key + " was type " + object->typeName() + "; could not coerce to " + Object::GetTypeName(T::Type()));
+        _errors.push_back(_name + " key " + key + " was type " + ObjectTypes::Name(object->type()) + "; could not coerce to " + ObjectTypes::Name(T::Type()));
         return nullptr;
     }
 

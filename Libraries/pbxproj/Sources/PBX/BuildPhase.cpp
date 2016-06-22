@@ -9,10 +9,17 @@
 
 #include <pbxproj/PBX/BuildPhase.h>
 #include <pbxproj/Context.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BuildPhase;
 
-BuildPhase::BuildPhase(std::string const &isa, Type type) :
+BuildPhase::
+BuildPhase(std::string const &isa, Type type) :
     Object                             (isa),
     _type                              (type),
     _runOnlyForDeploymentPostprocessing(false),
@@ -23,8 +30,9 @@ BuildPhase::BuildPhase(std::string const &isa, Type type) :
 bool BuildPhase::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Object::parse(context, dict, seen, false))
+    if (!Object::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("BuildPhase", dict, seen);
 

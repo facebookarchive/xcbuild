@@ -10,11 +10,16 @@
 #ifndef __pbxspec_PBX_FileType_h
 #define __pbxspec_PBX_FileType_h
 
-#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
 #include <pbxspec/PBX/BuildPhaseInjection.h>
 
+#include <memory>
+#include <string>
+#include <vector>
 #include <ext/optional>
+
+namespace plist { class Array; }
+namespace plist { class Dictionary; }
 
 namespace pbxspec { namespace PBX {
 

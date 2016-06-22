@@ -11,12 +11,17 @@
 #include <pbxproj/PBX/NativeTarget.h>
 #include <pbxproj/PBX/BuildPhases.h>
 #include <pbxproj/Context.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::Target;
 using pbxproj::PBX::NativeTarget;
 using pbxproj::PBX::FileReference;
 
-Target::Target(std::string const &isa, Type type) :
+Target::
+Target(std::string const &isa, Type type) :
     Object(isa),
     _type (type)
 {
@@ -31,7 +36,7 @@ settings(void) const
         pbxsetting::Setting::Create("PRODUCT_NAME", _productName),
     };
 
-    if (_type == kTypeNative) {
+    if (_type == Type::Native) {
         NativeTarget const *nativeTarget = static_cast <NativeTarget const *> (this);
         if (FileReference::shared_ptr const &productReference = nativeTarget->productReference()) {
             pbxsetting::Setting setting = pbxsetting::Setting::Create("FULL_PRODUCT_NAME", productReference->name());
@@ -45,8 +50,9 @@ settings(void) const
 bool Target::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Object::parse(context, dict, seen, false))
+    if (!Object::parse(context, dict, seen, false)) {
         return false;
+    }
 
     _project = context.project;
 
@@ -73,10 +79,8 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (BCL != nullptr) {
-        _buildConfigurationList =
-          context.parseObject(context.configurationLists, BCLID, BCL);
+        _buildConfigurationList = context.parseObject(context.configurationLists, BCLID, BCL);
         if (!_buildConfigurationList) {
-            abort();
             return false;
         }
     }
@@ -84,13 +88,13 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     if (BPs != nullptr) {
         for (size_t n = 0; n < BPs->count(); n++) {
             auto ID = BPs->value <plist::String> (n);
-            if (ID == nullptr)
+            if (ID == nullptr) {
                 continue;
+            }
 
             if (auto BPd = context.get <HeadersBuildPhase> (ID)) {
                 auto O = context.parseObject(context.headersBuildPhases, ID->value(), BPd);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -98,7 +102,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto BPd = context.get <SourcesBuildPhase> (ID)) {
                 auto O = context.parseObject(context.sourcesBuildPhases, ID->value(), BPd);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -106,7 +109,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto BPd = context.get <ResourcesBuildPhase> (ID)) {
                 auto O = context.parseObject(context.resourcesBuildPhases, ID->value(), BPd);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -114,7 +116,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto BPd = context.get <FrameworksBuildPhase> (ID)) {
                 auto O = context.parseObject(context.frameworksBuildPhases, ID->value(), BPd);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -122,7 +123,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto BPd = context.get <CopyFilesBuildPhase> (ID)) {
                 auto O = context.parseObject(context.copyFilesBuildPhases, ID->value(), BPd);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -130,7 +130,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto BPd = context.get <ShellScriptBuildPhase> (ID)) {
                 auto O = context.parseObject(context.shellScriptBuildPhases, ID->value(), BPd);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -138,7 +137,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto BPd = context.get <AppleScriptBuildPhase> (ID)) {
                 auto O = context.parseObject(context.appleScriptBuildPhases, ID->value(), BPd);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -146,7 +144,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto BPd = context.get <RezBuildPhase> (ID)) {
                 auto O = context.parseObject(context.rezBuildPhases, ID->value(), BPd);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -165,7 +162,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             if (D != nullptr) {
                 auto TD = context.parseObject(context.targetDependencies, DID, D);
                 if (!TD) {
-                    abort();
                     return false;
                 }
 

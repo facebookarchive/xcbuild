@@ -9,6 +9,10 @@
 
 #include <xcscheme/XC/Scheme.h>
 #include <xcscheme/XC/Actions.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Format/SimpleXML.h>
 #include <libutil/Filesystem.h>
 
 using xcscheme::XC::Scheme;

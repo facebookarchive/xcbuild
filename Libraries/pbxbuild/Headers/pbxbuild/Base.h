@@ -10,7 +10,6 @@
 #ifndef __pbxbuild_Base_h
 #define __pbxbuild_Base_h
 
-#include <xcsdk/xcsdk.h>
 #include <pbxproj/pbxproj.h>
 #include <pbxspec/pbxspec.h>
 #include <xcscheme/xcscheme.h>

@@ -9,6 +9,9 @@
 
 #include <xcsdk/SDK/PlatformVersion.h>
 #include <libutil/Filesystem.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Format/Any.h>
 
 using xcsdk::SDK::PlatformVersion;
 using libutil::Filesystem;
@@ -82,10 +85,9 @@ Open(Filesystem const *filesystem, std::string const &path)
     //
     // Parse the version dictionary and create the object.
     //
-    auto platformVersion = std::make_shared <PlatformVersion> ();
-
+    auto platformVersion = std::make_shared<PlatformVersion>();
     if (!platformVersion->parse(plist)) {
-        platformVersion = nullptr;
+        return nullptr;
     }
 
     return platformVersion;

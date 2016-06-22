@@ -119,7 +119,7 @@ beginTarget(pbxbuild::Build::Context const &buildContext, pbxproj::PBX::Target::
     result += "=== ";
 
     result += FormatAction(buildContext.action()) + " ";
-    result += std::string(target->type() == pbxproj::PBX::Target::kTypeLegacy ? "LEGACY TARGET" : "TARGET") + " ";
+    result += std::string(target->type() == pbxproj::PBX::Target::Type::Legacy ? "LEGACY TARGET" : "TARGET") + " ";
     result += target->name() + " ";
     result += "OF PROJECT " + target->project()->name() + " ";
     if (buildContext.defaultConfiguration()) {
@@ -144,7 +144,7 @@ finishTarget(pbxbuild::Build::Context const &buildContext, pbxproj::PBX::Target:
 std::string DefaultFormatter::
 beginCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+    if (target->type() == pbxproj::PBX::Target::Type::Native) {
         return "Check dependencies\n";
     } else {
         return std::string();
@@ -154,7 +154,7 @@ beginCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target)
 std::string DefaultFormatter::
 finishCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+    if (target->type() == pbxproj::PBX::Target::Type::Native) {
         return "\n";
     } else {
         return std::string();
@@ -164,7 +164,7 @@ finishCheckDependencies(pbxproj::PBX::Target::shared_ptr const &target)
 std::string DefaultFormatter::
 beginWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+    if (target->type() == pbxproj::PBX::Target::Type::Native) {
         return "Write auxiliary files\n";
     } else {
         return std::string();
@@ -192,7 +192,7 @@ setAuxiliaryExecutable(std::string const &file)
 std::string DefaultFormatter::
 finishWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+    if (target->type() == pbxproj::PBX::Target::Type::Native) {
         return "\n";
     } else {
         return std::string();
@@ -202,7 +202,7 @@ finishWriteAuxiliaryFiles(pbxproj::PBX::Target::shared_ptr const &target)
 std::string DefaultFormatter::
 beginCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+    if (target->type() == pbxproj::PBX::Target::Type::Native) {
         // TODO(grp): Implement this fully.
         return "Create product structure\n";
     } else {
@@ -213,7 +213,7 @@ beginCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
 std::string DefaultFormatter::
 finishCreateProductStructure(pbxproj::PBX::Target::shared_ptr const &target)
 {
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+    if (target->type() == pbxproj::PBX::Target::Type::Native) {
         return "\n";
     } else {
         return std::string();

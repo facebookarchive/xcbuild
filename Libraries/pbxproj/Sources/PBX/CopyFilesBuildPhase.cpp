@@ -8,11 +8,16 @@
  */
 
 #include <pbxproj/PBX/CopyFilesBuildPhase.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::CopyFilesBuildPhase;
 
-CopyFilesBuildPhase::CopyFilesBuildPhase() :
-    BuildPhase       (Isa(), kTypeCopyFiles),
+CopyFilesBuildPhase::
+CopyFilesBuildPhase() :
+    BuildPhase       (Isa(), Type::CopyFiles),
     _dstPath         (pbxsetting::Value::Empty()),
     _dstSubfolderSpec(kDestinationAbsolute)
 {
@@ -21,8 +26,9 @@ CopyFilesBuildPhase::CopyFilesBuildPhase() :
 bool CopyFilesBuildPhase::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!BuildPhase::parse(context, dict, seen, false))
+    if (!BuildPhase::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("CopyFilesBuildPhase", dict, seen);
 

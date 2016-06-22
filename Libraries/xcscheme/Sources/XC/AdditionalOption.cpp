@@ -8,10 +8,14 @@
  */
 
 #include <xcscheme/XC/AdditionalOption.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::AdditionalOption;
 
-AdditionalOption::AdditionalOption() :
+AdditionalOption::
+AdditionalOption() :
     _isEnabled(false)
 {
 }

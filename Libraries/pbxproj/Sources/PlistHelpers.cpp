@@ -8,6 +8,9 @@
  */
 
 #include <pbxproj/PlistHelpers.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 namespace pbxproj {
 

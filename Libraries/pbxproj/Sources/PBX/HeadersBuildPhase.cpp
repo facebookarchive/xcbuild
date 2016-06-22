@@ -11,7 +11,8 @@
 
 using pbxproj::PBX::HeadersBuildPhase;
 
-HeadersBuildPhase::HeadersBuildPhase() :
-    BuildPhase(Isa(), kTypeHeaders)
+HeadersBuildPhase::
+HeadersBuildPhase() :
+    BuildPhase(Isa(), Type::Headers)
 {
 }

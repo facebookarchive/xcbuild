@@ -8,6 +8,7 @@
 #
 
 add_library(plist SHARED
+            Sources/ObjectType.cpp
             Sources/Array.cpp
             Sources/Boolean.cpp
             Sources/Data.cpp

@@ -12,6 +12,12 @@
 
 #include <pbxbuild/Base.h>
 
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+namespace pbxsetting { class Environment; }
+
 namespace pbxbuild {
 namespace Tool {
 

@@ -11,8 +11,19 @@
 #include <builtin/infoPlistUtility/Options.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <plist/plist.h>
-#include <pbxsetting/pbxsetting.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/Object.h>
+#include <plist/String.h>
+#include <plist/Format/Any.h>
+#include <plist/Format/ASCII.h>
+#include <plist/Format/Binary.h>
+#include <plist/Format/XML.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Setting.h>
+#include <pbxsetting/Type.h>
+#include <pbxsetting/Value.h>
 
 using builtin::infoPlistUtility::Driver;
 using builtin::infoPlistUtility::Options;

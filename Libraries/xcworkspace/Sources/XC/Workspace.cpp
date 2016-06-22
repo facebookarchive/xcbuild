@@ -9,6 +9,9 @@
 
 #include <xcworkspace/XC/Workspace.h>
 #include <xcworkspace/XC/Group.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Format/SimpleXML.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>

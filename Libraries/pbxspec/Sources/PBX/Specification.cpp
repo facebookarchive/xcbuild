@@ -20,6 +20,13 @@
 #include <pbxspec/Context.h>
 #include <pbxspec/Inherit.h>
 #include <pbxspec/Manager.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/Object.h>
+#include <plist/String.h>
+#include <plist/Format/Any.h>
+#include <plist/Keys/Unpack.h>
 #include <libutil/Filesystem.h>
 
 using pbxspec::PBX::Specification;

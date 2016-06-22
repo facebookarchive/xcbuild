@@ -9,6 +9,10 @@
 
 #include <pbxspec/Manager.h>
 #include <pbxspec/Context.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/Object.h>
+#include <plist/Format/Any.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
@@ -31,11 +35,13 @@ using pbxspec::PBX::Tool;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
-Manager::Manager()
+Manager::
+Manager()
 {
 }
 
-Manager::~Manager()
+Manager::
+~Manager()
 {
 }
 

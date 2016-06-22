@@ -10,10 +10,11 @@
 #ifndef __ninja_Writer_h
 #define __ninja_Writer_h
 
-#include <ninja/Base.h>
 #include <ninja/Value.h>
 
+#include <string>
 #include <sstream>
+#include <vector>
 
 namespace ninja {
 

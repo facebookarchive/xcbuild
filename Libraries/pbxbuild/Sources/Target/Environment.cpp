@@ -9,6 +9,11 @@
 
 #include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/Build/Context.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Level.h>
+#include <pbxsetting/Setting.h>
+#include <pbxsetting/Type.h>
+#include <pbxsetting/XC/Config.h>
 #include <libutil/FSUtil.h>
 
 #include <algorithm>
@@ -30,7 +35,7 @@ BuildFileDisambiguation(pbxproj::PBX::Target::shared_ptr const &target)
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> buildFileDisambiguation;
 
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
-        if (buildPhase->type() != pbxproj::PBX::BuildPhase::kTypeSources) {
+        if (buildPhase->type() != pbxproj::PBX::BuildPhase::Type::Sources) {
             continue;
         }
 
@@ -173,11 +178,11 @@ ProductTypeLevel(pbxspec::PBX::ProductType::shared_ptr const &productType)
 static pbxspec::PBX::BuildSystem::shared_ptr
 TargetBuildSystem(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, pbxproj::PBX::Target::shared_ptr const &target)
 {
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+    if (target->type() == pbxproj::PBX::Target::Type::Native) {
         return specManager->buildSystem("com.apple.build-system.native", specDomains);
-    } else if (target->type() == pbxproj::PBX::Target::kTypeLegacy) {
+    } else if (target->type() == pbxproj::PBX::Target::Type::Legacy) {
         return specManager->buildSystem("com.apple.build-system.external", specDomains);
-    } else if (target->type() == pbxproj::PBX::Target::kTypeAggregate) {
+    } else if (target->type() == pbxproj::PBX::Target::Type::Aggregate) {
        return specManager->buildSystem("com.apple.build-system.external", specDomains);
     } else {
         fprintf(stderr, "error: unknown target type\n");
@@ -313,7 +318,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
 
     pbxspec::PBX::ProductType::shared_ptr productType = nullptr;
     pbxspec::PBX::PackageType::shared_ptr packageType = nullptr;
-    if (target->type() == pbxproj::PBX::Target::kTypeNative) {
+    if (target->type() == pbxproj::PBX::Target::Type::Native) {
         pbxproj::PBX::NativeTarget::shared_ptr nativeTarget = std::static_pointer_cast<pbxproj::PBX::NativeTarget>(target);
 
         productType = buildEnvironment.specManager()->productType(nativeTarget->productType(), specDomains);

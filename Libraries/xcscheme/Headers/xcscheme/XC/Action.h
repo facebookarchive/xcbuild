@@ -10,8 +10,11 @@
 #ifndef __xcscheme_XC_Action_h
 #define __xcscheme_XC_Action_h
 
-#include <xcscheme/Base.h>
 #include <xcscheme/XC/ExecuteAction.h>
+
+#include <string>
+
+namespace plist { class Dictionary; }
 
 namespace xcscheme { namespace XC {
 

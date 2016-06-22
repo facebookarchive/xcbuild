@@ -58,14 +58,14 @@ public:
     static std::unique_ptr<Date> Coerce(Object const *obj);
 
 public:
-    virtual enum Object::Type type() const
+    virtual ObjectType type() const
     {
         return Date::Type();
     }
 
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::kTypeDate;
+        return ObjectType::Date;
     }
 
 protected:

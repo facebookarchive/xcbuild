@@ -9,19 +9,23 @@
 
 #include <pbxproj/PBX/AggregateTarget.h>
 #include <pbxproj/PBX/BuildPhases.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::AggregateTarget;
 
-AggregateTarget::AggregateTarget() :
-    Target(Isa(), kTypeAggregate)
+AggregateTarget::
+AggregateTarget() :
+    Target(Isa(), Type::Aggregate)
 {
 }
 
 bool AggregateTarget::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Target::parse(context, dict, seen, false))
+    if (!Target::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("AggregateTarget", dict, seen);
 

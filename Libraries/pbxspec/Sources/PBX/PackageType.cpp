@@ -9,6 +9,10 @@
 
 #include <pbxspec/PBX/PackageType.h>
 #include <pbxspec/Inherit.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::PackageType;
 using pbxsetting::Level;

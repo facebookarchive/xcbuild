@@ -54,14 +54,14 @@ public:
     static std::unique_ptr<String> Coerce(Object const *obj);
 
 public:
-    virtual enum Object::Type type() const
+    virtual ObjectType type() const
     {
         return String::Type();
     }
 
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::kTypeString;
+        return ObjectType::String;
     }
 
 protected:

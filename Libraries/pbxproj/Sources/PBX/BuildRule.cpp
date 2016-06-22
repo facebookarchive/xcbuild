@@ -8,6 +8,11 @@
  */
 
 #include <pbxproj/PBX/BuildRule.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BuildRule;
 
@@ -19,8 +24,9 @@ BuildRule::BuildRule() :
 bool BuildRule::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Object::parse(context, dict, seen, false))
+    if (!Object::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("BuildRule", dict, seen);
 

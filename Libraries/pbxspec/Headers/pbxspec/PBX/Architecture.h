@@ -10,9 +10,12 @@
 #ifndef __pbxspec_PBX_Architecture_h
 #define __pbxspec_PBX_Architecture_h
 
-#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Specification.h>
+#include <pbxsetting/Setting.h>
 
+#include <memory>
+#include <string>
+#include <vector>
 #include <ext/optional>
 
 namespace pbxspec { namespace PBX {

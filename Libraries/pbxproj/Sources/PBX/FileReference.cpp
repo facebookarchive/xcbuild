@@ -8,11 +8,17 @@
  */
 
 #include <pbxproj/PBX/FileReference.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::FileReference;
 
-FileReference::FileReference() :
-    GroupItem      (Isa(), GroupItem::kTypeFileReference),
+FileReference::
+FileReference() :
+    GroupItem      (Isa(), GroupItem::Type::FileReference),
     _includeInIndex(false),
     _fileEncoding  (FileEncoding::Default),
     _lineEnding    (LineEnding::Unix)
@@ -22,8 +28,9 @@ FileReference::FileReference() :
 bool FileReference::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!GroupItem::parse(context, dict, seen, false))
+    if (!GroupItem::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("FileReference", dict, seen);
 

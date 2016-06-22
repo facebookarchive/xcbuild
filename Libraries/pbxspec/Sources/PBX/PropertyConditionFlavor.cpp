@@ -9,6 +9,9 @@
 
 #include <pbxspec/PBX/PropertyConditionFlavor.h>
 #include <pbxspec/Inherit.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::PropertyConditionFlavor;
 

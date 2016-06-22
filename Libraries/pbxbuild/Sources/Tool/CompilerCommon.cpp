@@ -10,6 +10,7 @@
 #include <pbxbuild/Tool/CompilerCommon.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
+#include <pbxsetting/Environment.h>
 
 namespace Tool = pbxbuild::Tool;
 

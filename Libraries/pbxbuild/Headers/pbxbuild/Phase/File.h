@@ -13,6 +13,8 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Target/BuildRules.h>
 
+namespace pbxsetting { class Environment; }
+
 namespace pbxbuild {
 namespace Phase {
 

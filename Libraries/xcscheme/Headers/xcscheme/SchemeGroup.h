@@ -10,8 +10,10 @@
 #ifndef __xcscheme_SchemeGroup_h
 #define __xcscheme_SchemeGroup_h
 
-#include <xcscheme/Base.h>
 #include <xcscheme/XC/Scheme.h>
+
+#include <memory>
+#include <string>
 
 namespace libutil { class Filesystem; }
 

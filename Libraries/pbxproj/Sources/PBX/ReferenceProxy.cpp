@@ -12,16 +12,18 @@
 
 using pbxproj::PBX::ReferenceProxy;
 
-ReferenceProxy::ReferenceProxy() :
-    GroupItem(Isa(), kTypeReferenceProxy)
+ReferenceProxy::
+ReferenceProxy() :
+    GroupItem(Isa(), Type::ReferenceProxy)
 {
 }
 
 bool ReferenceProxy::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!GroupItem::parse(context, dict, seen, false))
+    if (!GroupItem::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("ReferenceProxy", dict, seen);
 
@@ -37,7 +39,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     if (RR != nullptr) {
         _remoteRef = context.parseObject(context.containerItemProxies, RRID, RR);
         if (_remoteRef == nullptr) {
-            abort();
             return false;
         }
     }

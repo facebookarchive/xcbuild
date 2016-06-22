@@ -139,14 +139,14 @@ public:
     static std::unique_ptr<Dictionary> Coerce(Object const *obj);
 
 public:
-    virtual enum Object::Type type() const
+    virtual ObjectType type() const
     {
         return Dictionary::Type();
     }
 
-    static inline enum Object::Type Type()
+    static inline ObjectType Type()
     {
-        return Object::kTypeDictionary;
+        return ObjectType::Dictionary;
     }
 
 protected:

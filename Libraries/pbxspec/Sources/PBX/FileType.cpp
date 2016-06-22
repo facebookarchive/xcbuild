@@ -11,15 +11,23 @@
 #include <pbxspec/PBX/BuildPhaseInjection.h>
 #include <pbxspec/Manager.h>
 #include <pbxspec/Inherit.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Data.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::FileType;
 
-FileType::FileType() :
+FileType::
+FileType() :
     Specification()
 {
 }
 
-FileType::~FileType()
+FileType::
+~FileType()
 {
 }
 

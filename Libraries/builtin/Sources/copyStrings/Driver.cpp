@@ -9,9 +9,17 @@
 
 #include <builtin/copyStrings/Driver.h>
 #include <builtin/copyStrings/Options.h>
-#include <plist/plist.h>
+#include <plist/Dictionary.h>
+#include <plist/Object.h>
+#include <plist/String.h>
+#include <plist/Format/Any.h>
+#include <plist/Format/ASCII.h>
+#include <plist/Format/Binary.h>
+#include <plist/Format/Encoding.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+
+#include <strings.h>
 
 using builtin::copyStrings::Driver;
 using builtin::copyStrings::Options;

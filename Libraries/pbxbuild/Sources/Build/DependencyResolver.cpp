@@ -82,13 +82,13 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
         // TODO(grp): Only include appropriate build phases for this action.
         // TODO(grp): This may be incomplete: is it possible to include proxied files in other phases?
-        if (buildPhase->type() != pbxproj::PBX::BuildPhase::kTypeFrameworks && buildPhase->type() != pbxproj::PBX::BuildPhase::kTypeCopyFiles) {
+        if (buildPhase->type() != pbxproj::PBX::BuildPhase::Type::Frameworks && buildPhase->type() != pbxproj::PBX::BuildPhase::Type::CopyFiles) {
             continue;
         }
 
         for (pbxproj::PBX::BuildFile::shared_ptr const &file : buildPhase->files()) {
             switch (file->fileRef()->type()) {
-                case pbxproj::PBX::GroupItem::kTypeReferenceProxy: {
+                case pbxproj::PBX::GroupItem::Type::ReferenceProxy: {
                     /* A implicit dependency referencing the product of another target through a direct reference to that target's product. */
                     pbxproj::PBX::ReferenceProxy::shared_ptr proxy = std::static_pointer_cast <pbxproj::PBX::ReferenceProxy> (file->fileRef());
 
@@ -107,7 +107,7 @@ AddImplicitDependencies(DependenciesContext const &context, pbxproj::PBX::Target
                     }
                     break;
                 }
-                case pbxproj::PBX::GroupItem::kTypeFileReference: {
+                case pbxproj::PBX::GroupItem::Type::FileReference: {
                     /* A implicit dependency referencing the product of another target through a filesystem path. */
                     pbxproj::PBX::FileReference::shared_ptr fileReference = std::static_pointer_cast<pbxproj::PBX::FileReference>(file->fileRef());
                     std::string name = fileReference->name();
@@ -222,7 +222,7 @@ BuildProductPathsToTargets(WorkspaceContext const &workspaceContext)
      */
     for (auto const &pair : workspaceContext.projects()) {
         for (pbxproj::PBX::Target::shared_ptr const &target : pair.second->targets()) {
-            if (target->type() != pbxproj::PBX::Target::kTypeNative) {
+            if (target->type() != pbxproj::PBX::Target::Type::Native) {
                 /* Only native targets have products. */
                 continue;
             }

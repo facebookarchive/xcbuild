@@ -12,6 +12,8 @@
 
 #include <pbxbuild/Base.h>
 
+namespace pbxsetting { class Environment; }
+
 namespace pbxbuild {
 namespace Tool {
 

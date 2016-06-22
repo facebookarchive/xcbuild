@@ -10,10 +10,10 @@
 #ifndef __pbxspec_PBX_BuildPhaseInjection_h
 #define __pbxspec_PBX_BuildPhaseInjection_h
 
-#include <pbxspec/Base.h>
 #include <plist/Dictionary.h>
 #include <pbxsetting/Value.h>
 
+#include <string>
 #include <ext/optional>
 
 namespace pbxspec { namespace PBX {

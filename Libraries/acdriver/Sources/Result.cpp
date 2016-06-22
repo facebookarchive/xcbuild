@@ -9,6 +9,10 @@
 
 #include <acdriver/Result.h>
 #include <acdriver/Output.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/Object.h>
+#include <plist/String.h>
 
 #include <cstdlib>
 

@@ -8,11 +8,15 @@
  */
 
 #include <pbxproj/PBX/Group.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::Group;
 
-Group::Group() :
-    BaseGroup   (Isa(), GroupItem::kTypeGroup),
+Group::
+Group() :
+    BaseGroup   (Isa(), GroupItem::Type::Group),
     _indentWidth(0),
     _tabWidth   (0)
 {
@@ -21,8 +25,9 @@ Group::Group() :
 bool Group::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!BaseGroup::parse(context, dict, seen, false))
+    if (!BaseGroup::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("Group", dict, seen);
 

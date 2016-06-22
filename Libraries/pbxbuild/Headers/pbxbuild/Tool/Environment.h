@@ -12,6 +12,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Phase/File.h>
+#include <pbxsetting/Environment.h>
 
 namespace pbxbuild {
 namespace Tool {

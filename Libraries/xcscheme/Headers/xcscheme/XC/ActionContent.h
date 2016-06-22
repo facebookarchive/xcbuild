@@ -12,6 +12,11 @@
 
 #include <xcscheme/XC/BuildableReference.h>
 
+#include <memory>
+#include <string>
+
+namespace plist { class Dictionary; }
+
 namespace xcscheme { namespace XC {
 
 class ActionContent {

@@ -8,10 +8,14 @@
  */
 
 #include <xcscheme/XC/Action.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::Action;
 
-Action::Action()
+Action::
+Action()
 {
 }
 

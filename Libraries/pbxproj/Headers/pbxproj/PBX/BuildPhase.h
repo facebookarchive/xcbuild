@@ -20,15 +20,15 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 public:
-    enum Type {
-        kTypeHeaders,
-        kTypeSources,
-        kTypeResources,
-        kTypeFrameworks,
-        kTypeCopyFiles,
-        kTypeShellScript,
-        kTypeAppleScript,
-        kTypeRez,
+    enum class Type {
+        Headers,
+        Sources,
+        Resources,
+        Frameworks,
+        CopyFiles,
+        ShellScript,
+        AppleScript,
+        Rez,
     };
 
     enum ActionMask {

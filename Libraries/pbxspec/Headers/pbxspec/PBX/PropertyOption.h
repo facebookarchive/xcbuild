@@ -10,10 +10,17 @@
 #ifndef __pbxspec_PBX_PropertyOption_h
 #define __pbxspec_PBX_PropertyOption_h
 
-#include <pbxsetting/pbxsetting.h>
-#include <plist/plist.h>
+#include <pbxsetting/Value.h>
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 #include <ext/optional>
+
+namespace plist { class Object; }
+namespace plist { class Dictionary; }
+namespace pbxsetting { class Setting; }
 
 namespace pbxspec { namespace PBX {
 

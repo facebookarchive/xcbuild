@@ -8,10 +8,13 @@
  */
 
 #include <xcscheme/XC/LocationScenarioReference.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::LocationScenarioReference;
 
-LocationScenarioReference::LocationScenarioReference() :
+LocationScenarioReference::
+LocationScenarioReference() :
     _referenceType(0)
 {
 }

@@ -25,10 +25,10 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 public:
-    enum Type {
-        kTypeNative,
-        kTypeLegacy,
-        kTypeAggregate
+    enum class Type {
+        Native,
+        Legacy,
+        Aggregate
     };
 
 private:

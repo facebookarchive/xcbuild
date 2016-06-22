@@ -9,15 +9,20 @@
 
 #include <pbxspec/PBX/BuildStep.h>
 #include <pbxspec/Inherit.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxspec::PBX::BuildStep;
 
-BuildStep::BuildStep() :
+BuildStep::
+BuildStep() :
     Specification()
 {
 }
 
-BuildStep::~BuildStep()
+BuildStep::
+~BuildStep()
 {
 }
 

@@ -13,6 +13,7 @@
 #include <libutil/Wildcard.h>
 
 #include <fstream>
+#include <strings.h>
 
 using pbxbuild::FileTypeResolver;
 using pbxbuild::DirectedGraph;

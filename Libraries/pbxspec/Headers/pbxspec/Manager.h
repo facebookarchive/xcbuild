@@ -10,7 +10,6 @@
 #ifndef __pbxspec_Manager_h
 #define __pbxspec_Manager_h
 
-#include <pbxsetting/pbxsetting.h>
 #include <pbxspec/PBX/Architecture.h>
 #include <pbxspec/PBX/BuildPhase.h>
 #include <pbxspec/PBX/BuildRule.h>
@@ -27,6 +26,11 @@
 #include <pbxspec/PBX/Tool.h>
 
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
+#include <unordered_set>
+#include <utility>
 
 namespace libutil { class Filesystem; }
 

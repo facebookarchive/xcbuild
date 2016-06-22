@@ -13,6 +13,7 @@
 
 using plist::Format::Encoding;
 using plist::Format::Encodings;
+using plist::ObjectType;
 using plist::Object;
 using plist::Boolean;
 using plist::Real;
@@ -396,7 +397,7 @@ _ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *re
         /* Process the object for mapping. */
         if (userProcess && (*(context->processCallBacks.process))(
                     context->processCallBacks.opaque, &newObject)) {
-            enum Object::Type type = newObject->type();
+            ObjectType type = newObject->type();
             /* Cache mapping, but do so only if newObject is different
              * than the origObject or origObject is not a container.
              */
@@ -453,7 +454,7 @@ static bool
 _ABPWritePreflightObject(ABPContext *context, Object const *object,
         uint32_t flags)
 {
-    enum Object::Type type;
+    ObjectType type;
     bool  success = true;
     uint32_t   refno   = 0;
 
@@ -494,7 +495,7 @@ _ABPWritePreflightObject(ABPContext *context, Object const *object,
 static bool
 _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
 {
-    enum Object::Type type;
+    ObjectType type;
     off_t        offset;
     bool         success;
     uint32_t     refno = 0;
@@ -524,7 +525,7 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
     type = object->type();
     offset = __ABPTell(context);
 
-    static const struct { enum Object::Type type; void *cb; } kTypeToCB[] = {
+    static const struct { ObjectType type; void *cb; } typeToCB[] = {
         { Array::Type(), (void *)__ABPWriteArray },
         { Dictionary::Type(), (void *)__ABPWriteDictionary },
         { Integer::Type(), (void *)__ABPWriteInteger },
@@ -538,7 +539,7 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
     };
 
     bool (*writer)(ABPContext *, Object const *) = nullptr;
-    for (auto const &it : kTypeToCB) {
+    for (auto const &it : typeToCB) {
         if (it.type == type) {
             writer = (bool(*)(ABPContext *, Object const *))it.cb;
             break;

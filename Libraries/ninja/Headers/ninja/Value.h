@@ -10,7 +10,9 @@
 #ifndef __ninja_Value_h
 #define __ninja_Value_h
 
-#include <ninja/Base.h>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace ninja {
 

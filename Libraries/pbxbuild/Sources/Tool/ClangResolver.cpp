@@ -18,6 +18,9 @@
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Tokens.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Type.h>
+#include <pbxsetting/Value.h>
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;

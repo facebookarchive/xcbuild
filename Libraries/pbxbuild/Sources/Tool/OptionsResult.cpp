@@ -10,6 +10,11 @@
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/Environment.h>
+#include <pbxsetting/Type.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/Object.h>
+#include <plist/String.h>
 
 namespace Tool = pbxbuild::Tool;
 

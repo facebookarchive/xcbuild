@@ -9,25 +9,29 @@
 
 #include <xcsdk/SDK/Platform.h>
 #include <xcsdk/SDK/Manager.h>
+#include <pbxsetting/Type.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Format/Any.h>
 
 #include <algorithm>
 
 using xcsdk::SDK::Platform;
-using pbxsetting::Level;
-using pbxsetting::Setting;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
-Platform::Platform() :
+Platform::
+Platform() :
     _defaultDebuggerSettings(nullptr),
-    _defaultProperties      (Level({ })),
-    _overrideProperties     (Level({ }))
+    _defaultProperties      (pbxsetting::Level({ })),
+    _overrideProperties     (pbxsetting::Level({ }))
 {
 }
 
-Platform::~Platform()
+Platform::
+~Platform()
 {
     if (_defaultDebuggerSettings != nullptr) {
         _defaultDebuggerSettings->release();
@@ -54,22 +58,22 @@ EndsWith(std::string const &str, std::string const &suffix)
     return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
 }
 
-Level Platform::
+pbxsetting::Level Platform::
 settings() const
 {
-    std::vector<Setting> settings = {
-        Setting::Create("PLATFORM_NAME", _name),
-        Setting::Create("PLATFORM_DISPLAY_NAME", _description),
-        Setting::Create("PLATFORM_DIR", _path),
+    std::vector<pbxsetting::Setting> settings = {
+        pbxsetting::Setting::Create("PLATFORM_NAME", _name),
+        pbxsetting::Setting::Create("PLATFORM_DISPLAY_NAME", _description),
+        pbxsetting::Setting::Create("PLATFORM_DIR", _path),
 
-        Setting::Parse("PLATFORM_DEVELOPER_USR_DIR", "$(PLATFORM_DIR)/Developer/usr"),
-        Setting::Parse("PLATFORM_DEVELOPER_BIN_DIR", "$(PLATFORM_DIR)/Developer/usr/bin"),
-        Setting::Parse("PLATFORM_DEVELOPER_APPLICATIONS_DIR", "$(PLATFORM_DIR)/Developer/Applications"),
-        Setting::Parse("PLATFORM_DEVELOPER_LIBRARY_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer/Library"), // TODO(grp): Verify.
-        Setting::Parse("PLATFORM_DEVELOPER_SDK_DIR", "$(PLATFORM_DIR)/Developer/SDKs"),
-        Setting::Parse("PLATFORM_DEVELOPER_TOOLS_DIR", "$(PLATFORM_DIR)/Developer/Tools"),
+        pbxsetting::Setting::Parse("PLATFORM_DEVELOPER_USR_DIR", "$(PLATFORM_DIR)/Developer/usr"),
+        pbxsetting::Setting::Parse("PLATFORM_DEVELOPER_BIN_DIR", "$(PLATFORM_DIR)/Developer/usr/bin"),
+        pbxsetting::Setting::Parse("PLATFORM_DEVELOPER_APPLICATIONS_DIR", "$(PLATFORM_DIR)/Developer/Applications"),
+        pbxsetting::Setting::Parse("PLATFORM_DEVELOPER_LIBRARY_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer/Library"), // TODO(grp): Verify.
+        pbxsetting::Setting::Parse("PLATFORM_DEVELOPER_SDK_DIR", "$(PLATFORM_DIR)/Developer/SDKs"),
+        pbxsetting::Setting::Parse("PLATFORM_DEVELOPER_TOOLS_DIR", "$(PLATFORM_DIR)/Developer/Tools"),
 
-        Setting::Create("PLATFORM_PRODUCT_BUILD_VERSION", _platformVersion ? _platformVersion->buildVersion() : ""),
+        pbxsetting::Setting::Create("PLATFORM_PRODUCT_BUILD_VERSION", _platformVersion ? _platformVersion->buildVersion() : ""),
         // TODO(grp): PLATFORM_PREFERRED_ARCH
 
         // TODO(grp): CORRESPONDING_DEVICE_PLATFORM_NAME
@@ -118,13 +122,13 @@ settings() const
         flagName += "-simulator";
     }
 
-    settings.push_back(Setting::Create("DEPLOYMENT_TARGET_SETTING_NAME", settingName + "_DEPLOYMENT_TARGET"));
-    settings.push_back(Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_NAME", "m" + flagName + "-version-min"));
-    settings.push_back(Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_PREFIX", "-m" + flagName + "-version-min="));
-    settings.push_back(Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_ENV", envName + "_DEPLOYMENT_TARGET"));
-    settings.push_back(Setting::Create("SWIFT_PLATFORM_TARGET_PREFIX", swiftName));
+    settings.push_back(pbxsetting::Setting::Create("DEPLOYMENT_TARGET_SETTING_NAME", settingName + "_DEPLOYMENT_TARGET"));
+    settings.push_back(pbxsetting::Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_NAME", "m" + flagName + "-version-min"));
+    settings.push_back(pbxsetting::Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_PREFIX", "-m" + flagName + "-version-min="));
+    settings.push_back(pbxsetting::Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_ENV", envName + "_DEPLOYMENT_TARGET"));
+    settings.push_back(pbxsetting::Setting::Create("SWIFT_PLATFORM_TARGET_PREFIX", swiftName));
 
-    settings.push_back(Setting::Parse("EFFECTIVE_PLATFORM_NAME", (_name == "macosx" ? "" : "-$(PLATFORM_NAME)")));
+    settings.push_back(pbxsetting::Setting::Parse("EFFECTIVE_PLATFORM_NAME", (_name == "macosx" ? "" : "-$(PLATFORM_NAME)")));
 
     std::vector<std::string> supportedPlatformNames;
     std::shared_ptr<Manager> manager = _manager.lock();
@@ -137,9 +141,9 @@ settings() const
     } else {
         supportedPlatformNames.push_back(_name);
     }
-    settings.push_back(Setting::Create("SUPPORTED_PLATFORMS", pbxsetting::Type::FormatList(supportedPlatformNames)));
+    settings.push_back(pbxsetting::Setting::Create("SUPPORTED_PLATFORMS", pbxsetting::Type::FormatList(supportedPlatformNames)));
 
-    return Level(settings);
+    return pbxsetting::Level(settings);
 }
 
 std::vector<std::string> Platform::
@@ -200,31 +204,31 @@ parse(plist::Dictionary const *dict)
     }
 
     if (DP != nullptr) {
-        std::vector<Setting> settings;
+        std::vector<pbxsetting::Setting> settings;
         for (size_t n = 0; n < DP->count(); n++) {
             auto DPK = DP->key(n);
             auto DPV = DP->value <plist::String> (DPK);
 
             if (DPV != nullptr) {
-                Setting setting = Setting::Parse(DPK, DPV->value());
+                pbxsetting::Setting setting = pbxsetting::Setting::Parse(DPK, DPV->value());
                 settings.push_back(setting);
             }
         }
-        _defaultProperties = Level(settings);
+        _defaultProperties = pbxsetting::Level(settings);
     }
 
     if (OP != nullptr) {
-        std::vector<Setting> settings;
+        std::vector<pbxsetting::Setting> settings;
         for (size_t n = 0; n < OP->count(); n++) {
             auto OPK = OP->key(n);
             auto OPV = OP->value <plist::String> (OPK);
 
             if (OPV != nullptr) {
-                Setting setting = Setting::Parse(OPK, OPV->value());
+                pbxsetting::Setting setting = pbxsetting::Setting::Parse(OPK, OPV->value());
                 settings.push_back(setting);
             }
         }
-        _overrideProperties = Level(settings);
+        _overrideProperties = pbxsetting::Level(settings);
     }
 
     return true;
@@ -268,44 +272,40 @@ Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string
     //
     // Parse the SDK platform dictionary and create the object.
     //
-    auto platform = std::make_shared <Platform> ();
+    auto platform = std::make_shared<Platform>();
     platform->_manager = manager;
 
-    if (platform->parse(plist)) {
-        //
-        // Save some useful info
-        //
-        platform->_path = FSUtil::GetDirectoryName(realPath);
-    } else {
-        platform = nullptr;
+    if (!platform->parse(plist)) {
+        return nullptr;
     }
 
-    if (platform) {
-        //
-        // Parse version information
-        //
-        platform->_platformVersion = PlatformVersion::Open(filesystem, platform->_path);
+    //
+    // Save some useful info
+    //
+    platform->_path = FSUtil::GetDirectoryName(realPath);
 
-        //
-        // Lookup all the SDKs inside the platform
-        //
-        std::string sdksPath = platform->_path + "/Developer/SDKs";
-        filesystem->enumerateDirectory(sdksPath, [&](std::string const &filename) -> void {
-            if (FSUtil::GetFileExtension(filename) != "sdk") {
-                return;
-            }
+    //
+    // Parse version information
+    //
+    platform->_platformVersion = PlatformVersion::Open(filesystem, platform->_path);
 
-            if (auto target = Target::Open(filesystem, manager, platform, sdksPath + "/" + filename)) {
-                platform->_targets.push_back(target);
-            }
-        });
+    //
+    // Lookup all the SDKs inside the platform
+    //
+    std::string sdksPath = platform->_path + "/Developer/SDKs";
+    filesystem->enumerateDirectory(sdksPath, [&](std::string const &filename) -> void {
+        if (FSUtil::GetFileExtension(filename) != "sdk") {
+            return;
+        }
 
-        std::sort(platform->_targets.begin(), platform->_targets.end(),
-                [](Target::shared_ptr const &a, Target::shared_ptr const &b) -> bool
-                {
-                    return (a->canonicalName() < b->canonicalName());
-                });
-    }
+        if (auto target = Target::Open(filesystem, manager, platform, sdksPath + "/" + filename)) {
+            platform->_targets.push_back(target);
+        }
+    });
+
+    std::sort(platform->_targets.begin(), platform->_targets.end(), [](Target::shared_ptr const &a, Target::shared_ptr const &b) -> bool {
+        return (a->canonicalName() < b->canonicalName());
+    });
 
     return platform;
 }

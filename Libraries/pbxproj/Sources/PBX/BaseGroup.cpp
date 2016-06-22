@@ -14,10 +14,15 @@
 #include <pbxproj/PBX/FileReference.h>
 #include <pbxproj/PBX/ReferenceProxy.h>
 #include <pbxproj/Context.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BaseGroup;
 
-BaseGroup::BaseGroup(std::string const &isa, GroupItem::Type type) :
+BaseGroup::
+BaseGroup(std::string const &isa, GroupItem::Type type) :
     GroupItem(isa, type)
 {
 }
@@ -25,8 +30,9 @@ BaseGroup::BaseGroup(std::string const &isa, GroupItem::Type type) :
 bool BaseGroup::
 parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!GroupItem::parse(context, dict, seen, false))
+    if (!GroupItem::parse(context, dict, seen, false)) {
         return false;
+    }
 
     auto unpack = plist::Keys::Unpack("BaseGroup", dict, seen);
 
@@ -39,13 +45,13 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     if (Cs != nullptr) {
         for (size_t n = 0; n < Cs->count(); n++) {
             auto ID = Cs->value <plist::String> (n);
-            if (ID == nullptr)
+            if (ID == nullptr) {
                 continue;
+            }
 
             if (auto C = context.get <Group> (ID)) {
                 auto O = context.parseObject(context.groups, ID->value(), C);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -54,7 +60,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto C = context.get <VariantGroup> (ID)) {
                 auto O = context.parseObject(context.variantGroups, ID->value(), C);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -63,7 +68,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto C = context.get <XC::VersionGroup> (ID)) {
                 auto O = context.parseObject(context.versionGroups, ID->value(), C);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -72,7 +76,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto C = context.get <FileReference> (ID)) {
                 auto O = context.parseObject(context.fileReferences, ID->value(), C);
                 if (!O) {
-                    abort();
                     return false;
                 }
 
@@ -81,7 +84,6 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
             } else if (auto C = context.get <ReferenceProxy> (ID)) {
                 auto O = context.parseObject(context.referenceProxies, ID->value(), C);
                 if (!O) {
-                    abort();
                     return false;
                 }
 

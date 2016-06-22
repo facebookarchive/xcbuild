@@ -14,6 +14,8 @@
 #include <pbxsetting/Setting.h>
 #include <pbxspec/PBX/PropertyOption.h>
 
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <ext/optional>
 

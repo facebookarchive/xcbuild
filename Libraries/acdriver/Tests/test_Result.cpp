@@ -9,6 +9,9 @@
 
 #include <gtest/gtest.h>
 #include <acdriver/Result.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using acdriver::Result;
 

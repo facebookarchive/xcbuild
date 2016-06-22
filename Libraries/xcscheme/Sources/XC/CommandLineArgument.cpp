@@ -8,10 +8,14 @@
  */
 
 #include <xcscheme/XC/CommandLineArgument.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::CommandLineArgument;
 
-CommandLineArgument::CommandLineArgument() :
+CommandLineArgument::
+CommandLineArgument() :
     _isEnabled(false)
 {
 }

@@ -8,10 +8,14 @@
  */
 
 #include <xcscheme/XC/ActionContent.h>
+#include <plist/Boolean.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using xcscheme::XC::ActionContent;
 
-ActionContent::ActionContent()
+ActionContent::
+ActionContent()
 {
 }
 
