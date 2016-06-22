@@ -13,6 +13,8 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
+#include <strings.h>
+
 using xcdriver::ListAction;
 using xcdriver::Options;
 using libutil::Filesystem;

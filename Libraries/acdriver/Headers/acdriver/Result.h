@@ -10,6 +10,7 @@
 #ifndef __acdriver_Result_h
 #define __acdriver_Result_h
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <unordered_map>

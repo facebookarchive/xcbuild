@@ -19,6 +19,8 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
+#include <strings.h>
+
 using builtin::copyStrings::Driver;
 using builtin::copyStrings::Options;
 using libutil::Filesystem;

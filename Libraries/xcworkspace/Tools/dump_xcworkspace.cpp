@@ -13,6 +13,7 @@
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 
+#include <algorithm>
 #include <cstring>
 #include <cerrno>
 
