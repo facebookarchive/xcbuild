@@ -19,6 +19,7 @@ Options() :
     _errors(false),
     _notices(false),
     _compressPNGs(false),
+    _targetDevice({}),
     _enableOnDemandResources(false),
     _enableIncrementalDistill(false)
 {

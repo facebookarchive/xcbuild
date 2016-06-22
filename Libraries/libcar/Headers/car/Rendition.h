@@ -37,6 +37,10 @@ public:
              */
             PremultipliedGA8,
             /*
+             * Raw data, JPEG format.
+             */
+            JPEG,
+            /*
              * Raw data.
              */
             Data,
