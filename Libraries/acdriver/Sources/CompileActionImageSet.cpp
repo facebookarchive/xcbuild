@@ -290,6 +290,9 @@ CompileAsset(
         case xcassets::Slot::Idiom::Watch:
             idiom = car_attribute_identifier_idiom_value_watch;
             break;
+        case xcassets::Slot::Idiom::Car:
+            idiom = car_attribute_identifier_idiom_value_car;
+            break;
     }
 
     std::vector<unsigned char> pixels;

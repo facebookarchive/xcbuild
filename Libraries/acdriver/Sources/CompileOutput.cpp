@@ -11,6 +11,8 @@
 #include <acdriver/Options.h>
 #include <acdriver/Result.h>
 #include <libutil/Filesystem.h>
+#include <plist/Format/Format.h>
+#include <plist/Format/XML.h>
 
 using acdriver::CompileOutput;
 using acdriver::Options;

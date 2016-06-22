@@ -36,7 +36,10 @@
 #include <car/Writer.h>
 #include <bom/bom_format.h>
 #include <dependency/BinaryDependencyInfo.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
 #include <plist/Dictionary.h>
+#include <plist/String.h>
 
 using acdriver::CompileAction;
 using acdriver::CompileOutput;
