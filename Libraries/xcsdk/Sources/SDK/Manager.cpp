@@ -14,6 +14,8 @@
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/Type.h>
 
+#include <algorithm>
+
 using xcsdk::Configuration;
 using xcsdk::SDK::Manager;
 using xcsdk::SDK::Platform;
