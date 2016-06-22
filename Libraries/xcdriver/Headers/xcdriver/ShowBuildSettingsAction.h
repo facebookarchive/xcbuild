@@ -10,8 +10,6 @@
 #ifndef __xcdriver_ShowBuildSettingsAction_h
 #define __xcdriver_ShowBuildSettingsAction_h
 
-#include <xcdriver/Base.h>
-
 namespace libutil { class Filesystem; }
 
 namespace xcdriver {

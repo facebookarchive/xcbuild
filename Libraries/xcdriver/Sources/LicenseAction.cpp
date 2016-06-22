@@ -9,6 +9,10 @@
 
 #include <xcdriver/LicenseAction.h>
 
+#include <string>
+
+#include <cstdio>
+
 /*
  * Generated from project license. The check below is extra-conservative
  * in that it fails if __has_include is not available (even though the

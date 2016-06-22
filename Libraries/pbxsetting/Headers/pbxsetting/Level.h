@@ -10,7 +10,6 @@
 #ifndef __pbxsetting_Level_h
 #define __pbxsetting_Level_h
 
-#include <pbxsetting/Base.h>
 #include <pbxsetting/Condition.h>
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/Value.h>

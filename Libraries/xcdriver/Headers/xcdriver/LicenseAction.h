@@ -10,8 +10,6 @@
 #ifndef __xcdriver_LicenseAction_h
 #define __xcdriver_LicenseAction_h
 
-#include <xcdriver/Base.h>
-
 namespace xcdriver {
 
 /*

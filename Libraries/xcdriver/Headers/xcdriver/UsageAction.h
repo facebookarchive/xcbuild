@@ -10,8 +10,6 @@
 #ifndef __xcdriver_UsageAction_h
 #define __xcdriver_UsageAction_h
 
-#include <xcdriver/Base.h>
-
 namespace xcdriver {
 
 /*
@@ -30,4 +28,3 @@ public:
 }
 
 #endif // !__xcdriver_UsageAction_h
-

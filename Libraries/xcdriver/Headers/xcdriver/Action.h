@@ -10,9 +10,12 @@
 #ifndef __xcdriver_Action_h
 #define __xcdriver_Action_h
 
-#include <xcdriver/Base.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Level.h>
 #include <xcexecution/Parameters.h>
 
+#include <string>
+#include <vector>
 #include <ext/optional>
 
 namespace xcdriver {

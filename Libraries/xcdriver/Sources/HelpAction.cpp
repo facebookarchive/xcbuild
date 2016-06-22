@@ -10,6 +10,8 @@
 #include <xcdriver/HelpAction.h>
 #include <xcdriver/Usage.h>
 
+#include <cstdio>
+
 using xcdriver::HelpAction;
 using xcdriver::Usage;
 

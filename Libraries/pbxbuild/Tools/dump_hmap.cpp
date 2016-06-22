@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <pbxbuild/pbxbuild.h>
+#include <pbxbuild/HeaderMap.h>
 
 #include <iterator>
 #include <fstream>

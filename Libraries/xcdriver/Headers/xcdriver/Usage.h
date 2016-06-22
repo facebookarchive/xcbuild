@@ -10,7 +10,7 @@
 #ifndef __xcdriver_Usage_h
 #define __xcdriver_Usage_h
 
-#include <xcdriver/Base.h>
+#include <string>
 
 namespace xcdriver {
 

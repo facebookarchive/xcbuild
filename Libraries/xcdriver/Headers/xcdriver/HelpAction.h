@@ -10,8 +10,6 @@
 #ifndef __xcdriver_HelpAction_h
 #define __xcdriver_HelpAction_h
 
-#include <xcdriver/Base.h>
-
 namespace xcdriver {
 
 /*
@@ -30,5 +28,3 @@ public:
 }
 
 #endif // !__xcdriver_HelpAction_h
-
-

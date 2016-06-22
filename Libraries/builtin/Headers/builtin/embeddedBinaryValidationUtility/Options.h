@@ -10,7 +10,6 @@
 #ifndef __builtin_embeddedBinaryValidationUtility_Options_h
 #define __builtin_embeddedBinaryValidationUtility_Options_h
 
-#include <builtin/Base.h>
 #include <libutil/Options.h>
 
 #include <string>

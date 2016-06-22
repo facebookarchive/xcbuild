@@ -10,16 +10,14 @@
 #ifndef __xcexecution_Parameters_h
 #define __xcexecution_Parameters_h
 
-#include <xcexecution/Base.h>
 #include <pbxsetting/Level.h>
 #include <pbxbuild/Build/Context.h>
 #include <pbxbuild/DirectedGraph.h>
 #include <pbxbuild/WorkspaceContext.h>
 
-#include <ext/optional>
-
 #include <string>
 #include <vector>
+#include <ext/optional>
 
 namespace libutil { class Filesystem; }
 

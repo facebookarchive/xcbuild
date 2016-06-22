@@ -10,8 +10,6 @@
 #ifndef __pbxsetting_Condition_h
 #define __pbxsetting_Condition_h
 
-#include <pbxsetting/Base.h>
-
 #include <string>
 #include <unordered_map>
 

@@ -10,8 +10,6 @@
 #ifndef __builtin_Registry_h
 #define __builtin_Registry_h
 
-#include <builtin/Base.h>
-
 #include <memory>
 #include <string>
 #include <vector>

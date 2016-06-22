@@ -10,8 +10,12 @@
 #ifndef __xcdriver_Options_h
 #define __xcdriver_Options_h
 
-#include <xcdriver/Base.h>
+#include <pbxsetting/Setting.h>
 #include <libutil/Options.h>
+
+#include <string>
+#include <vector>
+#include <utility>
 
 namespace xcdriver {
 

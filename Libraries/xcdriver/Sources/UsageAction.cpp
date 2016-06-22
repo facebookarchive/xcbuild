@@ -10,6 +10,8 @@
 #include <xcdriver/UsageAction.h>
 #include <xcdriver/Usage.h>
 
+#include <cstdio>
+
 using xcdriver::UsageAction;
 using xcdriver::Usage;
 
@@ -30,4 +32,3 @@ Run()
 
     return 0;
 }
-

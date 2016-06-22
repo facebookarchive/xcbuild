@@ -10,7 +10,8 @@
 #ifndef __xcdriver_Driver_h
 #define __xcdriver_Driver_h
 
-#include <xcdriver/Base.h>
+#include <string>
+#include <vector>
 
 namespace libutil { class Filesystem; }
 

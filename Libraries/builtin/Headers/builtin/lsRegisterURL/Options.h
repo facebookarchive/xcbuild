@@ -10,7 +10,6 @@
 #ifndef __builtin_lsRegisterURL_Options_h
 #define __builtin_lsRegisterURL_Options_h
 
-#include <builtin/Base.h>
 #include <libutil/Options.h>
 
 #include <string>
