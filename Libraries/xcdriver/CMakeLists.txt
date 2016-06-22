@@ -24,9 +24,11 @@ add_library(xcdriver SHARED
             )
 
 # Copy project LICENSE into build directory as a header.
-file(READ "${PROJECT_SOURCE_DIR}/LICENSE" LICENSE_CONTENTS HEX)
-string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1, " LICENSE_CONTENTS "${LICENSE_CONTENTS}")
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/LICENSE.h" "static char const LICENSE[] = { ${LICENSE_CONTENTS} };\n")
+if ("${PROJECT_SOURCE_DIR}/LICENSE" IS_NEWER_THAN "${CMAKE_CURRENT_BINARY_DIR}/LICENSE.h")
+    file(READ "${PROJECT_SOURCE_DIR}/LICENSE" LICENSE_CONTENTS HEX)
+    string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1, " LICENSE_CONTENTS "${LICENSE_CONTENTS}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/LICENSE.h" "static char const LICENSE[] = { ${LICENSE_CONTENTS} };\n")
+endif ()
 target_include_directories(xcdriver PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
 target_link_libraries(xcdriver PUBLIC xcexecution xcformatter pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
