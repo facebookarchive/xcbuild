@@ -10,6 +10,9 @@
 #include <xcsdk/SDK/Toolchain.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Format/Any.h>
 
 using xcsdk::SDK::Toolchain;
 using libutil::Filesystem;
@@ -81,18 +84,18 @@ Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string
     //
     // Parse the toolchain dictionary and create the object.
     //
-    auto toolchain = std::make_shared <Toolchain> ();
+    auto toolchain = std::make_shared<Toolchain>();
     toolchain->_manager = manager;
 
-    if (toolchain->parse(plist)) {
-        //
-        // Save some useful info
-        //
-        toolchain->_path = FSUtil::GetDirectoryName(realPath);
-        toolchain->_name = FSUtil::GetBaseNameWithoutExtension(toolchain->_path);
-    } else {
-        toolchain = nullptr;
+    if (!toolchain->parse(plist)) {
+        return nullptr;
     }
+
+    //
+    // Save some useful info
+    //
+    toolchain->_path = FSUtil::GetDirectoryName(realPath);
+    toolchain->_name = FSUtil::GetBaseNameWithoutExtension(toolchain->_path);
 
     return toolchain;
 }

@@ -7,7 +7,10 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <xcsdk/xcsdk.h>
+#include <xcsdk/Configuration.h>
+#include <xcsdk/Environment.h>
+#include <xcsdk/SDK/Manager.h>
+#include <xcsdk/SDK/Toolchain.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/Options.h>

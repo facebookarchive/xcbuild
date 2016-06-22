@@ -9,6 +9,7 @@
 
 #include <pbxbuild/Build/Environment.h>
 #include <xcsdk/Configuration.h>
+#include <xcsdk/Environment.h>
 #include <libutil/Filesystem.h>
 
 namespace Build = pbxbuild::Build;

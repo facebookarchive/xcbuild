@@ -9,7 +9,10 @@
 
 #include <xcdriver/FindAction.h>
 #include <xcdriver/Options.h>
-#include <xcsdk/xcsdk.h>
+#include <xcsdk/Configuration.h>
+#include <xcsdk/Environment.h>
+#include <xcsdk/SDK/Manager.h>
+#include <xcsdk/SDK/Target.h>
 #include <libutil/Filesystem.h>
 
 using xcdriver::FindAction;

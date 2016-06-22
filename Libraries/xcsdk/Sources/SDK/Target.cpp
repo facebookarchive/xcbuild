@@ -9,41 +9,46 @@
 
 #include <xcsdk/SDK/Target.h>
 #include <xcsdk/SDK/Manager.h>
+#include <pbxsetting/Type.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Format/Any.h>
 
 using xcsdk::SDK::Target;
-using pbxsetting::Level;
-using pbxsetting::Setting;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
-Target::Target() :
-    _customProperties (Level({ })),
-    _defaultProperties(Level({ }))
+Target::
+Target() :
+    _customProperties (pbxsetting::Level({ })),
+    _defaultProperties(pbxsetting::Level({ }))
 {
 }
 
-Target::~Target()
+Target::
+~Target()
 {
 }
 
-Level Target::
+pbxsetting::Level Target::
 settings(void) const
 {
-    std::vector<Setting> settings = {
-        Setting::Create("SDK_NAME", _canonicalName),
-        Setting::Create("SDK_DIR", _path),
-        Setting::Create("SDK_PRODUCT_BUILD_VERSION", (_product ? _product->buildVersion() : "")),
+    std::vector<pbxsetting::Setting> settings = {
+        pbxsetting::Setting::Create("SDK_NAME", _canonicalName),
+        pbxsetting::Setting::Create("SDK_DIR", _path),
+        pbxsetting::Setting::Create("SDK_PRODUCT_BUILD_VERSION", (_product ? _product->buildVersion() : "")),
     };
 
     std::vector<std::string> toolchainIdentifiers;
     for (Toolchain::shared_ptr const &toolchain : _toolchains) {
         toolchainIdentifiers.push_back(toolchain->identifier());
     }
-    settings.push_back(Setting::Create("TOOLCHAINS", pbxsetting::Type::FormatList(toolchainIdentifiers)));
+    settings.push_back(pbxsetting::Setting::Create("TOOLCHAINS", pbxsetting::Type::FormatList(toolchainIdentifiers)));
 
-    return Level(settings);
+    return pbxsetting::Level(settings);
 }
 
 std::vector<std::string> Target::
@@ -114,31 +119,31 @@ parse(plist::Dictionary const *dict)
     }
 
     if (CP != nullptr) {
-        std::vector<Setting> settings;
+        std::vector<pbxsetting::Setting> settings;
         for (size_t n = 0; n < CP->count(); n++) {
             auto CPK = CP->key(n);
             auto CPV = CP->value <plist::String> (CPK);
 
             if (CPV != nullptr) {
-                Setting setting = Setting::Parse(CPK, CPV->value());
+                pbxsetting::Setting setting = pbxsetting::Setting::Parse(CPK, CPV->value());
                 settings.push_back(setting);
             }
         }
-        _customProperties = Level(settings);
+        _customProperties = pbxsetting::Level(settings);
     }
 
     if (DP != nullptr) {
-        std::vector<Setting> settings;
+        std::vector<pbxsetting::Setting> settings;
         for (size_t n = 0; n < DP->count(); n++) {
             auto DPK = DP->key(n);
             auto DPV = DP->value <plist::String> (DPK);
 
             if (DPV != nullptr) {
-                Setting setting = Setting::Parse(DPK, DPV->value());
+                pbxsetting::Setting setting = pbxsetting::Setting::Parse(DPK, DPV->value());
                 settings.push_back(setting);
             }
         }
-        _defaultProperties = Level(settings);
+        _defaultProperties = pbxsetting::Level(settings);
     }
 
     if (IBS != nullptr) {
@@ -210,29 +215,24 @@ Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::shared
     //
     // Parse the SDK dictionary and create the object.
     //
-    auto target = std::make_shared <Target> ();
-    target->_manager    = manager;
-    target->_platform   = platform;
+    auto target = std::make_shared<Target>();
+    target->_manager  = manager;
+    target->_platform = platform;
 
-    if (target->parse(plist)) {
-        //
-        // Save some useful info
-        //
-        target->_path       = FSUtil::GetDirectoryName(realPath);
-
-        size_t slash = target->_path.rfind('/');
-
-        target->_bundleName = target->_path.substr(slash + 1);
-    } else {
-        target = nullptr;
+    if (!target->parse(plist)) {
+        return nullptr;
     }
 
-    if (target) {
-        //
-        // Parse product information
-        //
-        target->_product = Product::Open(filesystem, target->_path);
-    }
+    //
+    // Save some useful info
+    //
+    target->_path       = FSUtil::GetDirectoryName(realPath);
+    target->_bundleName = FSUtil::GetBaseName(realPath);
+
+    //
+    // Parse product information
+    //
+    target->_product = Product::Open(filesystem, target->_path);
 
     return target;
 }

@@ -9,6 +9,9 @@
 
 #include <xcsdk/SDK/Product.h>
 #include <libutil/Filesystem.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
+#include <plist/Format/Any.h>
 
 using xcsdk::SDK::Product;
 using libutil::Filesystem;
@@ -88,9 +91,8 @@ Open(Filesystem const *filesystem, std::string const &path)
     // Parse the Product dictionary and create the object.
     //
     auto product = std::make_shared <Product> ();
-
     if (!product->parse(plist)) {
-        product = nullptr;
+        return nullptr;
     }
 
     return product;

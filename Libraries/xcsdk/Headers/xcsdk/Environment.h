@@ -10,8 +10,7 @@
 #ifndef __xcsdk_Environment_h
 #define __xcsdk_Environment_h
 
-#include <xcsdk/Base.h>
-
+#include <string>
 #include <ext/optional>
 
 namespace libutil { class Filesystem; };

@@ -11,15 +11,14 @@
 #include <xcsdk/Configuration.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <plist/plist.h>
+#include <pbxsetting/Setting.h>
+#include <pbxsetting/Type.h>
 
 using xcsdk::Configuration;
 using xcsdk::SDK::Manager;
 using xcsdk::SDK::Platform;
 using xcsdk::SDK::Target;
 using xcsdk::SDK::Toolchain;
-using pbxsetting::Setting;
-using pbxsetting::Level;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -84,33 +83,33 @@ findPlatformFamily(std::string const &identifier)
 pbxsetting::Level Manager::
 computedSettings(void) const
 {
-    std::vector<Setting> settings = {
-        Setting::Create("DEVELOPER_DIR", _path),
-        Setting::Parse("DEVELOPER_USR_DIR", "$(DEVELOPER_DIR)/usr"),
-        Setting::Parse("DEVELOPER_BIN_DIR", "$(DEVELOPER_DIR)/usr/bin"),
-        Setting::Parse("DEVELOPER_APPLICATIONS_DIR", "$(DEVELOPER_DIR)/Applications"),
-        Setting::Parse("DEVELOPER_FRAMEWORKS_DIR", "$(DEVELOPER_DIR)/Library/Frameworks"),
-        Setting::Parse("DEVELOPER_FRAMEWORKS_DIR_QUOTED", "$(DEVELOPER_DIR)/Library/Frameworks"),
-        Setting::Parse("DEVELOPER_LIBRARY_DIR", "$(DEVELOPER_DIR)/Library"),
-        Setting::Parse("DEVELOPER_TOOLS_DIR", "$(DEVELOPER_DIR)/Tools"),
-        Setting::Parse("DEVELOPER_SDK_DIR", "$(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs"), // TODO(grp): Verify.
-        Setting::Parse("LEGACY_DEVELOPER_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer"), // TODO(grp): Verify.
-        Setting::Parse("DERIVED_DATA_DIR", "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData"),
+    std::vector<pbxsetting::Setting> settings = {
+        pbxsetting::Setting::Create("DEVELOPER_DIR", _path),
+        pbxsetting::Setting::Parse("DEVELOPER_USR_DIR", "$(DEVELOPER_DIR)/usr"),
+        pbxsetting::Setting::Parse("DEVELOPER_BIN_DIR", "$(DEVELOPER_DIR)/usr/bin"),
+        pbxsetting::Setting::Parse("DEVELOPER_APPLICATIONS_DIR", "$(DEVELOPER_DIR)/Applications"),
+        pbxsetting::Setting::Parse("DEVELOPER_FRAMEWORKS_DIR", "$(DEVELOPER_DIR)/Library/Frameworks"),
+        pbxsetting::Setting::Parse("DEVELOPER_FRAMEWORKS_DIR_QUOTED", "$(DEVELOPER_DIR)/Library/Frameworks"),
+        pbxsetting::Setting::Parse("DEVELOPER_LIBRARY_DIR", "$(DEVELOPER_DIR)/Library"),
+        pbxsetting::Setting::Parse("DEVELOPER_TOOLS_DIR", "$(DEVELOPER_DIR)/Tools"),
+        pbxsetting::Setting::Parse("DEVELOPER_SDK_DIR", "$(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs"), // TODO(grp): Verify.
+        pbxsetting::Setting::Parse("LEGACY_DEVELOPER_DIR", "$(DEVELOPER_DIR)/../PlugIns/Xcode3Core.ideplugin/Contents/SharedSupport/Developer"), // TODO(grp): Verify.
+        pbxsetting::Setting::Parse("DERIVED_DATA_DIR", "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData"),
     };
 
     if (Toolchain::shared_ptr defaultToolchain = findToolchain(Toolchain::DefaultIdentifier())) {
-        settings.push_back(Setting::Create("DT_TOOLCHAIN_DIR", defaultToolchain->path()));
+        settings.push_back(pbxsetting::Setting::Create("DT_TOOLCHAIN_DIR", defaultToolchain->path()));
     } else {
-        settings.push_back(Setting::Create("DT_TOOLCHAIN_DIR", ""));
+        settings.push_back(pbxsetting::Setting::Create("DT_TOOLCHAIN_DIR", ""));
     }
 
     std::vector<std::string> platformNames;
     for (Platform::shared_ptr const &platform : _platforms) {
         platformNames.push_back(platform->name());
     }
-    settings.push_back(Setting::Create("AVAILABLE_PLATFORMS", pbxsetting::Type::FormatList(platformNames)));
+    settings.push_back(pbxsetting::Setting::Create("AVAILABLE_PLATFORMS", pbxsetting::Type::FormatList(platformNames)));
 
-    return Level(settings);
+    return pbxsetting::Level(settings);
 }
 
 std::vector<std::string> Manager::

@@ -9,8 +9,13 @@
 
 #include <xcdriver/VersionAction.h>
 #include <xcdriver/Options.h>
-
-#include <xcsdk/xcsdk.h>
+#include <xcsdk/Configuration.h>
+#include <xcsdk/Environment.h>
+#include <xcsdk/SDK/Manager.h>
+#include <xcsdk/SDK/Platform.h>
+#include <xcsdk/SDK/PlatformVersion.h>
+#include <xcsdk/SDK/Product.h>
+#include <xcsdk/SDK/Target.h>
 #include <libutil/Filesystem.h>
 
 using xcdriver::VersionAction;

@@ -12,8 +12,14 @@
 
 #include <xcsdk/SDK/Target.h>
 #include <xcsdk/SDK/PlatformVersion.h>
+#include <pbxsetting/Level.h>
+
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace libutil { class Filesystem; };
+namespace plist { class Dictionary; }
 
 namespace xcsdk { namespace SDK {
 

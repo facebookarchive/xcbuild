@@ -17,6 +17,8 @@
 #include <pbxbuild/Tool/SwiftModuleInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
+#include <xcsdk/SDK/Target.h>
+#include <xcsdk/SDK/Toolchain.h>
 
 namespace pbxbuild {
 namespace Tool {

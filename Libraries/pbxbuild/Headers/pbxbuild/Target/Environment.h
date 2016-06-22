@@ -13,6 +13,8 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Target/BuildRules.h>
+#include <xcsdk/SDK/Target.h>
+#include <xcsdk/SDK/Toolchain.h>
 
 #include <ext/optional>
 
