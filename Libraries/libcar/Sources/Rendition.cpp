@@ -188,9 +188,7 @@ Load(
                         };
                         slices.push_back(slice);
                 }
-                if (slices.size() > 0) {
-                    rendition.slices() = std::move(slices);                    
-                }
+                rendition.slices() = slices;
                 break;
             }
             case car_rendition_info_magic_metrics: {
@@ -249,6 +247,10 @@ Load(
     enum car_rendition_value_layout layout = (enum car_rendition_value_layout)value->metadata.layout;
     rendition.layout() = layout;
     rendition.resizeMode() = ResizeModeFromLayout(layout);
+
+    if (rendition.slices().size() == 0) {
+        rendition.slices().push_back({0, 0, value->width, value->height});
+    }
 
     if (layout >= car_rendition_value_layout_three_part_horizontal_tile &&
         layout <= car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform &&
