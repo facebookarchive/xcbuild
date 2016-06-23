@@ -53,6 +53,12 @@ public:
 
 public:
     /*
+     * Serialize the rendition for writing to a file.
+     */
+    std::vector<uint8_t> write() const;
+
+public:
+    /*
      * Print debugging information about the facet.
      */
     void dump() const;
@@ -63,20 +69,14 @@ public:
      */
     static Facet Load(
         std::string const &name,
-        struct car_facet_value *value);
+        struct car_facet_value const *value);
 
-public:
     /*
      * Create a facet with the provided name and attributes
      */
-    static Facet Create(std::string const &name, AttributeList const &attributes);
-
-public:
-
-    /*
-     * Serialize the rendition for writing to a file.
-     */
-    std::vector<uint8_t> write() const;
+    static Facet Create(
+        std::string const &name,
+        AttributeList const &attributes);
 };
 
 }

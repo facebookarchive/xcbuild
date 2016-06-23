@@ -56,9 +56,7 @@ renditionIterate(Reader const *archive, std::function<void(Rendition const &)> c
 }
 
 Facet Facet::
-Load(
-    std::string const &name,
-    struct car_facet_value *value)
+Load(std::string const &name, struct car_facet_value const *value)
 {
     AttributeList attributes = car::AttributeList::Load(value->attributes_count, value->attributes);
     return Facet(name, attributes);
