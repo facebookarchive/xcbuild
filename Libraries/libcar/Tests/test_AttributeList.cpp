@@ -11,38 +11,26 @@
 #include <car/AttributeList.h>
 #include <car/car_format.h>
 
-
-struct test_car_key_format {
-    struct car_key_format keyfmt;
-    uint32_t identifier_list[13];
-} __attribute__((packed));
-
-static struct test_car_key_format keyfmt_s = {
-    {
-        { 'k', 'f', 'm', 't' }, 0, 13,
-    },
-    {
-        car_attribute_identifier_scale,
-        car_attribute_identifier_idiom,
-        car_attribute_identifier_subtype,
-        car_attribute_identifier_graphics_class,
-        car_attribute_identifier_memory_class,
-        car_attribute_identifier_size_class_horizontal,
-        car_attribute_identifier_size_class_vertical,
-        car_attribute_identifier_identifier,
-        car_attribute_identifier_element,
-        car_attribute_identifier_part,
-        car_attribute_identifier_state,
-        car_attribute_identifier_value,
-        car_attribute_identifier_dimension1,
-    }
+static uint32_t KeyFormat[] = {
+    car_attribute_identifier_scale,
+    car_attribute_identifier_idiom,
+    car_attribute_identifier_subtype,
+    car_attribute_identifier_graphics_class,
+    car_attribute_identifier_memory_class,
+    car_attribute_identifier_size_class_horizontal,
+    car_attribute_identifier_size_class_vertical,
+    car_attribute_identifier_identifier,
+    car_attribute_identifier_element,
+    car_attribute_identifier_part,
+    car_attribute_identifier_state,
+    car_attribute_identifier_value,
+    car_attribute_identifier_dimension1,
 };
+static size_t const KeyFormatCount = sizeof(KeyFormat) / sizeof(*KeyFormat);
 
-static struct car_key_format *keyfmt = &keyfmt_s.keyfmt;
-
-TEST(AttributeList, TestAttributeListDeSerialize)
+TEST(AttributeList, DeserializeAndSerialize)
 {
-    uint16_t rendition_key[13] = {
+    uint16_t rendition_key[KeyFormatCount] = {
         1,                                        // scale
         car_attribute_identifier_idiom_value_pad, // idiom
         3,                                        // subtype
@@ -58,31 +46,32 @@ TEST(AttributeList, TestAttributeListDeSerialize)
         13,                                       // dimension1
     };
 
-    car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
+    /* Deserialize and verify. */
+    car::AttributeList attributes = car::AttributeList::Load(KeyFormatCount, KeyFormat, rendition_key);
 
     ext::optional<uint16_t> scale = attributes.get(car_attribute_identifier_scale);
-    EXPECT_TRUE(scale);
-    EXPECT_TRUE(*scale == 1);
+    ASSERT_TRUE(scale);
+    EXPECT_EQ(*scale, 1);
 
     ext::optional<uint16_t> idiom = attributes.get(car_attribute_identifier_idiom);
-    EXPECT_TRUE(idiom);
-    EXPECT_TRUE(*idiom == car_attribute_identifier_idiom_value_pad);
+    ASSERT_TRUE(idiom);
+    EXPECT_EQ(*idiom, car_attribute_identifier_idiom_value_pad);
 
     ext::optional<uint16_t> facet_identifier = attributes.get(car_attribute_identifier_identifier);
-    EXPECT_TRUE(facet_identifier);
-    EXPECT_TRUE(*facet_identifier == 8);
+    ASSERT_TRUE(facet_identifier);
+    EXPECT_EQ(*facet_identifier, 8);
 
     ext::optional<uint16_t> size_class_horizontal = attributes.get(car_attribute_identifier_size_class_horizontal);
-    EXPECT_TRUE(size_class_horizontal);
-    EXPECT_TRUE(*size_class_horizontal == car_attribute_identifier_size_class_value_compact);
+    ASSERT_TRUE(size_class_horizontal);
+    EXPECT_EQ(*size_class_horizontal, car_attribute_identifier_size_class_value_compact);
 
     ext::optional<uint16_t> size_class_vertical = attributes.get(car_attribute_identifier_size_class_vertical);
-    EXPECT_TRUE(size_class_vertical);
-    EXPECT_TRUE(*size_class_vertical == car_attribute_identifier_size_class_value_regular);
+    ASSERT_TRUE(size_class_vertical);
+    EXPECT_EQ(*size_class_vertical, car_attribute_identifier_size_class_value_regular);
 
-    auto output = attributes.write(keyfmt->num_identifiers, keyfmt->identifier_list);
+    /* Verify serialization matches original. */
+    auto output = attributes.write(KeyFormatCount, KeyFormat);
     uint16_t *attributes_out = reinterpret_cast<uint16_t *>(output.data());
-
-    EXPECT_TRUE(0 == memcmp(rendition_key, attributes_out, sizeof(uint16_t) * keyfmt->num_identifiers));
+    EXPECT_TRUE(0 == memcmp(rendition_key, attributes_out, sizeof(uint16_t) * KeyFormatCount));
 }
 
