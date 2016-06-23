@@ -112,7 +112,7 @@ private:
     ResizeMode                      _resizeMode;
     std::vector<Slice>              _slices;
     enum car_rendition_value_layout _layout;
-    ext::optional<std::string>      _uti;
+    ext::optional<std::string>      _UTI;
 
 private:
     Rendition(AttributeList const &attributes, std::function<ext::optional<Data>(Rendition const *)> const &data);
@@ -134,6 +134,15 @@ public:
     std::string &fileName()
     { return _fileName; }
 
+    /*
+     * The UTI type of the rendition.
+     */
+    ext::optional<std::string> const &UTI() const
+    { return _UTI; }
+    ext::optional<std::string> &UTI()
+    { return _UTI; }
+
+public:
     /*
      * The width of the rendition, in pixels.
      */
@@ -158,6 +167,7 @@ public:
     float &scale()
     { return _scale; }
 
+public:
     /*
      * Is vector
      */
@@ -182,8 +192,9 @@ public:
     enum car_rendition_value_layout &layout()
     { return _layout; }
 
+public:
     /*
-     * Is resizeable
+     * If the rendition is resizable at all.
      */
     bool isResizable() const
     { return _isResizable; }
@@ -191,35 +202,32 @@ public:
     { return _isResizable; }
 
     /*
-     * resizeMode
+     * How the rendition should resize.
      */
-
     ResizeMode resizeMode() const
     { return _resizeMode; }
     ResizeMode &resizeMode()
     { return _resizeMode; }
 
     /*
-     * Slices.
+     * How the rendition is sliced for resizing.
      */
     std::vector<Slice> const &slices() const
     { return _slices; }
     std::vector<Slice> &slices()
     { return _slices; }
 
-    /*
-     * uti
-     */
-    ext::optional<std::string> const &uti() const
-    { return _uti; }
-    ext::optional<std::string> &uti()
-    { return _uti; }
-
 public:
     /*
      * The rendition pixel data. May incur expensive decoding.
      */
     ext::optional<Data> data() const;
+
+public:
+    /*
+     * Serialize the rendition for writing to a file.
+     */
+    std::vector<uint8_t> write() const;
 
 public:
     /*
@@ -235,6 +243,7 @@ public:
         AttributeList const &attributes,
         struct car_rendition_value *value);
 
+public:
     /*
      * Create a new rendition with the given properties.
      */
@@ -245,14 +254,6 @@ public:
     static Rendition Create(
         AttributeList const &attributes,
         ext::optional<Data> const &data);
-
-public:
-
-    /*
-     * Serialize the rendition for writing to a file.
-     */
-    std::vector<uint8_t> write() const;
-
 };
 
 }

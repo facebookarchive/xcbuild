@@ -13,52 +13,14 @@
 
 using car::Rendition;
 
-struct test_car_key_format {
-    struct car_key_format keyfmt;
-    uint32_t identifier_list[13];
-} __attribute__((packed));
-
-static struct test_car_key_format keyfmt_s = {
-    {
-        { 'k', 'f', 'm', 't' }, 0, 13,
-    },
-    {
-        car_attribute_identifier_scale,
-        car_attribute_identifier_idiom,
-        car_attribute_identifier_subtype,
-        car_attribute_identifier_graphics_class,
-        car_attribute_identifier_memory_class,
-        car_attribute_identifier_size_class_horizontal,
-        car_attribute_identifier_size_class_vertical,
-        car_attribute_identifier_identifier,
-        car_attribute_identifier_element,
-        car_attribute_identifier_part,
-        car_attribute_identifier_state,
-        car_attribute_identifier_value,
-        car_attribute_identifier_dimension1,
-    }
-};
-
-static struct car_key_format *keyfmt = &keyfmt_s.keyfmt;
+static car::AttributeList
+EmptyAttributeList()
+{
+    return car::AttributeList({ });
+}
 
 TEST(Rendition, TestRenditionDeSerializeSerialize)
 {
-    uint16_t rendition_key[13] = {
-        1,                                        // scale
-        car_attribute_identifier_idiom_value_pad, // idiom
-        3,                                        // subtype
-        4,                                        // graphics_class
-        5,                                        // memory_class
-        car_attribute_identifier_size_class_value_compact, // size_class_horizontal
-        car_attribute_identifier_size_class_value_regular, // size_class_vertical
-        8,                                        // identifier
-        9,                                        // element
-        10,                                       // part
-        11,                                       // state
-        12,                                       // value
-        13,                                       // dimension1
-    };
-
     size_t rendition_len = 598;
     const unsigned char rendition_value[598] = {
         0x49, 0x53, 0x54, 0x43, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
@@ -101,32 +63,7 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
         0x83, 0xa9, 0x00, 0x04, 0x00, 0x00,
     };
 
-    car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
-
-    ext::optional<uint16_t> scale = attributes.get(car_attribute_identifier_scale);
-    EXPECT_TRUE(scale);
-    EXPECT_TRUE(*scale == 1);
-
-    ext::optional<uint16_t> idiom = attributes.get(car_attribute_identifier_idiom);
-    EXPECT_TRUE(idiom);
-    EXPECT_TRUE(*idiom == car_attribute_identifier_idiom_value_pad);
-
-    ext::optional<uint16_t> facet_identifier = attributes.get(car_attribute_identifier_identifier);
-    EXPECT_TRUE(facet_identifier);
-    EXPECT_TRUE(*facet_identifier == 8);
-
-    ext::optional<uint16_t> size_class_horizontal = attributes.get(car_attribute_identifier_size_class_horizontal);
-    EXPECT_TRUE(size_class_horizontal);
-    EXPECT_TRUE(*size_class_horizontal == car_attribute_identifier_size_class_value_compact);
-
-    ext::optional<uint16_t> size_class_vertical = attributes.get(car_attribute_identifier_size_class_vertical);
-    EXPECT_TRUE(size_class_vertical);
-    EXPECT_TRUE(*size_class_vertical == car_attribute_identifier_size_class_value_regular);
-
-    auto attributes_out = attributes.write(keyfmt->num_identifiers, keyfmt->identifier_list);
-    EXPECT_TRUE(0 == memcmp(rendition_key, (uint16_t *)&attributes_out[0], sizeof(uint16_t) * keyfmt->num_identifiers));
-
-    car::Rendition rendition = car::Rendition::Load(attributes, (struct car_rendition_value *)rendition_value);
+    car::Rendition rendition = car::Rendition::Load(EmptyAttributeList(), (struct car_rendition_value *)rendition_value);
 
     car::Rendition::Data::Format format = car::Rendition::Data::Format::PremultipliedBGRA8;
     std::vector<uint8_t> test_bitmap_bytes = {
@@ -205,8 +142,8 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     }
 
     // Construct an identical Rendition instance using test_bitmap_bytes
-    auto new_rendition_data = ext::optional<car::Rendition::Data>(car::Rendition::Data(test_bitmap_bytes, format));
-    car::Rendition new_rendition = car::Rendition::Create(attributes, new_rendition_data);
+    auto new_rendition_data = car::Rendition::Data(test_bitmap_bytes, format);
+    car::Rendition new_rendition = car::Rendition::Create(EmptyAttributeList(), new_rendition_data);
     new_rendition.width() = 16;
     new_rendition.height() = 16;
     new_rendition.scale() = 1.0;
@@ -219,10 +156,6 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     EXPECT_TRUE(0 == strcmp(rendition.fileName().c_str(), new_rendition.fileName().c_str()));
     EXPECT_TRUE(rendition.layout() == new_rendition.layout());
 
-    // Check that serialized attributes match the rendition_key
-    auto new_rendition_key = new_rendition.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);
-    EXPECT_TRUE(0 == memcmp(&new_rendition_key[0], rendition_key, sizeof(uint16_t) * keyfmt->num_identifiers));
-
     // Serialise new_rendition.
     auto new_rendition_value = new_rendition.write();
 
@@ -230,7 +163,8 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     EXPECT_TRUE(0 == memcmp(rendition_value, &new_rendition_value[0], rendition_len));
 
     // Decode the serialized copy of new_rendition.
-    car::Rendition new_rendition_check = car::Rendition::Load(attributes,
+    car::Rendition new_rendition_check = car::Rendition::Load(
+        EmptyAttributeList(),
         reinterpret_cast<struct car_rendition_value *>(new_rendition_value.data()));
     auto check_data = new_rendition_check.data();
 
@@ -242,107 +176,73 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     EXPECT_TRUE(v == test_bitmap_bytes);
 }
 
-TEST(Rendition, TestRenditionJPEG)
+TEST(Rendition, SerializeJPEG)
 {
-    uint16_t rendition_key[13] = {
-        1,                                        // scale
-        car_attribute_identifier_idiom_value_pad, // idiom
-        3,                                        // subtype
-        4,                                        // graphics_class
-        5,                                        // memory_class
-        car_attribute_identifier_size_class_value_compact, // size_class_horizontal
-        car_attribute_identifier_size_class_value_regular, // size_class_vertical
-        8,                                        // identifier
-        9,                                        // element
-        10,                                       // part
-        11,                                       // state
-        12,                                       // value
-        13,                                       // dimension1
-    };
-    car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
-
-    car::Rendition::Data::Format test_data_format = car::Rendition::Data::Format::JPEG;
-    size_t test_data_size = 10000;
-    std::vector<uint8_t> test_data(test_data_size);
-    for (unsigned int i = 0; i < test_data_size; i++) {
-        test_data[i] = i & 0xFF;
+    /* Use a test pattern, since JPEG is stored as raw data. */
+    auto format = car::Rendition::Data::Format::JPEG;
+    auto jpeg = std::vector<uint8_t>(10000);
+    for (size_t i = 0; i < jpeg.size(); i++) {
+        jpeg[i] = i & 0xFF;
     }
 
-    // Construct a Rendition using a test pattern, since JPEG is stored as raw data
-    auto data = ext::optional<car::Rendition::Data>(car::Rendition::Data(test_data, test_data_format));
-    car::Rendition rendition = car::Rendition::Create(attributes, data);
+    /* Create test rendition. */
+    auto data = car::Rendition::Data(jpeg, format);
+    car::Rendition rendition = car::Rendition::Create(EmptyAttributeList(), data);
     rendition.width() = 100;
     rendition.height() = 100;
     rendition.scale() = 1.0;
-    rendition.fileName() = std::string("test.png");
+    rendition.fileName() = "test.png";
     rendition.layout() = car_rendition_value_layout_one_part_scale;
 
-    // Serialise rendition.
+    /* Serialize and deserialize rendition. */
     std::vector<uint8_t> rendition_value = rendition.write();
+    car::Rendition deserialized_rendition = car::Rendition::Load(EmptyAttributeList(), reinterpret_cast<struct car_rendition_value *>(rendition_value.data()));
 
-    // deserialize and compare
-    car::Rendition deserialized_rendition = car::Rendition::Load(attributes, reinterpret_cast<struct car_rendition_value *>(rendition_value.data()));
-
+    /* Verify data is identical. */
     auto deserialized_data = deserialized_rendition.data();
-    auto deserialized_bytes = deserialized_data->data();
-
-    EXPECT_TRUE(deserialized_data->format() == test_data_format);
-    EXPECT_TRUE(deserialized_bytes == test_data);
+    EXPECT_EQ(deserialized_data->format(), format);
+    EXPECT_EQ(deserialized_data->data(), jpeg);
 }
 
-TEST(Rendition, TestRenditionSlices)
+TEST(Rendition, SerializeSlices)
 {
-    uint16_t rendition_key[13] = {
-        1,                                        // scale
-        car_attribute_identifier_idiom_value_pad, // idiom
-        3,                                        // subtype
-        4,                                        // graphics_class
-        5,                                        // memory_class
-        car_attribute_identifier_size_class_value_compact, // size_class_horizontal
-        car_attribute_identifier_size_class_value_regular, // size_class_vertical
-        8,                                        // identifier
-        9,                                        // element
-        10,                                       // part
-        11,                                       // state
-        12,                                       // value
-        13,                                       // dimension1
-    };
-    car::AttributeList attributes = car::AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
-
     size_t width = 100;
     size_t height = 100;
 
-    car::Rendition::Data::Format format = car::Rendition::Data::Format::PremultipliedBGRA8;
-    std::vector<uint8_t> test_bitmap_bytes(width*height*4);
+    /* Bitmap data matching format size. */
+    auto format = car::Rendition::Data::Format::PremultipliedBGRA8;
+    auto bitmap = std::vector<uint8_t>(width * height * 4);
 
-    // Construct a Rendition using test_bitmap_bytes and slices
-    auto data = ext::optional<car::Rendition::Data>(car::Rendition::Data(test_bitmap_bytes, format));
-    car::Rendition rendition = car::Rendition::Create(attributes, data);
+    /* Construct a rendition. */
+    auto data = car::Rendition::Data(bitmap, format);
+    car::Rendition rendition = car::Rendition::Create(EmptyAttributeList(), data);
     rendition.width() = width;
     rendition.height() = height;
     rendition.scale() = 1.0;
-    rendition.fileName() = std::string("test.png");
+    rendition.fileName() = "test.png";
     rendition.layout() = car_rendition_value_layout_nine_part_tile;
 
-    // Add slices
+    /* Add test slices. */
     uint32_t slice_value = 0;
     for (size_t i = 0; i < 9; i++) {
         Rendition::Slice slice = { ++slice_value, ++slice_value, ++slice_value, ++slice_value };
         rendition.slices().push_back(slice);
     }
 
-    // Serialise rendition.
+    /* Serialize and deserialize rendition. */
     std::vector<uint8_t> rendition_value = rendition.write();
+    car::Rendition deserialized_rendition = car::Rendition::Load(EmptyAttributeList(), reinterpret_cast<struct car_rendition_value *>(rendition_value.data()));
 
-    // deserialize and compare
-    car::Rendition deserialized_rendition = car::Rendition::Load(attributes, reinterpret_cast<struct car_rendition_value *>(rendition_value.data()));
-    EXPECT_TRUE(deserialized_rendition.slices().size() == rendition.slices().size());
-
+    /* Verify slices are the same. */
+    EXPECT_EQ(deserialized_rendition.slices().size(), rendition.slices().size());
     for (size_t i = 0; i < rendition.slices().size(); i++) {
-        EXPECT_TRUE(deserialized_rendition.slices()[i].x == rendition.slices()[i].x);
-        EXPECT_TRUE(deserialized_rendition.slices()[i].y == rendition.slices()[i].y);
-        EXPECT_TRUE(deserialized_rendition.slices()[i].width == rendition.slices()[i].width);
-        EXPECT_TRUE(deserialized_rendition.slices()[i].height == rendition.slices()[i].height);
+        Rendition::Slice const &slice = deserialized_rendition.slices()[i];
+        Rendition::Slice const &deserialized_slice = deserialized_rendition.slices()[i];
+
+        EXPECT_EQ(deserialized_slice.x, slice.x);
+        EXPECT_EQ(deserialized_slice.y, slice.y);
+        EXPECT_EQ(deserialized_slice.width, slice.width);
+        EXPECT_EQ(deserialized_slice.height, slice.height);
     }
 }
 

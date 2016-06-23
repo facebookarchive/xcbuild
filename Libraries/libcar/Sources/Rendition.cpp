@@ -92,30 +92,30 @@ dump() const
 
     printf("Resizable: %d\n", _isResizable);
     if (_isResizable) {
-        int i = 0;
-        for (auto const &slice : _slices) {
-            printf("slice %d (%u, %u) %u x %u \n", i++, slice.x, slice.y, slice.width, slice.height);
+        for (size_t i = 0; i < _slices.size(); i++) {
+            Slice const &slice = _slices[i];
+            printf("Slice %zd: (%u, %u) %u x %u\n", i++, slice.x, slice.y, slice.width, slice.height);
         }
     }
 
-    switch(_resizeMode) {
+    switch (_resizeMode) {
         case ResizeMode::FixedSize:
-            printf("Resize mode: ResizeMode::fixedSize\n");
+            printf("Resize mode: Fixed Size\n");
             break;
         case ResizeMode::Tile:
-            printf("Resize mode: ResizeMode::tile\n");
+            printf("Resize mode: Tile\n");
             break;
         case ResizeMode::Scale:
-            printf("Resize mode: ResizeMode::scale\n");
+            printf("Resize mode: Scale\n");
             break;
         case ResizeMode::Uniform:
-            printf("Resize mode: ResizeMode::uniform\n");
+            printf("Resize mode: Uniform\n");
             break;
         case ResizeMode::HorizontalUniformVerticalScale:
-            printf("Resize mode: ResizeMode::horizontal_uniform_vertical_scale\n");
+            printf("Resize mode: Horizontal Uniform; Vertical Scale\n");
             break;
         case ResizeMode::HorizontalScaleVerticalUniform:
-            printf("Resize mode: ResizeMode::horizontal_scale_vertical_uniform\n");
+            printf("Resize mode: Horizontal Scale; Vertical Uniform\n");
             break;
     }
 
@@ -213,7 +213,7 @@ Load(
             }
             case car_rendition_info_magic_uti: {
                 struct car_rendition_info_uti *uti = (struct car_rendition_info_uti *)info_header;
-                rendition.uti() = std::string(uti->uti, uti->uti_length);
+                rendition.UTI() = std::string(uti->uti, uti->uti_length);
                 break;
             }
             case car_rendition_info_magic_bitmap_info: {
@@ -423,20 +423,16 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
         return ext::nullopt;
     }
 
+    /*
+     * If the format is already as required, nothing to do.
+     */
+    if (data->format() == Rendition::Data::Format::JPEG || data->format() == Rendition::Data::Format::Data) {
+        return data->data();
+    }
+
     // The selected algorithm, only zlib for now
     enum car_rendition_data_compression_magic compression_magic = car_rendition_data_compression_magic_zlib;
-    size_t bytes_per_pixel = 0;
-    switch (data->format()) {
-        case Rendition::Data::Format::PremultipliedBGRA8:
-            bytes_per_pixel = 4;
-            break;
-        case Rendition::Data::Format::PremultipliedGA8:
-            bytes_per_pixel = 2;
-            break;
-        case Rendition::Data::Format::JPEG:
-        case Rendition::Data::Format::Data:
-            return ext::optional<std::vector<uint8_t>>(data->data());
-    }
+    size_t bytes_per_pixel = Rendition::Data::FormatSize(data->format());
 
     size_t uncompressed_length = rendition->width() * rendition->height() * bytes_per_pixel;
     void *uncompressed_data = static_cast<void *>(data->data().data());

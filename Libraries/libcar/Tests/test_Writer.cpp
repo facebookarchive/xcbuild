@@ -57,7 +57,7 @@ TEST(Writer, TestWriter)
     writer->addFacet(facet);
 
     car::Rendition::Data::Format format = car::Rendition::Data::Format::PremultipliedBGRA8;
-    auto data = ext::optional<car::Rendition::Data>(car::Rendition::Data(test_pixels, format));
+    auto data = car::Rendition::Data(test_pixels, format);
     car::Rendition rendition = car::Rendition::Create(attributes, data);
     rendition.width() = width;
     rendition.height() = height;
