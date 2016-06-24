@@ -83,3 +83,21 @@ TEST(FSUtil, ResolveRelativePath)
     EXPECT_EQ("c/a/b", FSUtil::ResolveRelativePath("a/b", "c"));
     EXPECT_EQ("/a/b", FSUtil::ResolveRelativePath("/a/b", "/c"));
 }
+
+TEST(FSUtil, IsFileExtension)
+{
+    EXPECT_TRUE(FSUtil::IsFileExtension("", ""));
+    EXPECT_TRUE(FSUtil::IsFileExtension("a", ""));
+    EXPECT_TRUE(FSUtil::IsFileExtension("/a/b", ""));
+
+    EXPECT_TRUE(FSUtil::IsFileExtension("a/b.ext", "ext"));
+    EXPECT_TRUE(FSUtil::IsFileExtension("a/b.ext", "Ext", true));
+    EXPECT_FALSE(FSUtil::IsFileExtension("a/b.ext", "Ext", false));
+
+    EXPECT_TRUE(FSUtil::IsFileExtension("/a/b.ext", "ext"));
+    EXPECT_TRUE(FSUtil::IsFileExtension("/a/b.ext", "Ext", true));
+    EXPECT_FALSE(FSUtil::IsFileExtension("/a/b.ext", "Ext", false));
+
+    EXPECT_FALSE(FSUtil::IsFileExtension("/a/b/c.sub.ext", ""));
+    EXPECT_TRUE(FSUtil::IsFileExtension("/a/b/c.sub.ext", "ext"));
+}
