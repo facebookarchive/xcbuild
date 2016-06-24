@@ -562,7 +562,7 @@ write() const
 
     struct car_rendition_info_composition info_composition;
     info_composition.header.magic = car_rendition_info_magic_composition;
-    info_composition.header.length = sizeof(struct car_rendition_info_composition) - sizeof(struct car_rendition_info_header);;
+    info_composition.header.length = sizeof(struct car_rendition_info_composition) - sizeof(struct car_rendition_info_header);
     info_composition.blend_mode = 0;
     info_composition.opacity = 1;
 

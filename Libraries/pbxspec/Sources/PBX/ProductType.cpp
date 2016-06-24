@@ -260,7 +260,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (VTS != nullptr) {
-        _validationToolSpec = VTS->value();;
+        _validationToolSpec = VTS->value();
     }
 
     if (Cs != nullptr) {
