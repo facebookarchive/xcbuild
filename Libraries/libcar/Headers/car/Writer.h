@@ -51,14 +51,14 @@ public:
 
 public:
     /*
-     * Add a Facet
+     * Add a facet to the archive.
      */
-    void addFacet(Facet const &);
+    void addFacet(Facet const &facet);
 
     /*
-     * Add a Rendition for a Facet, allow lazy loading of data
+     * Add a rendition for a facet, allow lazy loading of data.
      */
-    void addRendition(Rendition const &);
+    void addRendition(Rendition const &rendition);
 
 public:
     /*
@@ -68,9 +68,9 @@ public:
 
 public:
     /*
-     * Serialize and write to BOM
+     * Serialize and write to BOM.
      */
-     void write();
+     void write() const;
 };
 
 }
