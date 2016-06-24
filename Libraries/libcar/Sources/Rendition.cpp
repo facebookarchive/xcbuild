@@ -94,7 +94,7 @@ dump() const
     if (_isResizable) {
         for (size_t i = 0; i < _slices.size(); i++) {
             Slice const &slice = _slices[i];
-            printf("Slice %zd: (%u, %u) %u x %u\n", i++, slice.x, slice.y, slice.width, slice.height);
+            printf("Slice %zd: (%u, %u) %u x %u\n", i, slice.x, slice.y, slice.width, slice.height);
         }
     }
 
