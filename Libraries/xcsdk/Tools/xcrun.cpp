@@ -16,6 +16,7 @@
 #include <libutil/Options.h>
 #include <libutil/Subprocess.h>
 #include <libutil/SysUtil.h>
+#include <pbxsetting/Type.h>
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
@@ -260,10 +261,10 @@ main(int argc, char **argv)
     /*
      * Parse fallback options from the environment.
      */
-    std::string toolchain = options.toolchain();
-    if (toolchain.empty()) {
+    std::string toolchainsInput = options.toolchain();
+    if (toolchainsInput.empty()) {
         if (char const *toolchains = getenv("TOOLCHAINS")) {
-            toolchain = std::string(toolchains);
+            toolchainsInput = std::string(toolchains);
         }
     }
     std::string SDK = options.SDK();
@@ -324,15 +325,22 @@ main(int argc, char **argv)
     /*
      * Determine the toolchains to use. Default to the SDK's toolchains.
      */
-    xcsdk::SDK::Toolchain::vector toolchains = target->toolchains();
-    if (!toolchain.empty()) {
+    xcsdk::SDK::Toolchain::vector toolchains;
+    if (!toolchainsInput.empty()) {
         /* If the custom toolchain exists, use it instead. */
-        if (auto TC = manager->findToolchain(toolchain)) {
-            toolchains = { TC };
-        } else {
-            fprintf(stderr, "error: unable to find toolchain '%s'\n", toolchain.c_str());
+        std::vector<std::string> toolchainTokens = pbxsetting::Type::ParseList(toolchainsInput);
+        for (std::string const &toolchainToken : toolchainTokens) {
+            if (auto TC = manager->findToolchain(toolchainToken)) {
+                toolchains.push_back(TC);
+            }
+        }
+
+        if (toolchains.empty()) {
+            fprintf(stderr, "error: unable to find toolchains in '%s'\n", toolchainsInput.c_str());
             return -1;
         }
+    } else {
+        toolchains = target->toolchains();
     }
     if (toolchains.empty()) {
         fprintf(stderr, "error: unable to find any toolchains\n");
