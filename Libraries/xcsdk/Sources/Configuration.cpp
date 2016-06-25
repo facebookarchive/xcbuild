@@ -14,6 +14,8 @@
 #include <plist/String.h>
 #include <plist/Format/Any.h>
 
+#include <unistd.h>
+ 
 using xcsdk::Configuration;
 using libutil::Filesystem;
 
@@ -26,14 +28,20 @@ Configuration(
 {
 }
 
-std::string Configuration::
-DefaultPath()
+std::vector<std::string> Configuration::
+DefaultPaths()
 {
+    std::vector<std::string> defaultPaths;
     if (char const *environmentPath = getenv("XCSDK_CONFIGURATION_PATH")) {
-        return std::string(environmentPath);
+        defaultPaths.push_back(std::string(environmentPath));
     } else {
-        return "/var/db/xcsdk_configuration.plist";
+        char const *homePath = getenv("HOME");
+        if (getuid() != 0 && homePath != nullptr) {
+            defaultPaths.push_back(std::string(homePath) + "/.xcsdk/xcsdk_configuration.plist");
+        }
+        defaultPaths.push_back("/var/db/xcsdk_configuration.plist");
     }
+    return defaultPaths;
 }
 
 static std::vector<std::string>
@@ -53,10 +61,16 @@ LoadArray(plist::Array const *array)
 }
 
 ext::optional<Configuration> Configuration::
-Load(Filesystem const *filesystem, std::string const &path)
+Load(Filesystem const *filesystem, std::vector<std::string> const &paths)
 {
     std::vector<uint8_t> contents;
-    if (!filesystem->read(&contents, path)) {
+    for (std::string const &path : paths) {
+        if (filesystem->read(&contents, path)) {
+            break;
+        }
+    }
+
+    if (contents.size() == 0) {
         return ext::nullopt;
     }
 
