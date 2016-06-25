@@ -46,14 +46,16 @@ public:
 
 public:
     /*
-     * The default path for the configuration.
+     * The default paths for the configuration.
      */
-    static std::string DefaultPath();
+    static std::vector<std::string> DefaultPaths();
 
     /*
-     * Loads a configuration from the filesystem.
+     * Loads a configuration from the filesystem given a list of
+     * possible locations. The configuration loaded is the first valid
+     * location.
      */
-    static ext::optional<Configuration> Load(libutil::Filesystem const *filesystem, std::string const &path);
+    static ext::optional<Configuration> Load(libutil::Filesystem const *filesystem, std::vector<std::string> const &paths);
 };
 
 }
