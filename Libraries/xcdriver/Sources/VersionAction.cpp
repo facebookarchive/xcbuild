@@ -46,7 +46,7 @@ Run(Filesystem const *filesystem, Options const &options)
             return 1;
         }
 
-        auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPath());
+        auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths());
         auto manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
         if (manager == nullptr) {
             fprintf(stderr, "error: unable to open developer directory\n");

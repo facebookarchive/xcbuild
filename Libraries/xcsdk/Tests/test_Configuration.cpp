@@ -29,7 +29,41 @@ TEST(Configuration, Load)
         }")),
     });
 
-    auto configuration = Configuration::Load(&filesystem, "/Configuration.plist");
+    auto configuration = Configuration::Load(&filesystem, { "/Configuration.plist" });
+    ASSERT_NE(configuration, ext::nullopt);
+    EXPECT_EQ(configuration->extraPlatformsPaths(), std::vector<std::string>({ "one", "three" }));
+    EXPECT_EQ(configuration->extraToolchainsPaths(), std::vector<std::string>({ "two", "four" }));
+}
+
+TEST(Configuration, LoadRealFile)
+{
+    auto filesystem = MemoryFilesystem({
+        MemoryFilesystem::Entry::File("Configuration.plist", Contents("{ \
+            ExtraPlatformsPaths = ( one, three ); \
+            ExtraToolchainsPaths = ( two, four ); \
+        }")),
+    });
+
+    auto configuration = Configuration::Load(&filesystem, { "/FakeConfiguration.plist", "/Configuration.plist" });
+    ASSERT_NE(configuration, ext::nullopt);
+    EXPECT_EQ(configuration->extraPlatformsPaths(), std::vector<std::string>({ "one", "three" }));
+    EXPECT_EQ(configuration->extraToolchainsPaths(), std::vector<std::string>({ "two", "four" }));
+}
+
+TEST(Configuration, LoadFirstValidFile)
+{
+    auto filesystem = MemoryFilesystem({
+        MemoryFilesystem::Entry::File("Configuration.plist", Contents("{ \
+            ExtraPlatformsPaths = ( one, three ); \
+            ExtraToolchainsPaths = ( two, four ); \
+        }")),
+        MemoryFilesystem::Entry::File("Configuration2.plist", Contents("{ \
+            ExtraPlatformsPaths = ( five, six ); \
+            ExtraToolchainsPaths = ( seven, eight ); \
+        }")),
+    });
+
+    auto configuration = Configuration::Load(&filesystem, { "/Configuration.plist", "/Configuration2.plist" });
     ASSERT_NE(configuration, ext::nullopt);
     EXPECT_EQ(configuration->extraPlatformsPaths(), std::vector<std::string>({ "one", "three" }));
     EXPECT_EQ(configuration->extraToolchainsPaths(), std::vector<std::string>({ "two", "four" }));

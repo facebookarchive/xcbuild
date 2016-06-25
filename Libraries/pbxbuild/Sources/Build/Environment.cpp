@@ -56,7 +56,7 @@ Default(Filesystem const *filesystem)
      */
     specManager->registerDomains(filesystem, pbxspec::Manager::DefaultDomains(*developerRoot));
 
-    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPath());
+    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths());
     auto sdkManager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
     if (sdkManager == nullptr) {
         fprintf(stderr, "error: couldn't create SDK manager\n");
