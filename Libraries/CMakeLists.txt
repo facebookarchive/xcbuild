@@ -7,6 +7,9 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
+set(OLD_DEFAULT_COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME libraries)
+
 add_subdirectory(acdriver)
 add_subdirectory(builtin)
 add_subdirectory(dependency)
@@ -27,4 +30,6 @@ add_subdirectory(xcformatter)
 add_subdirectory(xcscheme)
 add_subdirectory(xcsdk)
 add_subdirectory(xcworkspace)
+
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME ${OLD_DEFAULT_COMPONENT})
 
