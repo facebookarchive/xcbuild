@@ -306,7 +306,24 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         std::string infoPlistFile = environment.resolve("INFOPLIST_FILE");
         if (!infoPlistFile.empty()) {
             if (pbxsetting::Type::ParseBoolean(environment.resolve("INFOPLIST_PREPROCESS"))) {
-                // TODO(grp): Preprocess Info.plist using configuration from other build settings.
+                if (Tool::ToolResolver const *toolResolver = phaseContext->toolResolver(phaseEnvironment, "com.apple.compilers.cpp")) {
+                    std::string infoPlistIntermediate = environment.resolve("TEMP_DIR") + "/" + "Preprocessed-Info.plist";
+
+                    pbxsetting::Level level = pbxsetting::Level({
+                        pbxsetting::Setting::Create("CPP_PREPROCESSOR_DEFINITIONS", pbxsetting::Value::Variable("INFOPLIST_PREPROCESSOR_DEFINITIONS")),
+                        pbxsetting::Setting::Create("CPP_PREFIX_HEADER", pbxsetting::Value::Variable("INFOPLIST_PREFIX_HEADER")),
+                        pbxsetting::Setting::Create("CPP_OTHER_PREPROCESSOR_FLAGS", pbxsetting::Value::Variable("CPP_OTHER_PREPROCESSOR_FLAGS")),
+                    });
+
+                    pbxsetting::Environment preprocessEnvironment = environment;
+                    preprocessEnvironment.insertFront(level, false);
+                    toolResolver->resolve(&phaseContext->toolContext(), preprocessEnvironment, { infoPlistFile }, { infoPlistIntermediate });
+
+                    /* Use the preprocessed result as the input below. */
+                    infoPlistFile = std::move(infoPlistIntermediate);
+                } else {
+                    fprintf(stderr, "warning: could not find preprocessor tool\n");
+                }
             }
 
             if (Tool::InfoPlistResolver const *infoPlistResolver = phaseContext->infoPlistResolver(phaseEnvironment)) {
