@@ -10,6 +10,7 @@
 install(FILES
         com.apple.build-tasks.copy-plist-file.xcspec
         com.apple.build-tasks.copy-strings-file.xcspec
+        com.apple.build-tasks.ls-register-url.xcspec
         com.apple.compilers.assetcatalog.xcspec
         com.apple.compilers.gcc.xcspec
         com.apple.compilers.llvm.clang.1_0.compiler.xcspec
