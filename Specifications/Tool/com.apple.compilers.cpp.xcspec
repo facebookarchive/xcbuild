@@ -1,0 +1,40 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Tool;
+    Identifier = com.apple.compilers.cpp;
+    Name = "C Preprocessor";
+    CommandLine = "cpp -E -P -x c -Wno-trigraphs [input] [options] -o [output]";
+    RuleName = "Preprocess $(OutputPath) $(InputPath)";
+
+    Options = (
+        {
+            Name = "SDKROOT";
+            Type = Path;
+            CommandLineFlag = "-isysroot";
+        },
+
+        {
+            Name = "CPP_PREFIX_HEADER";
+            Type = Path;
+            CommandLineFlag = "-include";
+        },
+        {
+            Name = "CPP_PREPROCESSOR_DEFINITIONS";
+            Type = StringList;
+            CommandLinePrefixFlag = "-D";
+        },
+        {
+            Name = "CPP_OTHER_PREPROCESSOR_FLAGS";
+            Type = StringList;
+            CommandLinePrefixFlag = "";
+        },
+    );
+}

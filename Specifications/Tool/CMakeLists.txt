@@ -11,6 +11,7 @@ install(FILES
         com.apple.commands.built-in.compilation-database-generator.xcspec
         com.apple.commands.built-in.headermap-generator.xcspec
         com.apple.commands.shell-script.xcspec
+        com.apple.compilers.cpp.xcspec
         com.apple.compilers.pbxcp.xcspec
         com.apple.tools.ditto.xcspec
         com.apple.tools.dsymutil.xcspec
