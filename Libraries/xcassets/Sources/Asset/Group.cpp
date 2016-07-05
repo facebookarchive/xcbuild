@@ -24,7 +24,7 @@ load(Filesystem const *filesystem)
         return false;
     }
 
-    if (!loadChildren(filesystem, &_children)) {
+    if (!loadChildren(filesystem, &_children, _providesNamespace.value_or(false))) {
         fprintf(stderr, "error: failed to load children\n");
     }
 

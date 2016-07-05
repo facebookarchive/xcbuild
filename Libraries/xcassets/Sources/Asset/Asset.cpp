@@ -230,6 +230,7 @@ load(Filesystem const *filesystem)
      */
     std::unique_ptr<plist::Dictionary> contentsDictionary;
     std::string contentsPath = _path + "/" + "Contents.json";
+    _filesystem = filesystem;
 
     /*
      * Check if the contents file exists. Not existing is valid for some asset types.

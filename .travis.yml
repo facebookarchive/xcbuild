@@ -11,6 +11,10 @@ matrix:
     - os: linux
       dist: trusty
       compiler: gcc4.8
+      sudo: required
+      before_install:
+        - sudo apt-get install -y zlib1g-dev
+        - sudo bash .travis.linux.trusty.sh
       env:
         - CC=gcc-4.8
         - CXX=g++-4.8
@@ -38,3 +42,4 @@ matrix:
       install:
         - brew reinstall cmake
         - brew reinstall ninja
+        - brew reinstall libpng
