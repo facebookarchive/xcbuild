@@ -20,11 +20,11 @@ add_library(xcsdk SHARED
 
 target_link_libraries(xcsdk PUBLIC pbxsetting util plist)
 target_include_directories(xcsdk PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-XCBUILD_INSTALL_TARGET(xcsdk)
+XCBUILD_INSTALL_TARGET(xcsdk USER) # Used by xcrun.
 
 add_executable(xcrun Tools/xcrun.cpp)
 target_link_libraries(xcrun xcsdk util)
-XCBUILD_INSTALL_TARGET(xcrun)
+XCBUILD_INSTALL_TARGET(xcrun USER)
 
 add_executable(xcode-select Tools/xcode-select.cpp)
 target_link_libraries(xcode-select xcsdk util)

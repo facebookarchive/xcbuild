@@ -12,6 +12,7 @@
 #include <xcsdk/SDK/Manager.h>
 #include <xcsdk/SDK/Toolchain.h>
 #include <libutil/DefaultFilesystem.h>
+#include <libutil/FSUtil.h>
 #include <libutil/Filesystem.h>
 #include <libutil/Options.h>
 #include <libutil/Subprocess.h>
@@ -103,8 +104,12 @@ public:
     { return _toolchain; }
 
 public:
+    std::string &tool()
+    { return _tool; }
     std::string const &tool() const
     { return _tool; }
+    std::vector<std::string> &args()
+    { return _args; }
     std::vector<std::string> const &args() const
     { return _args; }
 
@@ -236,15 +241,25 @@ Version()
 int
 main(int argc, char **argv)
 {
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-
     /*
      * Parse out the options, or print help & exit.
      */
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
-    if (!result.first) {
-        return Help(result.second);
+
+    {
+        std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+        std::string xcrunBaseName = libutil::FSUtil::GetBaseName(argv[0]);
+        /* HACK(strager): There must be a better way. */
+        bool isXcrun = xcrunBaseName == "xcrun";
+        if (isXcrun) {
+            std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+            if (!result.first) {
+                return Help(result.second);
+            }
+        } else {
+            options.tool() = std::move(xcrunBaseName);
+            options.args() = std::move(args);
+        }
     }
 
     /*
