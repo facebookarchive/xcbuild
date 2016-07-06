@@ -20,4 +20,4 @@ install(FILES
         com.apple.tools.plutil.xcspec
         com.apple.tools.symlink.xcspec
         com.apple.tools.touch.xcspec
-        DESTINATION Library/Xcode/Specifications)
+        DESTINATION ${XCBUILD_INSTALL_DEVELOPER_DIR}/Library/Xcode/Specifications)

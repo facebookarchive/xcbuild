@@ -42,7 +42,7 @@ XCBUILD_INSTALL_TARGET(xcbuild)
 add_custom_command(TARGET xcbuild
                    COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE_NAME:xcbuild> $<TARGET_FILE_DIR:xcbuild>/xcodebuild
                    DEPENDS $<TARGET_FILE:xcbuild>)
-install(FILES $<TARGET_FILE_DIR:xcbuild>/xcodebuild DESTINATION usr/bin)
+install(FILES $<TARGET_FILE_DIR:xcbuild>/xcodebuild DESTINATION ${XCBUILD_INSTALL_DEVELOPER_DIR}/usr/bin)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(xcdriver Options Tests/test_Options.cpp)

@@ -13,4 +13,4 @@ install(FILES
         com.apple.build-system.jam.xcspec
         com.apple.build-system.native.xcspec
         com.apple.buildsettings.standard.xcspec
-        DESTINATION Library/Xcode/Specifications)
+        DESTINATION ${XCBUILD_INSTALL_DEVELOPER_DIR}/Library/Xcode/Specifications)

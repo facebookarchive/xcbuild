@@ -15,4 +15,4 @@ install(FILES
         com.apple.compilers.gcc.xcspec
         com.apple.compilers.llvm.clang.1_0.compiler.xcspec
         com.apple.compilers.llvm.clang.1_0.xcspec
-        DESTINATION Library/Xcode/Specifications)
+        DESTINATION ${XCBUILD_INSTALL_DEVELOPER_DIR}/Library/Xcode/Specifications)

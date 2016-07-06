@@ -9,4 +9,4 @@
 
 install(FILES
         BuiltInBuildRules.plist
-        DESTINATION Library/Xcode/Specifications)
+        DESTINATION ${XCBUILD_INSTALL_DEVELOPER_DIR}/Library/Xcode/Specifications)
