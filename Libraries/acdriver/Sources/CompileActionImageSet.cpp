@@ -259,12 +259,13 @@ assetIdiomToRenditionIdiom(xcassets::Slot::Idiom assetIdiom)
 
 bool
 CompileAsset(
-    std::shared_ptr<xcassets::Asset::Catalog> const &catalog,
+    xcassets::Asset::ImageSet::Image const &image,
+    std::shared_ptr<xcassets::Asset::Asset> const &parent,
+    libutil::Filesystem *filesystem,
     Options const &options,
     CompileOutput *compileOutput,
-    Result *result,
-    std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    xcassets::Asset::ImageSet::Image const &image)
+    Result *result
+    )
 {
     static std::map<std::string, uint16_t> idMap = {};
 
@@ -296,7 +297,7 @@ CompileAsset(
 
     if (FSUtil::IsFileExtension(filename, "png", true)) {
         std::vector<uint8_t> contents;
-        if (!catalog->filesystem() || !catalog->filesystem()->read(&contents, filename)) {
+        if (!filesystem || !filesystem->read(&contents, filename)) {
             result->normal(
                 Result::Severity::Error,
                 "unable to open PNG file",

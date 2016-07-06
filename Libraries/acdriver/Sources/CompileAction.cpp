@@ -64,27 +64,27 @@ CompileAction::
 
 static bool
 CompileAsset(
-    std::shared_ptr<xcassets::Asset::Catalog> const &catalog,
+    std::shared_ptr<xcassets::Asset::Asset> const &asset,
+    std::shared_ptr<xcassets::Asset::Asset> const &parent,
+    Filesystem *filesystem,
     Options const &options,
     CompileOutput *compileOutput,
-    Result *result,
-    std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    std::shared_ptr<xcassets::Asset::Asset> const &asset);
+    Result *result);
 
 template<typename T>
 static bool
 CompileChildren(
-    std::shared_ptr<xcassets::Asset::Catalog> const &catalog,
+    std::vector<T> const &assets,
+    std::shared_ptr<xcassets::Asset::Asset> const &parent,
+    Filesystem *filesystem,
     Options const &options,
     CompileOutput *compileOutput,
-    Result *result,
-    std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    std::vector<T> const &assets)
+    Result *result)
 {
     bool success = true;
 
     for (auto const &asset : assets) {
-        if (!CompileAsset(catalog, options, compileOutput, result, parent, asset)) {
+        if (!CompileAsset(asset, parent, filesystem, options, compileOutput, result)) {
             success = false;
         }
     }
@@ -154,12 +154,13 @@ CompileAppIconSet(std::shared_ptr<xcassets::Asset::AppIconSet> const &appIconSet
 
 static bool
 CompileAsset(
-    std::shared_ptr<xcassets::Asset::Catalog> const &catalog,
+    std::shared_ptr<xcassets::Asset::Asset> const &asset,
+    std::shared_ptr<xcassets::Asset::Asset> const &parent,
+    // std::shared_ptr<xcassets::Asset::Catalog> const &catalog,
+    Filesystem *filesystem,
     Options const &options,
     CompileOutput *compileOutput,
-    Result *result,
-    std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    std::shared_ptr<xcassets::Asset::Asset> const &asset)
+    Result *result)
 {
     std::string filename = FSUtil::GetBaseName(asset->path());
     std::string name = FSUtil::GetBaseNameWithoutExtension(filename);
@@ -173,71 +174,71 @@ CompileAsset(
         }
         case xcassets::Asset::AssetType::BrandAssets: {
             auto brandAssets = std::static_pointer_cast<xcassets::Asset::BrandAssets>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "brand assets not yet supported");
-            CompileChildren(catalog, options, compileOutput, result, asset, brandAssets->children());
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "brand assets not yet supported");
+            CompileChildren(brandAssets->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::Catalog: {
             auto catalog = std::static_pointer_cast<xcassets::Asset::Catalog>(asset);
-            CompileChildren(catalog, options, compileOutput, result, asset, catalog->children());
+            CompileChildren(catalog->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ComplicationSet: {
             auto complicationSet = std::static_pointer_cast<xcassets::Asset::ComplicationSet>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "complication set not yet supported");
-            CompileChildren(catalog, options, compileOutput, result, asset, complicationSet->children());
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "complication set not yet supported");
+            CompileChildren(complicationSet->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::DataSet: {
             auto dataSet = std::static_pointer_cast<xcassets::Asset::DataSet>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "data set not yet supported");
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "data set not yet supported");
             break;
         }
         case xcassets::Asset::AssetType::GCDashboardImage: {
             auto dashboardImage = std::static_pointer_cast<xcassets::Asset::GCDashboardImage>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "gc dashboard image not yet supported");
-            CompileChildren(catalog, options, compileOutput, result, asset, dashboardImage->children());
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "gc dashboard image not yet supported");
+            CompileChildren(dashboardImage->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboard: {
             auto leaderboard = std::static_pointer_cast<xcassets::Asset::GCLeaderboard>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "gc leaderboard not yet supported");
-            CompileChildren(catalog, options, compileOutput, result, asset, leaderboard->children());
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "gc leaderboard not yet supported");
+            CompileChildren(leaderboard->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboardSet: {
             auto leaderboardSet = std::static_pointer_cast<xcassets::Asset::GCLeaderboardSet>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "gc leaderboard set not yet supported");
-            CompileChildren(catalog, options, compileOutput, result, asset, leaderboardSet->children());
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "gc leaderboard set not yet supported");
+            CompileChildren(leaderboardSet->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::Group: {
             auto group = std::static_pointer_cast<xcassets::Asset::Group>(asset);
-            CompileChildren(catalog, options, compileOutput, result, asset, group->children());
+            CompileChildren(group->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::IconSet: {
             auto iconSet = std::static_pointer_cast<xcassets::Asset::IconSet>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "icon set not yet supported");
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "icon set not yet supported");
             break;
         }
         case xcassets::Asset::AssetType::ImageSet: {
             auto imageSet = std::static_pointer_cast<xcassets::Asset::ImageSet>(asset);
             if (imageSet->images()) {
-                CompileChildren(catalog, options, compileOutput, result, asset, *imageSet->images());
+                CompileChildren(*imageSet->images(), asset, filesystem, options, compileOutput, result);
             }
             break;
         }
         case xcassets::Asset::AssetType::ImageStack: {
             auto imageStack = std::static_pointer_cast<xcassets::Asset::ImageStack>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "image stack not yet supported");
-            CompileChildren(catalog, options, compileOutput, result, asset, imageStack->children());
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "image stack not yet supported");
+            CompileChildren(imageStack->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageStackLayer: {
             auto imageStackLayer = std::static_pointer_cast<xcassets::Asset::ImageStackLayer>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "image stack layer not yet supported");
-            // TODO: CompileChildren(catalog, options, compileOutput, result, asset, imageStackLayer->children());
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "image stack layer not yet supported");
+            // TODO: CompileChildren(imageStackLayer->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::LaunchImage: {
@@ -245,13 +246,13 @@ CompileAsset(
             if (launchImage->name().name() == options.launchImage()) {
 
             }
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "launch image not yet supported");
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "launch image not yet supported");
             break;
         }
         case xcassets::Asset::AssetType::SpriteAtlas: {
             auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
-            result->document(Result::Severity::Warning, catalog->path(), { AssetReference(asset) }, "Not Implemented", "sprite atlas not yet supported");
-            CompileChildren(catalog, options, compileOutput, result, asset, spriteAtlas->children());
+            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "sprite atlas not yet supported");
+            CompileChildren(spriteAtlas->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
     }
@@ -321,7 +322,7 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
             continue;
         }
 
-        if (!CompileAsset(catalog, options, &compileOutput, result, catalog, catalog)) {
+        if (!CompileAsset(catalog, catalog, filesystem, options, &compileOutput, result)) {
             /* Error already printed. */
             continue;
         }

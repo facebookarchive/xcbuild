@@ -29,7 +29,6 @@ class Asset {
 private:
     FullyQualifiedName         _name;
     std::string                _path;
-    libutil::Filesystem const *_filesystem;
 
 private:
     ext::optional<std::string> _author;
@@ -57,9 +56,6 @@ public:
      */
     FullyQualifiedName const &name()
     { return _name; }
-
-    libutil::Filesystem const *filesystem()
-    { return _filesystem; }
 
 public:
     ext::optional<std::string> const &author()

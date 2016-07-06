@@ -20,9 +20,9 @@
 
 bool
 CompileAsset(
-    std::shared_ptr<xcassets::Asset::Catalog> const &catalog,
+    xcassets::Asset::ImageSet::Image const &image,
+    std::shared_ptr<xcassets::Asset::Asset> const &parent,
+    libutil::Filesystem *filesystem,
     acdriver::Options const &options,
     acdriver::CompileOutput *compileOutput,
-    acdriver::Result *result,
-    std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    xcassets::Asset::ImageSet::Image const &image);
+    acdriver::Result *result);
