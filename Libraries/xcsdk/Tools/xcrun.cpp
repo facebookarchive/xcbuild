@@ -416,7 +416,7 @@ main(int argc, char **argv)
              * Update effective environment to include the target path.
              */
             std::unordered_map<std::string, std::string> environment = SysUtil::EnvironmentVariables();
-            environment["SYSROOT"] = target->path();
+            environment["SDKROOT"] = target->path();
 
             if (log) {
                 printf("env SDKROOT=%s %s\n", target->path().c_str(), executable->c_str());
