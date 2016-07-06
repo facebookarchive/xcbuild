@@ -51,43 +51,43 @@ endif ()
 
 target_link_libraries(builtin PUBLIC util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
 target_include_directories(builtin PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-install(TARGETS builtin DESTINATION usr/lib)
+XCBUILD_INSTALL_TARGET(builtin)
 
 add_executable(builtin-copy Tools/copy.cpp)
 target_link_libraries(builtin-copy builtin)
-install(TARGETS builtin-copy DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(builtin-copy)
 
 add_executable(builtin-copyPlist Tools/copyPlist.cpp)
 target_link_libraries(builtin-copyPlist builtin)
-install(TARGETS builtin-copyPlist DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(builtin-copyPlist)
 
 add_executable(builtin-copyStrings Tools/copyStrings.cpp)
 target_link_libraries(builtin-copyStrings builtin)
-install(TARGETS builtin-copyStrings DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(builtin-copyStrings)
 
 add_executable(builtin-copyTiff Tools/copyTiff.cpp)
 target_link_libraries(builtin-copyTiff builtin)
-install(TARGETS builtin-copyTiff DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(builtin-copyTiff)
 
 add_executable(builtin-infoPlistUtility Tools/infoPlistUtility.cpp)
 target_link_libraries(builtin-infoPlistUtility builtin)
-install(TARGETS builtin-infoPlistUtility DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(builtin-infoPlistUtility)
 
 add_executable(builtin-lsRegisterURL Tools/lsRegisterURL.cpp)
 target_link_libraries(builtin-lsRegisterURL builtin)
-install(TARGETS builtin-lsRegisterURL DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(builtin-lsRegisterURL)
 
 add_executable(builtin-productPackagingUtility Tools/productPackagingUtility.cpp)
 target_link_libraries(builtin-productPackagingUtility builtin)
-install(TARGETS builtin-productPackagingUtility DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(builtin-productPackagingUtility)
 
 add_executable(builtin-validationUtility Tools/validationUtility.cpp)
 target_link_libraries(builtin-validationUtility builtin)
-install(TARGETS builtin-validationUtility DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(builtin-validationUtility)
 
 add_executable(builtin-embeddedBinaryValidationUtility Tools/embeddedBinaryValidationUtility.cpp)
 target_link_libraries(builtin-embeddedBinaryValidationUtility builtin)
-install(TARGETS builtin-embeddedBinaryValidationUtility DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(builtin-embeddedBinaryValidationUtility)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(builtin copyStrings Tests/test_copyStrings.cpp)

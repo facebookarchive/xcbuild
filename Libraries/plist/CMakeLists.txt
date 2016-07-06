@@ -60,14 +60,14 @@ find_package(LibXml2 REQUIRED)
 target_include_directories(plist PRIVATE "${LIBXML2_INCLUDE_DIR}")
 target_link_libraries(plist PUBLIC ${LIBXML2_LIBRARIES})
 # TODO: Should we use the definitions from https://cmake.org/cmake/help/v3.0/module/FindLibXml2.html?
-install(TARGETS plist DESTINATION usr/lib)
+XCBUILD_INSTALL_TARGET(plist)
 
 target_include_directories(plist PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
 
 add_executable(plutil Tools/plutil.cpp)
 target_link_libraries(plutil plist util)
-install(TARGETS plutil DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(plutil)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(plist Boolean Tests/test_Boolean.cpp)

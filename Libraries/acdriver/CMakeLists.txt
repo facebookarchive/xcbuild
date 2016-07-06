@@ -20,12 +20,11 @@ add_library(acdriver SHARED
 
 target_link_libraries(acdriver PUBLIC xcassets util plist dependency ext bom car ${PNG_LIBRARIES})
 target_include_directories(acdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-
-install(TARGETS acdriver DESTINATION usr/lib)
+XCBUILD_INSTALL_TARGET(acdriver)
 
 add_executable(actool Tools/actool.cpp)
 target_link_libraries(actool PRIVATE acdriver)
-install(TARGETS actool DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(actool)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(acdriver Options Tests/test_Options.cpp)
