@@ -25,7 +25,7 @@ add_library(util SHARED
 
 target_link_libraries(util PUBLIC ext)
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-install(TARGETS util DESTINATION usr/lib)
+XCBUILD_INSTALL_TARGET(util USER) # Used by xcrun.
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(util MemoryFilesystem Tests/test_MemoryFilesystem.cpp)

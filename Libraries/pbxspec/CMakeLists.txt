@@ -31,7 +31,7 @@ add_library(pbxspec SHARED
 target_link_libraries(pbxspec PUBLIC pbxsetting util plist ext)
 target_include_directories(pbxspec PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(pbxspec PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
-install(TARGETS pbxspec DESTINATION usr/lib)
+XCBUILD_INSTALL_TARGET(pbxspec)
 
 add_executable(dump_xcspec Tools/dump_xcspec.cpp)
 target_link_libraries(dump_xcspec pbxspec)

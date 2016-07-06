@@ -12,6 +12,7 @@
 #include <xcsdk/SDK/Manager.h>
 #include <xcsdk/SDK/Toolchain.h>
 #include <libutil/DefaultFilesystem.h>
+#include <libutil/FSUtil.h>
 #include <libutil/Filesystem.h>
 #include <libutil/Options.h>
 #include <libutil/Subprocess.h>
@@ -103,8 +104,12 @@ public:
     { return _toolchain; }
 
 public:
+    std::string &tool()
+    { return _tool; }
     std::string const &tool() const
     { return _tool; }
+    std::vector<std::string> &args()
+    { return _args; }
     std::vector<std::string> const &args() const
     { return _args; }
 
@@ -236,15 +241,25 @@ Version()
 int
 main(int argc, char **argv)
 {
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-
     /*
      * Parse out the options, or print help & exit.
      */
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
-    if (!result.first) {
-        return Help(result.second);
+
+    {
+        std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+        std::string xcrunBaseName = libutil::FSUtil::GetBaseName(argv[0]);
+        /* HACK(strager): There must be a better way. */
+        bool isXcrun = xcrunBaseName == "xcrun";
+        if (isXcrun) {
+            std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+            if (!result.first) {
+                return Help(result.second);
+            }
+        } else {
+            options.tool() = std::move(xcrunBaseName);
+            options.args() = std::move(args);
+        }
     }
 
     /*
@@ -314,75 +329,52 @@ main(int argc, char **argv)
      * Determine the SDK to use.
      */
     xcsdk::SDK::Target::shared_ptr target = manager->findTarget(SDK);
-    if (target == nullptr) {
-        fprintf(stderr, "error: unable to find sdk '%s'\n", SDK.c_str());
-        return -1;
-    }
     if (verbose) {
-        fprintf(stderr, "verbose: using sdk '%s': %s\n", target->canonicalName().c_str(), target->path().c_str());
-    }
-
-    /*
-     * Determine the toolchains to use. Default to the SDK's toolchains.
-     */
-    xcsdk::SDK::Toolchain::vector toolchains;
-    if (!toolchainsInput.empty()) {
-        /* If the custom toolchain exists, use it instead. */
-        std::vector<std::string> toolchainTokens = pbxsetting::Type::ParseList(toolchainsInput);
-        for (std::string const &toolchainToken : toolchainTokens) {
-            if (auto TC = manager->findToolchain(toolchainToken)) {
-                toolchains.push_back(TC);
-            }
+        if (target == nullptr) {
+            fprintf(stderr, "verbose: using no sdk\n");
+        } else {
+            fprintf(stderr, "verbose: using sdk '%s': %s\n", target->canonicalName().c_str(), target->path().c_str());
         }
-
-        if (toolchains.empty()) {
-            fprintf(stderr, "error: unable to find toolchains in '%s'\n", toolchainsInput.c_str());
-            return -1;
-        }
-    } else {
-        toolchains = target->toolchains();
-    }
-    if (toolchains.empty()) {
-        fprintf(stderr, "error: unable to find any toolchains\n");
-        return -1;
-    }
-    if (verbose) {
-        fprintf(stderr, "verbose: using toolchain(s):");
-        for (xcsdk::SDK::Toolchain::shared_ptr const &toolchain : toolchains) {
-            fprintf(stderr, " '%s'", toolchain->identifier().c_str());
-        }
-        fprintf(stderr, "\n");
     }
 
     /*
      * Perform actions.
      */
-    if (options.showSDKPath()) {
-        printf("%s\n", target->path().c_str());
-        return 0;
-    } else if (options.showSDKVersion()) {
-        printf("%s\n", target->path().c_str());
-        return 0;
-    } else if (options.showSDKBuildVersion()) {
-        if (auto product = target->product()) {
-            printf("%s\n", product->buildVersion().c_str());
+    if (options.showSDKPath() || options.showSDKVersion() || options.showSDKBuildVersion() || options.showSDKPlatformPath() || options.showSDKPlatformVersion()) {
+        if (target == nullptr) {
+            fprintf(stderr, "error: unable to find sdk '%s'\n", SDK.c_str());
+            return -1;
+        }
+        if (options.showSDKPath()) {
+            printf("%s\n", target->path().c_str());
             return 0;
+        } else if (options.showSDKVersion()) {
+            printf("%s\n", target->path().c_str());
+            return 0;
+        } else if (options.showSDKBuildVersion()) {
+            if (auto product = target->product()) {
+                printf("%s\n", product->buildVersion().c_str());
+                return 0;
+            } else {
+                fprintf(stderr, "error: sdk has no build version\n");
+                return -1;
+            }
+        } else if (options.showSDKPlatformPath()) {
+            if (auto platform = target->platform()) {
+                printf("%s\n", platform->path().c_str());
+            } else {
+                fprintf(stderr, "error: sdk has no platform\n");
+                return -1;
+            }
+        } else if (options.showSDKPlatformVersion()) {
+            if (auto platform = target->platform()) {
+                printf("%s\n", platform->version().c_str());
+            } else {
+                fprintf(stderr, "error: sdk has no platform\n");
+                return -1;
+            }
         } else {
-            fprintf(stderr, "error: sdk has no build version\n");
-            return -1;
-        }
-    } else if (options.showSDKPlatformPath()) {
-        if (auto platform = target->platform()) {
-            printf("%s\n", platform->path().c_str());
-        } else {
-            fprintf(stderr, "error: sdk has no platform\n");
-            return -1;
-        }
-    } else if (options.showSDKPlatformVersion()) {
-        if (auto platform = target->platform()) {
-            printf("%s\n", platform->version().c_str());
-        } else {
-            fprintf(stderr, "error: sdk has no platform\n");
+            assert(false);
             return -1;
         }
     } else {
@@ -391,9 +383,49 @@ main(int argc, char **argv)
         }
 
         /*
+         * Determine the toolchains to use. Default to the SDK's toolchains.
+         */
+        xcsdk::SDK::Toolchain::vector toolchains;
+        if (!toolchainsInput.empty()) {
+            /* If the custom toolchain exists, use it instead. */
+            std::vector<std::string> toolchainTokens = pbxsetting::Type::ParseList(toolchainsInput);
+            for (std::string const &toolchainToken : toolchainTokens) {
+                if (auto TC = manager->findToolchain(toolchainToken)) {
+                    toolchains.push_back(TC);
+                }
+            }
+
+            if (toolchains.empty()) {
+                fprintf(stderr, "error: unable to find toolchains in '%s'\n", toolchainsInput.c_str());
+                return -1;
+            }
+        } else if (target != nullptr) {
+            toolchains = target->toolchains();
+        }
+        if (target != nullptr && toolchains.empty()) {
+            fprintf(stderr, "error: unable to find any toolchains\n");
+            return -1;
+        }
+        if (verbose) {
+            fprintf(stderr, "verbose: using toolchain(s):");
+            for (xcsdk::SDK::Toolchain::shared_ptr const &toolchain : toolchains) {
+                fprintf(stderr, " '%s'", toolchain->identifier().c_str());
+            }
+            fprintf(stderr, "\n");
+        }
+
+        /*
          * Find the tool to execute in the SDK or toolchains.
          */
-        std::vector<std::string> executablePaths = target->executablePaths(toolchains);
+        std::vector<std::string> executablePaths;
+        if (target == nullptr) {
+            /* HACK(strager) */
+            xcsdk::SDK::Target t;
+            t._manager = manager;
+            executablePaths = t.executablePaths(toolchains);
+        } else {
+            executablePaths = target->executablePaths(toolchains);
+        }
         ext::optional<std::string> executable = filesystem->findExecutable(options.tool(), executablePaths);
         if (!executable) {
             fprintf(stderr, "error: tool '%s' not found\n", options.tool().c_str());
@@ -416,10 +448,12 @@ main(int argc, char **argv)
              * Update effective environment to include the target path.
              */
             std::unordered_map<std::string, std::string> environment = SysUtil::EnvironmentVariables();
-            environment["SYSROOT"] = target->path();
+            if (target != nullptr) {
+                environment["SYSROOT"] = target->path();
 
-            if (log) {
-                printf("env SDKROOT=%s %s\n", target->path().c_str(), executable->c_str());
+                if (log) {
+                    printf("env SDKROOT=%s %s\n", target->path().c_str(), executable->c_str());
+                }
             }
 
             /*

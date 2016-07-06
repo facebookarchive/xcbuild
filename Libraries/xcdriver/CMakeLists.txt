@@ -33,16 +33,16 @@ target_include_directories(xcdriver PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
 target_link_libraries(xcdriver PUBLIC xcexecution xcformatter pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
 target_include_directories(xcdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-install(TARGETS xcdriver DESTINATION usr/lib)
+XCBUILD_INSTALL_TARGET(xcdriver)
 
 add_executable(xcbuild Tools/xcbuild.cpp)
 target_link_libraries(xcbuild xcdriver)
-install(TARGETS xcbuild DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(xcbuild)
 
 add_custom_command(TARGET xcbuild
                    COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE_NAME:xcbuild> $<TARGET_FILE_DIR:xcbuild>/xcodebuild
                    DEPENDS $<TARGET_FILE:xcbuild>)
-install(FILES $<TARGET_FILE_DIR:xcbuild>/xcodebuild DESTINATION usr/bin)
+install(FILES $<TARGET_FILE_DIR:xcbuild>/xcodebuild DESTINATION ${XCBUILD_INSTALL_DEVELOPER_DIR}/usr/bin)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(xcdriver Options Tests/test_Options.cpp)

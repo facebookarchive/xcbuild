@@ -15,11 +15,11 @@ add_library(bom SHARED
 
 target_link_libraries(bom PUBLIC)
 target_include_directories(bom PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-install(TARGETS bom DESTINATION usr/lib)
+XCBUILD_INSTALL_TARGET(bom)
 
 add_executable(lsbom Tools/lsbom.cpp)
 target_link_libraries(lsbom PRIVATE util bom)
-install(TARGETS lsbom DESTINATION usr/bin)
+XCBUILD_INSTALL_TARGET(lsbom)
 
 add_executable(dump_bom Tools/dump_bom.c)
 target_link_libraries(dump_bom PRIVATE bom)

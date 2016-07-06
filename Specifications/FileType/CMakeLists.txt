@@ -178,4 +178,4 @@ install(FILES
         wrapper.xcmappingmodel.xcspec
         wrapper.xcspec
         wrapper.xpc-service.xcspec
-        DESTINATION Library/Xcode/Specifications)
+        DESTINATION ${XCBUILD_INSTALL_DEVELOPER_DIR}/Library/Xcode/Specifications)

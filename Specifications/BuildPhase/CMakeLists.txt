@@ -17,4 +17,4 @@ install(FILES
         com.apple.buildphase.rez.xcspec
         com.apple.buildphase.shellscript.xcspec
         com.apple.buildphase.sources.xcspec
-        DESTINATION Library/Xcode/Specifications)
+        DESTINATION ${XCBUILD_INSTALL_DEVELOPER_DIR}/Library/Xcode/Specifications)

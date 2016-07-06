@@ -14,4 +14,4 @@ add_library(xcformatter SHARED
 
 target_link_libraries(xcformatter PUBLIC pbxbuild pbxproj pbxsetting)
 target_include_directories(xcformatter PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-install(TARGETS xcformatter DESTINATION usr/lib)
+XCBUILD_INSTALL_TARGET(xcformatter)

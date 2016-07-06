@@ -32,7 +32,7 @@ public:
     typedef std::weak_ptr <Target> weak_ptr;
     typedef std::vector <shared_ptr> vector;
 
-protected:
+public:
     std::weak_ptr<Manager>  _manager;
     std::weak_ptr<Platform> _platform;
 

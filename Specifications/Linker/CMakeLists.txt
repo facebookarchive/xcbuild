@@ -11,4 +11,4 @@ install(FILES
         com.apple.pbx.linkers.ld.xcspec
         com.apple.pbx.linkers.libtool.xcspec
         com.apple.xcode.linkers.lipo.xcspec
-        DESTINATION Library/Xcode/Specifications)
+        DESTINATION ${XCBUILD_INSTALL_DEVELOPER_DIR}/Library/Xcode/Specifications)
