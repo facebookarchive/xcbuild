@@ -156,7 +156,6 @@ static bool
 CompileAsset(
     std::shared_ptr<xcassets::Asset::Asset> const &asset,
     std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    // std::shared_ptr<xcassets::Asset::Catalog> const &catalog,
     Filesystem *filesystem,
     Options const &options,
     CompileOutput *compileOutput,
