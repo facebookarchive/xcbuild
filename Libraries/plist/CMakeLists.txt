@@ -56,14 +56,11 @@ add_library(plist SHARED
             Sources/Format/Any.cpp
             )
 
-find_package(LibXml2 REQUIRED)
-target_include_directories(plist PRIVATE "${LIBXML2_INCLUDE_DIR}")
-target_link_libraries(plist PUBLIC ${LIBXML2_LIBRARIES})
-# TODO: Should we use the definitions from https://cmake.org/cmake/help/v3.0/module/FindLibXml2.html?
 install(TARGETS plist DESTINATION usr/lib)
 
 target_include_directories(plist PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
+TARGET_USE_LIBXML2(plist)
 
 add_executable(plutil Tools/plutil.cpp)
 target_link_libraries(plutil plist util)

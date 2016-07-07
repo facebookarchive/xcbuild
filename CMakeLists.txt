@@ -47,20 +47,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_CXX_COMPILER_VERS
   add_compile_options(-fdiagnostics-color)
 endif ()
 
-# Enable unit testing.
-include(CTest)
-
-if (BUILD_TESTING)
-  add_subdirectory(ThirdParty/googletest/googletest)
-
-  function (ADD_UNIT_GTEST LIBRARY NAME SOURCES)
-    set(TARGET_NAME "test_${LIBRARY}_${NAME}")
-    add_executable("${TARGET_NAME}" ${SOURCES})
-    target_link_libraries("${TARGET_NAME}" PRIVATE "${LIBRARY}" gtest gtest_main)
-    target_include_directories("${TARGET_NAME}" PRIVATE "${CMAKE_SOURCE_DIR}/ThirdParty/googletest/googletest/include")
-    add_test(NAME "${TARGET_NAME}" COMMAND "${TARGET_NAME}")
-  endfunction ()
-endif ()
+include(CMake/GTest.cmake)
+include(CMake/libpng.cmake)
+include(CMake/libxml2.cmake)
 
 add_subdirectory(Libraries)
 add_subdirectory(Specifications)

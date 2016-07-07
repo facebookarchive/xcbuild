@@ -19,12 +19,9 @@ add_library(acdriver SHARED
             Sources/ContentsAction.cpp
             )
 
-find_package(PNG REQUIRED)
-
-target_link_libraries(acdriver PUBLIC xcassets util plist dependency ext bom car ${PNG_LIBRARIES})
+target_link_libraries(acdriver PUBLIC xcassets util plist dependency ext bom car)
 target_include_directories(acdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-target_include_directories(acdriver PRIVATE ${PNG_INCLUDE_DIRS})
-set_target_properties(acdriver PROPERTIES COMPILE_DEFINITIONS "${PNG_DEFINITIONS}")
+TARGET_USE_LIBPNG(acdriver)
 
 install(TARGETS acdriver DESTINATION usr/lib)
 
