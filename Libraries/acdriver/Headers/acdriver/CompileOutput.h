@@ -7,6 +7,9 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+#ifndef __acdriver_CompileOutput_h
+#define __acdriver_CompileOutput_h
+
 #include <plist/Dictionary.h>
 #include <dependency/BinaryDependencyInfo.h>
 #include <car/Writer.h>
@@ -16,9 +19,6 @@
 #include <utility>
 #include <vector>
 #include <ext/optional>
-
-#ifndef __acdriver_CompileOutput_h
-#define __acdriver_CompileOutput_h
 
 namespace libutil { class Filesystem; }
 

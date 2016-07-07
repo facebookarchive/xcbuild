@@ -7,22 +7,45 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+#ifndef __acdriver_CompileActionImageSet_h
+#define __acdriver_CompileActionImageSet_h
+
 #include <acdriver/CompileOutput.h>
 #include <acdriver/Result.h>
 
-#include <ext/optional>
-#include <car/Writer.h>
-
-#include <xcassets/Asset/Catalog.h>
+#include <xcassets/Asset/Asset.h>
 #include <xcassets/Asset/ImageSet.h>
 
-#include <string>
+#include <memory>
 
-bool
-CompileAsset(
-    xcassets::Asset::ImageSet::Image const &image,
-    std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    libutil::Filesystem *filesystem,
-    acdriver::Options const &options,
-    acdriver::CompileOutput *compileOutput,
-    acdriver::Result *result);
+namespace acdriver {
+
+class CompileOutput;
+class Options;
+class Result;
+
+class CompileActionImageSet {
+private:
+    CompileActionImageSet();
+    ~CompileActionImageSet();
+
+public:
+    static bool Compile(
+        std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
+        libutil::Filesystem *filesystem,
+        Options const &options,
+        CompileOutput *compileOutput,
+        Result *result);
+
+    static bool CompileAsset(
+        std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
+        xcassets::Asset::ImageSet::Image const &image,
+        libutil::Filesystem *filesystem,
+        Options const &options,
+        CompileOutput *compileOutput,
+        Result *result);
+};
+
+}
+
+#endif // !__acdriver_CompileActionImageSet_h

@@ -42,6 +42,7 @@
 #include <plist/String.h>
 
 using acdriver::CompileAction;
+using acdriver::CompileActionImageSet;
 using acdriver::CompileOutput;
 using acdriver::Options;
 using acdriver::Output;
@@ -223,9 +224,7 @@ CompileAsset(
         }
         case xcassets::Asset::AssetType::ImageSet: {
             auto imageSet = std::static_pointer_cast<xcassets::Asset::ImageSet>(asset);
-            if (imageSet->images()) {
-                CompileChildren(*imageSet->images(), asset, filesystem, options, compileOutput, result);
-            }
+            CompileActionImageSet::Compile(imageSet, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageStack: {
