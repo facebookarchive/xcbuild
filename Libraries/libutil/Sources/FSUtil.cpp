@@ -276,8 +276,8 @@ EnumerateRecursive(std::string const &path, std::function <bool(std::string cons
     return true;
 }
 
-std::string FSUtil::
-FindExecutable(std::string const &name)
+std::vector<std::string> FSUtil::
+GetExecutablePaths()
 {
     std::vector<std::string>        vpaths;
     std::unordered_set<std::string> seen;
@@ -285,14 +285,15 @@ FindExecutable(std::string const &name)
     std::istringstream              is(::getenv("PATH"));
 
     while (std::getline(is, path, ':')) {
-        if (seen.find(path) != seen.end())
+        if (seen.find(path) != seen.end()) {
             continue;
+        }
 
         vpaths.push_back(path);
         seen.insert(path);
     }
 
-    return FindExecutable(name, vpaths);
+    return vpaths;
 }
 
 std::string FSUtil::

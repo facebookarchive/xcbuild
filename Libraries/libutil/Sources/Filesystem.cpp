@@ -69,22 +69,3 @@ findExecutable(std::string const &name, std::vector<std::string> const &paths) c
     return ext::nullopt;
 }
 
-ext::optional<std::string> Filesystem::
-findExecutable(std::string const &name) const
-{
-    std::vector<std::string>        vpaths;
-    std::unordered_set<std::string> seen;
-    std::string                     path;
-    std::istringstream              is(::getenv("PATH"));
-
-    while (std::getline(is, path, ':')) {
-        if (seen.find(path) != seen.end()) {
-            continue;
-        }
-
-        vpaths.push_back(path);
-        seen.insert(path);
-    }
-
-    return findExecutable(name, vpaths);
-}

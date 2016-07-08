@@ -13,6 +13,7 @@
 #include <xcsdk/SDK/Toolchain.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
+#include <libutil/FSUtil.h>
 #include <libutil/Options.h>
 #include <libutil/Subprocess.h>
 #include <libutil/SysUtil.h>
@@ -20,6 +21,7 @@
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
+using libutil::FSUtil;
 using libutil::SysUtil;
 using libutil::Subprocess;
 
@@ -391,9 +393,15 @@ main(int argc, char **argv)
         }
 
         /*
-         * Find the tool to execute in the SDK or toolchains.
+         * Collect search paths for the tool. Can be in toolchains, target, developer root, or default paths.
          */
         std::vector<std::string> executablePaths = target->executablePaths(toolchains);
+        std::vector<std::string> defaultExecutablePaths = FSUtil::GetExecutablePaths();
+        executablePaths.insert(executablePaths.end(), defaultExecutablePaths.begin(), defaultExecutablePaths.end());
+
+        /*
+         * Find the tool to execute.
+         */
         ext::optional<std::string> executable = filesystem->findExecutable(options.tool(), executablePaths);
         if (!executable) {
             fprintf(stderr, "error: tool '%s' not found\n", options.tool().c_str());

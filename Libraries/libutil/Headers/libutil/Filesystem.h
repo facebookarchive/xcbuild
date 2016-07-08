@@ -120,9 +120,6 @@ public:
      * Finds an executable in the given directories.
      */
     ext::optional<std::string> findExecutable(std::string const &name, std::vector<std::string> const &paths) const;
-
-    // FIXME: Remove this and reference PATH explicitly.
-    ext::optional<std::string> findExecutable(std::string const &name) const;
 };
 
 }
