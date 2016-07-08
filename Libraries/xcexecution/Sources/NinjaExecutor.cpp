@@ -354,12 +354,12 @@ build(
         /*
          * Find the path to the Ninja executable to use.
          */
-        ext::optional<std::string> executable = filesystem->findExecutable("ninja");
+        ext::optional<std::string> executable = filesystem->findExecutable("ninja", FSUtil::GetExecutablePaths());
         if (!executable) {
             /*
              * Couldn't find standard Ninja, try with llbuild.
              */
-            executable = filesystem->findExecutable("llbuild");
+            executable = filesystem->findExecutable("llbuild", FSUtil::GetExecutablePaths());
 
             /*
              * If neither Ninja or llbuild are available, can't start the build.

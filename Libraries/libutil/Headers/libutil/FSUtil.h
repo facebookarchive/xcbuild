@@ -61,7 +61,9 @@ public:
 public:
     static std::string FindFile(std::string const &name, std::vector<std::string> const &paths);
     static std::string FindExecutable(std::string const &name, std::vector<std::string> const &paths);
-    static std::string FindExecutable(std::string const &name);
+
+public:
+    static std::vector<std::string> GetExecutablePaths();
 };
 
 }
