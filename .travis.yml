@@ -42,4 +42,3 @@ matrix:
       install:
         - brew reinstall cmake
         - brew reinstall ninja
-        - brew reinstall libpng
