@@ -7,33 +7,32 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __acdriver_CompileActionImageSet_h
-#define __acdriver_CompileActionImageSet_h
-
-#include <acdriver/CompileOutput.h>
-#include <acdriver/Result.h>
+#ifndef __acdriver_Compile_ImageSet_h
+#define __acdriver_Compile_ImageSet_h
 
 #include <xcassets/Asset/Asset.h>
 #include <xcassets/Asset/ImageSet.h>
 
 #include <memory>
 
+namespace libutil { class Filesystem; }
+
 namespace acdriver {
 
 class CompileOutput;
-class Options;
 class Result;
 
-class CompileActionImageSet {
+namespace Compile {
+
+class ImageSet {
 private:
-    CompileActionImageSet();
-    ~CompileActionImageSet();
+    ImageSet();
+    ~ImageSet();
 
 public:
     static bool Compile(
         std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
         libutil::Filesystem *filesystem,
-        Options const &options,
         CompileOutput *compileOutput,
         Result *result);
 
@@ -41,11 +40,11 @@ public:
         std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
         xcassets::Asset::ImageSet::Image const &image,
         libutil::Filesystem *filesystem,
-        Options const &options,
         CompileOutput *compileOutput,
         Result *result);
 };
 
 }
+}
 
-#endif // !__acdriver_CompileActionImageSet_h
+#endif // !__acdriver_Compile_ImageSet_h

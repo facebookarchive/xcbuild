@@ -8,27 +8,25 @@
  */
 
 #include <acdriver/CompileAction.h>
-#include <acdriver/CompileActionImageSet.h>
+#include <acdriver/Compile/AppIconSet.h>
+#include <acdriver/Compile/BrandAssets.h>
+#include <acdriver/Compile/ComplicationSet.h>
+#include <acdriver/Compile/DataSet.h>
+#include <acdriver/Compile/GCDashboardImage.h>
+#include <acdriver/Compile/GCLeaderboard.h>
+#include <acdriver/Compile/GCLeaderboardSet.h>
+#include <acdriver/Compile/IconSet.h>
+#include <acdriver/Compile/ImageSet.h>
+#include <acdriver/Compile/ImageStack.h>
+#include <acdriver/Compile/ImageStackLayer.h>
+#include <acdriver/Compile/LaunchImage.h>
+#include <acdriver/Compile/SpriteAtlas.h>
 #include <acdriver/CompileOutput.h>
 #include <acdriver/Options.h>
 #include <acdriver/Output.h>
 #include <acdriver/Result.h>
-#include <xcassets/Asset/AppIconSet.h>
-#include <xcassets/Asset/BrandAssets.h>
 #include <xcassets/Asset/Catalog.h>
-#include <xcassets/Asset/ComplicationSet.h>
-#include <xcassets/Asset/DataSet.h>
-#include <xcassets/Asset/GCDashboardImage.h>
-#include <xcassets/Asset/GCLeaderboard.h>
-#include <xcassets/Asset/GCLeaderboardSet.h>
 #include <xcassets/Asset/Group.h>
-#include <xcassets/Asset/IconSet.h>
-#include <xcassets/Asset/ImageSet.h>
-#include <xcassets/Asset/ImageStack.h>
-#include <xcassets/Asset/ImageStackLayer.h>
-#include <xcassets/Asset/LaunchImage.h>
-#include <xcassets/Asset/SpriteAtlas.h>
-#include <xcassets/Slot/Idiom.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <bom/bom.h>
@@ -42,16 +40,25 @@
 #include <plist/String.h>
 
 using acdriver::CompileAction;
-using acdriver::CompileActionImageSet;
 using acdriver::CompileOutput;
+using acdriver::Compile::AppIconSet;
+using acdriver::Compile::BrandAssets;
+using acdriver::Compile::ComplicationSet;
+using acdriver::Compile::GCDashboardImage;
+using acdriver::Compile::GCLeaderboard;
+using acdriver::Compile::GCLeaderboardSet;
+using acdriver::Compile::DataSet;
+using acdriver::Compile::IconSet;
+using acdriver::Compile::ImageSet;
+using acdriver::Compile::ImageStack;
+using acdriver::Compile::ImageStackLayer;
+using acdriver::Compile::LaunchImage;
+using acdriver::Compile::SpriteAtlas;
 using acdriver::Options;
 using acdriver::Output;
 using acdriver::Result;
 using libutil::Filesystem;
-
-using libutil::Filesystem;
 using libutil::FSUtil;
-
 
 CompileAction::
 CompileAction()
@@ -93,66 +100,6 @@ CompileChildren(
     return success;
 }
 
-static std::string
-AssetReference(std::shared_ptr<xcassets::Asset::Asset> const &asset)
-{
-    // TODO: include [] for each key
-    return asset->path();
-}
-
-static void
-CompileAppIconSet(std::shared_ptr<xcassets::Asset::AppIconSet> const &appIconSet, CompileOutput *compileOutput, Result *result)
-{
-    // TODO: what should this do for watch?
-
-    auto primary = plist::Dictionary::New();
-
-    /*
-     * Copy the app icon images into the output.
-     */
-    if (appIconSet->images()) {
-        auto files = plist::Array::New();
-
-        for (xcassets::Asset::AppIconSet::Image const &image : *appIconSet->images()) {
-            if (!image.fileName()) {
-                continue;
-            }
-
-            // TODO: verify the dimensions of the image are correct
-
-            // TODO: how should these be named?
-            std::string source = appIconSet->path() + "/" + *image.fileName();
-            std::string destination = compileOutput->root() + "/" + appIconSet->name().name();
-            // TODO: add WIDTHxHEIGHT
-            // TODO: add @SCALEx (if not 1)
-            // TODO: add ~idiom (if not phone)
-
-            compileOutput->copies().push_back({ source, destination });
-
-            // TODO: what should the value in this array be?
-            files->append(plist::String::New(*image.fileName()));
-        }
-
-        primary->set("CFBundleIconFiles", std::move(files));
-    }
-
-    /*
-     * Record if the icon is pre-rendered.
-     */
-    if (appIconSet->preRendered()) {
-        primary->set("UIPrerenderedIcon", plist::Boolean::New(true));
-    }
-
-    /*
-     * Store the icon information in the Info.plist.
-     */
-    auto icons = plist::Dictionary::New();
-    icons->set("CFBundlePrimaryIcon", std::move(primary));
-
-    // TODO: needs a separate case for ~ipad
-    compileOutput->additionalInfo()->set("CFBundleIcons", std::move(icons));
-}
-
 static bool
 CompileAsset(
     std::shared_ptr<xcassets::Asset::Asset> const &asset,
@@ -168,13 +115,13 @@ CompileAsset(
         case xcassets::Asset::AssetType::AppIconSet: {
             auto appIconSet = std::static_pointer_cast<xcassets::Asset::AppIconSet>(asset);
             if (appIconSet->name().name() == options.appIcon()) {
-                CompileAppIconSet(appIconSet, compileOutput, result);
+                AppIconSet::Compile(appIconSet, filesystem, compileOutput, result);
             }
             break;
         }
         case xcassets::Asset::AssetType::BrandAssets: {
             auto brandAssets = std::static_pointer_cast<xcassets::Asset::BrandAssets>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "brand assets not yet supported");
+            BrandAssets::Compile(brandAssets, filesystem, compileOutput, result);
             CompileChildren(brandAssets->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
@@ -185,30 +132,30 @@ CompileAsset(
         }
         case xcassets::Asset::AssetType::ComplicationSet: {
             auto complicationSet = std::static_pointer_cast<xcassets::Asset::ComplicationSet>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "complication set not yet supported");
+            ComplicationSet::Compile(complicationSet, filesystem, compileOutput, result);
             CompileChildren(complicationSet->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::DataSet: {
             auto dataSet = std::static_pointer_cast<xcassets::Asset::DataSet>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "data set not yet supported");
+            DataSet::Compile(dataSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCDashboardImage: {
             auto dashboardImage = std::static_pointer_cast<xcassets::Asset::GCDashboardImage>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "gc dashboard image not yet supported");
+            GCDashboardImage::Compile(dashboardImage, filesystem, compileOutput, result);
             CompileChildren(dashboardImage->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboard: {
             auto leaderboard = std::static_pointer_cast<xcassets::Asset::GCLeaderboard>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "gc leaderboard not yet supported");
+            GCLeaderboard::Compile(leaderboard, filesystem, compileOutput, result);
             CompileChildren(leaderboard->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboardSet: {
             auto leaderboardSet = std::static_pointer_cast<xcassets::Asset::GCLeaderboardSet>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "gc leaderboard set not yet supported");
+            GCLeaderboardSet::Compile(leaderboardSet, filesystem, compileOutput, result);
             CompileChildren(leaderboardSet->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
@@ -219,37 +166,36 @@ CompileAsset(
         }
         case xcassets::Asset::AssetType::IconSet: {
             auto iconSet = std::static_pointer_cast<xcassets::Asset::IconSet>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "icon set not yet supported");
+            IconSet::Compile(iconSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageSet: {
             auto imageSet = std::static_pointer_cast<xcassets::Asset::ImageSet>(asset);
-            CompileActionImageSet::Compile(imageSet, filesystem, options, compileOutput, result);
+            ImageSet::Compile(imageSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageStack: {
             auto imageStack = std::static_pointer_cast<xcassets::Asset::ImageStack>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "image stack not yet supported");
+            ImageStack::Compile(imageStack, filesystem, compileOutput, result);
             CompileChildren(imageStack->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageStackLayer: {
             auto imageStackLayer = std::static_pointer_cast<xcassets::Asset::ImageStackLayer>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "image stack layer not yet supported");
+            ImageStackLayer::Compile(imageStackLayer, filesystem, compileOutput, result);
             // TODO: CompileChildren(imageStackLayer->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::LaunchImage: {
             auto launchImage = std::static_pointer_cast<xcassets::Asset::LaunchImage>(asset);
             if (launchImage->name().name() == options.launchImage()) {
-
+                LaunchImage::Compile(launchImage, filesystem, compileOutput, result);
             }
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "launch image not yet supported");
             break;
         }
         case xcassets::Asset::AssetType::SpriteAtlas: {
             auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
-            result->document(Result::Severity::Warning, asset->path(), { AssetReference(asset) }, "Not Implemented", "sprite atlas not yet supported");
+            SpriteAtlas::Compile(spriteAtlas, filesystem, compileOutput, result);
             CompileChildren(spriteAtlas->children(), asset, filesystem, options, compileOutput, result);
             break;
         }

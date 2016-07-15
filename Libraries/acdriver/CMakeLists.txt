@@ -14,8 +14,20 @@ add_library(acdriver SHARED
             Sources/Result.cpp
             Sources/VersionAction.cpp
             Sources/CompileAction.cpp
-            Sources/CompileActionImageSet.cpp
             Sources/CompileOutput.cpp
+            Sources/Compile/AppIconSet.cpp
+            Sources/Compile/BrandAssets.cpp
+            Sources/Compile/ComplicationSet.cpp
+            Sources/Compile/DataSet.cpp
+            Sources/Compile/GCDashboardImage.cpp
+            Sources/Compile/GCLeaderboard.cpp
+            Sources/Compile/GCLeaderboardSet.cpp
+            Sources/Compile/IconSet.cpp
+            Sources/Compile/ImageSet.cpp
+            Sources/Compile/ImageStack.cpp
+            Sources/Compile/ImageStackLayer.cpp
+            Sources/Compile/LaunchImage.cpp
+            Sources/Compile/SpriteAtlas.cpp
             Sources/ContentsAction.cpp
             )
 

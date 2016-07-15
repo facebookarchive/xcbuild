@@ -7,17 +7,14 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <acdriver/CompileActionImageSet.h>
-#include <acdriver/CompileAction.h>
+#include <acdriver/Compile/ImageSet.h>
+#include <acdriver/CompileOutput.h>
 #include <acdriver/Result.h>
 #include <xcassets/Asset/ImageSet.h>
 #include <xcassets/Slot/Idiom.h>
-#include <bom/bom.h>
-#include <car/Reader.h>
-#include <car/Writer.h>
 #include <car/Facet.h>
 #include <car/Rendition.h>
-#include <bom/bom_format.h>
+#include <car/Writer.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
@@ -29,11 +26,10 @@
 #include <png.h>
 #include <string.h>
 
-using acdriver::CompileActionImageSet;
-using acdriver::CompileAction;
+using acdriver::Compile::ImageSet;
 using acdriver::CompileOutput;
-using acdriver::Options;
 using acdriver::Result;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 static void
@@ -335,11 +331,10 @@ SlicesForResizingModeAndCapInsets(uint32_t width, uint32_t height, xcassets::Res
     }
 }
 
-bool CompileActionImageSet::
+bool ImageSet::
 Compile(
     std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
-    libutil::Filesystem *filesystem,
-    Options const &options,
+    Filesystem *filesystem,
     CompileOutput *compileOutput,
     Result *result)
 {
@@ -347,7 +342,7 @@ Compile(
 
     if (imageSet->images()) {
         for (xcassets::Asset::ImageSet::Image const &image : *imageSet->images()) {
-            if (!CompileAsset(imageSet, image, filesystem, options, compileOutput, result)) {
+            if (!CompileAsset(imageSet, image, filesystem, compileOutput, result)) {
                 success = false;
             }
         }
@@ -363,12 +358,11 @@ GenerateIdentifier(void) {
     return last;
 }
 
-bool CompileActionImageSet::
+bool ImageSet::
 CompileAsset(
     std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
     xcassets::Asset::ImageSet::Image const &image,
-    libutil::Filesystem *filesystem,
-    Options const &options,
+    Filesystem *filesystem,
     CompileOutput *compileOutput,
     Result *result)
 {

@@ -21,6 +21,7 @@
 #include <ext/optional>
 
 namespace libutil { class Filesystem; }
+namespace xcassets { namespace Asset { class Asset; } }
 
 namespace acdriver {
 
@@ -114,6 +115,12 @@ public:
         ext::optional<std::string> const &partialInfoPlist,
         ext::optional<std::string> const &dependencyInfo,
         Result *result) const;
+
+public:
+    /*
+     * The identifier of an asset for use in results.
+     */
+    static std::string AssetReference(std::shared_ptr<xcassets::Asset::Asset> const &asset);
 };
 
 }

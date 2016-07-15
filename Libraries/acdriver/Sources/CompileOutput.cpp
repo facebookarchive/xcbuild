@@ -10,6 +10,7 @@
 #include <acdriver/CompileOutput.h>
 #include <acdriver/Options.h>
 #include <acdriver/Result.h>
+#include <xcassets/Asset/Asset.h>
 #include <libutil/Filesystem.h>
 #include <plist/Format/Format.h>
 #include <plist/Format/XML.h>
@@ -89,4 +90,10 @@ write(Filesystem *filesystem, ext::optional<std::string> const &partialInfoPlist
     return success;
 }
 
+std::string CompileOutput::
+AssetReference(std::shared_ptr<xcassets::Asset::Asset> const &asset)
+{
+    // TODO: include [] for each key
+    return asset->path();
+}
 
