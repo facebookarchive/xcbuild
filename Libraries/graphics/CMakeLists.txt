@@ -8,6 +8,7 @@
 #
 
 add_library(graphics SHARED
+            Sources/Image.cpp
             Sources/PixelFormat.cpp
             )
 
