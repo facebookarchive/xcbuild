@@ -8,9 +8,13 @@
 #
 
 add_library(graphics SHARED
-            Sources/Graphics.cpp
+            Sources/PixelFormat.cpp
             )
 
+target_link_libraries(graphics PUBLIC ext)
 target_include_directories(graphics PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-target_include_directories(graphics PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
 install(TARGETS graphics DESTINATION usr/lib)
+
+if (BUILD_TESTING)
+  ADD_UNIT_GTEST(graphics PixelFormat Tests/test_PixelFormat.cpp)
+endif ()
