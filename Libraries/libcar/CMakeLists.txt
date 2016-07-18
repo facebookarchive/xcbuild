@@ -30,8 +30,7 @@ target_include_directories(car PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS car DESTINATION usr/lib)
 
 add_executable(dump_car Tools/dump_car.cpp)
-target_link_libraries(dump_car PRIVATE car)
-target_link_libraries(dump_car PRIVATE ${ZLIB_LIBRARIES})
+target_link_libraries(dump_car PRIVATE car graphics)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(car Facet Tests/test_Facet.cpp)

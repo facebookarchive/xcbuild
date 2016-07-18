@@ -35,9 +35,12 @@ if (NOT "${PNG_FOUND}")
   set(PNG_DEFINITIONS "")
 endif ()
 
-target_link_libraries(graphics PUBLIC ext ${PNG_LIBRARIES} ${CORE_FOUNDATION} ${CORE_GRAPHICS} ${IMAGE_IO})
+find_package(ZLIB REQUIRED)
+
+target_link_libraries(graphics PUBLIC ext ${ZLIB_LIBRARIES} ${PNG_LIBRARIES} ${CORE_FOUNDATION} ${CORE_GRAPHICS} ${IMAGE_IO})
 target_include_directories(graphics PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(graphics PRIVATE ${PNG_INCLUDE_DIRS})
+target_include_directories(graphics PRIVATE "${ZLIB_INCLUDE_DIR}")
 set_target_properties(graphics PROPERTIES COMPILE_DEFINITIONS "${PNG_DEFINITIONS}")
 install(TARGETS graphics DESTINATION usr/lib)
 
