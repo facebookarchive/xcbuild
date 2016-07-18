@@ -614,9 +614,21 @@ buildTargetAuxiliaryFiles(
                 return false;
             }
 
-            if (!filesystem->write(auxiliaryFile.contents(), auxiliaryFile.path())) {
-                fprintf(stderr, "error: failed to write auxiliary file: %s\n", auxiliaryFile.path().c_str());
-                return false;
+            if (auxiliaryFile.contentsData()) {
+                if (!filesystem->write(*auxiliaryFile.contentsData(), auxiliaryFile.path())) {
+                    fprintf(stderr, "error: failed to write auxiliary file: %s\n", auxiliaryFile.path().c_str());
+                    return false;
+                }
+            } else if (auxiliaryFile.contentsPath()) {
+                std::vector<uint8_t> contents;
+                if (!filesystem->read(&contents, *auxiliaryFile.contentsPath())) {
+                    fprintf(stderr, "error: failed to read auxiliary file contents: %s\n", auxiliaryFile.contentsPath()->c_str());
+                    return false;
+                }
+                if (!filesystem->write(contents, auxiliaryFile.path())) {
+                    fprintf(stderr, "error: failed to write auxiliary file: %s\n", auxiliaryFile.path().c_str());
+                    return false;
+                }
             }
 
             if (auxiliaryFile.executable() && !filesystem->isExecutable(auxiliaryFile.path())) {

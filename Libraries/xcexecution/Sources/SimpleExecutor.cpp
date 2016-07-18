@@ -167,8 +167,18 @@ writeAuxiliaryFiles(
             xcformatter::Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
 
             if (!_dryRun) {
-                if (!filesystem->write(auxiliaryFile.contents(), auxiliaryFile.path())) {
-                    return false;
+                if (auxiliaryFile.contentsData()) {
+                    if (!filesystem->write(*auxiliaryFile.contentsData(), auxiliaryFile.path())) {
+                        return false;
+                    }
+                } else if (auxiliaryFile.contentsPath()) {
+                    std::vector<uint8_t> contents;
+                    if (!filesystem->read(&contents, *auxiliaryFile.contentsPath())) {
+                        return false;
+                    }
+                    if (!filesystem->write(contents, auxiliaryFile.path())) {
+                        return false;
+                    }
                 }
             }
 

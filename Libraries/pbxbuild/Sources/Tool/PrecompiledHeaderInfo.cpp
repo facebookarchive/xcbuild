@@ -56,7 +56,7 @@ std::string Tool::PrecompiledHeaderInfo::
 hash() const
 {
     // TODO(grp): Generate this hash properly.
-    std::string content = serialize();
+    std::vector<uint8_t> content = serialize();
 
     md5_state_t state;
     md5_init(&state);
@@ -72,7 +72,7 @@ hash() const
     return ss.str();
 }
 
-std::string Tool::PrecompiledHeaderInfo::
+std::vector<uint8_t> Tool::PrecompiledHeaderInfo::
 serialize() const
 {
     std::string result;
@@ -86,7 +86,7 @@ serialize() const
     result += "SDK_PRODUCT_BUILD_VERSION=FIXME\n";
     result += "FIXME\n";
 
-    return result;
+    return std::vector<uint8_t>(result.begin(), result.end());
 }
 
 Tool::PrecompiledHeaderInfo Tool::PrecompiledHeaderInfo::
