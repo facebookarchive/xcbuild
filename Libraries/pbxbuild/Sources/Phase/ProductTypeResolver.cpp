@@ -11,6 +11,7 @@
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Target/Environment.h>
+#include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/InfoPlistResolver.h>
 #include <pbxbuild/Tool/MakeDirectoryResolver.h>
 #include <pbxbuild/Tool/SymlinkResolver.h>
@@ -268,6 +269,135 @@ ResolveFrameworkStructure(Phase::Environment const &phaseEnvironment, Phase::Con
     return true;
 }
 
+static ext::optional<std::string>
+FindUmbrellaHeaderName(pbxsetting::Environment const &environment, std::string const &moduleName, pbxproj::PBX::Target::shared_ptr const &target)
+{
+    std::string lowerModuleName;
+    std::transform(moduleName.begin(), moduleName.end(), std::back_inserter(lowerModuleName), ::tolower);
+
+    ext::optional<std::string> umbrellaHeader;
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
+        if (buildPhase->type() != pbxproj::PBX::BuildPhase::Type::Headers) {
+            continue;
+        }
+
+        for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+            if (buildFile->fileRef() == nullptr) {
+                continue;
+            }
+
+            std::string filePath = environment.expand(buildFile->fileRef()->resolve());
+            if (FSUtil::GetFileExtension(filePath) == "h") {
+                std::string baseName = FSUtil::GetBaseNameWithoutExtension(filePath);
+
+                std::string lowerBaseName;
+                std::transform(baseName.begin(), baseName.end(), std::back_inserter(lowerBaseName), ::tolower);
+
+                if (lowerBaseName == lowerModuleName) {
+                    return baseName;
+                }
+            }
+        }
+    }
+
+    return ext::nullopt;
+}
+
+static bool
+ResolveModuleMap(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext, pbxsetting::Environment const &environment)
+{
+    std::string const &workingDirectory = phaseContext->toolContext().workingDirectory();
+    // TODO: what about non-framework product types?
+    std::string finalModuleMapRoot = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("CONTENTS_FOLDER_PATH") + "/" + "Modules";
+
+    /*
+     * Handle the standard module map, either copied or generated.
+     */
+    std::string inputModuleMapPath = environment.resolve("MODULEMAP_FILE");
+    std::string intermediateModuleMapPath = environment.resolve("TARGET_TEMP_DIR") + "/" + "module.modulemap";
+    ext::optional<Tool::Invocation::AuxiliaryFile> moduleMapAuxiliaryFile;
+    if (!inputModuleMapPath.empty()) {
+        /*
+         * Copy in the input module map as an auxiliary file.
+         */
+        moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile(
+            intermediateModuleMapPath,
+            FSUtil::ResolveRelativePath(inputModuleMapPath, workingDirectory),
+            false);
+    } else {
+        /*
+         * Find umbrella header: a header with the same name as the target's module.
+         */
+        std::string moduleName = environment.resolve("PRODUCT_MODULE_NAME");
+        ext::optional<std::string> umbrellaHeaderName = FindUmbrellaHeaderName(environment, moduleName, phaseEnvironment.target());
+
+        if (umbrellaHeaderName) {
+            /*
+             * Generate a module map as an auxiliary file.
+             */
+            auto contents = std::string();
+            contents += "framework module " + moduleName + " {\n";
+            contents += "  umbrella header \"" + *umbrellaHeaderName + "\"\n";
+            contents += "  \n";
+            contents += "  export *\n";
+            contents += "  module * { export * }\n";
+            contents += "}\n";
+
+            moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile(
+                intermediateModuleMapPath,
+                std::vector<uint8_t>(contents.begin(), contents.end()),
+                false);
+        } else {
+            fprintf(stderr, "warning: target defines module, but has no umbrella header\n");
+        }
+    }
+
+    if (moduleMapAuxiliaryFile) {
+        /* Define source module map. */
+        // TODO: it would be nicer to attach this to the copy invocation created below
+        Tool::Invocation invocation;
+        invocation.auxiliaryFiles().push_back(*moduleMapAuxiliaryFile);
+        phaseContext->toolContext().invocations().push_back(invocation);
+
+        /* Copy in the module map as part of the build. */
+        if (Tool::CopyResolver const *copyResolver = phaseContext->copyResolver(phaseEnvironment)) {
+            copyResolver->resolve(&phaseContext->toolContext(), environment, { intermediateModuleMapPath }, finalModuleMapRoot, "Ditto");
+        } else {
+            fprintf(stderr, "warning: failed to get copy tool for module map\n");
+        }
+    }
+
+    /*
+     * Handle the private module map. This module map can only be specified; it is never auto-generated.
+     */
+    std::string inputPrivateModuleMapPath = environment.resolve("MODULEMAP_PRIVATE_FILE");
+    std::string intermediatePrivateModuleMapPath = environment.resolve("TARGET_TEMP_DIR") + "/" + "module.private.modulemap";
+    if (!inputPrivateModuleMapPath.empty()) {
+        /*
+         * Copy in the private module map.
+         */
+        auto privateModuleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile(
+            intermediateModuleMapPath,
+            FSUtil::ResolveRelativePath(inputPrivateModuleMapPath, workingDirectory),
+            false);
+
+        /* Define source module map. */
+        // TODO: it would be nicer to attach this to the copy invocation created below
+        Tool::Invocation invocation;
+        invocation.auxiliaryFiles().push_back(privateModuleMapAuxiliaryFile);
+        phaseContext->toolContext().invocations().push_back(invocation);
+
+        /* Copy in the module map as part of the build. */
+        if (Tool::CopyResolver const *copyResolver = phaseContext->copyResolver(phaseEnvironment)) {
+            copyResolver->resolve(&phaseContext->toolContext(), environment, { intermediatePrivateModuleMapPath }, finalModuleMapRoot, "Ditto");
+        } else {
+            fprintf(stderr, "warning: failed to get copy tool for module map\n");
+        }
+    }
+
+    return true;
+}
+
 bool Phase::ProductTypeResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext) const
 {
@@ -331,6 +461,15 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
             } else {
                 fprintf(stderr, "warning: could not find info plist tool\n");
             }
+        }
+    }
+
+    /*
+     * Create the product's module maps, if required.
+     */
+    if (pbxsetting::Type::ParseBoolean(environment.resolve("DEFINES_MODULE"))) {
+        if (!ResolveModuleMap(phaseEnvironment, phaseContext, environment)) {
+            return false;
         }
     }
 
