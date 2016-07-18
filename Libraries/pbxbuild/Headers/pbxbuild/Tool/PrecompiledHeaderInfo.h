@@ -38,7 +38,7 @@ public:
 
 public:
     std::string hash() const;
-    std::string serialize() const;
+    std::vector<uint8_t> serialize() const;
 
 public:
     pbxsetting::Value logicalOutputPath() const;
