@@ -121,18 +121,38 @@ TEST(PNG, Read)
     for (size_t i = 0; i < sizeof(PNGTests) / sizeof(*PNGTests); i++) {
         /* Load test data. */
         auto const &test = PNGTests[i];
-        std::vector<uint8_t> input;
-        std::vector<uint8_t> output;
+        std::vector<uint8_t> png;
+        std::vector<uint8_t> pixels;
         PixelFormat format = PixelFormat(PixelFormat::Color::Grayscale, PixelFormat::Order::Forward, PixelFormat::Alpha::None);
-        test(&input, &output, &format);
+        test(&png, &pixels, &format);
 
         /* Should be able to read PNG. */
-        auto result = PNG::Read(input);
+        auto result = PNG::Read(png);
         ASSERT_NE(result.first, ext::nullopt);
         Image const &image = *result.first;
 
         /* Should have expected pixels in specified format. */
-        std::vector<uint8_t> pixels = PixelFormat::Convert(image.data(), image.format(), format);
-        EXPECT_EQ(pixels, output);
+        std::vector<uint8_t> converted = PixelFormat::Convert(image.data(), image.format(), format);
+        EXPECT_EQ(converted, pixels);
+    }
+}
+
+TEST(PNG, Write)
+{
+    for (size_t i = 0; i < sizeof(PNGTests) / sizeof(*PNGTests); i++) {
+        /* Load test data. */
+        auto const &test = PNGTests[i];
+        std::vector<uint8_t> png;
+        std::vector<uint8_t> pixels;
+        PixelFormat format = PixelFormat(PixelFormat::Color::Grayscale, PixelFormat::Order::Forward, PixelFormat::Alpha::None);
+        test(&png, &pixels, &format);
+
+        /* Should be able to write PNG. */
+        auto image = Image(1, 1, format, pixels);
+        auto result = PNG::Write(image);
+        ASSERT_NE(result.first, ext::nullopt);
+
+        /* Should have expected PNG data. */
+        EXPECT_EQ(*result.first, png);
     }
 }

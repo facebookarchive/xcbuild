@@ -35,6 +35,13 @@ public:
      */
     static std::pair<ext::optional<Image>, std::string>
     Read(std::vector<uint8_t> const &contents);
+
+public:
+    /*
+     * Write a PNG image.
+     */
+    static std::pair<ext::optional<std::vector<uint8_t>>, std::string>
+    Write(Image const &image);
 };
 
 }

@@ -9,6 +9,7 @@
 
 #include <graphics/Format/PNG.h>
 
+#include <iterator>
 #include <ext/optional>
 
 using graphics::Format::PNG;
@@ -358,3 +359,179 @@ Read(std::vector<uint8_t> const &contents)
 }
 
 #endif
+
+#include <arpa/inet.h>
+#include <zlib.h>
+
+std::pair<ext::optional<std::vector<uint8_t>>, std::string> PNG::
+Write(Image const &image)
+{
+    std::vector<uint8_t> png;
+
+    uint32_t const crc32_initial = crc32(0, NULL, 0);
+    uint32_t crc32_big;
+    uint8_t *crc32p = reinterpret_cast<uint8_t *>(&crc32_big);
+
+    /*
+     * Write out PNG header.
+     */
+    uint8_t const header[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a };
+    png.insert(png.end(), std::begin(header), std::end(header));
+
+    /*
+     * Determine if the image has an alpha channel.
+     */
+    bool alpha;
+    switch (image.format().alpha()) {
+        case PixelFormat::Alpha::None:
+        case PixelFormat::Alpha::IgnoredFirst:
+        case PixelFormat::Alpha::IgnoredLast:
+            /* No alpha. */
+            alpha = false;
+            break;
+        case PixelFormat::Alpha::First:
+        case PixelFormat::Alpha::Last:
+        case PixelFormat::Alpha::PremultipliedFirst:
+        case PixelFormat::Alpha::PremultipliedLast:
+            /* Has alpha. */
+            alpha = true;
+            break;
+        default: abort();
+    }
+
+    /*
+     * Determine PNG color format.
+     */
+    uint8_t color_type;
+    switch (image.format().color()) {
+        case PixelFormat::Color::Grayscale:
+            /* GA or G. */
+            color_type = (alpha ? 0x04 : 0x00);
+            break;
+        case PixelFormat::Color::RGB:
+            /* RGBA or RGB. */
+            color_type = (alpha ? 0x06 : 0x02);
+            break;
+        default: abort();
+    }
+
+    /*
+     * Convert image data to PNG format.
+     */
+    PixelFormat format = PixelFormat(
+        image.format().color(),
+        PixelFormat::Order::Forward,
+        (alpha ? PixelFormat::Alpha::Last : PixelFormat::Alpha::None));
+    std::vector<uint8_t> data = PixelFormat::Convert(image.data(), image.format(), format);
+
+    /*
+     * Write out the PNG header.
+     */
+    uint32_t width_big = htonl(image.width());
+    uint8_t *width_buf = reinterpret_cast<uint8_t *>(&width_big);
+
+    uint32_t height_big = htonl(image.height());
+    uint8_t *height_buf = reinterpret_cast<uint8_t *>(&height_big);
+
+    uint8_t const ihdr[] = {
+        0x0, 0x0, 0x0, 0xD, // chunk length
+        'I', 'H', 'D', 'R', // chunk type
+        width_buf[0], width_buf[1], width_buf[2], width_buf[3], // width
+        height_buf[0], height_buf[1], height_buf[2], height_buf[3], // height
+        0x8, // bit depth
+        color_type, // color type
+        0x0, // compression method
+        0x0, // filter method
+        0x0, // interlace method
+    };
+    png.insert(png.end(), std::begin(ihdr), std::end(ihdr));
+
+    crc32_big = crc32(crc32_initial, ihdr + 4, sizeof(ihdr) - 4);
+    crc32_big = htonl(crc32_big);
+    uint8_t const ihdr_crc32[] = { crc32p[0], crc32p[1], crc32p[2], crc32p[3] };
+    png.insert(png.end(), std::begin(ihdr_crc32), std::end(ihdr_crc32));
+
+    /*
+     * Compress the pixel data with DEFLATE.
+     */
+    z_stream strm;
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+
+    int ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, 8, 15, 8, Z_DEFAULT_STRATEGY);
+    if (ret != Z_OK) {
+        return std::make_pair(ext::nullopt, "deflate init failed");
+    }
+
+    /* Add filter bytes between rows in the image. */
+    uint32_t filter_stride = image.width() * format.bytesPerPixel();
+    size_t filter_size = (data.size() / filter_stride);
+    std::vector<uint8_t> buffer = std::vector<uint8_t>(data.size() + filter_size);
+    for (size_t i = 0; i < image.height(); i++) {
+        size_t offset = (i * filter_stride);
+        size_t filter_offset = i;
+
+        *(buffer.data() + offset + filter_offset) = 0; // filter format
+        memcpy(buffer.data() + offset + filter_offset + 1, data.data() + offset, filter_stride);
+    }
+
+    strm.avail_in = buffer.size();
+    strm.next_in = buffer.data();
+
+    /* Maximum compressed size is x1.01 + 12 the uncompressed size. */
+    std::vector<uint8_t> compressed = std::vector<uint8_t>(buffer.size() * 1.01 + 12);
+
+    do {
+        strm.avail_out = compressed.size() - strm.total_out;
+        strm.next_out = (Bytef *)(compressed.data() + strm.total_out);
+
+        ret = deflate(&strm, Z_FINISH);
+        if (ret != Z_OK && ret != Z_STREAM_END) {
+            return std::make_pair(ext::nullopt, "deflate failed");
+        }
+    } while (ret != Z_STREAM_END);
+
+    /* Shrink down to compressed size. */
+    compressed.resize(strm.total_out);
+
+    ret = deflateEnd(&strm);
+    if (ret != Z_OK) {
+        return std::make_pair(ext::nullopt, "deflate end failed");
+    }
+
+    /*
+     * Write out IDAT chunk with the image data.
+     */
+    uint32_t size_big = htonl(compressed.size());
+    uint8_t *size_buf = reinterpret_cast<uint8_t *>(&size_big);
+
+    uint8_t const idat[] = {
+        size_buf[0], size_buf[1], size_buf[2], size_buf[3], // chunk length
+        'I', 'D', 'A', 'T', // chunk type
+    };
+    png.insert(png.end(), std::begin(idat), std::end(idat));
+    png.insert(png.end(), compressed.begin(), compressed.end());
+
+    crc32_big = crc32(crc32_initial, idat + 4, sizeof(idat) - 4);
+    crc32_big = crc32(crc32_big, compressed.data(), compressed.size());
+    crc32_big = htonl(crc32_big);
+    uint8_t const idat_crc32[] = { crc32p[0], crc32p[1], crc32p[2], crc32p[3] };
+    png.insert(png.end(), std::begin(idat_crc32), std::end(idat_crc32));
+
+    /*
+     * Write out final IEND chunk.
+     */
+    uint8_t const iend[] = {
+        0x0, 0x0, 0x0, 0x0, // chunk length
+        'I', 'E', 'N', 'D', // chunk type
+    };
+    png.insert(png.end(), std::begin(iend), std::end(iend));
+
+    crc32_big = crc32(crc32_initial, iend + 4, sizeof(iend) - 4);
+    crc32_big = htonl(crc32_big);
+    uint8_t const iend_crc32[] = { crc32p[0], crc32p[1], crc32p[2], crc32p[3] };
+    png.insert(png.end(), std::begin(iend_crc32), std::end(iend_crc32));
+
+    return std::make_pair(png, std::string());
+}
