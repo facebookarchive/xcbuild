@@ -52,7 +52,11 @@ settings(void) const
 std::string Project::
 sourceRoot() const
 {
-    return FSUtil::NormalizePath(_basePath + "/" + _projectDirPath);
+    std::string root = _basePath;
+    if (!_projectDirPath.empty()) {
+        root += "/" + _projectDirPath;
+    }
+    return FSUtil::NormalizePath(root);
 }
 
 bool Project::
