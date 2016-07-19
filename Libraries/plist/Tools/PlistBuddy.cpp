@@ -9,8 +9,24 @@
 
 #include <libutil/Options.h>
 #include <libutil/DefaultFilesystem.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
+#include <plist/Data.h>
+#include <plist/Date.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/Real.h>
+#include <plist/String.h>
+#include <plist/Object.h>
+#include <plist/Format/Any.h>
+#include <plist/Format/ASCII.h>
+#include <plist/Format/Binary.h>
+#include <plist/Format/Encoding.h>
+#include <plist/Format/XML.h>
 
 #include <histedit.h>
+#include <iostream>
+#include <sstream>
 #include <string>
 
 class Options {
@@ -104,9 +120,39 @@ Help(std::string const &error = std::string())
 }
 
 static bool
-ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &file, std::string const &command)
+Print(plist::Object *object)
 {
-    fprintf(stderr, "Unrecognized command");
+    /* Convert to ASCII. */
+    plist::Format::ASCII out = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
+    auto serialize = plist::Format::ASCII::Serialize(object, out);
+    if (serialize.first == nullptr) {
+        fprintf(stderr, "error: %s\n", serialize.second.c_str());
+        return false;
+    }
+
+    /* Print. */
+    std::copy(serialize.first->begin(), serialize.first->end(), std::ostream_iterator<char>(std::cout));
+
+    return true;
+}
+
+
+static bool
+ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &file, plist::Object *object, std::string const &input)
+{
+    std::vector<std::string> tokens;
+    std::stringstream sstream(input);
+    std::copy(std::istream_iterator<std::string>(sstream), std::istream_iterator<std::string>(), std::back_inserter(tokens));
+
+    std::string command = tokens[0];
+
+    if (command == "Print") {
+        Print(object);
+    } else if (command == "Exit") {
+        return false;
+    } else {
+        std::cerr << "Unrecognized command" << std::endl;
+    }
     return true;
 }
 
@@ -135,8 +181,27 @@ main(int argc, char **argv)
         fprintf(stderr, "File does not exist, will be created: %s\n", options.input().c_str());
     }
 
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, options.input())) {
+        return false;
+    }
+
+    auto format = plist::Format::Any::Identify(contents);
+    if (format == nullptr) {
+        fprintf(stderr, "error: input %s not a plist\n", options.input().c_str());
+        return 1;
+    }
+
+    auto deserialize = plist::Format::Any::Deserialize(contents, *format);
+    if (!deserialize.first) {
+        fprintf(stderr, "error: %s\n", deserialize.second.c_str());
+        return 1;
+    }
+
+    std::unique_ptr<plist::Object> object = std::move(deserialize.first);
+
     if (!options.command().empty()) {
-        ProcessCommand(filesystem.get(), options.xml(), options.input(), options.command());
+        ProcessCommand(filesystem.get(), options.xml(), options.input(), object.get(), options.command());
     } else {
         EditLine *el;
         History *cmdhistory;
@@ -163,7 +228,7 @@ main(int argc, char **argv)
 
               /* strip trailing newline */
               std::string strline = std::string(line, 0, count - 1);
-              ProcessCommand(filesystem.get(), options.xml(), options.input(),  strline);
+              keepReading = ProcessCommand(filesystem.get(), options.xml(), options.input(), object.get(), strline);
             } else {
                 keepReading = false;
             }
