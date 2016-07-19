@@ -18,6 +18,7 @@
 #include <algorithm>
 
 namespace Tool = pbxbuild::Tool;
+namespace Phase = pbxbuild::Phase;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -27,13 +28,15 @@ CopyResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :
 {
 }
 
-void Tool::CopyResolver::
-resolve(
+static void
+ResolveInternal(
+    pbxspec::PBX::Tool::shared_ptr const &tool,
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::vector<Phase::File> const &inputs,
+    std::vector<std::string> const &inputPaths,
+    ext::optional<std::vector<Phase::File>> const &inputs,
     std::string const &outputDirectory,
-    std::string const &logMessageTitle) const
+    std::string const &logMessageTitle)
 {
     /*
      * Add the copy-specific build settings.
@@ -50,34 +53,36 @@ resolve(
     /*
      * The output path is the same as the input, but in the output directory.
      */
-    std::vector<std::string> outputs;
-    std::transform(inputs.begin(), inputs.end(), std::back_inserter(outputs), [&](Phase::File const &input) -> std::string {
-        std::string output = outputDirectory + "/" + FSUtil::GetBaseName(input.path());
-        return output;
-    });
+    std::vector<std::string> outputPaths;
+    for (std::string const &inputPath : inputPaths) {
+        std::string outputPath = outputDirectory + "/" + FSUtil::GetBaseName(inputPath);
+        outputPaths.push_back(outputPath);
+    }
 
     /*
      * Build the arguments: each input file, then the output directory.
      */
     std::vector<std::string> args;
-    for (Phase::File const &file : inputs) {
-        args.push_back(file.path());
+    for (std::string const &inputPath : inputPaths) {
+        args.push_back(inputPath);
     }
     args.push_back(outputDirectory);
 
     /*
-     * Resolve the tool options.
+     * Resolve the tool options. Inputs can either be full build files or just paths.
      */
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, environment, toolContext->workingDirectory(), inputs, outputs);
+    Tool::Environment toolEnvironment = (inputs ?
+        Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), *inputs, outputPaths) :
+        Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), inputPaths, outputPaths));
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options, std::string(), args);
 
     // TODO(grp): This should be generic for all tools.
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
-    if (_tool->deeplyStatInputDirectories()) {
-        for (Phase::File const &input : inputs) {
+    if (tool->deeplyStatInputDirectories()) {
+        for (std::string const &inputPath : inputPaths) {
             /* Create a dependency info file to track the input directory contents. */
-            auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, input.path());
+            auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, inputPath);
             dependencyInfo.push_back(info);
         }
     }
@@ -95,6 +100,47 @@ resolve(
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();
     toolContext->invocations().push_back(invocation);
+}
+
+void Tool::CopyResolver::
+resolve(
+    Tool::Context *toolContext,
+    pbxsetting::Environment const &baseEnvironment,
+    std::vector<std::string> const &inputs,
+    std::string const &outputDirectory,
+    std::string const &logMessageTitle) const
+{
+    return ResolveInternal(
+        _tool,
+        toolContext,
+        baseEnvironment,
+        inputs,
+        ext::nullopt,
+        outputDirectory,
+        logMessageTitle);
+}
+
+void Tool::CopyResolver::
+resolve(
+    Tool::Context *toolContext,
+    pbxsetting::Environment const &baseEnvironment,
+    std::vector<Phase::File> const &inputs,
+    std::string const &outputDirectory,
+    std::string const &logMessageTitle) const
+{
+    std::vector<std::string> inputPaths;
+    std::transform(inputs.begin(), inputs.end(), std::back_inserter(inputPaths), [&](Phase::File const &input) -> std::string {
+        return input.path();
+    });
+
+    ResolveInternal(
+        _tool,
+        toolContext,
+        baseEnvironment,
+        inputPaths,
+        inputs,
+        outputDirectory,
+        logMessageTitle);
 }
 
 std::unique_ptr<Tool::CopyResolver> Tool::CopyResolver::
