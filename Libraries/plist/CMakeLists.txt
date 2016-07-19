@@ -69,6 +69,10 @@ add_executable(plutil Tools/plutil.cpp)
 target_link_libraries(plutil plist process util)
 install(TARGETS plutil DESTINATION usr/bin)
 
+add_executable(PlistBuddy Tools/PlistBuddy.cpp)
+target_link_libraries(PlistBuddy plist util edit)
+install(TARGETS PlistBuddy DESTINATION usr/bin)
+
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(plist Boolean Tests/test_Boolean.cpp)
   ADD_UNIT_GTEST(plist Real Tests/test_Real.cpp)
