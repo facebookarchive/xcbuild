@@ -302,7 +302,9 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
     /*
      * Write out the output.
      */
-    if (!compileOutput.write(filesystem, ext::nullopt, ext::nullopt, result)) {
+    ext::optional<std::string> partialInfoPlist = (!options.outputPartialInfoPlist().empty() ? ext::optional<std::string>(options.outputPartialInfoPlist()) : ext::nullopt);
+    ext::optional<std::string> dependencyInfo = (!options.exportDependencyInfo().empty() ? ext::optional<std::string>(options.exportDependencyInfo()) : ext::nullopt);
+    if (!compileOutput.write(filesystem, partialInfoPlist, dependencyInfo, result)) {
         /* Error already reported. */
     }
 }
