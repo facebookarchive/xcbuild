@@ -11,6 +11,7 @@
 #define __xcexecution_NinjaExecutor_h
 
 #include <xcexecution/Executor.h>
+#include <pbxbuild/Tool/Invocation.h>
 
 namespace ninja { class Writer; }
 
@@ -44,17 +45,22 @@ private:
         ninja::Writer *writer,
         std::vector<pbxbuild::Tool::Invocation> const &invocations,
         std::unordered_set<std::string> *seenDirectories);
-    bool buildTargetAuxiliaryFiles(
-        libutil::Filesystem *filesystem,
-        ninja::Writer *writer,
-        pbxproj::PBX::Target::shared_ptr const &target,
-        pbxbuild::Target::Environment const &targetEnvironment,
-        std::vector<pbxbuild::Tool::Invocation> const &invocations);
     bool buildTargetInvocations(
         libutil::Filesystem *filesystem,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
         std::vector<pbxbuild::Tool::Invocation> const &invocations);
+
+private:
+    bool buildAuxiliaryFile(
+        ninja::Writer *writer,
+        pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile,
+        std::string const &after);
+    bool buildInvocation(
+        ninja::Writer *writer,
+        pbxbuild::Tool::Invocation const &invocation,
+        std::string const &temporaryDirectory,
+        std::string const &after);
 
 public:
     static std::unique_ptr<NinjaExecutor>
