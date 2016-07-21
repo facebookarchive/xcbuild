@@ -52,7 +52,7 @@ RunInternal(Filesystem *filesystem, Options const &options, Output *output, Resu
         contents.run(filesystem, options, output, result);
     }
 
-    if (!options.compile().empty()) {
+    if (options.compile()) {
         CompileAction compile;
         compile.run(filesystem, options, output, result);
     }
@@ -61,11 +61,11 @@ RunInternal(Filesystem *filesystem, Options const &options, Output *output, Resu
 static Output::Format
 OptionsOutputFormat(Options const &options, Result *result)
 {
-    if (options.outputFormat().empty() || options.outputFormat() == "xml1") {
+    if (!options.outputFormat() || *options.outputFormat() == "xml1") {
         return Output::Format::XML;
-    } else if (options.outputFormat() == "binary1") {
+    } else if (*options.outputFormat() == "binary1") {
         return Output::Format::Binary;
-    } else if (options.outputFormat() == "human-readable-text") {
+    } else if (*options.outputFormat() == "human-readable-text") {
         return Output::Format::Text;
     } else {
         result->normal(Result::Severity::Error, "unknown output format");

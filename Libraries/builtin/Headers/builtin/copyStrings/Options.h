@@ -21,18 +21,18 @@ namespace copyStrings {
 
 class Options {
 private:
-    std::vector<std::string> _inputs;
-    std::string              _outputDirectory;
+    std::vector<std::string>   _inputs;
+    ext::optional<std::string> _outputDirectory;
 
 public:
-    bool                     _validate;
+    ext::optional<bool>        _validate;
 
 public:
-    std::string              _inputEncoding;
-    std::string              _outputEncoding;
+    ext::optional<std::string> _inputEncoding;
+    ext::optional<std::string> _outputEncoding;
 
 public:
-    bool                     _separator;
+    bool                       _separator;
 
 public:
     Options();
@@ -41,17 +41,17 @@ public:
 public:
     std::vector<std::string> const &inputs() const
     { return _inputs; }
-    std::string const &outputDirectory() const
+    ext::optional<std::string> const &outputDirectory() const
     { return _outputDirectory; }
 
 public:
     bool validate() const
-    { return _validate; }
+    { return _validate.value_or(false); }
 
 public:
-    std::string const &inputEncoding() const
+    ext::optional<std::string> const &inputEncoding() const
     { return _inputEncoding; }
-    std::string const &outputEncoding() const
+    ext::optional<std::string> const &outputEncoding() const
     { return _outputEncoding; }
 
 private:

@@ -22,40 +22,40 @@ namespace acdriver {
  */
 class Options {
 private:
-    bool        _version;
-    bool        _printContents;
-    std::vector<std::string> _inputs;
+    ext::optional<bool>        _version;
+    ext::optional<bool>        _printContents;
+    std::vector<std::string>   _inputs;
 
 private:
-    std::string _outputFormat;
-    bool        _warnings;
-    bool        _errors;
-    bool        _notices;
+    ext::optional<std::string> _outputFormat;
+    ext::optional<bool>        _warnings;
+    ext::optional<bool>        _errors;
+    ext::optional<bool>        _notices;
 
 private:
-    std::string _compile;
-    std::string _exportDependencyInfo;
+    ext::optional<std::string> _compile;
+    ext::optional<std::string> _exportDependencyInfo;
 
 private:
-    std::string _optimization;
-    bool        _compressPNGs;
+    ext::optional<std::string> _optimization;
+    ext::optional<bool>        _compressPNGs;
 
 private:
-    std::string _platform;
-    std::string _minimumDeploymentTarget;
-    std::vector<std::string> _targetDevice;
+    ext::optional<std::string> _platform;
+    ext::optional<std::string> _minimumDeploymentTarget;
+    std::vector<std::string>   _targetDevice;
 
 private:
-    std::string _outputPartialInfoPlist;
-    std::string _appIcon;
-    std::string _launchImage;
+    ext::optional<std::string> _outputPartialInfoPlist;
+    ext::optional<std::string> _appIcon;
+    ext::optional<std::string> _launchImage;
 
 private:
-    bool        _enableOnDemandResources;
-    bool        _enableIncrementalDistill;
-    std::string _targetName;
-    std::string _filterForDeviceModel;
-    std::string _filterForDeviceOsVersion;
+    ext::optional<bool>        _enableOnDemandResources;
+    ext::optional<bool>        _enableIncrementalDistill;
+    ext::optional<std::string> _targetName;
+    ext::optional<std::string> _filterForDeviceModel;
+    ext::optional<std::string> _filterForDeviceOsVersion;
 
 public:
     Options();
@@ -63,60 +63,60 @@ public:
 
 public:
     bool version() const
-    { return _version; }
+    { return _version.value_or(false); }
     bool printContents() const
-    { return _printContents; }
-    std::string const &compile() const
+    { return _printContents.value_or(false); }
+    ext::optional<std::string> const &compile() const
     { return _compile; }
 
 public:
-    std::string const &outputFormat() const
+    ext::optional<std::string> const &outputFormat() const
     { return _outputFormat; }
     bool warnings() const
-    { return _warnings; }
+    { return _warnings.value_or(false); }
     bool errors() const
-    { return _errors; }
+    { return _errors.value_or(false); }
     bool notices() const
-    { return _notices; }
+    { return _notices.value_or(false); }
 
 public:
-    std::string const &exportDependencyInfo() const
+    ext::optional<std::string> const &exportDependencyInfo() const
     { return _exportDependencyInfo; }
     std::vector<std::string> const &inputs() const
     { return _inputs; }
 
 public:
-    std::string const &optimization() const
+    ext::optional<std::string> const &optimization() const
     { return _optimization; }
     bool compressPNGs() const
-    { return _compressPNGs; }
+    { return _compressPNGs.value_or(false); }
 
 public:
-    std::string const &platform() const
+    ext::optional<std::string> const &platform() const
     { return _platform; }
-    std::string const &minimumDeploymentTarget() const
+    ext::optional<std::string> const &minimumDeploymentTarget() const
     { return _minimumDeploymentTarget; }
     std::vector<std::string> const &targetDevice() const
     { return _targetDevice; }
 
 public:
-    std::string const &outputPartialInfoPlist() const
+    ext::optional<std::string> const &outputPartialInfoPlist() const
     { return _outputPartialInfoPlist; }
-    std::string const &appIcon() const
+    ext::optional<std::string> const &appIcon() const
     { return _appIcon; }
-    std::string const &launchImage() const
+    ext::optional<std::string> const &launchImage() const
     { return _launchImage; }
 
 public:
     bool enableOnDemandResources() const
-    { return _enableOnDemandResources; }
+    { return _enableOnDemandResources.value_or(false); }
     bool enableIncrementalDistill() const
-    { return _enableIncrementalDistill; }
-    std::string const &targetName() const
+    { return _enableIncrementalDistill.value_or(false); }
+    ext::optional<std::string> const &targetName() const
     { return _targetName; }
-    std::string const &filterForDeviceModel() const
+    ext::optional<std::string> const &filterForDeviceModel() const
     { return _filterForDeviceModel; }
-    std::string const &filterForDeviceOsVersion() const
+    ext::optional<std::string> const &filterForDeviceOsVersion() const
     { return _filterForDeviceOsVersion; }
 
 private:

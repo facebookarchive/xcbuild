@@ -158,26 +158,37 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         return 1;
     }
 
+    /* Validate options. */
+    if (!options.input()) {
+        fprintf(stderr, "error: no input file specified\n");
+        return 1;
+    }
+
+    if (!options.output()) {
+        fprintf(stderr, "error: no output file specified\n");
+        return 1;
+    }
+
     pbxsetting::Environment settingsEnvironment = CreateBuildEnvironment(environment);
 
     /* Read in the input. */
     std::vector<uint8_t> inputContents;
-    if (!filesystem->read(&inputContents, FSUtil::ResolveRelativePath(options.input(), workingDirectory))) {
-        fprintf(stderr, "error: unable to read input %s\n", options.input().c_str());
+    if (!filesystem->read(&inputContents, FSUtil::ResolveRelativePath(*options.input(), workingDirectory))) {
+        fprintf(stderr, "error: unable to read input %s\n", options.input()->c_str());
         return 1;
     }
 
     /* Determine the input format. */
     std::unique_ptr<plist::Format::Any> inputFormat = plist::Format::Any::Identify(inputContents);
     if (inputFormat == nullptr) {
-        fprintf(stderr, "error: input %s is not a plist\n", options.input().c_str());
+        fprintf(stderr, "error: input %s is not a plist\n", options.input()->c_str());
         return 1;
     }
 
     /* Deserialize the input. */
     auto deserialize = plist::Format::Any::Deserialize(inputContents, *inputFormat);
     if (!deserialize.first) {
-        fprintf(stderr, "error: %s: %s\n", options.input().c_str(), deserialize.second.c_str());
+        fprintf(stderr, "error: %s: %s\n", options.input()->c_str(), deserialize.second.c_str());
         return 1;
     }
 
@@ -221,7 +232,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     /*
      * Info file keys/values: it's unknown what these are used for. Just warn.
      */
-    if (!options.infoFileKeys().empty() && !options.infoFileValues().empty()) {
+    if (options.infoFileKeys() || options.infoFileValues()) {
         // TODO(grp): Handle info file keys and values.
         fprintf(stderr, "warning: info file keys and values are not yet implemented\n");
     }
@@ -229,7 +240,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     /*
      * Platform and required architectures: it's unknown what these are used for. Just warn.
      */
-    if (!options.platform().empty() || !options.requiredArchitectures().empty()) {
+    if (options.platform() || !options.requiredArchitectures().empty()) {
         // TODO(grp): Handle platform and required architectures.
 #if 0
         fprintf(stderr, "warning: platform and required architectures are not yet implemented\n");
@@ -244,8 +255,8 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     /*
      * Write the PkgInfo file. This is just the package type and signature.
      */
-    if (!options.genPkgInfo().empty()) {
-        auto result = WritePkgInfo(filesystem, root, FSUtil::ResolveRelativePath(options.genPkgInfo(), workingDirectory));
+    if (options.genPkgInfo()) {
+        auto result = WritePkgInfo(filesystem, root, FSUtil::ResolveRelativePath(*options.genPkgInfo(), workingDirectory));
         if (!result.first) {
             fprintf(stderr, "error: %s\n", result.second.c_str());
             return 1;
@@ -255,7 +266,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     /*
      * Copy the resource rules file. This is used by code signing.
      */
-    if (!options.resourceRulesFile().empty()) {
+    if (options.resourceRulesFile()) {
         std::string resourceRulesInputPath = settingsEnvironment.resolve("CODE_SIGN_RESOURCE_RULES_PATH");
         if (!resourceRulesInputPath.empty()) {
             std::vector<uint8_t> contents;
@@ -264,31 +275,26 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
                 return 1;
             }
 
-            if (!filesystem->write(contents, FSUtil::ResolveRelativePath(options.resourceRulesFile(), workingDirectory))) {
-                fprintf(stderr, "error: could not open output path %s to write\n", options.resourceRulesFile().c_str());
+            if (!filesystem->write(contents, FSUtil::ResolveRelativePath(*options.resourceRulesFile(), workingDirectory))) {
+                fprintf(stderr, "error: could not open output path %s to write\n", options.resourceRulesFile()->c_str());
                 return 1;
             }
         }
-    }
-
-    if (options.output().empty()) {
-        fprintf(stderr, "error: no output file specified\n");
-        return 1;
     }
 
     /*
      * Determine the output format. By default, use the same as the input format.
      */
     plist::Format::Any outputFormat = *inputFormat;
-    if (!options.format().empty()) {
-        if (options.format() == "binary") {
+    if (options.format()) {
+        if (*options.format() == "binary") {
             outputFormat = plist::Format::Any::Create(plist::Format::Binary::Create());
-        } else if (options.format() == "xml") {
+        } else if (*options.format() == "xml") {
             outputFormat = plist::Format::Any::Create(plist::Format::XML::Create(plist::Format::Encoding::UTF8));
-        } else if (options.format() == "ascii" || options.format() == "openstep") {
+        } else if (*options.format() == "ascii" || *options.format() == "openstep") {
             outputFormat = plist::Format::Any::Create(plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8));
         } else {
-            fprintf(stderr, "error: unknown output format %s\n", options.format().c_str());
+            fprintf(stderr, "error: unknown output format %s\n", options.format()->c_str());
             return 1;
         }
     }
@@ -301,8 +307,8 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     }
 
     /* Write out the output. */
-    if (!filesystem->write(*serialize.first, FSUtil::ResolveRelativePath(options.output(), workingDirectory))) {
-        fprintf(stderr, "error: could not open output path %s to write\n", options.output().c_str());
+    if (!filesystem->write(*serialize.first, FSUtil::ResolveRelativePath(*options.output(), workingDirectory))) {
+        fprintf(stderr, "error: could not open output path %s to write\n", options.output()->c_str());
         return 1;
     }
 

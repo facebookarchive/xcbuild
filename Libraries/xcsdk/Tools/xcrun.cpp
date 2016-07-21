@@ -27,36 +27,36 @@ using libutil::Subprocess;
 
 class Options {
 private:
-    bool                     _help;
-    bool                     _version;
+    ext::optional<bool>        _help;
+    ext::optional<bool>        _version;
 
 private:
-    bool                     _run;
-    bool                     _find;
+    ext::optional<bool>        _run;
+    ext::optional<bool>        _find;
 
 private:
-    bool                     _showSDKPath;
-    bool                     _showSDKVersion;
-    bool                     _showSDKBuildVersion;
-    bool                     _showSDKPlatformPath;
-    bool                     _showSDKPlatformVersion;
+    ext::optional<bool>        _showSDKPath;
+    ext::optional<bool>        _showSDKVersion;
+    ext::optional<bool>        _showSDKBuildVersion;
+    ext::optional<bool>        _showSDKPlatformPath;
+    ext::optional<bool>        _showSDKPlatformVersion;
 
 private:
-    bool                     _log;
-    bool                     _verbose;
+    ext::optional<bool>        _log;
+    ext::optional<bool>        _verbose;
 
 private:
-    bool                     _noCache;
-    bool                     _killCache;
+    ext::optional<bool>        _noCache;
+    ext::optional<bool>        _killCache;
 
 private:
-    std::string              _toolchain;
-    std::string              _SDK;
+    ext::optional<std::string> _toolchain;
+    ext::optional<std::string> _SDK;
 
 private:
-    bool                     _separator;
-    std::string              _tool;
-    std::vector<std::string> _args;
+    ext::optional<bool>        _separator;
+    ext::optional<std::string> _tool;
+    std::vector<std::string>   _args;
 
 public:
     Options();
@@ -64,48 +64,48 @@ public:
 
 public:
     bool help() const
-    { return _help; }
+    { return _help.value_or(false); }
     bool version() const
-    { return _version; }
+    { return _version.value_or(false); }
 
 public:
     bool run() const
-    { return _run; }
+    { return _run.value_or(false); }
     bool find() const
-    { return _find; }
+    { return _find.value_or(false); }
 
 public:
     bool showSDKPath() const
-    { return _showSDKPath; }
+    { return _showSDKPath.value_or(false); }
     bool showSDKVersion() const
-    { return _showSDKVersion; }
+    { return _showSDKVersion.value_or(false); }
     bool showSDKBuildVersion() const
-    { return _showSDKBuildVersion; }
+    { return _showSDKBuildVersion.value_or(false); }
     bool showSDKPlatformPath() const
-    { return _showSDKPlatformPath; }
+    { return _showSDKPlatformPath.value_or(false); }
     bool showSDKPlatformVersion() const
-    { return _showSDKPlatformVersion; }
+    { return _showSDKPlatformVersion.value_or(false); }
 
 public:
     bool log() const
-    { return _log; }
+    { return _log.value_or(false); }
     bool verbose() const
-    { return _verbose; }
+    { return _verbose.value_or(false); }
 
 public:
     bool noCache() const
-    { return _noCache; }
+    { return _noCache.value_or(false); }
     bool killCache() const
-    { return _killCache; }
+    { return _killCache.value_or(false); }
 
 public:
-    std::string const &SDK() const
+    ext::optional<std::string> const &SDK() const
     { return _SDK; }
-    std::string const &toolchain() const
+    ext::optional<std::string> const &toolchain() const
     { return _toolchain; }
 
 public:
-    std::string const &tool() const
+    ext::optional<std::string> const &tool() const
     { return _tool; }
     std::vector<std::string> const &args() const
     { return _args; }
@@ -117,21 +117,7 @@ private:
 };
 
 Options::
-Options() :
-    _help                  (false),
-    _version               (false),
-    _run                   (false),
-    _find                  (false),
-    _showSDKPath           (false),
-    _showSDKVersion        (false),
-    _showSDKBuildVersion   (false),
-    _showSDKPlatformPath   (false),
-    _showSDKPlatformVersion(false),
-    _log                   (false),
-    _verbose               (false),
-    _noCache               (false),
-    _killCache             (false),
-    _separator             (false)
+Options()
 {
 }
 
@@ -147,42 +133,42 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 
     if (!_separator) {
         if (arg == "-h" || arg == "--help" || arg == "-help") {
-            return libutil::Options::MarkBool(&_help, arg, it);
+            return libutil::Options::Current<bool>(&_help, arg, it);
         } else if (arg == "--version" || arg == "-version") {
-            return libutil::Options::MarkBool(&_version, arg, it);
+            return libutil::Options::Current<bool>(&_version, arg, it);
         } else if (arg == "-r" || arg == "--run" || arg == "-run") {
-            return libutil::Options::MarkBool(&_run, arg, it);
+            return libutil::Options::Current<bool>(&_run, arg, it);
         } else if (arg == "-f" || arg == "--find" || arg == "-find") {
-            return libutil::Options::MarkBool(&_find, arg, it);
+            return libutil::Options::Current<bool>(&_find, arg, it);
         } else if (arg == "--show-sdk-path" || arg == "-show-sdk-path") {
-            return libutil::Options::MarkBool(&_showSDKPath, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKPath, arg, it);
         } else if (arg == "--show-sdk-version" || arg == "-show-sdk-version") {
-            return libutil::Options::MarkBool(&_showSDKVersion, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKVersion, arg, it);
         } else if (arg == "--show-sdk-build-version" || arg == "-show-sdk-build-version") {
-            return libutil::Options::MarkBool(&_showSDKBuildVersion, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKBuildVersion, arg, it);
         } else if (arg == "--show-sdk-platform-path" || arg == "-show-sdk-platform-path") {
-            return libutil::Options::MarkBool(&_showSDKPlatformPath, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKPlatformPath, arg, it);
         } else if (arg == "--show-sdk-platform-version" || arg == "-show-sdk-platform-version") {
-            return libutil::Options::MarkBool(&_showSDKPlatformVersion, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKPlatformVersion, arg, it);
         } else if (arg == "-l" || arg == "--log" || arg == "-log") {
-            return libutil::Options::MarkBool(&_log, arg, it);
+            return libutil::Options::Current<bool>(&_log, arg, it);
         } else if (arg == "-v" || arg == "--verbose" || arg == "-verbose") {
-            return libutil::Options::MarkBool(&_verbose, arg, it);
+            return libutil::Options::Current<bool>(&_verbose, arg, it);
         } else if (arg == "-n" || arg == "--no-cache" || arg == "-no-cache") {
-            return libutil::Options::MarkBool(&_noCache, arg, it);
+            return libutil::Options::Current<bool>(&_noCache, arg, it);
         } else if (arg == "-k" || arg == "--kill-cache" || arg == "-kill-cache") {
-            return libutil::Options::MarkBool(&_killCache, arg, it);
+            return libutil::Options::Current<bool>(&_killCache, arg, it);
         } else if (arg == "--sdk" || arg == "-sdk") {
-            return libutil::Options::NextString(&_SDK, args, it);
+            return libutil::Options::Next<std::string>(&_SDK, args, it);
         } else if (arg == "--toolchain" || arg == "-toolchain") {
-            return libutil::Options::NextString(&_toolchain, args, it);
+            return libutil::Options::Next<std::string>(&_toolchain, args, it);
         } else if (arg == "--") {
-            return libutil::Options::MarkBool(&_separator, arg, it);
+            return libutil::Options::Current<bool>(&_separator, arg, it);
         }
     }
 
-    if (_separator || !_tool.empty() || (!arg.empty() && arg[0] != '-')) {
-        if (_tool.empty()) {
+    if (_separator || _tool || (!arg.empty() && arg[0] != '-')) {
+        if (!_tool) {
             _tool = arg;
             return std::make_pair(true, std::string());
         } else {
@@ -252,7 +238,7 @@ main(int argc, char **argv)
     /*
      * Handle the basic options that don't need SDKs.
      */
-    if (options.tool().empty()) {
+    if (!options.tool()) {
         if (options.help()) {
             return Help();
         } else if (options.version()) {
@@ -263,19 +249,16 @@ main(int argc, char **argv)
     /*
      * Parse fallback options from the environment.
      */
-    std::string toolchainsInput = options.toolchain();
-    if (toolchainsInput.empty()) {
+    ext::optional<std::string> toolchainsInput = options.toolchain();
+    if (!toolchainsInput) {
         if (char const *toolchains = getenv("TOOLCHAINS")) {
             toolchainsInput = std::string(toolchains);
         }
     }
-    std::string SDK = options.SDK();
-    if (SDK.empty()) {
+    ext::optional<std::string> SDK = options.SDK();
+    if (!SDK) {
         if (char const *sdkroot = getenv("SDKROOT")) {
             SDK = std::string(sdkroot);
-        } else {
-            /* Default SDK. */
-            SDK = "macosx";
         }
     }
     bool verbose = options.verbose() || getenv("xcrun_verbose") != NULL;
@@ -315,9 +298,13 @@ main(int argc, char **argv)
     /*
      * Determine the SDK to use.
      */
-    xcsdk::SDK::Target::shared_ptr target = manager->findTarget(SDK);
+    xcsdk::SDK::Target::shared_ptr target = manager->findTarget(SDK.value_or("macosx"));
     if (target == nullptr) {
-        fprintf(stderr, "error: unable to find sdk '%s'\n", SDK.c_str());
+        if (SDK) {
+            fprintf(stderr, "error: unable to find sdk '%s'\n", SDK->c_str());
+        } else {
+            fprintf(stderr, "error: unable to find default sdk\n");
+        }
         return -1;
     }
     if (verbose) {
@@ -328,9 +315,9 @@ main(int argc, char **argv)
      * Determine the toolchains to use. Default to the SDK's toolchains.
      */
     xcsdk::SDK::Toolchain::vector toolchains;
-    if (!toolchainsInput.empty()) {
+    if (toolchainsInput) {
         /* If the custom toolchain exists, use it instead. */
-        std::vector<std::string> toolchainTokens = pbxsetting::Type::ParseList(toolchainsInput);
+        std::vector<std::string> toolchainTokens = pbxsetting::Type::ParseList(*toolchainsInput);
         for (std::string const &toolchainToken : toolchainTokens) {
             if (auto TC = manager->findToolchain(toolchainToken)) {
                 toolchains.push_back(TC);
@@ -338,7 +325,7 @@ main(int argc, char **argv)
         }
 
         if (toolchains.empty()) {
-            fprintf(stderr, "error: unable to find toolchains in '%s'\n", toolchainsInput.c_str());
+            fprintf(stderr, "error: unable to find toolchains in '%s'\n", toolchainsInput->c_str());
             return -1;
         }
     } else {
@@ -388,7 +375,7 @@ main(int argc, char **argv)
             return -1;
         }
     } else {
-        if (options.tool().empty()) {
+        if (!options.tool()) {
             return Help("no tool provided");
         }
 
@@ -402,13 +389,13 @@ main(int argc, char **argv)
         /*
          * Find the tool to execute.
          */
-        ext::optional<std::string> executable = filesystem->findExecutable(options.tool(), executablePaths);
+        ext::optional<std::string> executable = filesystem->findExecutable(*options.tool(), executablePaths);
         if (!executable) {
-            fprintf(stderr, "error: tool '%s' not found\n", options.tool().c_str());
+            fprintf(stderr, "error: tool '%s' not found\n", options.tool()->c_str());
             return 1;
         }
         if (verbose) {
-            fprintf(stderr, "verbose: resolved tool '%s' to: %s\n", options.tool().c_str(), executable->c_str());
+            fprintf(stderr, "verbose: resolved tool '%s' to: %s\n", options.tool()->c_str(), executable->c_str());
         }
 
         if (options.find()) {
@@ -438,7 +425,7 @@ main(int argc, char **argv)
             }
             Subprocess process;
             if (!process.execute(*executable, options.args(), environment)) {
-                fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool().c_str());
+                fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
                 return -1;
             }
 

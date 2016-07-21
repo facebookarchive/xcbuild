@@ -35,7 +35,7 @@ VersionAction::
 int VersionAction::
 Run(Filesystem const *filesystem, Options const &options)
 {
-    if (options.sdk().empty()) {
+    if (!options.sdk()) {
         // TODO(grp): Real version numbers.
         printf("xcbuild version 0.1\n");
         printf("Build version 1\n");
@@ -53,9 +53,9 @@ Run(Filesystem const *filesystem, Options const &options)
             return 1;
         }
 
-        xcsdk::SDK::Target::shared_ptr target = manager->findTarget(options.sdk());
+        xcsdk::SDK::Target::shared_ptr target = manager->findTarget(*options.sdk());
         if (target == nullptr) {
-            fprintf(stderr, "error: cannot find sdk '%s'\n", options.sdk().c_str());
+            fprintf(stderr, "error: cannot find sdk '%s'\n", options.sdk()->c_str());
             return 1;
         }
 

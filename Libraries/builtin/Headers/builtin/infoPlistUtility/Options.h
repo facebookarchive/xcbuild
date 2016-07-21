@@ -21,60 +21,60 @@ namespace infoPlistUtility {
 
 class Options {
 private:
-    std::string              _input;
-    std::vector<std::string> _additionalContentFiles;
-    std::string              _output;
+    ext::optional<std::string> _input;
+    std::vector<std::string>   _additionalContentFiles;
+    ext::optional<std::string> _output;
 
 private:
-    std::string              _format;
-    bool                     _expandBuildSettings;
+    ext::optional<std::string> _format;
+    ext::optional<bool>        _expandBuildSettings;
 
 private:
-    std::string              _platform;
-    std::vector<std::string> _requiredArchitectures;
+    ext::optional<std::string> _platform;
+    std::vector<std::string>   _requiredArchitectures;
 
 private:
-    std::string              _genPkgInfo;
-    std::string              _resourceRulesFile;
+    ext::optional<std::string> _genPkgInfo;
+    ext::optional<std::string> _resourceRulesFile;
 
 private:
-    std::string              _infoFileKeys;
-    std::string              _infoFileValues;
+    ext::optional<std::string> _infoFileKeys;
+    ext::optional<std::string> _infoFileValues;
 
 public:
     Options();
     ~Options();
 
 public:
-    std::string const &input() const
+    ext::optional<std::string> const &input() const
     { return _input; }
     std::vector<std::string> const &additionalContentFiles() const
     { return _additionalContentFiles; }
-    std::string const &output() const
+    ext::optional<std::string> const &output() const
     { return _output; }
 
 public:
-    std::string const &format() const
+    ext::optional<std::string> const &format() const
     { return _format; }
     bool expandBuildSettings() const
-    { return _expandBuildSettings; }
+    { return _expandBuildSettings.value_or(false); }
 
 public:
-    std::string const &platform() const
+    ext::optional<std::string> const &platform() const
     { return _platform; }
     std::vector<std::string> const &requiredArchitectures() const
     { return _requiredArchitectures; }
 
 public:
-    std::string const &genPkgInfo() const
+    ext::optional<std::string> const &genPkgInfo() const
     { return _genPkgInfo; }
-    std::string const &resourceRulesFile() const
+    ext::optional<std::string> const &resourceRulesFile() const
     { return _resourceRulesFile; }
 
 public:
-    std::string const &infoFileKeys() const
+    ext::optional<std::string> const &infoFileKeys() const
     { return _infoFileKeys; }
-    std::string const &infoFileValues() const
+    ext::optional<std::string> const &infoFileValues() const
     { return _infoFileValues; }
 
 private:

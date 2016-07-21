@@ -49,7 +49,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      * It's unclear if an output directory should be required, but require it for
      * now since the behavior without one is also unclear.
      */
-    if (options.outputDirectory().empty()) {
+    if (!options.outputDirectory()) {
         fprintf(stderr, "error: output directory not provided\n");
         return 1;
     }
@@ -66,21 +66,21 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      * Determine the output format. Leave null for the same as input.
      */
     std::unique_ptr<plist::Format::Any> convertFormat = nullptr;
-    if (!options.convertFormat().empty()) {
-        if (options.convertFormat() == "binary1") {
+    if (options.convertFormat()) {
+        if (*options.convertFormat() == "binary1") {
             convertFormat = std::unique_ptr<plist::Format::Any>(new plist::Format::Any(plist::Format::Any::Create(
                 plist::Format::Binary::Create()
             )));
-        } else if (options.convertFormat() == "xml1") {
+        } else if (*options.convertFormat() == "xml1") {
             convertFormat = std::unique_ptr<plist::Format::Any>(new plist::Format::Any(plist::Format::Any::Create(
                 plist::Format::XML::Create(plist::Format::Encoding::UTF8)
             )));
-        } else if (options.convertFormat() == "ascii1" || options.convertFormat() == "openstep1") {
+        } else if (*options.convertFormat() == "ascii1" || *options.convertFormat() == "openstep1") {
             convertFormat = std::unique_ptr<plist::Format::Any>(new plist::Format::Any(plist::Format::Any::Create(
                 plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8)
             )));
         } else {
-            fprintf(stderr, "error: unknown output format %s\n", options.convertFormat().c_str());
+            fprintf(stderr, "error: unknown output format %s\n", options.convertFormat()->c_str());
             return 1;
         }
     }
@@ -132,7 +132,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         }
 
         /* Output to the same name as the input, but in the output directory. */
-        std::string outputPath = FSUtil::ResolveRelativePath(options.outputDirectory(), workingDirectory) + "/" + FSUtil::GetBaseName(inputPath);
+        std::string outputPath = FSUtil::ResolveRelativePath(*options.outputDirectory(), workingDirectory) + "/" + FSUtil::GetBaseName(inputPath);
 
         /* Write out the output. */
         if (!filesystem->write(outputContents, outputPath)) {

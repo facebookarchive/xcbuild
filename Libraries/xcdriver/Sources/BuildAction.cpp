@@ -34,9 +34,9 @@ BuildAction::
 }
 
 static std::shared_ptr<xcformatter::Formatter>
-CreateFormatter(std::string const &formatter)
+CreateFormatter(ext::optional<std::string> const &formatter)
 {
-    if (formatter == "default" || formatter.empty()) {
+    if (!formatter || *formatter == "default") {
         /* Only use color if attached to a terminal. */
         bool color = isatty(fileno(stdout));
 
@@ -49,16 +49,16 @@ CreateFormatter(std::string const &formatter)
 
 static std::unique_ptr<xcexecution::Executor>
 CreateExecutor(
-    std::string const &executor,
+    ext::optional<std::string> const &executor,
     std::shared_ptr<xcformatter::Formatter> const &formatter,
     bool dryRun,
     bool generate)
 {
-    if (executor == "simple" || executor.empty()) {
+    if (!executor || *executor == "simple") {
         auto registry = builtin::Registry::Default();
         auto executor = xcexecution::SimpleExecutor::Create(formatter, dryRun, registry);
         return libutil::static_unique_pointer_cast<xcexecution::Executor>(std::move(executor));
-    } else if (executor == "ninja") {
+    } else if (*executor == "ninja") {
         auto executor = xcexecution::NinjaExecutor::Create(formatter, dryRun, generate);
         return libutil::static_unique_pointer_cast<xcexecution::Executor>(std::move(executor));
     }
@@ -69,15 +69,15 @@ CreateExecutor(
 static bool
 VerifySupportedOptions(Options const &options)
 {
-    if (!options.toolchain().empty()) {
+    if (options.toolchain()) {
         fprintf(stderr, "warning: toolchain option not implemented\n");
     }
 
-    if (!options.destination().empty() || !options.destinationTimeout().empty()) {
+    if (options.destination() || options.destinationTimeout()) {
         fprintf(stderr, "warning: destination option not implemented\n");
     }
 
-    if (options.parallelizeTargets() || options.jobs() > 0) {
+    if (options.parallelizeTargets() || options.jobs()) {
         fprintf(stderr, "warning: job control option not implemented\n");
     }
 
@@ -89,11 +89,11 @@ VerifySupportedOptions(Options const &options)
         fprintf(stderr, "warning: build mode option not implemented\n");
     }
 
-    if (!options.derivedDataPath().empty()) {
+    if (options.derivedDataPath()) {
         fprintf(stderr, "warning: custom derived data path not implemented\n");
     }
 
-    if (!options.resultBundlePath().empty()) {
+    if (options.resultBundlePath()) {
         fprintf(stderr, "warning: result bundle path not implemented\n");
     }
 
@@ -118,7 +118,7 @@ Run(Filesystem *filesystem, Options const &options)
      */
     std::shared_ptr<xcformatter::Formatter> formatter = CreateFormatter(options.formatter());
     if (formatter == nullptr) {
-        fprintf(stderr, "error: unknown formatter %s\n", options.formatter().c_str());
+        fprintf(stderr, "error: unknown formatter '%s'\n", options.formatter()->c_str());
         return -1;
     }
 
@@ -127,7 +127,7 @@ Run(Filesystem *filesystem, Options const &options)
      */
     std::unique_ptr<xcexecution::Executor> executor = CreateExecutor(options.executor(), formatter, options.dryRun(), options.generate());
     if (executor == nullptr) {
-        fprintf(stderr, "error: unknown executor %s\n", options.executor().c_str());
+        fprintf(stderr, "error: unknown executor '%s'\n", options.executor()->c_str());
         return -1;
     }
 

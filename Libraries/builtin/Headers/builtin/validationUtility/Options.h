@@ -21,21 +21,21 @@ namespace validationUtility {
 
 class Options {
 private:
-    std::string _input;
-    std::string _infoPlistPath;
-    bool        _validateForStore;
+    ext::optional<std::string> _input;
+    ext::optional<std::string> _infoPlistPath;
+    ext::optional<bool>        _validateForStore;
 
 public:
     Options();
     ~Options();
 
 public:
-    std::string const &input() const
+    ext::optional<std::string> const &input() const
     { return _input; }
-    std::string const &infoPlistPath() const
+    ext::optional<std::string> const &infoPlistPath() const
     { return _infoPlistPath; }
     bool validateForStore() const
-    { return _validateForStore; }
+    { return _validateForStore.value_or(false); }
 
 private:
     friend class libutil::Options;

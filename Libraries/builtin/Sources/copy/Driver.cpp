@@ -62,6 +62,11 @@ CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const
 static int
 Run(Filesystem *filesystem, Options const &options, std::string const &workingDirectory)
 {
+    if (!options.output()) {
+        fprintf(stderr, "error: no output path provided\n");
+        return 1;
+    }
+
     if (options.stripDebugSymbols() || options.bitcodeStrip() != Options::BitcodeStripMode::None) {
         // TODO(grp): Implement strip support when copying.
 #if 0
@@ -73,7 +78,7 @@ Run(Filesystem *filesystem, Options const &options, std::string const &workingDi
         fprintf(stderr, "warning: preserve HFS data is not supported\n");
     }
 
-    std::string const &output = FSUtil::ResolveRelativePath(options.output(), workingDirectory);
+    std::string const &output = FSUtil::ResolveRelativePath(*options.output(), workingDirectory);
     auto excludes = std::unordered_set<std::string>(options.excludes().begin(), options.excludes().end());
 
     for (std::string input : options.inputs()) {

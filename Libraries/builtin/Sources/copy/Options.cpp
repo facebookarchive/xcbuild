@@ -12,13 +12,7 @@
 using builtin::copy::Options;
 
 Options::
-Options() :
-    _verbose(false),
-    _preserveHFSData(false),
-    _ignoreMissingInputs(false),
-    _resolveSrcSymlinks(false),
-    _stripDebugSymbols(false),
-    _bitcodeStrip(BitcodeStripMode::None)
+Options()
 {
 }
 
@@ -33,48 +27,42 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-V") {
-        return libutil::Options::MarkBool(&_verbose, arg, it);
+        return libutil::Options::Current<bool>(&_verbose, arg, it);
     } else if (arg == "-preserve-hfs-data") {
-        return libutil::Options::MarkBool(&_preserveHFSData, arg, it);
+        return libutil::Options::Current<bool>(&_preserveHFSData, arg, it);
     } else if (arg == "-ignore-missing-inputs") {
-        return libutil::Options::MarkBool(&_ignoreMissingInputs, arg, it);
+        return libutil::Options::Current<bool>(&_ignoreMissingInputs, arg, it);
     } else if (arg == "-resolve-src-symlinks") {
-        return libutil::Options::MarkBool(&_resolveSrcSymlinks, arg, it);
+        return libutil::Options::Current<bool>(&_resolveSrcSymlinks, arg, it);
     } else if (arg == "-exclude") {
-        std::string exclude;
-        std::pair<bool, std::string> result = libutil::Options::NextString(&exclude, args, it);
-        if (result.first) {
-            _excludes.push_back(exclude);
-        }
-        return result;
+        return libutil::Options::AppendNext<std::string>(&_excludes, args, it);
     } else if (arg == "-strip-debug-symbols") {
-        return libutil::Options::MarkBool(&_stripDebugSymbols, arg, it);
+        return libutil::Options::Current<bool>(&_stripDebugSymbols, arg, it);
     } else if (arg == "-strip-tool") {
-        return libutil::Options::NextString(&_stripTool, args, it);
+        return libutil::Options::Next<std::string>(&_stripTool, args, it);
     } else if (arg == "-bitcode-strip") {
-        std::string mode;
-        std::pair<bool, std::string> result = libutil::Options::NextString(&mode, args, it);
+        ext::optional<std::string> mode;
+        std::pair<bool, std::string> result = libutil::Options::Next<std::string>(&mode, args, it);
         if (result.first) {
-            if (mode == "none") {
+            if (*mode == "none") {
                 _bitcodeStrip = BitcodeStripMode::None;
-            } else if (mode == "replace-with-marker") {
+            } else if (*mode == "replace-with-marker") {
                 _bitcodeStrip = BitcodeStripMode::ReplaceWithMarker;
-            } else if (mode == "all") {
+            } else if (*mode == "all") {
                 _bitcodeStrip = BitcodeStripMode::All;
             } else {
-                return std::make_pair<bool, std::string>(false, "unknown bitcode strip mode");
+                return std::make_pair<bool, std::string>(false, "unknown bitcode strip mode '" + *mode + "'");
             }
         }
         return result;
     } else if (arg == "-bitcode-strip-tool") {
-        return libutil::Options::NextString(&_bitcodeStripTool, args, it);
+        return libutil::Options::Next<std::string>(&_bitcodeStripTool, args, it);
     } else if (!arg.empty() && arg[0] != '-') {
         if (*it == std::prev(args.end())) {
-            _output = arg;
+            return libutil::Options::Current<std::string>(&_output, arg);
         } else {
-            _inputs.push_back(arg);
+            return libutil::Options::AppendCurrent<std::string>(&_inputs, arg);
         }
-        return std::make_pair(true, std::string());
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }

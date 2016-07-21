@@ -59,25 +59,25 @@ public:
     };
 
 private:
-    bool                     _help;
-    bool                     _print;
-    bool                     _lint;
+    ext::optional<bool>                _help;
+    ext::optional<bool>                _print;
+    ext::optional<bool>                _lint;
 
 private:
-    std::shared_ptr<plist::Format::Type> _convert;
+    ext::optional<plist::Format::Type> _convert;
 
 public:
-    std::vector<Adjustment>  _adjustments;
+    std::vector<Adjustment>            _adjustments;
 
 private:
-    std::vector<std::string> _inputs;
-    std::string              _output;
-    std::string              _extension;
-    bool                     _separator;
+    std::vector<std::string>           _inputs;
+    ext::optional<std::string>         _output;
+    ext::optional<std::string>         _extension;
+    ext::optional<bool>                _separator;
 
 private:
-    bool                     _silent;
-    bool                     _humanReadable;
+    ext::optional<bool>                _silent;
+    ext::optional<bool>                _humanReadable;
 
 public:
     Options();
@@ -85,14 +85,14 @@ public:
 
 public:
     bool help() const
-    { return _help; }
+    { return _help.value_or(false); }
     bool print() const
-    { return _print; }
+    { return _print.value_or(false); }
     bool lint() const
-    { return _lint; }
+    { return _lint.value_or(false); }
 
 public:
-    std::shared_ptr<plist::Format::Type> const &convert() const
+    ext::optional<plist::Format::Type> const &convert() const
     { return _convert; }
 
 public:
@@ -102,16 +102,16 @@ public:
 public:
     std::vector<std::string> const &inputs() const
     { return _inputs; }
-    std::string const &output() const
+    ext::optional<std::string> const &output() const
     { return _output; }
-    std::string const &extension() const
+    ext::optional<std::string> const &extension() const
     { return _extension; }
 
 public:
     bool silent() const
-    { return _silent; }
+    { return _silent.value_or(false); }
     bool humanReadable() const
-    { return _humanReadable; }
+    { return _humanReadable.value_or(false); }
 
 private:
     friend class libutil::Options;
@@ -120,13 +120,7 @@ private:
 };
 
 Options::
-Options() :
-    _help         (false),
-    _print        (false),
-    _lint         (false),
-    _separator    (false),
-    _silent       (false),
-    _humanReadable(false)
+Options()
 {
 }
 
@@ -146,20 +140,20 @@ Adjustment(Type type, std::string const &path, std::unique_ptr<plist::Object con
 static std::pair<bool, std::string>
 NextFormatType(plist::Format::Type *type, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it)
 {
-    std::string format;
-    std::pair<bool, std::string> result = libutil::Options::NextString(&format, args, it);
+    ext::optional<std::string> format;
+    std::pair<bool, std::string> result = libutil::Options::Next<std::string>(&format, args, it);
     if (result.first) {
-        if (format == "xml1") {
+        if (*format == "xml1") {
             *type = plist::Format::Type::XML;
-        } else if (format == "binary1") {
+        } else if (*format == "binary1") {
             *type = plist::Format::Type::Binary;
-        } else if (format == "openstep1" || format == "ascii1") {
+        } else if (*format == "openstep1" || *format == "ascii1") {
             *type = plist::Format::Type::ASCII;
-        } else if (format == "json") {
+        } else if (*format == "json") {
             // TODO(grp): Support JSON output.
             return std::make_pair(false, "JSON not yet implemented");
         } else {
-            return std::make_pair(false, "unknown format " + format);
+            return std::make_pair(false, "unknown format " + *format);
         }
     }
     return result;
@@ -222,60 +216,60 @@ NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, 
 {
     std::pair<bool, std::string> result;
 
-    std::string path;
-    result = libutil::Options::NextString(&path, args, it);
+    ext::optional<std::string> path;
+    result = libutil::Options::Next<std::string>(&path, args, it);
     if (!result.first) {
         return result;
     }
 
-    std::string arg;
-    result = libutil::Options::NextString(&arg, args, it);
+    ext::optional<std::string> arg;
+    result = libutil::Options::Next<std::string>(&arg, args, it);
     if (!result.first) {
         return result;
     }
 
-    std::string value;
-    result = libutil::Options::NextString(&value, args, it);
+    ext::optional<std::string> value;
+    result = libutil::Options::Next<std::string>(&value, args, it);
     if (!result.first) {
         return result;
     }
 
     std::unique_ptr<plist::Object const> object = nullptr;
 
-    if (arg == "-bool") {
-        bool boolean = (value == "YES" || value == "true");
+    if (*arg == "-bool") {
+        bool boolean = (*value == "YES" || *value == "true");
         object = plist::Boolean::New(boolean);
-    } else if (arg == "-integer") {
+    } else if (*arg == "-integer") {
         char *end = NULL;
-        long long integer = std::strtoll(value.c_str(), &end, 0);
+        long long integer = std::strtoll(value->c_str(), &end, 0);
 
-        if (end != value.c_str()) {
+        if (end != value->c_str()) {
             object = plist::Integer::New(integer);
         } else {
             return std::make_pair(false, "invalid integer argument");
         }
-    } else if (arg == "-float") {
+    } else if (*arg == "-float") {
         char *end = NULL;
-        double real = std::strtod(value.c_str(), &end);
+        double real = std::strtod(value->c_str(), &end);
 
-        if (end != value.c_str()) {
+        if (end != value->c_str()) {
             object = plist::Real::New(real);
         } else {
             return std::make_pair(false, "invalid float argument");
         }
-    } else if (arg == "-string") {
-        object = plist::String::New(value);
-    } else if (arg == "-date") {
-        object = plist::Date::New(value);
-    } else if (arg == "-data") {
-        object = plist::Data::New(value);
-    } else if (arg == "-xml") {
-        std::pair<bool, std::string> result = SanitizeXMLFormat(&value);
+    } else if (*arg == "-string") {
+        object = plist::String::New(*value);
+    } else if (*arg == "-date") {
+        object = plist::Date::New(*value);
+    } else if (*arg == "-data") {
+        object = plist::Data::New(*value);
+    } else if (*arg == "-xml") {
+        std::pair<bool, std::string> result = SanitizeXMLFormat(&*value);
         if (!result.first) {
             return result;
         }
 
-        std::vector<uint8_t> contents = std::vector<uint8_t>(value.begin(), value.end());
+        std::vector<uint8_t> contents = std::vector<uint8_t>(value->begin(), value->end());
         plist::Format::XML format = plist::Format::XML::Create(plist::Format::Encoding::UTF8);
 
         auto deserialize = plist::Format::XML::Deserialize(contents, format);
@@ -284,13 +278,13 @@ NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, 
         }
 
         object = std::move(deserialize.first);
-    } else if (arg == "-json") {
+    } else if (*arg == "-json") {
         return std::make_pair(false, "JSON not yet implemented");
     } else {
-        return std::make_pair(false, "unknown type option " + arg);
+        return std::make_pair(false, "unknown type option " + *arg);
     }
 
-    *adjustment = Options::Adjustment(type, path, std::move(object));
+    *adjustment = Options::Adjustment(type, *path, std::move(object));
 
     return result;
 }
@@ -301,21 +295,20 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (_separator) {
-        _inputs.push_back(arg);
-        return std::make_pair(true, std::string());
+        return libutil::Options::AppendCurrent<std::string>(&_inputs, arg);
     }
 
     if (arg == "-help") {
-        return libutil::Options::MarkBool(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg, it);
     } else if (arg == "-lint") {
-        return libutil::Options::MarkBool(&_lint, arg, it);
+        return libutil::Options::Current<bool>(&_lint, arg, it);
     } else if (arg == "-p") {
-        return libutil::Options::MarkBool(&_print, arg, it);
+        return libutil::Options::Current<bool>(&_print, arg, it);
     } else if (arg == "-convert") {
         plist::Format::Type type;
         std::pair<bool, std::string> result = NextFormatType(&type, args, it);
         if (result.first) {
-            _convert = std::make_shared<plist::Format::Type>(type);
+            _convert = type;
         }
         return result;
     } else if (arg == "-insert") {
@@ -333,21 +326,21 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         }
         return result;
     } else if (arg == "-remove") {
-        std::string remove;
-        std::pair<bool, std::string> result = libutil::Options::NextString(&remove, args, it);
+        ext::optional<std::string> remove;
+        std::pair<bool, std::string> result = libutil::Options::Next<std::string>(&remove, args, it);
         if (result.first) {
-            Options::Adjustment adjustment = Options::Adjustment(Options::Adjustment::Type::Remove, remove, nullptr);
+            Options::Adjustment adjustment = Options::Adjustment(Options::Adjustment::Type::Remove, *remove, nullptr);
             _adjustments.emplace_back(std::move(adjustment));
         }
         return result;
     } else if (arg == "-extract") {
-        std::string path;
-        std::pair<bool, std::string> result = libutil::Options::NextString(&path, args, it);
+        ext::optional<std::string> path;
+        std::pair<bool, std::string> result = libutil::Options::Next<std::string>(&path, args, it);
         if (!result.first) {
             return result;
         }
 
-        Options::Adjustment adjustment = Options::Adjustment(Options::Adjustment::Type::Extract, path, nullptr);
+        Options::Adjustment adjustment = Options::Adjustment(Options::Adjustment::Type::Extract, *path, nullptr);
         _adjustments.emplace_back(std::move(adjustment));
 
         plist::Format::Type type;
@@ -356,21 +349,20 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
             return result;
         }
 
-        _convert = std::make_shared<plist::Format::Type>(type);
+        _convert = type;
         return result;
     } else if (arg == "-e") {
-        return libutil::Options::NextString(&_extension, args, it);
+        return libutil::Options::Next<std::string>(&_extension, args, it);
     } else if (arg == "-o") {
-        return libutil::Options::NextString(&_output, args, it);
+        return libutil::Options::Next<std::string>(&_output, args, it);
     } else if (arg == "-s") {
-        return libutil::Options::MarkBool(&_silent, arg, it);
+        return libutil::Options::Current<bool>(&_silent, arg, it);
     } else if (arg == "-r") {
-        return libutil::Options::MarkBool(&_humanReadable, arg, it);
+        return libutil::Options::Current<bool>(&_humanReadable, arg, it);
     } else if (arg == "--") {
-        return libutil::Options::MarkBool(&_separator, arg, it);
+        return libutil::Options::Current<bool>(&_separator, arg, it);
     } else if (!arg.empty() && arg[0] != '-') {
-        _inputs.push_back(arg);
-        return std::make_pair(true, std::string());
+        return libutil::Options::AppendCurrent<std::string>(&_inputs, arg);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }
@@ -485,14 +477,14 @@ Print(libutil::Filesystem *filesystem, Options const &options, std::unique_ptr<p
 static std::string
 OutputPath(Options const &options, std::string const &file)
 {
-    if (!options.output().empty()) {
+    if (options.output()) {
         /* A specified output path. */
-        return options.output();
+        return *options.output();
     }
 
-    if (file != "-" && !options.extension().empty()) {
+    if (file != "-" && options.extension()) {
         /* Replace the file extension with the provided one. */
-        return libutil::FSUtil::GetDirectoryName(file) + "/" + libutil::FSUtil::GetBaseNameWithoutExtension(file) + "." + options.extension();
+        return libutil::FSUtil::GetDirectoryName(file) + "/" + libutil::FSUtil::GetBaseNameWithoutExtension(file) + "." + *options.extension();
     }
 
     /* Default to overwriting the input. */
@@ -598,7 +590,7 @@ Modify(libutil::Filesystem *filesystem, Options const &options, std::string cons
 
     /* Find output format. */
     plist::Format::Any out = format;
-    if (options.convert() != nullptr) {
+    if (options.convert()) {
         switch (*options.convert()) {
             case plist::Format::Type::Binary: {
                 plist::Format::Binary binary = plist::Format::Binary::Create();
@@ -649,7 +641,7 @@ main(int argc, char **argv)
     }
 
     /* Detect conflicting mode options. */
-    bool modify = (options.convert() != nullptr || options.adjustments().size() > 0);
+    bool modify = (options.convert() || !options.adjustments().empty());
     if ((modify && options.lint()) ||
         (modify && options.print()) ||
         (modify && options.help()) ||

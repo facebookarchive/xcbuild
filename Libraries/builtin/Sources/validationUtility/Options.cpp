@@ -27,15 +27,9 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-validate-for-store") {
-        return libutil::Options::MarkBool(&_validateForStore, arg, it);
+        return libutil::Options::Current<bool>(&_validateForStore, arg, it);
     } else if (!arg.empty() && arg[0] != '-') {
-        if (_input.empty()) {
-            _input = arg;
-            return std::make_pair(true, std::string());
-        } else {
-            return std::make_pair(false, "multiple inputs");
-        }
-        return std::make_pair(true, std::string());
+        return libutil::Options::Current<std::string>(&_input, arg);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }

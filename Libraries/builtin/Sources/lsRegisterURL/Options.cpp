@@ -26,11 +26,6 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 {
     std::string const &arg = **it;
 
-    if (_input.empty()) {
-        _input = arg;
-        return std::make_pair(true, std::string());
-    } else {
-        return std::make_pair(false, "multiple input files");
-    }
+    return libutil::Options::Current<std::string>(&_input, arg);
 }
 

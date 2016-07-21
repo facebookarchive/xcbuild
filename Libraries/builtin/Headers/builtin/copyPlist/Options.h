@@ -21,17 +21,17 @@ namespace copyPlist {
 
 class Options {
 private:
-    std::vector<std::string> _inputs;
-    std::string              _outputDirectory;
+    std::vector<std::string>   _inputs;
+    ext::optional<std::string> _outputDirectory;
 
 public:
-    bool                     _validate;
+    ext::optional<bool>        _validate;
 
 public:
-    std::string              _convertFormat;
+    ext::optional<std::string> _convertFormat;
 
 public:
-    bool                     _separator;
+    bool                       _separator;
 
 public:
     Options();
@@ -40,15 +40,15 @@ public:
 public:
     std::vector<std::string> const &inputs() const
     { return _inputs; }
-    std::string const &outputDirectory() const
+    ext::optional<std::string> const &outputDirectory() const
     { return _outputDirectory; }
 
 public:
     bool validate() const
-    { return _validate; }
+    { return _validate.value_or(false); }
 
 public:
-    std::string const &convertFormat() const
+    ext::optional<std::string> const &convertFormat() const
     { return _convertFormat; }
 
 private:

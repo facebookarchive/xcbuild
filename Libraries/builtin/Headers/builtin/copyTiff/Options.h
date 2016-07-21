@@ -21,17 +21,17 @@ namespace copyTiff {
 
 class Options {
 private:
-    std::vector<std::string> _inputs;
-    std::string              _outputDirectory;
+    std::vector<std::string>   _inputs;
+    ext::optional<std::string> _outputDirectory;
 
 public:
-    bool                     _validate;
+    ext::optional<bool>        _validate;
 
 public:
-    std::string              _compressionFormat;
+    ext::optional<std::string> _compressionFormat;
 
 public:
-    bool                     _separator;
+    bool                       _separator;
 
 public:
     Options();
@@ -40,15 +40,15 @@ public:
 public:
     std::vector<std::string> const &inputs() const
     { return _inputs; }
-    std::string const &outputDirectory() const
+    ext::optional<std::string> const &outputDirectory() const
     { return _outputDirectory; }
 
 public:
-    bool validate() const
+    ext::optional<bool> validate() const
     { return _validate; }
 
 public:
-    std::string const &compressionFormat() const
+    ext::optional<std::string> const &compressionFormat() const
     { return _compressionFormat; }
 
 private:

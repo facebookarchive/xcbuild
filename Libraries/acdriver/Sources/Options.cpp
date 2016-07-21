@@ -12,15 +12,7 @@
 using acdriver::Options;
 
 Options::
-Options() :
-    _version(false),
-    _printContents(false),
-    _warnings(false),
-    _errors(false),
-    _notices(false),
-    _compressPNGs(false),
-    _enableOnDemandResources(false),
-    _enableIncrementalDistill(false)
+Options()
 {
 }
 
@@ -35,55 +27,49 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "--version") {
-        return libutil::Options::MarkBool(&_version, arg);
+        return libutil::Options::Current<bool>(&_version, arg);
     } else if (arg == "--print-contents") {
-        return libutil::Options::MarkBool(&_printContents, arg);
+        return libutil::Options::Current<bool>(&_printContents, arg);
     } else if (arg == "--compile") {
-        return libutil::Options::NextString(&_compile, args, it);
+        return libutil::Options::Next<std::string>(&_compile, args, it);
     } else if (arg == "--output-format") {
-        return libutil::Options::NextString(&_outputFormat, args, it);
+        return libutil::Options::Next<std::string>(&_outputFormat, args, it);
     } else if (arg == "--warnings") {
-        return libutil::Options::MarkBool(&_warnings, arg);
+        return libutil::Options::Current<bool>(&_warnings, arg);
     } else if (arg == "--errors") {
-        return libutil::Options::MarkBool(&_errors, arg);
+        return libutil::Options::Current<bool>(&_errors, arg);
     } else if (arg == "--notices") {
-        return libutil::Options::MarkBool(&_notices, arg);
+        return libutil::Options::Current<bool>(&_notices, arg);
     } else if (arg == "--export-dependency-info") {
-        return libutil::Options::NextString(&_exportDependencyInfo, args, it);
+        return libutil::Options::Next<std::string>(&_exportDependencyInfo, args, it);
     } else if (arg == "--optimization") {
-        return libutil::Options::NextString(&_optimization, args, it);
+        return libutil::Options::Next<std::string>(&_optimization, args, it);
     } else if (arg == "--compress-pngs") {
-        return libutil::Options::MarkBool(&_compressPNGs, arg);
+        return libutil::Options::Current<bool>(&_compressPNGs, arg);
     } else if (arg == "--platform") {
-        return libutil::Options::NextString(&_platform, args, it);
+        return libutil::Options::Next<std::string>(&_platform, args, it);
     } else if (arg == "--minimum-deployment-target") {
-        return libutil::Options::NextString(&_minimumDeploymentTarget, args, it);
+        return libutil::Options::Next<std::string>(&_minimumDeploymentTarget, args, it);
     } else if (arg == "--target-device") {
-        std::string targetDevice;
-        auto result = libutil::Options::NextString(&targetDevice, args, it);
-        if (result.first) {
-            _targetDevice.push_back(targetDevice);
-        }
-        return result;
+        return libutil::Options::AppendNext<std::string>(&_targetDevice, args, it);
     } else if (arg == "--output-partial-info-plist") {
-        return libutil::Options::NextString(&_outputPartialInfoPlist, args, it);
+        return libutil::Options::Next<std::string>(&_outputPartialInfoPlist, args, it);
     } else if (arg == "--app-icon") {
-        return libutil::Options::NextString(&_appIcon, args, it);
+        return libutil::Options::Next<std::string>(&_appIcon, args, it);
     } else if (arg == "--launch-image") {
-        return libutil::Options::NextString(&_launchImage, args, it);
+        return libutil::Options::Next<std::string>(&_launchImage, args, it);
     } else if (arg == "--enable-on-demand-resources") {
-        return libutil::Options::NextBool(&_enableOnDemandResources, args, it, true);
+        return libutil::Options::Next<bool>(&_enableOnDemandResources, args, it, true);
     } else if (arg == "--enable-incremental-distill") {
-        return libutil::Options::MarkBool(&_enableIncrementalDistill, arg);
+        return libutil::Options::Current<bool>(&_enableIncrementalDistill, arg);
     } else if (arg == "--target-name") {
-        return libutil::Options::NextString(&_targetName, args, it);
+        return libutil::Options::Next<std::string>(&_targetName, args, it);
     } else if (arg == "--filter-for-device-model") {
-        return libutil::Options::NextString(&_filterForDeviceModel, args, it);
+        return libutil::Options::Next<std::string>(&_filterForDeviceModel, args, it);
     } else if (arg == "--filter-for-device-os-version") {
-        return libutil::Options::NextString(&_filterForDeviceOsVersion, args, it);
+        return libutil::Options::Next<std::string>(&_filterForDeviceOsVersion, args, it);
     } else if (!arg.empty() && arg[0] != '-') {
-        _inputs.push_back(arg);
-        return std::make_pair(true, std::string());
+        return libutil::Options::AppendCurrent<std::string>(&_inputs, arg);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }

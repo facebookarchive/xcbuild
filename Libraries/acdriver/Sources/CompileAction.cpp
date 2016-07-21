@@ -205,9 +205,9 @@ CompileAsset(
 }
 
 static ext::optional<CompileOutput::Format>
-DetermineOutputFormat(std::string const &minimumDeploymentTarget)
+DetermineOutputFormat(ext::optional<std::string> const &minimumDeploymentTarget)
 {
-    if (!minimumDeploymentTarget.empty()) {
+    if (minimumDeploymentTarget) {
         // TODO: if < 7, use Folder output format
     }
 
@@ -226,7 +226,7 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
         return;
     }
 
-    CompileOutput compileOutput = CompileOutput(options.compile(), *outputFormat);
+    CompileOutput compileOutput = CompileOutput(*options.compile(), *outputFormat);
 
     /*
      * If necssary, create output archive to write into.
@@ -274,27 +274,27 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
         // TODO: use these options:
         /*
         if (arg == "--optimization") {
-            return libutil::Options::NextString(&_optimization, args, it);
+            return libutil::Options::Next<std::string>(&_optimization, args, it);
         } else if (arg == "--compress-pngs") {
-            return libutil::Options::MarkBool(&_compressPNGs, arg);
+            return libutil::Options::Current<bool>(&_compressPNGs, arg);
         } else if (arg == "--platform") {
-            return libutil::Options::NextString(&_platform, args, it);
+            return libutil::Options::Next<std::string>(&_platform, args, it);
         } else if (arg == "--target-device") {
-            return libutil::Options::NextString(&_targetDevice, args, it);
+            return libutil::Options::Next<std::string>(&_targetDevice, args, it);
         } else if (arg == "--app-icon") {
-            return libutil::Options::NextString(&_appIcon, args, it);
+            return libutil::Options::Next<std::string>(&_appIcon, args, it);
         } else if (arg == "--launch-image") {
-            return libutil::Options::NextString(&_launchImage, args, it);
+            return libutil::Options::Next<std::string>(&_launchImage, args, it);
         } else if (arg == "--enable-on-demand-resources") {
-            return libutil::Options::MarkBool(&_enableOnDemandResources, arg);
+            return libutil::Options::Current<bool>(&_enableOnDemandResources, arg);
         } else if (arg == "--enable-incremental-distill") {
-            return libutil::Options::MarkBool(&_enableIncrementalDistill, arg);
+            return libutil::Options::Current<bool>(&_enableIncrementalDistill, arg);
         } else if (arg == "--target-name") {
-            return libutil::Options::NextString(&_targetName, args, it);
+            return libutil::Options::Next<std::string>(&_targetName, args, it);
         } else if (arg == "--filter-for-device-model") {
-            return libutil::Options::NextString(&_filterForDeviceModel, args, it);
+            return libutil::Options::Next<std::string>(&_filterForDeviceModel, args, it);
         } else if (arg == "--filter-for-device-os-version") {
-            return libutil::Options::NextString(&_filterForDeviceOsVersion, args, it);
+            return libutil::Options::Next<std::string>(&_filterForDeviceOsVersion, args, it);
         }
         */
     }
@@ -302,9 +302,7 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
     /*
      * Write out the output.
      */
-    ext::optional<std::string> partialInfoPlist = (!options.outputPartialInfoPlist().empty() ? ext::optional<std::string>(options.outputPartialInfoPlist()) : ext::nullopt);
-    ext::optional<std::string> dependencyInfo = (!options.exportDependencyInfo().empty() ? ext::optional<std::string>(options.exportDependencyInfo()) : ext::nullopt);
-    if (!compileOutput.write(filesystem, partialInfoPlist, dependencyInfo, result)) {
+    if (!compileOutput.write(filesystem, options.outputPartialInfoPlist(), options.exportDependencyInfo(), result)) {
         /* Error already reported. */
     }
 }

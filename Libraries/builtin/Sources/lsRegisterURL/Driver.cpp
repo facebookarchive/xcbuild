@@ -50,11 +50,16 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         return 1;
     }
 
+    if (!options.input()) {
+        fprintf(stderr, "error: no input specified\n");
+        return 1;
+    }
+
 #if defined(__APPLE__) && TARGET_OS_MAC && !TARGET_OS_IPHONE
-    CFURLRef URL = CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault, reinterpret_cast<const UInt8 *>(options.input().c_str()), options.input().size(), false);
+    CFURLRef URL = CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault, reinterpret_cast<const UInt8 *>(options.input()->c_str()), options.input()->size(), false);
     if (URL == NULL) {
         fprintf(stderr, "error: failed to create URL\n");
-        return -1;
+        return 1;
     }
 
     OSStatus status = LSRegisterURL(URL, true);
