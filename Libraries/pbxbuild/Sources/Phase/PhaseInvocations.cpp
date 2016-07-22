@@ -184,14 +184,6 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
             }
 
             /*
-             * Module maps need to be generated.
-             */
-            Phase::ModuleMapResolver moduleMap = Phase::ModuleMapResolver();
-            if (!moduleMap.resolve(phaseEnvironment, &phaseContext)) {
-                fprintf(stderr, "error: unable to resolve module map\n");
-            }
-
-            /*
              * Swift requires the standard library be copied into the product.
              */
             Phase::SwiftResolver swift = Phase::SwiftResolver();
