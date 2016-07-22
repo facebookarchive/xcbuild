@@ -10,6 +10,7 @@
 #include <pbxbuild/Phase/SourcesResolver.h>
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/Context.h>
+#include <pbxbuild/Phase/ModuleMapResolver.h>
 #include <pbxbuild/Target/Environment.h>
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/Build/Context.h>
@@ -112,6 +113,14 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
 
     /* Populate the tool context with what's needed for compilation. */
     headermapResolver->resolve(&phaseContext->toolContext(), targetEnvironment.environment(), phaseEnvironment.target());
+
+    /*
+     * Module maps need to be generated.
+     */
+    Phase::ModuleMapResolver moduleMap = Phase::ModuleMapResolver();
+    if (!moduleMap.resolve(phaseEnvironment, phaseContext)) {
+        fprintf(stderr, "error: unable to resolve module map\n");
+    }
 
     std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
 
