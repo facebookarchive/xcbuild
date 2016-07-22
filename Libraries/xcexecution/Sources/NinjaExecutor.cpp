@@ -682,22 +682,36 @@ buildAuxiliaryFile(
     /*
      * Build up the command to create the auxiliary file.
      */
-    std::string exec;
-    if (auxiliaryFile.contentsData()) {
-        // FIXME: use base64 directly, rather than through plist
-        auto data = plist::Data::New(*auxiliaryFile.contentsData());
-        exec = "echo " + data->base64Value() + " | base64 --decode > " + Escape::Shell(auxiliaryFile.path());
-    } else if (auxiliaryFile.contentsPath()) {
-        exec = "cat " + Escape::Shell(*auxiliaryFile.contentsPath()) + " > " + Escape::Shell(auxiliaryFile.path());
-        inputs.push_back(ninja::Value::String(*auxiliaryFile.contentsPath()));
-    } else {
-        abort();
+    std::string escapedPath = Escape::Shell(auxiliaryFile.path());
+    std::string exec = "echo -n > " + escapedPath;
+    for (pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
+        exec += " && ";
+
+        switch (chunk.type()) {
+            case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::Data: {
+                // FIXME: use base64 directly, rather than through plist
+                auto data = plist::Data::New(*chunk.data());
+                exec += "echo " + data->base64Value();
+                exec += " | ";
+                exec += "base64 --decode";
+                break;
+            }
+            case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::File: {
+                exec += "cat " + Escape::Shell(*chunk.file());
+                inputs.push_back(ninja::Value::String(*chunk.file()));
+                break;
+            }
+            default: abort();
+        }
+
+        exec += " >> ";
+        exec += escapedPath;
     }
 
     /* Mark the file as executable if necessary. */
     if (auxiliaryFile.executable()) {
         exec += " && ";
-        exec += "chmod 0755 " + Escape::Shell(auxiliaryFile.path());
+        exec += "chmod 0755 " + escapedPath;
     }
 
     /*

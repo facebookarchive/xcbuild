@@ -148,7 +148,7 @@ AppendOutputs(
     } else {
         /* Write output map as an auxiliary file. */
         std::string outputInfoPath = outputDirectory + "/" + moduleName + "-OutputFileMap.json";
-        Tool::Invocation::AuxiliaryFile outputInfoFile = Tool::Invocation::AuxiliaryFile(outputInfoPath, *serialized.first, false);
+        auto outputInfoFile = Tool::Invocation::AuxiliaryFile::Data(outputInfoPath, *serialized.first);
         auxiliaryFiles->push_back(outputInfoFile);
 
         /* Add output info to the arguments. */

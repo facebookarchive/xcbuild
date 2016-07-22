@@ -19,26 +19,61 @@ namespace Tool {
 class Invocation {
 public:
     class AuxiliaryFile {
-    private:
-        std::string                         _path;
-        ext::optional<std::vector<uint8_t>> _contentsData;
-        ext::optional<std::string>          _contentsPath;
-        bool                                _executable;
-
     public:
-        AuxiliaryFile(std::string const &path, std::vector<uint8_t> const &contentsData, bool executable);
-        AuxiliaryFile(std::string const &path, std::string const &contentsPath, bool executable);
-        ~AuxiliaryFile();
+        class Chunk {
+        public:
+            enum class Type {
+                Data,
+                File,
+            };
+
+        private:
+            Type                                _type;
+
+        private:
+            ext::optional<std::vector<uint8_t>> _data;
+            ext::optional<std::string>          _file;
+
+        private:
+            Chunk(
+                Type type,
+                ext::optional<std::vector<uint8_t>> const &data,
+                ext::optional<std::string> const &file);
+
+        public:
+            Type type() const
+            { return _type; }
+
+        public:
+            ext::optional<std::vector<uint8_t>> const &data() const
+            { return _data; }
+            ext::optional<std::string> const &file() const
+            { return _file; }
+
+        public:
+            static Chunk Data(std::vector<uint8_t> const &data);
+            static Chunk File(std::string const &file);
+        };
+
+    private:
+        std::string        _path;
+        std::vector<Chunk> _chunks;
+        bool               _executable;
+
+    private:
+        AuxiliaryFile(std::string const &path, std::vector<Chunk> const &chunks, bool executable);
 
     public:
         std::string const &path() const
         { return _path; }
-        ext::optional<std::vector<uint8_t>> const &contentsData() const
-        { return _contentsData; }
-        ext::optional<std::string> const &contentsPath() const
-        { return _contentsPath; }
+        std::vector<Chunk> const &chunks() const
+        { return _chunks; }
         bool executable() const
         { return _executable; }
+
+    public:
+        static AuxiliaryFile Data(std::string const &path, std::vector<uint8_t> const &data, bool executable = false);
+        static AuxiliaryFile File(std::string const &path, std::string const &file, bool executable = false);
     };
 
 public:

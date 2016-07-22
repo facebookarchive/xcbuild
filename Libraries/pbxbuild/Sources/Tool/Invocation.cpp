@@ -18,25 +18,44 @@ using Executable = pbxbuild::Tool::Invocation::Executable;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
-AuxiliaryFile::
-AuxiliaryFile(std::string const &path, std::vector<uint8_t> const &contentsData, bool executable) :
-    _path        (path),
-    _contentsData(contentsData),
-    _executable  (executable)
+AuxiliaryFile::Chunk::
+Chunk(Type type, ext::optional<std::vector<uint8_t>> const &data, ext::optional<std::string> const &file) :
+    _type(type),
+    _data(data),
+    _file(file)
 {
 }
 
-AuxiliaryFile::
-AuxiliaryFile(std::string const &path, std::string const &contentsPath, bool executable) :
-    _path        (path),
-    _contentsPath(contentsPath),
-    _executable  (executable)
+AuxiliaryFile::Chunk AuxiliaryFile::Chunk::
+Data(std::vector<uint8_t> const &data)
 {
+    return Chunk(Type::Data, data, ext::nullopt);
+}
+
+AuxiliaryFile::Chunk AuxiliaryFile::Chunk::
+File(std::string const &file)
+{
+    return Chunk(Type::File, ext::nullopt, file);
 }
 
 AuxiliaryFile::
-~AuxiliaryFile()
+AuxiliaryFile(std::string const &path, std::vector<Chunk> const &chunks, bool executable) :
+    _path      (path),
+    _chunks    (chunks),
+    _executable(executable)
 {
+}
+
+AuxiliaryFile AuxiliaryFile::
+Data(std::string const &path, std::vector<uint8_t> const &data, bool executable)
+{
+    return AuxiliaryFile(path, { Chunk::Data(data) }, executable);
+}
+
+AuxiliaryFile AuxiliaryFile::
+File(std::string const &path, std::string const &file, bool executable)
+{
+    return AuxiliaryFile(path, { Chunk::File(file) }, executable);
 }
 
 DependencyInfo::
