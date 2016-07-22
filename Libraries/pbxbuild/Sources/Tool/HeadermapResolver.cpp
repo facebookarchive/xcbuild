@@ -199,12 +199,12 @@ resolve(
     std::string headermapFileForProjectFiles                 = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES");
 
     std::vector<AuxiliaryFile> auxiliaryFiles = {
-        AuxiliaryFile(headermapFile, targetName.write(), false),
-        AuxiliaryFile(headermapFileForOwnTargetHeaders, ownTargetHeaders.write(), false),
-        AuxiliaryFile(headermapFileForAllTargetHeaders, allTargetHeaders.write(), false),
-        AuxiliaryFile(headermapFileForAllNonFrameworkTargetHeaders, allNonFrameworkTargetHeaders.write(), false),
-        AuxiliaryFile(headermapFileForGeneratedFiles, generatedFiles.write(), false),
-        AuxiliaryFile(headermapFileForProjectFiles, projectHeaders.write(), false),
+        AuxiliaryFile::Data(headermapFile, targetName.write()),
+        AuxiliaryFile::Data(headermapFileForOwnTargetHeaders, ownTargetHeaders.write()),
+        AuxiliaryFile::Data(headermapFileForAllTargetHeaders, allTargetHeaders.write()),
+        AuxiliaryFile::Data(headermapFileForAllNonFrameworkTargetHeaders, allNonFrameworkTargetHeaders.write()),
+        AuxiliaryFile::Data(headermapFileForGeneratedFiles, generatedFiles.write()),
+        AuxiliaryFile::Data(headermapFileForProjectFiles, projectHeaders.write()),
     };
 
     Tool::Invocation invocation;

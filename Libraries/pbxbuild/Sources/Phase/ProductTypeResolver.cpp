@@ -320,10 +320,9 @@ ResolveModuleMap(Phase::Environment const &phaseEnvironment, Phase::Context *pha
         /*
          * Copy in the input module map as an auxiliary file.
          */
-        moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile(
+        moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile::File(
             intermediateModuleMapPath,
-            FSUtil::ResolveRelativePath(inputModuleMapPath, workingDirectory),
-            false);
+            FSUtil::ResolveRelativePath(inputModuleMapPath, workingDirectory));
     } else {
         /*
          * Find umbrella header: a header with the same name as the target's module.
@@ -343,10 +342,9 @@ ResolveModuleMap(Phase::Environment const &phaseEnvironment, Phase::Context *pha
             contents += "  module * { export * }\n";
             contents += "}\n";
 
-            moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile(
+            moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile::Data(
                 intermediateModuleMapPath,
-                std::vector<uint8_t>(contents.begin(), contents.end()),
-                false);
+                std::vector<uint8_t>(contents.begin(), contents.end()));
         } else {
             fprintf(stderr, "warning: target defines module, but has no umbrella header\n");
         }
@@ -376,10 +374,9 @@ ResolveModuleMap(Phase::Environment const &phaseEnvironment, Phase::Context *pha
         /*
          * Copy in the private module map.
          */
-        auto privateModuleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile(
+        auto privateModuleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile::File(
             intermediateModuleMapPath,
-            FSUtil::ResolveRelativePath(inputPrivateModuleMapPath, workingDirectory),
-            false);
+            FSUtil::ResolveRelativePath(inputPrivateModuleMapPath, workingDirectory));
 
         /* Define source module map. */
         // TODO: it would be nicer to attach this to the copy invocation created below
