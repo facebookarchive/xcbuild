@@ -303,32 +303,23 @@ FindUmbrellaHeaderName(pbxsetting::Environment const &environment, std::string c
     return ext::nullopt;
 }
 
-static bool
-ResolveModuleMap(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext, pbxsetting::Environment const &environment)
+static ext::optional<Tool::Invocation::AuxiliaryFile::Chunk>
+ModuleMapContents(pbxsetting::Environment const &environment, std::string const &workingDirectory, pbxproj::PBX::Target::shared_ptr const &target)
 {
-    std::string const &workingDirectory = phaseContext->toolContext().workingDirectory();
-    // TODO: what about non-framework product types?
-    std::string finalModuleMapRoot = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("CONTENTS_FOLDER_PATH") + "/" + "Modules";
-
-    /*
-     * Handle the standard module map, either copied or generated.
-     */
     std::string inputModuleMapPath = environment.resolve("MODULEMAP_FILE");
-    std::string intermediateModuleMapPath = environment.resolve("TARGET_TEMP_DIR") + "/" + "module.modulemap";
-    ext::optional<Tool::Invocation::AuxiliaryFile> moduleMapAuxiliaryFile;
+
     if (!inputModuleMapPath.empty()) {
         /*
          * Copy in the input module map as an auxiliary file.
          */
-        moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile::File(
-            intermediateModuleMapPath,
-            FSUtil::ResolveRelativePath(inputModuleMapPath, workingDirectory));
+        std::string path = FSUtil::ResolveRelativePath(inputModuleMapPath, workingDirectory);
+        return Tool::Invocation::AuxiliaryFile::Chunk::File(path);
     } else {
         /*
          * Find umbrella header: a header with the same name as the target's module.
          */
         std::string moduleName = environment.resolve("PRODUCT_MODULE_NAME");
-        ext::optional<std::string> umbrellaHeaderName = FindUmbrellaHeaderName(environment, moduleName, phaseEnvironment.target());
+        ext::optional<std::string> umbrellaHeaderName = FindUmbrellaHeaderName(environment, moduleName, target);
 
         if (umbrellaHeaderName) {
             /*
@@ -342,19 +333,34 @@ ResolveModuleMap(Phase::Environment const &phaseEnvironment, Phase::Context *pha
             contents += "  module * { export * }\n";
             contents += "}\n";
 
-            moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile::Data(
-                intermediateModuleMapPath,
-                std::vector<uint8_t>(contents.begin(), contents.end()));
+            auto data = std::vector<uint8_t>(contents.begin(), contents.end());
+            return Tool::Invocation::AuxiliaryFile::Chunk::Data(data);
         } else {
-            fprintf(stderr, "warning: target defines module, but has no umbrella header\n");
+            return ext::nullopt;
         }
     }
+}
 
-    if (moduleMapAuxiliaryFile) {
+static bool
+ResolveModuleMap(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext, pbxsetting::Environment const &environment)
+{
+    std::string const &workingDirectory = phaseContext->toolContext().workingDirectory();
+    std::string intermediateModuleMapRoot = environment.resolve("TARGET_TEMP_DIR");
+    // TODO: what about non-framework product types?
+    std::string finalModuleMapRoot = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("CONTENTS_FOLDER_PATH") + "/" + "Modules";
+
+    /*
+     * Handle the standard module map, either copied or generated.
+     */
+    ext::optional<Tool::Invocation::AuxiliaryFile::Chunk> contents = ModuleMapContents(environment, workingDirectory, phaseEnvironment.target());
+    if (contents) {
+        std::string intermediateModuleMapPath = intermediateModuleMapRoot + "/" + "module.modulemap";
+        auto moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile(intermediateModuleMapPath, { *contents });
+
         /* Define source module map. */
         // TODO: it would be nicer to attach this to the copy invocation created below
         Tool::Invocation invocation;
-        invocation.auxiliaryFiles().push_back(*moduleMapAuxiliaryFile);
+        invocation.auxiliaryFiles().push_back(moduleMapAuxiliaryFile);
         phaseContext->toolContext().invocations().push_back(invocation);
 
         /* Copy in the module map as part of the build. */
@@ -363,19 +369,21 @@ ResolveModuleMap(Phase::Environment const &phaseEnvironment, Phase::Context *pha
         } else {
             fprintf(stderr, "warning: failed to get copy tool for module map\n");
         }
+    } else {
+        fprintf(stderr, "warning: target defines module, but has no umbrella header\n");
     }
 
     /*
      * Handle the private module map. This module map can only be specified; it is never auto-generated.
      */
     std::string inputPrivateModuleMapPath = environment.resolve("MODULEMAP_PRIVATE_FILE");
-    std::string intermediatePrivateModuleMapPath = environment.resolve("TARGET_TEMP_DIR") + "/" + "module.private.modulemap";
     if (!inputPrivateModuleMapPath.empty()) {
         /*
          * Copy in the private module map.
          */
+        std::string intermediatePrivateModuleMapPath = intermediateModuleMapRoot + "/" + "module.private.modulemap";
         auto privateModuleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile::File(
-            intermediateModuleMapPath,
+            intermediatePrivateModuleMapPath,
             FSUtil::ResolveRelativePath(inputPrivateModuleMapPath, workingDirectory));
 
         /* Define source module map. */
