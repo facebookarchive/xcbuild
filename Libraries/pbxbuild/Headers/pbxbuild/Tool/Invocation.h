@@ -60,8 +60,8 @@ public:
         std::vector<Chunk> _chunks;
         bool               _executable;
 
-    private:
-        AuxiliaryFile(std::string const &path, std::vector<Chunk> const &chunks, bool executable);
+    public:
+        AuxiliaryFile(std::string const &path, std::vector<Chunk> const &chunks, bool executable = false);
 
     public:
         std::string const &path() const
