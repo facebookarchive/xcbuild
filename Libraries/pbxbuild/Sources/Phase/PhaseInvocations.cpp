@@ -13,6 +13,7 @@
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/HeadersResolver.h>
 #include <pbxbuild/Phase/LegacyTargetResolver.h>
+#include <pbxbuild/Phase/ModuleMapResolver.h>
 #include <pbxbuild/Phase/ProductTypeResolver.h>
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/FrameworksResolver.h>
@@ -180,6 +181,14 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 if (!productType.resolve(phaseEnvironment, &phaseContext)) {
                     fprintf(stderr, "error: unable to resolve product type\n");
                 }
+            }
+
+            /*
+             * Module maps need to be generated.
+             */
+            Phase::ModuleMapResolver moduleMap = Phase::ModuleMapResolver();
+            if (!moduleMap.resolve(phaseEnvironment, &phaseContext)) {
+                fprintf(stderr, "error: unable to resolve module map\n");
             }
 
             /*

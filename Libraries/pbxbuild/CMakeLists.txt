@@ -48,6 +48,7 @@ add_library(pbxbuild SHARED
             Sources/Phase/CopyFilesResolver.cpp
             Sources/Phase/HeadersResolver.cpp
             Sources/Phase/LegacyTargetResolver.cpp
+            Sources/Phase/ModuleMapResolver.cpp
             Sources/Phase/ProductTypeResolver.cpp
             Sources/Phase/SwiftResolver.cpp
             Sources/Phase/ResourcesResolver.cpp
