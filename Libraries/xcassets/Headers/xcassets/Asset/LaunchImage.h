@@ -16,6 +16,7 @@
 #include <xcassets/Slot/LaunchImageExtent.h>
 #include <xcassets/Slot/Orientation.h>
 #include <xcassets/Slot/Scale.h>
+#include <xcassets/Slot/SystemVersion.h>
 #include <plist/Dictionary.h>
 
 #include <string>
@@ -36,7 +37,7 @@ public:
         ext::optional<Slot::Orientation>       _orientation;
         ext::optional<Slot::Scale>             _scale;
         ext::optional<Slot::DeviceSubtype>     _subtype;
-        // TODO: minimum-system-version
+        ext::optional<Slot::SystemVersion>     _minimumSystemVersion;
         ext::optional<Slot::LaunchImageExtent> _extent;
 
     public:
@@ -52,7 +53,8 @@ public:
         { return _scale; }
         ext::optional<Slot::DeviceSubtype> const &subtype() const
         { return _subtype; }
-        // TODO: minimum-system-version
+        ext::optional<Slot::SystemVersion> const &minimumSystemVersion() const
+        { return _minimumSystemVersion; }
         ext::optional<Slot::LaunchImageExtent> const &extent() const
         { return _extent; }
 
