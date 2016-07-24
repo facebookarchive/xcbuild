@@ -8,12 +8,12 @@
  */
 
 #include <acdriver/Compile/GCLeaderboard.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <libutil/Filesystem.h>
 
 using acdriver::Compile::GCLeaderboard;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 
@@ -21,13 +21,13 @@ bool GCLeaderboard::
 Compile(
     std::shared_ptr<xcassets::Asset::GCLeaderboard> const &gcLeaderboard,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     result->document(
         Result::Severity::Warning,
         gcLeaderboard->path(),
-        { CompileOutput::AssetReference(gcLeaderboard) },
+        { Output::AssetReference(gcLeaderboard) },
         "Not Implemented",
         "gc leaderboard not yet supported");
 

@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Options.h>
 #include <acdriver/Result.h>
 #include <xcassets/Asset/Asset.h>
@@ -15,20 +15,20 @@
 #include <plist/Format/Format.h>
 #include <plist/Format/XML.h>
 
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Options;
 using acdriver::Result;
 using libutil::Filesystem;
 
-CompileOutput::
-CompileOutput(std::string const &root, Format format) :
+Output::
+Output(std::string const &root, Format format) :
     _root          (root),
     _format        (format),
     _additionalInfo(plist::Dictionary::New())
 {
 }
 
-bool CompileOutput::
+bool Output::
 write(Filesystem *filesystem, ext::optional<std::string> const &partialInfoPlist, ext::optional<std::string> const &dependencyInfo, Result *result) const
 {
     bool success = true;
@@ -90,7 +90,7 @@ write(Filesystem *filesystem, ext::optional<std::string> const &partialInfoPlist
     return success;
 }
 
-std::string CompileOutput::
+std::string Output::
 AssetReference(std::shared_ptr<xcassets::Asset::Asset> const &asset)
 {
     // TODO: include [] for each key

@@ -9,7 +9,7 @@
 
 #include <acdriver/Compile/ImageSet.h>
 #include <acdriver/Compile/Convert.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <graphics/PixelFormat.h>
 #include <graphics/Format/PNG.h>
@@ -28,7 +28,7 @@
 
 using acdriver::Compile::ImageSet;
 using acdriver::Compile::Convert;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 using libutil::FSUtil;
@@ -37,7 +37,7 @@ bool ImageSet::
 Compile(
     std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     bool success = true;
@@ -65,7 +65,7 @@ CompileAsset(
     std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
     xcassets::Asset::ImageSet::Image const &image,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     static std::map<std::string, uint16_t> idMap = {};
