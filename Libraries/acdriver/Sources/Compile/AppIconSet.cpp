@@ -9,7 +9,7 @@
 
 #include <acdriver/Compile/AppIconSet.h>
 #include <acdriver/Compile/Convert.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <plist/Array.h>
 #include <plist/Boolean.h>
@@ -21,7 +21,7 @@
 
 using acdriver::Compile::AppIconSet;
 using acdriver::Compile::Convert;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 
@@ -51,7 +51,7 @@ bool AppIconSet::
 Compile(
     std::shared_ptr<xcassets::Asset::AppIconSet> const &appIconSet,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     struct IdiomHash
@@ -75,7 +75,7 @@ Compile(
                 result->document(
                     Result::Severity::Warning,
                     appIconSet->path(),
-                    { CompileOutput::AssetReference(appIconSet) },
+                    { Output::AssetReference(appIconSet) },
                     "Ambiguous Content",
                     "an icon in \"" + appIconSet->name().name() + "\" is unassigned");
                 continue;

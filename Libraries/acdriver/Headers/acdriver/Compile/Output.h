@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __acdriver_CompileOutput_h
-#define __acdriver_CompileOutput_h
+#ifndef __acdriver_Compile_Output_h
+#define __acdriver_Compile_Output_h
 
 #include <plist/Dictionary.h>
 #include <dependency/BinaryDependencyInfo.h>
@@ -28,10 +28,12 @@ namespace acdriver {
 class Options;
 class Result;
 
+namespace Compile {
+
 /*
  * Prints the contents of an asset catalog.
  */
-class CompileOutput {
+class Output {
 public:
     enum class Format {
         /*
@@ -57,7 +59,7 @@ private:
     dependency::BinaryDependencyInfo   _dependencyInfo;
 
 public:
-    CompileOutput(std::string const &root, Format format);
+    Output(std::string const &root, Format format);
 
 public:
     /*
@@ -124,5 +126,6 @@ public:
 };
 
 }
+}
 
-#endif // !__acdriver_CompileOutput_h
+#endif // !__acdriver_Compile_Output_h

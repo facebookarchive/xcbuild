@@ -8,12 +8,12 @@
  */
 
 #include <acdriver/Compile/ImageStackLayer.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <libutil/Filesystem.h>
 
 using acdriver::Compile::ImageStackLayer;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 
@@ -21,13 +21,13 @@ bool ImageStackLayer::
 Compile(
     std::shared_ptr<xcassets::Asset::ImageStackLayer> const &imageStackLayer,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     result->document(
         Result::Severity::Warning,
         imageStackLayer->path(),
-        { CompileOutput::AssetReference(imageStackLayer) },
+        { Output::AssetReference(imageStackLayer) },
         "Not Implemented",
         "image stack layer not yet supported");
 

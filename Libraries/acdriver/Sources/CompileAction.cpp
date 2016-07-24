@@ -8,6 +8,7 @@
  */
 
 #include <acdriver/CompileAction.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Compile/AppIconSet.h>
 #include <acdriver/Compile/BrandAssets.h>
 #include <acdriver/Compile/ComplicationSet.h>
@@ -21,7 +22,6 @@
 #include <acdriver/Compile/ImageStackLayer.h>
 #include <acdriver/Compile/LaunchImage.h>
 #include <acdriver/Compile/SpriteAtlas.h>
-#include <acdriver/CompileOutput.h>
 #include <acdriver/Options.h>
 #include <acdriver/Output.h>
 #include <acdriver/Result.h>
@@ -40,20 +40,7 @@
 #include <plist/String.h>
 
 using acdriver::CompileAction;
-using acdriver::CompileOutput;
-using acdriver::Compile::AppIconSet;
-using acdriver::Compile::BrandAssets;
-using acdriver::Compile::ComplicationSet;
-using acdriver::Compile::GCDashboardImage;
-using acdriver::Compile::GCLeaderboard;
-using acdriver::Compile::GCLeaderboardSet;
-using acdriver::Compile::DataSet;
-using acdriver::Compile::IconSet;
-using acdriver::Compile::ImageSet;
-using acdriver::Compile::ImageStack;
-using acdriver::Compile::ImageStackLayer;
-using acdriver::Compile::LaunchImage;
-using acdriver::Compile::SpriteAtlas;
+namespace Compile = acdriver::Compile;
 using acdriver::Options;
 using acdriver::Output;
 using acdriver::Result;
@@ -76,7 +63,7 @@ CompileAsset(
     std::shared_ptr<xcassets::Asset::Asset> const &parent,
     Filesystem *filesystem,
     Options const &options,
-    CompileOutput *compileOutput,
+    Compile::Output *compileOutput,
     Result *result);
 
 template<typename T>
@@ -86,7 +73,7 @@ CompileChildren(
     std::shared_ptr<xcassets::Asset::Asset> const &parent,
     Filesystem *filesystem,
     Options const &options,
-    CompileOutput *compileOutput,
+    Compile::Output *compileOutput,
     Result *result)
 {
     bool success = true;
@@ -106,7 +93,7 @@ CompileAsset(
     std::shared_ptr<xcassets::Asset::Asset> const &parent,
     Filesystem *filesystem,
     Options const &options,
-    CompileOutput *compileOutput,
+    Compile::Output *compileOutput,
     Result *result)
 {
     std::string filename = FSUtil::GetBaseName(asset->path());
@@ -115,13 +102,13 @@ CompileAsset(
         case xcassets::Asset::AssetType::AppIconSet: {
             auto appIconSet = std::static_pointer_cast<xcassets::Asset::AppIconSet>(asset);
             if (appIconSet->name().name() == options.appIcon()) {
-                AppIconSet::Compile(appIconSet, filesystem, compileOutput, result);
+                Compile::AppIconSet::Compile(appIconSet, filesystem, compileOutput, result);
             }
             break;
         }
         case xcassets::Asset::AssetType::BrandAssets: {
             auto brandAssets = std::static_pointer_cast<xcassets::Asset::BrandAssets>(asset);
-            BrandAssets::Compile(brandAssets, filesystem, compileOutput, result);
+            Compile::BrandAssets::Compile(brandAssets, filesystem, compileOutput, result);
             CompileChildren(brandAssets->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
@@ -132,30 +119,30 @@ CompileAsset(
         }
         case xcassets::Asset::AssetType::ComplicationSet: {
             auto complicationSet = std::static_pointer_cast<xcassets::Asset::ComplicationSet>(asset);
-            ComplicationSet::Compile(complicationSet, filesystem, compileOutput, result);
+            Compile::ComplicationSet::Compile(complicationSet, filesystem, compileOutput, result);
             CompileChildren(complicationSet->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::DataSet: {
             auto dataSet = std::static_pointer_cast<xcassets::Asset::DataSet>(asset);
-            DataSet::Compile(dataSet, filesystem, compileOutput, result);
+            Compile::DataSet::Compile(dataSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCDashboardImage: {
             auto dashboardImage = std::static_pointer_cast<xcassets::Asset::GCDashboardImage>(asset);
-            GCDashboardImage::Compile(dashboardImage, filesystem, compileOutput, result);
+            Compile::GCDashboardImage::Compile(dashboardImage, filesystem, compileOutput, result);
             CompileChildren(dashboardImage->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboard: {
             auto leaderboard = std::static_pointer_cast<xcassets::Asset::GCLeaderboard>(asset);
-            GCLeaderboard::Compile(leaderboard, filesystem, compileOutput, result);
+            Compile::GCLeaderboard::Compile(leaderboard, filesystem, compileOutput, result);
             CompileChildren(leaderboard->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboardSet: {
             auto leaderboardSet = std::static_pointer_cast<xcassets::Asset::GCLeaderboardSet>(asset);
-            GCLeaderboardSet::Compile(leaderboardSet, filesystem, compileOutput, result);
+            Compile::GCLeaderboardSet::Compile(leaderboardSet, filesystem, compileOutput, result);
             CompileChildren(leaderboardSet->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
@@ -166,36 +153,36 @@ CompileAsset(
         }
         case xcassets::Asset::AssetType::IconSet: {
             auto iconSet = std::static_pointer_cast<xcassets::Asset::IconSet>(asset);
-            IconSet::Compile(iconSet, filesystem, compileOutput, result);
+            Compile::IconSet::Compile(iconSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageSet: {
             auto imageSet = std::static_pointer_cast<xcassets::Asset::ImageSet>(asset);
-            ImageSet::Compile(imageSet, filesystem, compileOutput, result);
+            Compile::ImageSet::Compile(imageSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageStack: {
             auto imageStack = std::static_pointer_cast<xcassets::Asset::ImageStack>(asset);
-            ImageStack::Compile(imageStack, filesystem, compileOutput, result);
+            Compile::ImageStack::Compile(imageStack, filesystem, compileOutput, result);
             CompileChildren(imageStack->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageStackLayer: {
             auto imageStackLayer = std::static_pointer_cast<xcassets::Asset::ImageStackLayer>(asset);
-            ImageStackLayer::Compile(imageStackLayer, filesystem, compileOutput, result);
+            Compile::ImageStackLayer::Compile(imageStackLayer, filesystem, compileOutput, result);
             // TODO: CompileChildren(imageStackLayer->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::LaunchImage: {
             auto launchImage = std::static_pointer_cast<xcassets::Asset::LaunchImage>(asset);
             if (launchImage->name().name() == options.launchImage()) {
-                LaunchImage::Compile(launchImage, filesystem, compileOutput, result);
+                Compile::LaunchImage::Compile(launchImage, filesystem, compileOutput, result);
             }
             break;
         }
         case xcassets::Asset::AssetType::SpriteAtlas: {
             auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
-            SpriteAtlas::Compile(spriteAtlas, filesystem, compileOutput, result);
+            Compile::SpriteAtlas::Compile(spriteAtlas, filesystem, compileOutput, result);
             CompileChildren(spriteAtlas->children(), asset, filesystem, options, compileOutput, result);
             break;
         }
@@ -204,14 +191,14 @@ CompileAsset(
     return true;
 }
 
-static ext::optional<CompileOutput::Format>
+static ext::optional<Compile::Output::Format>
 DetermineOutputFormat(ext::optional<std::string> const &minimumDeploymentTarget)
 {
     if (minimumDeploymentTarget) {
         // TODO: if < 7, use Folder output format
     }
 
-    return CompileOutput::Format::Compiled;
+    return Compile::Output::Format::Compiled;
 }
 
 void CompileAction::
@@ -220,18 +207,18 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
     /*
      * Determine format to output compiled assets.
      */
-    ext::optional<CompileOutput::Format> outputFormat = DetermineOutputFormat(options.minimumDeploymentTarget());
+    ext::optional<Compile::Output::Format> outputFormat = DetermineOutputFormat(options.minimumDeploymentTarget());
     if (!outputFormat) {
         result->normal(Result::Severity::Error, "invalid minimum deployment target");
         return;
     }
 
-    CompileOutput compileOutput = CompileOutput(*options.compile(), *outputFormat);
+    Compile::Output compileOutput = Compile::Output(*options.compile(), *outputFormat);
 
     /*
      * If necssary, create output archive to write into.
      */
-    if (compileOutput.format() == CompileOutput::Format::Compiled) {
+    if (compileOutput.format() == Compile::Output::Format::Compiled) {
         std::string path = compileOutput.root() + "/" + "Assets.car";
 
         struct bom_context_memory memory = bom_context_memory_file(path.c_str(), true, 0);

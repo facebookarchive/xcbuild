@@ -8,12 +8,12 @@
  */
 
 #include <acdriver/Compile/IconSet.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <libutil/Filesystem.h>
 
 using acdriver::Compile::IconSet;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 
@@ -21,13 +21,13 @@ bool IconSet::
 Compile(
     std::shared_ptr<xcassets::Asset::IconSet> const &iconSet,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     result->document(
         Result::Severity::Warning,
         iconSet->path(),
-        { CompileOutput::AssetReference(iconSet) },
+        { Output::AssetReference(iconSet) },
         "Not Implemented",
         "icon set not yet supported");
 

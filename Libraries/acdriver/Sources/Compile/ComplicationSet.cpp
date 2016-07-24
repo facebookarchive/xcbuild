@@ -8,12 +8,12 @@
  */
 
 #include <acdriver/Compile/ComplicationSet.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <libutil/Filesystem.h>
 
 using acdriver::Compile::ComplicationSet;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 
@@ -21,13 +21,13 @@ bool ComplicationSet::
 Compile(
     std::shared_ptr<xcassets::Asset::ComplicationSet> const &complicationSet,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     result->document(
         Result::Severity::Warning,
         complicationSet->path(),
-        { CompileOutput::AssetReference(complicationSet) },
+        { Output::AssetReference(complicationSet) },
         "Not Implemented",
         "complication set not yet supported");
 
