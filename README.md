@@ -6,7 +6,7 @@
 
 **xcbuild** is an Xcode-compatible build tool with the goal of providing faster builds, better documentation of the build process and running on multiple platforms (in particular OS X and Linux)
 
-### Why xcbuild? 
+### Why xcbuild?
 
 <table>
   <tr>
@@ -20,7 +20,7 @@
   <tr><td>:hatching_chick:</td><td>Supports Swift apps and frameworks</td><th rowspan="3">Clean Build</th><td rowspan="3">30.103s</td><td rowspan="3">25.122s</td></tr>
   <tr><td>:sparkles:</td><td>Tools and libraries for Xcode projects</td></tr>
   <tr><td>:gift_heart:</td><td>Fully compatible with <a href="https://github.com/supermarin/xcpretty">xcpretty</a></td></tr>
-  <tr><td>:tophat:</td><td>Uses <a href="https://martine.github.io/ninja">Ninja</a> and <a href="https://github.com/apple/swift-llbuild">llbuild</a></td><th rowspan="3">Incremental Build</th><td rowspan="3">2.190s</td><td rowspan="3">0.046s :zap:</td></tr>
+  <tr><td>:tophat:</td><td>Uses <a href="https://ninja-build.org/">Ninja</a> and <a href="https://github.com/apple/swift-llbuild">llbuild</a></td><th rowspan="3">Incremental Build</th><td rowspan="3">2.190s</td><td rowspan="3">0.046s :zap:</td></tr>
   <tr><td>:octocat:</td><td>Open source under the BSD license</td></tr>
   <tr><td>:penguin:</td><td>Builds on Linux</td></tr>
 </table>
@@ -37,7 +37,7 @@ xcbuild and [xctool](https://github.com/facebook/xctool) are both Xcode-compatib
 
 - Xcode 7 or later, on OS X.
 - GCC 4.8 or later, on Linux. `libxml2-dev` and `pkg-config` are also required.
-- [CMake](http://www.cmake.org) and [Ninja](https://martine.github.io/ninja/) (or [llbuild](https://github.com/apple/swift-llbuild)). 
+- [CMake](http://www.cmake.org) and [Ninja](https://ninja-build.org/) (or [llbuild](https://github.com/apple/swift-llbuild)).
   - With [Homebrew](http://brew.sh/): `brew install cmake ninja`
 
 ```sh
@@ -59,7 +59,7 @@ xcbuild -workspace Example.xcworkspace -scheme Example
 
 ### Using Ninja (or llbuild)
 
-To switch to the significantly faster [Ninja](https://martine.github.io/ninja/) executor:
+To switch to the significantly faster [Ninja](https://ninja-build.org/) executor:
 
 ```sh
 xcbuild -executor ninja [-workspace Example.xcworkspace ...]
