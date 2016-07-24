@@ -117,26 +117,51 @@ createDirectory(std::string const &path)
 bool DefaultFilesystem::
 read(std::vector<uint8_t> *contents, std::string const &path) const
 {
-    std::ifstream input;
-    input.open(path, std::ios::binary);
-    if (input.fail()) {
+    FILE *fp = std::fopen(path.c_str(), "rb");
+    if (fp == nullptr) {
         return false;
     }
 
-    *contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>());
+    if (std::fseek(fp, 0, SEEK_END) != 0) {
+        std::fclose(fp);
+        return false;
+    }
+
+    long size = std::ftell(fp);
+    if (size == (long)-1) {
+        std::fclose(fp);
+        return false;
+    }
+
+    if (std::fseek(fp, 0, SEEK_SET) != 0) {
+        std::fclose(fp);
+        return false;
+    }
+
+    *contents = std::vector<uint8_t>(size);
+    if (std::fread(contents->data(), size, 1, fp) != 1) {
+        std::fclose(fp);
+        return false;
+    }
+
+    std::fclose(fp);
     return true;
 }
 
 bool DefaultFilesystem::
 write(std::vector<uint8_t> const &contents, std::string const &path)
 {
-    std::ofstream output;
-    output.open(path, std::ios::binary);
-    if (output.fail()) {
+    FILE *fp = std::fopen(path.c_str(), "wb");
+    if (fp == nullptr) {
         return false;
     }
 
-    std::copy(contents.begin(), contents.end(), std::ostream_iterator<char>(output));
+    if (std::fwrite(contents.data(), contents.size(), 1, fp) != 1) {
+        std::fclose(fp);
+        return false;
+    }
+
+    std::fclose(fp);
     return true;
 }
 
