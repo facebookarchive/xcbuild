@@ -8,6 +8,7 @@
  */
 
 #include <acdriver/Compile/ImageSet.h>
+#include <acdriver/Compile/Convert.h>
 #include <acdriver/CompileOutput.h>
 #include <acdriver/Result.h>
 #include <graphics/PixelFormat.h>
@@ -26,125 +27,11 @@
 #include <string>
 
 using acdriver::Compile::ImageSet;
+using acdriver::Compile::Convert;
 using acdriver::CompileOutput;
 using acdriver::Result;
 using libutil::Filesystem;
 using libutil::FSUtil;
-
-static uint16_t
-IdiomAttributeForIdiom(xcassets::Slot::Idiom assetIdiom)
-{
-    switch (assetIdiom) {
-        case xcassets::Slot::Idiom::Universal:
-            return car_attribute_identifier_idiom_value_universal;
-            break;
-        case xcassets::Slot::Idiom::Phone:
-            return car_attribute_identifier_idiom_value_phone;
-            break;
-        case xcassets::Slot::Idiom::Pad:
-            return car_attribute_identifier_idiom_value_pad;
-            break;
-        case xcassets::Slot::Idiom::Desktop:
-            // TODO: desktop has no idiom value
-            return car_attribute_identifier_idiom_value_universal;
-        case xcassets::Slot::Idiom::TV:
-            return car_attribute_identifier_idiom_value_tv;
-        case xcassets::Slot::Idiom::Watch:
-            return car_attribute_identifier_idiom_value_watch;
-        case xcassets::Slot::Idiom::Car:
-            return car_attribute_identifier_idiom_value_car;
-        default:
-            return car_attribute_identifier_idiom_value_universal;
-    }
-}
-
-static enum car_rendition_value_layout
-LayoutForResizingAndCenterMode(xcassets::Resizing::Mode resizingMode, xcassets::Resizing::Center::Mode centerMode)
-{
-    switch (resizingMode) {
-        case xcassets::Resizing::Mode::ThreePartHorizontal:
-            switch (centerMode) {
-                case xcassets::Resizing::Center::Mode::Tile:
-                    return car_rendition_value_layout_three_part_horizontal_tile;
-                case xcassets::Resizing::Center::Mode::Stretch:
-                    return car_rendition_value_layout_three_part_horizontal_scale;
-                default:
-                    return car_rendition_value_layout_three_part_horizontal_tile;
-            }
-        case xcassets::Resizing::Mode::ThreePartVertical:
-            switch (centerMode) {
-                case xcassets::Resizing::Center::Mode::Tile:
-                    return car_rendition_value_layout_three_part_vertical_tile;
-                case xcassets::Resizing::Center::Mode::Stretch:
-                    return car_rendition_value_layout_three_part_vertical_scale;
-                default:
-                    return car_rendition_value_layout_three_part_vertical_tile;
-            }
-        case xcassets::Resizing::Mode::NinePart:
-            switch (centerMode) {
-                case xcassets::Resizing::Center::Mode::Tile:
-                    return car_rendition_value_layout_nine_part_tile;
-                case xcassets::Resizing::Center::Mode::Stretch:
-                    return car_rendition_value_layout_nine_part_scale;
-                default:
-                    return car_rendition_value_layout_nine_part_tile;
-            }
-        default: abort();
-    }
-}
-
-static std::vector<car::Rendition::Slice>
-SlicesForResizingModeAndCapInsets(uint32_t width, uint32_t height, xcassets::Resizing::Mode resizingMode, ext::optional<xcassets::Insets> const &capInsets)
-{
-    double topCapInset = capInsets ? capInsets->top().value_or(0) : 0;
-    double leftCapInset = capInsets ? capInsets->left().value_or(0) : 0;
-    double bottomCapInset = capInsets ? capInsets->bottom().value_or(0) : 0;
-    double rightCapInset = capInsets ? capInsets->right().value_or(0) : 0;
-
-    uint32_t leftWidth = static_cast<uint32_t>(leftCapInset);
-    uint32_t centerWidth = static_cast<uint32_t>(width - (leftCapInset + rightCapInset));
-    uint32_t rightWidth = static_cast<uint32_t>(rightCapInset);
-
-    uint32_t topHeight = static_cast<uint32_t>(topCapInset);
-    uint32_t centerHeight = static_cast<uint32_t>(height - (topCapInset + bottomCapInset));
-    uint32_t bottomHeight = static_cast<uint32_t>(bottomCapInset);
-
-    uint32_t topVerticalOffset = static_cast<uint32_t>(height - topCapInset);
-    uint32_t centerVerticalOffset = static_cast<uint32_t>(bottomCapInset);
-    uint32_t bottomVerticalOffset = static_cast<uint32_t>(0);
-
-    uint32_t leftHorizontalOffset = static_cast<uint32_t>(0);
-    uint32_t centerHorizontalOffset = static_cast<uint32_t>(leftCapInset);
-    uint32_t rightHorizontalOffset = static_cast<uint32_t>(width - rightCapInset);
-
-    switch (resizingMode) {
-        case xcassets::Resizing::Mode::ThreePartHorizontal:
-            return {
-                { leftHorizontalOffset,   0, leftWidth,   height },
-                { centerHorizontalOffset, 0, centerWidth, height },
-                { rightHorizontalOffset,  0, rightWidth,  height },
-            };
-        case xcassets::Resizing::Mode::ThreePartVertical:
-            return {
-                { 0, topVerticalOffset,    width, topHeight    },
-                { 0, centerVerticalOffset, width, centerHeight },
-                { 0, bottomVerticalOffset, width, bottomHeight },
-            };
-        case xcassets::Resizing::Mode::NinePart:
-            return {
-                { leftHorizontalOffset,   topVerticalOffset,    leftWidth,   topHeight    },
-                { centerHorizontalOffset, topVerticalOffset,    centerWidth, topHeight    },
-                { rightHorizontalOffset,  topVerticalOffset,    rightWidth,  topHeight    },
-                { leftHorizontalOffset,   centerVerticalOffset, leftWidth,   centerHeight },
-                { centerHorizontalOffset, centerVerticalOffset, centerWidth, centerHeight },
-                { rightHorizontalOffset,  centerVerticalOffset, rightWidth,  centerHeight },
-                { leftHorizontalOffset,   bottomVerticalOffset, leftWidth,   bottomHeight },
-                { centerHorizontalOffset, bottomVerticalOffset, centerWidth, bottomHeight },
-                { rightHorizontalOffset,  bottomVerticalOffset, rightWidth,  bottomHeight },
-            };
-        default: abort();
-    }
-}
 
 bool ImageSet::
 Compile(
@@ -204,7 +91,7 @@ CompileAsset(
     }
 
     // TODO: filter by target-device / device-model / os-version
-    uint16_t idiom = IdiomAttributeForIdiom(*image.idiom());
+    uint16_t idiom = Convert::IdiomAttribute(*image.idiom());
 
     std::vector<uint8_t> pixels;
     size_t width = 0;
@@ -323,8 +210,8 @@ CompileAsset(
 
         if (resizing.mode()) {
             xcassets::Resizing::Mode resizingMode = *resizing.mode();
-            rendition.layout() = LayoutForResizingAndCenterMode(resizingMode, centerMode);
-            rendition.slices() = SlicesForResizingModeAndCapInsets(width, height, resizingMode, resizing.capInsets());
+            rendition.layout() = Convert::LayoutForResizingAndCenterMode(resizingMode, centerMode);
+            rendition.slices() = Convert::SlicesForResizingModeAndCapInsets(width, height, resizingMode, resizing.capInsets());
         }
     }
 

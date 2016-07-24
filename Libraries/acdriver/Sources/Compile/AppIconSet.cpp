@@ -8,6 +8,7 @@
  */
 
 #include <acdriver/Compile/AppIconSet.h>
+#include <acdriver/Compile/Convert.h>
 #include <acdriver/CompileOutput.h>
 #include <acdriver/Result.h>
 #include <plist/Array.h>
@@ -16,7 +17,10 @@
 #include <plist/String.h>
 #include <libutil/Filesystem.h>
 
+#include <sstream>
+
 using acdriver::Compile::AppIconSet;
+using acdriver::Compile::Convert;
 using acdriver::CompileOutput;
 using acdriver::Result;
 using libutil::Filesystem;
@@ -34,36 +38,14 @@ IconsDictionary(plist::Dictionary *info, std::string const &key)
 }
 
 static std::string
-IdiomSuffix(xcassets::Slot::Idiom idiom)
+SizeSuffix(xcassets::Slot::ImageSize const &size)
 {
-    switch (idiom) {
-        case xcassets::Slot::Idiom::Universal:
-            return std::string();
-        case xcassets::Slot::Idiom::Phone:
-            return std::string();
-        case xcassets::Slot::Idiom::Pad:
-            return "~ipad";
-        case xcassets::Slot::Idiom::Desktop:
-            // TODO: no idiom suffix for desktop
-            return std::string();
-        case xcassets::Slot::Idiom::TV:
-            return "~tv";
-        case xcassets::Slot::Idiom::Watch:
-            return "~watch";
-        case xcassets::Slot::Idiom::Car:
-            return "~car";
-    }
-
-    abort();
+    std::ostringstream out;
+    out << size.width();
+    out << "x";
+    out << size.height();
+    return out.str();
 }
-
-struct IdiomHash
-{
-    std::size_t operator()(xcassets::Slot::Idiom idiom) const
-    {
-        return static_cast<std::size_t>(idiom);
-    }
-};
 
 bool AppIconSet::
 Compile(
@@ -72,10 +54,18 @@ Compile(
     CompileOutput *compileOutput,
     Result *result)
 {
+    struct IdiomHash
+    {
+        std::size_t operator()(xcassets::Slot::Idiom idiom) const
+        {
+            return static_cast<std::size_t>(idiom);
+        }
+    };
+    auto files = std::unordered_map<xcassets::Slot::Idiom, std::vector<std::string>, IdiomHash>();
+
     /*
      * Copy the app icon images into the output.
      */
-    auto files = std::unordered_map<xcassets::Slot::Idiom, std::vector<std::string>, IdiomHash>();
     if (appIconSet->images()) {
         for (xcassets::Asset::AppIconSet::Image const &image : *appIconSet->images()) {
             /*
@@ -96,17 +86,14 @@ Compile(
              */
             xcassets::Slot::ImageSize const &size = *image.imageSize();
             // TODO: verify the dimensions of the image are correct
-            std::string sizeSuffix = xcassets::Slot::ImageSize::String(size);
+            std::string sizeSuffix = SizeSuffix(size);
 
             xcassets::Slot::Scale const &scale = *image.scale();
-            std::string scaleSuffix = std::string();
-            if (scale.value() != 1.0) {
-                scaleSuffix = "@" + xcassets::Slot::Scale::String(scale);
-            }
+            std::string scaleSuffix = Convert::ScaleSuffix(scale);
 
             xcassets::Slot::Idiom idiom = image.idiom().value_or(xcassets::Slot::Idiom::Universal);
             // TODO: skip images with idioms inappropriate for target platform
-            std::string idiomSuffix = IdiomSuffix(idiom);
+            std::string idiomSuffix = Convert::IdiomSuffix(idiom);
 
             /*
              * Copy the icon image into the output.
@@ -147,7 +134,7 @@ Compile(
         /*
          * Store the icon in the additional info.
          */
-        std::string idiomSuffix = IdiomSuffix(pair.first);
+        std::string idiomSuffix = Convert::IdiomSuffix(pair.first);
         plist::Dictionary *icons = IconsDictionary(compileOutput->additionalInfo(), "CFBundleIcons" + idiomSuffix);
         icons->set("CFBundlePrimaryIcon", std::move(primary));
     }
