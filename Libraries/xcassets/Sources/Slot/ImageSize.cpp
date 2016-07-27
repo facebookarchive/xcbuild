@@ -57,11 +57,11 @@ Parse(std::string const &value)
 }
 
 std::string ImageSize::
-String(ImageSize scale)
+String(ImageSize imageSize)
 {
     std::ostringstream out;
-    out << scale.width();
+    out << imageSize.width();
     out << "x";
-    out << scale.height();
+    out << imageSize.height();
     return out.str();
 }

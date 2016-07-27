@@ -14,7 +14,7 @@ using xcassets::Slot::ImageSize;
 
 TEST(ImageSize, Parse)
 {
-    /* Invalid scales. */
+    /* Invalid image sizes. */
     EXPECT_EQ(ImageSize::Parse(""), ext::nullopt);
     EXPECT_EQ(ImageSize::Parse("1"), ext::nullopt);
     EXPECT_EQ(ImageSize::Parse("1a"), ext::nullopt);
@@ -24,7 +24,7 @@ TEST(ImageSize, Parse)
     EXPECT_EQ(ImageSize::Parse("1xA"), ext::nullopt);
     EXPECT_EQ(ImageSize::Parse("AxB"), ext::nullopt);
 
-    /* Valid scales. */
+    /* Valid image sizes. */
     auto size1 = ImageSize::Parse("1x1");
     ASSERT_NE(size1, ext::nullopt);
     EXPECT_EQ(size1->width(), 1.0);

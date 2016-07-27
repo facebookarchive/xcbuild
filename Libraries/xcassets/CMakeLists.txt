@@ -23,6 +23,7 @@ add_library(xcassets SHARED
             Sources/Slot/MemoryRequirement.cpp
             Sources/Slot/Scale.cpp
             Sources/Slot/SizeClass.cpp
+            Sources/Slot/SystemVersion.cpp
             Sources/Slot/WatchIconRole.cpp
             Sources/Asset/Asset.cpp
             Sources/Asset/AppIconSet.cpp
@@ -54,4 +55,5 @@ if (BUILD_TESTING)
   ADD_UNIT_GTEST(xcassets IconSet Tests/test_IconSet.cpp)
   ADD_UNIT_GTEST(xcassets Scale Tests/test_Scale.cpp)
   ADD_UNIT_GTEST(xcassets ImageSize Tests/test_ImageSize.cpp)
+  ADD_UNIT_GTEST(xcassets SystemVersion Tests/test_SystemVersion.cpp)
 endif ()
