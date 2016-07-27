@@ -81,7 +81,8 @@ write(Filesystem *filesystem, ext::optional<std::string> const &partialInfoPlist
      * Write out dependency info, if requested.
      */
     if (dependencyInfo) {
-        if (!filesystem->write(_dependencyInfo.serialize(), *dependencyInfo)) {
+        auto contents = _dependencyInfo.serialize();
+        if (contents.size() > 0 && !filesystem->write(contents, *dependencyInfo)) {
             result->normal(Result::Severity::Error, "unable to write dependency info");
             success = false;
         }
