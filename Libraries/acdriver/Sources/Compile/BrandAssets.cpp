@@ -8,12 +8,12 @@
  */
 
 #include <acdriver/Compile/BrandAssets.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <libutil/Filesystem.h>
 
 using acdriver::Compile::BrandAssets;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 
@@ -21,13 +21,13 @@ bool BrandAssets::
 Compile(
     std::shared_ptr<xcassets::Asset::BrandAssets> const &brandAssets,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     result->document(
         Result::Severity::Warning,
         brandAssets->path(),
-        { CompileOutput::AssetReference(brandAssets) },
+        { Output::AssetReference(brandAssets) },
         "Not Implemented",
         "brand assets not yet supported");
 

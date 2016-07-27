@@ -8,12 +8,12 @@
  */
 
 #include <acdriver/Compile/DataSet.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <libutil/Filesystem.h>
 
 using acdriver::Compile::DataSet;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 
@@ -21,13 +21,13 @@ bool DataSet::
 Compile(
     std::shared_ptr<xcassets::Asset::DataSet> const &dataSet,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     result->document(
         Result::Severity::Warning,
         dataSet->path(),
-        { CompileOutput::AssetReference(dataSet) },
+        { Output::AssetReference(dataSet) },
         "Not Implemented",
         "data set not yet supported");
 

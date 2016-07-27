@@ -8,12 +8,12 @@
  */
 
 #include <acdriver/Compile/LaunchImage.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <libutil/Filesystem.h>
 
 using acdriver::Compile::LaunchImage;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 
@@ -21,13 +21,13 @@ bool LaunchImage::
 Compile(
     std::shared_ptr<xcassets::Asset::LaunchImage> const &launchImage,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     result->document(
         Result::Severity::Warning,
         launchImage->path(),
-        { CompileOutput::AssetReference(launchImage) },
+        { Output::AssetReference(launchImage) },
         "Not Implemented",
         "launch image not yet supported");
 

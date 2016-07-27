@@ -19,10 +19,11 @@ namespace libutil { class Filesystem; }
 
 namespace acdriver {
 
-class CompileOutput;
 class Result;
 
 namespace Compile {
+
+class Output;
 
 class GCLeaderboard {
 private:
@@ -33,7 +34,7 @@ public:
     static bool Compile(
         std::shared_ptr<xcassets::Asset::GCLeaderboard> const &gcLeaderboard,
         libutil::Filesystem *filesystem,
-        CompileOutput *compileOutput,
+        Output *compileOutput,
         Result *result);
 };
 

@@ -8,12 +8,12 @@
  */
 
 #include <acdriver/Compile/SpriteAtlas.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <libutil/Filesystem.h>
 
 using acdriver::Compile::SpriteAtlas;
-using acdriver::CompileOutput;
+using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
 
@@ -21,13 +21,13 @@ bool SpriteAtlas::
 Compile(
     std::shared_ptr<xcassets::Asset::SpriteAtlas> const &spriteAtlas,
     Filesystem *filesystem,
-    CompileOutput *compileOutput,
+    Output *compileOutput,
     Result *result)
 {
     result->document(
         Result::Severity::Warning,
         spriteAtlas->path(),
-        { CompileOutput::AssetReference(spriteAtlas) },
+        { Output::AssetReference(spriteAtlas) },
         "Not Implemented",
         "sprite atlas yet supported");
 

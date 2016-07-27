@@ -19,10 +19,11 @@ namespace libutil { class Filesystem; }
 
 namespace acdriver {
 
-class CompileOutput;
 class Result;
 
 namespace Compile {
+
+class Output;
 
 class ImageSet {
 private:
@@ -33,14 +34,14 @@ public:
     static bool Compile(
         std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
         libutil::Filesystem *filesystem,
-        CompileOutput *compileOutput,
+        Output *compileOutput,
         Result *result);
 
     static bool CompileAsset(
         std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
         xcassets::Asset::ImageSet::Image const &image,
         libutil::Filesystem *filesystem,
-        CompileOutput *compileOutput,
+        Output *compileOutput,
         Result *result);
 };
 

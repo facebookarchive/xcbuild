@@ -8,11 +8,11 @@
  */
 
 #include <gtest/gtest.h>
-#include <acdriver/CompileOutput.h>
+#include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <libutil/MemoryFilesystem.h>
 
-using acdriver::CompileOutput;
+namespace Compile = acdriver::Compile;
 using acdriver::Result;
 using libutil::MemoryFilesystem;
 
@@ -25,7 +25,7 @@ Contents(std::string const &string)
 TEST(CompileOutput, Empty)
 {
     MemoryFilesystem filesystem = MemoryFilesystem({ });
-    CompileOutput output = CompileOutput("/", CompileOutput::Format::Compiled);
+    Compile::Output output = Compile::Output("/", Compile::Output::Format::Compiled);
 
     Result result;
     EXPECT_TRUE(output.write(&filesystem, ext::nullopt, ext::nullopt, &result));
@@ -40,7 +40,7 @@ TEST(CompileOutput, Copy)
     });
 
     /* Copy files from input to output. */
-    CompileOutput output = CompileOutput("/", CompileOutput::Format::Compiled);
+    Compile::Output output = Compile::Output("/", Compile::Output::Format::Compiled);
     output.copies().push_back({ "/source1", "/dest1" });
     output.copies().push_back({ "/source2", "/dest2" });
 
