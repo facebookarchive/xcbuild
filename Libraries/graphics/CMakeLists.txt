@@ -28,6 +28,7 @@ if ("${IMAGE_IO}" STREQUAL "IMAGE_IO-NOTFOUND")
   set(IMAGE_IO "")
 endif ()
 
+set(PNG_STATIC ON)
 find_package(PNG)
 if (NOT "${PNG_FOUND}")
   set(PNG_LIBRARIES "")
