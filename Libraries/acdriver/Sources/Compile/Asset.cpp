@@ -81,7 +81,7 @@ Compile(
         case xcassets::Asset::AssetType::AppIconSet: {
             auto appIconSet = std::static_pointer_cast<xcassets::Asset::AppIconSet>(asset);
             if (appIconSet->name().name() == compileOutput->appIcon()) {
-                Compile::AppIconSet::Compile(appIconSet, filesystem, compileOutput, result);
+                Compile::AppIconSet::Compile(appIconSet, compileOutput, result);
             }
             break;
         }
