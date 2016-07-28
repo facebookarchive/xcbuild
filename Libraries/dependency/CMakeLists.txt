@@ -23,6 +23,9 @@ add_executable(dependency-info-tool Tools/dependency-info-tool.cpp)
 target_link_libraries(dependency-info-tool dependency util)
 install(TARGETS dependency-info-tool DESTINATION usr/bin)
 
+add_executable(dump_dependency Tools/dump_dependency.cpp)
+target_link_libraries(dump_dependency dependency util)
+
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(dependency BinaryDependencyInfo Tests/test_BinaryDependencyInfo.cpp)
   ADD_UNIT_GTEST(dependency MakefileDependencyInfo Tests/test_MakefileDependencyInfo.cpp)
