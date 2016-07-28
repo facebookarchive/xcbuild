@@ -15,7 +15,6 @@
 #include <plist/Boolean.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
-#include <libutil/Filesystem.h>
 
 #include <sstream>
 
@@ -23,7 +22,6 @@ using acdriver::Compile::AppIconSet;
 using acdriver::Compile::Convert;
 using acdriver::Compile::Output;
 using acdriver::Result;
-using libutil::Filesystem;
 
 static plist::Dictionary *
 IconsDictionary(plist::Dictionary *info, std::string const &key)
@@ -50,7 +48,6 @@ SizeSuffix(xcassets::Slot::ImageSize const &size)
 bool AppIconSet::
 Compile(
     std::shared_ptr<xcassets::Asset::AppIconSet> const &appIconSet,
-    Filesystem *filesystem,
     Output *compileOutput,
     Result *result)
 {
@@ -122,8 +119,12 @@ Compile(
 
         /* List the files for the icon. */
         auto files = plist::Array::New();
+        std::unordered_set<std::string> seen;
         for (std::string const &file : pair.second) {
-            files->append(plist::String::New(file));
+            if (seen.find(file) == seen.end()) {
+                seen.insert(file);
+                files->append(plist::String::New(file));
+            }
         }
         primary->set("CFBundleIconFiles", std::move(files));
 
