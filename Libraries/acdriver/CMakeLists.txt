@@ -13,6 +13,7 @@ add_library(acdriver SHARED
             Sources/Output.cpp
             Sources/Result.cpp
             Sources/VersionAction.cpp
+            Sources/Version.cpp
             Sources/CompileAction.cpp
             Sources/Compile/Convert.cpp
             Sources/Compile/Output.cpp

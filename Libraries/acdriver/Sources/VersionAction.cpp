@@ -8,6 +8,7 @@
  */
 
 #include <acdriver/VersionAction.h>
+#include <acdriver/Version.h>
 #include <acdriver/Options.h>
 #include <acdriver/Output.h>
 #include <acdriver/Result.h>
@@ -15,6 +16,7 @@
 #include <plist/String.h>
 
 using acdriver::VersionAction;
+using acdriver::Version;
 using acdriver::Options;
 using acdriver::Output;
 using acdriver::Result;
@@ -33,12 +35,16 @@ void VersionAction::
 run(Options const &options, Output *output, Result *result)
 {
     std::unique_ptr<plist::Dictionary> dict = plist::Dictionary::New();
-    dict->set("bundle-version", plist::String::New("1"));
-    dict->set("short-bundle-version", plist::String::New("1"));
+
+    std::string bundleVersion = std::to_string(Version::BuildVersion());
+    std::string shortBundleVersion = Version::UserVersion();
+
+    dict->set("bundle-version", plist::String::New(bundleVersion));
+    dict->set("short-bundle-version", plist::String::New(shortBundleVersion));
 
     std::string text;
-    text += "bundle-version: 1\n";
-    text += "short-bundle-version: 1\n";
+    text += "bundle-version: " + bundleVersion + "\n";
+    text += "short-bundle-version: " + shortBundleVersion + "\n";
 
     output->add("com.apple.actool.version", std::move(dict), text);
 }
