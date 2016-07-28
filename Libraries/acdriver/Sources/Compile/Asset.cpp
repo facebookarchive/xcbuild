@@ -155,7 +155,7 @@ Compile(
         case xcassets::Asset::AssetType::LaunchImage: {
             auto launchImage = std::static_pointer_cast<xcassets::Asset::LaunchImage>(asset);
             if (launchImage->name().name() == compileOutput->launchImage()) {
-                Compile::LaunchImage::Compile(launchImage, filesystem, compileOutput, result);
+                Compile::LaunchImage::Compile(launchImage, compileOutput, result);
             }
             break;
         }

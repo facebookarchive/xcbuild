@@ -15,8 +15,6 @@
 
 #include <memory>
 
-namespace libutil { class Filesystem; }
-
 namespace acdriver {
 
 class Result;
@@ -33,7 +31,6 @@ private:
 public:
     static bool Compile(
         std::shared_ptr<xcassets::Asset::LaunchImage> const &launchImage,
-        libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);
 };
