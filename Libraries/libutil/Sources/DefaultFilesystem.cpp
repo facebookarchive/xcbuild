@@ -139,9 +139,12 @@ read(std::vector<uint8_t> *contents, std::string const &path) const
     }
 
     *contents = std::vector<uint8_t>(size);
-    if (std::fread(contents->data(), size, 1, fp) != 1) {
-        std::fclose(fp);
-        return false;
+
+    if (size > 0) {
+        if (std::fread(contents->data(), size, 1, fp) != 1) {
+            std::fclose(fp);
+            return false;
+        }
     }
 
     std::fclose(fp);
@@ -156,9 +159,13 @@ write(std::vector<uint8_t> const &contents, std::string const &path)
         return false;
     }
 
-    if (std::fwrite(contents.data(), contents.size(), 1, fp) != 1) {
-        std::fclose(fp);
-        return false;
+    size_t size = contents.size();
+
+    if (size > 0) {
+        if (std::fwrite(contents.data(), size, 1, fp) != 1) {
+            std::fclose(fp);
+            return false;
+        }
     }
 
     std::fclose(fp);
