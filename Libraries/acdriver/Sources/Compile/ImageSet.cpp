@@ -96,7 +96,7 @@ CompileAsset(
     std::vector<uint8_t> pixels;
     size_t width = 0;
     size_t height = 0;
-    car::Rendition::Data::Format format;
+    car::Rendition::Data::Format format = car::Rendition::Data::Format::Data;
 
     if (FSUtil::IsFileExtension(filename, "png", true)) {
         std::vector<uint8_t> contents;
