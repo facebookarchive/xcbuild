@@ -9,25 +9,13 @@
 
 #include <acdriver/CompileAction.h>
 #include <acdriver/Compile/Output.h>
-#include <acdriver/Compile/AppIconSet.h>
-#include <acdriver/Compile/BrandAssets.h>
-#include <acdriver/Compile/ComplicationSet.h>
-#include <acdriver/Compile/DataSet.h>
-#include <acdriver/Compile/GCDashboardImage.h>
-#include <acdriver/Compile/GCLeaderboard.h>
-#include <acdriver/Compile/GCLeaderboardSet.h>
-#include <acdriver/Compile/IconSet.h>
-#include <acdriver/Compile/ImageSet.h>
-#include <acdriver/Compile/ImageStack.h>
-#include <acdriver/Compile/ImageStackLayer.h>
-#include <acdriver/Compile/LaunchImage.h>
-#include <acdriver/Compile/SpriteAtlas.h>
+#include <acdriver/Compile/Asset.h>
 #include <acdriver/Version.h>
 #include <acdriver/Options.h>
 #include <acdriver/Output.h>
 #include <acdriver/Result.h>
 #include <xcassets/Asset/Catalog.h>
-#include <xcassets/Asset/Group.h>
+#include <xcassets/Slot/SystemVersion.h>
 #include <bom/bom.h>
 #include <car/Reader.h>
 #include <car/Writer.h>
@@ -58,140 +46,6 @@ CompileAction()
 CompileAction::
 ~CompileAction()
 {
-}
-
-static bool
-CompileAsset(
-    std::shared_ptr<xcassets::Asset::Asset> const &asset,
-    std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    Filesystem *filesystem,
-    Options const &options,
-    Compile::Output *compileOutput,
-    Result *result);
-
-template<typename T>
-static bool
-CompileChildren(
-    std::vector<T> const &assets,
-    std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    Filesystem *filesystem,
-    Options const &options,
-    Compile::Output *compileOutput,
-    Result *result)
-{
-    bool success = true;
-
-    for (auto const &asset : assets) {
-        if (!CompileAsset(asset, parent, filesystem, options, compileOutput, result)) {
-            success = false;
-        }
-    }
-
-    return success;
-}
-
-static bool
-CompileAsset(
-    std::shared_ptr<xcassets::Asset::Asset> const &asset,
-    std::shared_ptr<xcassets::Asset::Asset> const &parent,
-    Filesystem *filesystem,
-    Options const &options,
-    Compile::Output *compileOutput,
-    Result *result)
-{
-    std::string filename = FSUtil::GetBaseName(asset->path());
-    std::string name = FSUtil::GetBaseNameWithoutExtension(filename);
-    switch (asset->type()) {
-        case xcassets::Asset::AssetType::AppIconSet: {
-            auto appIconSet = std::static_pointer_cast<xcassets::Asset::AppIconSet>(asset);
-            if (appIconSet->name().name() == options.appIcon()) {
-                Compile::AppIconSet::Compile(appIconSet, filesystem, compileOutput, result);
-            }
-            break;
-        }
-        case xcassets::Asset::AssetType::BrandAssets: {
-            auto brandAssets = std::static_pointer_cast<xcassets::Asset::BrandAssets>(asset);
-            Compile::BrandAssets::Compile(brandAssets, filesystem, compileOutput, result);
-            CompileChildren(brandAssets->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::Catalog: {
-            auto catalog = std::static_pointer_cast<xcassets::Asset::Catalog>(asset);
-            CompileChildren(catalog->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::ComplicationSet: {
-            auto complicationSet = std::static_pointer_cast<xcassets::Asset::ComplicationSet>(asset);
-            Compile::ComplicationSet::Compile(complicationSet, filesystem, compileOutput, result);
-            CompileChildren(complicationSet->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::DataSet: {
-            auto dataSet = std::static_pointer_cast<xcassets::Asset::DataSet>(asset);
-            Compile::DataSet::Compile(dataSet, filesystem, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::GCDashboardImage: {
-            auto dashboardImage = std::static_pointer_cast<xcassets::Asset::GCDashboardImage>(asset);
-            Compile::GCDashboardImage::Compile(dashboardImage, filesystem, compileOutput, result);
-            CompileChildren(dashboardImage->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::GCLeaderboard: {
-            auto leaderboard = std::static_pointer_cast<xcassets::Asset::GCLeaderboard>(asset);
-            Compile::GCLeaderboard::Compile(leaderboard, filesystem, compileOutput, result);
-            CompileChildren(leaderboard->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::GCLeaderboardSet: {
-            auto leaderboardSet = std::static_pointer_cast<xcassets::Asset::GCLeaderboardSet>(asset);
-            Compile::GCLeaderboardSet::Compile(leaderboardSet, filesystem, compileOutput, result);
-            CompileChildren(leaderboardSet->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::Group: {
-            auto group = std::static_pointer_cast<xcassets::Asset::Group>(asset);
-            CompileChildren(group->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::IconSet: {
-            auto iconSet = std::static_pointer_cast<xcassets::Asset::IconSet>(asset);
-            Compile::IconSet::Compile(iconSet, filesystem, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::ImageSet: {
-            auto imageSet = std::static_pointer_cast<xcassets::Asset::ImageSet>(asset);
-            Compile::ImageSet::Compile(imageSet, filesystem, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::ImageStack: {
-            auto imageStack = std::static_pointer_cast<xcassets::Asset::ImageStack>(asset);
-            Compile::ImageStack::Compile(imageStack, filesystem, compileOutput, result);
-            CompileChildren(imageStack->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::ImageStackLayer: {
-            auto imageStackLayer = std::static_pointer_cast<xcassets::Asset::ImageStackLayer>(asset);
-            Compile::ImageStackLayer::Compile(imageStackLayer, filesystem, compileOutput, result);
-            // TODO: CompileChildren(imageStackLayer->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-        case xcassets::Asset::AssetType::LaunchImage: {
-            auto launchImage = std::static_pointer_cast<xcassets::Asset::LaunchImage>(asset);
-            if (launchImage->name().name() == options.launchImage()) {
-                Compile::LaunchImage::Compile(launchImage, filesystem, compileOutput, result);
-            }
-            break;
-        }
-        case xcassets::Asset::AssetType::SpriteAtlas: {
-            auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
-            Compile::SpriteAtlas::Compile(spriteAtlas, filesystem, compileOutput, result);
-            CompileChildren(spriteAtlas->children(), asset, filesystem, options, compileOutput, result);
-            break;
-        }
-    }
-
-    return true;
 }
 
 static bool
@@ -386,7 +240,11 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
     /*
      * Create compilation output.
      */
-    Compile::Output compileOutput = Compile::Output(*options.compile(), *outputFormat);
+    Compile::Output compileOutput = Compile::Output(
+        *options.compile(),
+        *outputFormat,
+        options.appIcon(),
+        options.launchImage());
 
     /*
      * If necessary, create output archive to write into.
@@ -425,7 +283,7 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
         /*
          * Compile the asset catalog.
          */
-        if (!CompileAsset(catalog, catalog, filesystem, options, &compileOutput, result)) {
+        if (!Compile::Asset::Compile(catalog, filesystem, &compileOutput, result)) {
             /* Error already printed. */
             continue;
         }

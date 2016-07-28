@@ -17,6 +17,7 @@ add_library(acdriver SHARED
             Sources/CompileAction.cpp
             Sources/Compile/Convert.cpp
             Sources/Compile/Output.cpp
+            Sources/Compile/Asset.cpp
             Sources/Compile/AppIconSet.cpp
             Sources/Compile/BrandAssets.cpp
             Sources/Compile/ComplicationSet.cpp
