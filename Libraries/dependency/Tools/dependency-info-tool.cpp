@@ -111,7 +111,7 @@ Help(std::string const &error = std::string())
         fprintf(stderr, "\n");
     }
 
-    fprintf(stderr, "Usage: dependency-info-tool [options]\n\n");
+    fprintf(stderr, "Usage: dependency-info-tool [options] [inputs]\n\n");
     fprintf(stderr, "Converts dependency info to Ninja format.\n\n");
 
 #define INDENT "  "
@@ -121,10 +121,13 @@ Help(std::string const &error = std::string())
     fprintf(stderr, "\n");
 
     fprintf(stderr, "Conversion Options:\n");
-    fprintf(stderr, INDENT "-i, --input\n");
     fprintf(stderr, INDENT "-o, --output\n");
-    fprintf(stderr, INDENT "-f, --format\n");
     fprintf(stderr, INDENT "-n, --name\n");
+    fprintf(stderr, "\n");
+
+    fprintf(stderr, "Inputs:\n");
+    fprintf(stderr, INDENT "<format>:<path>\n");
+    fprintf(stderr, INDENT "format: makefile, binary, directory\n");
     fprintf(stderr, "\n");
 #undef INDENT
 
@@ -134,7 +137,7 @@ Help(std::string const &error = std::string())
 static int
 Version()
 {
-    printf("ninja-dependency-info version 1 (xcbuild)\n");
+    printf("dependency-info-tool version 1\n");
     return 0;
 }
 
