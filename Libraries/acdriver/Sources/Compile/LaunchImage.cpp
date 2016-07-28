@@ -104,53 +104,55 @@ LaunchImageSupportsLandscape(xcassets::Slot::Idiom idiom, ext::optional<xcassets
 static bool
 LaunchImageScreenSize(xcassets::Slot::Idiom idiom, ext::optional<xcassets::Slot::DeviceSubtype> subtype, size_t *width, size_t *height)
 {
-    switch (idiom) {
-        case xcassets::Slot::Idiom::Universal:
-            return false;
-        case xcassets::Slot::Idiom::Phone:
-            if (!subtype) {
-                *width = 320;
-                *height = 480;
-                return true;
-            } else {
-                switch (*subtype) {
-                    case xcassets::Slot::DeviceSubtype::Retina4:
-                        *width = 320;
-                        *height = 568;
-                        return true;
-                    case xcassets::Slot::DeviceSubtype::Height667:
-                        *width = 375;
-                        *height = 667;
-                        return true;
-                    case xcassets::Slot::DeviceSubtype::Height736:
-                        *width = 414;
-                        *height = 736;
-                        return true;
-                }
+    if (width && height) {
+        switch (idiom) {
+            case xcassets::Slot::Idiom::Universal:
+                return false;
+            case xcassets::Slot::Idiom::Phone:
+                if (!subtype) {
+                    *width = 320;
+                    *height = 480;
+                    return true;
+                } else {
+                    switch (*subtype) {
+                        case xcassets::Slot::DeviceSubtype::Retina4:
+                            *width = 320;
+                            *height = 568;
+                            return true;
+                        case xcassets::Slot::DeviceSubtype::Height667:
+                            *width = 375;
+                            *height = 667;
+                            return true;
+                        case xcassets::Slot::DeviceSubtype::Height736:
+                            *width = 414;
+                            *height = 736;
+                            return true;
+                    }
 
-                abort();
-            }
-        case xcassets::Slot::Idiom::Pad:
-            /* Note there is no subtype for larger sizes. */
-            if (subtype) {
+                    abort();
+                }
+            case xcassets::Slot::Idiom::Pad:
+                /* Note there is no subtype for larger sizes. */
+                if (subtype) {
+                    return false;
+                }
+                *width = 768;
+                *height = 1024;
+                return true;
+            case xcassets::Slot::Idiom::Desktop:
                 return false;
-            }
-            *width = 768;
-            *height = 1024;
-            return true;
-        case xcassets::Slot::Idiom::Desktop:
-            return false;
-        case xcassets::Slot::Idiom::TV:
-            if (subtype) {
+            case xcassets::Slot::Idiom::TV:
+                if (subtype) {
+                    return false;
+                }
+                *width = 1920;
+                *height = 1080;
+                return true;
+            case xcassets::Slot::Idiom::Watch:
                 return false;
-            }
-            *width = 1920;
-            *height = 1080;
-            return true;
-        case xcassets::Slot::Idiom::Watch:
-            return false;
-        case xcassets::Slot::Idiom::Car:
-            return false;
+            case xcassets::Slot::Idiom::Car:
+                return false;
+        }
     }
 
     abort();
@@ -160,28 +162,29 @@ static void
 LaunchImageExtentSize(size_t w, size_t h, xcassets::Slot::LaunchImageExtent extent, xcassets::Slot::Orientation orientation, size_t *width, size_t *height)
 {
     static size_t const StatusBarHeight = 20;
+    if (width && height) {
+        switch (extent) {
+            case xcassets::Slot::LaunchImageExtent::ToStatusBar:
+                switch (orientation) {
+                    case xcassets::Slot::Orientation::Portrait:
+                        /* Subtract from height. */
+                        *width = w;
+                        *height = h - StatusBarHeight;
+                        return;
+                    case xcassets::Slot::Orientation::Landscape:
+                        /* Subtract from width. */
+                        *width = w - StatusBarHeight;
+                        *height = h;
+                        return;
+                }
 
-    switch (extent) {
-        case xcassets::Slot::LaunchImageExtent::ToStatusBar:
-            switch (orientation) {
-                case xcassets::Slot::Orientation::Portrait:
-                    /* Subtract from height. */
-                    *width = w;
-                    *height = h - StatusBarHeight;
-                    return;
-                case xcassets::Slot::Orientation::Landscape:
-                    /* Subtract from width. */
-                    *width = w - StatusBarHeight;
-                    *height = h;
-                    return;
-            }
-
-            abort();
-        case xcassets::Slot::LaunchImageExtent::FullScreen:
-            /* No changes needed. */
-            *width = w;
-            *height = h;
-            return;
+                abort();
+            case xcassets::Slot::LaunchImageExtent::FullScreen:
+                /* No changes needed. */
+                *width = w;
+                *height = h;
+                return;
+        }
     }
 
     abort();
@@ -228,8 +231,8 @@ Compile(
              * Get the expected size for the launch image.
              */
             // TODO: verify image size matches expected
-            size_t width;
-            size_t height;
+            size_t width = 0;
+            size_t height = 0;
             if (!LaunchImageScreenSize(*image.idiom(), image.subtype(), &width, &height)) {
                 result->document(
                     Result::Severity::Error,
