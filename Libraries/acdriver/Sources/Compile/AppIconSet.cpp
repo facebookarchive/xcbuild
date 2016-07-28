@@ -101,6 +101,7 @@ Compile(
             std::string source = appIconSet->path() + "/" + *image.fileName();
             std::string destination = compileOutput->root() + "/" + appIconSet->name().name() + sizeSuffix + scaleSuffix + idiomSuffix + ".png";
             compileOutput->copies().push_back({ source, destination });
+            compileOutput->outputs().push_back(destination);
 
             /*
              * Add the file to the output info.
