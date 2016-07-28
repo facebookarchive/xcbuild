@@ -38,3 +38,12 @@ TEST(DirectoryDependencyInfo, Deserialize)
     EXPECT_TRUE(info->dependencyInfo().outputs().empty());
 }
 
+TEST(DirectoryDependencyInfo, File)
+{
+    MemoryFilesystem filesystem = MemoryFilesystem({
+        MemoryFilesystem::Entry::File("file1", { }),
+    });
+
+    auto info = DirectoryDependencyInfo::Deserialize(&filesystem, "/file");
+    ASSERT_EQ(info, ext::nullopt);
+}
