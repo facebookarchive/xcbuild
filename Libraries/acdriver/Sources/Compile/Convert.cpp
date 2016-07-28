@@ -51,6 +51,21 @@ ScaleSuffix(xcassets::Slot::Scale const &scale)
     return std::string();
 }
 
+std::string Convert::
+DeviceSubtypeSuffix(xcassets::Slot::DeviceSubtype subtype)
+{
+    switch (subtype) {
+        case xcassets::Slot::DeviceSubtype::Retina4:
+            return "-568h";
+        case xcassets::Slot::DeviceSubtype::Height667:
+            return "-667h";
+        case xcassets::Slot::DeviceSubtype::Height736:
+            return "-736h";
+    }
+
+    abort();
+}
+
 uint16_t Convert::
 IdiomAttribute(xcassets::Slot::Idiom idiom)
 {

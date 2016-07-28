@@ -36,13 +36,13 @@ parse(plist::Dictionary const *dict)
     std::unordered_set<std::string> seen;
     auto unpack = plist::Keys::Unpack("LaunchImageImage", dict, &seen);
 
-    auto F  = unpack.cast <plist::String> ("filename");
-    auto I  = unpack.cast <plist::String> ("idiom");
-    auto O  = unpack.cast <plist::String> ("orientation");
-    auto S  = unpack.cast <plist::String> ("scale");
-    auto ST = unpack.cast <plist::String> ("subtype");
-    // TODO: minimum-system-version
-    auto E  = unpack.cast <plist::String> ("extent");
+    auto F   = unpack.cast <plist::String> ("filename");
+    auto I   = unpack.cast <plist::String> ("idiom");
+    auto O   = unpack.cast <plist::String> ("orientation");
+    auto S   = unpack.cast <plist::String> ("scale");
+    auto ST  = unpack.cast <plist::String> ("subtype");
+    auto MSV = unpack.cast <plist::String> ("minimum-system-version");
+    auto E   = unpack.cast <plist::String> ("extent");
 
     if (!unpack.complete(true)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
@@ -66,6 +66,10 @@ parse(plist::Dictionary const *dict)
 
     if (ST != nullptr) {
         _subtype = Slot::DeviceSubtypes::Parse(ST->value());
+    }
+
+    if (MSV != nullptr) {
+        _minimumSystemVersion = Slot::SystemVersion::Parse(MSV->value());
     }
 
     if (E != nullptr) {

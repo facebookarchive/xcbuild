@@ -12,6 +12,7 @@
 
 #include <xcassets/Insets.h>
 #include <xcassets/Resizing.h>
+#include <xcassets/Slot/DeviceSubtype.h>
 #include <xcassets/Slot/Idiom.h>
 #include <xcassets/Slot/Scale.h>
 #include <car/Rendition.h>
@@ -41,6 +42,11 @@ public:
      * The suffix for an image file name for a specific scale.
      */
     static std::string ScaleSuffix(xcassets::Slot::Scale const &scale);
+
+    /*
+     * The suffix for an image file name for a specific phone subtype.
+     */
+    static std::string DeviceSubtypeSuffix(xcassets::Slot::DeviceSubtype subtype);
 
 public:
     /*
