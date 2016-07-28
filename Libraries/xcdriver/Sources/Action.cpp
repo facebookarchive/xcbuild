@@ -29,20 +29,20 @@ CreateOverrideLevels(Options const &options, pbxsetting::Environment const &envi
     std::vector<pbxsetting::Level> levels;
 
     std::vector<pbxsetting::Setting> settings;
-    if (!options.sdk().empty()) {
-        settings.push_back(pbxsetting::Setting::Create("SDKROOT", options.sdk()));
+    if (options.sdk()) {
+        settings.push_back(pbxsetting::Setting::Create("SDKROOT", *options.sdk()));
     }
-    if (!options.arch().empty()) {
-        settings.push_back(pbxsetting::Setting::Create("ARCHS", options.arch()));
+    if (options.arch()) {
+        settings.push_back(pbxsetting::Setting::Create("ARCHS", *options.arch()));
     }
     levels.push_back(pbxsetting::Level(settings));
 
     levels.push_back(options.settings());
 
-    if (!options.xcconfig().empty()) {
-        pbxsetting::XC::Config::shared_ptr config = pbxsetting::XC::Config::Open(options.xcconfig(), environment);
+    if (options.xcconfig()) {
+        pbxsetting::XC::Config::shared_ptr config = pbxsetting::XC::Config::Open(*options.xcconfig(), environment);
         if (config == nullptr) {
-            fprintf(stderr, "warning: unable to open xcconfig '%s'\n", options.xcconfig().c_str());
+            fprintf(stderr, "warning: unable to open xcconfig '%s'\n", options.xcconfig()->c_str());
         } else {
             levels.push_back(config->level());
         }
@@ -66,13 +66,13 @@ xcexecution::Parameters Action::
 CreateParameters(Options const &options, std::vector<pbxsetting::Level> const &overrideLevels)
 {
     return xcexecution::Parameters(
-        !options.workspace().empty() ? ext::make_optional(options.workspace()) : ext::nullopt,
-        !options.project().empty() ? ext::make_optional(options.project()) : ext::nullopt,
-        !options.scheme().empty() ? ext::make_optional(options.scheme()) : ext::nullopt,
-        !options.target().empty() ? ext::make_optional(options.target()) : ext::nullopt,
+        options.workspace(),
+        options.project(),
+        options.scheme(),
+        options.target(),
         options.allTargets(),
         options.actions(),
-        !options.configuration().empty() ? ext::make_optional(options.configuration()) : ext::nullopt,
+        options.configuration(),
         overrideLevels);
 }
 
@@ -110,7 +110,7 @@ Determine(Options const &options)
         return CheckFirstLaunch;
     } else if (options.showSDKs()) {
         return ShowSDKs;
-    } else if (!options.findLibrary().empty() || !options.findExecutable().empty()) {
+    } else if (options.findLibrary() || options.findExecutable()) {
         return Find;
     } else if (options.exportArchive()) {
         return ExportArchive;

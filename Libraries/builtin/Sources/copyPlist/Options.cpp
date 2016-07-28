@@ -13,7 +13,6 @@ using builtin::copyPlist::Options;
 
 Options::
 Options() :
-    _validate (false),
     _separator(false)
 {
 }
@@ -30,19 +29,19 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 
     if (!_separator) {
         if (arg == "--validate") {
-            return libutil::Options::MarkBool(&_validate, arg, it);
+            return libutil::Options::Current<bool>(&_validate, arg, it);
         } else if (arg == "--convert") {
-            return libutil::Options::NextString(&_convertFormat, args, it);
+            return libutil::Options::Next<std::string>(&_convertFormat, args, it);
         } else if (arg == "--outdir") {
-            return libutil::Options::NextString(&_outputDirectory, args, it);
+            return libutil::Options::Next<std::string>(&_outputDirectory, args, it);
         } else if (arg == "--") {
-            return libutil::Options::MarkBool(&_separator, arg, it);
+            _separator = true;
+            return std::make_pair(true, std::string());
         }
     }
 
     if (_separator || (!arg.empty() && arg[0] != '-')) {
-        _inputs.push_back(arg);
-        return std::make_pair(true, std::string());
+        return libutil::Options::AppendCurrent<std::string>(&_inputs, arg);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }

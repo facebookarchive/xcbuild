@@ -21,14 +21,14 @@ namespace lsRegisterURL {
 
 class Options {
 private:
-    std::string _input;
+    ext::optional<std::string> _input;
 
 public:
     Options();
     ~Options();
 
 public:
-    std::string const &input() const
+    ext::optional<std::string> const &input() const
     { return _input; }
 
 private:

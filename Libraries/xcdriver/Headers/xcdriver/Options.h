@@ -21,74 +21,74 @@ namespace xcdriver {
 
 class Options {
 private:
-    bool        _usage;
-    bool        _help;
-    bool        _verbose;
-    bool        _license;
-    bool        _checkFirstLaunchStatus;
-    bool        _version;
+    ext::optional<bool>        _usage;
+    ext::optional<bool>        _help;
+    ext::optional<bool>        _verbose;
+    ext::optional<bool>        _license;
+    ext::optional<bool>        _checkFirstLaunchStatus;
+    ext::optional<bool>        _version;
 
 private:
-    std::string _project;
-    std::vector<std::string> _target;
-    bool        _allTargets;
-    std::string _workspace;
-    std::string _scheme;
-    std::string _configuration;
-    std::string _arch;
-    std::string _sdk;
-    std::string _toolchain;
-    std::string _destination;
-    std::string _destinationTimeout;
+    ext::optional<std::string> _project;
+    std::vector<std::string>   _target;
+    ext::optional<bool>        _allTargets;
+    ext::optional<std::string> _workspace;
+    ext::optional<std::string> _scheme;
+    ext::optional<std::string> _configuration;
+    ext::optional<std::string> _arch;
+    ext::optional<std::string> _sdk;
+    ext::optional<std::string> _toolchain;
+    ext::optional<std::string> _destination;
+    ext::optional<std::string> _destinationTimeout;
 
 private:
-    std::string _formatter;
-    std::string _executor;
-    bool        _generate;
+    ext::optional<std::string> _formatter;
+    ext::optional<std::string> _executor;
+    ext::optional<bool>        _generate;
 
 private:
-    bool        _parallelizeTargets;
-    int         _jobs;
-    bool        _dryRun;
-    bool        _hideShellScriptEnvironment;
+    ext::optional<bool>        _parallelizeTargets;
+    ext::optional<int>         _jobs;
+    ext::optional<bool>        _dryRun;
+    ext::optional<bool>        _hideShellScriptEnvironment;
 
 private:
-    bool        _list;
-    bool        _showSDKs;
-    bool        _showBuildSettings;
+    ext::optional<bool>        _list;
+    ext::optional<bool>        _showSDKs;
+    ext::optional<bool>        _showBuildSettings;
 
 private:
-    std::string _xcconfig;
+    ext::optional<std::string> _xcconfig;
     std::vector<pbxsetting::Setting> _settings;
 
 private:
-    std::string _findExecutable;
-    std::string _findLibrary;
+    ext::optional<std::string> _findExecutable;
+    ext::optional<std::string> _findLibrary;
 
 private:
-    bool        _enableAddressSanitizer;
-    bool        _enableCodeCoverage;
+    ext::optional<bool>        _enableAddressSanitizer;
+    ext::optional<bool>        _enableCodeCoverage;
 
 private:
-    std::string _resultBundlePath;
-    std::string _derivedDataPath;
+    ext::optional<std::string> _resultBundlePath;
+    ext::optional<std::string> _derivedDataPath;
 
 private:
-    bool        _exportArchive;
-    std::string _archivePath;
-    std::string _exportPath;
-    std::string _exportOptionsPlist;
+    ext::optional<bool>        _exportArchive;
+    ext::optional<std::string> _archivePath;
+    ext::optional<std::string> _exportPath;
+    ext::optional<std::string> _exportOptionsPlist;
 
 private:
-    bool        _skipUnavailableActions;
-    std::vector<std::string> _actions;
+    ext::optional<bool>        _skipUnavailableActions;
+    std::vector<std::string>   _actions;
 
 private:
-    bool        _exportLocalizations;
-    bool        _importLocalizations;
-    std::string _localizationPath;
-    std::string _exportLanguage;
-    bool        _forceImport;
+    ext::optional<bool>        _exportLocalizations;
+    ext::optional<bool>        _importLocalizations;
+    ext::optional<std::string> _localizationPath;
+    ext::optional<std::string> _exportLanguage;
+    ext::optional<bool>        _forceImport;
 
 public:
     Options();
@@ -96,122 +96,122 @@ public:
 
 public:
     bool usage() const
-    { return _usage; }
+    { return _usage.value_or(false); }
     bool help() const
-    { return _help; }
+    { return _help.value_or(false); }
     bool verbose() const
-    { return _verbose; }
+    { return _verbose.value_or(false); }
     bool license() const
-    { return _license; }
+    { return _license.value_or(false); }
     bool checkFirstLaunchStatus() const
-    { return _checkFirstLaunchStatus; }
+    { return _checkFirstLaunchStatus.value_or(false); }
     bool version() const
-    { return _version; }
+    { return _version.value_or(false); }
 
 public:
-    std::string const &project() const
+    ext::optional<std::string> const &project() const
     { return _project; }
     std::vector<std::string> const &target() const
     { return _target; }
     bool allTargets() const
-    { return _allTargets; }
-    std::string const &workspace() const
+    { return _allTargets.value_or(false); }
+    ext::optional<std::string> const &workspace() const
     { return _workspace; }
-    std::string const &scheme() const
+    ext::optional<std::string> const &scheme() const
     { return _scheme; }
-    std::string const &configuration() const
+    ext::optional<std::string> const &configuration() const
     { return _configuration; }
-    std::string const &arch() const
+    ext::optional<std::string> const &arch() const
     { return _arch; }
-    std::string const &sdk() const
+    ext::optional<std::string> const &sdk() const
     { return _sdk; }
-    std::string const &toolchain() const
+    ext::optional<std::string> const &toolchain() const
     { return _toolchain; }
-    std::string const &destination() const
+    ext::optional<std::string> const &destination() const
     { return _destination; }
-    std::string const &destinationTimeout() const
+    ext::optional<std::string> const &destinationTimeout() const
     { return _destinationTimeout; }
 
 public:
     /* Extension. */
-    std::string const &formatter() const
+    ext::optional<std::string> const &formatter() const
     { return _formatter; }
     /* Extension. */
-    std::string const &executor() const
+    ext::optional<std::string> const &executor() const
     { return _executor; }
     /* Extension. */
     bool generate() const
-    { return _generate; }
+    { return _generate.value_or(false); }
 
 public:
     bool parallelizeTargets() const
-    { return _parallelizeTargets; }
-    int jobs() const
+    { return _parallelizeTargets.value_or(false); }
+    ext::optional<int> jobs() const
     { return _jobs; }
     bool dryRun() const
-    { return _dryRun; }
+    { return _dryRun.value_or(false); }
     bool hideShellScriptEnvironment() const
-    { return _hideShellScriptEnvironment; }
+    { return _hideShellScriptEnvironment.value_or(false); }
 
 public:
     bool list() const
-    { return _list; }
+    { return _list.value_or(false); }
     bool showSDKs() const
-    { return _showSDKs; }
+    { return _showSDKs.value_or(false); }
     bool showBuildSettings() const
-    { return _showBuildSettings; }
+    { return _showBuildSettings.value_or(false); }
 
 public:
-    std::string const &xcconfig() const
+    ext::optional<std::string> const &xcconfig() const
     { return _xcconfig; }
     std::vector<pbxsetting::Setting> const &settings() const
     { return _settings; }
 
 public:
-    std::string const &findExecutable() const
+    ext::optional<std::string> const &findExecutable() const
     { return _findExecutable; }
-    std::string const &findLibrary() const
+    ext::optional<std::string> const &findLibrary() const
     { return _findLibrary; }
 
 public:
     bool enableAddressSanitizer() const
-    { return _enableAddressSanitizer; }
+    { return _enableAddressSanitizer.value_or(false); }
     bool enableCodeCoverage() const
-    { return _enableCodeCoverage; }
+    { return _enableCodeCoverage.value_or(false); }
 
 public:
-    std::string const &resultBundlePath() const
+    ext::optional<std::string> const &resultBundlePath() const
     { return _resultBundlePath; }
-    std::string const &derivedDataPath() const
+    ext::optional<std::string> const &derivedDataPath() const
     { return _derivedDataPath; }
 
 public:
     bool exportArchive() const
-    { return _exportArchive; }
-    std::string const &archivePath() const
+    { return _exportArchive.value_or(false); }
+    ext::optional<std::string> const &archivePath() const
     { return _archivePath; }
-    std::string const &exportPath() const
+    ext::optional<std::string> const &exportPath() const
     { return _exportPath; }
-    std::string const &exportOptionsPlist() const
+    ext::optional<std::string> const &exportOptionsPlist() const
     { return _exportOptionsPlist; }
 
 public:
     bool skipUnavailableActions() const
-    { return _skipUnavailableActions; }
+    { return _skipUnavailableActions.value_or(false); }
     std::vector<std::string> const &actions() const
     { return _actions; }
 
 public:
     bool exportLocalizations() const
-    { return _exportLocalizations; }
+    { return _exportLocalizations.value_or(false); }
     bool importLocalizations() const
-    { return _importLocalizations; }
-    std::string const &localizationPath() const
+    { return _importLocalizations.value_or(false); }
+    ext::optional<std::string> const &localizationPath() const
     { return _localizationPath; }
-    std::string const &exportLanguage() const
+    ext::optional<std::string> const &exportLanguage() const
     { return _exportLanguage; }
     bool forceImport() const
-    { return _forceImport; }
+    { return _forceImport.value_or(false); }
 
 private:
     friend class libutil::Options;

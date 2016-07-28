@@ -21,35 +21,35 @@ namespace productPackagingUtility {
 
 class Options {
 private:
-    std::string _input;
-    std::string _output;
+    ext::optional<std::string> _input;
+    ext::optional<std::string> _output;
 
 private:
-    bool        _removeFile;
-    bool        _entitlements;
-    bool        _resourceRules;
+    ext::optional<bool>        _removeFile;
+    ext::optional<bool>        _entitlements;
+    ext::optional<bool>        _resourceRules;
 
 private:
-    std::string _format;
+    ext::optional<std::string> _format;
 
 public:
     Options();
     ~Options();
 
 public:
-    std::string const &input() const
+    ext::optional<std::string> const &input() const
     { return _input; }
-    std::string const &output() const
+    ext::optional<std::string> const &output() const
     { return _output; }
 
 private:
     bool removeFile() const
-    { return _removeFile; }
+    { return _removeFile.value_or(false); }
     bool entitlements() const
-    { return _entitlements; }
+    { return _entitlements.value_or(false); }
 
 public:
-    std::string const &format() const
+    ext::optional<std::string> const &format() const
     { return _format; }
 
 private:

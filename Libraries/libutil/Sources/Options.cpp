@@ -13,15 +13,18 @@
 
 using libutil::Options;
 
+namespace libutil {
+
+template<>
 std::pair<bool, std::string> Options::
-NextString(std::string *result, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it, bool allowDuplicate)
+Next<std::string>(ext::optional<std::string> *result, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it, bool allowDuplicate)
 {
     std::string const &arg = **it;
-    ++(*it);
+    if (++*it != args.end()) {
+        std::string const &value = **it;
 
-    if ((*it) != args.end()) {
-        if (allowDuplicate || result->empty()) {
-            *result = **it;
+        if (!*result || allowDuplicate) {
+            *result = value;
             return std::make_pair(true, std::string());
         } else {
             return std::make_pair(false, "duplicate argument " + arg);
@@ -31,38 +34,80 @@ NextString(std::string *result, std::vector<std::string> const &args, std::vecto
     }
 }
 
+template<>
 std::pair<bool, std::string> Options::
-NextInt(int *result, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it, bool allowDuplicate)
+Next<int>(ext::optional<int> *result, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it, bool allowDuplicate)
 {
-    std::string str = std::to_string(*result);
-    std::pair<bool, std::string> success = NextString(&str, args, it, allowDuplicate);
-    if (success.first) {
-        *result = std::atoi(str.c_str());
-    }
-    return success;
-}
+    std::string const &arg = **it;
+    if (++*it != args.end()) {
+        std::string const &value = **it;
 
-std::pair<bool, std::string> Options::
-NextBool(bool *result, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it, bool allowDuplicate)
-{
-    std::string str = *result ? "YES" : "NO";
-    std::pair<bool, std::string> success = NextString(&str, args, it, allowDuplicate);
-    if (success.first) {
-        if (str == "YES") {
-            *result = true;
-        } else if (str == "NO") {
-            *result = false;
+        if (!*result || allowDuplicate) {
+            *result = std::atoi(value.c_str());
+            return std::make_pair(true, std::string());
         } else {
-            success = std::make_pair(false, "invalid value " + str + " for boolean argument");
+            return std::make_pair(false, "duplicate argument " + arg);
         }
+    } else {
+        return std::make_pair(false, "missing argument value for argument " + arg);
     }
-    return success;
 }
 
+template<>
 std::pair<bool, std::string> Options::
-MarkBool(bool *result, std::string const &arg, bool allowDuplicate)
+Next<bool>(ext::optional<bool> *result, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it, bool allowDuplicate)
 {
-    if (allowDuplicate || !*result) {
+    std::string const &arg = **it;
+    if (++*it != args.end()) {
+        std::string const &value = **it;
+
+        if (!*result || allowDuplicate) {
+            if (value == "YES") {
+                *result = true;
+                return std::make_pair(true, std::string());
+            } else if (value == "NO") {
+                *result = false;
+                return std::make_pair(true, std::string());
+            } else {
+                return std::make_pair(false, "invalid value " + arg + " for boolean argument");
+            }
+        } else {
+            return std::make_pair(false, "duplicate argument " + arg);
+        }
+    } else {
+        return std::make_pair(false, "missing argument value for argument " + arg);
+    }
+}
+
+template<>
+std::pair<bool, std::string> Options::
+AppendNext<std::string>(std::vector<std::string> *result, std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it)
+{
+    ext::optional<std::string> value;
+    auto ret = Next<std::string>(&value, args, it);
+    if (ret.first) {
+        result->push_back(*value);
+    }
+    return ret;
+}
+
+template<>
+std::pair<bool, std::string> Options::
+Current<std::string>(ext::optional<std::string> *result, std::string const &arg, bool allowDuplicate)
+{
+    if (!*result || allowDuplicate) {
+        *result = arg;
+        return std::make_pair(true, std::string());
+    } else {
+        return std::make_pair(false, "duplicate argument " + arg);
+    }
+}
+
+template<>
+std::pair<bool, std::string> Options::
+Current<bool>(ext::optional<bool> *result, std::string const &arg, bool allowDuplicate)
+{
+    if (!*result || allowDuplicate) {
         *result = true;
         return std::make_pair(true, std::string());
     } else {
@@ -70,3 +115,12 @@ MarkBool(bool *result, std::string const &arg, bool allowDuplicate)
     }
 }
 
+template<>
+std::pair<bool, std::string> Options::
+AppendCurrent<std::string>(std::vector<std::string> *result, std::string const &arg)
+{
+    result->push_back(arg);
+    return std::make_pair(true, std::string());
+}
+
+}

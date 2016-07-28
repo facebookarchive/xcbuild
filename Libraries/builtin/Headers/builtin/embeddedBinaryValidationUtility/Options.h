@@ -21,20 +21,20 @@ namespace embeddedBinaryValidationUtility {
 
 class Options {
 private:
-    std::string _input;
-    std::string _signingCert;
-    std::string _infoPlistPath;
+    ext::optional<std::string> _input;
+    ext::optional<std::string> _signingCert;
+    ext::optional<std::string> _infoPlistPath;
 
 public:
     Options();
     ~Options();
 
 public:
-    std::string const &input() const
+    ext::optional<std::string> const &input() const
     { return _input; }
-    std::string const &signingCert() const
+    ext::optional<std::string> const &signingCert() const
     { return _signingCert; }
-    std::string const &inputPlistPath() const
+    ext::optional<std::string> const &inputPlistPath() const
     { return _infoPlistPath; }
 
 private:

@@ -27,13 +27,13 @@ using libutil::FSUtil;
 
 class Options {
 private:
-    bool        _help;
-    bool        _version;
+    ext::optional<bool>        _help;
+    ext::optional<bool>        _version;
 
 private:
     std::vector<std::pair<dependency::DependencyInfoFormat, std::string>> _inputs;
-    std::string _output;
-    std::string _name;
+    ext::optional<std::string> _output;
+    ext::optional<std::string> _name;
 
 public:
     Options();
@@ -41,16 +41,16 @@ public:
 
 public:
     bool help() const
-    { return _help; }
+    { return _help.value_or(false); }
     bool version() const
-    { return _version; }
+    { return _version.value_or(false); }
 
 public:
     std::vector<std::pair<dependency::DependencyInfoFormat, std::string>> const &inputs() const
     { return _inputs; }
-    std::string const &output() const
+    ext::optional<std::string> const &output() const
     { return _output; }
-    std::string const &name() const
+    ext::optional<std::string> const &name() const
     { return _name; }
 
 private:
@@ -60,9 +60,7 @@ private:
 };
 
 Options::
-Options() :
-    _help                  (false),
-    _version               (false)
+Options()
 {
 }
 
@@ -77,13 +75,13 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h" || arg == "--help") {
-        return libutil::Options::MarkBool(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg, it);
     } else if (arg == "-v" || arg == "--version") {
-        return libutil::Options::MarkBool(&_version, arg, it);
+        return libutil::Options::Current<bool>(&_version, arg, it);
     } else if (arg == "-o" || arg == "--output") {
-        return libutil::Options::NextString(&_output, args, it);
+        return libutil::Options::Next<std::string>(&_output, args, it);
     } else if (arg == "-n" || arg == "--name") {
-        return libutil::Options::NextString(&_name, args, it);
+        return libutil::Options::Next<std::string>(&_name, args, it);
     } else if (!arg.empty() && arg[0] != '-') {
         std::string::size_type offset = arg.find(':');
         if (offset != std::string::npos && offset != 0 && offset != arg.size() - 1) {
@@ -235,7 +233,7 @@ main(int argc, char **argv)
     /*
      * Diagnose missing options.
      */
-    if (options.inputs().empty() || options.output().empty() || options.name().empty()) {
+    if (options.inputs().empty() || !options.output() || !options.name()) {
         return Help("missing option(s)");
     }
 
@@ -257,13 +255,13 @@ main(int argc, char **argv)
     /*
      * Serialize the output.
      */
-    std::string contents = SerializeMakefileDependencyInfo(options.name(), inputs);
+    std::string contents = SerializeMakefileDependencyInfo(*options.name(), inputs);
 
     /*
      * Write out the output.
      */
     std::vector<uint8_t> makefileContents = std::vector<uint8_t>(contents.begin(), contents.end());
-    if (!filesystem.write(makefileContents, options.output())) {
+    if (!filesystem.write(makefileContents, *options.output())) {
         return false;
     }
 

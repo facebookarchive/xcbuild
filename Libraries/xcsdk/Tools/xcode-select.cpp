@@ -18,16 +18,16 @@ using libutil::Filesystem;
 
 class Options {
 private:
-    bool _help;
-    bool _version;
+    ext::optional<bool>        _help;
+    ext::optional<bool>        _version;
 
 private:
-    bool _printPath;
-    bool _resetPath;
+    ext::optional<bool>        _printPath;
+    ext::optional<bool>        _resetPath;
     ext::optional<std::string> _switchPath;
 
 private:
-    bool _install;
+    ext::optional<bool>        _install;
 
 public:
     Options();
@@ -35,21 +35,21 @@ public:
 
 public:
     bool help() const
-    { return _help; }
+    { return _help.value_or(false); }
     bool version() const
-    { return _version; }
+    { return _version.value_or(false); }
 
 public:
     bool printPath() const
-    { return _printPath; }
+    { return _printPath.value_or(false); }
     bool resetPath() const
-    { return _resetPath; }
+    { return _resetPath.value_or(false); }
     ext::optional<std::string> const &switchPath() const
     { return _switchPath; }
 
 public:
     bool install() const
-    { return _install; }
+    { return _install.value_or(false); }
 
 private:
     friend class libutil::Options;
@@ -58,12 +58,7 @@ private:
 };
 
 Options::
-Options() :
-    _help     (false),
-    _version  (false),
-    _printPath(false),
-    _resetPath(false),
-    _install  (false)
+Options()
 {
 }
 
@@ -78,25 +73,17 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h" || arg == "--help") {
-        return libutil::Options::MarkBool(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg, it);
     } else if (arg == "-v" || arg == "--version" || arg == "-version") {
-        return libutil::Options::MarkBool(&_version, arg, it);
+        return libutil::Options::Current<bool>(&_version, arg, it);
     } else if (arg == "-p" || arg == "--print-path" || arg == "-print-path") {
-        return libutil::Options::MarkBool(&_printPath, arg, it);
+        return libutil::Options::Current<bool>(&_printPath, arg, it);
     } else if (arg == "-r" || arg == "--reset") {
-        return libutil::Options::MarkBool(&_resetPath, arg, it);
+        return libutil::Options::Current<bool>(&_resetPath, arg, it);
     } else if (arg == "-s" || arg == "--switch" || arg == "-switch") {
-        std::string switchPath;
-
-        auto result = libutil::Options::NextString(&switchPath, args, it);
-        if (!result.first) {
-            return result;
-        }
-
-        _switchPath = switchPath;
-        return result;
+        return libutil::Options::Next<std::string>(&_switchPath, args, it);
     } else if (arg == "--install") {
-        return libutil::Options::MarkBool(&_install, arg, it);
+        return libutil::Options::Current<bool>(&_install, arg, it);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }

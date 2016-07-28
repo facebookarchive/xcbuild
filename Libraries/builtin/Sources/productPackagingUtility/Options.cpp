@@ -27,20 +27,15 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-removefile") {
-        return libutil::Options::MarkBool(&_removeFile, arg, it);
+        return libutil::Options::Current<bool>(&_removeFile, arg, it);
     } else if (arg == "-entitlements") {
-        return libutil::Options::MarkBool(&_entitlements, arg, it);
+        return libutil::Options::Current<bool>(&_entitlements, arg, it);
     } else if (arg == "-resourcerules") {
-        return libutil::Options::MarkBool(&_resourceRules, arg, it);
+        return libutil::Options::Current<bool>(&_resourceRules, arg, it);
     } else if (arg == "-o") {
-        return libutil::Options::NextString(&_output, args, it);
+        return libutil::Options::Next<std::string>(&_output, args, it);
     } else if (!arg.empty() && arg[0] != '-') {
-        if (_input.empty()) {
-            _input = arg;
-            return std::make_pair(true, std::string());
-        } else {
-            return std::make_pair(false, "multiple inputs");
-        }
+        return libutil::Options::Current<std::string>(&_input, arg);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }

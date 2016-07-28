@@ -45,9 +45,7 @@ name()
 static bool
 ParseStringsEncoding(std::string const &string, plist::Format::Any *format)
 {
-    if (string.empty()) {
-        return true;
-    } else if (strcasecmp(string.c_str(), "binary") == 0) {
+    if (strcasecmp(string.c_str(), "binary") == 0) {
         *format = plist::Format::Any::Create(plist::Format::Binary::Create());
         return true;
     } else if (strcasecmp(string.c_str(), "utf-8") == 0) {
@@ -96,7 +94,7 @@ ValidateOptions(Options const &options)
      * It's unclear if an output directory should be required, but require it for
      * now since the behavior without one is also unclear.
      */
-    if (options.outputDirectory().empty()) {
+    if (!options.outputDirectory()) {
         fprintf(stderr, "error: output directory not provided\n");
         return false;
     }
@@ -133,8 +131,8 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      * Determine output encoding. Default to UTF-16 since that's what strings files should be.
      */
     plist::Format::Any outputFormat = plist::Format::Any::Create(plist::Format::ASCII::Create(true, plist::Format::Encoding::UTF16LE));
-    if (!ParseStringsEncoding(options.outputEncoding(), &outputFormat)) {
-        fprintf(stderr, "error: invalid output encoding '%s'\n", options.outputEncoding().c_str());
+    if (options.outputEncoding() && !ParseStringsEncoding(*options.outputEncoding(), &outputFormat)) {
+        fprintf(stderr, "error: invalid output encoding '%s'\n", options.outputEncoding()->c_str());
         return -1;
     }
 
@@ -159,8 +157,8 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
 
         /* If no input format was specified, use the detected strings encoding. */
         plist::Format::Any resolvedInputFormat = *inputFormat;
-        if (!ParseStringsEncoding(options.inputEncoding(), &resolvedInputFormat)) {
-            fprintf(stderr, "error: invalid input encoding '%s'\n", options.inputEncoding().c_str());
+        if (options.inputEncoding() && !ParseStringsEncoding(*options.inputEncoding(), &resolvedInputFormat)) {
+            fprintf(stderr, "error: invalid input encoding '%s'\n", options.inputEncoding()->c_str());
             return -1;
         }
 
@@ -181,7 +179,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         }
 
         /* Output to the same name as the input, but in the output directory. */
-        std::string outputPath = FSUtil::ResolveRelativePath(options.outputDirectory(), workingDirectory) + "/" + FSUtil::GetBaseName(inputPath);
+        std::string outputPath = FSUtil::ResolveRelativePath(*options.outputDirectory(), workingDirectory) + "/" + FSUtil::GetBaseName(inputPath);
 
         /* Write out the output. */
         auto serialize = plist::Format::Any::Serialize(deserialize.first.get(), outputFormat);

@@ -45,10 +45,7 @@ Run(Filesystem const *filesystem, Options const &options)
         return 1;
     }
 
-    std::string sdk = options.sdk();
-    if (sdk.empty()) {
-        sdk = "macosx";
-    }
+    std::string sdk = options.sdk().value_or("macosx");
 
     xcsdk::SDK::Target::shared_ptr target = manager->findTarget(sdk);
     if (target == nullptr) {
@@ -56,16 +53,16 @@ Run(Filesystem const *filesystem, Options const &options)
         return 1;
     }
 
-    if (!options.findExecutable().empty()) {
-        ext::optional<std::string> executable = filesystem->findExecutable(options.findExecutable(), target->executablePaths());
+    if (options.findExecutable()) {
+        ext::optional<std::string> executable = filesystem->findExecutable(*options.findExecutable(), target->executablePaths());
         if (!executable) {
-            fprintf(stderr, "error: '%s' not found\n", options.findExecutable().c_str());
+            fprintf(stderr, "error: '%s' not found\n", options.findExecutable()->c_str());
             return 1;
         }
 
         printf("%s\n", executable->c_str());
         return 0;
-    } else if (!options.findLibrary().empty()) {
+    } else if (options.findLibrary()) {
         fprintf(stderr, "warning: finding libraries is not supported\n");
         return 0;
     } else {

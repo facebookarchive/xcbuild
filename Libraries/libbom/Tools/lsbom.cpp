@@ -18,42 +18,42 @@
 
 class Options {
 private:
-    bool _help;
+    ext::optional<bool> _help;
 
 private:
-    bool _includeBlockDevices;
-    bool _includeCharacterDevices;
-    bool _includeDirectories;
-    bool _includeFiles;
-    bool _includeSymbolicLinks;
+    ext::optional<bool> _includeBlockDevices;
+    ext::optional<bool> _includeCharacterDevices;
+    ext::optional<bool> _includeDirectories;
+    ext::optional<bool> _includeFiles;
+    ext::optional<bool> _includeSymbolicLinks;
 
 private:
-    bool _printMTime;
-    bool _onlyPath;
-    bool _noModes;
+    ext::optional<bool> _printMTime;
+    ext::optional<bool> _onlyPath;
+    ext::optional<bool> _noModes;
 
 private:
-    std::string _arch;
+    ext::optional<std::string> _arch;
 
 private:
-    bool _printChecksum;
-    bool _printFileName;
-    bool _printFileNameQuoted;
-    bool _printGroupID;
-    bool _printGroupName;
-    bool _printPermissions;
-    bool _printPermissionsText;
-    bool _printFileSize;
-    bool _printFileSizeFormatted;
-    bool _printModificationTime;
-    bool _printModificationTimeFormatted;
-    bool _printUserID;
-    bool _printUserName;
-    bool _printUserGroupID;
-    bool _printUserGroupName;
+    ext::optional<bool> _printChecksum;
+    ext::optional<bool> _printFileName;
+    ext::optional<bool> _printFileNameQuoted;
+    ext::optional<bool> _printGroupID;
+    ext::optional<bool> _printGroupName;
+    ext::optional<bool> _printPermissions;
+    ext::optional<bool> _printPermissionsText;
+    ext::optional<bool> _printFileSize;
+    ext::optional<bool> _printFileSizeFormatted;
+    ext::optional<bool> _printModificationTime;
+    ext::optional<bool> _printModificationTimeFormatted;
+    ext::optional<bool> _printUserID;
+    ext::optional<bool> _printUserName;
+    ext::optional<bool> _printUserGroupID;
+    ext::optional<bool> _printUserGroupName;
 
 private:
-    std::string _input;
+    ext::optional<std::string> _input;
 
 public:
     Options();
@@ -61,66 +61,66 @@ public:
 
 public:
     bool help() const
-    { return _help; }
+    { return _help.value_or(false); }
 
 public:
     bool includeBlockDevices() const
-    { return _includeBlockDevices; }
+    { return _includeBlockDevices.value_or(false); }
     bool includeCharacterDevices() const
-    { return _includeCharacterDevices; }
+    { return _includeCharacterDevices.value_or(false); }
     bool includeDirectories() const
-    { return _includeDirectories; }
+    { return _includeDirectories.value_or(false); }
     bool includeFiles() const
-    { return _includeFiles; }
+    { return _includeFiles.value_or(false); }
     bool includeSymbolicLinks() const
-    { return _includeSymbolicLinks; }
+    { return _includeSymbolicLinks.value_or(false); }
 
 public:
     bool printMTime() const
-    { return _printMTime; }
+    { return _printMTime.value_or(false); }
     bool onlyPath() const
-    { return _onlyPath; }
+    { return _onlyPath.value_or(false); }
     bool noModes() const
-    { return _noModes; }
+    { return _noModes.value_or(false); }
 
 public:
-    std::string const &arch() const
+    ext::optional<std::string> const &arch() const
     { return _arch; }
 
 public:
     bool printChecksum() const
-    { return _printChecksum; }
+    { return _printChecksum.value_or(false); }
     bool printFileName() const
-    { return _printFileName; }
+    { return _printFileName.value_or(false); }
     bool printFileNameQuoted() const
-    { return _printFileNameQuoted; }
+    { return _printFileNameQuoted.value_or(false); }
     bool printGroupID() const
-    { return _printGroupID; }
+    { return _printGroupID.value_or(false); }
     bool printGroupName() const
-    { return _printGroupName; }
+    { return _printGroupName.value_or(false); }
     bool printPermissions() const
-    { return _printPermissions; }
+    { return _printPermissions.value_or(false); }
     bool printPermissionsText() const
-    { return _printPermissionsText; }
+    { return _printPermissionsText.value_or(false); }
     bool printFileSize() const
-    { return _printFileSize; }
+    { return _printFileSize.value_or(false); }
     bool printFileSizeFormatted() const
-    { return _printFileSizeFormatted; }
+    { return _printFileSizeFormatted.value_or(false); }
     bool printModificationTime() const
-    { return _printModificationTime; }
+    { return _printModificationTime.value_or(false); }
     bool printModificationTimeFormatted() const
-    { return _printModificationTimeFormatted; }
+    { return _printModificationTimeFormatted.value_or(false); }
     bool printUserID() const
-    { return _printUserID; }
+    { return _printUserID.value_or(false); }
     bool printUserName() const
-    { return _printUserName; }
+    { return _printUserName.value_or(false); }
     bool printUserGroupID() const
-    { return _printUserGroupID; }
+    { return _printUserGroupID.value_or(false); }
     bool printUserGroupName() const
-    { return _printUserGroupName; }
+    { return _printUserGroupName.value_or(false); }
 
 public:
-    std::string const &input() const
+    ext::optional<std::string> const &input() const
     { return _input; }
 
 private:
@@ -130,31 +130,7 @@ private:
 };
 
 Options::
-Options() :
-    _help(false),
-    _includeBlockDevices(false),
-    _includeCharacterDevices(false),
-    _includeDirectories(false),
-    _includeFiles(false),
-    _includeSymbolicLinks(false),
-    _printMTime(false),
-    _onlyPath(false),
-    _noModes(false),
-    _printChecksum(false),
-    _printFileName(false),
-    _printFileNameQuoted(false),
-    _printGroupID(false),
-    _printGroupName(false),
-    _printPermissions(false),
-    _printPermissionsText(false),
-    _printFileSize(false),
-    _printFileSizeFormatted(false),
-    _printModificationTime(false),
-    _printModificationTimeFormatted(false),
-    _printUserID(false),
-    _printUserName(false),
-    _printUserGroupID(false),
-    _printUserGroupName(false)
+Options()
 {
 }
 
@@ -170,34 +146,33 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h" || arg == "--help") {
-        return libutil::Options::MarkBool(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg, it);
     } else if (arg == "-b") {
-        return libutil::Options::MarkBool(&_includeBlockDevices, arg, it);
+        return libutil::Options::Current<bool>(&_includeBlockDevices, arg, it);
     } else if (arg == "-c") {
-        return libutil::Options::MarkBool(&_includeCharacterDevices, arg, it);
+        return libutil::Options::Current<bool>(&_includeCharacterDevices, arg, it);
     } else if (arg == "-d") {
-        return libutil::Options::MarkBool(&_includeDirectories, arg, it);
+        return libutil::Options::Current<bool>(&_includeDirectories, arg, it);
     } else if (arg == "-f") {
-        return libutil::Options::MarkBool(&_includeFiles, arg, it);
+        return libutil::Options::Current<bool>(&_includeFiles, arg, it);
     } else if (arg == "-l") {
-        return libutil::Options::MarkBool(&_includeSymbolicLinks, arg, it);
+        return libutil::Options::Current<bool>(&_includeSymbolicLinks, arg, it);
     } else if (arg == "-m") {
-        return libutil::Options::MarkBool(&_printMTime, arg, it);
+        return libutil::Options::Current<bool>(&_printMTime, arg, it);
     } else if (arg == "-s") {
-        return libutil::Options::MarkBool(&_onlyPath, arg, it);
+        return libutil::Options::Current<bool>(&_onlyPath, arg, it);
     } else if (arg == "-x") {
-        return libutil::Options::MarkBool(&_noModes, arg, it);
+        return libutil::Options::Current<bool>(&_noModes, arg, it);
     } else if (arg == "--arch") {
-        return libutil::Options::NextString(&_arch, args, it);
+        return libutil::Options::Next<std::string>(&_arch, args, it);
     } else if (arg == "-p") {
-        std::string print;
-
-        auto result = libutil::Options::NextString(&print, args, it);
+        ext::optional<std::string> print;
+        auto result = libutil::Options::Next<std::string>(&print, args, it);
         if (!result.first) {
             return result;
         }
 
-        for (char c : print) {
+        for (char c : *print) {
             switch (c) {
                 case 'c': _printChecksum = true; break;
                 case 'f': _printFileName = true; break;
@@ -221,12 +196,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 
         return std::make_pair(true, std::string());
     } else if (!arg.empty() && arg[0] != '-') {
-        if (_input.empty()) {
-            _input = arg;
-            return std::make_pair(true, std::string());
-        } else {
-            return std::make_pair(false, "extra input " + arg);
-        }
+        return libutil::Options::Current<std::string>(&_input, arg);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }
@@ -350,10 +320,10 @@ main(int argc, char **argv)
     /*
      * Validate options.
      */
-    if (options.input().empty()) {
+    if (!options.input()) {
         return Help("input is required");
     }
-    if (!options.arch().empty()) {
+    if (options.arch()) {
         fprintf(stderr, "warning: arch argument not yet implemented\n");
     }
 
@@ -368,7 +338,7 @@ main(int argc, char **argv)
     /*
      * Load the BOM file.
      */
-    struct bom_context_memory memory = bom_context_memory_file(options.input().c_str(), false, 0);
+    struct bom_context_memory memory = bom_context_memory_file(options.input()->c_str(), false, 0);
     auto bom = std::unique_ptr<struct bom_context, decltype(&bom_free)>(bom_alloc_load(memory), bom_free);
     if (bom == nullptr) {
         fprintf(stderr, "error: failed to load BOM\n");
@@ -491,5 +461,4 @@ main(int argc, char **argv)
 
     return 0;
 }
-
 
