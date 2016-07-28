@@ -46,6 +46,10 @@ private:
     Format                             _format;
 
 private:
+    ext::optional<std::string>         _appIcon;
+    ext::optional<std::string>         _launchImage;
+
+private:
     ext::optional<car::Writer>         _car;
     std::vector<std::pair<std::string, std::string>> _copies;
     std::unique_ptr<plist::Dictionary> _additionalInfo;
@@ -55,7 +59,11 @@ private:
     std::vector<std::string>           _outputs;
 
 public:
-    Output(std::string const &root, Format format);
+    Output(
+        std::string const &root,
+        Format format,
+        ext::optional<std::string> const &appIcon,
+        ext::optional<std::string> const &launchImage);
 
 public:
     /*
@@ -69,6 +77,19 @@ public:
      */
     Format format() const
     { return _format; }
+
+public:
+    /*
+     * The name of the app icon to use.
+     */
+    ext::optional<std::string> const &appIcon()
+    { return _appIcon; }
+
+    /*
+     * The name of the launch image to use.
+     */
+    ext::optional<std::string> const &launchImage()
+    { return _launchImage; }
 
 public:
     /*

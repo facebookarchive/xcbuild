@@ -25,9 +25,15 @@ using acdriver::Result;
 using libutil::Filesystem;
 
 Output::
-Output(std::string const &root, Format format) :
+Output(
+    std::string const &root,
+    Format format,
+    ext::optional<std::string> const &appIcon,
+    ext::optional<std::string> const &launchImage) :
     _root          (root),
     _format        (format),
+    _appIcon       (appIcon),
+    _launchImage   (launchImage),
     _additionalInfo(plist::Dictionary::New())
 {
 }
