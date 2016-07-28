@@ -28,8 +28,6 @@
 #include <acdriver/Result.h>
 #include <xcassets/Asset/Catalog.h>
 #include <xcassets/Asset/Group.h>
-#include <libutil/Filesystem.h>
-#include <libutil/FSUtil.h>
 #include <bom/bom.h>
 #include <car/Reader.h>
 #include <car/Writer.h>
@@ -39,6 +37,9 @@
 #include <plist/Boolean.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
+#include <plist/Format/XML.h>
+#include <libutil/Filesystem.h>
+#include <libutil/FSUtil.h>
 
 using acdriver::CompileAction;
 namespace Compile = acdriver::Compile;
@@ -193,6 +194,102 @@ CompileAsset(
     return true;
 }
 
+static bool
+WriteOutput(Filesystem *filesystem, Options const &options, Compile::Output const &compileOutput, Output *output, Result *result)
+{
+    bool success = true;
+
+    /*
+     * Collect all inputs and outputs.
+     */
+    auto info = dependency::DependencyInfo(compileOutput.inputs(), compileOutput.outputs());
+
+    /*
+     * Write out compiled archive.
+     */
+    if (compileOutput.car()) {
+        // TODO: only write if non-empty. but did mmap already create the file?
+        compileOutput.car()->write();
+    }
+
+    /*
+     * Copy files into output.
+     */
+    for (std::pair<std::string, std::string> const &copy : compileOutput.copies()) {
+        std::vector<uint8_t> contents;
+
+        if (!filesystem->read(&contents, copy.first)) {
+            result->normal(Result::Severity::Error, "unable to read input: " + copy.first);
+            success = false;
+            continue;
+        }
+
+        if (!filesystem->write(contents, copy.second)) {
+            result->normal(Result::Severity::Error, "unable to write output: " + copy.second);
+            success = false;
+            continue;
+        }
+    }
+
+    /*
+     * Write out partial info plist, if requested.
+     */
+    if (options.outputPartialInfoPlist()) {
+        auto format = plist::Format::XML::Create(plist::Format::Encoding::UTF8);
+        auto serialize = plist::Format::XML::Serialize(compileOutput.additionalInfo(), format);
+        if (serialize.first == nullptr) {
+            result->normal(Result::Severity::Error, "unable to serialize partial info plist");
+            success = false;
+        } else {
+            if (!filesystem->write(*serialize.first, *options.outputPartialInfoPlist())) {
+                result->normal(Result::Severity::Error, "unable to write partial info plist");
+                success = false;
+            }
+        }
+
+        /* Note output file. */
+        info.outputs().push_back(*options.outputPartialInfoPlist());
+    }
+
+    /*
+     * Write out dependency info, if requested.
+     */
+    if (options.exportDependencyInfo()) {
+        auto binaryInfo = dependency::BinaryDependencyInfo();
+        binaryInfo.version() = "actool-" + std::to_string(Version::BuildVersion());
+        binaryInfo.dependencyInfo() = info;
+
+        if (!filesystem->write(binaryInfo.serialize(), *options.exportDependencyInfo())) {
+            result->normal(Result::Severity::Error, "unable to write dependency info");
+            success = false;
+        }
+    }
+
+    /*
+     * Add output files to output.
+     */
+    {
+        std::string text;
+        auto array = plist::Array::New();
+
+        for (std::string const &output : info.outputs()) {
+            /* Array is one entry per file. */
+            array->append(plist::String::New(output));
+
+            /* Text is one line per file. */
+            text += output;
+            text += "\n";
+        }
+
+        auto dict = plist::Dictionary::New();
+        dict->set("output-files", std::move(array));
+
+        output->add("com.apple.actool.compilation-results", std::move(dict), text);
+    }
+
+    return success;
+}
+
 static ext::optional<Compile::Output::Format>
 DetermineOutputFormat(ext::optional<std::string> const &minimumDeploymentTarget)
 {
@@ -216,7 +313,6 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
     }
 
     Compile::Output compileOutput = Compile::Output(*options.compile(), *outputFormat);
-    compileOutput.dependencyInfo().version() = "actool-" + std::to_string(Version::BuildVersion());
 
     /*
      * If necessary, create output archive to write into.
@@ -237,6 +333,8 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
         }
 
         compileOutput.car() = car::Writer::Create(std::move(bom));
+        // TODO: should only be an output if ultimately non-empty
+        compileOutput.outputs().push_back(path);
     }
 
     /*
@@ -256,6 +354,8 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
             continue;
         }
 
+        compileOutput.inputs().push_back(input);
+
         if (!CompileAsset(catalog, catalog, filesystem, options, &compileOutput, result)) {
             /* Error already printed. */
             continue;
@@ -271,10 +371,6 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
             return libutil::Options::Next<std::string>(&_platform, args, it);
         } else if (arg == "--target-device") {
             return libutil::Options::Next<std::string>(&_targetDevice, args, it);
-        } else if (arg == "--app-icon") {
-            return libutil::Options::Next<std::string>(&_appIcon, args, it);
-        } else if (arg == "--launch-image") {
-            return libutil::Options::Next<std::string>(&_launchImage, args, it);
         } else if (arg == "--enable-on-demand-resources") {
             return libutil::Options::Current<bool>(&_enableOnDemandResources, arg);
         } else if (arg == "--enable-incremental-distill") {
@@ -292,7 +388,7 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
     /*
      * Write out the output.
      */
-    if (!compileOutput.write(filesystem, options.outputPartialInfoPlist(), options.exportDependencyInfo(), result)) {
+    if (!WriteOutput(filesystem, options, compileOutput, output, result)) {
         /* Error already reported. */
     }
 }

@@ -279,6 +279,7 @@ Compile(
             destination += ".png";
 
             compileOutput->copies().push_back({ source, destination });
+            compileOutput->outputs().push_back(destination);
 
             /*
              * Configure the image info. This is only relevant if there is a minimum system
