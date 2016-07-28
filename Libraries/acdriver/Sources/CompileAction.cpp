@@ -22,6 +22,7 @@
 #include <acdriver/Compile/ImageStackLayer.h>
 #include <acdriver/Compile/LaunchImage.h>
 #include <acdriver/Compile/SpriteAtlas.h>
+#include <acdriver/Version.h>
 #include <acdriver/Options.h>
 #include <acdriver/Output.h>
 #include <acdriver/Result.h>
@@ -41,6 +42,7 @@
 
 using acdriver::CompileAction;
 namespace Compile = acdriver::Compile;
+using acdriver::Version;
 using acdriver::Options;
 using acdriver::Output;
 using acdriver::Result;
@@ -214,9 +216,10 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
     }
 
     Compile::Output compileOutput = Compile::Output(*options.compile(), *outputFormat);
+    compileOutput.dependencyInfo().version() = "actool-" + std::to_string(Version::BuildVersion());
 
     /*
-     * If necssary, create output archive to write into.
+     * If necessary, create output archive to write into.
      */
     if (compileOutput.format() == Compile::Output::Format::Compiled) {
         std::string path = compileOutput.root() + "/" + "Assets.car";
