@@ -294,15 +294,86 @@ static ext::optional<Compile::Output::Format>
 DetermineOutputFormat(ext::optional<std::string> const &minimumDeploymentTarget)
 {
     if (minimumDeploymentTarget) {
-        // TODO: if < 7, use Folder output format
+        if (auto systemVersion = xcassets::Slot::SystemVersion::Parse(*minimumDeploymentTarget)) {
+            /*
+             * Only versions starting with 7 support compiled assets.
+             */
+            if (systemVersion->major() >= 7) {
+                return Compile::Output::Format::Compiled;
+            } else {
+                return Compile::Output::Format::Folder;
+            }
+        } else {
+            return ext::nullopt;
+        }
+    } else {
+        /* If no version is specified, default to compiled. */
+        return Compile::Output::Format::Compiled;
+    }
+}
+
+static ext::optional<car::Writer>
+CreateWriter(std::string const &path)
+{
+    struct bom_context_memory memory = bom_context_memory_file(path.c_str(), true, 0);
+    if (memory.data == NULL) {
+        return ext::nullopt;
     }
 
-    return Compile::Output::Format::Compiled;
+    auto bom = car::Writer::unique_ptr_bom(bom_alloc_empty(memory), bom_free);
+    if (bom == nullptr) {
+        return ext::nullopt;
+    }
+
+    return car::Writer::Create(std::move(bom));
+}
+
+static void
+WarnUnsupportedOptions(Options const &options, Result *result)
+{
+    if (options.optimization()) {
+        result->normal(Result::Severity::Warning, "optimization not supported");
+    }
+
+    if (options.compressPNGs()) {
+        result->normal(Result::Severity::Warning, "compress PNGs not supported");
+    }
+
+    if (options.platform()) {
+        result->normal(Result::Severity::Warning, "platform not supported");
+    }
+
+    if (!options.targetDevice().empty()) {
+        result->normal(Result::Severity::Warning, "target device not supported");
+    }
+
+    if (options.targetName()) {
+        result->normal(Result::Severity::Warning, "target name not supported");
+    }
+
+    if (options.enableOnDemandResources()) {
+        result->normal(Result::Severity::Warning, "on-demand resources not supported");
+    }
+
+    if (options.enableIncrementalDistill()) {
+        result->normal(Result::Severity::Warning, "incremental distill not supported");
+    }
+
+    if (options.filterForDeviceModel()) {
+        result->normal(Result::Severity::Warning, "filter device model not supported");
+    }
+
+    if (options.filterForDeviceOsVersion()) {
+        result->normal(Result::Severity::Warning, "filter device os version not supported");
+    }
 }
 
 void CompileAction::
 run(Filesystem *filesystem, Options const &options, Output *output, Result *result)
 {
+    // TODO: support all options
+    WarnUnsupportedOptions(options, result);
+
     /*
      * Determine format to output compiled assets.
      */
@@ -312,6 +383,9 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
         return;
     }
 
+    /*
+     * Create compilation output.
+     */
     Compile::Output compileOutput = Compile::Output(*options.compile(), *outputFormat);
 
     /*
@@ -320,19 +394,13 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
     if (compileOutput.format() == Compile::Output::Format::Compiled) {
         std::string path = compileOutput.root() + "/" + "Assets.car";
 
-        struct bom_context_memory memory = bom_context_memory_file(path.c_str(), true, 0);
-        if (memory.data == NULL) {
-            result->normal(Result::Severity::Error, "unable to open output for writing");
+        ext::optional<car::Writer> writer = CreateWriter(path);
+        if (!writer) {
+            result->normal(Result::Severity::Error, "unable to create compiled asset writer");
             return;
         }
 
-        auto bom = car::Writer::unique_ptr_bom(bom_alloc_empty(memory), bom_free);
-        if (bom == nullptr) {
-            result->normal(Result::Severity::Error, "unable to create output structure");
-            return;
-        }
-
-        compileOutput.car() = car::Writer::Create(std::move(bom));
+        compileOutput.car() = std::move(writer);
         // TODO: should only be an output if ultimately non-empty
         compileOutput.outputs().push_back(path);
     }
@@ -354,35 +422,15 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
             continue;
         }
 
-        compileOutput.inputs().push_back(input);
-
+        /*
+         * Compile the asset catalog.
+         */
         if (!CompileAsset(catalog, catalog, filesystem, options, &compileOutput, result)) {
             /* Error already printed. */
             continue;
         }
 
-        // TODO: use these options:
-        /*
-        if (arg == "--optimization") {
-            return libutil::Options::Next<std::string>(&_optimization, args, it);
-        } else if (arg == "--compress-pngs") {
-            return libutil::Options::Current<bool>(&_compressPNGs, arg);
-        } else if (arg == "--platform") {
-            return libutil::Options::Next<std::string>(&_platform, args, it);
-        } else if (arg == "--target-device") {
-            return libutil::Options::Next<std::string>(&_targetDevice, args, it);
-        } else if (arg == "--enable-on-demand-resources") {
-            return libutil::Options::Current<bool>(&_enableOnDemandResources, arg);
-        } else if (arg == "--enable-incremental-distill") {
-            return libutil::Options::Current<bool>(&_enableIncrementalDistill, arg);
-        } else if (arg == "--target-name") {
-            return libutil::Options::Next<std::string>(&_targetName, args, it);
-        } else if (arg == "--filter-for-device-model") {
-            return libutil::Options::Next<std::string>(&_filterForDeviceModel, args, it);
-        } else if (arg == "--filter-for-device-os-version") {
-            return libutil::Options::Next<std::string>(&_filterForDeviceOsVersion, args, it);
-        }
-        */
+        compileOutput.inputs().push_back(input);
     }
 
     /*
@@ -390,6 +438,7 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
      */
     if (!WriteOutput(filesystem, options, compileOutput, output, result)) {
         /* Error already reported. */
+        return;
     }
 }
 
