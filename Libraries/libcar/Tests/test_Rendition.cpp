@@ -16,7 +16,7 @@ using car::Rendition;
 static car::AttributeList
 EmptyAttributeList()
 {
-    return car::AttributeList({ });
+    return car::AttributeList(std::unordered_map<car_attribute_identifier, uint16_t>());
 }
 
 TEST(Rendition, TestRenditionDeSerializeSerialize)
