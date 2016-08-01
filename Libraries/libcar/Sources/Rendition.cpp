@@ -17,15 +17,12 @@
 
 #include <zlib.h>
 
-#if defined(__APPLE__)
-#include <Availability.h>
-#include <TargetConditionals.h>
-#if (TARGET_OS_MAC && __MAC_10_11 && __MAC_OS_X_VERSION_MIN_REQUIRED > __MAC_10_11) || (TARGET_OS_IPHONE && __IPHONE_9_0 && __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_9_0)
-#define HAVE_LIBCOMPRESSION 1
-#endif
-#endif
-
-#if HAVE_LIBCOMPRESSION
+#if HAVE_LZFSE
+extern "C" {
+#include <lzfse.h>
+}
+#include <lzvn_decode_base.h>
+#elif HAVE_COMPRESSION
 #include <compression.h>
 #define _COMPRESSION_LZVN 0x900
 #endif
@@ -376,8 +373,38 @@ Decode(struct car_rendition_value *value)
         } else if (header1->compression == car_rendition_data_compression_magic_unk1) {
             fprintf(stderr, "error: unable to handle UNKNOWN\n");
             return ext::nullopt;
-        } else if (header1->compression == car_rendition_data_compression_magic_lzvn || header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
-#if HAVE_LIBCOMPRESSION
+        } else if (header1->compression == car_rendition_data_compression_magic_jpeg_lzfse || header1->compression == car_rendition_data_compression_magic_lzvn) {
+#if HAVE_LZFSE || HAVE_COMPRESSION
+            uint8_t *uncompressed_buffer = static_cast<uint8_t *>(uncompressed_data) + offset;
+            size_t uncompressed_size = uncompressed_length - offset;
+
+            uint8_t *compressed_buffer = static_cast<uint8_t *>(compressed_data);
+            size_t compressed_size = compressed_length;
+
+            size_t compression_result;
+#if HAVE_LZFSE
+            if (header1->compression == car_rendition_data_compression_magic_lzvn) {
+                lzvn_decoder_state decoder = { 0 };
+                decoder.src = compressed_buffer;
+                decoder.src_end = compressed_buffer + compressed_size;
+                decoder.dst = uncompressed_buffer;
+                decoder.dst_begin = uncompressed_buffer;
+                decoder.dst_end = uncompressed_buffer + uncompressed_size;
+                decoder.dst_current = uncompressed_buffer;
+                lzvn_decode(&decoder);
+
+                if (decoder.src - compressed_buffer == compressed_size) {
+                    compression_result = decoder.dst - decoder.dst_begin;
+                } else {
+                    compression_result = 0;
+                }
+            } else if (header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
+                auto scratch = std::vector<uint8_t>(lzfse_decode_scratch_size());
+                compression_result = lzfse_decode_buffer(uncompressed_buffer, uncompressed_size, compressed_buffer, compressed_size, scratch.data());
+            } else {
+                assert(false);
+            }
+#elif HAVE_COMPRESSION
             compression_algorithm algorithm;
             if (header1->compression == car_rendition_data_compression_magic_lzvn) {
                 algorithm = (compression_algorithm)_COMPRESSION_LZVN;
@@ -387,7 +414,9 @@ Decode(struct car_rendition_value *value)
                 assert(false);
             }
 
-            size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, algorithm);
+            compression_result = compression_decode_buffer(uncompressed_buffer, uncompressed_size, compressed_buffer, compressed_size, NULL, COMPRESSION_LZFSE);
+#endif
+
             if (compression_result != 0) {
                 offset += compression_result;
                 compressed_data = (void *)((uintptr_t)compressed_data + compressed_length);
