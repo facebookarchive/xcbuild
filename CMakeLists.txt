@@ -25,6 +25,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_BUILD_TYPE "Release")
 
+# Installing to root can break systems.
+if (CMAKE_INSTALL_PREFIX STREQUAL "")
+  message(FATAL_ERROR "Installing without a prefix may conflict with system files.")
+endif ()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
