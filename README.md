@@ -36,7 +36,7 @@ xcbuild and [xctool](https://github.com/facebook/xctool) are both Xcode-compatib
 [![Build Status](https://travis-ci.org/facebook/xcbuild.svg?branch=master)](https://travis-ci.org/facebook/xcbuild)
 
 - Xcode 7 or later, on OS X.
-- GCC 4.8 or later, on Linux. `libxml2-dev` and `pkg-config` are also required.
+- GCC 4.8 or later, on Linux. `libpng16-dev`, `zlib1g-dev`, `libxml2-dev`, and `pkg-config` are also required.
 - [CMake](http://www.cmake.org) and [Ninja](https://ninja-build.org/) (or [llbuild](https://github.com/apple/swift-llbuild)).
   - With [Homebrew](http://brew.sh/): `brew install cmake ninja`
 
