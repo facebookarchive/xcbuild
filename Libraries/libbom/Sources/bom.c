@@ -21,6 +21,7 @@
 struct bom_context {
     struct bom_context_memory memory;
     unsigned int iteration_count;
+    unsigned int preallocated_index_count;
 };
 
 struct bom_context *
@@ -33,6 +34,7 @@ _bom_alloc(struct bom_context_memory memory)
 
     context->memory = memory;
     context->iteration_count = 0;
+    context->preallocated_index_count = 0;
 
     return context;
 }
@@ -40,14 +42,22 @@ _bom_alloc(struct bom_context_memory memory)
 struct bom_context *
 bom_alloc_empty(struct bom_context_memory memory)
 {
+  return bom_alloc_size(memory, 2);
+}
+
+struct bom_context *
+bom_alloc_size(struct bom_context_memory memory, uint32_t index_count)
+{
     struct bom_context *context = _bom_alloc(memory);
     if (context == NULL) {
         return NULL;
     }
 
+    context->preallocated_index_count = index_count;
+
     size_t header_size = sizeof(struct bom_header);
     size_t index_size = sizeof(struct bom_index_header);
-    size_t freelist_size = sizeof(struct bom_index_header) + sizeof(struct bom_index) * 2;
+    size_t freelist_size = sizeof(struct bom_index_header) + sizeof(struct bom_index) * index_count;
     size_t variables_size = sizeof(struct bom_variables);
     context->memory.resize(&context->memory, header_size + index_size + freelist_size + variables_size);
 
@@ -245,9 +255,16 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
     struct bom_index_header *index_header = (struct bom_index_header *)((void *)header + ntohl(header->index_offset));
 
     /* Insert index at the end of the list. */
+    bool resize = true;
+    if (context->preallocated_index_count > 0) {
+      resize = false;
+      context->preallocated_index_count -= 1;
+    }
     uint32_t index_point = ntohl(header->index_offset) + sizeof(struct bom_index_header) + sizeof(struct bom_index) * ntohl(index_header->count);
-    ptrdiff_t index_delta = sizeof(struct bom_index);
-    _bom_address_resize(context, index_point, index_delta);
+    if (resize) {
+      ptrdiff_t index_delta = sizeof(struct bom_index);
+      _bom_address_resize(context, index_point, index_delta);
+    }
 
     /* Insert data at the very end. */
     uint32_t data_point = context->memory.size;
@@ -268,7 +285,9 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
 
     /* Update length for newly added index. */
     index_header->count = htonl(ntohl(index_header->count) + 1);
-    header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));
+    if (resize) {
+      header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));
+    }
     header->block_count++;
 
     return added_index;

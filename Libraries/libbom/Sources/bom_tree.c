@@ -23,6 +23,7 @@ struct bom_tree_context {
     struct bom_context *context;
     char *variable_name;
     int tree_iterating;
+    unsigned int preallocated_index_count;
 };
 
 
@@ -39,6 +40,7 @@ _bom_tree_alloc(struct bom_context *context, const char *variable_name)
 
     tree_context->context = context;
     tree_context->tree_iterating = 0;
+    tree_context->preallocated_index_count = 0;
 
     tree_context->variable_name = malloc(strlen(variable_name));
     if (tree_context->variable_name == NULL) {
@@ -53,12 +55,21 @@ _bom_tree_alloc(struct bom_context *context, const char *variable_name)
 struct bom_tree_context *
 bom_tree_alloc_empty(struct bom_context *context, const char *variable_name)
 {
+    return bom_tree_alloc_size(context, variable_name, 0);
+}
+
+struct bom_tree_context *
+bom_tree_alloc_size(struct bom_context *context, const char *variable_name, uint32_t index_count)
+{
     struct bom_tree_context *tree_context = _bom_tree_alloc(context, variable_name);
     if (tree_context == NULL) {
         return NULL;
     }
 
-    struct bom_tree_entry *entry = malloc(sizeof(*entry));
+    tree_context->preallocated_index_count = index_count;
+
+    size_t entry_size = sizeof(struct bom_tree_entry) + (sizeof(struct bom_tree_entry_indexes) * index_count);
+    struct bom_tree_entry *entry = malloc(entry_size);
     if (entry == NULL) {
         bom_tree_free(tree_context);
         return NULL;
@@ -75,7 +86,7 @@ bom_tree_alloc_empty(struct bom_context *context, const char *variable_name)
     entry->count = htons(0);
     entry->forward = htonl(0);
     entry->backward = htonl(0);
-    int entry_index = bom_index_add(tree_context->context, entry, sizeof(*entry));
+    int entry_index = bom_index_add(tree_context->context, entry, entry_size);
     free(entry);
 
     strncpy(tree->magic, "tree", 4);
@@ -202,19 +213,28 @@ bom_tree_add(struct bom_tree_context *tree_context, const void *key, size_t key_
     int tree_index = bom_variable_get(tree_context->context, tree_context->variable_name);
     struct bom_tree *tree = (struct bom_tree *)bom_index_get(tree_context->context, tree_index, NULL);
 
-    /* Make room for the new index, extending the size as necessary. */
     int paths_index = ntohl(tree->child);
-    bom_index_append(tree_context->context, paths_index, sizeof(struct bom_tree_entry_indexes));
+    bool resize;
+    if (tree_context->preallocated_index_count > 0) {
+      tree_context->preallocated_index_count -= 1;
+      resize = false;
+    } else {
+      /* Make room for the new index, extending the size as necessary. */
+      bom_index_append(tree_context->context, paths_index, sizeof(struct bom_tree_entry_indexes));
+      resize = true;
+    }
 
     /* Re-fetch after append invalidation. */
     tree = (struct bom_tree *)bom_index_get(tree_context->context, tree_index, NULL);
     size_t paths_length;
     struct bom_tree_entry *paths = (struct bom_tree_entry *)bom_index_get(tree_context->context, paths_index, &paths_length);
 
-    /* Push back existing data after insertion point. */
     int entry_index = ntohs(paths->count);
-    ptrdiff_t entry_point = sizeof(struct bom_tree_entry) + sizeof(struct bom_tree_entry_indexes) * entry_index;
-    memmove((void *)paths + entry_point + sizeof(struct bom_tree_entry_indexes), (void *)paths + entry_point, paths_length - entry_point);
+    if (resize) {
+      /* Push back existing data after insertion point. */
+      ptrdiff_t entry_point = sizeof(struct bom_tree_entry) + sizeof(struct bom_tree_entry_indexes) * entry_index;
+      memmove((void *)paths + entry_point + sizeof(struct bom_tree_entry_indexes), (void *)paths + entry_point, paths_length - entry_point);      
+    }
 
     /* Set the indexes for the inserted entry. */
     struct bom_tree_entry_indexes *indexes = &paths->indexes[entry_index];
