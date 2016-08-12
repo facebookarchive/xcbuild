@@ -47,10 +47,9 @@ TEST(Writer, TestWriter)
     auto writer = car::Writer::Create(std::move(writer_bom));
     EXPECT_NE(writer, ext::nullopt);
 
-    car::AttributeList attributes = car::AttributeList({
+    car::AttributeList attributes = car::AttributeList(1, {
         { car_attribute_identifier_idiom, car_attribute_identifier_idiom_value_universal },
         { car_attribute_identifier_scale, 2 },
-        { car_attribute_identifier_identifier, 1 },
     });
 
     car::Facet facet = car::Facet::Create("testpattern", attributes);
@@ -80,18 +79,19 @@ TEST(Writer, TestWriter)
     int facet_count = 0;
     int rendition_count = 0;
 
-    reader->facetIterate([&reader, &facet_count, &rendition_count](car::Facet const &facet) {
+    reader->iterateFacets([&reader, &facet_count, &rendition_count](std::string const &name, car::FacetReference const &reference) {
         facet_count++;
 
+        car::Facet facet = car::Facet::Load(reference);
         EXPECT_EQ(facet.name(), "testpattern");
 
-        auto renditions = reader->lookupRenditions(facet);
-        for (auto const &rendition : renditions) {
+        reader->iterateRenditions(facet.attributes().identifier(), [&reader, &rendition_count](car::AttributeList::Identifier const &identifier, car::RenditionReference const &reference) {
             rendition_count++;
 
+            car::Rendition rendition = car::Rendition::Load(reference);
             auto data = rendition.data()->data();
             EXPECT_EQ(data, test_pixels);
-        }
+        });
     });
 
     EXPECT_EQ(facet_count, 1);

@@ -13,16 +13,19 @@
 
 using car::Rendition;
 
-static car::AttributeList
-EmptyAttributeList()
-{
-    return car::AttributeList(std::unordered_map<car_attribute_identifier, uint16_t>());
-}
+static car::AttributeList::Identifier const test_identifier = 7;
+static size_t const test_key_length = 1;
+static size_t const test_key_identifier_index = 0;
+static uint32_t const test_key_format[test_key_length] = {
+    static_cast<uint32_t>(car_attribute_identifier_identifier),
+};
+static uint16_t const test_key[test_key_length] = {
+    test_identifier,
+};
 
 TEST(Rendition, TestRenditionDeSerializeSerialize)
 {
-    size_t rendition_len = 598;
-    const unsigned char rendition_value[598] = {
+    static uint8_t const rendition_value[] = {
         0x49, 0x53, 0x54, 0x43, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
         0x10, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0x42, 0x47, 0x52, 0x41, 0x01, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00, 0x64, 0x6f, 0x74, 0x2e, 0x70, 0x6e, 0x67, 0x00,
@@ -63,7 +66,8 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
         0x83, 0xa9, 0x00, 0x04, 0x00, 0x00,
     };
 
-    car::Rendition rendition = car::Rendition::Load(EmptyAttributeList(), (struct car_rendition_value *)rendition_value);
+    car::RenditionReference reference = car::RenditionReference(test_key_length, test_key_format, test_key_identifier_index, test_key, rendition_value, sizeof(rendition_value));
+    car::Rendition rendition = car::Rendition::Load(reference);
 
     car::Rendition::Data::Format format = car::Rendition::Data::Format::PremultipliedBGRA8;
     std::vector<uint8_t> test_bitmap_bytes = {
@@ -143,7 +147,8 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
 
     // Construct an identical Rendition instance using test_bitmap_bytes
     auto new_rendition_data = car::Rendition::Data(test_bitmap_bytes, format);
-    car::Rendition new_rendition = car::Rendition::Create(EmptyAttributeList(), new_rendition_data);
+    car::AttributeList new_attributes = car::AttributeList(test_identifier, std::unordered_map<enum car_attribute_identifier, uint16_t>());
+    car::Rendition new_rendition = car::Rendition::Create(new_attributes, new_rendition_data);
     new_rendition.width() = 16;
     new_rendition.height() = 16;
     new_rendition.scale() = 1.0;
@@ -157,15 +162,15 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     EXPECT_TRUE(rendition.layout() == new_rendition.layout());
 
     // Serialise new_rendition.
+    auto new_rendition_key = new_rendition.attributes().write(test_key_length, test_key_format);
     auto new_rendition_value = new_rendition.write();
 
     // Check that rendition_value matches the serialized rendition created using test_bitmap_bytes.
-    EXPECT_TRUE(0 == memcmp(rendition_value, &new_rendition_value[0], rendition_len));
+    EXPECT_TRUE(0 == memcmp(rendition_value, new_rendition_value.data(), sizeof(rendition_value)));
 
     // Decode the serialized copy of new_rendition.
-    car::Rendition new_rendition_check = car::Rendition::Load(
-        EmptyAttributeList(),
-        reinterpret_cast<struct car_rendition_value *>(new_rendition_value.data()));
+    car::RenditionReference new_reference = car::RenditionReference(test_key_length, test_key_format, test_key_identifier_index, reinterpret_cast<uint16_t const *>(new_rendition_key.data()), new_rendition_value.data(), new_rendition_value.size());
+    car::Rendition new_rendition_check = car::Rendition::Load(new_reference);
     auto check_data = new_rendition_check.data();
 
     // Check that the encoded and decoded data is the same length
@@ -187,7 +192,8 @@ TEST(Rendition, SerializeJPEG)
 
     /* Create test rendition. */
     auto data = car::Rendition::Data(jpeg, format);
-    car::Rendition rendition = car::Rendition::Create(EmptyAttributeList(), data);
+    auto attributes = car::AttributeList(test_identifier, std::unordered_map<enum car_attribute_identifier, uint16_t>());
+    car::Rendition rendition = car::Rendition::Create(attributes, data);
     rendition.width() = 100;
     rendition.height() = 100;
     rendition.scale() = 1.0;
@@ -195,8 +201,10 @@ TEST(Rendition, SerializeJPEG)
     rendition.layout() = car_rendition_value_layout_one_part_scale;
 
     /* Serialize and deserialize rendition. */
+    std::vector<uint8_t> rendition_key = rendition.attributes().write(test_key_length, test_key_format);
     std::vector<uint8_t> rendition_value = rendition.write();
-    car::Rendition deserialized_rendition = car::Rendition::Load(EmptyAttributeList(), reinterpret_cast<struct car_rendition_value *>(rendition_value.data()));
+    car::RenditionReference reference = car::RenditionReference(test_key_length, test_key_format, test_key_identifier_index, reinterpret_cast<uint16_t const *>(rendition_key.data()), rendition_value.data(), rendition_value.size());
+    car::Rendition deserialized_rendition = car::Rendition::Load(reference);
 
     /* Verify data is identical. */
     auto deserialized_data = deserialized_rendition.data();
@@ -215,7 +223,8 @@ TEST(Rendition, SerializeSlices)
 
     /* Construct a rendition. */
     auto data = car::Rendition::Data(bitmap, format);
-    car::Rendition rendition = car::Rendition::Create(EmptyAttributeList(), data);
+    auto attributes = car::AttributeList(test_identifier, std::unordered_map<enum car_attribute_identifier, uint16_t>());
+    car::Rendition rendition = car::Rendition::Create(attributes, data);
     rendition.width() = width;
     rendition.height() = height;
     rendition.scale() = 1.0;
@@ -230,8 +239,10 @@ TEST(Rendition, SerializeSlices)
     }
 
     /* Serialize and deserialize rendition. */
+    std::vector<uint8_t> rendition_key = rendition.attributes().write(test_key_length, test_key_format);
     std::vector<uint8_t> rendition_value = rendition.write();
-    car::Rendition deserialized_rendition = car::Rendition::Load(EmptyAttributeList(), reinterpret_cast<struct car_rendition_value *>(rendition_value.data()));
+    car::RenditionReference reference = car::RenditionReference(test_key_length, test_key_format, test_key_identifier_index, reinterpret_cast<uint16_t const *>(rendition_key.data()), rendition_value.data(), rendition_value.size());
+    car::Rendition deserialized_rendition = car::Rendition::Load(reference);
 
     /* Verify slices are the same. */
     EXPECT_EQ(deserialized_rendition.slices().size(), rendition.slices().size());

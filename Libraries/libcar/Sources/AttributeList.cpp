@@ -11,10 +11,13 @@
 
 using car::AttributeList;
 
+static enum car_attribute_identifier const IdentifierAttribute = car_attribute_identifier_identifier;
+
 AttributeList::
-AttributeList(std::unordered_map<enum car_attribute_identifier, uint16_t> const &values) :
+AttributeList(Identifier const &identifier, std::unordered_map<enum car_attribute_identifier, uint16_t> const &values) :
     _values(values)
 {
+    _values[IdentifierAttribute] = identifier;
 }
 
 bool AttributeList::
@@ -27,6 +30,12 @@ bool AttributeList::
 operator!=(AttributeList const &rhs) const
 {
     return !(*this == rhs);
+}
+
+AttributeList::Identifier AttributeList::
+identifier() const
+{
+    return *get(IdentifierAttribute);
 }
 
 ext::optional<uint16_t> AttributeList::
@@ -70,22 +79,49 @@ dump() const
 AttributeList AttributeList::
 Load(size_t count, uint32_t const *identifiers, uint16_t const *values)
 {
+    ext::optional<Identifier> identifier;
+
     std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
     for (size_t i = 0; i < count; ++i) {
-        attributes.insert({ (enum car_attribute_identifier)identifiers[i], values[i] });
+        uint16_t value = values[i];
+        enum car_attribute_identifier attribute = static_cast<enum car_attribute_identifier>(identifiers[i]);
+
+        if (attribute == IdentifierAttribute) {
+            identifier = value;
+        } else {
+            attributes.insert({ attribute, value });
+        }
     }
-    return AttributeList(attributes);
+
+    if (!identifier) {
+        abort();
+    }
+
+    return AttributeList(*identifier, attributes);
 }
 
 AttributeList AttributeList::
 Load(size_t count, struct car_attribute_pair const *pairs)
 {
+    ext::optional<Identifier> identifier;
+
     std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
     for (size_t i = 0; i < count; ++i) {
         uint16_t value = pairs[i].value;
-        attributes.insert({ (enum car_attribute_identifier)pairs[i].identifier, value });
+        enum car_attribute_identifier attribute = static_cast<enum car_attribute_identifier>(pairs[i].identifier);
+
+        if (attribute == IdentifierAttribute) {
+            identifier = value;
+        } else {
+            attributes.insert({ attribute, value });
+        }
     }
-    return AttributeList(attributes);
+
+    if (!identifier) {
+        abort();
+    }
+
+    return AttributeList(*identifier, attributes);
 }
 
 size_t std::hash<AttributeList>::

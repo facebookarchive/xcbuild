@@ -19,6 +19,8 @@
 namespace car {
 
 class Reader;
+class Writer;
+class RenditionReference;
 
 /*
  * Represents a specific variant of a facet.
@@ -237,14 +239,6 @@ public:
 
 public:
     /*
-     * Load an existing rendition matching the provided attributes.
-     */
-    static Rendition const Load(
-        AttributeList const &attributes,
-        struct car_rendition_value *value);
-
-public:
-    /*
      * Create a new rendition with the given properties.
      */
     static Rendition Create(
@@ -254,6 +248,60 @@ public:
     static Rendition Create(
         AttributeList const &attributes,
         ext::optional<Data> const &data);
+
+public:
+    /*
+     * Load an existing rendition matching the provided attributes.
+     */
+    static Rendition const Load(RenditionReference const &reference);
+};
+
+
+/*
+ * A rendition reference points to a rendition within an archive.
+ */
+class RenditionReference {
+private:
+    size_t          _count;
+    uint32_t const *_format;
+    size_t          _identifierIndex;
+
+private:
+    uint16_t const *_key;
+
+private:
+    void const     *_value;
+    size_t          _valueSize;
+
+public:
+    RenditionReference(
+        size_t count,
+        uint32_t const *format,
+        size_t identifierIndex,
+        uint16_t const *key,
+        void const *value,
+        size_t valueSize);
+
+public:
+    size_t count() const
+    { return _count; }
+    uint32_t const *format() const
+    { return _format; }
+    size_t identifierIndex() const
+    { return _identifierIndex; }
+
+public:
+    uint16_t const *key() const
+    { return _key; }
+
+public:
+    void const *value() const
+    { return _value; }
+    size_t valueSize() const
+    { return _valueSize; }
+
+public:
+    AttributeList::Identifier identifier() const;
 };
 
 }

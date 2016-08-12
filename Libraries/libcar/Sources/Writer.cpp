@@ -36,34 +36,45 @@ Create(unique_ptr_bom bom)
 void Writer::
 addFacet(Facet const &facet)
 {
-    _facets.insert({ facet.name(), facet });
+    _facets.push_back(facet);
+}
+
+void Writer::
+addFacet(FacetReference const &facet)
+{
+    _facetReferences.push_back(facet);
 }
 
 void Writer::
 addRendition(Rendition const &rendition)
 {
-    auto identifier = rendition.attributes().get(car_attribute_identifier_identifier);
-    if (identifier != ext::nullopt) {
-        _renditions.insert({ *identifier, rendition });
-    }
+    _renditions.push_back(rendition);
+}
+
+void Writer::
+addRendition(RenditionReference const &rendition)
+{
+    _renditionReferences.push_back(rendition);
 }
 
 static std::vector<enum car_attribute_identifier>
 DetermineKeyFormat(
-    std::unordered_map<std::string, Facet> const &facets,
-    std::unordered_multimap<uint16_t, Rendition> const &renditions)
+    std::vector<Facet> const &facets,
+    std::vector<Rendition> const &renditions)
 {
     std::unordered_set<enum car_attribute_identifier> format;
     auto insert = [&format](enum car_attribute_identifier identifier, uint16_t value) {
         format.insert(identifier);
     };
 
-    for (auto const &item : facets) {
-        item.second.attributes().iterate(insert);
+    // TODO: what about referenced renditions and facets?
+
+    for (Facet const &facet : facets) {
+        facet.attributes().iterate(insert);
     }
 
-    for (auto const &item : renditions) {
-        item.second.attributes().iterate(insert);
+    for (Rendition const &rendition : renditions) {
+        rendition.attributes().iterate(insert);
     }
 
     /* Sort attributes to preserve ordering. */
@@ -121,14 +132,22 @@ write() const
     /* Write facets. */
     struct bom_tree_context *facets_tree_context = bom_tree_alloc_empty(_bom.get(), car_facet_keys_variable);
     if (facets_tree_context != NULL) {
-        for (auto const &item : _facets) {
-            auto facet_value = item.second.write();
+        for (Facet const &facet : _facets) {
+            auto facet_value = facet.write();
             bom_tree_add(
                 facets_tree_context,
-                reinterpret_cast<void const *>(item.first.c_str()),
-                item.first.size(),
+                reinterpret_cast<void const *>(facet.name().c_str()),
+                facet.name().size(),
                 reinterpret_cast<void const *>(facet_value.data()),
                 facet_value.size());
+        }
+        for (FacetReference const &facetReference : _facetReferences) {
+            bom_tree_add(
+                facets_tree_context,
+                facetReference.name(),
+                facetReference.nameSize(),
+                facetReference.value(),
+                facetReference.valueSize());
         }
         bom_tree_free(facets_tree_context);
     }
@@ -136,15 +155,24 @@ write() const
     /* Write renditions. */
     struct bom_tree_context *renditions_tree_context = bom_tree_alloc_empty(_bom.get(), car_renditions_variable);
     if (renditions_tree_context != NULL) {
-        for (auto const &item : _renditions) {
-            auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);
-            auto rendition_value = item.second.write();
+        for (Rendition const &rendition : _renditions) {
+            auto attributes_value = rendition.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);
+            auto rendition_value = rendition.write();
             bom_tree_add(
                 renditions_tree_context,
                 reinterpret_cast<void const *>(attributes_value.data()),
                 attributes_value.size(),
                 reinterpret_cast<void const *>(rendition_value.data()),
                 rendition_value.size());
+        }
+        for (RenditionReference const &renditionReference : _renditionReferences) {
+            bom_tree_add(
+                renditions_tree_context,
+                // TODO: key may not match key format
+                renditionReference.key(),
+                renditionReference.count() * sizeof(uint16_t),
+                renditionReference.value(),
+                renditionReference.valueSize());
         }
         bom_tree_free(renditions_tree_context);
     }

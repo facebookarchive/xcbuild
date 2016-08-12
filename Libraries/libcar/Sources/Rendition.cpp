@@ -31,6 +31,8 @@
 #endif
 
 using car::Rendition;
+using car::RenditionReference;
+using car::AttributeList;
 
 Rendition::Data::
 Data(std::vector<uint8_t> const &data, Format format) :
@@ -123,7 +125,7 @@ dump() const
     _attributes.dump();
 }
 
-static ext::optional<Rendition::Data> Decode(struct car_rendition_value *value);
+static ext::optional<Rendition::Data> Decode(struct car_rendition_value const *value);
 static ext::optional<std::vector<uint8_t>> Encode(Rendition const *rendition, ext::optional<Rendition::Data> data);
 
 
@@ -164,10 +166,11 @@ ResizeModeFromLayout(enum car_rendition_value_layout layout)
 }
 
 Rendition const Rendition::
-Load(
-    AttributeList const &attributes,
-    struct car_rendition_value *value)
+Load(RenditionReference const &reference)
 {
+    AttributeList attributes = AttributeList::Load(reference.count(), reference.format(), reference.key());
+    struct car_rendition_value const *value = static_cast<struct car_rendition_value const *>(reference.value());
+
     Rendition rendition = Rendition(attributes, [value](Rendition const *rendition) -> ext::optional<Data> {
         return Decode(value);
     });
@@ -275,7 +278,7 @@ data() const
 }
 
 static ext::optional<Rendition::Data>
-Decode(struct car_rendition_value *value)
+Decode(struct car_rendition_value const *value)
 {
     if (strncmp(value->magic, "ISTC", 4) != 0) {
         return ext::nullopt;
@@ -483,17 +486,13 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
 }
 
 Rendition Rendition::
-Create(
-    AttributeList const &attributes,
-    std::function<ext::optional<Data>(Rendition const *)> const &data)
+Create(AttributeList const &attributes, std::function<ext::optional<Data>(Rendition const *)> const &data)
 {
     return Rendition(attributes, data);
 }
 
 Rendition Rendition::
-Create(
-    AttributeList const &attributes,
-    ext::optional<Data> const &data)
+Create(AttributeList const &attributes, ext::optional<Data> const &data)
 {
     return Rendition(attributes, data);
 }
@@ -658,5 +657,28 @@ write() const
     memcpy(output_bytes, compressed_data, compressed_data_length);
 
     return output;
+}
+
+RenditionReference::
+RenditionReference(
+    size_t count,
+    uint32_t const *format,
+    size_t identifierIndex,
+    uint16_t const *key,
+    void const *value,
+    size_t valueSize) :
+    _count          (count),
+    _format         (format),
+    _identifierIndex(identifierIndex),
+    _key            (key),
+    _value          (value),
+    _valueSize      (valueSize)
+{
+}
+
+AttributeList::Identifier RenditionReference::
+identifier() const
+{
+    return _key[_identifierIndex];
 }
 

@@ -119,16 +119,19 @@ main(int argc, char **argv)
     int facet_count = 0;
     int rendition_count = 0;
 
-    car->facetIterate([&car, &facet_count, &rendition_count, output](car::Facet const &facet) {
+    car->iterateFacets([&car, &facet_count, &rendition_count, output](std::string const &name, car::FacetReference const &reference) {
         facet_count++;
+
+        car::Facet facet = car::Facet::Load(reference);
         facet.dump();
 
-        auto renditions = car->lookupRenditions(facet);
-        for (auto const &rendition : renditions) {
+        car->iterateRenditions(facet.attributes().identifier(), [&rendition_count, output](car::AttributeList::Identifier const &identifier, car::RenditionReference const &reference) {
+            rendition_count++;
+
+            car::Rendition rendition = car::Rendition::Load(reference);
             rendition.dump();
             rendition_dump(rendition, output + "/" + rendition.fileName());
-            rendition_count++;
-        }
+        });
     });
 
     printf("Found %d facets and %d renditions\n", facet_count, rendition_count);

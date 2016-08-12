@@ -170,10 +170,7 @@ CompileAsset(
         facetIdentifier = it->second;
     }
     if (createFacet) {
-        car::AttributeList attributes = car::AttributeList({
-            { car_attribute_identifier_identifier, facetIdentifier },
-        });
-
+        car::AttributeList attributes = car::AttributeList(facetIdentifier, { });
         car::Facet facet = car::Facet::Create(name, attributes);
         compileOutput->car()->addFacet(facet);
     }
@@ -181,10 +178,9 @@ CompileAsset(
     /*
      * Create rendition for the image.
      */
-    car::AttributeList attributes = car::AttributeList({
+    car::AttributeList attributes = car::AttributeList(facetIdentifier, {
         { car_attribute_identifier_idiom, idiom },
         { car_attribute_identifier_scale, static_cast<int>(scale) },
-        { car_attribute_identifier_identifier, facetIdentifier },
     });
 
     auto data = ext::optional<car::Rendition::Data>(car::Rendition::Data(std::move(pixels), format));

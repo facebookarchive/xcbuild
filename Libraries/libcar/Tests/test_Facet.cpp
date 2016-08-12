@@ -33,8 +33,11 @@ static struct car_facet_value *test_facet_value = &(test_facet_value_s.header);
 
 TEST(Facet, Deserialize)
 {
-    auto facet = car::Facet::Load("name", test_facet_value);
-    EXPECT_EQ(facet.name(), "name");
+    std::string name = "name";
+    auto reference = car::FacetReference(name.c_str(), name.size(), test_facet_value, sizeof(struct test_car_facet_value));
+
+    auto facet = car::Facet::Load(reference);
+    EXPECT_EQ(facet.name(), name);
     EXPECT_EQ(*facet.attributes().get(car_attribute_identifier_element), 85);
     EXPECT_EQ(*facet.attributes().get(car_attribute_identifier_part), 181);
     EXPECT_EQ(*facet.attributes().get(car_attribute_identifier_identifier), 4258);
@@ -45,10 +48,9 @@ TEST(Facet, Serialize)
     std::vector<uint8_t> test_facet_value_vector(reinterpret_cast<uint8_t *>(test_facet_value),
         reinterpret_cast<uint8_t *>(test_facet_value) + sizeof(test_facet_value_s));
 
-    car::AttributeList attributes = car::AttributeList({
+    car::AttributeList attributes = car::AttributeList(4258, {
         { car_attribute_identifier_element, 85 },
         { car_attribute_identifier_part, 181 },
-        { car_attribute_identifier_identifier, 4258 },
     });
 
     car::Facet facet = car::Facet::Create("name", attributes);

@@ -19,13 +19,9 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include <ext/optional>
 
 namespace car {
-
-class Facet;
-class Rendition;
 
 /*
  * An archive within a BOM file holding facets and their renditions.
@@ -36,8 +32,12 @@ public:
 
 private:
     unique_ptr_bom _bom;
-    std::unordered_map<std::string, Facet> _facets;
-    std::unordered_multimap<uint16_t, Rendition> _renditions;
+
+private:
+    std::vector<Facet>              _facets;
+    std::vector<FacetReference>     _facetReferences;
+    std::vector<Rendition>          _renditions;
+    std::vector<RenditionReference> _renditionReferences;
 
 private:
     Writer(unique_ptr_bom bom);
@@ -56,9 +56,20 @@ public:
     void addFacet(Facet const &facet);
 
     /*
+     * Add a facet to the archive by reference.
+     */
+    void addFacet(FacetReference const &reference);
+
+public:
+    /*
      * Add a rendition for a facet, allow lazy loading of data.
      */
     void addRendition(Rendition const &rendition);
+
+    /*
+     * Add a rendition to the archive by reference.
+     */
+    void addRendition(RenditionReference const &reference);
 
 public:
     /*

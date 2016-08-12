@@ -23,7 +23,9 @@
 namespace car {
 
 class Facet;
+class FacetReference;
 class Rendition;
+class RenditionReference;
 
 /*
  * An archive within a BOM file holding facets and their renditions.
@@ -34,23 +36,12 @@ public:
     typedef std::unique_ptr<struct bom_tree_context, decltype(&bom_tree_free)> unique_ptr_bom_tree;
 
 private:
-    typedef struct {
-        void *key;
-        size_t key_len;
-        void *value;
-        size_t value_len;
-    } KeyValuePair;
-
-private:
-    unique_ptr_bom                                  _bom;
-    ext::optional<struct car_key_format *>          _keyfmt;
-    std::unordered_map<std::string, void *>         _facetValues;
-    std::unordered_multimap<uint16_t, KeyValuePair> _renditionValues;
+    unique_ptr_bom _bom;
+    std::unordered_map<std::string, FacetReference> _facetReferences;
+    std::unordered_multimap<AttributeList::Identifier, RenditionReference> _renditionReferences;
 
 private:
     Reader(unique_ptr_bom bom);
-    void facetFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &facet) const;
-    void renditionFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &iterator) const;
 
 public:
     /*
@@ -59,33 +50,34 @@ public:
     struct bom_context *bom() const
     { return _bom.get(); }
 
+public:
     /*
-     * The key format
+     * Fetch a facet by name.
      */
-    struct car_key_format *keyfmt() const
-    { return *_keyfmt; }
+    ext::optional<FacetReference> facet(std::string const &name) const;
+
+    /*
+     * Fetch all renditions for a facet.
+     */
+    std::vector<RenditionReference> renditions(AttributeList::Identifier const &identifier) const;
 
 public:
     /*
-     * Iterate all facets.
+     * Iterate all facets in the archive.
      */
-    void facetIterate(std::function<void(Facet const &)> const &facet) const;
+    void iterateFacets(
+        std::function<void(
+            std::string const &name,
+            FacetReference const &reference)> const &iterator) const;
 
     /*
-     * Iterate all renditions.
+     * Iterate renditions in the archive, optionally limited to a facet.
      */
-    void renditionIterate(std::function<void(Rendition const &)> const &iterator) const;
-
-public:
-    /*
-     * Lookup a Facet by name
-     */
-    ext::optional<car::Facet> lookupFacet(std::string name) const;
-
-    /*
-     * Lookup Rendition list for a Facet
-     */
-    std::vector<car::Rendition> lookupRenditions(Facet const &) const;
+    void iterateRenditions(
+        ext::optional<AttributeList::Identifier> const &identifier,
+        std::function<void(
+            AttributeList::Identifier const &identifier,
+            RenditionReference const &reference)> const &iterator) const;
 
 public:
     /*

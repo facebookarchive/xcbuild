@@ -33,17 +33,25 @@ namespace car {
  * renditions, which are uniquely identified by their attribute list.
  */
 class AttributeList {
+public:
+    using Identifier = uint16_t;
+
 private:
     std::unordered_map<enum car_attribute_identifier, uint16_t> _values;
 
 public:
-    AttributeList(std::unordered_map<enum car_attribute_identifier, uint16_t> const &values);
+    AttributeList(Identifier const &identifier, std::unordered_map<enum car_attribute_identifier, uint16_t> const &values);
 
 public:
     bool operator==(AttributeList const &rhs) const;
     bool operator!=(AttributeList const &rhs) const;
 
 public:
+    /*
+     * The identifier in the attribute list.
+     */
+    Identifier identifier() const;
+
     /*
      * Get the value of an attribute.
      */

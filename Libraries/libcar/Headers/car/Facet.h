@@ -18,7 +18,7 @@
 namespace car {
 
 class Reader;
-class Rendition;
+class FacetReference;
 
 /*
  * A facet represents an entry in an archive, identifiy by name.
@@ -47,12 +47,6 @@ public:
 
 public:
     /*
-     * Iterate renditions for a facet.
-     */
-    void renditionIterate(Reader const *archive, std::function<void(Rendition const &)> const &iterator) const;
-
-public:
-    /*
      * Serialize the rendition for writing to a file.
      */
     std::vector<uint8_t> write() const;
@@ -65,18 +59,47 @@ public:
 
 public:
     /*
-     * Load an existing rendition matching the provided attributes.
-     */
-    static Facet Load(
-        std::string const &name,
-        struct car_facet_value const *value);
-
-    /*
      * Create a facet with the provided name and attributes
      */
     static Facet Create(
         std::string const &name,
         AttributeList const &attributes);
+
+    /*
+     * Load an existing facet.
+     */
+    static Facet Load(FacetReference const &reference);
+};
+
+/*
+ * A facet reference points to a facet within an archive.
+ */
+class FacetReference {
+private:
+    char const *_name;
+    size_t      _nameSize;
+
+public:
+    void const *_value;
+    size_t      _valueSize;
+
+public:
+    FacetReference(char const *name, size_t nameSize, void const *value, size_t valueSize);
+
+public:
+    char const *name() const
+    { return _name; }
+    size_t nameSize() const
+    { return _nameSize; }
+
+public:
+    void const *value() const
+    { return _value; }
+    size_t valueSize() const
+    { return _valueSize; }
+
+public:
+    AttributeList::Identifier identifier() const;
 };
 
 }
