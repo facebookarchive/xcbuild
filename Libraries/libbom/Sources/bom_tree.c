@@ -53,12 +53,6 @@ _bom_tree_alloc(struct bom_context *context, const char *variable_name)
 }
 
 struct bom_tree_context *
-bom_tree_alloc_empty(struct bom_context *context, const char *variable_name)
-{
-    return bom_tree_alloc_size(context, variable_name, 0);
-}
-
-struct bom_tree_context *
 bom_tree_alloc_size(struct bom_context *context, const char *variable_name, uint32_t index_count)
 {
     struct bom_tree_context *tree_context = _bom_tree_alloc(context, variable_name);
