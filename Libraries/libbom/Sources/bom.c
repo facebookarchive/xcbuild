@@ -123,7 +123,7 @@ bom_alloc_load(struct bom_context_memory memory)
 
     struct bom_variables *vars = (struct bom_variables *)((void *)header + ntohl(header->variables_offset));
     size_t vars_count = ntohl(vars->count);
-    if (vars_offset + vars_count * sizeof(struct bom_variable) > context->memory.size) {
+    if (vars_offset + sizeof(struct bom_variables) + vars_count * sizeof(struct bom_variable) > context->memory.size) {
         bom_free(context);
         return NULL;
     }
