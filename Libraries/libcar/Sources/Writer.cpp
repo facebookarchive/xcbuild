@@ -48,6 +48,12 @@ addRendition(Rendition const &rendition)
     }
 }
 
+void Writer::
+addRendition(void *key, size_t key_len, void *value, size_t value_len)
+{
+  _raw_renditions.push_back({key, key_len, value, value_len});
+}
+
 static std::vector<enum car_attribute_identifier>
 DetermineKeyFormat(
     std::unordered_map<std::string, Facet> const &facets,
@@ -104,15 +110,21 @@ write() const
     free(header);
 
     /* Write key format. */
-    std::vector<enum car_attribute_identifier> format = DetermineKeyFormat(_facets, _renditions);
-    size_t keyfmt_size = sizeof(struct car_key_format) + (format.size() * sizeof(uint32_t));
-
-    struct car_key_format *keyfmt = (struct car_key_format *)malloc(keyfmt_size);
-    strncpy(keyfmt->magic, "kfmt", 4);
-    keyfmt->reserved = 0;
-    keyfmt->num_identifiers = format.size();
-    for (size_t i = 0; i < format.size(); ++i) {
-        keyfmt->identifier_list[i] = static_cast<uint32_t>(format[i]);
+    struct car_key_format *keyfmt;
+    size_t keyfmt_size;
+    if (_keyfmt == ext::nullopt) {
+      std::vector<enum car_attribute_identifier> format = DetermineKeyFormat(_facets, _renditions);
+      keyfmt_size = sizeof(struct car_key_format) + (format.size() * sizeof(uint32_t));
+      keyfmt = (struct car_key_format *)malloc(keyfmt_size);
+      strncpy(keyfmt->magic, "kfmt", 4);
+      keyfmt->reserved = 0;
+      keyfmt->num_identifiers = format.size();
+      for (size_t i = 0; i < format.size(); ++i) {
+          keyfmt->identifier_list[i] = static_cast<uint32_t>(format[i]);
+      }
+    } else {
+      keyfmt = *_keyfmt;
+      keyfmt_size = sizeof(struct car_key_format) + (keyfmt->num_identifiers * sizeof(uint32_t));
     }
 
     int key_format_index = bom_index_add(_bom.get(), keyfmt, keyfmt_size);
@@ -135,7 +147,7 @@ write() const
     }
 
     /* Write renditions. */
-    uint32_t rendition_count = _renditions.size();
+    uint32_t rendition_count = _renditions.size() + _raw_renditions.size();
     struct bom_tree_context *renditions_tree_context = bom_tree_alloc_size(_bom.get(), car_renditions_variable, rendition_count);
     if (renditions_tree_context != NULL) {
         for (auto const &item : _renditions) {
@@ -148,9 +160,19 @@ write() const
                 reinterpret_cast<void const *>(rendition_value.data()),
                 rendition_value.size());
         }
+        for (auto const &item : _raw_renditions) {
+            bom_tree_add(
+                renditions_tree_context,
+                item.key,
+                item.key_len,
+                item.value,
+                item.value_len);
+        }
         bom_tree_free(renditions_tree_context);
     }
 
-    free(keyfmt);
+    if (_keyfmt == ext::nullopt) {
+      free(keyfmt);
+    }
 }
 

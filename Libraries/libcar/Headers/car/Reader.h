@@ -49,6 +49,8 @@ private:
 
 private:
     Reader(unique_ptr_bom bom);
+
+public:
     void facetFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &facet) const;
     void renditionFastIterate(std::function<void(void *key, size_t key_len, void *value, size_t value_len)> const &iterator) const;
 
@@ -64,6 +66,18 @@ public:
      */
     struct car_key_format *keyfmt() const
     { return *_keyfmt; }
+
+    /*
+     * The number of Facets read
+     */
+    int facetCount() const
+    { return _facetValues.size(); }
+
+    /*
+     * The number of Renditions read
+     */
+     int renditionCount() const
+     { return _renditionValues.size(); }
 
 public:
     /*
