@@ -51,7 +51,8 @@ addRendition(Rendition const &rendition)
 void Writer::
 addRendition(void *key, size_t key_len, void *value, size_t value_len)
 {
-  _raw_renditions.push_back({key, key_len, value, value_len});
+    KeyValuePair kv = {key, key_len, value, value_len};
+    _raw_renditions.emplace_back(kv);
 }
 
 static std::vector<enum car_attribute_identifier>
