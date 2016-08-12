@@ -35,13 +35,16 @@ public:
 
 private:
     typedef struct {
-        void *key; size_t key_len; void *value; size_t value_len;
+        void *key;
+        size_t key_len;
+        void *value;
+        size_t value_len;
     } KeyValuePair;
 
 private:
-    unique_ptr_bom _bom;
-    ext::optional<struct car_key_format*> _keyfmt;
-    std::unordered_map<std::string, void*> _facetValues;
+    unique_ptr_bom                                  _bom;
+    ext::optional<struct car_key_format *>          _keyfmt;
+    std::unordered_map<std::string, void *>         _facetValues;
     std::unordered_multimap<uint16_t, KeyValuePair> _renditionValues;
 
 private:

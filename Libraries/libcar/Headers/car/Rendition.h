@@ -259,4 +259,3 @@ public:
 }
 
 #endif /* _LIBCAR_RENDITION_H */
-
