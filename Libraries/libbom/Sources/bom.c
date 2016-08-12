@@ -51,7 +51,7 @@ bom_alloc_size(struct bom_context_memory memory, uint32_t index_count)
 
     size_t header_size = sizeof(struct bom_header);
     size_t index_size = sizeof(struct bom_index_header);
-    size_t freelist_size = sizeof(struct bom_index_header) + sizeof(struct bom_index) * index_count;
+    size_t freelist_size = sizeof(struct bom_index_header) + sizeof(struct bom_index) * (index_count + 2);
     size_t variables_size = sizeof(struct bom_variables);
     context->memory.resize(&context->memory, header_size + index_size + freelist_size + variables_size);
 
