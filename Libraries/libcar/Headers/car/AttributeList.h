@@ -40,10 +40,6 @@ public:
     AttributeList(std::unordered_map<enum car_attribute_identifier, uint16_t> const &values);
 
 public:
-    bool operator==(AttributeList const &rhs) const;
-    bool operator!=(AttributeList const &rhs) const;
-
-public:
     /*
      * Get the value of an attribute.
      */
@@ -102,16 +98,6 @@ public:
         struct car_attribute_pair const *pairs);
 };
 
-}
-
-namespace std {
-template<> struct hash<car::AttributeList>
-{
-    /*
-     * Suport using an AttributeList as a key.
-     */
-    size_t operator()(car::AttributeList const &attributes) const;
-};
 }
 
 #endif /* _LIBCAR_ATTRIBUTELIST_H */
