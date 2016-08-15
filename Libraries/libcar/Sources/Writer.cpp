@@ -52,7 +52,7 @@ void Writer::
 addRendition(void *key, size_t key_len, void *value, size_t value_len)
 {
     KeyValuePair kv = {key, key_len, value, value_len};
-    _raw_renditions.emplace_back(kv);
+    _rawRenditions.emplace_back(kv);
 }
 
 static std::vector<enum car_attribute_identifier>
@@ -148,7 +148,7 @@ write() const
     }
 
     /* Write renditions. */
-    uint32_t rendition_count = _renditions.size() + _raw_renditions.size();
+    uint32_t rendition_count = _renditions.size() + _rawRenditions.size();
     struct bom_tree_context *renditions_tree_context = bom_tree_alloc_size(_bom.get(), car_renditions_variable, rendition_count);
     if (renditions_tree_context != NULL) {
         for (auto const &item : _renditions) {
@@ -161,7 +161,7 @@ write() const
                 reinterpret_cast<void const *>(rendition_value.data()),
                 rendition_value.size());
         }
-        for (auto const &item : _raw_renditions) {
+        for (auto const &item : _rawRenditions) {
             bom_tree_add(
                 renditions_tree_context,
                 item.key,

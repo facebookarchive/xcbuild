@@ -44,7 +44,7 @@ private:
     ext::optional<struct car_key_format *> _keyfmt;
     std::unordered_map<std::string, Facet> _facets;
     std::unordered_multimap<uint16_t, Rendition> _renditions;
-    std::vector<KeyValuePair> _raw_renditions;
+    std::vector<KeyValuePair> _rawRenditions;
 
 private:
     Writer(unique_ptr_bom bom);
