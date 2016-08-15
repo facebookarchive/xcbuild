@@ -111,7 +111,6 @@ TEST(Writer, TestWriter100)
     /* Write with half the required number of pre-allocated indexes */
     int preallocated_index_count = 6 + create_facet_count * 2 + create_rendition_count * 2;
     auto writer_bom = car::Writer::unique_ptr_bom(bom_alloc_size(bom_context_memory(NULL, 0), preallocated_index_count / 2), bom_free);
-    // auto writer_bom = car::Writer::unique_ptr_bom(bom_alloc_size(bom_context_memory(NULL, 0), 0), bom_free);
     EXPECT_NE(writer_bom, nullptr);
 
     auto writer = car::Writer::Create(std::move(writer_bom));
