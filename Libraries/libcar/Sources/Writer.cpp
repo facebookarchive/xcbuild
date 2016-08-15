@@ -165,9 +165,9 @@ write() const
             bom_tree_add(
                 renditions_tree_context,
                 item.key,
-                item.key_len,
+                item.keyLength,
                 item.value,
-                item.value_len);
+                item.valueLength);
         }
         bom_tree_free(renditions_tree_context);
     }

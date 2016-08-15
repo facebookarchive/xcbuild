@@ -36,7 +36,7 @@ public:
 
 private:
     typedef struct {
-        void *key; size_t key_len; void *value; size_t value_len;
+        void *key; size_t keyLength; void *value; size_t valueLength;
     } KeyValuePair;
 
 private:
@@ -70,7 +70,7 @@ public:
     /*
      * Add a rendition for a facet, optimized for fast editing of CAR files
      */
-    void addRendition(void *key, size_t key_len, void *value, size_t value_len);
+    void addRendition(void *key, size_t keyLength, void *value, size_t valueLength);
 
     /*
      * The key format, optional and determined automatically if omitted.
