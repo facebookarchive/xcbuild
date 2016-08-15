@@ -205,16 +205,11 @@ bom_tree_add(struct bom_tree_context *tree_context, const void *key, size_t key_
     struct bom_tree *tree = (struct bom_tree *)bom_index_get(tree_context->context, tree_index, NULL);
 
     int paths_index = ntohl(tree->child);
-    bool resize;
 
     size_t paths_length;
     struct bom_tree_entry *paths = (struct bom_tree_entry *)bom_index_get(tree_context->context, paths_index, &paths_length);
 
-    if ((ntohs(paths->count) + 1) * sizeof(struct bom_tree_entry_indexes) < paths_length) {
-        resize = false;
-    } else {
-        resize = true;
-
+    if ((ntohs(paths->count) + 1) * sizeof(struct bom_tree_entry_indexes) > paths_length) {
         /* Make room for the new index, extending the size as necessary. */
         bom_index_append(tree_context->context, paths_index, sizeof(struct bom_tree_entry_indexes));
 

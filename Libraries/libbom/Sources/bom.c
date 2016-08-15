@@ -246,17 +246,12 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
     struct bom_index_header *index_header = (struct bom_index_header *)((void *)header + ntohl(header->index_offset));
 
     /* Insert index at the end of the list. */
-    bool resize;
-    size_t new_index_length = sizeof(struct bom_index_header) + sizeof(struct bom_index) * (ntohl(index_header->count) + 1);
-    if (new_index_length < ntohl(header->index_length) - (sizeof(struct bom_index) * 2) ) {
-        resize = false;
-    } else {
-        resize = true;
-    }
     uint32_t index_point = ntohl(header->index_offset) + sizeof(struct bom_index_header) + sizeof(struct bom_index) * ntohl(index_header->count);
-    if (resize) {
+    size_t new_index_length = sizeof(struct bom_index_header) + sizeof(struct bom_index) * (ntohl(index_header->count) + 1);
+    if (new_index_length > ntohl(header->index_length) - (sizeof(struct bom_index) * 2) ) {
         ptrdiff_t index_delta = sizeof(struct bom_index);
         _bom_address_resize(context, index_point, index_delta);
+        header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));        
     }
 
     /* Insert data at the very end. */
@@ -278,9 +273,6 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
 
     /* Update length for newly added index. */
     index_header->count = htonl(ntohl(index_header->count) + 1);
-    if (resize) {
-        header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));
-    }
     header->block_count++;
 
     return added_index;
