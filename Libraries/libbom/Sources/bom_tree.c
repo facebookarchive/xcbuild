@@ -23,7 +23,6 @@ struct bom_tree_context {
     struct bom_context *context;
     char *variable_name;
     int tree_iterating;
-    unsigned int preallocated_index_count;
 };
 
 
@@ -40,7 +39,6 @@ _bom_tree_alloc(struct bom_context *context, const char *variable_name)
 
     tree_context->context = context;
     tree_context->tree_iterating = 0;
-    tree_context->preallocated_index_count = 0;
 
     tree_context->variable_name = malloc(strlen(variable_name));
     if (tree_context->variable_name == NULL) {
@@ -60,7 +58,6 @@ bom_tree_alloc_size(struct bom_context *context, const char *variable_name, uint
         return NULL;
     }
 
-    tree_context->preallocated_index_count = index_count;
 
     size_t entry_size = sizeof(struct bom_tree_entry) + (sizeof(struct bom_tree_entry_indexes) * index_count);
     struct bom_tree_entry *entry = malloc(entry_size);
@@ -209,26 +206,24 @@ bom_tree_add(struct bom_tree_context *tree_context, const void *key, size_t key_
 
     int paths_index = ntohl(tree->child);
     bool resize;
-    if (tree_context->preallocated_index_count > 0) {
-      tree_context->preallocated_index_count -= 1;
-      resize = false;
-    } else {
-      /* Make room for the new index, extending the size as necessary. */
-      bom_index_append(tree_context->context, paths_index, sizeof(struct bom_tree_entry_indexes));
-      resize = true;
-    }
 
-    /* Re-fetch after append invalidation. */
-    tree = (struct bom_tree *)bom_index_get(tree_context->context, tree_index, NULL);
     size_t paths_length;
     struct bom_tree_entry *paths = (struct bom_tree_entry *)bom_index_get(tree_context->context, paths_index, &paths_length);
 
-    int entry_index = ntohs(paths->count);
-    if (resize) {
-      /* Push back existing data after insertion point. */
-      ptrdiff_t entry_point = sizeof(struct bom_tree_entry) + sizeof(struct bom_tree_entry_indexes) * entry_index;
-      memmove((void *)paths + entry_point + sizeof(struct bom_tree_entry_indexes), (void *)paths + entry_point, paths_length - entry_point);      
+    if ((ntohs(paths->count) + 1) * sizeof(struct bom_tree_entry_indexes) < paths_length) {
+        resize = false;
+    } else {
+        resize = true;
+
+        /* Make room for the new index, extending the size as necessary. */
+        bom_index_append(tree_context->context, paths_index, sizeof(struct bom_tree_entry_indexes));
+
+        /* Re-fetch after append invalidation. */
+        tree = (struct bom_tree *)bom_index_get(tree_context->context, tree_index, NULL);
+        paths = (struct bom_tree_entry *)bom_index_get(tree_context->context, paths_index, &paths_length);
     }
+
+    int entry_index = ntohs(paths->count);
 
     /* Set the indexes for the inserted entry. */
     struct bom_tree_entry_indexes *indexes = &paths->indexes[entry_index];

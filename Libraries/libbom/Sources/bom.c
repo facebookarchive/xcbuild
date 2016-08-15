@@ -21,7 +21,6 @@
 struct bom_context {
     struct bom_context_memory memory;
     unsigned int iteration_count;
-    unsigned int preallocated_index_count;
 };
 
 struct bom_context *
@@ -34,7 +33,6 @@ _bom_alloc(struct bom_context_memory memory)
 
     context->memory = memory;
     context->iteration_count = 0;
-    context->preallocated_index_count = 0;
 
     return context;
 }
@@ -47,7 +45,6 @@ bom_alloc_size(struct bom_context_memory memory, uint32_t index_count)
         return NULL;
     }
 
-    context->preallocated_index_count = index_count;
 
     size_t header_size = sizeof(struct bom_header);
     size_t index_size = sizeof(struct bom_index_header);
@@ -249,15 +246,17 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
     struct bom_index_header *index_header = (struct bom_index_header *)((void *)header + ntohl(header->index_offset));
 
     /* Insert index at the end of the list. */
-    bool resize = true;
-    if (context->preallocated_index_count > 0) {
-      resize = false;
-      context->preallocated_index_count -= 1;
+    bool resize;
+    size_t new_index_length = sizeof(struct bom_index_header) + sizeof(struct bom_index) * (ntohl(index_header->count) + 1);
+    if (new_index_length < ntohl(header->index_length) - (sizeof(struct bom_index) * 2) ) {
+        resize = false;
+    } else {
+        resize = true;
     }
     uint32_t index_point = ntohl(header->index_offset) + sizeof(struct bom_index_header) + sizeof(struct bom_index) * ntohl(index_header->count);
     if (resize) {
-      ptrdiff_t index_delta = sizeof(struct bom_index);
-      _bom_address_resize(context, index_point, index_delta);
+        ptrdiff_t index_delta = sizeof(struct bom_index);
+        _bom_address_resize(context, index_point, index_delta);
     }
 
     /* Insert data at the very end. */
@@ -280,7 +279,7 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
     /* Update length for newly added index. */
     index_header->count = htonl(ntohl(index_header->count) + 1);
     if (resize) {
-      header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));
+        header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));
     }
     header->block_count++;
 
