@@ -251,6 +251,10 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
     if (new_index_length > ntohl(header->index_length) - (sizeof(struct bom_index) * 2) ) {
         ptrdiff_t index_delta = sizeof(struct bom_index);
         _bom_address_resize(context, index_point, index_delta);
+
+        /* Re-fetch, invalidated by resize. */
+        header = (struct bom_header *)context->memory.data;
+
         header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));        
     }
 
