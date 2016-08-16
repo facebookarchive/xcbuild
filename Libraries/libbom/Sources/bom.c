@@ -412,3 +412,21 @@ bom_variable_add(struct bom_context *context, const char *name, int data_index)
     header->trailer_len = htonl(ntohl(header->trailer_len) + variable_delta);
 }
 
+void
+bom_alloc_indexes(struct bom_context *context, uint32_t index_count)
+{
+    assert(context != NULL);
+    assert(context->iteration_count == 0 && "cannot mutate while iterating");
+    struct bom_header *header = (struct bom_header *)context->memory.data;
+
+    /* Insert space for extra indexes at the end of the currently allocated space. */
+    uint32_t index_point = ntohl(header->index_offset) + ntohl(header->index_length);
+    size_t new_index_length = ntohl(header->index_length) + sizeof(struct bom_index) * index_count;
+    ptrdiff_t index_delta = sizeof(struct bom_index) * index_count;
+    _bom_address_resize(context, index_point, index_delta);
+    
+    /* Re-fetch, invalidated by resize. */
+    header = (struct bom_header *)context->memory.data;
+    header->index_length = htonl(new_index_length);
+}
+
