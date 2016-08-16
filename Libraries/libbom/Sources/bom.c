@@ -38,7 +38,13 @@ _bom_alloc(struct bom_context_memory memory)
 }
 
 struct bom_context *
-bom_alloc_size(struct bom_context_memory memory, uint32_t index_count)
+bom_alloc_empty(struct bom_context_memory memory)
+{
+  return bom_alloc_empty2(memory, 2);
+}
+
+struct bom_context *
+bom_alloc_empty2(struct bom_context_memory memory, uint32_t index_count)
 {
     struct bom_context *context = _bom_alloc(memory);
     if (context == NULL) {

@@ -39,7 +39,10 @@ bom_context_memory_file(const char *fn, bool writeable, size_t minimum_size);
 struct bom_context;
 
 struct bom_context *
-bom_alloc_size(struct bom_context_memory memory, uint32_t index_count);
+bom_alloc_empty(struct bom_context_memory memory);
+
+struct bom_context *
+bom_alloc_empty2(struct bom_context_memory memory, uint32_t index_count);
 
 struct bom_context *
 bom_alloc_load(struct bom_context_memory memory);
@@ -87,7 +90,10 @@ bom_variable_add(struct bom_context *context, const char *name, int data_index);
 struct bom_tree_context;
 
 struct bom_tree_context *
-bom_tree_alloc_size(struct bom_context *context, const char *variable_name, uint32_t index_count);
+bom_tree_alloc_empty(struct bom_context *context, const char *variable_name);
+
+struct bom_tree_context *
+bom_tree_alloc_empty2(struct bom_context *context, const char *variable_name, uint32_t index_count);
 
 struct bom_tree_context *
 bom_tree_alloc_load(struct bom_context *context, const char *variable_name);

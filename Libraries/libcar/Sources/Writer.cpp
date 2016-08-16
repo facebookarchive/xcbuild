@@ -133,7 +133,7 @@ write() const
 
     /* Write facets. */
     uint32_t facet_count = _facets.size();
-    struct bom_tree_context *facets_tree_context = bom_tree_alloc_size(_bom.get(), car_facet_keys_variable, facet_count);
+    struct bom_tree_context *facets_tree_context = bom_tree_alloc_empty2(_bom.get(), car_facet_keys_variable, facet_count);
     if (facets_tree_context != NULL) {
         for (auto const &item : _facets) {
             auto facet_value = item.second.write();
@@ -149,7 +149,7 @@ write() const
 
     /* Write renditions. */
     uint32_t rendition_count = _renditions.size() + _rawRenditions.size();
-    struct bom_tree_context *renditions_tree_context = bom_tree_alloc_size(_bom.get(), car_renditions_variable, rendition_count);
+    struct bom_tree_context *renditions_tree_context = bom_tree_alloc_empty2(_bom.get(), car_renditions_variable, rendition_count);
     if (renditions_tree_context != NULL) {
         for (auto const &item : _renditions) {
             auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);

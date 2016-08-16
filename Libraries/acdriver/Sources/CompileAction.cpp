@@ -174,7 +174,7 @@ CreateWriter(std::string const &path)
         return ext::nullopt;
     }
 
-    auto bom = car::Writer::unique_ptr_bom(bom_alloc_size(memory, 0), bom_free);
+    auto bom = car::Writer::unique_ptr_bom(bom_alloc_empty(memory), bom_free);
     if (bom == nullptr) {
         return ext::nullopt;
     }
