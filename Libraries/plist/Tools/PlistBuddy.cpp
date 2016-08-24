@@ -136,6 +136,21 @@ Print(plist::Object *object)
     return true;
 }
 
+static bool
+Set(plist::Object *object, const std::string &keypath, const std::string &valueString)
+{
+    plist::Dictionary *dict = plist::CastTo<plist::Dictionary>(object);
+    if (!dict) {
+        /* does Set work with arrays too? probably. */
+        /* probably need some younit tests */
+        fprintf(stderr, "error: expected a dictionary when using Set\n");
+        return false;
+    }
+
+    dict->set(keypath, plist::String::New(valueString));
+
+    return true;
+}
 
 static bool
 ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &file, plist::Object *object, std::string const &input)
@@ -150,13 +165,16 @@ ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &fil
         Print(object);
     } else if (command == "Exit") {
         return false;
+    } else if (command == "Set") {
+        /* verify there are three tokens */
+        Set(object, tokens[1], tokens[2]);
     } else {
         std::cerr << "Unrecognized command" << std::endl;
     }
     return true;
 }
 
-static const char * prompt(EditLine *e) {
+static const char *prompt(EditLine *e) {
   return "Command: ";
 }
 
