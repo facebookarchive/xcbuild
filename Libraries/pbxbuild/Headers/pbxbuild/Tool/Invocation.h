@@ -19,23 +19,61 @@ namespace Tool {
 class Invocation {
 public:
     class AuxiliaryFile {
+    public:
+        class Chunk {
+        public:
+            enum class Type {
+                Data,
+                File,
+            };
+
+        private:
+            Type                                _type;
+
+        private:
+            ext::optional<std::vector<uint8_t>> _data;
+            ext::optional<std::string>          _file;
+
+        private:
+            Chunk(
+                Type type,
+                ext::optional<std::vector<uint8_t>> const &data,
+                ext::optional<std::string> const &file);
+
+        public:
+            Type type() const
+            { return _type; }
+
+        public:
+            ext::optional<std::vector<uint8_t>> const &data() const
+            { return _data; }
+            ext::optional<std::string> const &file() const
+            { return _file; }
+
+        public:
+            static Chunk Data(std::vector<uint8_t> const &data);
+            static Chunk File(std::string const &file);
+        };
+
     private:
-        std::string          _path;
-        std::vector<uint8_t> _contents;
-        bool                 _executable;
+        std::string        _path;
+        std::vector<Chunk> _chunks;
+        bool               _executable;
 
     public:
-        AuxiliaryFile(std::string const &path, std::vector<uint8_t> const &contents, bool executable);
-        AuxiliaryFile(std::string const &path, std::string const &contents, bool executable);
-        ~AuxiliaryFile();
+        AuxiliaryFile(std::string const &path, std::vector<Chunk> const &chunks, bool executable = false);
 
     public:
         std::string const &path() const
         { return _path; }
-        std::vector<uint8_t> const &contents() const
-        { return _contents; }
+        std::vector<Chunk> const &chunks() const
+        { return _chunks; }
         bool executable() const
         { return _executable; }
+
+    public:
+        static AuxiliaryFile Data(std::string const &path, std::vector<uint8_t> const &data, bool executable = false);
+        static AuxiliaryFile File(std::string const &path, std::string const &file, bool executable = false);
     };
 
 public:

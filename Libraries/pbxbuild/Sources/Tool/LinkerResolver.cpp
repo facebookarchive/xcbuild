@@ -49,7 +49,7 @@ resolve(
         for (std::string const &input : inputFiles) {
             contents += input + "\n";
         }
-        Tool::Invocation::AuxiliaryFile fileList = Tool::Invocation::AuxiliaryFile(path, contents, false);
+        auto fileList = Tool::Invocation::AuxiliaryFile::Data(path, std::vector<uint8_t>(contents.begin(), contents.end()));
         auxiliaries.push_back(fileList);
     }
 

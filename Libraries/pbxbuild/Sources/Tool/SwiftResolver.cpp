@@ -148,7 +148,7 @@ AppendOutputs(
     } else {
         /* Write output map as an auxiliary file. */
         std::string outputInfoPath = outputDirectory + "/" + moduleName + "-OutputFileMap.json";
-        Tool::Invocation::AuxiliaryFile outputInfoFile = Tool::Invocation::AuxiliaryFile(outputInfoPath, *serialized.first, false);
+        auto outputInfoFile = Tool::Invocation::AuxiliaryFile::Data(outputInfoPath, *serialized.first);
         auxiliaryFiles->push_back(outputInfoFile);
 
         /* Add output info to the arguments. */
@@ -232,6 +232,73 @@ AppendObjcHeader(
     }
 }
 
+static void
+AppendUnderlyingModule(
+    std::vector<std::string> *args,
+    std::vector<Tool::Invocation::AuxiliaryFile> *auxiliaryFiles,
+    Tool::Context const *toolContext,
+    pbxsetting::Environment const &environment,
+    std::string const &headerName)
+{
+    /* No module map means no underlying module to import. */
+    ext::optional<Tool::ModuleMapInfo::Entry> const &moduleMap = toolContext->moduleMapInfo().moduleMap();
+    if (!moduleMap) {
+        return;
+    }
+
+    /*
+     * Create a module map to import the underlying module. However, exclude the Swift-generated
+     * header here, to avoid having this module try and import its own generated Objective-C structures.
+     */
+    std::string moduleName = environment.resolve("PRODUCT_MODULE_NAME");
+
+    std::string unextendedModuleMap = "\n";
+    unextendedModuleMap += "module " + moduleName + ".__Swift {\n";
+    unextendedModuleMap += "  exclude header \"" + headerName + "\"\n";
+    unextendedModuleMap += "}\n";
+
+    auto unextendedModuleMapData = std::vector<uint8_t>(unextendedModuleMap.begin(), unextendedModuleMap.end());
+    auto unextendedModuleMapChunk = Tool::Invocation::AuxiliaryFile::Chunk::Data(unextendedModuleMapData);
+
+    std::string unextendedModuleMapPath = environment.resolve("TARGET_TEMP_DIR") + "/" + "unextended-module.modulemap";
+    auto unextendedModuleMapFile = Tool::Invocation::AuxiliaryFile(unextendedModuleMapPath, { moduleMap->contents(), unextendedModuleMapChunk });
+    auxiliaryFiles->push_back(unextendedModuleMapFile);
+
+    /*
+     * Create a VFS overlay to load the above module map. This replaces the module map in the product,
+     * which does not contain the extra Swift rule, and may not even exist yet (depending on ordering).
+     */
+    std::string unextendedModuleOverlayPath = environment.resolve("TARGET_TEMP_DIR") + "/" + "unextended-module-overlay.yaml";
+
+    std::string unextendedModuleOverlay;
+    unextendedModuleOverlay += "{\n";
+    unextendedModuleOverlay += "  'version': 0,\n";
+    unextendedModuleOverlay += "  'case-sensitive': 'false',\n";
+    unextendedModuleOverlay += "  'roots': [{\n";
+    unextendedModuleOverlay += "    'type': 'directory',\n";
+    unextendedModuleOverlay += "    'name': '" + FSUtil::GetDirectoryName(moduleMap->finalPath()) + "',\n";
+    unextendedModuleOverlay += "    'contents': [{\n";
+    unextendedModuleOverlay += "      'type': 'file',\n";
+    unextendedModuleOverlay += "      'name': '" + FSUtil::GetBaseName(moduleMap->finalPath()) + "',\n";
+    unextendedModuleOverlay += "      'external-contents': '" + unextendedModuleMapPath + "',\n";
+    unextendedModuleOverlay += "    }]\n";
+    unextendedModuleOverlay += "  }]\n";
+    unextendedModuleOverlay += "}\n";
+
+    auto unextendedModuleOverlayData = std::vector<uint8_t>(unextendedModuleOverlay.begin(), unextendedModuleOverlay.end());
+    auto unextendedModuleOverlayFile = Tool::Invocation::AuxiliaryFile::Data(unextendedModuleOverlayPath, unextendedModuleOverlayData);
+    auxiliaryFiles->push_back(unextendedModuleOverlayFile);
+
+    /*
+     * Add flags to import the underlying module.
+     */
+    args->push_back("-import-underlying-module");
+    args->push_back("-Xcc");
+    args->push_back("-ivfsoverlay");
+    args->push_back("-Xcc");
+    args->push_back(unextendedModuleOverlayPath);
+}
+
 void Tool::SwiftResolver::
 resolve(
     Tool::Context *toolContext,
@@ -309,6 +376,11 @@ resolve(
     std::string headerName = environment.resolve("SWIFT_OBJC_INTERFACE_HEADER_NAME");
     std::string headerPath = outputDirectory + "/" + headerName;
     AppendObjcHeader(&arguments, &outputs, environment, outputDirectory, headerName, headerPath);
+
+    /*
+     * Automatically import the underlying Objective-C module if available.
+     */
+    AppendUnderlyingModule(&arguments, &auxiliaryFiles, toolContext, environment, headerName);
 
     /* Compiler working directory. */
     arguments.push_back("-Xcc");

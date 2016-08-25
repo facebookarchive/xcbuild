@@ -13,6 +13,7 @@
 #include <pbxbuild/Phase/CopyFilesResolver.h>
 #include <pbxbuild/Phase/HeadersResolver.h>
 #include <pbxbuild/Phase/LegacyTargetResolver.h>
+#include <pbxbuild/Phase/ModuleMapResolver.h>
 #include <pbxbuild/Phase/ProductTypeResolver.h>
 #include <pbxbuild/Phase/ResourcesResolver.h>
 #include <pbxbuild/Phase/FrameworksResolver.h>

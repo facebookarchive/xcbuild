@@ -33,8 +33,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        pbxproj::PBX::Target::shared_ptr const &target
-    ) const;
+        pbxproj::PBX::Target::shared_ptr const &target) const;
 
 public:
     pbxspec::PBX::Tool::shared_ptr const &tool() const

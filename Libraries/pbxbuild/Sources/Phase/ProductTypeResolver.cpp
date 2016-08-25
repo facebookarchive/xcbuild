@@ -11,6 +11,7 @@
 #include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Target/Environment.h>
+#include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/InfoPlistResolver.h>
 #include <pbxbuild/Tool/MakeDirectoryResolver.h>
 #include <pbxbuild/Tool/SymlinkResolver.h>

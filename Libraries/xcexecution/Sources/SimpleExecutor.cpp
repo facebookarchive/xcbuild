@@ -167,7 +167,27 @@ writeAuxiliaryFiles(
             xcformatter::Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
 
             if (!_dryRun) {
-                if (!filesystem->write(auxiliaryFile.contents(), auxiliaryFile.path())) {
+                std::vector<uint8_t> data;
+
+                for (pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
+                    switch (chunk.type()) {
+                        case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::Data: {
+                            data.insert(data.end(), chunk.data()->begin(), chunk.data()->end());
+                            break;
+                        }
+                        case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::File: {
+                            std::vector<uint8_t> contents;
+                            if (!filesystem->read(&contents, *chunk.file())) {
+                                return false;
+                            }
+                            data.insert(data.end(), contents.begin(), contents.end());
+                            break;
+                        }
+                        default: abort();
+                    }
+                }
+
+                if (!filesystem->write(data, auxiliaryFile.path())) {
                     return false;
                 }
             }

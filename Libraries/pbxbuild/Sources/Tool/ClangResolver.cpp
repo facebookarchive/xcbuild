@@ -172,10 +172,9 @@ resolvePrecompiledHeader(
     std::string logTitle = DialectIsCPlusPlus(dialect) ? "ProcessPCH++" : "ProcessPCH";
     std::string logMessage = CompileLogMessage(_compiler, logTitle, input, fileType, output, env, toolContext->workingDirectory());
 
-    auto serializedFile = Tool::Invocation::AuxiliaryFile(
+    auto serializedFile = Tool::Invocation::AuxiliaryFile::Data(
         env.expand(precompiledHeaderInfo.serializedOutputPath()),
-        precompiledHeaderInfo.serialize(),
-        false);
+        precompiledHeaderInfo.serialize());
 
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
     if (_compiler->dependencyInfoFile()) {

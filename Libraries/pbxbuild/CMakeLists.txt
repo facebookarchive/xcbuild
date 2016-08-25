@@ -21,6 +21,7 @@ add_library(pbxbuild SHARED
             Sources/Tool/CompilationInfo.cpp
             Sources/Tool/SwiftModuleInfo.cpp
             Sources/Tool/HeadermapInfo.cpp
+            Sources/Tool/ModuleMapInfo.cpp
             Sources/Tool/PrecompiledHeaderInfo.cpp
             Sources/Tool/SearchPaths.cpp
             Sources/Tool/CopyResolver.cpp
@@ -28,6 +29,7 @@ add_library(pbxbuild SHARED
             Sources/Tool/SymlinkResolver.cpp
             Sources/Tool/MakeDirectoryResolver.cpp
             Sources/Tool/HeadermapResolver.cpp
+            Sources/Tool/ModuleMapResolver.cpp
             Sources/Tool/InfoPlistResolver.cpp
             Sources/Tool/AssetCatalogResolver.cpp
             Sources/Tool/InterfaceBuilderResolver.cpp
@@ -48,6 +50,7 @@ add_library(pbxbuild SHARED
             Sources/Phase/CopyFilesResolver.cpp
             Sources/Phase/HeadersResolver.cpp
             Sources/Phase/LegacyTargetResolver.cpp
+            Sources/Phase/ModuleMapResolver.cpp
             Sources/Phase/ProductTypeResolver.cpp
             Sources/Phase/SwiftResolver.cpp
             Sources/Phase/ResourcesResolver.cpp

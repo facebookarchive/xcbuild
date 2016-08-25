@@ -108,7 +108,7 @@ resolve(
 
     std::string scriptFilePath = phaseEnvironment.expand(scriptPath);
     std::string contents = (!buildPhase->shellPath().empty() ? "#!" + buildPhase->shellPath() + "\n" : "") + buildPhase->shellScript();
-    Tool::Invocation::AuxiliaryFile scriptFile = Tool::Invocation::AuxiliaryFile(scriptFilePath, contents, true);
+    auto scriptFile = Tool::Invocation::AuxiliaryFile::Data(scriptFilePath, std::vector<uint8_t>(contents.begin(), contents.end()), true);
 
     pbxsetting::Environment scriptEnvironment = environment;
     scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, true), false);
