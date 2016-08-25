@@ -28,6 +28,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <queue>
 
 class Options {
 public:
@@ -119,12 +120,92 @@ Help(std::string const &error = std::string())
     return (error.empty() ? 0 : -1);
 }
 
+static void parseCommandKeyPathString(const std::string &keyPathString, std::queue<std::string> &keyPath) {
+    auto loc = keyPathString.find(':');
+    if (loc == std::string::npos) {
+        if (keyPathString.size() > 0) {
+            keyPath.push(keyPathString);
+        }
+    } else {
+        if (loc > 0) {
+            keyPath.push(keyPathString.substr(0, loc));
+        }
+        parseCommandKeyPathString(keyPathString.substr(loc + 1), keyPath);
+    }
+}
+
+static std::string parseCommandValueString(std::vector<std::string>::const_iterator begin, std::vector<std::string>::const_iterator end) {
+    if (begin == end) {
+        return "";
+    }
+    std::stringstream sstream;
+    for (auto it = begin; it != end; it++) {
+        if (it != begin) {
+            sstream << ' ';
+        }
+        sstream << it->c_str();
+    }
+
+    std::string valueString = sstream.str();
+    if (valueString.front() == '\"' && valueString.back() == '\"') {
+        // strip double quote if necessary
+        valueString = valueString.substr(1, valueString.size() - 2);
+    }
+    return valueString;
+}
+
+static plist::Object *getObjectAtKeyPath(plist::Object *object, std::queue<std::string> &remainingKeys, bool leaveLastKey = true) {
+    if (remainingKeys.empty() || (leaveLastKey && remainingKeys.size() == 1)) {
+        return object;
+    } else if (!object) {
+        std::cerr << "Invalid key path (indexing into null object)" << std::endl;
+        return nullptr;
+    }
+
+    std::string currentKey = remainingKeys.front();
+
+    plist::Object *subObject = nullptr;
+    switch (object->type()) {
+        case plist::ObjectType::Dictionary:
+            subObject = plist::CastTo<plist::Dictionary>(object)->value(currentKey);
+            break;
+        case plist::ObjectType::Array: {
+            char *end = NULL;
+            long long index = std::strtoll(currentKey.c_str(), &end, 0);
+            if (end == currentKey.c_str() || index < 0) {
+                std::cerr << "Invalid array index" << std::endl;
+                return nullptr;
+            }
+
+            subObject = plist::CastTo<plist::Array>(object)->value(index);
+            break;
+        }
+        default:
+            // Reached a state of non-collection object with remaining key path. error
+            std::cerr << "Invalid key path (indexing into non-collection object)" << std::endl;
+            return nullptr;
+    }
+
+    if (!subObject) {
+        return object;
+    } else {
+        remainingKeys.pop();
+        return getObjectAtKeyPath(subObject, remainingKeys, leaveLastKey);
+    }
+}
+
 static bool
-Print(plist::Object *object)
+Print(plist::Object *object, std::queue<std::string> &keyPath)
 {
+    plist::Object *target = getObjectAtKeyPath(object, keyPath, false);
+    if (!keyPath.empty() || !target) {
+        std::cerr << "Invalid key path (no object at key path)" << std::endl;
+        return false;
+    }
+
     /* Convert to ASCII. */
     plist::Format::ASCII out = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
-    auto serialize = plist::Format::ASCII::Serialize(object, out);
+    auto serialize = plist::Format::ASCII::Serialize(target, out);
     if (serialize.first == nullptr) {
         fprintf(stderr, "error: %s\n", serialize.second.c_str());
         return false;
@@ -137,19 +218,97 @@ Print(plist::Object *object)
 }
 
 static bool
-Set(plist::Object *object, const std::string &keypath, const std::string &valueString)
+Set(plist::Object *object, std::queue<std::string> &keyPath, plist::ObjectType type, const std::string &valueString, bool overwrite = true)
 {
-    plist::Dictionary *dict = plist::CastTo<plist::Dictionary>(object);
-    if (!dict) {
-        /* does Set work with arrays too? probably. */
-        /* probably need some younit tests */
-        fprintf(stderr, "error: expected a dictionary when using Set\n");
+    plist::Object *target = getObjectAtKeyPath(object, keyPath, true);
+    if (!target || keyPath.size() != 1) {
+        std::cerr << keyPath.front() << ' ' << keyPath.back() << std::endl;
+        std::cerr << "Invalid key path (target object not found)" << std::endl;
         return false;
     }
 
-    dict->set(keypath, plist::String::New(valueString));
+    if (target->type() != plist::ObjectType::Dictionary || target->type() != plist::ObjectType::Array) {
+    }
 
-    return true;
+    std::string targetKey = keyPath.front();
+
+    std::unique_ptr<plist::Object> newObj;
+    switch (type) {
+        case plist::ObjectType::String:
+            newObj = plist::String::New(valueString);
+            break;
+        case plist::ObjectType::Dictionary:
+            newObj = plist::Dictionary::New();
+            break;
+        case plist::ObjectType::Array:
+            newObj = plist::Array::New();
+            break;
+        case plist::ObjectType::Boolean:
+            newObj = plist::Boolean::Coerce(new plist::String(valueString));
+            break;
+        case plist::ObjectType::Real:
+            newObj = plist::Real::Coerce(new plist::String(valueString));
+            break;
+        case plist::ObjectType::Integer:
+            newObj = plist::Integer::Coerce(new plist::String(valueString));
+            break;
+        case plist::ObjectType::Date:
+            newObj = plist::Date::New(valueString);
+            break;
+        case plist::ObjectType::Data:
+            newObj = plist::Data::New(valueString);
+            break;
+        default:
+            std::cerr << "Not supported" << std::endl;
+            return false;
+    }
+
+    switch (target->type()) {
+        case plist::ObjectType::Dictionary: {
+            plist::Dictionary *dict = plist::CastTo<plist::Dictionary>(target);
+            if (!overwrite && dict->value(targetKey)) {
+                std::cerr << "Cannot overwrite key path" << std::endl;
+                return false;
+            }
+            dict->set(targetKey, std::move(newObj));
+            return true;
+        }
+        case plist::ObjectType::Array: {
+            char *end = NULL;
+            long long index = std::strtoll(targetKey.c_str(), &end, 0);
+            if (end == targetKey.c_str() || index < 0) {
+                std::cerr << "Invalid array index" << std::endl;
+                return false;
+            }
+            plist::Array *array = plist::CastTo<plist::Array>(target);
+            if (!overwrite && array->value(index)) {
+                std::cerr << "Cannot overwrite key path" << std::endl;
+                return false;
+            }
+            array->insert(index, std::move(newObj));
+            return true;
+        }
+        default:
+            std::cerr << "Invalid key path (setting value on non-collection object)" << std::endl;
+            return false;
+    }
+}
+
+static void CommandHelp()
+{
+#define INDENT "  "
+    fprintf(stderr, "\nCommands help:\n");
+    fprintf(stderr, INDENT "Help - Print this information\n");
+    fprintf(stderr, INDENT "Exit - Exits this program\n");
+    fprintf(stderr, INDENT "Print [<KeyPath>] - Print value at KeyPath. (default KeyPath = root)\n");
+    fprintf(stderr, INDENT "Set <KeyPath> <Value> - Set value at KeyPath to Value\n");
+    fprintf(stderr, INDENT "Add <KeyPath> <Type> <Value> - Set value at KeyPath to Value\n");
+    fprintf(stderr, "\n<KeyPath>\n");
+    fprintf(stderr, INDENT ":= \"\"                             => root object\n");
+    fprintf(stderr, INDENT ":= <KeyPath>[:<Dictionary Key>]   => indexes into dictionary\n");
+    fprintf(stderr, INDENT ":= <KeyPath>[:<Array Index>]      => indexes into Array\n");
+    fprintf(stderr, "\n<Type> := (string|dictionary|array|bool|real|integer|date|data)\n\n");
+#undef INDENT
 }
 
 static bool
@@ -159,15 +318,62 @@ ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &fil
     std::stringstream sstream(input);
     std::copy(std::istream_iterator<std::string>(sstream), std::istream_iterator<std::string>(), std::back_inserter(tokens));
 
-    std::string command = tokens[0];
+    if (tokens.size() < 1) {
+        return true;
+    }
 
+    std::string command = tokens[0];
     if (command == "Print") {
-        Print(object);
+        std::queue<std::string> keyPath;
+        if (tokens.size() < 2) {
+            parseCommandKeyPathString("", keyPath);
+        } else {
+            parseCommandKeyPathString(tokens[1], keyPath);
+        }
+        Print(object, keyPath);
     } else if (command == "Exit") {
         return false;
     } else if (command == "Set") {
-        /* verify there are three tokens */
-        Set(object, tokens[1], tokens[2]);
+        if (tokens.size() < 2) {
+            std::cerr << "Set command requires KeyValue" << std::endl;
+            return true;
+        } else {
+            std::queue<std::string> keyPath;
+            parseCommandKeyPathString(tokens[1], keyPath);
+            Set(object, keyPath, plist::ObjectType::String, parseCommandValueString(tokens.begin() + 2, tokens.end()));
+        }
+    } else if (command == "Add") {
+        if (tokens.size() < 3) {
+            std::cerr << "Add command requires KeyValue and Type" << std::endl;
+            return true;
+        } else {
+            std::queue<std::string> keyPath;
+            parseCommandKeyPathString(tokens[1], keyPath);
+            plist::ObjectType type = plist::ObjectType::String;
+            if (tokens[2] == "string") {
+                type = plist::ObjectType::String;
+            } else if (tokens[2] == "dictionary") {
+                type = plist::ObjectType::Dictionary;
+            } else if (tokens[2] == "array") {
+                type = plist::ObjectType::Array;
+            } else if (tokens[2] == "bool") {
+                type = plist::ObjectType::Boolean;
+            } else if (tokens[2] == "real") {
+                type = plist::ObjectType::Real;
+            } else if (tokens[2] == "integer") {
+                type = plist::ObjectType::Integer;
+            } else if (tokens[2] == "date") {
+                type = plist::ObjectType::Date;
+            } else if (tokens[2] == "data") {
+                type = plist::ObjectType::Data;
+            } else {
+                std::cerr << "Invalid type" << std::endl;
+                return true;
+            }
+            Set(object, keyPath, type, parseCommandValueString(tokens.begin() + 3, tokens.end()), false);
+        }
+    } else if (command == "Help") {
+        CommandHelp();
     } else {
         std::cerr << "Unrecognized command" << std::endl;
     }
