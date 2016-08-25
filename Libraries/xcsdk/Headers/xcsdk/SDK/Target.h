@@ -41,7 +41,7 @@ public:
     std::string              _path;
     std::string              _bundleName;
     std::string              _version;
-    std::string               _canonicalName;
+    std::string              _canonicalName;
     std::string              _displayName;
     std::string              _minimalDisplayName;
     std::string              _maximumDeploymentTarget;
