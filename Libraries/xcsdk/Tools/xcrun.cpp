@@ -350,7 +350,7 @@ main(int argc, char **argv)
         printf("%s\n", target->path().c_str());
         return 0;
     } else if (options.showSDKVersion()) {
-        printf("%s\n", target->path().c_str());
+        printf("%s\n", target->version().c_str());
         return 0;
     } else if (options.showSDKBuildVersion()) {
         if (auto product = target->product()) {
