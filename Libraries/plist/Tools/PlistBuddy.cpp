@@ -30,6 +30,10 @@
 #include <string>
 #include <queue>
 
+typedef struct {
+    std::unique_ptr<plist::Object> object;
+} RootObjectContainer;
+
 class Options {
 public:
 
@@ -97,6 +101,28 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return std::make_pair(true, std::string());
     } else {
         return std::make_pair(false, "unknown argument " + arg);
+    }
+}
+
+plist::ObjectType parseType(std::string &typeString) {
+    if (typeString == "string") {
+        return plist::ObjectType::String;
+    } else if (typeString == "dictionary") {
+        return plist::ObjectType::Dictionary;
+    } else if (typeString == "array") {
+        return plist::ObjectType::Array;
+    } else if (typeString == "bool") {
+        return plist::ObjectType::Boolean;
+    } else if (typeString == "real") {
+        return plist::ObjectType::Real;
+    } else if (typeString == "integer") {
+        return plist::ObjectType::Integer;
+    } else if (typeString == "date") {
+        return plist::ObjectType::Date;
+    } else if (typeString == "data") {
+        return plist::ObjectType::Data;
+    } else {
+        return plist::ObjectType::None;
     }
 }
 
@@ -294,6 +320,39 @@ Set(plist::Object *object, std::queue<std::string> &keyPath, plist::ObjectType t
     }
 }
 
+static bool Clear(RootObjectContainer &root, plist::ObjectType clearType) {
+    switch (clearType) {
+        case plist::ObjectType::String:
+            root.object = plist::String::New();
+            break;
+        case plist::ObjectType::Dictionary:
+            root.object = plist::Dictionary::New();
+            break;
+        case plist::ObjectType::Array:
+            root.object = plist::Array::New();
+            break;
+        case plist::ObjectType::Boolean:
+            root.object = plist::Boolean::New(false);
+            break;
+        case plist::ObjectType::Real:
+            root.object = plist::Real::New();
+            break;
+        case plist::ObjectType::Integer:
+            root.object = plist::Integer::New();
+            break;
+        case plist::ObjectType::Date:
+            root.object = plist::Date::New();
+            break;
+        case plist::ObjectType::Data:
+            root.object = plist::Data::New();
+            break;
+        default:
+            std::cerr << "Unsupported type" << std::endl;
+            return false;
+    }
+    return true;
+}
+
 static void CommandHelp()
 {
 #define INDENT "  "
@@ -303,6 +362,7 @@ static void CommandHelp()
     fprintf(stderr, INDENT "Print [<KeyPath>] - Print value at KeyPath. (default KeyPath = root)\n");
     fprintf(stderr, INDENT "Set <KeyPath> <Value> - Set value at KeyPath to Value\n");
     fprintf(stderr, INDENT "Add <KeyPath> <Type> <Value> - Set value at KeyPath to Value\n");
+    fprintf(stderr, INDENT "Clear <Type> - Clears all data, and sets root to of the given type\n");
     fprintf(stderr, "\n<KeyPath>\n");
     fprintf(stderr, INDENT ":= \"\"                             => root object\n");
     fprintf(stderr, INDENT ":= <KeyPath>[:<Dictionary Key>]   => indexes into dictionary\n");
@@ -312,7 +372,7 @@ static void CommandHelp()
 }
 
 static bool
-ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &file, plist::Object *object, std::string const &input)
+ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &file, RootObjectContainer &root, std::string const &input)
 {
     std::vector<std::string> tokens;
     std::stringstream sstream(input);
@@ -330,7 +390,7 @@ ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &fil
         } else {
             parseCommandKeyPathString(tokens[1], keyPath);
         }
-        Print(object, keyPath);
+        Print(root.object.get(), keyPath);
     } else if (command == "Exit") {
         return false;
     } else if (command == "Set") {
@@ -340,7 +400,7 @@ ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &fil
         } else {
             std::queue<std::string> keyPath;
             parseCommandKeyPathString(tokens[1], keyPath);
-            Set(object, keyPath, plist::ObjectType::String, parseCommandValueString(tokens.begin() + 2, tokens.end()));
+            Set(root.object.get(), keyPath, plist::ObjectType::String, parseCommandValueString(tokens.begin() + 2, tokens.end()));
         }
     } else if (command == "Add") {
         if (tokens.size() < 3) {
@@ -349,29 +409,17 @@ ProcessCommand(libutil::Filesystem *filesystem, bool xml, std::string const &fil
         } else {
             std::queue<std::string> keyPath;
             parseCommandKeyPathString(tokens[1], keyPath);
-            plist::ObjectType type = plist::ObjectType::String;
-            if (tokens[2] == "string") {
-                type = plist::ObjectType::String;
-            } else if (tokens[2] == "dictionary") {
-                type = plist::ObjectType::Dictionary;
-            } else if (tokens[2] == "array") {
-                type = plist::ObjectType::Array;
-            } else if (tokens[2] == "bool") {
-                type = plist::ObjectType::Boolean;
-            } else if (tokens[2] == "real") {
-                type = plist::ObjectType::Real;
-            } else if (tokens[2] == "integer") {
-                type = plist::ObjectType::Integer;
-            } else if (tokens[2] == "date") {
-                type = plist::ObjectType::Date;
-            } else if (tokens[2] == "data") {
-                type = plist::ObjectType::Data;
-            } else {
-                std::cerr << "Invalid type" << std::endl;
-                return true;
-            }
-            Set(object, keyPath, type, parseCommandValueString(tokens.begin() + 3, tokens.end()), false);
+            plist::ObjectType type = parseType(tokens[2]);
+            Set(root.object.get(), keyPath, type, parseCommandValueString(tokens.begin() + 3, tokens.end()), false);
         }
+    } else if (command == "Clear") {
+        plist::ObjectType clearType;
+        if (tokens.size() < 2) {
+            clearType = plist::ObjectType::Dictionary;
+        } else {
+            clearType = parseType(tokens[1]);
+        }
+        Clear(root, clearType);
     } else if (command == "Help") {
         CommandHelp();
     } else {
@@ -422,10 +470,11 @@ main(int argc, char **argv)
         return 1;
     }
 
-    std::unique_ptr<plist::Object> object = std::move(deserialize.first);
+    RootObjectContainer root;
+    root.object = std::move(deserialize.first);
 
     if (!options.command().empty()) {
-        ProcessCommand(filesystem.get(), options.xml(), options.input(), object.get(), options.command());
+        ProcessCommand(filesystem.get(), options.xml(), options.input(), root, options.command());
     } else {
         EditLine *el;
         History *cmdhistory;
@@ -452,7 +501,7 @@ main(int argc, char **argv)
 
               /* strip trailing newline */
               std::string strline = std::string(line, 0, count - 1);
-              keepReading = ProcessCommand(filesystem.get(), options.xml(), options.input(), object.get(), strline);
+              keepReading = ProcessCommand(filesystem.get(), options.xml(), options.input(), root, strline);
             } else {
                 keepReading = false;
             }
