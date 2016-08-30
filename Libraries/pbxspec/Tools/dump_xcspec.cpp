@@ -15,11 +15,12 @@
 
 using pbxspec::Manager;
 using pbxspec::PBX::Specification;
+using libutil::DefaultFilesystem;
 
 int
 main(int argc, char **argv)
 {
-    libutil::DefaultFilesystem filesystem = libutil::DefaultFilesystem();
+    DefaultFilesystem filesystem = DefaultFilesystem();
 
     if (argc < 2) {
         fprintf(stderr, "usage: %s path\n", argv[0]);

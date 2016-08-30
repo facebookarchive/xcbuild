@@ -10,10 +10,12 @@
 #include <xcdriver/Driver.h>
 #include <libutil/DefaultFilesystem.h>
 
+using libutil::DefaultFilesystem;
+
 int
 main(int argc, char **argv)
 {
-    libutil::DefaultFilesystem filesystem = libutil::DefaultFilesystem();
+    DefaultFilesystem filesystem = DefaultFilesystem();
     std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
     return xcdriver::Driver::Run(&filesystem, args);
 }

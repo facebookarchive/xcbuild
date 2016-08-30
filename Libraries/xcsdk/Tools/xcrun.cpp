@@ -275,18 +275,18 @@ main(int argc, char **argv)
     /*
      * Create filesystem.
      */
-    auto filesystem = std::unique_ptr<Filesystem>(new DefaultFilesystem());
+    DefaultFilesystem filesystem = DefaultFilesystem();
 
     /*
      * Load the SDK manager from the developer root.
      */
-    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem.get());
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(&filesystem);
     if (!developerRoot) {
         fprintf(stderr, "error: unable to find developer root\n");
         return -1;
     }
-    auto configuration = xcsdk::Configuration::Load(filesystem.get(), xcsdk::Configuration::DefaultPaths());
-    auto manager = xcsdk::SDK::Manager::Open(filesystem.get(), *developerRoot, configuration);
+    auto configuration = xcsdk::Configuration::Load(&filesystem, xcsdk::Configuration::DefaultPaths());
+    auto manager = xcsdk::SDK::Manager::Open(&filesystem, *developerRoot, configuration);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to load manager from '%s'\n", developerRoot->c_str());
         return -1;
@@ -389,7 +389,7 @@ main(int argc, char **argv)
         /*
          * Find the tool to execute.
          */
-        ext::optional<std::string> executable = filesystem->findExecutable(*options.tool(), executablePaths);
+        ext::optional<std::string> executable = filesystem.findExecutable(*options.tool(), executablePaths);
         if (!executable) {
             fprintf(stderr, "error: tool '%s' not found\n", options.tool()->c_str());
             return 1;

@@ -30,6 +30,10 @@
 #include <iterator>
 #include <iostream>
 
+using libutil::Filesystem;
+using libutil::DefaultFilesystem;
+using libutil::FSUtil;
+
 class Options {
 public:
     class Adjustment {
@@ -410,7 +414,7 @@ Help(std::string const &error = std::string())
 }
 
 static std::pair<bool, std::vector<uint8_t>>
-Read(libutil::Filesystem const *filesystem, std::string const &path = "-")
+Read(Filesystem const *filesystem, std::string const &path = "-")
 {
     std::vector<uint8_t> contents;
 
@@ -428,7 +432,7 @@ Read(libutil::Filesystem const *filesystem, std::string const &path = "-")
 }
 
 static bool
-Write(libutil::Filesystem *filesystem, std::vector<uint8_t> const &contents, std::string const &path = "-")
+Write(Filesystem *filesystem, std::vector<uint8_t> const &contents, std::string const &path = "-")
 {
     if (path == "-") {
         /* - means write to stdout. */
@@ -455,7 +459,7 @@ Lint(Options const &options, std::string const &file)
 }
 
 static bool
-Print(libutil::Filesystem *filesystem, Options const &options, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
+Print(Filesystem *filesystem, Options const &options, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
 {
     /* Convert to ASCII. */
     plist::Format::ASCII out = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
@@ -484,7 +488,7 @@ OutputPath(Options const &options, std::string const &file)
 
     if (file != "-" && options.extension()) {
         /* Replace the file extension with the provided one. */
-        return libutil::FSUtil::GetDirectoryName(file) + "/" + libutil::FSUtil::GetBaseNameWithoutExtension(file) + "." + *options.extension();
+        return FSUtil::GetDirectoryName(file) + "/" + FSUtil::GetBaseNameWithoutExtension(file) + "." + *options.extension();
     }
 
     /* Default to overwriting the input. */
@@ -550,7 +554,7 @@ PerformAdjustment(plist::Object *object, plist::Object **rootObject, std::string
 }
 
 static bool
-Modify(libutil::Filesystem *filesystem, Options const &options, std::string const &file, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
+Modify(Filesystem *filesystem, Options const &options, std::string const &file, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
 {
     plist::Object *writeObject = object.get();
 
@@ -632,7 +636,7 @@ int
 main(int argc, char **argv)
 {
     std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-    auto filesystem = std::unique_ptr<libutil::Filesystem>(new libutil::DefaultFilesystem());
+    DefaultFilesystem filesystem = DefaultFilesystem();
 
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -663,7 +667,7 @@ main(int argc, char **argv)
 
         /* Actions applied to each input file separately. */
         for (std::string const &file : options.inputs()) {
-            std::pair<bool, std::vector<uint8_t>> result = Read(filesystem.get(), file);
+            std::pair<bool, std::vector<uint8_t>> result = Read(&filesystem, file);
             if (!result.first) {
                 fprintf(stderr, "error: unable to read %s\n", file.c_str());
                 success = false;
@@ -686,9 +690,9 @@ main(int argc, char **argv)
 
             /* Perform the sepcific action. */
             if (modify) {
-                success &= Modify(filesystem.get(), options, file, std::move(deserialize.first), *format);
+                success &= Modify(&filesystem, options, file, std::move(deserialize.first), *format);
             } else if (options.print()) {
-                success &= Print(filesystem.get(), options, std::move(deserialize.first), *format);
+                success &= Print(&filesystem, options, std::move(deserialize.first), *format);
             } else if (options.lint() || true) {
                 success &= Lint(options, file);
             }
