@@ -116,8 +116,12 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::Current<bool>(&_generate, arg);
     } else if (!arg.empty() && arg[0] != '-') {
         if (arg.find('=') != std::string::npos) {
-            _settings.push_back(pbxsetting::Setting::Parse(arg));
-            return std::make_pair(true, std::string());
+            if (ext::optional<pbxsetting::Setting> setting = pbxsetting::Setting::Parse(arg)) {
+                _settings.push_back(*setting);
+                return std::make_pair(true, std::string());
+            } else {
+                return std::make_pair(false, "unknown argument " + arg);
+            }
         } else {
             _actions.push_back(arg);
             return std::make_pair(true, std::string());

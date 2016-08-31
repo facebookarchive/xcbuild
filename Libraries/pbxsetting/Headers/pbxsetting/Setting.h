@@ -14,6 +14,7 @@
 #include <pbxsetting/Value.h>
 
 #include <string>
+#include <ext/optional>
 
 namespace pbxsetting {
 
@@ -23,8 +24,8 @@ namespace pbxsetting {
 class Setting {
 private:
     std::string _name;
-    Condition _condition;
-    Value _value;
+    Condition   _condition;
+    Value       _value;
 
 public:
     Setting(std::string const &name, Condition const &condition, Value const &value);
@@ -80,7 +81,7 @@ public:
      *
      * Note the setting value supports uses `Value::Parse()`.
      */
-    static Setting
+    static ext::optional<Setting>
     Parse(std::string const &string);
 
     /*
