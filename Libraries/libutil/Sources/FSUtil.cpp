@@ -25,50 +25,6 @@
 
 using libutil::FSUtil;
 
-bool FSUtil::
-TestForPresence(std::string const &path)
-{
-    return ::access(path.c_str(), F_OK) == 0;
-}
-
-bool FSUtil::
-TestForRead(std::string const &path)
-{
-    return ::access(path.c_str(), R_OK) == 0;
-}
-
-bool FSUtil::
-TestForWrite(std::string const &path)
-{
-    return ::access(path.c_str(), W_OK) == 0;
-}
-
-bool FSUtil::
-TestForExecute(std::string const &path)
-{
-    return ::access(path.c_str(), X_OK) == 0;
-}
-
-bool FSUtil::
-TestForDirectory(std::string const &path)
-{
-    struct stat st;
-    if (::stat(path.c_str(), &st) < 0)
-        return false;
-    else
-        return S_ISDIR(st.st_mode);
-}
-
-bool FSUtil::
-TestForSymlink(std::string const &path)
-{
-    struct stat st;
-    if (::lstat(path.c_str(), &st) < 0)
-        return false;
-    else
-        return S_ISLNK(st.st_mode);
-}
-
 std::string FSUtil::
 GetDirectoryName(std::string const &path)
 {
@@ -218,16 +174,6 @@ ResolveRelativePath(std::string const &path, std::string const &workingDirectory
 }
 
 std::string FSUtil::
-ResolvePath(std::string const &path)
-{
-    char realPath[PATH_MAX + 1];
-    if (::realpath(path.c_str(), realPath) == nullptr)
-        return std::string();
-    else
-        return realPath;
-}
-
-std::string FSUtil::
 GetCurrentDirectory()
 {
     char path[PATH_MAX + 1];
@@ -235,45 +181,6 @@ GetCurrentDirectory()
         path[0] = '\0';
     }
     return path;
-}
-
-bool FSUtil::
-EnumerateDirectory(std::string const &path, std::function <bool(std::string const &)> const &cb)
-{
-    DIR *dp = opendir(path.c_str());
-    if (dp == NULL) {
-        return false;
-    }
-
-    while (struct dirent *entry = readdir(dp)) {
-        std::string name = entry->d_name;
-        if (name != "." && name != "..") {
-            cb(name);
-        }
-    }
-
-    closedir(dp);
-    return true;
-}
-
-bool FSUtil::
-EnumerateRecursive(std::string const &path, std::function <bool(std::string const &)> const &cb)
-{
-    EnumerateDirectory(path, [&](std::string const &filename) -> bool {
-        std::string full = path + "/" + filename;
-        cb(full);
-        return true;
-    });
-
-    EnumerateDirectory(path, [&](std::string const &filename) -> bool {
-        std::string full = path + "/" + filename;
-        if (TestForDirectory(full) && !TestForSymlink(full)) {
-            EnumerateRecursive(full, cb);
-        }
-        return true;
-    });
-
-    return true;
 }
 
 std::vector<std::string> FSUtil::
@@ -294,37 +201,6 @@ GetExecutablePaths()
     }
 
     return vpaths;
-}
-
-std::string FSUtil::
-FindExecutable(std::string const &name, std::vector<std::string> const &paths)
-{
-    std::string exePath = FindFile(name, paths);
-
-    if (exePath.empty())
-        return std::string();
-
-    if (TestForExecute(exePath)) {
-        return NormalizePath(exePath);
-    }
-
-    return std::string();
-}
-
-std::string FSUtil::
-FindFile(std::string const &name, std::vector<std::string> const &paths)
-{
-    if (name.empty())
-        return std::string();
-
-    for (auto const &path : paths) {
-        std::string filePath = path + "/" + name;
-        if (TestForPresence(filePath)) {
-            return NormalizePath(filePath);
-        }
-    }
-
-    return std::string();
 }
 
 static size_t

@@ -8,7 +8,7 @@
  */
 
 #include <libutil/Subprocess.h>
-#include <libutil/FSUtil.h>
+#include <libutil/Filesystem.h>
 
 #include <sstream>
 
@@ -24,6 +24,7 @@ Subprocess::Subprocess() :
 
 bool Subprocess::
 execute(
+    Filesystem *filesystem,
     std::string const &path,
     std::vector<std::string> const &arguments,
     std::unordered_map<std::string, std::string> const &environment,
@@ -32,7 +33,7 @@ execute(
     std::ostream *output,
     std::ostream *error)
 {
-    if (!FSUtil::TestForExecute(path)) {
+    if (!filesystem->isExecutable(path)) {
         return false;
     }
 

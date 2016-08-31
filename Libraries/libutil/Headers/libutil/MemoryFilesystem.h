@@ -90,7 +90,7 @@ public:
     virtual bool createDirectory(std::string const &path);
 
 public:
-    virtual bool read(std::vector<uint8_t> *contents, std::string const &path) const;
+    virtual bool read(std::vector<uint8_t> *contents, std::string const &path, size_t offset = 0, ext::optional<size_t> length = ext::nullopt) const;
     virtual bool write(std::vector<uint8_t> const &contents, std::string const &path);
     virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const;
     virtual bool writeSymbolicLink(std::string const &target, std::string const &path);

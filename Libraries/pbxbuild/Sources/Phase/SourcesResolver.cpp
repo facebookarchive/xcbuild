@@ -20,11 +20,13 @@
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 #include <pbxbuild/Tool/SearchPaths.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Target = pbxbuild::Target;
 namespace Tool = pbxbuild::Tool;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Phase::SourcesResolver::
@@ -113,7 +115,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     /* Populate the tool context with what's needed for compilation. */
     headermapResolver->resolve(&phaseContext->toolContext(), targetEnvironment.environment(), phaseEnvironment.target());
 
-    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
+    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
 
     /*
      * Split files based on whether their tool is architecture-neutral.

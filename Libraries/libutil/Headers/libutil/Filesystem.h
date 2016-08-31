@@ -66,7 +66,7 @@ public:
     /*
      * Read from a file.
      */
-    virtual bool read(std::vector<uint8_t> *contents, std::string const &path) const = 0;
+    virtual bool read(std::vector<uint8_t> *contents, std::string const &path, size_t offset = 0, ext::optional<size_t> length = ext::nullopt) const = 0;
 
     /*
      * Write to a file.
@@ -120,6 +120,12 @@ public:
      * Finds an executable in the given directories.
      */
     ext::optional<std::string> findExecutable(std::string const &name, std::vector<std::string> const &paths) const;
+
+public:
+    /*
+     * Remove this! Access a global default filesystem.
+     */
+    static Filesystem *GetDefaultUNSAFE();
 };
 
 }

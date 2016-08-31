@@ -12,6 +12,7 @@
 #include <pbxsetting/Setting.h>
 
 #include <libutil/Base.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 #include <cstdio>
@@ -20,6 +21,7 @@
 using pbxsetting::ConfigFile;
 using pbxsetting::Level;
 using pbxsetting::Setting;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 ConfigFile::ConfigFile()
@@ -65,7 +67,7 @@ open(std::string const &path, Environment const &environment, XC::Config::error_
 bool ConfigFile::
 parse(std::string const &path, Environment const &environment)
 {
-    std::string realPath = FSUtil::ResolvePath(path);
+    std::string realPath = Filesystem::GetDefaultUNSAFE()->resolvePath(path);
     if (realPath.empty()) {
         //
         // Add as missing.

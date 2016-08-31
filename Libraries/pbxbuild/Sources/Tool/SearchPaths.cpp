@@ -11,9 +11,11 @@
 #include <pbxbuild/Tool/Context.h>
 #include <pbxsetting/Environment.h>
 #include <pbxsetting/Type.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Tool::SearchPaths::
@@ -32,6 +34,8 @@ SearchPaths(
 static void
 AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &environment, std::string const &workingDirectory, std::vector<std::string> const &paths)
 {
+    Filesystem const *filesystem = Filesystem::GetDefaultUNSAFE();
+
     for (std::string path : paths) {
         // TODO(grp): Is this the right place to insert the SDKROOT? Should all path lists have this, or just *_SEARCH_PATHS?
         std::string const system = "/System";
@@ -41,7 +45,7 @@ AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &envir
             std::string sdkPath = FSUtil::NormalizePath(environment.resolve("SDKROOT") + path);
 
             // TODO(grp): Testing if the directory exists seems fragile.
-            if (FSUtil::TestForDirectory(sdkPath)) {
+            if (filesystem->isDirectory(sdkPath)) {
                 path = sdkPath;
             }
         }
@@ -52,13 +56,13 @@ AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &envir
             args->push_back(root);
 
             std::string absoluteRoot = FSUtil::ResolveRelativePath(root, workingDirectory);
-            FSUtil::EnumerateRecursive(absoluteRoot, [&](std::string const &path) -> bool {
+            filesystem->enumerateRecursive(absoluteRoot, [&](std::string const &path) -> bool {
                 // TODO(grp): Use build settings for included and excluded recursive paths.
                 // Included: INCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES
                 // Excluded: EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES
                 // Follow: RECURSIVE_SEARCH_PATHS_FOLLOW_SYMLINKS
 
-                if (FSUtil::TestForDirectory(path)) {
+                if (filesystem->isDirectory(path)) {
                     std::string relativePath = root + "/" + path.substr(absoluteRoot.size() + 1);
                     args->push_back(relativePath);
                 }

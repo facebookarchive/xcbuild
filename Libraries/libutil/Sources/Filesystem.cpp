@@ -69,3 +69,15 @@ findExecutable(std::string const &name, std::vector<std::string> const &paths) c
     return ext::nullopt;
 }
 
+#include <libutil/DefaultFilesystem.h>
+
+Filesystem *Filesystem::
+GetDefaultUNSAFE()
+{
+    static DefaultFilesystem *filesystem = nullptr;
+    if (filesystem == nullptr) {
+        filesystem = new DefaultFilesystem();
+    }
+
+    return filesystem;
+}

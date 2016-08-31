@@ -8,6 +8,7 @@
  */
 
 #include <pbxbuild/Tool/Invocation.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/SysUtil.h>
 
@@ -15,6 +16,7 @@ namespace Tool = pbxbuild::Tool;
 using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
 using DependencyInfo = pbxbuild::Tool::Invocation::DependencyInfo;
 using Executable = pbxbuild::Tool::Invocation::Executable;
+using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::SysUtil;
 
@@ -77,7 +79,8 @@ Determine(std::string const &executable, std::vector<std::string> const &executa
 
         if (!FSUtil::IsAbsolutePath(executable)) {
             /* Not absolute, look in the search paths. */
-            path = FSUtil::FindExecutable(executable, executablePaths);
+            // TODO(grp): Handle when the executable is not found.
+            path = Filesystem::GetDefaultUNSAFE()->findExecutable(executable, executablePaths).value_or(std::string());
         }
 
         return Absolute(path);

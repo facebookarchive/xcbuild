@@ -14,12 +14,14 @@
 #include <pbxbuild/FileTypeResolver.h>
 #include <pbxbuild/HeaderMap.h>
 #include <pbxsetting/Type.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
 using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
 using pbxbuild::HeaderMap;
 using pbxbuild::FileTypeResolver;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Tool::HeadermapResolver::
@@ -106,7 +108,7 @@ resolve(
 
     std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, compilerEnvironment, target, toolContext->searchPaths(), toolContext->workingDirectory());
     for (std::string const &path : headermapSearchPaths) {
-        FSUtil::EnumerateDirectory(path, [&](std::string const &fileName) -> bool {
+        Filesystem::GetDefaultUNSAFE()->enumerateDirectory(path, [&](std::string const &fileName) -> bool {
             // TODO(grp): Use FileTypeResolver when reliable.
             std::string extension = FSUtil::GetFileExtension(fileName);
             if (extension != "h" && extension != "hpp") {
@@ -120,7 +122,7 @@ resolve(
 
     for (pbxproj::PBX::FileReference::shared_ptr const &fileReference : project->fileReferences()) {
         std::string filePath = compilerEnvironment.expand(fileReference->resolve());
-        pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, filePath);
+        pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(Filesystem::GetDefaultUNSAFE(), _specManager, { pbxspec::Manager::AnyDomain() }, fileReference, filePath);
         if (fileType == nullptr || (fileType->identifier() != "sourcecode.c.h" && fileType->identifier() != "sourcecode.cpp.h")) {
             continue;
         }
@@ -147,7 +149,7 @@ resolve(
 
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
                 std::string filePath = compilerEnvironment.expand(fileReference->resolve());
-                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(_specManager, { pbxspec::Manager::AnyDomain() }, fileReference, filePath);
+                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(Filesystem::GetDefaultUNSAFE(), _specManager, { pbxspec::Manager::AnyDomain() }, fileReference, filePath);
                 if (fileType == nullptr || (fileType->identifier() != "sourcecode.c.h" && fileType->identifier() != "sourcecode.cpp.h")) {
                     continue;
                 }

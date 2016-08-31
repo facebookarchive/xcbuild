@@ -8,27 +8,32 @@
  */
 
 #include <pbxbuild/HeaderMap.h>
-
-#include <iterator>
-#include <fstream>
+#include <libutil/Filesystem.h>
+#include <libutil/DefaultFilesystem.h>
 
 using pbxbuild::HeaderMap;
+using libutil::Filesystem;
+using libutil::DefaultFilesystem;
 
 int
 main(int argc, char **argv)
 {
+    DefaultFilesystem filesystem = DefaultFilesystem();
+
     if (argc < 2) {
         fprintf(stderr, "usage: %s <file.hmap>\n", argv[0]);
         return -1;
     }
 
-    std::ifstream file(argv[1], std::ios::binary);
-    std::vector<uint8_t> contents = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+    std::vector<uint8_t> contents;
+    if (!filesystem.read(&contents, argv[1])) {
+        fprintf(stderr, "error: cannot open '%s', failed to read\n", argv[1]);
+        return -1;
+    }
 
     HeaderMap hmap;
     if (!hmap.read(contents)) {
-        fprintf(stderr, "error: cannot open '%s', either non-existant or "
-                "not an hmap file\n", argv[1]);
+        fprintf(stderr, "error: cannot open '%s', not an hmap file\n", argv[1]);
         return -1;
     }
 

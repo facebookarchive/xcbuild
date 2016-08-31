@@ -12,11 +12,13 @@
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/Context.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 #include <algorithm>
 
 namespace Tool = pbxbuild::Tool;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Tool::CopyResolver::
@@ -37,8 +39,8 @@ resolve(
      * Add the copy-specific build settings.
      */
     pbxsetting::Level copyLevel = pbxsetting::Level({
-        pbxsetting::Setting::Create("PBXCP_STRIP_TOOL", FSUtil::FindExecutable("strip", toolContext->executablePaths())),
-        pbxsetting::Setting::Create("PBXCP_BITCODE_STRIP_TOOL", FSUtil::FindExecutable("bitcode_strip", toolContext->executablePaths())),
+        pbxsetting::Setting::Create("PBXCP_STRIP_TOOL", Filesystem::GetDefaultUNSAFE()->findExecutable("strip", toolContext->executablePaths()).value_or(std::string())),
+        pbxsetting::Setting::Create("PBXCP_BITCODE_STRIP_TOOL", Filesystem::GetDefaultUNSAFE()->findExecutable("bitcode_strip", toolContext->executablePaths()).value_or(std::string())),
         pbxsetting::Setting::Create("pbxcp_rule_name", logMessageTitle),
     });
 

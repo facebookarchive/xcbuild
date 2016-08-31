@@ -12,9 +12,11 @@
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Phase/File.h>
 #include <pbxbuild/Tool/CopyResolver.h>
+#include <libutil/Filesystem.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
+using libutil::Filesystem;
 
 Phase::HeadersResolver::
 HeadersResolver(pbxproj::PBX::HeadersBuildPhase::shared_ptr const &buildPhase) :
@@ -42,7 +44,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string publicOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH");
     std::string privateOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PRIVATE_HEADERS_FOLDER_PATH");
 
-    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, environment, _buildPhase->files());
+    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
 
     for (Phase::File const &file : files) {
         std::vector<std::string> const &attributes = file.buildFile()->attributes();

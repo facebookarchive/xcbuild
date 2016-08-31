@@ -12,12 +12,14 @@
 #include <pbxbuild/Phase/Context.h>
 #include <pbxbuild/Tool/CopyResolver.h>
 #include <pbxbuild/Tool/InterfaceBuilderStoryboardLinkerResolver.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Target = pbxbuild::Target;
 namespace Build = pbxbuild::Build;
 namespace Tool = pbxbuild::Tool;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Phase::ResourcesResolver::
@@ -63,7 +65,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
     std::string resourcesDirectory = environment.resolve("BUILT_PRODUCTS_DIR") + "/" + environment.resolve("UNLOCALIZED_RESOURCES_FOLDER_PATH");
 
-    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, environment, _buildPhase->files());
+    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
     std::vector<std::vector<Phase::File>> groups = Phase::Context::Group(files);
     if (!phaseContext->resolveBuildFiles(phaseEnvironment, environment, _buildPhase, groups, resourcesDirectory, Tool::CopyResolver::ToolIdentifier())) {
         return false;

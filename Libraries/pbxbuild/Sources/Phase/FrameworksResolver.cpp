@@ -17,12 +17,14 @@
 #include <pbxbuild/Tool/ToolResolver.h>
 #include <pbxbuild/Tool/LinkerResolver.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
 namespace Tool = pbxbuild::Tool;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Phase::FrameworksResolver::
@@ -69,7 +71,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string workingDirectory = targetEnvironment.workingDirectory();
     std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
 
-    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
+    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
 
     for (std::string const &variant : targetEnvironment.variants()) {
         pbxsetting::Environment variantEnvironment = targetEnvironment.environment();

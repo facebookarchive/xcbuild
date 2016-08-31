@@ -216,14 +216,21 @@ createDirectory(std::string const &path)
 }
 
 bool MemoryFilesystem::
-read(std::vector<uint8_t> *contents, std::string const &path) const
+read(std::vector<uint8_t> *contents, std::string const &path, size_t offset, ext::optional<size_t> length) const
 {
     return WalkPath<MemoryFilesystem::Entry const>(this, path, false, [&](MemoryFilesystem::Entry const *parent, std::string const &name, MemoryFilesystem::Entry const *entry) -> MemoryFilesystem::Entry const * {
         if (entry == nullptr || entry->type() != MemoryFilesystem::Entry::Type::File) {
             return nullptr;
         }
 
-        *contents = entry->contents();
+        if (offset == 0 && !length) {
+            *contents = entry->contents();
+        } else {
+            std::vector<uint8_t> const &from = entry->contents();
+            size_t end = (length ? offset + *length : from.size() - offset);
+            *contents = std::vector<uint8_t>(from.begin() + offset, from.begin() + end);
+        }
+
         return entry;
     });
 }

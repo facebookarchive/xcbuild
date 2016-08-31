@@ -14,11 +14,13 @@
 #include <pbxbuild/Tool/SwiftStandardLibraryResolver.h>
 #include <pbxsetting/Environment.h>
 #include <pbxsetting/Type.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 namespace Target = pbxbuild::Target;
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Phase::SwiftResolver::
@@ -105,7 +107,7 @@ CollectScanDirectories(
             continue;
         }
 
-        std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, environment, buildPhase->files());
+        std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, buildPhase->files());
         for (Phase::File const &file : files) {
             if (file.fileType() != nullptr && file.fileType()->isFrameworkWrapper()) {
                 directories.push_back(file.path());

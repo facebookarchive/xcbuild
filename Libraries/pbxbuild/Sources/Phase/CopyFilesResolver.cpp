@@ -15,9 +15,11 @@
 #include <pbxsetting/Environment.h>
 #include <pbxsetting/Type.h>
 #include <pbxsetting/Value.h>
+#include <libutil/Filesystem.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Tool = pbxbuild::Tool;
+using libutil::Filesystem;
 
 Phase::CopyFilesResolver::
 CopyFilesResolver(pbxproj::PBX::CopyFilesBuildPhase::shared_ptr const &buildPhase) :
@@ -83,7 +85,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string path = environment.expand(_buildPhase->dstPath());
     std::string outputDirectory = root + "/" + path;
 
-    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(phaseEnvironment, environment, _buildPhase->files());
+    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
     std::vector<std::vector<Phase::File>> groups = Phase::Context::Group(files);
 
     if (pbxsetting::Type::ParseBoolean(environment.resolve("APPLY_RULES_IN_COPY_FILES"))) {

@@ -395,7 +395,7 @@ build(
          * Run Ninja and return if it failed. Ninja itself does the build.
          */
         Subprocess ninja;
-        if (!ninja.execute(*executable, arguments, environmentVariables, intermediatesDirectory) || ninja.exitcode() != 0) {
+        if (!ninja.execute(filesystem, *executable, arguments, environmentVariables, intermediatesDirectory) || ninja.exitcode() != 0) {
             return false;
         }
     }

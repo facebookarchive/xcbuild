@@ -9,14 +9,15 @@
 
 #include <pbxbuild/FileTypeResolver.h>
 #include <pbxbuild/DirectedGraph.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/Wildcard.h>
 
-#include <fstream>
 #include <strings.h>
 
 using pbxbuild::FileTypeResolver;
 using pbxbuild::DirectedGraph;
+using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::Wildcard;
 
@@ -37,18 +38,17 @@ SortedFileTypes(std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes
 }
 
 pbxspec::PBX::FileType::shared_ptr FileTypeResolver::
-Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, std::string const &filePath)
+Resolve(Filesystem const *filesystem, pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, std::string const &filePath)
 {
-    bool isReadable = FSUtil::TestForRead(filePath);
-    bool isFolder = isReadable && FSUtil::TestForDirectory(filePath);
+    bool isReadable = filesystem->isReadable(filePath);
+    bool isFolder = isReadable && filesystem->isDirectory(filePath);
 
     std::string fileExtension = FSUtil::GetFileExtension(filePath);
     std::string fileName = FSUtil::GetBaseName(filePath);
 
-    std::ifstream fileHandle;
     std::vector<uint8_t> fileContents;
 
-    // Reverse first so more specific file types are processed first.
+    /* Reverse first so more specific file types are processed first. */
     std::vector<pbxspec::PBX::FileType::shared_ptr> const &fileTypes = specManager->fileTypes(domains);
     ext::optional<std::vector<pbxspec::PBX::FileType::shared_ptr>> result = SortedFileTypes(fileTypes);
     if (!result) {
@@ -119,9 +119,9 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
             if (permissions == "read") {
                 matched = isReadable;
             } else if (permissions == "write") {
-                matched = FSUtil::TestForWrite(filePath);
+                matched = filesystem->isWritable(filePath);
             } else if (permissions == "executable") {
-                matched = FSUtil::TestForExecute(filePath);
+                matched = filesystem->isExecutable(filePath);
             } else {
                 fprintf(stderr, "warning: unhandled permission %s\n", permissions.c_str());
             }
@@ -139,22 +139,15 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
 
             for (std::vector<uint8_t> const &magicWord : *fileType->magicWords()) {
                 if (fileContents.size() < magicWord.size()) {
-                    if (!fileHandle.is_open()) {
-                        fileHandle.open(fileName, std::ios::in | std::ios::binary);
-                        if (!fileHandle.good()) {
-                            continue;
-                        }
-                    }
-
-                    size_t offset = fileContents.size();
-                    fileContents.resize(magicWord.size());
-                    fileHandle.read((char *)&fileContents[offset], magicWord.size() - offset);
-                    if (!fileHandle.good()) {
-                        fileContents.resize(offset);
+                    std::vector<uint8_t> next;
+                    if (!filesystem->read(&next, fileName, fileContents.size(), magicWord.size() - fileContents.size())) {
                         continue;
                     }
+
+                    fileContents.insert(fileContents.end(), next.begin(), next.end());
                 }
 
+                assert(fileContents.size() == magicWord.size());
                 if (std::equal(magicWord.begin(), magicWord.end(), fileContents.begin())) {
                     matched = true;
                 }
@@ -165,16 +158,16 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
             }
         }
 
-        //
-        // Matched no checks.
-        //
+        /*
+         * Matched no checks.
+         */
         if (empty) {
             continue;
         }
 
-        //
-        // Matched all checks.
-        //
+        /*
+         * Matched all checks.
+         */
         return fileType;
     }
 
@@ -183,7 +176,7 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
 }
 
 pbxspec::PBX::FileType::shared_ptr FileTypeResolver::
-Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::FileReference::shared_ptr const &fileReference, std::string const &filePath)
+Resolve(Filesystem const *filesystem, pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::FileReference::shared_ptr const &fileReference, std::string const &filePath)
 {
     if (!fileReference->explicitFileType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(fileReference->explicitFileType(), domains)) {
@@ -197,11 +190,11 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
         }
     }
 
-    return Resolve(specManager, domains, filePath);
+    return Resolve(filesystem, specManager, domains, filePath);
 }
 
 pbxspec::PBX::FileType::shared_ptr FileTypeResolver::
-Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::XC::VersionGroup::shared_ptr const &versionGroup, std::string const &filePath)
+Resolve(Filesystem const *filesystem, pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::XC::VersionGroup::shared_ptr const &versionGroup, std::string const &filePath)
 {
     if (!versionGroup->versionGroupType().empty()) {
         if (pbxspec::PBX::FileType::shared_ptr const &fileType = specManager->fileType(versionGroup->versionGroupType(), domains)) {
@@ -209,5 +202,5 @@ Resolve(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string
         }
     }
 
-    return Resolve(specManager, domains, filePath);
+    return Resolve(filesystem, specManager, domains, filePath);
 }

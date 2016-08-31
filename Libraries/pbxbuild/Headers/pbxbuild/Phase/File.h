@@ -13,6 +13,7 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Target/BuildRules.h>
 
+namespace libutil { class Filesystem; }
 namespace pbxsetting { class Environment; }
 
 namespace pbxbuild {
@@ -92,7 +93,7 @@ public:
      * of `Phase::File`s returned may be different than the number of build files passed in.
      */
     static std::vector<Phase::File>
-    ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Environment const &environment, std::vector<pbxproj::PBX::BuildFile::shared_ptr> const &buildFiles);
+    ResolveBuildFiles(libutil::Filesystem const *filesystem, Phase::Environment const &phaseEnvironment, pbxsetting::Environment const &environment, std::vector<pbxproj::PBX::BuildFile::shared_ptr> const &buildFiles);
 };
 
 }

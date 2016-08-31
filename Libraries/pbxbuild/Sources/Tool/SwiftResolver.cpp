@@ -18,10 +18,12 @@
 #include <plist/Dictionary.h>
 #include <plist/String.h>
 #include <plist/Format/JSON.h>
+#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
 namespace Phase = pbxbuild::Phase;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Tool::SwiftResolver::
@@ -59,7 +61,7 @@ SwiftLibraryPath(pbxsetting::Environment const &environment, xcsdk::SDK::Target:
             std::string path = toolchain->path() + "/" + "usr" + "/" + "lib" + "/" + subpath;
 
             /* If the Swift library exists, return the directory containing it. */
-            if (FSUtil::TestForPresence(path)) {
+            if (Filesystem::GetDefaultUNSAFE()->exists(path)) {
                 return FSUtil::GetDirectoryName(path);
             }
         }

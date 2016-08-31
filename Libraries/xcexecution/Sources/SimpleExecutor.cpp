@@ -235,7 +235,7 @@ performInvocations(
             } else {
                 /* External tool, run the tool externally. */
                 Subprocess process;
-                if (!process.execute(invocation.executable().path(), invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
+                if (!process.execute(filesystem, invocation.executable().path(), invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
                     xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }

@@ -18,14 +18,6 @@ namespace libutil {
 
 class FSUtil {
 public:
-    static bool TestForPresence(std::string const &path);
-    static bool TestForRead(std::string const &path);
-    static bool TestForWrite(std::string const &path);
-    static bool TestForExecute(std::string const &path);
-    static bool TestForDirectory(std::string const &path);
-    static bool TestForSymlink(std::string const &path);
-
-public:
     static std::string GetDirectoryName(std::string const &path);
     static std::string GetBaseName(std::string const &path);
     static std::string GetBaseNameWithoutExtension(std::string const &path);
@@ -44,16 +36,7 @@ public:
 
 public:
     static std::string ResolveRelativePath(std::string const &path, std::string const &workingDirectory);
-    static std::string ResolvePath(std::string const &path);
     static std::string NormalizePath(std::string const &path);
-
-public:
-    static bool EnumerateDirectory(std::string const &path,
-            std::function <bool(std::string const &)> const &cb);
-
-public:
-    static bool EnumerateRecursive(std::string const &path,
-            std::function <bool(std::string const &)> const &cb);
 
 public:
     static std::string GetCurrentDirectory();

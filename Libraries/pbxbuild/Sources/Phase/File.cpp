@@ -13,11 +13,13 @@
 #include <pbxbuild/Build/Context.h>
 #include <pbxbuild/Build/Environment.h>
 #include <pbxbuild/FileTypeResolver.h>
+#include <libutil/Filesystem.h>
 
 namespace Phase = pbxbuild::Phase;
 namespace Target = pbxbuild::Target;
 namespace Build = pbxbuild::Build;
 using pbxbuild::FileTypeResolver;
+using libutil::Filesystem;
 
 Phase::File::
 File(
@@ -42,7 +44,7 @@ Phase::File::
 }
 
 std::vector<Phase::File> Phase::File::
-ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Environment const &environment, std::vector<pbxproj::PBX::BuildFile::shared_ptr> const &buildFiles)
+ResolveBuildFiles(Filesystem const *filesystem, Phase::Environment const &phaseEnvironment, pbxsetting::Environment const &environment, std::vector<pbxproj::PBX::BuildFile::shared_ptr> const &buildFiles)
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
     Target::BuildRules const &buildRules = targetEnvironment.buildRules();
@@ -68,7 +70,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
 
                 std::string path = environment.expand(fileReference->resolve());
-                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, path);
+                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(filesystem, buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, path);
 
                 Target::BuildRules::BuildRule::shared_ptr buildRule = buildRules.resolve(fileType, path);
                 Phase::File file = Phase::File(buildFile, buildRule, fileType, path, std::string(), fileNameDisambiguator);
@@ -96,7 +98,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
 
                 pbxproj::PBX::FileReference::shared_ptr const &fileReference = remote->second;
                 std::string path = remoteEnvironment->environment().expand(fileReference->resolve());
-                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, path);
+                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(filesystem, buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, path);
 
                 Target::BuildRules::BuildRule::shared_ptr buildRule = buildRules.resolve(fileType, path);
                 Phase::File file = Phase::File(buildFile, buildRule, fileType, path, std::string(), std::string());
@@ -114,7 +116,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                     std::string const &localization = fileReference->name();
 
                     std::string path = environment.expand(fileReference->resolve());
-                    pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, path);
+                    pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(filesystem, buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, fileReference, path);
 
                     Target::BuildRules::BuildRule::shared_ptr buildRule = buildRules.resolve(fileType, path);
                     Phase::File file = Phase::File(buildFile, buildRule, fileType, path, localization, fileNameDisambiguator);
@@ -126,7 +128,7 @@ ResolveBuildFiles(Phase::Environment const &phaseEnvironment, pbxsetting::Enviro
                 pbxproj::XC::VersionGroup::shared_ptr const &versionGroup = std::static_pointer_cast <pbxproj::XC::VersionGroup> (buildFile->fileRef());
 
                 std::string path = environment.expand(versionGroup->resolve());
-                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, versionGroup, path);
+                pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(filesystem, buildEnvironment.specManager(), { pbxspec::Manager::AnyDomain() }, versionGroup, path);
 
                 Target::BuildRules::BuildRule::shared_ptr buildRule = buildRules.resolve(fileType, path);
                 Phase::File file = Phase::File(buildFile, buildRule, fileType, path, std::string(), fileNameDisambiguator);

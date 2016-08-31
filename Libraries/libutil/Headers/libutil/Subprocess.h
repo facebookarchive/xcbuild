@@ -16,6 +16,8 @@
 
 namespace libutil {
 
+class Filesystem;
+
 class Subprocess {
 private:
     int _exitcode;
@@ -28,38 +30,42 @@ public:
     { return _exitcode; }
 
 public:
-    bool execute(std::string const &path,
+    bool execute(Filesystem *filesystem,
+                 std::string const &path,
                  std::istream *input = nullptr,
                  std::ostream *output = nullptr,
                  std::ostream *error = nullptr)
     {
         std::vector<std::string> emptyVector;
         std::unordered_map<std::string, std::string> emptyMap;
-        return execute(path, emptyVector, emptyMap, "", input, output, error);
+        return execute(filesystem, path, emptyVector, emptyMap, "", input, output, error);
     }
 
-    bool execute(std::string const &path,
+    bool execute(Filesystem *filesystem,
+                 std::string const &path,
                  std::vector<std::string> const &arguments,
                  std::istream *input = nullptr,
                  std::ostream *output = nullptr,
                  std::ostream *error = nullptr)
     {
         std::unordered_map<std::string, std::string> emptyMap;
-        return execute(path, arguments, emptyMap, "", input, output, error);
+        return execute(filesystem, path, arguments, emptyMap, "", input, output, error);
     }
 
-    bool execute(std::string const &path,
+    bool execute(Filesystem *filesystem,
+                 std::string const &path,
                  std::vector<std::string> const &arguments,
                  std::unordered_map<std::string, std::string> const &environment,
                  std::istream *input = nullptr,
                  std::ostream *output = nullptr,
                  std::ostream *error = nullptr)
     {
-        return execute(path, arguments, environment, "", input, output, error);
+        return execute(filesystem, path, arguments, environment, "", input, output, error);
     }
 
 public:
-    bool execute(std::string const &path,
+    bool execute(Filesystem *filesystem,
+                 std::string const &path,
                  std::vector<std::string> const &arguments,
                  std::unordered_map<std::string, std::string> const &environment,
                  std::string const &directory,

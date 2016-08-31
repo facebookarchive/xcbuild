@@ -10,9 +10,6 @@
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/FSUtil.h>
 
-#include <fstream>
-#include <iterator>
-
 #include <climits>
 #include <cstdlib>
 #include <cstdio>
@@ -115,7 +112,7 @@ createDirectory(std::string const &path)
 }
 
 bool DefaultFilesystem::
-read(std::vector<uint8_t> *contents, std::string const &path) const
+read(std::vector<uint8_t> *contents, std::string const &path, size_t offset, ext::optional<size_t> length) const
 {
     FILE *fp = std::fopen(path.c_str(), "rb");
     if (fp == nullptr) {
@@ -133,7 +130,16 @@ read(std::vector<uint8_t> *contents, std::string const &path) const
         return false;
     }
 
-    if (std::fseek(fp, 0, SEEK_SET) != 0) {
+    if (length) {
+        if (offset + *length > size) {
+            std::fclose(fp);
+            return false;
+        }
+
+        size = *length;
+    }
+
+    if (std::fseek(fp, offset, SEEK_SET) != 0) {
         std::fclose(fp);
         return false;
     }

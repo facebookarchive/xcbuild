@@ -46,13 +46,13 @@ CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const
     }
 
     Subprocess cp;
-    if (!cp.execute("/bin/cp", { "-R", inputPath, outputPath }) || cp.exitcode() != 0) {
+    if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }) || cp.exitcode() != 0) {
         return false;
     }
 
     /* Should preserve permissions but make writable. */
     Subprocess chmod;
-    if (!chmod.execute("/bin/chmod", { "-R", "+w", outputPath }) || chmod.exitcode() != 0) {
+    if (!chmod.execute(filesystem, "/bin/chmod", { "-R", "+w", outputPath }) || chmod.exitcode() != 0) {
         return false;
     }
 
