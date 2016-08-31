@@ -124,13 +124,13 @@ resolveValue(Condition const &condition, Value const &value, InheritanceContext 
 {
     std::string result;
     for (auto const &entry : value.entries()) {
-        switch (entry.type) {
-            case Value::Entry::String: {
-                result += entry.string;
+        switch (entry.type()) {
+            case Value::Entry::Type::String: {
+                result += *entry.string();
                 break;
             }
-            case Value::Entry::Value: {
-                std::string resolved = resolveValue(condition, *entry.value, context);
+            case Value::Entry::Type::Value: {
+                std::string resolved = resolveValue(condition, *entry.value(), context);
                 if (context.valid && (resolved == context.setting || resolved == "inherited")) {
                     result += resolveInheritance(condition, context);
                 } else {
