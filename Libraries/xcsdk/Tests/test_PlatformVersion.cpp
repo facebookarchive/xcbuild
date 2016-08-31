@@ -34,7 +34,7 @@ TEST(PlatformVersion, Parse)
         }),
     });
 
-    auto platformVersion = PlatformVersion::Open(&filesystem, platform);
+    auto platformVersion = PlatformVersion::Open(&filesystem, "/" + platform);
     ASSERT_NE(platformVersion, nullptr);
 
     EXPECT_EQ(platformVersion->name(), "Name");

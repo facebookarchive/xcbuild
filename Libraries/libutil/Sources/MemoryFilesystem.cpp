@@ -82,6 +82,11 @@ WalkPath(
     bool all,
     V const &cb)
 {
+    /* All paths are expected to be absolute. */
+    if (path.front() != '/') {
+        return false;
+    }
+
     std::string normalized = FSUtil::NormalizePath(path);
     if (normalized.empty()) {
         return false;
@@ -90,7 +95,7 @@ WalkPath(
     T *current = &filesystem->root();
     assert(current->type() == MemoryFilesystem::Entry::Type::Directory);
 
-    std::string::size_type start = (normalized.front() == '/' ? 1 : 0);
+    std::string::size_type start = 0;
     std::string::size_type end = normalized.find('/', start);
 
     do {
