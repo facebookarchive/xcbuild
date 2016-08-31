@@ -15,16 +15,48 @@
 #include <pbxsetting/Type.h>
 #include <pbxsetting/XC/Config.h>
 #include <libutil/FSUtil.h>
+#include <libutil/Filesystem.h>
 
 #include <algorithm>
 #include <set>
 
 namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 Target::Environment::
-Environment()
+Environment(
+    xcsdk::SDK::Target::shared_ptr const &sdk,
+    xcsdk::SDK::Toolchain::vector const &toolchains,
+    std::vector<std::string> const &executablePaths,
+    std::shared_ptr<Target::BuildRules> const &buildRules,
+    std::vector<std::string> const &specDomains,
+    pbxspec::PBX::BuildSystem::shared_ptr const &buildSystem,
+    pbxspec::PBX::ProductType::shared_ptr const &productType,
+    pbxspec::PBX::PackageType::shared_ptr const &packageType,
+    std::shared_ptr<pbxsetting::Environment> const &environment,
+    std::vector<std::string> const &variants,
+    std::vector<std::string> const &architectures,
+    ext::optional<pbxsetting::XC::Config> const &projectConfigurationFile,
+    ext::optional<pbxsetting::XC::Config> const &targetConfigurationFile,
+    std::string const &workingDirectory,
+    std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> const &buildFileDisambiguation) :
+    _sdk                     (sdk),
+    _toolchains              (toolchains),
+    _executablePaths         (executablePaths),
+    _buildRules              (buildRules),
+    _specDomains             (specDomains),
+    _buildSystem             (buildSystem),
+    _productType             (productType),
+    _packageType             (packageType),
+    _environment             (environment),
+    _variants                (variants),
+    _architectures           (architectures),
+    _projectConfigurationFile(projectConfigurationFile),
+    _targetConfigurationFile (targetConfigurationFile),
+    _workingDirectory        (workingDirectory),
+    _buildFileDisambiguation (buildFileDisambiguation)
 {
 }
 
@@ -87,16 +119,16 @@ ConfigurationNamed(pbxproj::XC::ConfigurationList::shared_ptr const &configurati
     return *configurationIterator;
 }
 
-static pbxsetting::XC::Config::shared_ptr
-LoadConfigurationFile(pbxproj::XC::BuildConfiguration::shared_ptr const &buildConfiguration, pbxsetting::Environment const &environment)
+static ext::optional<pbxsetting::XC::Config>
+LoadConfigurationFile(Filesystem const *filesystem, pbxsetting::Environment const &environment, std::string const &workingDirectory, pbxproj::XC::BuildConfiguration::shared_ptr const &buildConfiguration)
 {
     if (buildConfiguration->baseConfigurationReference() == nullptr) {
-        return nullptr;
+        return ext::nullopt;
     }
 
     pbxsetting::Value configurationValue = buildConfiguration->baseConfigurationReference()->resolve();
-    std::string configurationPath = environment.expand(configurationValue);
-    return pbxsetting::XC::Config::Open(configurationPath, environment);
+    std::string configurationPath = FSUtil::ResolveRelativePath(environment.expand(configurationValue), workingDirectory);
+    return pbxsetting::XC::Config::Load(filesystem, environment, configurationPath);
 }
 
 static std::vector<std::string>
@@ -241,12 +273,15 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
 ext::optional<Target::Environment> Target::Environment::
 Create(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
+    /* Use the source root, which could have been modified by project options, rather than the raw project path. */
+    std::string workingDirectory = target->project()->sourceRoot();
+
     xcsdk::SDK::Target::shared_ptr sdk;
     std::vector<std::string> specDomains;
     pbxproj::XC::BuildConfiguration::shared_ptr projectConfiguration;
     pbxproj::XC::BuildConfiguration::shared_ptr targetConfiguration;
-    pbxsetting::XC::Config::shared_ptr projectConfigurationFile;
-    pbxsetting::XC::Config::shared_ptr targetConfigurationFile;
+    ext::optional<pbxsetting::XC::Config> projectConfigurationFile;
+    ext::optional<pbxsetting::XC::Config> targetConfigurationFile;
     {
         // FIXME(grp): $(SRCROOT) must be set in order to find the xcconfig, but we need the xcconfig to know $(SDKROOT). So this can't
         // use the default level order, because $(SRCROOT) comes below $(SDKROOT). Hack around this for now with a synthetic environment.
@@ -269,8 +304,8 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
             projectActionEnvironment.insertFront(level, false);
         }
 
-        projectConfigurationFile = LoadConfigurationFile(projectConfiguration, projectActionEnvironment);
-        if (projectConfigurationFile != nullptr) {
+        projectConfigurationFile = LoadConfigurationFile(Filesystem::GetDefaultUNSAFE(), projectActionEnvironment, workingDirectory, projectConfiguration);
+        if (projectConfigurationFile) {
             determinationEnvironment.insertFront(projectConfigurationFile->level(), false);
         }
 
@@ -290,8 +325,8 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
             targetActionEnvironment.insertFront(level, false);
         }
 
-        targetConfigurationFile = LoadConfigurationFile(targetConfiguration, targetActionEnvironment);
-        if (targetConfigurationFile != nullptr) {
+        targetConfigurationFile = LoadConfigurationFile(Filesystem::GetDefaultUNSAFE(), targetActionEnvironment, workingDirectory, targetConfiguration);
+        if (targetConfigurationFile) {
             determinationEnvironment.insertFront(targetConfigurationFile->level(), false);
         }
 
@@ -361,13 +396,13 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     }
 
     environment.insertFront(target->project()->settings(), false);
-    if (projectConfigurationFile != nullptr) {
+    if (projectConfigurationFile) {
         environment.insertFront(projectConfigurationFile->level(), false);
     }
     environment.insertFront(projectConfiguration->buildSettings(), false);
 
     environment.insertFront(target->settings(), false);
-    if (targetConfigurationFile != nullptr) {
+    if (targetConfigurationFile) {
         environment.insertFront(targetConfigurationFile->level(), false);
     }
     environment.insertFront(targetConfiguration->buildSettings(), false);
@@ -400,24 +435,20 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     auto buildRules = std::make_shared<Target::BuildRules>(Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target));
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
 
-    /* Use the source root, which could have been modified by project options, rather than the raw project path. */
-    std::string workingDirectory = target->project()->sourceRoot();
-
-    Target::Environment te = Target::Environment();
-    te._sdk = sdk;
-    te._toolchains = toolchains;
-    te._executablePaths = executablePaths;
-    te._buildRules = buildRules;
-    te._environment = std::unique_ptr<pbxsetting::Environment>(new pbxsetting::Environment(environment));
-    te._variants = variants;
-    te._architectures = architectures;
-    te._buildSystem = buildSystem;
-    te._packageType = packageType;
-    te._productType = productType;
-    te._specDomains = specDomains;
-    te._projectConfigurationFile = projectConfigurationFile;
-    te._targetConfigurationFile = targetConfigurationFile;
-    te._workingDirectory = workingDirectory;
-    te._buildFileDisambiguation = buildFileDisambiguation;
-    return te;
+    return Target::Environment(
+        sdk,
+        toolchains,
+        executablePaths,
+        buildRules,
+        specDomains,
+        buildSystem,
+        productType,
+        packageType,
+        std::unique_ptr<pbxsetting::Environment>(new pbxsetting::Environment(environment)),
+        variants,
+        architectures,
+        projectConfigurationFile,
+        targetConfigurationFile,
+        workingDirectory,
+        buildFileDisambiguation);
 }

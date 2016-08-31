@@ -39,7 +39,7 @@ Run(Filesystem const *filesystem, Options const &options)
         return -1;
     }
 
-    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(options, buildEnvironment->baseEnvironment());
+    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(filesystem, buildEnvironment->baseEnvironment(), options, FSUtil::GetCurrentDirectory());
     xcexecution::Parameters parameters = Action::CreateParameters(options, overrideLevels);
 
     ext::optional<pbxbuild::WorkspaceContext> context = parameters.loadWorkspace(filesystem, *buildEnvironment, FSUtil::GetCurrentDirectory());

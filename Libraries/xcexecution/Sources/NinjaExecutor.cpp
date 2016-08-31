@@ -574,11 +574,11 @@ buildAction(
         /*
          * Add loaded files for the target configuration to the inputs.
          */
-        if (targetEnvironment->projectConfigurationFile() != nullptr) {
-            inputPaths.push_back(targetEnvironment->projectConfigurationFile()->path());
+        if (auto projectConfigurationFile = targetEnvironment->projectConfigurationFile()) {
+            inputPaths.push_back(projectConfigurationFile->path());
         }
-        if (targetEnvironment->targetConfigurationFile() != nullptr) {
-            inputPaths.push_back(targetEnvironment->targetConfigurationFile()->path());
+        if (auto targetConfigurationFile = targetEnvironment->targetConfigurationFile()) {
+            inputPaths.push_back(targetConfigurationFile->path());
         }
     }
 

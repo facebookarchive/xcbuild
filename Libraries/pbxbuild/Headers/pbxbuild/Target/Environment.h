@@ -50,15 +50,30 @@ private:
     std::vector<std::string>                 _architectures;
 
 private:
-    pbxsetting::XC::Config::shared_ptr       _projectConfigurationFile;
-    pbxsetting::XC::Config::shared_ptr       _targetConfigurationFile;
+    ext::optional<pbxsetting::XC::Config>    _projectConfigurationFile;
+    ext::optional<pbxsetting::XC::Config>    _targetConfigurationFile;
 
 private:
     std::string                              _workingDirectory;
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> _buildFileDisambiguation;
 
 private:
-    Environment();
+    Environment(
+        xcsdk::SDK::Target::shared_ptr const &sdk,
+        xcsdk::SDK::Toolchain::vector const &toolchains,
+        std::vector<std::string> const &executablePaths,
+        std::shared_ptr<Target::BuildRules> const &buildRules,
+        std::vector<std::string> const &specDomains,
+        pbxspec::PBX::BuildSystem::shared_ptr const &buildSystem,
+        pbxspec::PBX::ProductType::shared_ptr const &productType,
+        pbxspec::PBX::PackageType::shared_ptr const &packageType,
+        std::shared_ptr<pbxsetting::Environment> const &environment,
+        std::vector<std::string> const &variants,
+        std::vector<std::string> const &architectures,
+        ext::optional<pbxsetting::XC::Config> const &projectConfigurationFile,
+        ext::optional<pbxsetting::XC::Config> const &targetConfigurationFile,
+        std::string const &workingDirectory,
+        std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> const &buildFileDisambiguation);
 
 public:
     /*
@@ -137,13 +152,13 @@ public:
     /*
      * The configuration files loaded for the project in this configuration.
      */
-    pbxsetting::XC::Config::shared_ptr const &projectConfigurationFile() const
+    ext::optional<pbxsetting::XC::Config> const &projectConfigurationFile() const
     { return _projectConfigurationFile; }
 
     /*
      * The configuration files loaded for this target and configuration.
      */
-    pbxsetting::XC::Config::shared_ptr const &targetConfigurationFile() const
+    ext::optional<pbxsetting::XC::Config> const &targetConfigurationFile() const
     { return _targetConfigurationFile; }
 
 public:
