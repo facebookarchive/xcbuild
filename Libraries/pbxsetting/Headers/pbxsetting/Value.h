@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <ext/optional>
 
 namespace plist { class Object; }
 
@@ -35,23 +36,36 @@ public:
      * string or a reference to another build setting. References are
      * themselves made up of arbitrary build setting values.
      */
-    struct Entry {
-        enum Type {
+    class Entry {
+    public:
+        enum class Type {
             String,
             Value,
         };
 
-        Entry(Type type, std::string const &string);
-        Entry(Type type, std::shared_ptr<class Value> const &value);
+    private:
+        Type                       _type;
+        ext::optional<std::string> _string;
+        std::shared_ptr<Value>     _value;
 
+    public:
+        Entry(std::string const &string);
+        Entry(std::shared_ptr<Value> const &value);
+
+    public:
         bool operator==(Entry const &rhs) const;
         bool operator!=(Entry const &rhs) const;
 
-        Type type;
-        std::string string;
-        std::shared_ptr<class Value> value;
+    public:
+        Type type() const
+        { return _type; }
+        ext::optional<std::string> const &string() const
+        { return _string; }
+        std::shared_ptr<Value> const &value() const
+        { return _value; }
     };
 
+private:
     std::vector<Entry> _entries;
 
 public:
