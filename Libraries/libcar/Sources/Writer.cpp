@@ -48,6 +48,13 @@ addRendition(Rendition const &rendition)
     }
 }
 
+void Writer::
+addRendition(void *key, size_t key_len, void *value, size_t value_len)
+{
+    KeyValuePair kv = {key, key_len, value, value_len};
+    _rawRenditions.emplace_back(kv);
+}
+
 static std::vector<enum car_attribute_identifier>
 DetermineKeyFormat(
     std::unordered_map<std::string, Facet> const &facets,
@@ -74,6 +81,16 @@ DetermineKeyFormat(
 void Writer::
 write() const
 {
+    /*
+     * A fast write has pre-allocated space for BOM indexes
+     * A baseline of 6 indexes are required: CAR Header (1), Key Format (1), and FACET (2) and RENDITION (2) trees
+     * Each tree entry (facet or rendition) requires 2: one key index, one value index.
+     */
+    uint32_t facet_count = _facets.size();
+    uint32_t rendition_count = _renditions.size() + _rawRenditions.size();
+    uint32_t bom_index_count = 6 + facet_count * 2 + rendition_count * 2;
+    bom_alloc_indexes(_bom.get(), bom_index_count);
+
     /* Write header. */
     struct car_header *header = (struct car_header *)malloc(sizeof(struct car_header));
     if (header == NULL) {
@@ -104,22 +121,28 @@ write() const
     free(header);
 
     /* Write key format. */
-    std::vector<enum car_attribute_identifier> format = DetermineKeyFormat(_facets, _renditions);
-    size_t keyfmt_size = sizeof(struct car_key_format) + (format.size() * sizeof(uint32_t));
-
-    struct car_key_format *keyfmt = (struct car_key_format *)malloc(keyfmt_size);
-    strncpy(keyfmt->magic, "kfmt", 4);
-    keyfmt->reserved = 0;
-    keyfmt->num_identifiers = format.size();
-    for (size_t i = 0; i < format.size(); ++i) {
-        keyfmt->identifier_list[i] = static_cast<uint32_t>(format[i]);
+    struct car_key_format *keyfmt;
+    size_t keyfmt_size;
+    if (_keyfmt == ext::nullopt) {
+      std::vector<enum car_attribute_identifier> format = DetermineKeyFormat(_facets, _renditions);
+      keyfmt_size = sizeof(struct car_key_format) + (format.size() * sizeof(uint32_t));
+      keyfmt = (struct car_key_format *)malloc(keyfmt_size);
+      strncpy(keyfmt->magic, "kfmt", 4);
+      keyfmt->reserved = 0;
+      keyfmt->num_identifiers = format.size();
+      for (size_t i = 0; i < format.size(); ++i) {
+          keyfmt->identifier_list[i] = static_cast<uint32_t>(format[i]);
+      }
+    } else {
+      keyfmt = *_keyfmt;
+      keyfmt_size = sizeof(struct car_key_format) + (keyfmt->num_identifiers * sizeof(uint32_t));
     }
 
     int key_format_index = bom_index_add(_bom.get(), keyfmt, keyfmt_size);
     bom_variable_add(_bom.get(), car_key_format_variable, key_format_index);
 
     /* Write facets. */
-    struct bom_tree_context *facets_tree_context = bom_tree_alloc_empty(_bom.get(), car_facet_keys_variable);
+    struct bom_tree_context *facets_tree_context = bom_tree_alloc_empty2(_bom.get(), car_facet_keys_variable, facet_count);
     if (facets_tree_context != NULL) {
         for (auto const &item : _facets) {
             auto facet_value = item.second.write();
@@ -134,7 +157,7 @@ write() const
     }
 
     /* Write renditions. */
-    struct bom_tree_context *renditions_tree_context = bom_tree_alloc_empty(_bom.get(), car_renditions_variable);
+    struct bom_tree_context *renditions_tree_context = bom_tree_alloc_empty2(_bom.get(), car_renditions_variable, rendition_count);
     if (renditions_tree_context != NULL) {
         for (auto const &item : _renditions) {
             auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);
@@ -146,9 +169,19 @@ write() const
                 reinterpret_cast<void const *>(rendition_value.data()),
                 rendition_value.size());
         }
+        for (auto const &item : _rawRenditions) {
+            bom_tree_add(
+                renditions_tree_context,
+                item.key,
+                item.keyLength,
+                item.value,
+                item.valueLength);
+        }
         bom_tree_free(renditions_tree_context);
     }
 
-    free(keyfmt);
+    if (_keyfmt == ext::nullopt) {
+      free(keyfmt);
+    }
 }
 

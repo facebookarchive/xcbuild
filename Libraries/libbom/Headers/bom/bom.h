@@ -42,6 +42,12 @@ struct bom_context *
 bom_alloc_empty(struct bom_context_memory memory);
 
 struct bom_context *
+bom_alloc_empty2(struct bom_context_memory memory, uint32_t index_count);
+
+void
+bom_alloc_indexes(struct bom_context *context, uint32_t index_count);
+
+struct bom_context *
 bom_alloc_load(struct bom_context_memory memory);
 
 struct bom_context_memory const *
@@ -88,6 +94,9 @@ struct bom_tree_context;
 
 struct bom_tree_context *
 bom_tree_alloc_empty(struct bom_context *context, const char *variable_name);
+
+struct bom_tree_context *
+bom_tree_alloc_empty2(struct bom_context *context, const char *variable_name, uint32_t index_count);
 
 struct bom_tree_context *
 bom_tree_alloc_load(struct bom_context *context, const char *variable_name);

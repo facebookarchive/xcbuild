@@ -35,9 +35,16 @@ public:
     typedef std::unique_ptr<struct bom_context, decltype(&bom_free)> unique_ptr_bom;
 
 private:
+    typedef struct {
+        void *key; size_t keyLength; void *value; size_t valueLength;
+    } KeyValuePair;
+
+private:
     unique_ptr_bom _bom;
+    ext::optional<struct car_key_format *> _keyfmt;
     std::unordered_map<std::string, Facet> _facets;
     std::unordered_multimap<uint16_t, Rendition> _renditions;
+    std::vector<KeyValuePair> _rawRenditions;
 
 private:
     Writer(unique_ptr_bom bom);
@@ -59,6 +66,17 @@ public:
      * Add a rendition for a facet, allow lazy loading of data.
      */
     void addRendition(Rendition const &rendition);
+
+    /*
+     * Add a rendition for a facet, optimized for fast editing of CAR files
+     */
+    void addRendition(void *key, size_t keyLength, void *value, size_t valueLength);
+
+    /*
+     * The key format, optional and determined automatically if omitted.
+     */
+    ext::optional<struct car_key_format *> &keyfmt()
+    { return _keyfmt; }
 
 public:
     /*
