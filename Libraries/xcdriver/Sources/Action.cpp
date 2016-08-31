@@ -9,9 +9,13 @@
 
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
+#include <libutil/Filesystem.h>
+#include <libutil/FSUtil.h>
 
 using xcdriver::Action;
 using xcdriver::Options;
+using libutil::Filesystem;
+using libutil::FSUtil;
 
 Action::
 Action()
@@ -24,7 +28,7 @@ Action::
 }
 
 std::vector<pbxsetting::Level> Action::
-CreateOverrideLevels(Options const &options, pbxsetting::Environment const &environment)
+CreateOverrideLevels(Filesystem const *filesystem, pbxsetting::Environment const &environment, Options const &options, std::string const &workingDirectory)
 {
     std::vector<pbxsetting::Level> levels;
 
@@ -40,8 +44,9 @@ CreateOverrideLevels(Options const &options, pbxsetting::Environment const &envi
     levels.push_back(options.settings());
 
     if (options.xcconfig()) {
-        pbxsetting::XC::Config::shared_ptr config = pbxsetting::XC::Config::Open(*options.xcconfig(), environment);
-        if (config == nullptr) {
+        std::string path = FSUtil::ResolveRelativePath(*options.xcconfig(), workingDirectory);
+        ext::optional<pbxsetting::XC::Config> config = pbxsetting::XC::Config::Load(filesystem, environment, path);
+        if (!config) {
             fprintf(stderr, "warning: unable to open xcconfig '%s'\n", options.xcconfig()->c_str());
         } else {
             levels.push_back(config->level());
@@ -49,10 +54,9 @@ CreateOverrideLevels(Options const &options, pbxsetting::Environment const &envi
     }
 
     if (getenv("XCODE_XCCONFIG_FILE")) {
-        std::string path = getenv("XCODE_XCCONFIG_FILE");
-
-        pbxsetting::XC::Config::shared_ptr config = pbxsetting::XC::Config::Open(path, environment);
-        if (config == nullptr) {
+        std::string path = FSUtil::ResolveRelativePath(getenv("XCODE_XCCONFIG_FILE"), workingDirectory);
+        ext::optional<pbxsetting::XC::Config> config = pbxsetting::XC::Config::Load(filesystem, environment, path);
+        if (!config) {
             fprintf(stderr, "warning: unable to open xcconfig from environment '%s'\n", path.c_str());
         } else {
             levels.push_back(config->level());

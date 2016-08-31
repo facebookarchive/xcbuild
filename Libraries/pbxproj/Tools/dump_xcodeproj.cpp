@@ -48,26 +48,6 @@ DumpGroup(PBX::BaseGroup const *group, size_t indent = 0)
     indent--;
 }
 
-std::string
-MakePath(PBX::Project const &P, std::string const &sep,
-        PBX::FileReference const &FR)
-{
-    auto path = FR.path();
-    if (!path.empty() && path[0] == '/')
-        return path;
-
-    if (sep.empty())
-        return P.basePath() + "/" + FR.path();
-    else
-        return P.basePath() + "/" + sep + "/" + FR.path();
-}
-
-std::string
-MakePath(PBX::Project const &P, PBX::FileReference const &FR)
-{
-    return MakePath(P, std::string(), FR);
-}
-
 std::unique_ptr<plist::Dictionary>
 GenerateConfigurationSettings(Filesystem const *filesystem,
                               PBX::Project::shared_ptr const &project,
@@ -96,33 +76,14 @@ GenerateConfigurationSettings(Filesystem const *filesystem,
     }
 
     if (auto baseConfigurationReference = BC.baseConfigurationReference()) {
-        auto path = MakePath(*project, *baseConfigurationReference);
-        if (!filesystem->isReadable(path)) {
-            path = MakePath(*project, "Configurations", *baseConfigurationReference);
-            if (!filesystem->isReadable(path)) {
-                fprintf(stderr, "The file \"%s\" couldn't be opened because its "
-                        "path couldn't be resolved.  It may be missing.\n",
-                        baseConfigurationReference->path().c_str());
-                path.clear();
-            }
-        }
-
-        if (!path.empty()) {
-            auto environment = pbxsetting::Environment::Empty();
-            auto config = pbxsetting::XC::Config::Open(path, environment,
-                    [](std::string const &filename, unsigned line,
-                        std::string const &message) -> bool
-                    {
-                        fprintf(stderr, "%s line %u: %s\n", filename.c_str(),
-                            line, message.c_str());
-                        return true; // Ignore error and continue.
-                    });
-            if (config) {
-                for (pbxsetting::Setting const &setting : config->level().settings()) {
-                    std::string key = setting.name().c_str();
-                    std::string value = setting.value().raw().c_str();
-                    settings->set(key, plist::String::New(value));
-                }
+        auto environment = pbxsetting::Environment::Empty();
+        auto config = pbxsetting::XC::Config::Load(filesystem, environment, environment.expand(baseConfigurationReference->resolve()));
+        if (config) {
+            pbxsetting::Level level = config->level();
+            for (pbxsetting::Setting const &setting : level.settings()) {
+                std::string key = setting.name().c_str();
+                std::string value = setting.value().raw().c_str();
+                settings->set(key, plist::String::New(value));
             }
         }
     }

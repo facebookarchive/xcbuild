@@ -8,9 +8,7 @@
 #
 
 add_library(pbxsetting SHARED
-            Sources/ConfigFile.cpp
             Sources/Condition.cpp
-            Sources/ConfigFile.cpp
             Sources/DefaultSettings.cpp
             Sources/Environment.cpp
             Sources/Level.cpp
@@ -34,5 +32,6 @@ if (BUILD_TESTING)
   ADD_UNIT_GTEST(pbxsetting Setting Tests/test_Setting.cpp)
   ADD_UNIT_GTEST(pbxsetting Type Tests/test_Type.cpp)
   ADD_UNIT_GTEST(pbxsetting Value Tests/test_Value.cpp)
+  ADD_UNIT_GTEST(pbxsetting Config Tests/test_Config.cpp)
 endif ()
 

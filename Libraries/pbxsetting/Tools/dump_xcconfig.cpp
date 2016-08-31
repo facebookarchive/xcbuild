@@ -10,42 +10,66 @@
 #include <pbxsetting/XC/Config.h>
 #include <pbxsetting/Environment.h>
 #include <pbxsetting/Setting.h>
+#include <pbxsetting/Value.h>
+#include <libutil/DefaultFilesystem.h>
 #include <libutil/FSUtil.h>
 
 #include <cstdio>
 
-using pbxsetting::XC::Config;
-using pbxsetting::Environment;
-using pbxsetting::Setting;
+using libutil::Filesystem;
+using libutil::DefaultFilesystem;
 using libutil::FSUtil;
+
+static void
+DumpConfig(pbxsetting::Environment const &environment, pbxsetting::XC::Config const &config)
+{
+    fprintf(stdout, "%s:\n", config.path().c_str());
+    for (pbxsetting::XC::Config::Entry const &entry : config.contents()) {
+        switch (entry.type()) {
+            case pbxsetting::XC::Config::Entry::Type::Setting: {
+                pbxsetting::Setting const &setting = *entry.setting();
+                fprintf(stdout, "  %s = %s\n", setting.name().c_str(), setting.value().raw().c_str());
+                break;
+            }
+            case pbxsetting::XC::Config::Entry::Type::Include: {
+                pbxsetting::Value const &path = *entry.path();
+                fprintf(stdout, "  #include \"%s\"\n", path.raw().c_str());
+                break;
+            }
+        }
+    }
+    fprintf(stdout, "\n");
+
+    for (pbxsetting::XC::Config::Entry const &entry : config.contents()) {
+        if (entry.type() == pbxsetting::XC::Config::Entry::Type::Include) {
+            DumpConfig(environment, *entry.config());
+        }
+    }
+}
 
 int
 main(int argc, char **argv)
 {
+    DefaultFilesystem filesystem = DefaultFilesystem();
+
     if (argc < 2) {
         fprintf(stderr, "usage: %s filename.xcconfig\n", argv[0]);
         return -1;
     }
 
-    auto environment = Environment::Empty();
-    auto config = Config::Open(argv[1], environment,
-            [](std::string const &filename, unsigned line,
-                std::string const &message) -> bool
-            {
-                fprintf(stderr, "%s line %u: %s\n", filename.c_str(), line,
-                    message.c_str());
-                return true; // Ignore error and continue.
-            });
-
+    pbxsetting::Environment environment = pbxsetting::Environment::Empty();
+    auto config = pbxsetting::XC::Config::Load(&filesystem, environment, argv[1]);
     if (!config) {
-        fprintf(stderr, "The file \"%s\" couldn’t be opened "
-                "because its path couldn't be resolved.  "
-                "It may be missing.\n", argv[1]);
+        fprintf(stderr, "The file \"%s\" couldn’t be opened. It may be missing.\n", argv[1]);
         return -1;
     }
 
-    for (Setting const &setting : config->level().settings()) {
-        printf("%s = %s\n", setting.name().c_str(), setting.value().raw().c_str());
+    DumpConfig(environment, *config);
+
+    fprintf(stdout, "Resolved settings:\n");
+    std::vector<pbxsetting::Setting> settings = config->level().settings();
+    for (pbxsetting::Setting const &setting : settings) {
+        fprintf(stdout, "  %s = %s\n", setting.name().c_str(), setting.value().raw().c_str());
     }
 
     return 0;
