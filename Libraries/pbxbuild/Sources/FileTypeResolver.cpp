@@ -13,6 +13,7 @@
 #include <libutil/FSUtil.h>
 #include <libutil/Wildcard.h>
 
+#include <cassert>
 #include <strings.h>
 
 using pbxbuild::FileTypeResolver;
