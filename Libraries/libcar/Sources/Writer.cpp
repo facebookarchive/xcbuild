@@ -89,7 +89,7 @@ write() const
     uint32_t facet_count = _facets.size();
     uint32_t rendition_count = _renditions.size() + _rawRenditions.size();
     uint32_t bom_index_count = 6 + facet_count * 2 + rendition_count * 2;
-    bom_alloc_indexes(_bom.get(), bom_index_count);
+    bom_index_reserve(_bom.get(), bom_index_count);
 
     /* Write header. */
     struct car_header *header = (struct car_header *)malloc(sizeof(struct car_header));
@@ -142,7 +142,8 @@ write() const
     bom_variable_add(_bom.get(), car_key_format_variable, key_format_index);
 
     /* Write facets. */
-    struct bom_tree_context *facets_tree_context = bom_tree_alloc_empty2(_bom.get(), car_facet_keys_variable, facet_count);
+    struct bom_tree_context *facets_tree_context = bom_tree_alloc_empty(_bom.get(), car_facet_keys_variable);
+    bom_tree_reserve(facets_tree_context, facet_count);
     if (facets_tree_context != NULL) {
         for (auto const &item : _facets) {
             auto facet_value = item.second.write();
@@ -157,7 +158,8 @@ write() const
     }
 
     /* Write renditions. */
-    struct bom_tree_context *renditions_tree_context = bom_tree_alloc_empty2(_bom.get(), car_renditions_variable, rendition_count);
+    struct bom_tree_context *renditions_tree_context = bom_tree_alloc_empty(_bom.get(), car_renditions_variable);
+    bom_tree_reserve(renditions_tree_context, rendition_count);
     if (renditions_tree_context != NULL) {
         for (auto const &item : _renditions) {
             auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);

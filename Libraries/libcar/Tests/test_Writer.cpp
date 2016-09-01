@@ -110,7 +110,8 @@ TEST(Writer, TestWriter100)
     /* Write out. */
     /* Write with half the required number of pre-allocated indexes */
     int preallocated_index_count = 6 + create_facet_count * 2 + create_rendition_count * 2;
-    auto writer_bom = car::Writer::unique_ptr_bom(bom_alloc_empty2(bom_context_memory(NULL, 0), preallocated_index_count / 2), bom_free);
+    auto writer_bom = car::Writer::unique_ptr_bom(bom_alloc_empty(bom_context_memory(NULL, 0)), bom_free);
+    bom_index_reserve(writer_bom.get(), preallocated_index_count / 2);
     EXPECT_NE(writer_bom, nullptr);
 
     auto writer = car::Writer::Create(std::move(writer_bom));
@@ -188,7 +189,8 @@ TEST(Writer, TestWriter100Optimal)
      * Each tree entry (facet or rendition) requires 2: one key index, one value index.
      */
     unsigned int preallocated_index_count = 6 + create_facet_count * 2 + create_rendition_count * 2;
-    auto writer_bom = car::Writer::unique_ptr_bom(bom_alloc_empty2(bom_context_memory(NULL, 0), preallocated_index_count), bom_free);
+    auto writer_bom = car::Writer::unique_ptr_bom(bom_alloc_empty(bom_context_memory(NULL, 0)), bom_free);
+    bom_index_reserve(writer_bom.get(), preallocated_index_count);
     EXPECT_NE(writer_bom, nullptr);
 
     auto writer = car::Writer::Create(std::move(writer_bom));

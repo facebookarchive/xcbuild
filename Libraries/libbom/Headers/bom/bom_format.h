@@ -58,7 +58,7 @@ extern "C" {
  *
  * Some BOM variables contain trees, most commonly the "Paths" variable
  * found in standard BOM archives. BOM trees are a header in the variable's
- * data section, has an index pointing to the root of the tree. Each item
+ * data section with an index pointing to the root of the tree. Each item
  * in the tree has indexes pointing to both key and value data for that item.
  */
 
