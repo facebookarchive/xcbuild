@@ -291,7 +291,6 @@ Decode(struct car_rendition_value *value)
     } else if (value->pixel_format == car_rendition_value_pixel_format_jpeg) {
         format = Rendition::Data::Format::JPEG;
     } else {
-        format = Rendition::Data::Format::Data;
         fprintf(stderr, "error: unsupported pixel format %.4s\n", (char const *)&value->pixel_format);
         return ext::nullopt;
     }
@@ -632,6 +631,7 @@ write() const
 
     memcpy(output_bytes, info_slices, info_slices_size);
     output_bytes += info_slices_size;
+    free(info_slices);
 
     memcpy(output_bytes, &info_metrics, sizeof(struct car_rendition_info_metrics));
     output_bytes += sizeof(struct car_rendition_info_metrics);

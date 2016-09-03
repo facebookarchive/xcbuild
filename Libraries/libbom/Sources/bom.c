@@ -350,6 +350,7 @@ bom_variable_iterate(struct bom_context *context, bom_variable_iterator iterator
         strncpy(var_name, var->name, var->length);
         var_name[var->length] = 0;
         if (!iterator(context, var_name, ntohl(var->index), ctx)) {
+            free(var_name);
             break;
         }
         free(var_name);
