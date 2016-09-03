@@ -50,10 +50,6 @@ private:
     std::vector<std::string>                 _architectures;
 
 private:
-    ext::optional<pbxsetting::XC::Config>    _projectConfigurationFile;
-    ext::optional<pbxsetting::XC::Config>    _targetConfigurationFile;
-
-private:
     std::string                              _workingDirectory;
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> _buildFileDisambiguation;
 
@@ -70,8 +66,6 @@ private:
         std::shared_ptr<pbxsetting::Environment> const &environment,
         std::vector<std::string> const &variants,
         std::vector<std::string> const &architectures,
-        ext::optional<pbxsetting::XC::Config> const &projectConfigurationFile,
-        ext::optional<pbxsetting::XC::Config> const &targetConfigurationFile,
         std::string const &workingDirectory,
         std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> const &buildFileDisambiguation);
 
@@ -147,19 +141,6 @@ public:
      */
     std::vector<std::string> const &architectures() const
     { return _architectures; }
-
-public:
-    /*
-     * The configuration files loaded for the project in this configuration.
-     */
-    ext::optional<pbxsetting::XC::Config> const &projectConfigurationFile() const
-    { return _projectConfigurationFile; }
-
-    /*
-     * The configuration files loaded for this target and configuration.
-     */
-    ext::optional<pbxsetting::XC::Config> const &targetConfigurationFile() const
-    { return _targetConfigurationFile; }
 
 public:
     /*
