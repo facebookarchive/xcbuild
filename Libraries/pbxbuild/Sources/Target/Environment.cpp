@@ -22,6 +22,7 @@
 
 namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
+using pbxbuild::WorkspaceContext;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -38,8 +39,6 @@ Environment(
     std::shared_ptr<pbxsetting::Environment> const &environment,
     std::vector<std::string> const &variants,
     std::vector<std::string> const &architectures,
-    ext::optional<pbxsetting::XC::Config> const &projectConfigurationFile,
-    ext::optional<pbxsetting::XC::Config> const &targetConfigurationFile,
     std::string const &workingDirectory,
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> const &buildFileDisambiguation) :
     _sdk                     (sdk),
@@ -53,8 +52,6 @@ Environment(
     _environment             (environment),
     _variants                (variants),
     _architectures           (architectures),
-    _projectConfigurationFile(projectConfigurationFile),
-    _targetConfigurationFile (targetConfigurationFile),
     _workingDirectory        (workingDirectory),
     _buildFileDisambiguation (buildFileDisambiguation)
 {
@@ -108,27 +105,24 @@ ConfigurationNamed(pbxproj::XC::ConfigurationList::shared_ptr const &configurati
         return nullptr;
     }
 
-    auto configurationIterator = std::find_if(configurationList->begin(), configurationList->end(), [&](pbxproj::XC::BuildConfiguration::shared_ptr buildConfiguration) -> bool {
-        return buildConfiguration->name() == configuration;
-    });
-
-    if (configurationIterator == configurationList->end()) {
-        return nullptr;
+    for (pbxproj::XC::BuildConfiguration::shared_ptr const &buildConfiguration : configurationList->buildConfigurations()) {
+        if (buildConfiguration->name() == configuration) {
+            return buildConfiguration;
+        }
     }
 
-    return *configurationIterator;
+    return nullptr;
 }
 
 static ext::optional<pbxsetting::XC::Config>
-LoadConfigurationFile(Filesystem const *filesystem, pbxsetting::Environment const &environment, std::string const &workingDirectory, pbxproj::XC::BuildConfiguration::shared_ptr const &buildConfiguration)
+ConfigurationFile(WorkspaceContext const &workspaceContext, pbxproj::XC::BuildConfiguration::shared_ptr const &buildConfiguration)
 {
-    if (buildConfiguration->baseConfigurationReference() == nullptr) {
-        return ext::nullopt;
+    auto it = workspaceContext.configs().find(buildConfiguration);
+    if (it != workspaceContext.configs().end()) {
+        return it->second;
     }
 
-    pbxsetting::Value configurationValue = buildConfiguration->baseConfigurationReference()->resolve();
-    std::string configurationPath = FSUtil::ResolveRelativePath(environment.expand(configurationValue), workingDirectory);
-    return pbxsetting::XC::Config::Load(filesystem, environment, configurationPath);
+    return ext::nullopt;
 }
 
 static std::vector<std::string>
@@ -282,12 +276,24 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     pbxproj::XC::BuildConfiguration::shared_ptr targetConfiguration;
     ext::optional<pbxsetting::XC::Config> projectConfigurationFile;
     ext::optional<pbxsetting::XC::Config> targetConfigurationFile;
+
     {
-        // FIXME(grp): $(SRCROOT) must be set in order to find the xcconfig, but we need the xcconfig to know $(SDKROOT). So this can't
-        // use the default level order, because $(SRCROOT) comes below $(SDKROOT). Hack around this for now with a synthetic environment.
-        // It's also in the wrong order because project settings should be below the SDK, but are needed to *load* the xcconfig.
+        /*
+         * Create a synthetic build setting environment to determine the SDK to use. The real build
+         * setting environment will interleave in SDK build settings, but those aren't available until
+         * the target SDK is itself determined.
+         */
         pbxsetting::Environment determinationEnvironment = buildEnvironment.baseEnvironment();
+
+        /*
+         * Add build base settings.
+         */
         determinationEnvironment.insertFront(buildContext.baseSettings(), false);
+
+        /*
+         * Add project build settings.
+         */
+        determinationEnvironment.insertFront(target->project()->settings(), false);
 
         projectConfiguration = ConfigurationNamed(target->project()->buildConfigurationList(), buildContext.configuration());
         if (projectConfiguration == nullptr) {
@@ -295,19 +301,17 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
             return ext::nullopt;
         }
 
-        determinationEnvironment.insertFront(target->project()->settings(), false);
-        determinationEnvironment.insertFront(projectConfiguration->buildSettings(), false);
-
-        pbxsetting::Environment projectActionEnvironment = determinationEnvironment;
-        projectActionEnvironment.insertFront(buildContext.actionSettings(), false);
-        for (pbxsetting::Level const &level : buildContext.overrideLevels()) {
-            projectActionEnvironment.insertFront(level, false);
-        }
-
-        projectConfigurationFile = LoadConfigurationFile(Filesystem::GetDefaultUNSAFE(), projectActionEnvironment, workingDirectory, projectConfiguration);
+        projectConfigurationFile = ConfigurationFile(buildContext.workspaceContext(), projectConfiguration);
         if (projectConfigurationFile) {
             determinationEnvironment.insertFront(projectConfigurationFile->level(), false);
         }
+
+        determinationEnvironment.insertFront(projectConfiguration->buildSettings(), false);
+
+        /*
+         * Add target build settings.
+         */
+        determinationEnvironment.insertFront(target->settings(), false);
 
         targetConfiguration = ConfigurationNamed(target->buildConfigurationList(), buildContext.configuration());
         if (targetConfiguration == nullptr) {
@@ -315,26 +319,24 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
             return ext::nullopt;
         }
 
-        determinationEnvironment.insertFront(target->settings(), false);
-        determinationEnvironment.insertFront(targetConfiguration->buildSettings(), false);
-
-        // FIXME(grp): Similar issue for the target xcconfig. These levels aren't complete (no platform) but are needed to *get* which SDK to use.
-        pbxsetting::Environment targetActionEnvironment = determinationEnvironment;
-        targetActionEnvironment.insertFront(buildContext.actionSettings(), false);
-        for (pbxsetting::Level const &level : buildContext.overrideLevels()) {
-            targetActionEnvironment.insertFront(level, false);
-        }
-
-        targetConfigurationFile = LoadConfigurationFile(Filesystem::GetDefaultUNSAFE(), targetActionEnvironment, workingDirectory, targetConfiguration);
+        targetConfigurationFile = ConfigurationFile(buildContext.workspaceContext(), targetConfiguration);
         if (targetConfigurationFile) {
             determinationEnvironment.insertFront(targetConfigurationFile->level(), false);
         }
 
+        determinationEnvironment.insertFront(targetConfiguration->buildSettings(), false);
+
+        /*
+         * Add build override settings.
+         */
         determinationEnvironment.insertFront(buildContext.actionSettings(), false);
         for (pbxsetting::Level const &level : buildContext.overrideLevels()) {
             determinationEnvironment.insertFront(level, false);
         }
 
+        /*
+         * All settings added; determine target SDK.
+         */
         std::string sdkroot = determinationEnvironment.resolve("SDKROOT");
         sdk = buildEnvironment.sdkManager()->findTarget(sdkroot);
         if (sdk == nullptr) {
@@ -372,7 +374,9 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         }
     }
 
-    // Now we have $(SDKROOT), and can make the real levels.
+    /*
+     * Now we have $(SDKROOT), and can make the real levels.
+     */
     pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
     environment.insertFront(buildSystem->defaultSettings(), true);
     environment.insertFront(buildContext.baseSettings(), false);
@@ -395,12 +399,18 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         environment.insertFront(ProductTypeLevel(productType), false);
     }
 
+    /*
+     * Add project build settings.
+     */
     environment.insertFront(target->project()->settings(), false);
     if (projectConfigurationFile) {
         environment.insertFront(projectConfigurationFile->level(), false);
     }
     environment.insertFront(projectConfiguration->buildSettings(), false);
 
+    /*
+     * Add target build settings.
+     */
     environment.insertFront(target->settings(), false);
     if (targetConfigurationFile) {
         environment.insertFront(targetConfigurationFile->level(), false);
@@ -447,8 +457,6 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         std::unique_ptr<pbxsetting::Environment>(new pbxsetting::Environment(environment)),
         variants,
         architectures,
-        projectConfigurationFile,
-        targetConfigurationFile,
         workingDirectory,
         buildFileDisambiguation);
 }

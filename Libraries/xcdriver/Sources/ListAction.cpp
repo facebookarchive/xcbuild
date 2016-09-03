@@ -93,7 +93,7 @@ Run(Filesystem const *filesystem, Options const &options)
 
         if (project->buildConfigurationList()) {
             printf("%4sBuild Configurations:\n", "");
-            for (auto const &config : *project->buildConfigurationList()) {
+            for (auto const &config : project->buildConfigurationList()->buildConfigurations()) {
                 printf("%8s%s\n", "", config->name().c_str());
             }
             printf("\n%4sIf no build configuration is specified and -scheme is not passed then \"%s\" is used.\n", "", project->buildConfigurationList()->defaultConfigurationName().c_str());

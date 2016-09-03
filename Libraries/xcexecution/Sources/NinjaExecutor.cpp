@@ -453,11 +453,6 @@ buildAction(
     writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env -i $env $exec && $depexec"));
 
     /*
-     * Build up a list of all of the inputs to the build, so Ninja can regenerate as necessary.
-     */
-    std::vector<std::string> inputPaths = buildContext.workspaceContext().loadedFilePaths();
-
-    /*
      * Go over each target and write out Ninja targets for the start and end of each.
      * Don't bother topologically sorting the targets now, since Ninja will do that for us.
      */
@@ -570,17 +565,12 @@ buildAction(
             invocationOutputsValues.push_back(ninja::Value::String(output));
         }
         writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputsValues);
-
-        /*
-         * Add loaded files for the target configuration to the inputs.
-         */
-        if (auto projectConfigurationFile = targetEnvironment->projectConfigurationFile()) {
-            inputPaths.push_back(projectConfigurationFile->path());
-        }
-        if (auto targetConfigurationFile = targetEnvironment->targetConfigurationFile()) {
-            inputPaths.push_back(targetConfigurationFile->path());
-        }
     }
+
+    /*
+     * Build up a list of all of the inputs to the build, so Ninja can regenerate as necessary.
+     */
+    std::vector<std::string> inputPaths = buildContext.workspaceContext().loadedFilePaths();
 
     /*
      * Add a Ninja rule to regenerate the build.ninja file itself.

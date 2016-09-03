@@ -57,7 +57,7 @@ GenerateConfigurationSettings(Filesystem const *filesystem,
     std::unique_ptr<plist::Dictionary> settings = nullptr;
 
     if (!isProjectBC) {
-        for (auto PBC : *project->buildConfigurationList()) {
+        for (auto const &PBC : project->buildConfigurationList()->buildConfigurations()) {
             if (BC.name() == PBC->name()) {
                 settings = GenerateConfigurationSettings(filesystem, project, *PBC, true);
                 break;
@@ -221,7 +221,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
         }
         printf("\t\tConfigurations:\n");
         auto DCN = I->buildConfigurationList()->defaultConfigurationName();
-        for (auto J : *I->buildConfigurationList()) {
+        for (auto const &J : I->buildConfigurationList()->buildConfigurations()) {
             printf("\t\t\t%s%s\n", J->name().c_str(),
                     J->name() == DCN ?  " [Default]" : "");
         }
@@ -430,7 +430,7 @@ main(int argc, char **argv)
 
     if (project->buildConfigurationList()) {
         printf("%4sBuild Configurations:\n", "");
-        for (auto config : *project->buildConfigurationList()) {
+        for (auto const &config : project->buildConfigurationList()->buildConfigurations()) {
             printf("%8s%s\n", "", config->name().c_str());
         }
         printf("\n%4sIf no build configuration is specified and -scheme "
