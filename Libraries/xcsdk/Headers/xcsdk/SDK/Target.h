@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <ext/optional>
 
 namespace libutil { class Filesystem; };
 namespace plist { class Dictionary; }
@@ -29,27 +30,25 @@ class Platform;
 class Target {
 public:
     typedef std::shared_ptr <Target> shared_ptr;
-    typedef std::weak_ptr <Target> weak_ptr;
-    typedef std::vector <shared_ptr> vector;
 
-protected:
-    std::weak_ptr<Manager>  _manager;
-    std::weak_ptr<Platform> _platform;
+private:
+    std::weak_ptr<Manager>             _manager;
+    std::weak_ptr<Platform>            _platform;
 
-public:
-    Product::shared_ptr      _product;
-    std::string              _path;
-    std::string              _bundleName;
-    std::string              _version;
-    std::string              _canonicalName;
-    std::string              _displayName;
-    std::string              _minimalDisplayName;
-    std::string              _maximumDeploymentTarget;
-    std::vector<std::string> _supportedBuildToolsVersion;
-    pbxsetting::Level        _customProperties;
-    pbxsetting::Level        _defaultProperties;
-    bool                     _isBaseSDK;
-    Toolchain::vector        _toolchains;
+private:
+    Product::shared_ptr                _product;
+    std::string                        _path;
+    std::string                        _bundleName;
+    std::string                        _version;
+    std::string                        _canonicalName;
+    std::string                        _displayName;
+    std::string                        _minimalDisplayName;
+    std::string                        _maximumDeploymentTarget;
+    std::vector<std::string>           _supportedBuildToolsVersion;
+    pbxsetting::Level                  _customProperties;
+    pbxsetting::Level                  _defaultProperties;
+    bool                               _isBaseSDK;
+    std::vector<Toolchain::shared_ptr> _toolchains;
 
 public:
     Target();
@@ -61,6 +60,7 @@ public:
     inline std::shared_ptr<Platform> platform() const
     { return _platform.lock(); }
 
+public:
     inline std::string const &path() const
     { return _path; }
     inline std::string const &bundleName() const
@@ -107,14 +107,14 @@ public:
     { return _isBaseSDK; }
 
 public:
-    inline Toolchain::vector const &toolchains() const
+    inline std::vector<Toolchain::shared_ptr> const &toolchains() const
     { return _toolchains; }
 
 public:
     pbxsetting::Level settings(void) const;
 
 public:
-    std::vector<std::string> executablePaths(Toolchain::vector const &overrideToolchains = { }) const;
+    std::vector<std::string> executablePaths(ext::optional<std::vector<Toolchain::shared_ptr>> const &overrideToolchains = ext::nullopt) const;
 
 public:
     static Target::shared_ptr Open(libutil::Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::shared_ptr<Platform>, std::string const &path);

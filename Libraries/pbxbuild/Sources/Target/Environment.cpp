@@ -28,14 +28,14 @@ using libutil::FSUtil;
 Target::Environment::
 Environment(
     xcsdk::SDK::Target::shared_ptr const &sdk,
-    xcsdk::SDK::Toolchain::vector const &toolchains,
+    std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains,
     std::vector<std::string> const &executablePaths,
-    std::shared_ptr<Target::BuildRules> const &buildRules,
+    Target::BuildRules const &buildRules,
     std::vector<std::string> const &specDomains,
     pbxspec::PBX::BuildSystem::shared_ptr const &buildSystem,
     pbxspec::PBX::ProductType::shared_ptr const &productType,
     pbxspec::PBX::PackageType::shared_ptr const &packageType,
-    std::shared_ptr<pbxsetting::Environment> const &environment,
+    pbxsetting::Environment const &environment,
     std::vector<std::string> const &variants,
     std::vector<std::string> const &architectures,
     ext::optional<pbxsetting::XC::Config> const &projectConfigurationFile,
@@ -422,7 +422,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     }), false);
 
     /* Determine toolchains. Must be after the SDK levels are added, so they can be a fallback. */
-    xcsdk::SDK::Toolchain::vector toolchains;
+    std::vector<xcsdk::SDK::Toolchain::shared_ptr> toolchains;
     for (std::string const &toolchainName : pbxsetting::Type::ParseList(environment.resolve("TOOLCHAINS"))) {
         if (xcsdk::SDK::Toolchain::shared_ptr toolchain = buildEnvironment.sdkManager()->findToolchain(toolchainName)) {
             toolchains.push_back(toolchain);
@@ -432,10 +432,10 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     /* Tool search directories. Use the toolchains just discovered. */
     std::vector<std::string> executablePaths = sdk->executablePaths(toolchains);
 
-    auto buildRules = std::make_shared<Target::BuildRules>(Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target));
+    auto buildRules = Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target);
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
 
-    return Target::Environment(
+    return Environment(
         sdk,
         toolchains,
         executablePaths,
@@ -444,7 +444,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         buildSystem,
         productType,
         packageType,
-        std::unique_ptr<pbxsetting::Environment>(new pbxsetting::Environment(environment)),
+        environment,
         variants,
         architectures,
         projectConfigurationFile,

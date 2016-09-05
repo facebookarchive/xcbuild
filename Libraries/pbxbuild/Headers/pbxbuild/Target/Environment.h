@@ -31,43 +31,43 @@ namespace Target {
  */
 class Environment {
 private:
-    xcsdk::SDK::Target::shared_ptr           _sdk;
-    xcsdk::SDK::Toolchain::vector            _toolchains;
-    std::vector<std::string>                 _executablePaths;
+    xcsdk::SDK::Target::shared_ptr                 _sdk;
+    std::vector<xcsdk::SDK::Toolchain::shared_ptr> _toolchains;
+    std::vector<std::string>                       _executablePaths;
 
 private:
-    std::shared_ptr<Target::BuildRules>      _buildRules;
-    std::vector<std::string>                 _specDomains;
-    pbxspec::PBX::BuildSystem::shared_ptr    _buildSystem;
+    Target::BuildRules                             _buildRules;
+    std::vector<std::string>                       _specDomains;
+    pbxspec::PBX::BuildSystem::shared_ptr          _buildSystem;
 
 private:
-    pbxspec::PBX::ProductType::shared_ptr    _productType;
-    pbxspec::PBX::PackageType::shared_ptr    _packageType;
+    pbxspec::PBX::ProductType::shared_ptr          _productType;
+    pbxspec::PBX::PackageType::shared_ptr          _packageType;
 
 private:
-    std::shared_ptr<pbxsetting::Environment> _environment;
-    std::vector<std::string>                 _variants;
-    std::vector<std::string>                 _architectures;
+    pbxsetting::Environment                        _environment;
+    std::vector<std::string>                       _variants;
+    std::vector<std::string>                       _architectures;
 
 private:
-    ext::optional<pbxsetting::XC::Config>    _projectConfigurationFile;
-    ext::optional<pbxsetting::XC::Config>    _targetConfigurationFile;
+    ext::optional<pbxsetting::XC::Config>          _projectConfigurationFile;
+    ext::optional<pbxsetting::XC::Config>          _targetConfigurationFile;
 
 private:
-    std::string                              _workingDirectory;
+    std::string                                    _workingDirectory;
     std::unordered_map<pbxproj::PBX::BuildFile::shared_ptr, std::string> _buildFileDisambiguation;
 
-private:
+public:
     Environment(
         xcsdk::SDK::Target::shared_ptr const &sdk,
-        xcsdk::SDK::Toolchain::vector const &toolchains,
+        std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains,
         std::vector<std::string> const &executablePaths,
-        std::shared_ptr<Target::BuildRules> const &buildRules,
+        Target::BuildRules const &buildRules,
         std::vector<std::string> const &specDomains,
         pbxspec::PBX::BuildSystem::shared_ptr const &buildSystem,
         pbxspec::PBX::ProductType::shared_ptr const &productType,
         pbxspec::PBX::PackageType::shared_ptr const &packageType,
-        std::shared_ptr<pbxsetting::Environment> const &environment,
+        pbxsetting::Environment const &environment,
         std::vector<std::string> const &variants,
         std::vector<std::string> const &architectures,
         ext::optional<pbxsetting::XC::Config> const &projectConfigurationFile,
@@ -87,7 +87,7 @@ public:
      * The toolchains to use for this build. The SDK also has toolchains, but
      * they might have been overridden by the TOOLCHAINS build setting.
      */
-    xcsdk::SDK::Toolchain::vector const &toolchains() const
+    std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains() const
     { return _toolchains; }
 
     /*
@@ -102,7 +102,7 @@ public:
      * The build rules applicable to this target.
      */
     Target::BuildRules const &buildRules() const
-    { return *_buildRules.get(); }
+    { return _buildRules; }
 
     /*
      * The specification domains for this target.
@@ -134,7 +134,7 @@ public:
      * The complete build setting environment for this build of the target.
      */
     pbxsetting::Environment const &environment() const
-    { return *_environment; }
+    { return _environment; }
 
     /*
      * The variants to build this target for.

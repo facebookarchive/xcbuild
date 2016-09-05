@@ -33,7 +33,7 @@ SwiftResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler) :
 }
 
 static std::string
-SwiftLibraryPath(pbxsetting::Environment const &environment, xcsdk::SDK::Target::shared_ptr const &sdk, xcsdk::SDK::Toolchain::vector const &toolchains)
+SwiftLibraryPath(pbxsetting::Environment const &environment, xcsdk::SDK::Target::shared_ptr const &sdk, std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains)
 {
     std::string path = environment.resolve("SWIFT_LIBRARY_PATH");
     if (!path.empty()) {

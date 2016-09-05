@@ -85,8 +85,6 @@ Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string
     // Parse the toolchain dictionary and create the object.
     //
     auto toolchain = std::make_shared<Toolchain>();
-    toolchain->_manager = manager;
-
     if (!toolchain->parse(plist)) {
         return nullptr;
     }

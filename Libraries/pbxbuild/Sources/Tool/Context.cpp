@@ -14,7 +14,7 @@ namespace Tool = pbxbuild::Tool;
 Tool::Context::
 Context(
     xcsdk::SDK::Target::shared_ptr const &sdk,
-    xcsdk::SDK::Toolchain::vector const &toolchains,
+    std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains,
     std::vector<std::string> const &executablePaths,
     std::string const &workingDirectory,
     Tool::SearchPaths const &searchPaths) :

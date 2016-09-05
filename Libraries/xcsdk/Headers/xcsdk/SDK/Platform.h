@@ -29,21 +29,21 @@ public:
     typedef std::vector <shared_ptr> vector;
 
 private:
-    std::weak_ptr<Manager>      _manager;
-    PlatformVersion::shared_ptr _platformVersion;
-    Target::vector              _targets;
-    std::string                 _path;
-    std::string                 _identifier;
-    std::string                 _name;
-    std::string                 _description;
-    std::string                 _type;
-    std::string                 _version;
-    std::string                 _familyIdentifier;
-    std::string                 _familyName;
-    std::string                 _icon;
-    plist::Dictionary          *_defaultDebuggerSettings;
-    pbxsetting::Level           _defaultProperties;
-    pbxsetting::Level           _overrideProperties;
+    std::weak_ptr<Manager>          _manager;
+    PlatformVersion::shared_ptr     _platformVersion;
+    std::vector<Target::shared_ptr> _targets;
+    std::string                     _path;
+    std::string                     _identifier;
+    std::string                     _name;
+    std::string                     _description;
+    std::string                     _type;
+    std::string                     _version;
+    std::string                     _familyIdentifier;
+    std::string                     _familyName;
+    std::string                     _icon;
+    plist::Dictionary              *_defaultDebuggerSettings;
+    pbxsetting::Level               _defaultProperties;
+    pbxsetting::Level               _overrideProperties;
 
 public:
     Platform();
@@ -56,9 +56,7 @@ public:
 public:
     inline PlatformVersion::shared_ptr const &platformVersion() const
     { return _platformVersion; }
-    inline Target::vector const &targets() const
-    { return _targets; }
-    inline Target::vector &targets()
+    inline std::vector<Target::shared_ptr> const &targets() const
     { return _targets; }
 
 public:

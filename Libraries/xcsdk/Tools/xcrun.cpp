@@ -314,7 +314,7 @@ main(int argc, char **argv)
     /*
      * Determine the toolchains to use. Default to the SDK's toolchains.
      */
-    xcsdk::SDK::Toolchain::vector toolchains;
+    std::vector<xcsdk::SDK::Toolchain::shared_ptr> toolchains;
     if (toolchainsInput) {
         /* If the custom toolchain exists, use it instead. */
         std::vector<std::string> toolchainTokens = pbxsetting::Type::ParseList(*toolchainsInput);
