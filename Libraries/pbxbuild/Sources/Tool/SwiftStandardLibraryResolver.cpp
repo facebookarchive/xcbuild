@@ -35,7 +35,7 @@ resolve(
     pbxsetting::Level level = pbxsetting::Level({
         pbxsetting::Setting::Create("SWIFT_STDLIB_TOOL_FOLDERS_TO_SCAN", pbxsetting::Type::FormatList(directories)),
     });
-    pbxsetting::Environment env = baseEnvironment;
+    pbxsetting::Environment env = pbxsetting::Environment(baseEnvironment);
     env.insertFront(level, false);
 
     std::string outputPath = env.resolve("TARGET_BUILD_DIR") + "/" + env.resolve("FULL_PRODUCT_NAME");

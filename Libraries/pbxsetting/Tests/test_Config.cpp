@@ -27,7 +27,7 @@ Contents(std::string const &string)
 
 TEST(Config, Empty)
 {
-    Environment environment = Environment::Empty();
+    Environment environment = Environment();
     MemoryFilesystem filesystem = MemoryFilesystem({
         MemoryFilesystem::Entry::File("empty.xcconfig", Contents("")),
     });
@@ -40,7 +40,7 @@ TEST(Config, Empty)
 
 TEST(Config, Setting)
 {
-    Environment environment = Environment::Empty();
+    Environment environment = Environment();
     MemoryFilesystem filesystem = MemoryFilesystem({
         MemoryFilesystem::Entry::File("settings.xcconfig", Contents(
             "NAME1 = VALUE1\n"
@@ -76,7 +76,7 @@ TEST(Config, Setting)
 
 TEST(Config, Include)
 {
-    Environment environment = Environment::Empty();
+    Environment environment = Environment();
     MemoryFilesystem filesystem = MemoryFilesystem({
         MemoryFilesystem::Entry::File("common.xcconfig", Contents("NAME = VALUE")),
         MemoryFilesystem::Entry::File("include.xcconfig", Contents("#include \"common.xcconfig\"")),

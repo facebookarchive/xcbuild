@@ -57,7 +57,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    pbxsetting::Environment environment = pbxsetting::Environment::Empty();
+    pbxsetting::Environment environment = pbxsetting::Environment();
     auto config = pbxsetting::XC::Config::Load(&filesystem, environment, argv[1]);
     if (!config) {
         fprintf(stderr, "The file \"%s\" couldn’t be opened. It may be missing.\n", argv[1]);

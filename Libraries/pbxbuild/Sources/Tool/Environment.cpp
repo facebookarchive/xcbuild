@@ -124,7 +124,7 @@ CreateInternal(
     /*
      * Create the settings environment for the tool.
      */
-    pbxsetting::Environment environment = baseEnvironment;
+    pbxsetting::Environment environment = pbxsetting::Environment(baseEnvironment);
 
     /*
      * Add default settings from the tool itself.

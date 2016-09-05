@@ -154,7 +154,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::vector<std::vector<Phase::File>> architectureGroups = Phase::Context::Group(architectureFiles);
     for (std::string const &variant : targetEnvironment.variants()) {
         for (std::string const &arch : targetEnvironment.architectures()) {
-            pbxsetting::Environment currentEnvironment = targetEnvironment.environment();
+            pbxsetting::Environment currentEnvironment = pbxsetting::Environment(targetEnvironment.environment());
             currentEnvironment.insertFront(Phase::Environment::VariantLevel(variant), false);
             currentEnvironment.insertFront(Phase::Environment::ArchitectureLevel(arch), false);
 

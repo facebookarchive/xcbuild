@@ -78,7 +78,7 @@ GenerateConfigurationSettings(Filesystem const *filesystem,
     }
 
     if (auto baseConfigurationReference = BC.baseConfigurationReference()) {
-        auto environment = pbxsetting::Environment::Empty();
+        auto environment = pbxsetting::Environment();
         auto config = pbxsetting::XC::Config::Load(filesystem, environment, environment.expand(baseConfigurationReference->resolve()));
         if (config) {
             pbxsetting::Level level = config->level();

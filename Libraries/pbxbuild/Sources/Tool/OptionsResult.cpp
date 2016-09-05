@@ -68,7 +68,7 @@ EvaluateCondition(std::string const &condition, pbxsetting::Environment const &e
 static void
 AddOptionArgumentValue(std::vector<std::string> *arguments, pbxsetting::Environment const &environment, std::vector<pbxsetting::Value> const &args, std::string const &value)
 {
-    pbxsetting::Environment argEnvironment = environment;
+    pbxsetting::Environment argEnvironment = pbxsetting::Environment(environment);
     argEnvironment.insertFront(pbxsetting::Level({
         pbxsetting::Setting::Create("value", value),
     }), false);

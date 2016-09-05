@@ -29,8 +29,11 @@ private:
     size_t           _offset;
 
 public:
-    Environment();
-    ~Environment();
+    explicit Environment();
+    explicit Environment(Environment const &) = default;
+    Environment const &operator=(Environment const &) = delete;
+    Environment(Environment &&) = default;
+    Environment &operator=(Environment &&) = default;
 
 public:
     /*
@@ -77,12 +80,6 @@ public:
      * For debugging: print out the contents of all levels.
      */
     void dump() const;
-
-public:
-    /*
-     * An empty environment.
-     */
-    static Environment const &Empty();
 
 private:
     struct InheritanceContext {

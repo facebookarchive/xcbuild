@@ -26,11 +26,6 @@ Environment() :
 {
 }
 
-Environment::
-~Environment()
-{
-}
-
 static std::string
 ProcessOperation(std::string const &value, std::string const &operation)
 {
@@ -279,9 +274,3 @@ dump() const
     }
 }
 
-Environment const &Environment::
-Empty()
-{
-    static Environment *environment = new Environment({ });
-    return *environment;
-}

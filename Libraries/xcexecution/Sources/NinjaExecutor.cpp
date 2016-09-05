@@ -293,7 +293,7 @@ build(
     /*
      * This environment contains only settings shared for the entire build.
      */
-    pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
+    pbxsetting::Environment environment = pbxsetting::Environment(buildEnvironment.baseEnvironment());
     environment.insertFront(derivedDataLevel, false);
 
     /*

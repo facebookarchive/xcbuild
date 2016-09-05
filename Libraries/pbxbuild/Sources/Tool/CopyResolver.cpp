@@ -47,7 +47,7 @@ ResolveInternal(
         pbxsetting::Setting::Create("pbxcp_rule_name", logMessageTitle),
     });
 
-    pbxsetting::Environment environment = baseEnvironment;
+    pbxsetting::Environment environment = pbxsetting::Environment(baseEnvironment);
     environment.insertFront(copyLevel, false);
 
     /*

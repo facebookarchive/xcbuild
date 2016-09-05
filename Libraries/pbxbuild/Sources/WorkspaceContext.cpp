@@ -196,7 +196,7 @@ LoadNestedProjects(
          * but it's unclear exactly what settings are available here. Notably, we don't yet know what
          * the configuration or what target to use, so just the project settings seems reasonable.
          */
-        pbxsetting::Environment environment = baseEnvironment;
+        pbxsetting::Environment environment = pbxsetting::Environment(baseEnvironment);
         environment.insertFront(project->settings(), false);
 
         /*

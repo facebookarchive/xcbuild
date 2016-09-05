@@ -48,7 +48,7 @@ resolve(
         pbxsetting::Setting::Create("AdditionalInfoFileValues", ""), // TODO(grp): Determine what these are for.
     });
 
-    pbxsetting::Environment env = environment;
+    pbxsetting::Environment env = pbxsetting::Environment(environment);
     env.insertFront(level, false);
 
     std::string infoPlistPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("INFOPLIST_PATH");

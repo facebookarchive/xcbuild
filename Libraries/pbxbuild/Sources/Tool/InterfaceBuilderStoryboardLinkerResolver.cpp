@@ -36,7 +36,7 @@ resolve(
     pbxsetting::Level level = pbxsetting::Level({
         InterfaceBuilderCommon::TargetedDeviceSetting(baseEnvironment),
     });
-    pbxsetting::Environment interfaceBuilderEnvironment = baseEnvironment;
+    pbxsetting::Environment interfaceBuilderEnvironment = pbxsetting::Environment(baseEnvironment);
     interfaceBuilderEnvironment.insertFront(level, false);
 
     /*

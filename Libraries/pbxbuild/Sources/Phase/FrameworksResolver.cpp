@@ -74,7 +74,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
 
     for (std::string const &variant : targetEnvironment.variants()) {
-        pbxsetting::Environment variantEnvironment = targetEnvironment.environment();
+        pbxsetting::Environment variantEnvironment = pbxsetting::Environment(targetEnvironment.environment());
         variantEnvironment.insertFront(Phase::Environment::VariantLevel(variant), false);
 
         std::string variantIntermediatesName = variantEnvironment.resolve("EXECUTABLE_NAME") + variantEnvironment.resolve("EXECUTABLE_VARIANT_SUFFIX");
@@ -87,7 +87,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         std::vector<std::string> universalBinaryInputs;
 
         for (std::string const &arch : targetEnvironment.architectures()) {
-            pbxsetting::Environment archEnvironment = variantEnvironment;
+            pbxsetting::Environment archEnvironment = pbxsetting::Environment(variantEnvironment);
             archEnvironment.insertFront(Phase::Environment::ArchitectureLevel(arch), false);
 
             std::vector<std::string> sourceOutputs;

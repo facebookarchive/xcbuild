@@ -34,7 +34,7 @@ resolve(
     pbxsetting::Level level = pbxsetting::Level({
         InterfaceBuilderCommon::TargetedDeviceSetting(baseEnvironment),
     });
-    pbxsetting::Environment assetCatalogEnvironment = baseEnvironment;
+    pbxsetting::Environment assetCatalogEnvironment = pbxsetting::Environment(baseEnvironment);
     assetCatalogEnvironment.insertFront(level, false);
 
     /*

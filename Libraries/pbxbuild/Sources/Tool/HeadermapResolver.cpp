@@ -80,7 +80,7 @@ resolve(
 ) const
 {
     /* Add the compiler default environment, which contains the headermap setting defaults. */
-    pbxsetting::Environment compilerEnvironment = environment;
+    pbxsetting::Environment compilerEnvironment = pbxsetting::Environment(environment);
     compilerEnvironment.insertFront(_compiler->defaultSettings(), true);
 
     if (!pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("USE_HEADERMAP"))) {

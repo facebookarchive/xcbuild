@@ -283,7 +283,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
          * setting environment will interleave in SDK build settings, but those aren't available until
          * the target SDK is itself determined.
          */
-        pbxsetting::Environment determinationEnvironment = buildEnvironment.baseEnvironment();
+        pbxsetting::Environment determinationEnvironment = pbxsetting::Environment(buildEnvironment.baseEnvironment());
 
         /*
          * Add build base settings.
@@ -377,7 +377,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     /*
      * Now we have $(SDKROOT), and can make the real levels.
      */
-    pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
+    pbxsetting::Environment environment = pbxsetting::Environment(buildEnvironment.baseEnvironment());
     environment.insertFront(buildSystem->defaultSettings(), true);
     environment.insertFront(buildContext.baseSettings(), false);
     environment.insertFront(pbxsetting::Level({

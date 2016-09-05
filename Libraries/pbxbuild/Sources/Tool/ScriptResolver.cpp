@@ -88,7 +88,7 @@ resolve(
         pbxsetting::Setting::Create("BuildPhaseIdentifier", buildPhase->blueprintIdentifier()),
     });
 
-    pbxsetting::Environment phaseEnvironment = environment;
+    pbxsetting::Environment phaseEnvironment = pbxsetting::Environment(environment);
     phaseEnvironment.insertFront(level, false);
 
     pbxsetting::Value scriptPath = pbxsetting::Value::Parse("$(TEMP_FILES_DIR)/Script-$(BuildPhaseIdentifier).sh");
@@ -110,7 +110,7 @@ resolve(
     std::string contents = (!buildPhase->shellPath().empty() ? "#!" + buildPhase->shellPath() + "\n" : "") + buildPhase->shellScript();
     auto scriptFile = Tool::Invocation::AuxiliaryFile::Data(scriptFilePath, std::vector<uint8_t>(contents.begin(), contents.end()), true);
 
-    pbxsetting::Environment scriptEnvironment = environment;
+    pbxsetting::Environment scriptEnvironment = pbxsetting::Environment(environment);
     scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, true), false);
     std::unordered_map<std::string, std::string> environmentVariables = scriptEnvironment.computeValues(pbxsetting::Condition::Empty());
 
@@ -157,7 +157,7 @@ resolve(
         pbxsetting::Setting::Create("INPUT_FILE_REGION_PATH_COMPONENT", input.localization()), // TODO(grp): Verify format of this.
     });
 
-    pbxsetting::Environment ruleEnvironment = environment;
+    pbxsetting::Environment ruleEnvironment = pbxsetting::Environment(environment);
     ruleEnvironment.insertFront(level, false);
 
     /*

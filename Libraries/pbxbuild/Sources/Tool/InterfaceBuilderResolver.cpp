@@ -53,7 +53,7 @@ resolve(
         InterfaceBuilderCommon::TargetedDeviceSetting(baseEnvironment),
         pbxsetting::Setting::Create("IBC_REGIONS_AND_STRINGS_FILES", pbxsetting::Type::FormatList(localizationStringsFiles)),
     });
-    pbxsetting::Environment interfaceBuilderEnvironment = baseEnvironment;
+    pbxsetting::Environment interfaceBuilderEnvironment = pbxsetting::Environment(baseEnvironment);
     interfaceBuilderEnvironment.insertFront(level, false);
 
     /*

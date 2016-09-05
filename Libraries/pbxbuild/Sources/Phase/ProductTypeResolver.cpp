@@ -316,7 +316,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
                         pbxsetting::Setting::Create("CPP_OTHER_PREPROCESSOR_FLAGS", pbxsetting::Value::Variable("CPP_OTHER_PREPROCESSOR_FLAGS")),
                     });
 
-                    pbxsetting::Environment preprocessEnvironment = environment;
+                    pbxsetting::Environment preprocessEnvironment = pbxsetting::Environment(environment);
                     preprocessEnvironment.insertFront(level, false);
                     toolResolver->resolve(&phaseContext->toolContext(), preprocessEnvironment, { infoPlistFile }, { infoPlistIntermediate });
 
