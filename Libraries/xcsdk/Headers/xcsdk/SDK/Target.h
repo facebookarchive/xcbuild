@@ -114,7 +114,7 @@ public:
     pbxsetting::Level settings(void) const;
 
 public:
-    std::vector<std::string> executablePaths(ext::optional<std::vector<Toolchain::shared_ptr>> const &overrideToolchains = ext::nullopt) const;
+    std::vector<std::string> executablePaths() const;
 
 public:
     static Target::shared_ptr Open(libutil::Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::shared_ptr<Platform>, std::string const &path);

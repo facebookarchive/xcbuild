@@ -52,7 +52,7 @@ settings(void) const
 }
 
 std::vector<std::string> Target::
-executablePaths(ext::optional<std::vector<Toolchain::shared_ptr>> const &overrideToolchains) const
+executablePaths() const
 {
     std::vector<std::string> paths;
 
@@ -61,15 +61,10 @@ executablePaths(ext::optional<std::vector<Toolchain::shared_ptr>> const &overrid
         paths.insert(paths.end(), platformPaths.begin(), platformPaths.end());
     }
 
-    std::vector<Toolchain::shared_ptr> const &toolchains = overrideToolchains.value_or(_toolchains);
+    std::vector<Toolchain::shared_ptr> const &toolchains = _toolchains;
     for (Toolchain::shared_ptr const &toolchain : toolchains) {
         std::vector<std::string> toolchainPaths = toolchain->executablePaths();
         paths.insert(paths.end(), toolchainPaths.begin(), toolchainPaths.end());
-    }
-
-    if (std::shared_ptr<Manager> manager = _manager.lock()) {
-        std::vector<std::string> managerPaths = manager->executablePaths();
-        paths.insert(paths.end(), managerPaths.begin(), managerPaths.end());
     }
 
     return paths;
