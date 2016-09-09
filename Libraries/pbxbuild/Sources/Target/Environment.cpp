@@ -440,7 +440,8 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     }
 
     /* Tool search directories. Use the toolchains just discovered. */
-    std::vector<std::string> executablePaths = sdk->executablePaths(toolchains);
+    std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager = buildEnvironment.sdkManager();
+    std::vector<std::string> executablePaths = sdkManager->executablePaths(sdk->platform(), sdk, toolchains);
 
     auto buildRules = Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target);
     auto buildFileDisambiguation = BuildFileDisambiguation(target);

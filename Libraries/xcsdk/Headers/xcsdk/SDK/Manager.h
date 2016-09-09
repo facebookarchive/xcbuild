@@ -80,7 +80,7 @@ public:
     /*
      * Default settings for the contents of the developer root.
      */
-    pbxsetting::Level computedSettings(void) const;
+    pbxsetting::Level computedSettings() const;
 
 public:
     /*
@@ -88,6 +88,15 @@ public:
      * root, rather than within a toolchain or a platform.
      */
     std::vector<std::string> executablePaths() const;
+
+    /*
+     * Conglomeration of executable paths that optionally includes extra toolchains
+     * and the paths from an SDK target.
+     */
+    std::vector<std::string> executablePaths(
+        Platform::shared_ptr const &platform,
+        Target::shared_ptr const &target,
+        std::vector<Toolchain::shared_ptr> const &toolchains) const;
 
 public:
     /*
