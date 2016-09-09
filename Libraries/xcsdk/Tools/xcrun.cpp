@@ -298,17 +298,70 @@ main(int argc, char **argv)
     /*
      * Determine the SDK to use.
      */
-    xcsdk::SDK::Target::shared_ptr target = manager->findTarget(SDK.value_or("macosx"));
-    if (target == nullptr) {
-        if (SDK) {
-            fprintf(stderr, "error: unable to find sdk '%s'\n", SDK->c_str());
-        } else {
-            fprintf(stderr, "error: unable to find default sdk\n");
-        }
-        return -1;
-    }
+    const std::string defaultSDK = "macosx";
+    xcsdk::SDK::Target::shared_ptr target = manager->findTarget(SDK.value_or(defaultSDK));
     if (verbose) {
-        fprintf(stderr, "verbose: using sdk '%s': %s\n", target->canonicalName().c_str(), target->path().c_str());
+        if (target == nullptr) {
+            fprintf(stderr, "verbose: not using any SDK\n");
+        } else {
+            fprintf(stderr, "verbose: using sdk '%s': %s\n", target->canonicalName().c_str(), target->path().c_str());
+        }
+    }
+
+    bool showSDKValue = options.showSDKPath() ||
+        options.showSDKVersion() ||
+        options.showSDKBuildVersion() ||
+        options.showSDKPlatformPath() ||
+        options.showSDKPlatformVersion();
+
+    /*
+     * Perform SDK-specific actions.
+     */
+    if (showSDKValue) {
+        if (target == nullptr) {
+            if (SDK) {
+                fprintf(stderr, "error: unable to find sdk '%s'\n", SDK->c_str());
+            } else {
+                fprintf(stderr, "error: unable to find default sdk '%s'\n", defaultSDK.c_str());
+            }
+            return -1;
+        }
+
+        if (options.showSDKPath()) {
+            printf("%s\n", target->path().c_str());
+        } else if (options.showSDKVersion()) {
+            printf("%s\n", target->version().c_str());
+        } else if (options.showSDKBuildVersion()) {
+            if (auto product = target->product()) {
+                printf("%s\n", product->buildVersion().c_str());
+            } else {
+                fprintf(stderr, "error: sdk has no build version\n");
+                return -1;
+            }
+        } else if (options.showSDKPlatformPath()) {
+            if (auto platform = target->platform()) {
+                printf("%s\n", platform->path().c_str());
+            } else {
+                fprintf(stderr, "error: sdk has no platform\n");
+                return -1;
+            }
+        } else if (options.showSDKPlatformVersion()) {
+            if (auto platform = target->platform()) {
+                printf("%s\n", platform->version().c_str());
+            } else {
+                fprintf(stderr, "error: sdk has no platform\n");
+                return -1;
+            }
+        }
+
+        return 0;
+    }
+
+    /*
+     * Perform toolchain-specific actions.
+     */
+    if (!options.tool()) {
+        return Help("no tool provided");
     }
 
     /*
@@ -328,7 +381,7 @@ main(int argc, char **argv)
             fprintf(stderr, "error: unable to find toolchains in '%s'\n", toolchainsInput->c_str());
             return -1;
         }
-    } else {
+    } else if (target != nullptr) {
         toolchains = target->toolchains();
     }
     if (toolchains.empty()) {
@@ -344,92 +397,57 @@ main(int argc, char **argv)
     }
 
     /*
-     * Perform actions.
+     * Collect search paths for the tool.
+     * Can be in toolchains, target (if one is provided), developer root,
+     * or default paths.
      */
-    if (options.showSDKPath()) {
-        printf("%s\n", target->path().c_str());
+    std::vector<std::string> executablePaths = manager->executablePaths(toolchains, target);
+    std::vector<std::string> defaultExecutablePaths = FSUtil::GetExecutablePaths();
+    executablePaths.insert(executablePaths.end(), defaultExecutablePaths.begin(), defaultExecutablePaths.end());
+
+    /*
+     * Find the tool to execute.
+     */
+    ext::optional<std::string> executable = filesystem.findExecutable(*options.tool(), executablePaths);
+    if (!executable) {
+        fprintf(stderr, "error: tool '%s' not found\n", options.tool()->c_str());
+        return 1;
+    }
+    if (verbose) {
+        fprintf(stderr, "verbose: resolved tool '%s' to: %s\n", options.tool()->c_str(), executable->c_str());
+    }
+
+    if (options.find()) {
+        /*
+         * Just find the tool; i.e. print its path.
+         */
+        printf("%s\n", executable->c_str());
         return 0;
-    } else if (options.showSDKVersion()) {
-        printf("%s\n", target->version().c_str());
-        return 0;
-    } else if (options.showSDKBuildVersion()) {
-        if (auto product = target->product()) {
-            printf("%s\n", product->buildVersion().c_str());
-            return 0;
-        } else {
-            fprintf(stderr, "error: sdk has no build version\n");
-            return -1;
-        }
-    } else if (options.showSDKPlatformPath()) {
-        if (auto platform = target->platform()) {
-            printf("%s\n", platform->path().c_str());
-        } else {
-            fprintf(stderr, "error: sdk has no platform\n");
-            return -1;
-        }
-    } else if (options.showSDKPlatformVersion()) {
-        if (auto platform = target->platform()) {
-            printf("%s\n", platform->version().c_str());
-        } else {
-            fprintf(stderr, "error: sdk has no platform\n");
-            return -1;
-        }
     } else {
-        if (!options.tool()) {
-            return Help("no tool provided");
+        /* Run is the default. */
+
+        /*
+         * Update effective environment to include the target path.
+         */
+        std::unordered_map<std::string, std::string> environment = SysUtil::EnvironmentVariables();
+        environment["SDKROOT"] = target->path();
+
+        if (log) {
+            printf("env SDKROOT=%s %s\n", target->path().c_str(), executable->c_str());
         }
 
         /*
-         * Collect search paths for the tool. Can be in toolchains, target, developer root, or default paths.
+         * Execute the process!
          */
-        std::vector<std::string> executablePaths = target->executablePaths(toolchains);
-        std::vector<std::string> defaultExecutablePaths = FSUtil::GetExecutablePaths();
-        executablePaths.insert(executablePaths.end(), defaultExecutablePaths.begin(), defaultExecutablePaths.end());
-
-        /*
-         * Find the tool to execute.
-         */
-        ext::optional<std::string> executable = filesystem.findExecutable(*options.tool(), executablePaths);
-        if (!executable) {
-            fprintf(stderr, "error: tool '%s' not found\n", options.tool()->c_str());
-            return 1;
-        }
         if (verbose) {
-            fprintf(stderr, "verbose: resolved tool '%s' to: %s\n", options.tool()->c_str(), executable->c_str());
+            printf("verbose: executing tool: %s\n", executable->c_str());
+        }
+        Subprocess process;
+        if (!process.execute(&filesystem, *executable, options.args(), environment)) {
+            fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
+            return -1;
         }
 
-        if (options.find()) {
-            /*
-             * Just find the tool; i.e. print its path.
-             */
-            printf("%s\n", executable->c_str());
-            return 0;
-        } else {
-            /* Run is the default. */
-
-            /*
-             * Update effective environment to include the target path.
-             */
-            std::unordered_map<std::string, std::string> environment = SysUtil::EnvironmentVariables();
-            environment["SDKROOT"] = target->path();
-
-            if (log) {
-                printf("env SDKROOT=%s %s\n", target->path().c_str(), executable->c_str());
-            }
-
-            /*
-             * Execute the process!
-             */
-            if (verbose) {
-                printf("verbose: executing tool: %s\n", executable->c_str());
-            }
-            Subprocess process;
-            if (!process.execute(&filesystem, *executable, options.args(), environment)) {
-                fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
-                return -1;
-            }
-
-            return process.exitcode();
-        }
+        return process.exitcode();
     }
 }
