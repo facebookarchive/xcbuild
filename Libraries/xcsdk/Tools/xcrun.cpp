@@ -295,94 +295,118 @@ main(int argc, char **argv)
         fprintf(stderr, "verbose: using developer root '%s'\n", manager->path().c_str());
     }
 
+    bool showSDKValue = options.showSDKPath() ||
+        options.showSDKVersion() ||
+        options.showSDKBuildVersion() ||
+        options.showSDKPlatformPath() ||
+        options.showSDKPlatformVersion();
+
     /*
      * Determine the SDK to use.
      */
-    xcsdk::SDK::Target::shared_ptr target = manager->findTarget(SDK.value_or("macosx"));
-    if (target == nullptr) {
-        if (SDK) {
-            fprintf(stderr, "error: unable to find sdk '%s'\n", SDK->c_str());
-        } else {
-            fprintf(stderr, "error: unable to find default sdk\n");
+    const std::string defaultSDK = "macosx";
+    xcsdk::SDK::Target::shared_ptr target = nullptr;
+    if (SDK) {
+        target = manager->findTarget(*SDK);
+        if (target == nullptr) {
+             printf("error: unable to find sdk: '%s'\n", SDK->c_str());
+             return -1;
         }
-        return -1;
+    } else {
+        target = target = manager->findTarget(defaultSDK);
+        /* nullptr target is not an error (except later on if SDK information is requested) */
+        if (showSDKValue && target == nullptr) {
+            printf("error: unable os find default sdk: '%s'\n", defaultSDK.c_str());
+            return -1;
+        }
     }
+
     if (verbose) {
-        fprintf(stderr, "verbose: using sdk '%s': %s\n", target->canonicalName().c_str(), target->path().c_str());
+        if (target == nullptr) {
+            fprintf(stderr, "verbose: not using any SDK\n");
+        } else {
+            fprintf(stderr, "verbose: using sdk '%s': %s\n", target->canonicalName().c_str(), target->path().c_str());
+        }
     }
 
     /*
-     * Determine the toolchains to use. Default to the SDK's toolchains.
+     * Perform SDK-specific actions.
      */
-    std::vector<xcsdk::SDK::Toolchain::shared_ptr> toolchains;
-    if (toolchainsInput) {
-        /* If the custom toolchain exists, use it instead. */
-        std::vector<std::string> toolchainTokens = pbxsetting::Type::ParseList(*toolchainsInput);
-        for (std::string const &toolchainToken : toolchainTokens) {
-            if (auto TC = manager->findToolchain(toolchainToken)) {
-                toolchains.push_back(TC);
+    if (showSDKValue) {
+        if (options.showSDKPath()) {
+            printf("%s\n", target->path().c_str());
+        } else if (options.showSDKVersion()) {
+            printf("%s\n", target->version().c_str());
+        } else if (options.showSDKBuildVersion()) {
+            if (auto product = target->product()) {
+                printf("%s\n", product->buildVersion().c_str());
+            } else {
+                fprintf(stderr, "error: sdk has no build version\n");
+                return -1;
+            }
+        } else if (options.showSDKPlatformPath()) {
+            if (auto platform = target->platform()) {
+                printf("%s\n", platform->path().c_str());
+            } else {
+                fprintf(stderr, "error: sdk has no platform\n");
+                return -1;
+            }
+        } else if (options.showSDKPlatformVersion()) {
+            if (auto platform = target->platform()) {
+                printf("%s\n", platform->version().c_str());
+            } else {
+                fprintf(stderr, "error: sdk has no platform\n");
+                return -1;
             }
         }
 
-        if (toolchains.empty()) {
-            fprintf(stderr, "error: unable to find toolchains in '%s'\n", toolchainsInput->c_str());
-            return -1;
-        }
-    } else {
-        toolchains = target->toolchains();
-    }
-    if (toolchains.empty()) {
-        fprintf(stderr, "error: unable to find any toolchains\n");
-        return -1;
-    }
-    if (verbose) {
-        fprintf(stderr, "verbose: using toolchain(s):");
-        for (xcsdk::SDK::Toolchain::shared_ptr const &toolchain : toolchains) {
-            fprintf(stderr, " '%s'", toolchain->identifier().c_str());
-        }
-        fprintf(stderr, "\n");
-    }
-
-    /*
-     * Perform actions.
-     */
-    if (options.showSDKPath()) {
-        printf("%s\n", target->path().c_str());
         return 0;
-    } else if (options.showSDKVersion()) {
-        printf("%s\n", target->version().c_str());
-        return 0;
-    } else if (options.showSDKBuildVersion()) {
-        if (auto product = target->product()) {
-            printf("%s\n", product->buildVersion().c_str());
-            return 0;
-        } else {
-            fprintf(stderr, "error: sdk has no build version\n");
-            return -1;
-        }
-    } else if (options.showSDKPlatformPath()) {
-        if (auto platform = target->platform()) {
-            printf("%s\n", platform->path().c_str());
-        } else {
-            fprintf(stderr, "error: sdk has no platform\n");
-            return -1;
-        }
-    } else if (options.showSDKPlatformVersion()) {
-        if (auto platform = target->platform()) {
-            printf("%s\n", platform->version().c_str());
-        } else {
-            fprintf(stderr, "error: sdk has no platform\n");
-            return -1;
-        }
     } else {
+        /*
+         * Perform toolchain-specific actions.
+         */
         if (!options.tool()) {
             return Help("no tool provided");
         }
 
         /*
-         * Collect search paths for the tool. Can be in toolchains, target, developer root, or default paths.
+         * Determine the toolchains to use. Default to the SDK's toolchains.
          */
-        std::vector<std::string> executablePaths = target->executablePaths(toolchains);
+        std::vector<xcsdk::SDK::Toolchain::shared_ptr> toolchains;
+        if (toolchainsInput) {
+            /* If the custom toolchain exists, use it instead. */
+            std::vector<std::string> toolchainTokens = pbxsetting::Type::ParseList(*toolchainsInput);
+            for (std::string const &toolchainToken : toolchainTokens) {
+                if (auto TC = manager->findToolchain(toolchainToken)) {
+                    toolchains.push_back(TC);
+                }
+            }
+
+            if (toolchains.empty()) {
+                fprintf(stderr, "error: unable to find toolchains in '%s'\n", toolchainsInput->c_str());
+                return -1;
+            }
+        } else if (target != nullptr) {
+            toolchains = target->toolchains();
+        }
+        if (toolchains.empty()) {
+            fprintf(stderr, "error: unable to find any toolchains\n");
+            return -1;
+        }
+        if (verbose) {
+            fprintf(stderr, "verbose: using toolchain(s):");
+            for (xcsdk::SDK::Toolchain::shared_ptr const &toolchain : toolchains) {
+                fprintf(stderr, " '%s'", toolchain->identifier().c_str());
+            }
+            fprintf(stderr, "\n");
+        }
+
+        /*
+         * Collect search paths for the tool.
+         * Can be in toolchains, target (if one is provided), developer root,
+         * or default paths.
+         */
+        std::vector<std::string> executablePaths = manager->executablePaths(target, toolchains);
         std::vector<std::string> defaultExecutablePaths = FSUtil::GetExecutablePaths();
         executablePaths.insert(executablePaths.end(), defaultExecutablePaths.begin(), defaultExecutablePaths.end());
 

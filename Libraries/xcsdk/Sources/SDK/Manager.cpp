@@ -123,6 +123,27 @@ executablePaths() const
     };
 }
 
+std::vector<std::string> Manager::
+executablePaths(xcsdk::SDK::Target::shared_ptr const &target, std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains) const
+{
+    std::vector<std::string> paths;
+
+    if (target != nullptr) {
+        std::vector<std::string> targetPaths = target->executablePaths(toolchains);
+        paths.insert(paths.end(), targetPaths.begin(), targetPaths.end());
+    } else {
+        for (Toolchain::shared_ptr const &toolchain : toolchains) {
+            std::vector<std::string> toolchainPaths = toolchain->executablePaths();
+            paths.insert(paths.end(), toolchainPaths.begin(), toolchainPaths.end());
+        }
+    }
+
+    std::vector<std::string> managerPaths = this->executablePaths();
+    paths.insert(paths.end(), managerPaths.begin(), managerPaths.end());
+
+    return paths;
+}
+
 std::shared_ptr<Manager> Manager::
 Open(Filesystem const *filesystem, std::string const &path, ext::optional<Configuration> const &configuration)
 {

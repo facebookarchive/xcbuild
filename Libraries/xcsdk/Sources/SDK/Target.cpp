@@ -67,11 +67,6 @@ executablePaths(ext::optional<std::vector<Toolchain::shared_ptr>> const &overrid
         paths.insert(paths.end(), toolchainPaths.begin(), toolchainPaths.end());
     }
 
-    if (std::shared_ptr<Manager> manager = _manager.lock()) {
-        std::vector<std::string> managerPaths = manager->executablePaths();
-        paths.insert(paths.end(), managerPaths.begin(), managerPaths.end());
-    }
-
     return paths;
 }
 
