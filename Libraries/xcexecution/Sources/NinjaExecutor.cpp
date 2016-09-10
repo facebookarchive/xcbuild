@@ -190,7 +190,7 @@ WriteNinjaRegenerate(ninja::Writer *writer, Parameters const &buildParameters, s
     std::string ruleName = "regenerate";
     writer->rule(ruleName, ninja::Value::Expression("cd $dir && $exec"));
     writer->build({ ninja::Value::String(ninjaPath) }, ruleName, inputPathValues, {
-        { "dir", ninja::Value::String(Escape::Shell(FSUtil::GetCurrentDirectory())) },
+        { "dir", ninja::Value::String(Escape::Shell(SysUtil::GetCurrentDirectory())) },
         { "exec", ninja::Value::String(exec) },
         { "description", ninja::Value::String("Regenerating Ninja files...") },
 
@@ -301,7 +301,7 @@ build(
          * Load the workspace. This can be quite slow, so only do it if it's needed to generate
          * the Ninja file. Similarly, only resolve dependencies in that case.
          */
-        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, FSUtil::GetCurrentDirectory());
+        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, SysUtil::GetCurrentDirectory());
         if (!workspaceContext) {
             fprintf(stderr, "error: unable to load workspace\n");
             return false;
@@ -361,12 +361,12 @@ build(
         /*
          * Find the path to the Ninja executable to use.
          */
-        ext::optional<std::string> executable = filesystem->findExecutable("ninja", FSUtil::GetExecutablePaths());
+        ext::optional<std::string> executable = filesystem->findExecutable("ninja", SysUtil::GetExecutablePaths());
         if (!executable) {
             /*
              * Couldn't find standard Ninja, try with llbuild.
              */
-            executable = filesystem->findExecutable("llbuild", FSUtil::GetExecutablePaths());
+            executable = filesystem->findExecutable("llbuild", SysUtil::GetExecutablePaths());
 
             /*
              * If neither Ninja or llbuild are available, can't start the build.
@@ -396,7 +396,7 @@ build(
          * Pass through all environment variables, in case they affect Ninja or build settings
          * when re-generating the Ninja files.
          */
-        std::unordered_map<std::string, std::string> environmentVariables = SysUtil::EnvironmentVariables();
+        std::unordered_map<std::string, std::string> environmentVariables = SysUtil::GetEnvironmentVariables();
 
         /*
          * Run Ninja and return if it failed. Ninja itself does the build.

@@ -15,6 +15,7 @@
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
 #include <libutil/Subprocess.h>
 
 #include <sys/types.h>
@@ -23,6 +24,7 @@
 using xcexecution::SimpleExecutor;
 using libutil::Filesystem;
 using libutil::FSUtil;
+using libutil::SysUtil;
 using libutil::Subprocess;
 
 SimpleExecutor::
@@ -43,7 +45,7 @@ build(
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
 {
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, FSUtil::GetCurrentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, SysUtil::GetCurrentDirectory());
     if (!workspaceContext) {
         return false;
     }

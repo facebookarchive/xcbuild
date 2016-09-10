@@ -12,6 +12,7 @@
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
 
 #include <dependency/DependencyInfo.h>
 #include <dependency/BinaryDependencyInfo.h>
@@ -24,6 +25,7 @@ using libutil::Escape;
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
+using libutil::SysUtil;
 
 class Options {
 private:
@@ -197,7 +199,7 @@ SerializeMakefileDependencyInfo(std::string const &output, std::vector<std::stri
     dependencyInfo.outputs() = { output };
 
     /* Normalize path as Ninja requires matching paths. */
-    std::string currentDirectory = FSUtil::GetCurrentDirectory();
+    std::string currentDirectory = SysUtil::GetCurrentDirectory();
     for (std::string const &input : inputs) {
         std::string path = FSUtil::ResolveRelativePath(input, currentDirectory);
         dependencyInfo.inputs().push_back(path);

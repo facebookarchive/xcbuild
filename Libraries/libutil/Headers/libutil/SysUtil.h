@@ -11,26 +11,54 @@
 #define __libutil_SysUtil_h
 
 #include <string>
+#include <vector>
 #include <unordered_map>
 
 namespace libutil {
 
 class SysUtil {
 public:
-    static std::unordered_map<std::string, std::string> EnvironmentVariables();
-
-public:
+    /*
+     * The path to the running executable.
+     */
     static std::string GetExecutablePath();
 
+    /*
+     * The current directory of the process.
+     */
+    static std::string GetCurrentDirectory();
+
 public:
+    /*
+     * The default environment search paths.
+     */
+    static std::vector<std::string> GetExecutablePaths();
+
+    /*
+     * All environment variables.
+     */
+    static std::unordered_map<std::string, std::string> GetEnvironmentVariables();
+
+public:
+    /*
+     * Active user name.
+     */
     static std::string GetUserName();
+
+    /*
+     * Active group name.
+     */
     static std::string GetGroupName();
 
+    /*
+     * Active user ID.
+     */
     static int32_t GetUserID();
-    static int32_t GetGroupID();
 
-public:
-    static void Sleep(uint64_t us, bool interruptible = false);
+    /*
+     * Active group ID.
+     */
+    static int32_t GetGroupID();
 };
 
 }

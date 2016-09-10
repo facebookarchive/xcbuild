@@ -39,14 +39,8 @@ public:
     static std::string NormalizePath(std::string const &path);
 
 public:
-    static std::string GetCurrentDirectory();
-
-public:
     static std::string FindFile(std::string const &name, std::vector<std::string> const &paths);
     static std::string FindExecutable(std::string const &name, std::vector<std::string> const &paths);
-
-public:
-    static std::vector<std::string> GetExecutablePaths();
 };
 
 }

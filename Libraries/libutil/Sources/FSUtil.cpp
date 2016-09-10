@@ -9,19 +9,8 @@
 
 #include <libutil/FSUtil.h>
 
-#include <climits>
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <cerrno>
-#include <sstream>
-#include <unordered_map>
-#include <unordered_set>
-
 #include <unistd.h>
 #include <libgen.h>
-#include <dirent.h>
-#include <sys/stat.h>
 
 using libutil::FSUtil;
 
@@ -116,12 +105,12 @@ GetFileExtension(std::string const &path)
 }
 
 bool FSUtil::
-IsFileExtension(std::string const &path, std::string const &extension,
-        bool insensitive)
+IsFileExtension(std::string const &path, std::string const &extension, bool insensitive)
 {
     std::string pathExtension = GetFileExtension(path);
-    if (pathExtension.empty())
+    if (pathExtension.empty()) {
         return extension.empty();
+    }
 
     if (insensitive) {
         return ::strcasecmp(pathExtension.c_str(), extension.c_str()) == 0;
@@ -131,13 +120,12 @@ IsFileExtension(std::string const &path, std::string const &extension,
 }
 
 bool FSUtil::
-IsFileExtension(std::string const &path,
-        std::initializer_list <std::string> const &extensions,
-        bool insensitive)
+IsFileExtension(std::string const &path, std::initializer_list<std::string> const &extensions, bool insensitive)
 {
     std::string pathExtension = GetFileExtension(path);
-    if (pathExtension.empty())
+    if (pathExtension.empty()) {
         return false;
+    }
 
     for (auto const &extension : extensions) {
         bool match = false;
@@ -173,40 +161,16 @@ ResolveRelativePath(std::string const &path, std::string const &workingDirectory
     }
 }
 
-std::string FSUtil::
-GetCurrentDirectory()
-{
-    char path[PATH_MAX + 1];
-    if (::getcwd(path, sizeof(path)) == nullptr) {
-        path[0] = '\0';
-    }
-    return path;
-}
-
-std::vector<std::string> FSUtil::
-GetExecutablePaths()
-{
-    std::vector<std::string>        vpaths;
-    std::unordered_set<std::string> seen;
-    std::string                     path;
-    std::istringstream              is(::getenv("PATH"));
-
-    while (std::getline(is, path, ':')) {
-        if (seen.find(path) != seen.end()) {
-            continue;
-        }
-
-        vpaths.push_back(path);
-        seen.insert(path);
-    }
-
-    return vpaths;
-}
-
 static size_t
-SimplePathNormalize(char const *in, char *out, size_t outSize, char separator,
-        char const *invalidCharSet, bool dontWantRoot, bool relative,
-        char replacementChar)
+SimplePathNormalize(
+    char const *in,
+    char *out,
+    size_t outSize,
+    char separator,
+    char const *invalidCharSet,
+    bool dontWantRoot,
+    bool relative,
+    char replacementChar)
 {
     char const *i = in;
     char *o = out;
@@ -272,12 +236,12 @@ NormalizePath(std::string const &path)
 {
     std::string outputPath;
 
-    if (path.empty())
+    if (path.empty()) {
         return std::string();
+    }
 
     outputPath.resize(path.size() * 2);
-    size_t size = ::POSIXPathNormalize(path.c_str(),
-            &outputPath[0], outputPath.size(), path[0] != '/');
+    size_t size = ::POSIXPathNormalize(path.c_str(), &outputPath[0], outputPath.size(), path[0] != '/');
     outputPath.resize(size);
 
     return outputPath;

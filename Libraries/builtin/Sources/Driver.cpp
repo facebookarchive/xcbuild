@@ -11,11 +11,13 @@
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
 
 using builtin::Driver;
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
+using libutil::SysUtil;
 
 Driver::
 Driver()
@@ -45,5 +47,5 @@ runc(int argc, char **argv, char **envp)
         }
     }
 
-    return run(args, environment, &filesystem, FSUtil::GetCurrentDirectory());
+    return run(args, environment, &filesystem, SysUtil::GetCurrentDirectory());
 }

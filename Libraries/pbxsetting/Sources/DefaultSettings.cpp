@@ -28,7 +28,7 @@ Environment(void)
 {
     std::vector<Setting> settings;
 
-    for (auto const &variable : SysUtil::EnvironmentVariables()) {
+    for (auto const &variable : SysUtil::GetEnvironmentVariables()) {
         // TODO(grp): Is this right? Should this be filtered at another level?
         if (variable.first.front() != '_') {
             Setting setting = Setting::Create(variable.first, variable.second);

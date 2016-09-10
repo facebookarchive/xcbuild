@@ -11,12 +11,12 @@
 #include <xcdriver/Options.h>
 #include <xcdriver/Action.h>
 #include <libutil/Filesystem.h>
-#include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
 
 using xcdriver::ShowBuildSettingsAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::FSUtil;
+using libutil::SysUtil;
 
 ShowBuildSettingsAction::
 ShowBuildSettingsAction()
@@ -41,10 +41,10 @@ Run(Filesystem const *filesystem, Options const &options)
         return -1;
     }
 
-    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(filesystem, buildEnvironment->baseEnvironment(), options, FSUtil::GetCurrentDirectory());
+    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(filesystem, buildEnvironment->baseEnvironment(), options, SysUtil::GetCurrentDirectory());
     xcexecution::Parameters parameters = Action::CreateParameters(options, overrideLevels);
 
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = parameters.loadWorkspace(filesystem, *buildEnvironment, FSUtil::GetCurrentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = parameters.loadWorkspace(filesystem, *buildEnvironment, SysUtil::GetCurrentDirectory());
     if (!workspaceContext) {
         return -1;
     }

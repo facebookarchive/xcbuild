@@ -383,7 +383,7 @@ main(int argc, char **argv)
          * Collect search paths for the tool. Can be in toolchains, target, developer root, or default paths.
          */
         std::vector<std::string> executablePaths = target->executablePaths(toolchains);
-        std::vector<std::string> defaultExecutablePaths = FSUtil::GetExecutablePaths();
+        std::vector<std::string> defaultExecutablePaths = SysUtil::GetExecutablePaths();
         executablePaths.insert(executablePaths.end(), defaultExecutablePaths.begin(), defaultExecutablePaths.end());
 
         /*
@@ -410,7 +410,7 @@ main(int argc, char **argv)
             /*
              * Update effective environment to include the target path.
              */
-            std::unordered_map<std::string, std::string> environment = SysUtil::EnvironmentVariables();
+            std::unordered_map<std::string, std::string> environment = SysUtil::GetEnvironmentVariables();
             environment["SDKROOT"] = target->path();
 
             if (log) {

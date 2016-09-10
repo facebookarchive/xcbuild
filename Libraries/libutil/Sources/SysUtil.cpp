@@ -11,6 +11,7 @@
 #include <libutil/FSUtil.h>
 
 #include <sstream>
+#include <unordered_set>
 #include <cstring>
 #include <cassert>
 
@@ -29,26 +30,19 @@
 #endif
 #endif
 
-extern char **environ;
+extern "C" char **environ;
 
 using libutil::SysUtil;
 using libutil::FSUtil;
 
-std::unordered_map<std::string, std::string> SysUtil::
-EnvironmentVariables()
+std::string SysUtil::
+GetCurrentDirectory()
 {
-    std::unordered_map<std::string, std::string> environment;
-
-    for (char **current = environ; *current; current++) {
-        std::string variable = *current;
-        std::string::size_type offset = variable.find('=');
-
-        std::string name = variable.substr(0, offset);
-        std::string value = variable.substr(offset + 1);
-        environment.insert(std::make_pair(name, value));
+    char path[PATH_MAX + 1];
+    if (::getcwd(path, sizeof(path)) == nullptr) {
+        path[0] = '\0';
     }
-
-    return environment;
+    return path;
 }
 
 #if defined(__linux__)
@@ -107,6 +101,43 @@ GetExecutablePath()
 #endif
 }
 
+std::unordered_map<std::string, std::string> SysUtil::
+GetEnvironmentVariables()
+{
+    std::unordered_map<std::string, std::string> environment;
+
+    for (char **current = environ; *current; current++) {
+        std::string variable = *current;
+        std::string::size_type offset = variable.find('=');
+
+        std::string name = variable.substr(0, offset);
+        std::string value = variable.substr(offset + 1);
+        environment.insert(std::make_pair(name, value));
+    }
+
+    return environment;
+}
+
+std::vector<std::string> SysUtil::
+GetExecutablePaths()
+{
+    std::vector<std::string>        vpaths;
+    std::unordered_set<std::string> seen;
+    std::string                     path;
+    std::istringstream              is(::getenv("PATH"));
+
+    while (std::getline(is, path, ':')) {
+        if (seen.find(path) != seen.end()) {
+            continue;
+        }
+
+        vpaths.push_back(path);
+        seen.insert(path);
+    }
+
+    return vpaths;
+}
+
 std::string SysUtil::
 GetUserName()
 {
@@ -163,21 +194,3 @@ GetGroupID()
     return ::getgid();
 }
 
-void SysUtil::
-Sleep(uint64_t us, bool interruptible)
-{
-    struct timeval tv;
-
-    tv.tv_sec  = us / 1000000;
-    tv.tv_usec = us % 1000000;
-
-    for (;;) {
-        int rc = ::select(0, nullptr, nullptr, nullptr, &tv);
-        if (rc < 0) {
-            if (errno == EINTR && !interruptible)
-                continue;
-
-            break;
-        }
-    }
-}
