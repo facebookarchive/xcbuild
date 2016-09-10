@@ -233,7 +233,7 @@ png_user_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
 std::pair<ext::optional<Image>, std::string> PNG::
 Read(std::vector<uint8_t> const &contents)
 {
-    if (contents.size() < 8 || png_sig_cmp(static_cast<png_const_bytep>(contents.data()), 0, 8)) {
+    if (contents.size() < 8 || png_sig_cmp(const_cast<png_bytep>(static_cast<png_byte const *>(contents.data())), 0, 8)) {
         return std::make_pair(ext::nullopt, "contents is not a PNG");
     }
 

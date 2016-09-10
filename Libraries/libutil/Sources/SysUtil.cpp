@@ -137,7 +137,7 @@ executableSearchPaths() const
         std::unordered_set<std::string> seen;
 
         std::string path;
-        std::istringstream is = std::istringstream(*value);
+        std::istringstream is(*value);
         while (std::getline(is, path, ':')) {
             if (seen.find(path) != seen.end()) {
                 continue;

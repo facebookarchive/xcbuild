@@ -9,6 +9,9 @@
 
 #include <libutil/FSUtil.h>
 
+#include <cstring>
+
+#include <strings.h>
 #include <unistd.h>
 #include <libgen.h>
 
