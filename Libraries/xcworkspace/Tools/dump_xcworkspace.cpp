@@ -12,6 +12,7 @@
 #include <xcworkspace/xcworkspace.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
+#include <libutil/SysUtil.h>
 
 #include <algorithm>
 #include <cstring>
@@ -170,7 +171,7 @@ main(int argc, char **argv)
     printf("Base Path:      %s\n", workspace->basePath().c_str());
     printf("Name:           %s\n", workspace->name().c_str());
 
-    auto workspaceGroup = xcscheme::SchemeGroup::Open(&filesystem, workspace->basePath(), workspace->projectFile(), workspace->name());
+    auto workspaceGroup = xcscheme::SchemeGroup::Open(&filesystem, SysUtil::GetUserName(), workspace->basePath(), workspace->projectFile(), workspace->name());
 
     printf("Schemes:\n");
     if (workspaceGroup) {
@@ -215,7 +216,7 @@ main(int argc, char **argv)
                 std::string path = MakePath(&filesystem, *workspace, g, fref.location(), false);
                 auto project = PBX::Project::Open(&filesystem, path);
                 if (project) {
-                    auto projectGroup = xcscheme::SchemeGroup::Open(&filesystem, project->basePath(), project->projectFile(), project->name());
+                    auto projectGroup = xcscheme::SchemeGroup::Open(&filesystem, SysUtil::GetUserName(), project->basePath(), project->projectFile(), project->name());
                     if (projectGroup) {
                         schemes.insert(schemes.end(),
                                        projectGroup->schemes().begin(),
