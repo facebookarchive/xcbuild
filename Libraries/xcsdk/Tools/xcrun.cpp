@@ -431,14 +431,16 @@ main(int argc, char **argv)
         } else {
             /* Run is the default. */
 
-            /*
-             * Update effective environment to include the target path.
-             */
             std::unordered_map<std::string, std::string> environment = SysUtil::GetEnvironmentVariables();
-            environment["SDKROOT"] = target->path();
 
-            if (log) {
-                printf("env SDKROOT=%s %s\n", target->path().c_str(), executable->c_str());
+            if (target != nullptr) {
+                /*
+                 * Update effective environment to include the target path.
+                 */
+                environment["SDKROOT"] = target->path();
+                if (log) {
+                    printf("env SDKROOT=%s %s\n", target->path().c_str(), executable->c_str());
+                }
             }
 
             /*
