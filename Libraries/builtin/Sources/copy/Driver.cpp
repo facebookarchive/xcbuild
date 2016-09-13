@@ -12,6 +12,7 @@
 
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
 #include <libutil/Subprocess.h>
 
 #include <unordered_set>
@@ -20,6 +21,7 @@ using builtin::copy::Driver;
 using builtin::copy::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
+using libutil::SysUtil;
 using libutil::Subprocess;
 
 Driver::
@@ -45,14 +47,17 @@ CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const
         return false;
     }
 
+    std::unordered_map<std::string, std::string> environment = SysUtil::GetEnvironmentVariables();
+    std::string workingDirectory = SysUtil::GetCurrentDirectory();
+
     Subprocess cp;
-    if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }) || cp.exitcode() != 0) {
+    if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }, environment, workingDirectory) || cp.exitcode() != 0) {
         return false;
     }
 
     /* Should preserve permissions but make writable. */
     Subprocess chmod;
-    if (!chmod.execute(filesystem, "/bin/chmod", { "-R", "+w", outputPath }) || chmod.exitcode() != 0) {
+    if (!chmod.execute(filesystem, "/bin/chmod", { "-R", "+w", outputPath }, environment, workingDirectory) || chmod.exitcode() != 0) {
         return false;
     }
 

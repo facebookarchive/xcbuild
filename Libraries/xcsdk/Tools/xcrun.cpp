@@ -448,7 +448,7 @@ main(int argc, char **argv)
                 printf("verbose: executing tool: %s\n", executable->c_str());
             }
             Subprocess process;
-            if (!process.execute(&filesystem, *executable, options.args(), environment)) {
+            if (!process.execute(&filesystem, *executable, options.args(), environment, SysUtil::GetCurrentDirectory())) {
                 fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
                 return -1;
             }
