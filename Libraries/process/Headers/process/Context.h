@@ -82,7 +82,7 @@ public:
     /*
      * The home directory from the environment.
      */
-    std::string userHomeDirectory() const;
+    virtual ext::optional<std::string> userHomeDirectory() const;
 
 public:
     /*

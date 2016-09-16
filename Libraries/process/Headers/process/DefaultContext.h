@@ -37,6 +37,9 @@ public:
     virtual int32_t groupID() const;
     virtual std::string const &userName() const;
     virtual std::string const &groupName() const;
+
+public:
+    virtual ext::optional<std::string> userHomeDirectory() const;
 };
 
 }
