@@ -73,7 +73,7 @@ CreateParameters(Options const &options, std::vector<pbxsetting::Level> const &o
         options.workspace(),
         options.project(),
         options.scheme(),
-        options.target(),
+        (!options.target().empty() ? ext::make_optional(options.target()) : ext::nullopt),
         options.allTargets(),
         options.actions(),
         options.configuration(),
