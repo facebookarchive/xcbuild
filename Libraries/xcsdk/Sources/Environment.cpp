@@ -7,6 +7,10 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+#include <pwd.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <xcsdk/Environment.h>
 #include <libutil/Base.h>
 #include <libutil/Filesystem.h>
@@ -16,6 +20,16 @@
 using xcsdk::Environment;
 using libutil::Filesystem;
 using libutil::FSUtil;
+
+static std::string
+UserDeveloperRootLink()
+{
+    char *home_dir = getenv("HOME");
+    if (home_dir == NULL) {
+        home_dir = getpwuid(getuid())->pw_dir;
+    }
+    return std::string(home_dir) + "/.xcsdk/xcode_select_link";
+}
 
 static std::string
 PrimaryDeveloperRootLink()
@@ -48,6 +62,10 @@ DeveloperRoot(process::Context const *processContext, Filesystem const *filesyst
 {
     if (auto path = processContext->environmentVariable("DEVELOPER_DIR")) {
         return ResolveDeveloperRoot(filesystem, *path);
+    }
+
+    if (auto path = filesystem->readSymbolicLink(UserDeveloperRootLink())) {
+        return path;
     }
 
     if (auto path = filesystem->readSymbolicLink(PrimaryDeveloperRootLink())) {
