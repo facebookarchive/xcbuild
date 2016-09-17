@@ -101,6 +101,16 @@ GetExecutablePath()
 #endif
 }
 
+ext::optional<std::string> SysUtil::
+GetEnvironmentVariable(std::string const &variable)
+{
+    if (char *value = getenv(variable.c_str())) {
+        return std::string(value);
+    } else {
+        return ext::nullopt;
+    }
+}
+
 std::unordered_map<std::string, std::string> SysUtil::
 GetEnvironmentVariables()
 {

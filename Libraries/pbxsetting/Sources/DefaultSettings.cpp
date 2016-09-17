@@ -14,8 +14,6 @@
 
 #include <cstdlib>
 
-#include <unistd.h>
-
 using pbxsetting::DefaultSettings;
 using pbxsetting::Level;
 using pbxsetting::Setting;

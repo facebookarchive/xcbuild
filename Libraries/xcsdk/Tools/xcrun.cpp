@@ -251,19 +251,15 @@ main(int argc, char **argv)
      */
     ext::optional<std::string> toolchainsInput = options.toolchain();
     if (!toolchainsInput) {
-        if (char const *toolchains = getenv("TOOLCHAINS")) {
-            toolchainsInput = std::string(toolchains);
-        }
+        toolchainsInput = SysUtil::GetEnvironmentVariable("TOOLCHAINS");
     }
     ext::optional<std::string> SDK = options.SDK();
     if (!SDK) {
-        if (char const *sdkroot = getenv("SDKROOT")) {
-            SDK = std::string(sdkroot);
-        }
+        SDK = SysUtil::GetEnvironmentVariable("SDKROOT");
     }
-    bool verbose = options.verbose() || getenv("xcrun_verbose") != NULL;
-    bool log = options.log() || getenv("xcrun_log") != NULL;
-    bool nocache = options.noCache() || getenv("xcrun_nocache") != NULL;
+    bool verbose = options.verbose() || (bool)SysUtil::GetEnvironmentVariable("xcrun_verbose");
+    bool log = options.log() || (bool)SysUtil::GetEnvironmentVariable("xcrun_log");
+    bool nocache = options.noCache() || (bool)SysUtil::GetEnvironmentVariable("xcrun_nocache");
 
     /*
      * Warn about unhandled arguments.

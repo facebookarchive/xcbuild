@@ -11,11 +11,13 @@
 #include <xcdriver/Options.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <libutil/SysUtil.h>
 
 using xcdriver::Action;
 using xcdriver::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
+using libutil::SysUtil;
 
 Action::
 Action()
@@ -53,8 +55,8 @@ CreateOverrideLevels(Filesystem const *filesystem, pbxsetting::Environment const
         }
     }
 
-    if (getenv("XCODE_XCCONFIG_FILE")) {
-        std::string path = FSUtil::ResolveRelativePath(getenv("XCODE_XCCONFIG_FILE"), workingDirectory);
+    if (ext::optional<std::string> configFile = SysUtil::GetEnvironmentVariable("XCODE_XCCONFIG_FILE")) {
+        std::string path = FSUtil::ResolveRelativePath(*configFile, workingDirectory);
         ext::optional<pbxsetting::XC::Config> config = pbxsetting::XC::Config::Load(filesystem, environment, path);
         if (!config) {
             fprintf(stderr, "warning: unable to open xcconfig from environment '%s'\n", path.c_str());

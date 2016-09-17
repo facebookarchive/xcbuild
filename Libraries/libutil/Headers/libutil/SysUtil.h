@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <ext/optional>
 
 namespace libutil {
 
@@ -33,6 +34,11 @@ public:
      * The default environment search paths.
      */
     static std::vector<std::string> GetExecutablePaths();
+
+    /*
+     * Single environment variable.
+     */
+    static ext::optional<std::string> GetEnvironmentVariable(std::string const &variable);
 
     /*
      * All environment variables.

@@ -8,16 +8,18 @@
  */
 
 #include <xcsdk/Configuration.h>
-#include <libutil/Filesystem.h>
 #include <plist/Array.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
 #include <plist/Format/Any.h>
+#include <libutil/Filesystem.h>
+#include <libutil/SysUtil.h>
 
 #include <unistd.h>
- 
+
 using xcsdk::Configuration;
 using libutil::Filesystem;
+using libutil::SysUtil;
 
 Configuration::
 Configuration(
@@ -32,12 +34,12 @@ std::vector<std::string> Configuration::
 DefaultPaths()
 {
     std::vector<std::string> defaultPaths;
-    if (char const *environmentPath = getenv("XCSDK_CONFIGURATION_PATH")) {
-        defaultPaths.push_back(std::string(environmentPath));
+    if (ext::optional<std::string> environmentPath = SysUtil::GetEnvironmentVariable("XCSDK_CONFIGURATION_PATH")) {
+        defaultPaths.push_back(*environmentPath);
     } else {
-        char const *homePath = getenv("HOME");
-        if (getuid() != 0 && homePath != nullptr) {
-            defaultPaths.push_back(std::string(homePath) + "/.xcsdk/xcsdk_configuration.plist");
+        ext::optional<std::string> homePath = SysUtil::GetEnvironmentVariable("HOME");
+        if (getuid() != 0 && homePath) {
+            defaultPaths.push_back(*homePath + "/.xcsdk/xcsdk_configuration.plist");
         }
         defaultPaths.push_back("/var/db/xcsdk_configuration.plist");
     }
