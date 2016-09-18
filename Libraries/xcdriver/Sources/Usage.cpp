@@ -19,7 +19,7 @@ using libutil::SysUtil;
 
 std::string Usage::
 Text() {
-    std::string executable = FSUtil::GetBaseName(SysUtil::GetExecutablePath());
+    std::string executable = FSUtil::GetBaseName(SysUtil::GetDefault()->executablePath());
 
     std::ostringstream result;
     result << "Usage: " << executable << " [-project <projectname>] "

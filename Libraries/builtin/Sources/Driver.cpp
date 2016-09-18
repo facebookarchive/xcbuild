@@ -47,5 +47,5 @@ runc(int argc, char **argv, char **envp)
         }
     }
 
-    return run(args, environment, &filesystem, SysUtil::GetCurrentDirectory());
+    return run(args, environment, &filesystem, SysUtil::GetDefault()->currentDirectory());
 }

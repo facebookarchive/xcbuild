@@ -199,7 +199,7 @@ SerializeMakefileDependencyInfo(std::string const &output, std::vector<std::stri
     dependencyInfo.outputs() = { output };
 
     /* Normalize path as Ninja requires matching paths. */
-    std::string currentDirectory = SysUtil::GetCurrentDirectory();
+    std::string currentDirectory = SysUtil::GetDefault()->currentDirectory();
     for (std::string const &input : inputs) {
         std::string path = FSUtil::ResolveRelativePath(input, currentDirectory);
         dependencyInfo.inputs().push_back(path);

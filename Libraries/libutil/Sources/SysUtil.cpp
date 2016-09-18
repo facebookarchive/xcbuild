@@ -36,7 +36,7 @@ using libutil::SysUtil;
 using libutil::FSUtil;
 
 std::string SysUtil::
-GetCurrentDirectory()
+currentDirectory() const
 {
     char path[PATH_MAX + 1];
     if (::getcwd(path, sizeof(path)) == nullptr) {
@@ -66,7 +66,7 @@ static void InitialExecutablePathInitialize(int argc, char **argv)
 #endif
 
 std::string SysUtil::
-GetExecutablePath()
+executablePath() const
 {
 #if defined(__APPLE__)
     uint32_t size = 0;
@@ -102,7 +102,7 @@ GetExecutablePath()
 }
 
 ext::optional<std::string> SysUtil::
-GetEnvironmentVariable(std::string const &variable)
+environmentVariable(std::string const &variable) const
 {
     if (char *value = getenv(variable.c_str())) {
         return std::string(value);
@@ -112,7 +112,7 @@ GetEnvironmentVariable(std::string const &variable)
 }
 
 std::unordered_map<std::string, std::string> SysUtil::
-GetEnvironmentVariables()
+environmentVariables() const
 {
     std::unordered_map<std::string, std::string> environment;
 
@@ -122,43 +122,46 @@ GetEnvironmentVariables()
 
         std::string name = variable.substr(0, offset);
         std::string value = variable.substr(offset + 1);
-        environment.insert(std::make_pair(name, value));
+        environment.insert({ name, value });
     }
 
     return environment;
 }
 
 std::vector<std::string> SysUtil::
-GetExecutablePaths()
+executableSearchPaths() const
 {
-    std::vector<std::string>        vpaths;
-    std::unordered_set<std::string> seen;
-    std::string                     path;
-    std::istringstream              is(::getenv("PATH"));
+    std::vector<std::string> paths;
 
-    while (std::getline(is, path, ':')) {
-        if (seen.find(path) != seen.end()) {
-            continue;
+    if (ext::optional<std::string> value = environmentVariable("PATH")) {
+        std::unordered_set<std::string> seen;
+
+        std::string path;
+        std::istringstream is = std::istringstream(*value);
+        while (std::getline(is, path, ':')) {
+            if (seen.find(path) != seen.end()) {
+                continue;
+            }
+
+            paths.push_back(path);
+            seen.insert(path);
         }
-
-        vpaths.push_back(path);
-        seen.insert(path);
     }
 
-    return vpaths;
+    return paths;
 }
 
 std::string SysUtil::
-GetUserName()
+userName() const
 {
     std::string result;
 
-    struct passwd const *pw = ::getpwuid(::getuid());
-    if (pw != nullptr) {
+    if (struct passwd const *pw = ::getpwuid(::getuid())) {
         if (pw->pw_name != nullptr) {
-            result = pw->pw_name;
+            result = std::string(pw->pw_name);
         }
     }
+
     if (result.empty()) {
         std::ostringstream os;
         os << ::getuid();
@@ -171,16 +174,16 @@ GetUserName()
 }
 
 std::string SysUtil::
-GetGroupName()
+groupName() const
 {
     std::string result;
 
-    struct group const *gr = ::getgrgid(::getgid());
-    if (gr != nullptr) {
+    if (struct group const *gr = ::getgrgid(::getgid())) {
         if (gr->gr_name != nullptr) {
             result = gr->gr_name;
         }
     }
+
     if (result.empty()) {
         std::ostringstream os;
         os << ::getgid();
@@ -193,14 +196,25 @@ GetGroupName()
 }
 
 int32_t SysUtil::
-GetUserID()
+userID() const
 {
     return ::getuid();
 }
 
 int32_t SysUtil::
-GetGroupID()
+groupID() const
 {
     return ::getgid();
+}
+
+SysUtil const *SysUtil::
+GetDefault()
+{
+    static SysUtil *sysUtil = nullptr;
+    if (sysUtil == nullptr) {
+        sysUtil = new SysUtil();
+    }
+
+    return sysUtil;
 }
 

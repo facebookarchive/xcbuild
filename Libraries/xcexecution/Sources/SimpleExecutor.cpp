@@ -45,7 +45,7 @@ build(
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
 {
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, SysUtil::GetCurrentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, SysUtil::GetDefault()->currentDirectory());
     if (!workspaceContext) {
         return false;
     }

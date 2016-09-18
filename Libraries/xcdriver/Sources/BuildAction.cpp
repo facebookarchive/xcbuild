@@ -143,7 +143,7 @@ Run(Filesystem *filesystem, Options const &options)
     }
 
     /* The build settings passed in on the command line override all others. */
-    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(filesystem, buildEnvironment->baseEnvironment(), options, SysUtil::GetCurrentDirectory());
+    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(filesystem, buildEnvironment->baseEnvironment(), options, SysUtil::GetDefault()->currentDirectory());
 
     /*
      * Create the build parameters. The executor uses this to load a workspace and create a

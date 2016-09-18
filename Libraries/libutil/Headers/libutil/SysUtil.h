@@ -22,49 +22,61 @@ public:
     /*
      * The path to the running executable.
      */
-    static std::string GetExecutablePath();
+    std::string executablePath() const;
 
     /*
      * The current directory of the process.
      */
-    static std::string GetCurrentDirectory();
+    std::string currentDirectory() const;
 
 public:
-    /*
-     * The default environment search paths.
-     */
-    static std::vector<std::string> GetExecutablePaths();
-
-    /*
-     * Single environment variable.
-     */
-    static ext::optional<std::string> GetEnvironmentVariable(std::string const &variable);
-
     /*
      * All environment variables.
      */
-    static std::unordered_map<std::string, std::string> GetEnvironmentVariables();
+    std::unordered_map<std::string, std::string> environmentVariables() const;
 
 public:
     /*
-     * Active user name.
-     */
-    static std::string GetUserName();
-
-    /*
-     * Active group name.
-     */
-    static std::string GetGroupName();
-
-    /*
      * Active user ID.
      */
-    static int32_t GetUserID();
+    int32_t userID() const;
 
     /*
      * Active group ID.
      */
-    static int32_t GetGroupID();
+    int32_t groupID() const;
+
+    /*
+     * Active user name.
+     */
+    std::string userName() const;
+
+    /*
+     * Active group name.
+     */
+    std::string groupName() const;
+
+public:
+    /*
+     * Single environment variable.
+     */
+    ext::optional<std::string> environmentVariable(std::string const &variable) const;
+
+    /*
+     * The default environment search paths.
+     */
+    std::vector<std::string> executableSearchPaths() const;
+
+    /*
+     * The home directory from the environment.
+     */
+    std::string userHomeDirectory() const;
+
+public:
+    /*
+     * Get the system instance.
+     */
+    static SysUtil const *GetDefault();
 };
 
 }

@@ -14,6 +14,8 @@
 
 #include <cstdlib>
 
+#include <unistd.h>
+
 using pbxsetting::DefaultSettings;
 using pbxsetting::Level;
 using pbxsetting::Setting;
@@ -26,7 +28,7 @@ Environment(void)
 {
     std::vector<Setting> settings;
 
-    for (auto const &variable : SysUtil::GetEnvironmentVariables()) {
+    for (auto const &variable : SysUtil::GetDefault()->environmentVariables()) {
         // TODO(grp): Is this right? Should this be filtered at another level?
         if (variable.first.front() != '_') {
             Setting setting = Setting::Create(variable.first, variable.second);
@@ -34,10 +36,10 @@ Environment(void)
         }
     }
 
-    settings.push_back(Setting::Create("UID", Type::FormatInteger(SysUtil::GetUserID())));
-    settings.push_back(Setting::Create("USER", SysUtil::GetUserName()));
-    settings.push_back(Setting::Create("GID", Type::FormatInteger(SysUtil::GetGroupID())));
-    settings.push_back(Setting::Create("GROUP", SysUtil::GetGroupName()));
+    settings.push_back(Setting::Create("UID", Type::FormatInteger(SysUtil::GetDefault()->userID())));
+    settings.push_back(Setting::Create("USER", SysUtil::GetDefault()->userName()));
+    settings.push_back(Setting::Create("GID", Type::FormatInteger(SysUtil::GetDefault()->groupID())));
+    settings.push_back(Setting::Create("GROUP", SysUtil::GetDefault()->groupName()));
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));

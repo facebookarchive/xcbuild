@@ -55,7 +55,7 @@ CreateOverrideLevels(Filesystem const *filesystem, pbxsetting::Environment const
         }
     }
 
-    if (ext::optional<std::string> configFile = SysUtil::GetEnvironmentVariable("XCODE_XCCONFIG_FILE")) {
+    if (ext::optional<std::string> configFile = SysUtil::GetDefault()->environmentVariable("XCODE_XCCONFIG_FILE")) {
         std::string path = FSUtil::ResolveRelativePath(*configFile, workingDirectory);
         ext::optional<pbxsetting::XC::Config> config = pbxsetting::XC::Config::Load(filesystem, environment, path);
         if (!config) {

@@ -47,7 +47,7 @@ ResolveDeveloperRoot(Filesystem const *filesystem, std::string const &path)
 ext::optional<std::string> Environment::
 DeveloperRoot(Filesystem const *filesystem)
 {
-    if (auto path = SysUtil::GetEnvironmentVariable("DEVELOPER_DIR")) {
+    if (auto path = SysUtil::GetDefault()->environmentVariable("DEVELOPER_DIR")) {
         return ResolveDeveloperRoot(filesystem, *path);
     }
 

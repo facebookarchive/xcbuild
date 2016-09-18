@@ -170,7 +170,7 @@ WriteNinjaRegenerate(ninja::Writer *writer, Parameters const &buildParameters, s
      * Re-run the current executable to re-generate the Ninja file. There is an
      * implicit assumption here that this executable takes the parameters above.
      */
-    std::string exec = Escape::Shell(SysUtil::GetExecutablePath());
+    std::string exec = Escape::Shell(SysUtil::GetDefault()->executablePath());
 
     /*
      * Escape executable and input parameters for Ninja.
@@ -190,7 +190,7 @@ WriteNinjaRegenerate(ninja::Writer *writer, Parameters const &buildParameters, s
     std::string ruleName = "regenerate";
     writer->rule(ruleName, ninja::Value::Expression("cd $dir && $exec"));
     writer->build({ ninja::Value::String(ninjaPath) }, ruleName, inputPathValues, {
-        { "dir", ninja::Value::String(Escape::Shell(SysUtil::GetCurrentDirectory())) },
+        { "dir", ninja::Value::String(Escape::Shell(SysUtil::GetDefault()->currentDirectory())) },
         { "exec", ninja::Value::String(exec) },
         { "description", ninja::Value::String("Regenerating Ninja files...") },
 
@@ -301,7 +301,7 @@ build(
          * Load the workspace. This can be quite slow, so only do it if it's needed to generate
          * the Ninja file. Similarly, only resolve dependencies in that case.
          */
-        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, SysUtil::GetCurrentDirectory());
+        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, SysUtil::GetDefault()->currentDirectory());
         if (!workspaceContext) {
             fprintf(stderr, "error: unable to load workspace\n");
             return false;
@@ -361,12 +361,12 @@ build(
         /*
          * Find the path to the Ninja executable to use.
          */
-        ext::optional<std::string> executable = filesystem->findExecutable("ninja", SysUtil::GetExecutablePaths());
+        ext::optional<std::string> executable = filesystem->findExecutable("ninja", SysUtil::GetDefault()->executableSearchPaths());
         if (!executable) {
             /*
              * Couldn't find standard Ninja, try with llbuild.
              */
-            executable = filesystem->findExecutable("llbuild", SysUtil::GetExecutablePaths());
+            executable = filesystem->findExecutable("llbuild", SysUtil::GetDefault()->executableSearchPaths());
 
             /*
              * If neither Ninja or llbuild are available, can't start the build.
@@ -396,7 +396,7 @@ build(
          * Pass through all environment variables, in case they affect Ninja or build settings
          * when re-generating the Ninja files.
          */
-        std::unordered_map<std::string, std::string> environmentVariables = SysUtil::GetEnvironmentVariables();
+        std::unordered_map<std::string, std::string> environmentVariables = SysUtil::GetDefault()->environmentVariables();
 
         /*
          * Run Ninja and return if it failed. Ninja itself does the build.
@@ -649,7 +649,7 @@ buildTargetInvocations(
 static std::string
 LocalExecutable(std::string const &executable)
 {
-    std::string executableRoot = FSUtil::GetDirectoryName(SysUtil::GetExecutablePath());
+    std::string executableRoot = FSUtil::GetDirectoryName(SysUtil::GetDefault()->executablePath());
     return executableRoot + "/" + executable;
 }
 

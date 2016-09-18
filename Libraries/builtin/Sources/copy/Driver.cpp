@@ -47,8 +47,8 @@ CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const
         return false;
     }
 
-    std::unordered_map<std::string, std::string> environment = SysUtil::GetEnvironmentVariables();
-    std::string workingDirectory = SysUtil::GetCurrentDirectory();
+    std::unordered_map<std::string, std::string> environment = SysUtil::GetDefault()->environmentVariables();
+    std::string workingDirectory = SysUtil::GetDefault()->currentDirectory();
 
     Subprocess cp;
     if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }, environment, workingDirectory) || cp.exitcode() != 0) {

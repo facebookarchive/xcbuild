@@ -191,7 +191,7 @@ CompleteDump(Filesystem const *filesystem, PBX::Project::shared_ptr const &proje
     printf("Name:         %s\n", project->name().c_str());
 
     printf("Schemes:\n");
-    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(filesystem, SysUtil::GetUserName(), project->basePath(), project->projectFile(), project->name());
+    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(filesystem, SysUtil::GetDefault()->userName(), project->basePath(), project->projectFile(), project->name());
     for (auto &I : group->schemes()) {
         printf("\t%s [%s]%s\n", I->name().c_str(),
                 I->shared() ? "Shared" : I->owner().c_str(),
@@ -442,7 +442,7 @@ main(int argc, char **argv)
     }
     printf("\n");
 
-    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(&filesystem, SysUtil::GetUserName(), project->basePath(), project->projectFile(), project->name());
+    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(&filesystem, SysUtil::GetDefault()->userName(), project->basePath(), project->projectFile(), project->name());
     if (!group->schemes().empty()) {
         printf("%4sSchemes:\n", "");
         for (auto scheme : group->schemes()) {
