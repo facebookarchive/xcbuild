@@ -57,6 +57,11 @@ private:
     ext::optional<std::string> _filterForDeviceModel;
     ext::optional<std::string> _filterForDeviceOsVersion;
 
+// Unimplmeneted/ignored
+private:
+    ext::optional<std::string> _stickerPackIdentifierPrefix;
+    ext::optional<std::string> _productType;    
+
 public:
     Options();
     ~Options();
