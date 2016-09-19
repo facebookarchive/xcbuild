@@ -35,6 +35,11 @@ public:
 
 public:
     /*
+     * Arguments to the process.
+     */
+    virtual std::vector<std::string> commandLineArguments() const = 0;
+
+    /*
      * All environment variables.
      */
     virtual std::unordered_map<std::string, std::string> environmentVariables() const = 0;

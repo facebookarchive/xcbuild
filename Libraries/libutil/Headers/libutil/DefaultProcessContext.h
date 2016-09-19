@@ -19,7 +19,7 @@ namespace libutil {
  */
 class DefaultProcessContext : public ProcessContext {
 public:
-    DefaultProcessContext();
+    explicit DefaultProcessContext();
     virtual ~DefaultProcessContext();
 
 public:
@@ -27,6 +27,7 @@ public:
     virtual std::string currentDirectory() const;
 
 public:
+    virtual std::vector<std::string> commandLineArguments() const;
     virtual std::unordered_map<std::string, std::string> environmentVariables() const;
     virtual ext::optional<std::string> environmentVariable(std::string const &variable) const;
 
