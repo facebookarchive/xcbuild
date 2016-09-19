@@ -185,6 +185,10 @@ CreateWriter(std::string const &path)
 static void
 WarnUnsupportedOptions(Options const &options, Result *result)
 {
+    if (options.productType()) {
+        result->normal(Result::Severity::Warning, "product type not supported");
+    }
+
     if (options.optimization()) {
         result->normal(Result::Severity::Warning, "optimization not supported");
     }
@@ -195,6 +199,14 @@ WarnUnsupportedOptions(Options const &options, Result *result)
 
     if (options.platform()) {
         result->normal(Result::Severity::Warning, "platform not supported");
+    }
+
+    if (options.stickerPackIdentifierPrefix()) {
+        result->normal(Result::Severity::Warning, "sticker pack identifier prefix not supported");
+    }
+
+    if (options.stickerPackStringsFile()) {
+        result->normal(Result::Severity::Warning, "sticker pack strings file not supported");
     }
 
     if (!options.targetDevice().empty()) {

@@ -25,6 +25,7 @@ private:
     ext::optional<bool>        _version;
     ext::optional<bool>        _printContents;
     std::vector<std::string>   _inputs;
+    ext::optional<std::string> _productType;
 
 private:
     ext::optional<std::string> _outputFormat;
@@ -49,6 +50,10 @@ private:
     ext::optional<std::string> _outputPartialInfoPlist;
     ext::optional<std::string> _appIcon;
     ext::optional<std::string> _launchImage;
+
+private:
+    ext::optional<std::string> _stickerPackIdentifierPrefix;
+    ext::optional<std::string> _stickerPackStringsFile;
 
 private:
     ext::optional<bool>        _enableOnDemandResources;
@@ -84,6 +89,8 @@ public:
     { return _exportDependencyInfo; }
     std::vector<std::string> const &inputs() const
     { return _inputs; }
+    ext::optional<std::string> const &productType() const
+    { return _productType; }
 
 public:
     ext::optional<std::string> const &optimization() const
@@ -106,6 +113,12 @@ public:
     { return _appIcon; }
     ext::optional<std::string> const &launchImage() const
     { return _launchImage; }
+
+public:
+    ext::optional<std::string> const &stickerPackIdentifierPrefix() const
+    { return _stickerPackIdentifierPrefix; }
+    ext::optional<std::string> const &stickerPackStringsFile() const
+    { return _stickerPackStringsFile; }
 
 public:
     bool enableOnDemandResources() const
