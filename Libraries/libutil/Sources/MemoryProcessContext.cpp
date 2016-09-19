@@ -15,6 +15,7 @@ MemoryProcessContext::
 MemoryProcessContext(
     std::string const &executablePath,
     std::string const &currentDirectory,
+    std::vector<std::string> const &commandLineArguments,
     std::unordered_map<std::string, std::string> const &environmentVariables,
     int32_t userID,
     int32_t groupID,
@@ -23,6 +24,7 @@ MemoryProcessContext(
     ProcessContext       (),
     _executablePath      (executablePath),
     _currentDirectory    (currentDirectory),
+    _commandLineArguments(commandLineArguments),
     _environmentVariables(environmentVariables),
     _userID              (userID),
     _groupID             (groupID),
@@ -32,15 +34,16 @@ MemoryProcessContext(
 }
 
 MemoryProcessContext::
-MemoryProcessContext(ProcessContext const &processContext) :
+MemoryProcessContext(ProcessContext const *processContext) :
     MemoryProcessContext(
-        processContext.executablePath(),
-        processContext.currentDirectory(),
-        processContext.environmentVariables(),
-        processContext.userID(),
-        processContext.groupID(),
-        processContext.userName(),
-        processContext.groupName())
+        processContext->executablePath(),
+        processContext->currentDirectory(),
+        processContext->commandLineArguments(),
+        processContext->environmentVariables(),
+        processContext->userID(),
+        processContext->groupID(),
+        processContext->userName(),
+        processContext->groupName())
 {
 }
 

@@ -112,6 +112,29 @@ executablePath() const
 #endif
 }
 
+static int commandLineArgumentCount = 0;
+static char **commandLineArgumentValues = NULL;
+
+__attribute__((constructor))
+static void CommandLineArgumentsInitialize(int argc, char **argv)
+{
+    commandLineArgumentCount = argc;
+    commandLineArgumentValues = argv;
+}
+
+std::vector<std::string> DefaultProcessContext::
+commandLineArguments() const
+{
+    std::vector<std::string> arguments;
+
+    for (size_t i = 0; i < commandLineArgumentCount; i++) {
+        char *argument = commandLineArgumentValues[i];
+        arguments.push_back(argument);
+    }
+
+    return arguments;
+}
+
 ext::optional<std::string> DefaultProcessContext::
 environmentVariable(std::string const &variable) const
 {

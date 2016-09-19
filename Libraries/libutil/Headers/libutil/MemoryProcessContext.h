@@ -23,6 +23,7 @@ private:
     std::string _currentDirectory;
 
 private:
+    std::vector<std::string> _commandLineArguments;
     std::unordered_map<std::string, std::string> _environmentVariables;
 
 private:
@@ -35,12 +36,13 @@ public:
     MemoryProcessContext(
         std::string const &executablePath,
         std::string const &currentDirectory,
+        std::vector<std::string> const &commandLineArguments,
         std::unordered_map<std::string, std::string> const &environmentVariables,
         int32_t userID,
         int32_t groupID,
         std::string const &userName,
         std::string const &groupName);
-    explicit MemoryProcessContext(ProcessContext const &processContext);
+    explicit MemoryProcessContext(ProcessContext const *processContext);
     virtual ~MemoryProcessContext();
 
 public:
@@ -55,6 +57,11 @@ public:
     { return _currentDirectory; }
 
 public:
+    virtual std::vector<std::string> commandLineArguments() const
+    { return _commandLineArguments; }
+    std::vector<std::string> &commandLineArguments()
+    { return _commandLineArguments; }
+
     virtual std::unordered_map<std::string, std::string> environmentVariables() const
     { return _environmentVariables; }
     std::unordered_map<std::string, std::string> &environmentVariables()
