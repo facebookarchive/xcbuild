@@ -18,50 +18,54 @@
 namespace libutil {
 
 class ProcessContext {
+protected:
+    ProcessContext();
+    virtual ~ProcessContext();
+
 public:
     /*
      * The path to the running executable.
      */
-    std::string executablePath() const;
+    virtual std::string executablePath() const = 0;
 
     /*
      * The current directory of the process.
      */
-    std::string currentDirectory() const;
+    virtual std::string currentDirectory() const = 0;
 
 public:
     /*
      * All environment variables.
      */
-    std::unordered_map<std::string, std::string> environmentVariables() const;
+    virtual std::unordered_map<std::string, std::string> environmentVariables() const = 0;
+
+    /*
+     * Single environment variable.
+     */
+    virtual ext::optional<std::string> environmentVariable(std::string const &variable) const = 0;
 
 public:
     /*
      * Active user ID.
      */
-    int32_t userID() const;
+    virtual int32_t userID() const = 0;
 
     /*
      * Active group ID.
      */
-    int32_t groupID() const;
+    virtual int32_t groupID() const = 0;
 
     /*
      * Active user name.
      */
-    std::string userName() const;
+    virtual std::string userName() const = 0;
 
     /*
      * Active group name.
      */
-    std::string groupName() const;
+    virtual std::string groupName() const = 0;
 
 public:
-    /*
-     * Single environment variable.
-     */
-    ext::optional<std::string> environmentVariable(std::string const &variable) const;
-
     /*
      * The default environment search paths.
      */
