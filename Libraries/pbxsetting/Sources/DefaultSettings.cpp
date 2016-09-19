@@ -10,7 +10,7 @@
 #include <pbxsetting/DefaultSettings.h>
 #include <pbxsetting/Type.h>
 #include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
+#include <libutil/ProcessContext.h>
 
 #include <cstdlib>
 
@@ -21,14 +21,14 @@ using pbxsetting::Level;
 using pbxsetting::Setting;
 using pbxsetting::Type;
 using libutil::FSUtil;
-using libutil::SysUtil;
+using libutil::ProcessContext;
 
 Level DefaultSettings::
 Environment(void)
 {
     std::vector<Setting> settings;
 
-    for (auto const &variable : SysUtil::GetDefault()->environmentVariables()) {
+    for (auto const &variable : ProcessContext::GetDefault()->environmentVariables()) {
         // TODO(grp): Is this right? Should this be filtered at another level?
         if (variable.first.front() != '_') {
             Setting setting = Setting::Create(variable.first, variable.second);
@@ -36,10 +36,10 @@ Environment(void)
         }
     }
 
-    settings.push_back(Setting::Create("UID", Type::FormatInteger(SysUtil::GetDefault()->userID())));
-    settings.push_back(Setting::Create("USER", SysUtil::GetDefault()->userName()));
-    settings.push_back(Setting::Create("GID", Type::FormatInteger(SysUtil::GetDefault()->groupID())));
-    settings.push_back(Setting::Create("GROUP", SysUtil::GetDefault()->groupName()));
+    settings.push_back(Setting::Create("UID", Type::FormatInteger(ProcessContext::GetDefault()->userID())));
+    settings.push_back(Setting::Create("USER", ProcessContext::GetDefault()->userName()));
+    settings.push_back(Setting::Create("GID", Type::FormatInteger(ProcessContext::GetDefault()->groupID())));
+    settings.push_back(Setting::Create("GROUP", ProcessContext::GetDefault()->groupName()));
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));

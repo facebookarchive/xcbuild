@@ -12,7 +12,7 @@
 
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
+#include <libutil/ProcessContext.h>
 #include <libutil/Subprocess.h>
 
 #include <unordered_set>
@@ -21,7 +21,7 @@ using builtin::copy::Driver;
 using builtin::copy::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::SysUtil;
+using libutil::ProcessContext;
 using libutil::Subprocess;
 
 Driver::
@@ -47,8 +47,8 @@ CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const
         return false;
     }
 
-    std::unordered_map<std::string, std::string> environment = SysUtil::GetDefault()->environmentVariables();
-    std::string workingDirectory = SysUtil::GetDefault()->currentDirectory();
+    std::unordered_map<std::string, std::string> environment = ProcessContext::GetDefault()->environmentVariables();
+    std::string workingDirectory = ProcessContext::GetDefault()->currentDirectory();
 
     Subprocess cp;
     if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }, environment, workingDirectory) || cp.exitcode() != 0) {

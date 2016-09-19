@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <libutil/SysUtil.h>
+#include <libutil/ProcessContext.h>
 #include <libutil/FSUtil.h>
 
 #include <sstream>
@@ -32,10 +32,10 @@
 
 extern "C" char **environ;
 
-using libutil::SysUtil;
+using libutil::ProcessContext;
 using libutil::FSUtil;
 
-std::string SysUtil::
+std::string ProcessContext::
 currentDirectory() const
 {
     char path[PATH_MAX + 1];
@@ -65,7 +65,7 @@ static void InitialExecutablePathInitialize(int argc, char **argv)
 #endif
 #endif
 
-std::string SysUtil::
+std::string ProcessContext::
 executablePath() const
 {
 #if defined(__APPLE__)
@@ -101,7 +101,7 @@ executablePath() const
 #endif
 }
 
-ext::optional<std::string> SysUtil::
+ext::optional<std::string> ProcessContext::
 environmentVariable(std::string const &variable) const
 {
     if (char *value = getenv(variable.c_str())) {
@@ -111,7 +111,7 @@ environmentVariable(std::string const &variable) const
     }
 }
 
-std::unordered_map<std::string, std::string> SysUtil::
+std::unordered_map<std::string, std::string> ProcessContext::
 environmentVariables() const
 {
     std::unordered_map<std::string, std::string> environment;
@@ -128,7 +128,7 @@ environmentVariables() const
     return environment;
 }
 
-std::vector<std::string> SysUtil::
+std::vector<std::string> ProcessContext::
 executableSearchPaths() const
 {
     std::vector<std::string> paths;
@@ -151,7 +151,7 @@ executableSearchPaths() const
     return paths;
 }
 
-std::string SysUtil::
+std::string ProcessContext::
 userName() const
 {
     std::string result;
@@ -173,7 +173,7 @@ userName() const
     return result;
 }
 
-std::string SysUtil::
+std::string ProcessContext::
 groupName() const
 {
     std::string result;
@@ -195,24 +195,24 @@ groupName() const
     return result;
 }
 
-int32_t SysUtil::
+int32_t ProcessContext::
 userID() const
 {
     return ::getuid();
 }
 
-int32_t SysUtil::
+int32_t ProcessContext::
 groupID() const
 {
     return ::getgid();
 }
 
-SysUtil const *SysUtil::
+ProcessContext const *ProcessContext::
 GetDefault()
 {
-    static SysUtil *sysUtil = nullptr;
+    static ProcessContext *sysUtil = nullptr;
     if (sysUtil == nullptr) {
-        sysUtil = new SysUtil();
+        sysUtil = new ProcessContext();
     }
 
     return sysUtil;

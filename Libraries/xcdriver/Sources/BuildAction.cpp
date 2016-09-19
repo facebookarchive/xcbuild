@@ -16,14 +16,14 @@
 #include <builtin/Registry.h>
 #include <libutil/Base.h>
 #include <libutil/Filesystem.h>
-#include <libutil/SysUtil.h>
+#include <libutil/ProcessContext.h>
 
 #include <unistd.h>
 
 using xcdriver::BuildAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::SysUtil;
+using libutil::ProcessContext;
 
 BuildAction::
 BuildAction()
@@ -143,7 +143,7 @@ Run(Filesystem *filesystem, Options const &options)
     }
 
     /* The build settings passed in on the command line override all others. */
-    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(filesystem, buildEnvironment->baseEnvironment(), options, SysUtil::GetDefault()->currentDirectory());
+    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(filesystem, buildEnvironment->baseEnvironment(), options, ProcessContext::GetDefault()->currentDirectory());
 
     /*
      * Create the build parameters. The executor uses this to load a workspace and create a
