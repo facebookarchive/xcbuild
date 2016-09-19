@@ -14,6 +14,7 @@ add_library(util SHARED
             Sources/MemoryFilesystem.cpp
             Sources/ProcessContext.cpp
             Sources/DefaultProcessContext.cpp
+            Sources/MemoryProcessContext.cpp
             Sources/Options.cpp
             #
             Sources/Subprocess.cpp
