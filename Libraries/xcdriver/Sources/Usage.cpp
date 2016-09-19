@@ -9,17 +9,17 @@
 
 #include <xcdriver/Usage.h>
 #include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
+#include <libutil/ProcessContext.h>
 
 #include <sstream>
 
 using xcdriver::Usage;
 using libutil::FSUtil;
-using libutil::SysUtil;
+using libutil::ProcessContext;
 
 std::string Usage::
 Text() {
-    std::string executable = FSUtil::GetBaseName(SysUtil::GetDefault()->executablePath());
+    std::string executable = FSUtil::GetBaseName(ProcessContext::GetDefault()->executablePath());
 
     std::ostringstream result;
     result << "Usage: " << executable << " [-project <projectname>] "

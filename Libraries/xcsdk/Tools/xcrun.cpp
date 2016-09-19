@@ -16,13 +16,13 @@
 #include <libutil/FSUtil.h>
 #include <libutil/Options.h>
 #include <libutil/Subprocess.h>
-#include <libutil/SysUtil.h>
+#include <libutil/ProcessContext.h>
 #include <pbxsetting/Type.h>
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::SysUtil;
+using libutil::ProcessContext;
 using libutil::Subprocess;
 
 class Options {
@@ -251,15 +251,15 @@ main(int argc, char **argv)
      */
     ext::optional<std::string> toolchainsInput = options.toolchain();
     if (!toolchainsInput) {
-        toolchainsInput = SysUtil::GetDefault()->environmentVariable("TOOLCHAINS");
+        toolchainsInput = ProcessContext::GetDefault()->environmentVariable("TOOLCHAINS");
     }
     ext::optional<std::string> SDK = options.SDK();
     if (!SDK) {
-        SDK = SysUtil::GetDefault()->environmentVariable("SDKROOT");
+        SDK = ProcessContext::GetDefault()->environmentVariable("SDKROOT");
     }
-    bool verbose = options.verbose() || (bool)SysUtil::GetDefault()->environmentVariable("xcrun_verbose");
-    bool log = options.log() || (bool)SysUtil::GetDefault()->environmentVariable("xcrun_log");
-    bool nocache = options.noCache() || (bool)SysUtil::GetDefault()->environmentVariable("xcrun_nocache");
+    bool verbose = options.verbose() || (bool)ProcessContext::GetDefault()->environmentVariable("xcrun_verbose");
+    bool log = options.log() || (bool)ProcessContext::GetDefault()->environmentVariable("xcrun_log");
+    bool nocache = options.noCache() || (bool)ProcessContext::GetDefault()->environmentVariable("xcrun_nocache");
 
     /*
      * Warn about unhandled arguments.
@@ -403,7 +403,7 @@ main(int argc, char **argv)
          * or default paths.
          */
         std::vector<std::string> executablePaths = manager->executablePaths(target != nullptr ? target->platform() : nullptr, target, toolchains);
-        std::vector<std::string> defaultExecutablePaths = SysUtil::GetDefault()->executableSearchPaths();
+        std::vector<std::string> defaultExecutablePaths = ProcessContext::GetDefault()->executableSearchPaths();
         executablePaths.insert(executablePaths.end(), defaultExecutablePaths.begin(), defaultExecutablePaths.end());
 
         /*
@@ -427,7 +427,7 @@ main(int argc, char **argv)
         } else {
             /* Run is the default. */
 
-            std::unordered_map<std::string, std::string> environment = SysUtil::GetDefault()->environmentVariables();
+            std::unordered_map<std::string, std::string> environment = ProcessContext::GetDefault()->environmentVariables();
 
             if (target != nullptr) {
                 /*
@@ -446,7 +446,7 @@ main(int argc, char **argv)
                 printf("verbose: executing tool: %s\n", executable->c_str());
             }
             Subprocess process;
-            if (!process.execute(&filesystem, *executable, options.args(), environment, SysUtil::GetDefault()->currentDirectory())) {
+            if (!process.execute(&filesystem, *executable, options.args(), environment, ProcessContext::GetDefault()->currentDirectory())) {
                 fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
                 return -1;
             }

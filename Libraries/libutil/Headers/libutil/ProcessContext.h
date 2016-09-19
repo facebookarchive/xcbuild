@@ -7,8 +7,8 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __libutil_SysUtil_h
-#define __libutil_SysUtil_h
+#ifndef __libutil_ProcessContext_h
+#define __libutil_ProcessContext_h
 
 #include <string>
 #include <vector>
@@ -17,7 +17,7 @@
 
 namespace libutil {
 
-class SysUtil {
+class ProcessContext {
 public:
     /*
      * The path to the running executable.
@@ -76,9 +76,9 @@ public:
     /*
      * Get the system instance.
      */
-    static SysUtil const *GetDefault();
+    static ProcessContext const *GetDefault();
 };
 
 }
 
-#endif  // !__libutil_SysUtil_h
+#endif  // !__libutil_ProcessContext_h
