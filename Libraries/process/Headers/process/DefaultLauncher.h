@@ -25,12 +25,7 @@ public:
     ~DefaultLauncher();
 
 public:
-    virtual ext::optional<int> launch(
-        libutil::Filesystem *filesystem,
-        Context const *context,
-        std::istream *input = nullptr,
-        std::ostream *output = nullptr,
-        std::ostream *error = nullptr);
+    virtual ext::optional<int> launch(libutil::Filesystem *filesystem, Context const *context);
 };
 
 }

@@ -22,13 +22,7 @@ public:
     /*
      * Handler for a simulated process launch.
      */
-    using Handler = std::function<
-        ext::optional<int>(
-            libutil::Filesystem *filesystem,
-            Context const *context,
-            std::istream *input,
-            std::ostream *output,
-            std::ostream *error)>;
+    using Handler = std::function<ext::optional<int>(libutil::Filesystem *filesystem, Context const *context)>;
 
 private:
     std::unordered_map<std::string, Handler> _handlers;
@@ -38,12 +32,7 @@ public:
     ~MemoryLauncher();
 
 public:
-    virtual ext::optional<int> launch(
-        libutil::Filesystem *filesystem,
-        Context const *context,
-        std::istream *input = nullptr,
-        std::ostream *output = nullptr,
-        std::ostream *error = nullptr);
+    virtual ext::optional<int> launch(libutil::Filesystem *filesystem, Context const *context);
 };
 
 }

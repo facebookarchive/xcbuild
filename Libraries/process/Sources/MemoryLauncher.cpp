@@ -26,16 +26,11 @@ MemoryLauncher::
 }
 
 ext::optional<int> MemoryLauncher::
-launch(
-    Filesystem *filesystem,
-    Context const *context,
-    std::istream *input,
-    std::ostream *output,
-    std::ostream *error)
+launch(Filesystem *filesystem, Context const *context)
 {
     auto it = _handlers.find(context->executablePath());
     if (it != _handlers.end()) {
-        return it->second(filesystem, context, input, output, error);
+        return it->second(filesystem, context);
     } else {
         return ext::nullopt;
     }
