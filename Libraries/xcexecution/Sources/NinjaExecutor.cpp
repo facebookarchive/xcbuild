@@ -18,8 +18,9 @@
 #include <libutil/Escape.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <process/Subprocess.h>
 #include <process/Context.h>
+#include <process/MemoryContext.h>
+#include <process/Launcher.h>
 #include <libutil/md5.h>
 
 #include <sstream>
@@ -270,6 +271,7 @@ ShouldGenerateNinja(Filesystem const *filesystem, bool generate, Parameters cons
 bool NinjaExecutor::
 build(
     process::Context const *processContext,
+    process::Launcher *processLauncher,
     Filesystem *filesystem,
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
@@ -300,7 +302,7 @@ build(
     /*
      * Find the dependency info tool.
      */
-    std::string executableRoot = FSUtil::GetDirectoryName(process::Context::GetDefaultUNSAFE()->executablePath());
+    std::string executableRoot = FSUtil::GetDirectoryName(processContext->executablePath());
     std::string dependencyInfoToolPath = executableRoot + "/" + "dependency-info-tool";
 
     /*
@@ -407,16 +409,20 @@ build(
         // TODO(grp): Pass number of jobs if specified.
 
         /*
-         * Pass through all environment variables, in case they affect Ninja or build settings
-         * when re-generating the Ninja files.
-         */
-        std::unordered_map<std::string, std::string> environmentVariables = processContext->environmentVariables();
-
-        /*
          * Run Ninja and return if it failed. Ninja itself does the build.
          */
-        process::Subprocess ninja;
-        if (!ninja.execute(filesystem, *executable, arguments, environmentVariables, intermediatesDirectory) || ninja.exitcode() != 0) {
+        process::MemoryContext ninja = process::MemoryContext(
+            *executable,
+            intermediatesDirectory,
+            arguments,
+            processContext->environmentVariables(),
+            processContext->userID(),
+            processContext->groupID(),
+            processContext->userName(),
+            processContext->groupName());
+
+        ext::optional<int> exitCode = processLauncher->launch(filesystem, &ninja);
+        if (!exitCode || *exitCode != 0) {
             return false;
         }
     }

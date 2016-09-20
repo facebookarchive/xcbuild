@@ -7,52 +7,61 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <process/Subprocess.h>
+#include <process/DefaultLauncher.h>
 #include <libutil/Filesystem.h>
-
-#include <sstream>
 
 #include <sys/wait.h>
 #include <unistd.h>
 
-using process::Subprocess;
+using process::DefaultLauncher;
 using libutil::Filesystem;
 
-Subprocess::Subprocess() :
-    _exitcode(0)
+DefaultLauncher::
+DefaultLauncher() :
+    Launcher()
 {
 }
 
-bool Subprocess::
-execute(
+DefaultLauncher::
+~DefaultLauncher()
+{
+}
+
+ext::optional<int> DefaultLauncher::
+launch(
     Filesystem *filesystem,
-    std::string const &path,
-    std::vector<std::string> const &arguments,
-    std::unordered_map<std::string, std::string> const &environment,
-    std::string const &directory,
+    Context const *context,
     std::istream *input,
     std::ostream *output,
     std::ostream *error)
 {
-    if (!filesystem->isExecutable(path)) {
-        return false;
-    }
-
     /*
      * Extract input data for exec, so no C++ is required after fork.
      */
+    std::string path = context->executablePath();
+    if (!filesystem->isExecutable(path)) {
+        return ext::nullopt;
+    }
     char const *path_str = path.c_str();
 
+    std::string directory = context->currentDirectory();
+    char const *work_dir = directory.c_str();
+
+    /* Compute command-line arguments. */
     std::vector<char const *> exec_args;
-    exec_args.push_back(path.c_str());
-    for (std::string const &I : arguments) {
-        exec_args.push_back(I.c_str());
+    exec_args.push_back(path_str);
+
+    std::vector<std::string> arguments = context->commandLineArguments();
+    for (std::string const &argument : arguments) {
+        exec_args.push_back(argument.c_str());
     }
+
     exec_args.push_back(nullptr);
     char *const *exec_args_data = const_cast<char *const *>(exec_args.data());
 
+    /* Compute environment variables. */
     std::vector<std::string> env_values;
-    for (auto const &value : environment) {
+    for (auto const &value : context->environmentVariables()) {
         env_values.push_back(value.first + "=" + value.second);
     }
 
@@ -63,7 +72,9 @@ execute(
     exec_env.push_back(nullptr);
     char *const *exec_env_data = const_cast<char *const *>(exec_env.data());
 
-    char const *work_dir = directory.c_str();
+    /* Compute user. */
+    uid_t uid = context->userID();
+    gid_t gid = context->groupID();
 
     /*
      * Setup output pipe.
@@ -72,13 +83,13 @@ execute(
     int efds[2];
 
     if (::pipe(ofds) != 0) {
-        return false;
+        return ext::nullopt;
     }
 
     if (::pipe(efds) != 0) {
         ::close(ofds[1]);
         ::close(ofds[0]);
-        return false;
+        return ext::nullopt;
     }
 
     /*
@@ -94,7 +105,7 @@ execute(
         ::close(efds[1]);
         ::close(efds[0]);
 
-        return false;
+        return ext::nullopt;
     } else if (pid == 0) {
         /*
          * Fork succeeded, new process. Execute binary with requested parameters.
@@ -115,16 +126,25 @@ execute(
             // TODO!
         }
 
-        int rc = ::chdir(work_dir);
-        if (rc == -1) {
+        if (::chdir(work_dir) == -1) {
             ::perror("chdir");
+            ::_exit(1);
+        }
+
+        if (::setuid(uid) == -1) {
+            ::perror("setuid");
+            ::_exit(1);
+        }
+
+        if (::setgid(gid) == -1) {
+            ::perror("setgid");
             ::_exit(1);
         }
 
         ::execve(path_str, exec_args_data, exec_env_data);
         ::_exit(-1);
 
-        return false;
+        return ext::nullopt;
     } else {
         /*
          * Fork succeeded, existing process.
@@ -171,8 +191,6 @@ execute(
 
         int status;
         ::waitpid(pid, &status, 0);
-        _exitcode = WEXITSTATUS(status);
-
-        return true;
+        return WEXITSTATUS(status);
     }
 }

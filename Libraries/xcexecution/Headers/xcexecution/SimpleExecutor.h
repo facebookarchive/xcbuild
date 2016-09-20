@@ -30,6 +30,7 @@ public:
 public:
     virtual bool build(
         process::Context const *processContext,
+        process::Launcher *processLauncher,
         libutil::Filesystem *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters);
@@ -42,6 +43,7 @@ private:
         std::vector<pbxbuild::Tool::Invocation> const &invocations);
     std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> performInvocations(
         process::Context const *processContext,
+        process::Launcher *processLauncher,
         libutil::Filesystem *filesystem,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
@@ -49,6 +51,7 @@ private:
         bool createProductStructure);
     std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> buildTarget(
         process::Context const *processContext,
+        process::Launcher *processLauncher,
         libutil::Filesystem *filesystem,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,

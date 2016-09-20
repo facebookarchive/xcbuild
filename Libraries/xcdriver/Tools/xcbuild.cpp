@@ -10,6 +10,7 @@
 #include <xcdriver/Driver.h>
 #include <libutil/DefaultFilesystem.h>
 #include <process/DefaultContext.h>
+#include <process/DefaultLauncher.h>
 
 using libutil::DefaultFilesystem;
 
@@ -18,5 +19,6 @@ main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
     process::DefaultContext processContext = process::DefaultContext();
-    return xcdriver::Driver::Run(&processContext, &filesystem);
+    process::DefaultLauncher processLauncher = process::DefaultLauncher();
+    return xcdriver::Driver::Run(&processContext, &processLauncher, &filesystem);
 }

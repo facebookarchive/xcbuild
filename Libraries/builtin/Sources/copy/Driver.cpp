@@ -9,11 +9,11 @@
 
 #include <builtin/copy/Driver.h>
 #include <builtin/copy/Options.h>
-
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <process/Context.h>
-#include <process/Subprocess.h>
+#include <process/MemoryContext.h>
+#include <process/Launcher.h>
 
 #include <unordered_set>
 
@@ -39,25 +39,40 @@ name()
 }
 
 static bool
-CopyPath(
-    Filesystem *filesystem,
-    std::unordered_map<std::string, std::string> const &environmentVariables,
-    std::string const &workingDirectory,
-    std::string const &inputPath,
-    std::string const &outputPath)
+CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const &outputPath)
 {
     if (!filesystem->createDirectory(FSUtil::GetDirectoryName(outputPath))) {
         return false;
     }
 
-    process::Subprocess cp;
-    if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }, environmentVariables, workingDirectory) || cp.exitcode() != 0) {
+    // TODO: This shouldn't use external tools to copy.
+    process::Context const *context = process::Context::GetDefaultUNSAFE();
+    process::Launcher *launcher = process::Launcher::GetDefaultUNSAFE();
+
+    process::MemoryContext cp = process::MemoryContext(
+        "/bin/cp",
+        context->currentDirectory(),
+        { "-R", inputPath, outputPath },
+        context->environmentVariables(),
+        context->userID(),
+        context->groupID(),
+        context->userName(),
+        context->groupName());
+    if (launcher->launch(filesystem, &cp).value_or(-1) != 0) {
         return false;
     }
 
     /* Should preserve permissions but make writable. */
-    process::Subprocess chmod;
-    if (!chmod.execute(filesystem, "/bin/chmod", { "-R", "+w", outputPath }, environmentVariables, workingDirectory) || chmod.exitcode() != 0) {
+    process::MemoryContext chmod = process::MemoryContext(
+        "/bin/chmod",
+        context->currentDirectory(),
+        { "-R", "+w", outputPath },
+        context->environmentVariables(),
+        context->userID(),
+        context->groupID(),
+        context->userName(),
+        context->groupName());
+    if (launcher->launch(filesystem, &chmod).value_or(-1) != 0) {
         return false;
     }
 
@@ -65,7 +80,7 @@ CopyPath(
 }
 
 static int
-Run(Filesystem *filesystem, Options const &options, std::unordered_map<std::string, std::string> const &environmentVariables, std::string const &workingDirectory)
+Run(Filesystem *filesystem, Options const &options, std::string const &workingDirectory)
 {
     if (!options.output()) {
         fprintf(stderr, "error: no output path provided\n");
@@ -107,7 +122,7 @@ Run(Filesystem *filesystem, Options const &options, std::unordered_map<std::stri
         }
 
         std::string outputPath = output + "/" + FSUtil::GetBaseName(input);
-        if (!CopyPath(filesystem, environmentVariables, workingDirectory, input, outputPath)) {
+        if (!CopyPath(filesystem, input, outputPath)) {
             return 1;
         }
     }
@@ -125,5 +140,5 @@ run(process::Context const *processContext, libutil::Filesystem *filesystem)
         return 1;
     }
 
-    return Run(filesystem, options, processContext->environmentVariables(), processContext->currentDirectory());
+    return Run(filesystem, options, processContext->currentDirectory());
 }

@@ -29,6 +29,7 @@ public:
 public:
     virtual bool build(
         process::Context const *processContext,
+        process::Launcher *processLauncher,
         libutil::Filesystem *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters);
