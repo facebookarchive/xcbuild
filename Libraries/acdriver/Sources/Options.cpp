@@ -74,6 +74,10 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::Next<std::string>(&_filterForDeviceModel, args, it);
     } else if (arg == "--filter-for-device-os-version") {
         return libutil::Options::Next<std::string>(&_filterForDeviceOsVersion, args, it);
+    } else if (arg == "--sticker-pack-identifier-prefix") {
+        return libutil::Options::Next<std::string>(&_stickerPackIdentifierPrefix, args, it);
+    } else if (arg == "--product-type") {
+        return libutil::Options::Next<std::string>(&_productType, args, it);
     } else if (!arg.empty() && arg[0] != '-') {
         return libutil::Options::AppendCurrent<std::string>(&_inputs, arg);
     } else {
