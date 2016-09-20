@@ -33,7 +33,7 @@ ListAction::
 int ListAction::
 Run(ProcessContext const *processContext, Filesystem const *filesystem, Options const &options)
 {
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(filesystem);
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(processContext, filesystem);
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
@@ -42,7 +42,7 @@ Run(ProcessContext const *processContext, Filesystem const *filesystem, Options 
     std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(processContext, filesystem, buildEnvironment->baseEnvironment(), options, processContext->currentDirectory());
     xcexecution::Parameters parameters = Action::CreateParameters(options, overrideLevels);
 
-    ext::optional<pbxbuild::WorkspaceContext> context = parameters.loadWorkspace(filesystem, *buildEnvironment, processContext->currentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> context = parameters.loadWorkspace(filesystem, processContext->userName(), *buildEnvironment, processContext->currentDirectory());
     if (!context) {
         return -1;
     }

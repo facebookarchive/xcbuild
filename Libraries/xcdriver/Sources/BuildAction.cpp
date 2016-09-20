@@ -146,7 +146,7 @@ Run(ProcessContext const *processContext, Filesystem *filesystem, Options const 
     /*
      * Use the default build environment. We don't need anything custom here.
      */
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(filesystem);
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(processContext, filesystem);
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
@@ -169,7 +169,7 @@ Run(ProcessContext const *processContext, Filesystem *filesystem, Options const 
     /*
      * Perform the build!
      */
-    bool success = executor->build(filesystem, *buildEnvironment, parameters);
+    bool success = executor->build(processContext, filesystem, *buildEnvironment, parameters);
     if (!success) {
         return 1;
     }

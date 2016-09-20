@@ -45,9 +45,9 @@ ResolveDeveloperRoot(Filesystem const *filesystem, std::string const &path)
 }
 
 ext::optional<std::string> Environment::
-DeveloperRoot(Filesystem const *filesystem)
+DeveloperRoot(ProcessContext const *processContext, Filesystem const *filesystem)
 {
-    if (auto path = ProcessContext::GetDefaultUNSAFE()->environmentVariable("DEVELOPER_DIR")) {
+    if (auto path = processContext->environmentVariable("DEVELOPER_DIR")) {
         return ResolveDeveloperRoot(filesystem, *path);
     }
 

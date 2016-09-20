@@ -11,11 +11,11 @@
 #define __xcexecution_Executor_h
 
 #include <xcformatter/Formatter.h>
-#include <pbxbuild/DirectedGraph.h>
 
 #include <memory>
 
 namespace libutil { class Filesystem; }
+namespace libutil { class ProcessContext; }
 
 namespace pbxbuild {
 namespace Build { class Context; }
@@ -49,6 +49,7 @@ public:
      * Abstract build method. Override to implement the build.
      */
     virtual bool build(
+        libutil::ProcessContext const *processContext,
         libutil::Filesystem *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters) = 0;

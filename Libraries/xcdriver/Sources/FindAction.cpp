@@ -14,10 +14,12 @@
 #include <xcsdk/SDK/Manager.h>
 #include <xcsdk/SDK/Target.h>
 #include <libutil/Filesystem.h>
+#include <libutil/ProcessContext.h>
 
 using xcdriver::FindAction;
 using xcdriver::Options;
 using libutil::Filesystem;
+using libutil::ProcessContext;
 
 FindAction::
 FindAction()
@@ -30,15 +32,15 @@ FindAction::
 }
 
 int FindAction::
-Run(Filesystem const *filesystem, Options const &options)
+Run(ProcessContext const *processContext, Filesystem const *filesystem, Options const &options)
 {
-    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem);
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
     if (!developerRoot) {
         fprintf(stderr, "error: unable to find developer dir\n");
         return 1;
     }
 
-    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths());
+    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(processContext));
     auto manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to open developer directory\n");

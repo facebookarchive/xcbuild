@@ -270,12 +270,12 @@ static int Run(Filesystem *filesystem, ProcessContext const *processContext)
     /*
      * Load the SDK manager from the developer root.
      */
-    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem);
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
     if (!developerRoot) {
         fprintf(stderr, "error: unable to find developer root\n");
         return -1;
     }
-    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths());
+    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(processContext));
     auto manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to load manager from '%s'\n", developerRoot->c_str());

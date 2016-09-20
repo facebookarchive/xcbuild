@@ -152,7 +152,7 @@ OpenProject(Filesystem const *filesystem, ext::optional<std::string> const &proj
 }
 
 ext::optional<pbxbuild::WorkspaceContext> Parameters::
-loadWorkspace(Filesystem const *filesystem, pbxbuild::Build::Environment const &buildEnvironment, std::string const &workingDirectory) const
+loadWorkspace(Filesystem const *filesystem, std::string const &userName, pbxbuild::Build::Environment const &buildEnvironment, std::string const &workingDirectory) const
 {
     if (_workspace) {
         xcworkspace::XC::Workspace::shared_ptr workspace = xcworkspace::XC::Workspace::Open(filesystem, *_workspace);
@@ -161,14 +161,14 @@ loadWorkspace(Filesystem const *filesystem, pbxbuild::Build::Environment const &
             return ext::nullopt;
         }
 
-        return pbxbuild::WorkspaceContext::Workspace(filesystem, buildEnvironment.baseEnvironment(), workspace);
+        return pbxbuild::WorkspaceContext::Workspace(filesystem, userName, buildEnvironment.baseEnvironment(), workspace);
     } else {
         pbxproj::PBX::Project::shared_ptr project = OpenProject(filesystem, _project, workingDirectory);
         if (project == nullptr) {
             return ext::nullopt;
         }
 
-        return pbxbuild::WorkspaceContext::Project(filesystem, buildEnvironment.baseEnvironment(), project);
+        return pbxbuild::WorkspaceContext::Project(filesystem, userName, buildEnvironment.baseEnvironment(), project);
     }
 }
 

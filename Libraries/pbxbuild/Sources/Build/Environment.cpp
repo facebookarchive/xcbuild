@@ -16,6 +16,7 @@
 
 namespace Build = pbxbuild::Build;
 using libutil::Filesystem;
+using libutil::ProcessContext;
 
 Build::Environment::
 Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment) :
@@ -26,9 +27,9 @@ Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcs
 }
 
 ext::optional<Build::Environment> Build::Environment::
-Default(Filesystem const *filesystem)
+Default(ProcessContext const *processContext, Filesystem const *filesystem)
 {
-    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem);
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
     if (!developerRoot) {
         fprintf(stderr, "error: couldn't find developer dir\n");
         return ext::nullopt;
@@ -56,7 +57,7 @@ Default(Filesystem const *filesystem)
      */
     specManager->registerDomains(filesystem, pbxspec::Manager::DefaultDomains(*developerRoot));
 
-    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths());
+    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(processContext));
     auto sdkManager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
     if (sdkManager == nullptr) {
         fprintf(stderr, "error: couldn't create SDK manager\n");
@@ -86,7 +87,7 @@ Default(Filesystem const *filesystem)
     pbxsetting::Environment baseEnvironment;
     baseEnvironment.insertBack(buildSystem->defaultSettings(), true);
     baseEnvironment.insertBack(sdkManager->computedSettings(), false);
-    std::vector<pbxsetting::Level> defaultLevels = pbxsetting::DefaultSettings::Levels();
+    std::vector<pbxsetting::Level> defaultLevels = pbxsetting::DefaultSettings::Levels(processContext);
     for (pbxsetting::Level const &level : defaultLevels) {
         baseEnvironment.insertBack(level, false);
     }

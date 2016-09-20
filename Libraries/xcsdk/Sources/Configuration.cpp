@@ -31,13 +31,13 @@ Configuration(
 }
 
 std::vector<std::string> Configuration::
-DefaultPaths()
+DefaultPaths(ProcessContext const *processContext)
 {
     std::vector<std::string> defaultPaths;
-    if (ext::optional<std::string> environmentPath = ProcessContext::GetDefaultUNSAFE()->environmentVariable("XCSDK_CONFIGURATION_PATH")) {
+    if (ext::optional<std::string> environmentPath = processContext->environmentVariable("XCSDK_CONFIGURATION_PATH")) {
         defaultPaths.push_back(*environmentPath);
     } else {
-        ext::optional<std::string> homePath = ProcessContext::GetDefaultUNSAFE()->environmentVariable("HOME");
+        ext::optional<std::string> homePath = processContext->environmentVariable("HOME");
         if (getuid() != 0 && homePath) {
             defaultPaths.push_back(*homePath + "/.xcsdk/xcsdk_configuration.plist");
         }

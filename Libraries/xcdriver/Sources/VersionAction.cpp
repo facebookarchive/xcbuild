@@ -17,10 +17,12 @@
 #include <xcsdk/SDK/Product.h>
 #include <xcsdk/SDK/Target.h>
 #include <libutil/Filesystem.h>
+#include <libutil/ProcessContext.h>
 
 using xcdriver::VersionAction;
 using xcdriver::Options;
 using libutil::Filesystem;
+using libutil::ProcessContext;
 
 VersionAction::
 VersionAction()
@@ -33,20 +35,20 @@ VersionAction::
 }
 
 int VersionAction::
-Run(Filesystem const *filesystem, Options const &options)
+Run(ProcessContext const *processContext, Filesystem const *filesystem, Options const &options)
 {
     if (!options.sdk()) {
         // TODO(grp): Real version numbers.
         printf("xcbuild version 0.1\n");
         printf("Build version 1\n");
     } else {
-        ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem);
+        ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
         if (!developerRoot) {
             fprintf(stderr, "error: unable to find developer dir\n");
             return 1;
         }
 
-        auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths());
+        auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(processContext));
         auto manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
         if (manager == nullptr) {
             fprintf(stderr, "error: unable to open developer directory\n");
