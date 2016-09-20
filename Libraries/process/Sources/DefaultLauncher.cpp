@@ -28,12 +28,7 @@ DefaultLauncher::
 }
 
 ext::optional<int> DefaultLauncher::
-launch(
-    Filesystem *filesystem,
-    Context const *context,
-    std::istream *input,
-    std::ostream *output,
-    std::ostream *error)
+launch(Filesystem *filesystem, Context const *context)
 {
     /*
      * Extract input data for exec, so no C++ is required after fork.
@@ -77,55 +72,14 @@ launch(
     gid_t gid = context->groupID();
 
     /*
-     * Setup output pipe.
-     */
-    int ofds[2];
-    int efds[2];
-
-    if (::pipe(ofds) != 0) {
-        return ext::nullopt;
-    }
-
-    if (::pipe(efds) != 0) {
-        ::close(ofds[1]);
-        ::close(ofds[0]);
-        return ext::nullopt;
-    }
-
-    /*
      * Fork new process.
      */
     pid_t pid = fork();
     if (pid < 0) {
-        /*
-         * Fork failed, clean up.
-         */
-        ::close(ofds[1]);
-        ::close(ofds[0]);
-        ::close(efds[1]);
-        ::close(efds[0]);
-
+        /* Fork failed. */
         return ext::nullopt;
     } else if (pid == 0) {
-        /*
-         * Fork succeeded, new process. Execute binary with requested parameters.
-         */
-        ::close(ofds[0]);
-        ::close(efds[0]);
-
-        if (output != nullptr) {
-            ::close(1);
-            ::dup2(ofds[1], 1);
-        }
-        if (error != nullptr) {
-            ::close(2);
-            ::dup2(efds[1], 2);
-        }
-
-        if (input != nullptr) {
-            // TODO!
-        }
-
+        /* Fork succeeded, new process. */
         if (::chdir(work_dir) == -1) {
             ::perror("chdir");
             ::_exit(1);
@@ -146,49 +100,7 @@ launch(
 
         return ext::nullopt;
     } else {
-        /*
-         * Fork succeeded, existing process.
-         */
-        if (input != nullptr) {
-            // TODO!
-        }
-
-        ::close(ofds[1]);
-        ::close(efds[1]);
-
-        if (output != nullptr) {
-            for (;;) {
-                char    buf[16384];
-                ssize_t nread;
-
-                nread = ::read(ofds[0], buf, sizeof(buf));
-                if (nread <= 0) {
-                    break;
-                }
-
-                buf[nread] = '\0';
-                *output << buf;
-            }
-        }
-
-        if (error != nullptr) {
-            for (;;) {
-                char    buf[16384];
-                ssize_t nread;
-
-                nread = ::read(efds[0], buf, sizeof(buf));
-                if (nread <= 0) {
-                    break;
-                }
-
-                buf[nread] = '\0';
-                *error << buf;
-            }
-        }
-
-        ::close(ofds[0]);
-        ::close(efds[0]);
-
+        /* Fork succeeded, existing process. */
         int status;
         ::waitpid(pid, &status, 0);
         return WEXITSTATUS(status);

@@ -32,12 +32,7 @@ public:
      * Launch and wait for a process. The filesystem is symbolic, to note
      * that launching a process could arbitrarily affect the filesystem.
      */
-    virtual ext::optional<int> launch(
-        libutil::Filesystem *filesystem,
-        Context const *context,
-        std::istream *input = nullptr,
-        std::ostream *output = nullptr,
-        std::ostream *error = nullptr) = 0;
+    virtual ext::optional<int> launch(libutil::Filesystem *filesystem, Context const *context) = 0;
 
 public:
     /*
