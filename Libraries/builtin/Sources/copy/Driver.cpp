@@ -13,7 +13,7 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <process/Context.h>
-#include <libutil/Subprocess.h>
+#include <process/Subprocess.h>
 
 #include <unordered_set>
 
@@ -21,7 +21,6 @@ using builtin::copy::Driver;
 using builtin::copy::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::Subprocess;
 
 Driver::
 Driver()
@@ -51,13 +50,13 @@ CopyPath(
         return false;
     }
 
-    Subprocess cp;
+    process::Subprocess cp;
     if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }, environmentVariables, workingDirectory) || cp.exitcode() != 0) {
         return false;
     }
 
     /* Should preserve permissions but make writable. */
-    Subprocess chmod;
+    process::Subprocess chmod;
     if (!chmod.execute(filesystem, "/bin/chmod", { "-R", "+w", outputPath }, environmentVariables, workingDirectory) || chmod.exitcode() != 0) {
         return false;
     }

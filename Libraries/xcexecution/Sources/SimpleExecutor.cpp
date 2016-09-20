@@ -17,7 +17,7 @@
 #include <libutil/FSUtil.h>
 #include <process/Context.h>
 #include <process/MemoryContext.h>
-#include <libutil/Subprocess.h>
+#include <process/Subprocess.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -25,7 +25,6 @@
 using xcexecution::SimpleExecutor;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::Subprocess;
 
 SimpleExecutor::
 SimpleExecutor(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins) :
@@ -264,7 +263,7 @@ performInvocations(
                 }
             } else {
                 /* External tool, run the tool externally. */
-                Subprocess process;
+                process::Subprocess process;
                 if (!process.execute(filesystem, invocation.executable().path(), invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
                     xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));

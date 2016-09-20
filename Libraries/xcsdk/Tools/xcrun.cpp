@@ -15,7 +15,7 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/Options.h>
-#include <libutil/Subprocess.h>
+#include <process/Subprocess.h>
 #include <process/Context.h>
 #include <process/DefaultContext.h>
 #include <pbxsetting/Type.h>
@@ -23,7 +23,6 @@
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::Subprocess;
 
 class Options {
 private:
@@ -437,7 +436,7 @@ static int Run(Filesystem *filesystem, process::Context const *processContext)
             if (verbose) {
                 printf("verbose: executing tool: %s\n", executable->c_str());
             }
-            Subprocess process;
+            process::Subprocess process;
             if (!process.execute(filesystem, *executable, options.args(), environment, processContext->currentDirectory())) {
                 fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
                 return -1;

@@ -18,7 +18,7 @@
 #include <libutil/Escape.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/Subprocess.h>
+#include <process/Subprocess.h>
 #include <process/Context.h>
 #include <libutil/md5.h>
 
@@ -33,7 +33,6 @@ using xcexecution::Parameters;
 using libutil::Escape;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::Subprocess;
 
 NinjaExecutor::
 NinjaExecutor(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, bool generate) :
@@ -416,7 +415,7 @@ build(
         /*
          * Run Ninja and return if it failed. Ninja itself does the build.
          */
-        Subprocess ninja;
+        process::Subprocess ninja;
         if (!ninja.execute(filesystem, *executable, arguments, environmentVariables, intermediatesDirectory) || ninja.exitcode() != 0) {
             return false;
         }

@@ -7,16 +7,16 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __libutil_Subprocess_h
-#define __libutil_Subprocess_h
+#ifndef __process_Subprocess_h
+#define __process_Subprocess_h
 
 #include <string>
 #include <vector>
 #include <unordered_map>
 
-namespace libutil {
+namespace libutil { class Filesystem; }
 
-class Filesystem;
+namespace process {
 
 class Subprocess {
 private:
@@ -30,7 +30,7 @@ public:
     { return _exitcode; }
 
 public:
-    bool execute(Filesystem *filesystem,
+    bool execute(libutil::Filesystem *filesystem,
                  std::string const &path,
                  std::vector<std::string> const &arguments,
                  std::unordered_map<std::string, std::string> const &environment,
@@ -42,4 +42,4 @@ public:
 
 }
 
-#endif  // !__libutil_Subprocess_h
+#endif  // !__process_Subprocess_h
