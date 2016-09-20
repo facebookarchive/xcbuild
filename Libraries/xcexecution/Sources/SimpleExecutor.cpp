@@ -16,6 +16,7 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/ProcessContext.h>
+#include <libutil/MemoryProcessContext.h>
 #include <libutil/Subprocess.h>
 
 #include <sys/types.h>
@@ -25,6 +26,7 @@ using xcexecution::SimpleExecutor;
 using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::ProcessContext;
+using libutil::MemoryProcessContext;
 using libutil::Subprocess;
 
 SimpleExecutor::
@@ -45,7 +47,7 @@ build(
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
 {
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, ProcessContext::GetDefault()->currentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, ProcessContext::GetDefaultUNSAFE()->currentDirectory());
     if (!workspaceContext) {
         return false;
     }
@@ -250,7 +252,13 @@ performInvocations(
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
 
-                if (driver->run(invocation.arguments(), invocation.environment(), filesystem, invocation.workingDirectory()) != 0) {
+                MemoryProcessContext driverContext = MemoryProcessContext(ProcessContext::GetDefaultUNSAFE());
+                driverContext.executablePath() = invocation.executable().path();
+                driverContext.currentDirectory() = invocation.workingDirectory();
+                driverContext.commandLineArguments() = invocation.arguments();
+                driverContext.environmentVariables() = invocation.environment();
+
+                if (driver->run(&driverContext, filesystem) != 0) {
                     xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }

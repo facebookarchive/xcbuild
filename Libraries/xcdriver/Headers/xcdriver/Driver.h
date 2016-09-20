@@ -10,10 +10,8 @@
 #ifndef __xcdriver_Driver_h
 #define __xcdriver_Driver_h
 
-#include <string>
-#include <vector>
-
 namespace libutil { class Filesystem; }
+namespace libutil { class ProcessContext; }
 
 namespace xcdriver {
 
@@ -24,7 +22,7 @@ private:
 
 public:
     static int
-    Run(libutil::Filesystem *filesystem, std::vector<std::string> const &args);
+    Run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem);
 };
 
 }

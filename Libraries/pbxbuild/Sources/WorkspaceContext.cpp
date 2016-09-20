@@ -246,7 +246,7 @@ LoadProjectSchemes(Filesystem const *filesystem, std::vector<xcscheme::SchemeGro
      * Load the schemes inside the projects.
      */
     for (pbxproj::PBX::Project::shared_ptr const &project : projects) {
-        xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(filesystem, ProcessContext::GetDefault()->userName(), project->basePath(), project->projectFile(), project->name());
+        xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(filesystem, ProcessContext::GetDefaultUNSAFE()->userName(), project->basePath(), project->projectFile(), project->name());
         if (projectGroup != nullptr) {
             schemeGroups->push_back(projectGroup);
         }
@@ -277,7 +277,7 @@ Workspace(Filesystem const *filesystem, pbxsetting::Environment const &baseEnvir
     /*
      * Add the schemes from the workspace itself.
      */
-    xcscheme::SchemeGroup::shared_ptr workspaceGroup = xcscheme::SchemeGroup::Open(filesystem, ProcessContext::GetDefault()->userName(), workspace->basePath(), workspace->projectFile(), workspace->name());
+    xcscheme::SchemeGroup::shared_ptr workspaceGroup = xcscheme::SchemeGroup::Open(filesystem, ProcessContext::GetDefaultUNSAFE()->userName(), workspace->basePath(), workspace->projectFile(), workspace->name());
     if (workspaceGroup != nullptr) {
         schemeGroups.push_back(workspaceGroup);
     }

@@ -125,14 +125,7 @@ static void CommandLineArgumentsInitialize(int argc, char **argv)
 std::vector<std::string> DefaultProcessContext::
 commandLineArguments() const
 {
-    std::vector<std::string> arguments;
-
-    for (size_t i = 0; i < commandLineArgumentCount; i++) {
-        char *argument = commandLineArgumentValues[i];
-        arguments.push_back(argument);
-    }
-
-    return arguments;
+    return std::vector<std::string>(commandLineArgumentValues + 1, commandLineArgumentValues + commandLineArgumentCount);
 }
 
 ext::optional<std::string> DefaultProcessContext::
