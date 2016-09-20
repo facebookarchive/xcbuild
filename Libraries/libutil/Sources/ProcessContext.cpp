@@ -52,7 +52,7 @@ executableSearchPaths() const
 using libutil::DefaultProcessContext;
 
 ProcessContext const *ProcessContext::
-GetDefault()
+GetDefaultUNSAFE()
 {
     static DefaultProcessContext *defaultProcessContext = nullptr;
     if (defaultProcessContext == nullptr) {

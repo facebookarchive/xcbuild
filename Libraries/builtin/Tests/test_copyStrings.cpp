@@ -12,12 +12,16 @@
 #include <builtin/copyStrings/Driver.h>
 #include <libutil/Filesystem.h>
 #include <libutil/MemoryFilesystem.h>
+#include <libutil/ProcessContext.h>
+#include <libutil/MemoryProcessContext.h>
 #include <plist/Format/Encoding.h>
 
 using builtin::copyStrings::Driver;
 using builtin::copyStrings::Options;
 using libutil::Filesystem;
 using libutil::MemoryFilesystem;
+using libutil::ProcessContext;
+using libutil::MemoryProcessContext;
 
 static std::vector<uint8_t>
 Contents(std::string const &string)
@@ -41,12 +45,21 @@ TEST(copyStrings, CopyMultiple)
     });
 
     Driver driver;
-    EXPECT_EQ(0, driver.run({
-        "in1.strings",
-        "in2.strings",
-        "--outdir", "output",
-        "--outputencoding", "utf-8",
-    }, std::unordered_map<std::string, std::string>(), &filesystem, "/"));
+    MemoryProcessContext processContext = MemoryProcessContext(
+        driver.name(),
+        "/",
+        {
+            "in1.strings",
+            "in2.strings",
+            "--outdir", "output",
+            "--outputencoding", "utf-8",
+        },
+        std::unordered_map<std::string, std::string>(),
+        0,
+        0,
+        "root",
+        "wheel");
+    EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
     contents.clear();
     EXPECT_TRUE(filesystem.read(&contents, "output/in1.strings"));
@@ -78,12 +91,21 @@ TEST(copyStrings, InputOutputEncoding)
             });
 
             Driver driver;
-            EXPECT_EQ(0, driver.run({
-                "in.strings",
-                "--outdir", "output",
-                "--inputencoding", entry1.first,
-                "--outputencoding", entry2.first,
-            }, std::unordered_map<std::string, std::string>(), &filesystem, "/"));
+            MemoryProcessContext processContext = MemoryProcessContext(
+                driver.name(),
+                "/",
+                {
+                    "in.strings",
+                    "--outdir", "output",
+                    "--inputencoding", entry1.first,
+                    "--outputencoding", entry2.first,
+                },
+                std::unordered_map<std::string, std::string>(),
+                0,
+                0,
+                "root",
+                "wheel");
+            EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
             std::vector<uint8_t> contents;
             EXPECT_TRUE(filesystem.read(&contents, "output/in.strings"));

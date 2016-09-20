@@ -85,7 +85,7 @@ public:
     /*
      * Get the system instance.
      */
-    static ProcessContext const *GetDefault();
+    static ProcessContext const *GetDefaultUNSAFE();
 };
 
 }

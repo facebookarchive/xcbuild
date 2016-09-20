@@ -9,11 +9,15 @@
 
 #include <xcdriver/UsageAction.h>
 #include <xcdriver/Usage.h>
+#include <libutil/FSUtil.h>
+#include <libutil/ProcessContext.h>
 
 #include <cstdio>
 
 using xcdriver::UsageAction;
 using xcdriver::Usage;
+using libutil::FSUtil;
+using libutil::ProcessContext;
 
 UsageAction::
 UsageAction()
@@ -26,9 +30,11 @@ UsageAction::
 }
 
 int UsageAction::
-Run()
+Run(ProcessContext const *processContext)
 {
-    fprintf(stdout, "%s", Usage::Text().c_str());
+    std::string path = processContext->executablePath();
+    std::string text = Usage::Text(FSUtil::GetBaseName(path));
+    fprintf(stdout, "%s", text.c_str());
 
     return 0;
 }

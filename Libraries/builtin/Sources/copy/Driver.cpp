@@ -41,23 +41,25 @@ name()
 }
 
 static bool
-CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const &outputPath)
+CopyPath(
+    Filesystem *filesystem,
+    std::unordered_map<std::string, std::string> const &environmentVariables,
+    std::string const &workingDirectory,
+    std::string const &inputPath,
+    std::string const &outputPath)
 {
     if (!filesystem->createDirectory(FSUtil::GetDirectoryName(outputPath))) {
         return false;
     }
 
-    std::unordered_map<std::string, std::string> environment = ProcessContext::GetDefault()->environmentVariables();
-    std::string workingDirectory = ProcessContext::GetDefault()->currentDirectory();
-
     Subprocess cp;
-    if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }, environment, workingDirectory) || cp.exitcode() != 0) {
+    if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }, environmentVariables, workingDirectory) || cp.exitcode() != 0) {
         return false;
     }
 
     /* Should preserve permissions but make writable. */
     Subprocess chmod;
-    if (!chmod.execute(filesystem, "/bin/chmod", { "-R", "+w", outputPath }, environment, workingDirectory) || chmod.exitcode() != 0) {
+    if (!chmod.execute(filesystem, "/bin/chmod", { "-R", "+w", outputPath }, environmentVariables, workingDirectory) || chmod.exitcode() != 0) {
         return false;
     }
 
@@ -65,7 +67,7 @@ CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const
 }
 
 static int
-Run(Filesystem *filesystem, Options const &options, std::string const &workingDirectory)
+Run(Filesystem *filesystem, Options const &options, std::unordered_map<std::string, std::string> const &environmentVariables, std::string const &workingDirectory)
 {
     if (!options.output()) {
         fprintf(stderr, "error: no output path provided\n");
@@ -107,7 +109,7 @@ Run(Filesystem *filesystem, Options const &options, std::string const &workingDi
         }
 
         std::string outputPath = output + "/" + FSUtil::GetBaseName(input);
-        if (!CopyPath(filesystem, input, outputPath)) {
+        if (!CopyPath(filesystem, environmentVariables, workingDirectory, input, outputPath)) {
             return 1;
         }
     }
@@ -116,14 +118,14 @@ Run(Filesystem *filesystem, Options const &options, std::string const &workingDi
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
+run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
         fprintf(stderr, "error: %s\n", result.second.c_str());
         return 1;
     }
 
-    return Run(filesystem, options, workingDirectory);
+    return Run(filesystem, options, processContext->environmentVariables(), processContext->currentDirectory());
 }

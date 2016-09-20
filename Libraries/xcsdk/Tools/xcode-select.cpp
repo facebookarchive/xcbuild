@@ -10,11 +10,15 @@
 #include <xcsdk/Environment.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
+#include <libutil/DefaultProcessContext.h>
+#include <libutil/ProcessContext.h>
 #include <libutil/Options.h>
 #include <ext/optional>
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
+using libutil::DefaultProcessContext;
+using libutil::ProcessContext;
 
 class Options {
 private:
@@ -128,13 +132,13 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+    DefaultProcessContext processContext = DefaultProcessContext();
 
     /*
      * Parse out the options, or print help & exit.
      */
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext.commandLineArguments());
     if (!result.first) {
         return Help(result.second);
     }

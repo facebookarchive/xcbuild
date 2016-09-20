@@ -9,13 +9,15 @@
 
 #include <xcdriver/Driver.h>
 #include <libutil/DefaultFilesystem.h>
+#include <libutil/DefaultProcessContext.h>
 
 using libutil::DefaultFilesystem;
+using libutil::DefaultProcessContext;
 
 int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-    return xcdriver::Driver::Run(&filesystem, args);
+    DefaultProcessContext processContext = DefaultProcessContext();
+    return xcdriver::Driver::Run(&processContext, &filesystem);
 }

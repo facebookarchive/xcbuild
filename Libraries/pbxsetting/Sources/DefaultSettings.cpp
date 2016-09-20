@@ -28,7 +28,7 @@ Environment(void)
 {
     std::vector<Setting> settings;
 
-    for (auto const &variable : ProcessContext::GetDefault()->environmentVariables()) {
+    for (auto const &variable : ProcessContext::GetDefaultUNSAFE()->environmentVariables()) {
         // TODO(grp): Is this right? Should this be filtered at another level?
         if (variable.first.front() != '_') {
             Setting setting = Setting::Create(variable.first, variable.second);
@@ -36,10 +36,10 @@ Environment(void)
         }
     }
 
-    settings.push_back(Setting::Create("UID", Type::FormatInteger(ProcessContext::GetDefault()->userID())));
-    settings.push_back(Setting::Create("USER", ProcessContext::GetDefault()->userName()));
-    settings.push_back(Setting::Create("GID", Type::FormatInteger(ProcessContext::GetDefault()->groupID())));
-    settings.push_back(Setting::Create("GROUP", ProcessContext::GetDefault()->groupName()));
+    settings.push_back(Setting::Create("UID", Type::FormatInteger(ProcessContext::GetDefaultUNSAFE()->userID())));
+    settings.push_back(Setting::Create("USER", ProcessContext::GetDefaultUNSAFE()->userName()));
+    settings.push_back(Setting::Create("GID", Type::FormatInteger(ProcessContext::GetDefaultUNSAFE()->groupID())));
+    settings.push_back(Setting::Create("GROUP", ProcessContext::GetDefaultUNSAFE()->groupName()));
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));

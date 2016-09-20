@@ -115,7 +115,7 @@ Absolute(std::string const &path)
 Executable Executable::
 Builtin(std::string const &name)
 {
-    std::string executableRoot = FSUtil::GetDirectoryName(ProcessContext::GetDefault()->executablePath());
+    std::string executableRoot = FSUtil::GetDirectoryName(ProcessContext::GetDefaultUNSAFE()->executablePath());
     std::string path = executableRoot + "/" + name;
     return Executable(path, name);
 }

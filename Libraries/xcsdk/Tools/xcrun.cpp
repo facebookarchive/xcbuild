@@ -17,12 +17,14 @@
 #include <libutil/Options.h>
 #include <libutil/Subprocess.h>
 #include <libutil/ProcessContext.h>
+#include <libutil/DefaultProcessContext.h>
 #include <pbxsetting/Type.h>
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::ProcessContext;
+using libutil::DefaultProcessContext;
 using libutil::Subprocess;
 
 class Options {
@@ -221,16 +223,13 @@ Version()
     return 0;
 }
 
-int
-main(int argc, char **argv)
+static int Run(Filesystem *filesystem, ProcessContext const *processContext)
 {
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-
     /*
      * Parse out the options, or print help & exit.
      */
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
         return Help(result.second);
     }
@@ -251,15 +250,15 @@ main(int argc, char **argv)
      */
     ext::optional<std::string> toolchainsInput = options.toolchain();
     if (!toolchainsInput) {
-        toolchainsInput = ProcessContext::GetDefault()->environmentVariable("TOOLCHAINS");
+        toolchainsInput = processContext->environmentVariable("TOOLCHAINS");
     }
     ext::optional<std::string> SDK = options.SDK();
     if (!SDK) {
-        SDK = ProcessContext::GetDefault()->environmentVariable("SDKROOT");
+        SDK = processContext->environmentVariable("SDKROOT");
     }
-    bool verbose = options.verbose() || (bool)ProcessContext::GetDefault()->environmentVariable("xcrun_verbose");
-    bool log = options.log() || (bool)ProcessContext::GetDefault()->environmentVariable("xcrun_log");
-    bool nocache = options.noCache() || (bool)ProcessContext::GetDefault()->environmentVariable("xcrun_nocache");
+    bool verbose = options.verbose() || (bool)processContext->environmentVariable("xcrun_verbose");
+    bool log = options.log() || (bool)processContext->environmentVariable("xcrun_log");
+    bool nocache = options.noCache() || (bool)processContext->environmentVariable("xcrun_nocache");
 
     /*
      * Warn about unhandled arguments.
@@ -269,20 +268,15 @@ main(int argc, char **argv)
     }
 
     /*
-     * Create filesystem.
-     */
-    DefaultFilesystem filesystem = DefaultFilesystem();
-
-    /*
      * Load the SDK manager from the developer root.
      */
-    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(&filesystem);
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem);
     if (!developerRoot) {
         fprintf(stderr, "error: unable to find developer root\n");
         return -1;
     }
-    auto configuration = xcsdk::Configuration::Load(&filesystem, xcsdk::Configuration::DefaultPaths());
-    auto manager = xcsdk::SDK::Manager::Open(&filesystem, *developerRoot, configuration);
+    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths());
+    auto manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to load manager from '%s'\n", developerRoot->c_str());
         return -1;
@@ -403,13 +397,13 @@ main(int argc, char **argv)
          * or default paths.
          */
         std::vector<std::string> executablePaths = manager->executablePaths(target != nullptr ? target->platform() : nullptr, target, toolchains);
-        std::vector<std::string> defaultExecutablePaths = ProcessContext::GetDefault()->executableSearchPaths();
+        std::vector<std::string> defaultExecutablePaths = processContext->executableSearchPaths();
         executablePaths.insert(executablePaths.end(), defaultExecutablePaths.begin(), defaultExecutablePaths.end());
 
         /*
          * Find the tool to execute.
          */
-        ext::optional<std::string> executable = filesystem.findExecutable(*options.tool(), executablePaths);
+        ext::optional<std::string> executable = filesystem->findExecutable(*options.tool(), executablePaths);
         if (!executable) {
             fprintf(stderr, "error: tool '%s' not found\n", options.tool()->c_str());
             return 1;
@@ -427,7 +421,7 @@ main(int argc, char **argv)
         } else {
             /* Run is the default. */
 
-            std::unordered_map<std::string, std::string> environment = ProcessContext::GetDefault()->environmentVariables();
+            std::unordered_map<std::string, std::string> environment = processContext->environmentVariables();
 
             if (target != nullptr) {
                 /*
@@ -446,7 +440,7 @@ main(int argc, char **argv)
                 printf("verbose: executing tool: %s\n", executable->c_str());
             }
             Subprocess process;
-            if (!process.execute(&filesystem, *executable, options.args(), environment, ProcessContext::GetDefault()->currentDirectory())) {
+            if (!process.execute(filesystem, *executable, options.args(), environment, processContext->currentDirectory())) {
                 fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
                 return -1;
             }
@@ -455,3 +449,12 @@ main(int argc, char **argv)
         }
     }
 }
+
+int
+main(int argc, char **argv)
+{
+    DefaultFilesystem filesystem = DefaultFilesystem();
+    DefaultProcessContext processContext = DefaultProcessContext();
+    return Run(&filesystem, &processContext);
+}
+
