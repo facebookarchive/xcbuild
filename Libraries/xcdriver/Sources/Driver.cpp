@@ -60,7 +60,7 @@ Run(ProcessContext const *processContext, Filesystem *filesystem)
         case Action::List:
             return ListAction::Run(processContext, filesystem, options);
         case Action::Version:
-            return VersionAction::Run(filesystem, options);
+            return VersionAction::Run(processContext, filesystem, options);
         case Action::Usage:
             return UsageAction::Run(processContext);
         case Action::Help:
@@ -71,9 +71,9 @@ Run(ProcessContext const *processContext, Filesystem *filesystem)
             fprintf(stderr, "warning: check first launch not implemented\n");
             break;
         case Action::ShowSDKs:
-            return ShowSDKsAction::Run(filesystem, options);
+            return ShowSDKsAction::Run(processContext, filesystem, options);
         case Action::Find:
-            return FindAction::Run(filesystem, options);
+            return FindAction::Run(processContext, filesystem, options);
         case Action::ExportArchive:
             fprintf(stderr, "warning: export archive not implemented\n");
             break;

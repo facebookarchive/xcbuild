@@ -24,11 +24,11 @@ using libutil::FSUtil;
 using libutil::ProcessContext;
 
 Level DefaultSettings::
-Environment(void)
+Environment(ProcessContext const *processContext)
 {
     std::vector<Setting> settings;
 
-    for (auto const &variable : ProcessContext::GetDefaultUNSAFE()->environmentVariables()) {
+    for (auto const &variable : processContext->environmentVariables()) {
         // TODO(grp): Is this right? Should this be filtered at another level?
         if (variable.first.front() != '_') {
             Setting setting = Setting::Create(variable.first, variable.second);
@@ -36,15 +36,16 @@ Environment(void)
         }
     }
 
-    settings.push_back(Setting::Create("UID", Type::FormatInteger(ProcessContext::GetDefaultUNSAFE()->userID())));
-    settings.push_back(Setting::Create("USER", ProcessContext::GetDefaultUNSAFE()->userName()));
-    settings.push_back(Setting::Create("GID", Type::FormatInteger(ProcessContext::GetDefaultUNSAFE()->groupID())));
-    settings.push_back(Setting::Create("GROUP", ProcessContext::GetDefaultUNSAFE()->groupName()));
+    settings.push_back(Setting::Create("UID", Type::FormatInteger(processContext->userID())));
+    settings.push_back(Setting::Create("USER", processContext->userName()));
+    settings.push_back(Setting::Create("GID", Type::FormatInteger(processContext->groupID())));
+    settings.push_back(Setting::Create("GROUP", processContext->groupName()));
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));
 
 #if defined(__APPLE__)
+    // TODO(grp): This is reading system information directly.
     size_t len = confstr(_CS_DARWIN_USER_CACHE_DIR, NULL, 0);
     char *cache = (char *)malloc(len);
     confstr(_CS_DARWIN_USER_CACHE_DIR, cache, len);
@@ -171,10 +172,10 @@ Build(void)
 }
 
 std::vector<Level> DefaultSettings::
-Levels(void)
+Levels(ProcessContext const *processContext)
 {
     return {
-        Environment(),
+        Environment(processContext),
         Internal(),
         Local(),
         System(),

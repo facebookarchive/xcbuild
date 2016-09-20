@@ -151,7 +151,7 @@ main(int argc, char **argv)
     } else if (options.version()) {
         return Version();
     } else if (options.printPath()) {
-        ext::optional<std::string> developer = xcsdk::Environment::DeveloperRoot(&filesystem);
+        ext::optional<std::string> developer = xcsdk::Environment::DeveloperRoot(&processContext, &filesystem);
         if (!developer) {
             fprintf(stderr, "error: no developer directory found\n");
             return 1;

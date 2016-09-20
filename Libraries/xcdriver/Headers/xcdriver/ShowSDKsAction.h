@@ -11,6 +11,7 @@
 #define __xcdriver_ShowSDKsAction_h
 
 namespace libutil { class Filesystem; }
+namespace libutil { class ProcessContext; }
 
 namespace xcdriver {
 
@@ -23,7 +24,7 @@ private:
 
 public:
     static int
-    Run(libutil::Filesystem const *filesystem, Options const &options);
+    Run(libutil::ProcessContext const *processContext, libutil::Filesystem const *filesystem, Options const &options);
 };
 
 }

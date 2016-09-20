@@ -122,13 +122,13 @@ public:
      * Creates a workspace context from a real workspace.
      */
     static WorkspaceContext
-    Workspace(libutil::Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace);
+    Workspace(libutil::Filesystem const *filesystem, std::string const &userName, pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace);
 
     /*
      * Creates a workspace context for a legacy project-only build.
      */
     static WorkspaceContext
-    Project(libutil::Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project);
+    Project(libutil::Filesystem const *filesystem, std::string const &userName, pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project);
 };
 
 }

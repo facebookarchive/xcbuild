@@ -43,11 +43,12 @@ SimpleExecutor::
 
 bool SimpleExecutor::
 build(
-    libutil::Filesystem *filesystem,
+    ProcessContext const *processContext,
+    Filesystem *filesystem,
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
 {
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, ProcessContext::GetDefaultUNSAFE()->currentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, processContext->userName(), buildEnvironment, processContext->currentDirectory());
     if (!workspaceContext) {
         return false;
     }
@@ -85,7 +86,7 @@ build(
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
         xcformatter::Formatter::Print(_formatter->finishCheckDependencies(target));
 
-        auto result = buildTarget(filesystem, target, *targetEnvironment, phaseInvocations.invocations());
+        auto result = buildTarget(processContext, filesystem, target, *targetEnvironment, phaseInvocations.invocations());
         if (!result.first) {
             xcformatter::Formatter::Print(_formatter->finishTarget(*buildContext, target));
             xcformatter::Formatter::Print(_formatter->failure(*buildContext, result.second));
@@ -215,6 +216,7 @@ writeAuxiliaryFiles(
 
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 performInvocations(
+    ProcessContext const *processContext,
     Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
@@ -252,7 +254,7 @@ performInvocations(
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
 
-                MemoryProcessContext driverContext = MemoryProcessContext(ProcessContext::GetDefaultUNSAFE());
+                MemoryProcessContext driverContext = MemoryProcessContext(processContext);
                 driverContext.executablePath() = invocation.executable().path();
                 driverContext.currentDirectory() = invocation.workingDirectory();
                 driverContext.commandLineArguments() = invocation.arguments();
@@ -280,6 +282,7 @@ performInvocations(
 
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 buildTarget(
+    ProcessContext const *processContext,
     Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
@@ -296,13 +299,13 @@ buildTarget(
     }
 
     xcformatter::Formatter::Print(_formatter->beginCreateProductStructure(target));
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(filesystem, target, targetEnvironment, *orderedInvocations, true);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(processContext, filesystem, target, targetEnvironment, *orderedInvocations, true);
     xcformatter::Formatter::Print(_formatter->finishCreateProductStructure(target));
     if (!structureResult.first) {
         return structureResult;
     }
 
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(filesystem, target, targetEnvironment, *orderedInvocations, false);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(processContext, filesystem, target, targetEnvironment, *orderedInvocations, false);
     if (!invocationsResult.first) {
         return invocationsResult;
     }
