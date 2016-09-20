@@ -41,7 +41,7 @@ Driver::
 }
 
 int Driver::
-Run(process::Context const *processContext, Filesystem *filesystem)
+Run(process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
@@ -53,7 +53,7 @@ Run(process::Context const *processContext, Filesystem *filesystem)
     Action::Type action = Action::Determine(options);
     switch (action) {
         case Action::Build:
-            return BuildAction::Run(processContext, filesystem, options);
+            return BuildAction::Run(processContext, processLauncher, filesystem, options);
         case Action::ShowBuildSettings:
             return ShowBuildSettingsAction::Run(processContext, filesystem, options);
         case Action::List:

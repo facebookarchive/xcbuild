@@ -17,7 +17,7 @@
 #include <libutil/FSUtil.h>
 #include <process/Context.h>
 #include <process/MemoryContext.h>
-#include <process/Subprocess.h>
+#include <process/Launcher.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -41,6 +41,7 @@ SimpleExecutor::
 bool SimpleExecutor::
 build(
     process::Context const *processContext,
+    process::Launcher *processLauncher,
     Filesystem *filesystem,
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
@@ -83,7 +84,7 @@ build(
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
         xcformatter::Formatter::Print(_formatter->finishCheckDependencies(target));
 
-        auto result = buildTarget(processContext, filesystem, target, *targetEnvironment, phaseInvocations.invocations());
+        auto result = buildTarget(processContext, processLauncher, filesystem, target, *targetEnvironment, phaseInvocations.invocations());
         if (!result.first) {
             xcformatter::Formatter::Print(_formatter->finishTarget(*buildContext, target));
             xcformatter::Formatter::Print(_formatter->failure(*buildContext, result.second));
@@ -214,6 +215,7 @@ writeAuxiliaryFiles(
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 performInvocations(
     process::Context const *processContext,
+    process::Launcher *processLauncher,
     Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
@@ -243,6 +245,16 @@ performInvocations(
                 }
             }
 
+            process::MemoryContext context = process::MemoryContext(
+                invocation.executable().path(),
+                invocation.workingDirectory(),
+                invocation.arguments(),
+                invocation.environment(),
+                processContext->userID(),
+                processContext->groupID(),
+                processContext->userName(),
+                processContext->groupName());
+
             if (!invocation.executable().builtin().empty()) {
                 /* For built-in tools, run them in-process. */
                 std::shared_ptr<builtin::Driver> driver = _builtins.driver(invocation.executable().builtin());
@@ -251,20 +263,14 @@ performInvocations(
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
 
-                process::MemoryContext driverContext = process::MemoryContext(processContext);
-                driverContext.executablePath() = invocation.executable().path();
-                driverContext.currentDirectory() = invocation.workingDirectory();
-                driverContext.commandLineArguments() = invocation.arguments();
-                driverContext.environmentVariables() = invocation.environment();
-
-                if (driver->run(&driverContext, filesystem) != 0) {
+                if (driver->run(&context, filesystem) != 0) {
                     xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
             } else {
                 /* External tool, run the tool externally. */
-                process::Subprocess process;
-                if (!process.execute(filesystem, invocation.executable().path(), invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
+                ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
+                if (!exitCode || *exitCode != 0) {
                     xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
@@ -280,6 +286,7 @@ performInvocations(
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 buildTarget(
     process::Context const *processContext,
+    process::Launcher *processLauncher,
     Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
@@ -296,13 +303,13 @@ buildTarget(
     }
 
     xcformatter::Formatter::Print(_formatter->beginCreateProductStructure(target));
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(processContext, filesystem, target, targetEnvironment, *orderedInvocations, true);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(processContext, processLauncher, filesystem, target, targetEnvironment, *orderedInvocations, true);
     xcformatter::Formatter::Print(_formatter->finishCreateProductStructure(target));
     if (!structureResult.first) {
         return structureResult;
     }
 
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(processContext, filesystem, target, targetEnvironment, *orderedInvocations, false);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(processContext, processLauncher, filesystem, target, targetEnvironment, *orderedInvocations, false);
     if (!invocationsResult.first) {
         return invocationsResult;
     }

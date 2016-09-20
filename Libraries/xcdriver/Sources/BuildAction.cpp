@@ -112,7 +112,7 @@ VerifySupportedOptions(Options const &options)
 }
 
 int BuildAction::
-Run(process::Context const *processContext, Filesystem *filesystem, Options const &options)
+Run(process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem, Options const &options)
 {
     // TODO(grp): Implement these options.
     if (!VerifySupportedOptions(options)) {
@@ -168,7 +168,7 @@ Run(process::Context const *processContext, Filesystem *filesystem, Options cons
     /*
      * Perform the build!
      */
-    bool success = executor->build(processContext, filesystem, *buildEnvironment, parameters);
+    bool success = executor->build(processContext, processLauncher, filesystem, *buildEnvironment, parameters);
     if (!success) {
         return 1;
     }

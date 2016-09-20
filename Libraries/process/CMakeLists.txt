@@ -11,7 +11,9 @@ add_library(process SHARED
             Sources/Context.cpp
             Sources/DefaultContext.cpp
             Sources/MemoryContext.cpp
-            Sources/Subprocess.cpp
+            Sources/Launcher.cpp
+            Sources/DefaultLauncher.cpp
+            Sources/MemoryLauncher.cpp
             )
 
 target_link_libraries(process PUBLIC ext util)

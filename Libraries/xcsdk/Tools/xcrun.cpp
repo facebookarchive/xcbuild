@@ -15,9 +15,11 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/Options.h>
-#include <process/Subprocess.h>
 #include <process/Context.h>
 #include <process/DefaultContext.h>
+#include <process/MemoryContext.h>
+#include <process/Launcher.h>
+#include <process/DefaultLauncher.h>
 #include <pbxsetting/Type.h>
 
 using libutil::DefaultFilesystem;
@@ -220,7 +222,7 @@ Version()
     return 0;
 }
 
-static int Run(Filesystem *filesystem, process::Context const *processContext)
+static int Run(Filesystem *filesystem, process::Context const *processContext, process::Launcher *processLauncher)
 {
     /*
      * Parse out the options, or print help & exit.
@@ -436,13 +438,24 @@ static int Run(Filesystem *filesystem, process::Context const *processContext)
             if (verbose) {
                 printf("verbose: executing tool: %s\n", executable->c_str());
             }
-            process::Subprocess process;
-            if (!process.execute(filesystem, *executable, options.args(), environment, processContext->currentDirectory())) {
+
+            process::MemoryContext context = process::MemoryContext(
+                *executable,
+                processContext->currentDirectory(),
+                options.args(),
+                environment,
+                processContext->userID(),
+                processContext->groupID(),
+                processContext->userName(),
+                processContext->groupName());
+
+            ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
+            if (!exitCode) {
                 fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
                 return -1;
             }
 
-            return process.exitcode();
+            return *exitCode;
         }
     }
 }
@@ -452,6 +465,7 @@ main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
     process::DefaultContext processContext = process::DefaultContext();
-    return Run(&filesystem, &processContext);
+    process::DefaultLauncher processLauncher = process::DefaultLauncher();
+    return Run(&filesystem, &processContext, &processLauncher);
 }
 
