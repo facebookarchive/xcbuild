@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <libutil/Subprocess.h>
+#include <process/Subprocess.h>
 #include <libutil/Filesystem.h>
 
 #include <sstream>
@@ -15,7 +15,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-using libutil::Subprocess;
+using process::Subprocess;
+using libutil::Filesystem;
 
 Subprocess::Subprocess() :
     _exitcode(0)

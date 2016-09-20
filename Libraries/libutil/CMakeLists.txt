@@ -14,8 +14,6 @@ add_library(util SHARED
             Sources/MemoryFilesystem.cpp
             Sources/Options.cpp
             #
-            Sources/Subprocess.cpp
-            #
             Sources/Escape.cpp
             Sources/Wildcard.cpp
             #
