@@ -12,8 +12,8 @@
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/DefaultProcessContext.h>
-#include <libutil/ProcessContext.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 
 #include <dependency/DependencyInfo.h>
 #include <dependency/BinaryDependencyInfo.h>
@@ -26,8 +26,6 @@ using libutil::Escape;
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::DefaultProcessContext;
-using libutil::ProcessContext;
 
 class Options {
 private:
@@ -216,7 +214,7 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    DefaultProcessContext processContext = DefaultProcessContext();
+    process::DefaultContext processContext = process::DefaultContext();
 
     /*
      * Parse out the options, or print help & exit.

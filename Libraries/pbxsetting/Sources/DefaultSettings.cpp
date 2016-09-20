@@ -10,7 +10,7 @@
 #include <pbxsetting/DefaultSettings.h>
 #include <pbxsetting/Type.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #include <cstdlib>
 
@@ -21,10 +21,9 @@ using pbxsetting::Level;
 using pbxsetting::Setting;
 using pbxsetting::Type;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 
 Level DefaultSettings::
-Environment(ProcessContext const *processContext)
+Environment(process::Context const *processContext)
 {
     std::vector<Setting> settings;
 
@@ -172,7 +171,7 @@ Build(void)
 }
 
 std::vector<Level> DefaultSettings::
-Levels(ProcessContext const *processContext)
+Levels(process::Context const *processContext)
 {
     return {
         Environment(processContext),

@@ -12,8 +12,8 @@
 #include <xcworkspace/xcworkspace.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
-#include <libutil/DefaultProcessContext.h>
-#include <libutil/ProcessContext.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 
 #include <algorithm>
 #include <cstring>
@@ -153,7 +153,7 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    DefaultProcessContext processContext = DefaultProcessContext();
+    process::DefaultContext processContext = process::DefaultContext();
 
     if (argc < 2) {
         fprintf(stderr, "usage: %s filename.xcworkspace\n", argv[0]);

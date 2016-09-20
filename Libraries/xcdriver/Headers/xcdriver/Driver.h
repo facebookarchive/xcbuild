@@ -11,7 +11,7 @@
 #define __xcdriver_Driver_h
 
 namespace libutil { class Filesystem; }
-namespace libutil { class ProcessContext; }
+namespace process { class Context; }
 
 namespace xcdriver {
 
@@ -22,7 +22,7 @@ private:
 
 public:
     static int
-    Run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem);
+    Run(process::Context const *processContext, libutil::Filesystem *filesystem);
 };
 
 }

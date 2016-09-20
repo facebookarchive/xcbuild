@@ -16,15 +16,13 @@
 #include <libutil/FSUtil.h>
 #include <libutil/Options.h>
 #include <libutil/Subprocess.h>
-#include <libutil/ProcessContext.h>
-#include <libutil/DefaultProcessContext.h>
+#include <process/Context.h>
+#include <process/DefaultContext.h>
 #include <pbxsetting/Type.h>
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
-using libutil::DefaultProcessContext;
 using libutil::Subprocess;
 
 class Options {
@@ -223,7 +221,7 @@ Version()
     return 0;
 }
 
-static int Run(Filesystem *filesystem, ProcessContext const *processContext)
+static int Run(Filesystem *filesystem, process::Context const *processContext)
 {
     /*
      * Parse out the options, or print help & exit.
@@ -454,7 +452,7 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    DefaultProcessContext processContext = DefaultProcessContext();
+    process::DefaultContext processContext = process::DefaultContext();
     return Run(&filesystem, &processContext);
 }
 

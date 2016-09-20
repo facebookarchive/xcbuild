@@ -17,12 +17,11 @@
 #include <xcsdk/SDK/Product.h>
 #include <xcsdk/SDK/Target.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using xcdriver::VersionAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 VersionAction::
 VersionAction()
@@ -35,7 +34,7 @@ VersionAction::
 }
 
 int VersionAction::
-Run(ProcessContext const *processContext, Filesystem const *filesystem, Options const &options)
+Run(process::Context const *processContext, Filesystem const *filesystem, Options const &options)
 {
     if (!options.sdk()) {
         // TODO(grp): Real version numbers.

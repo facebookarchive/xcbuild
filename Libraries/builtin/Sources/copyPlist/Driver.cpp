@@ -12,14 +12,13 @@
 #include <plist/Object.h>
 #include <plist/Format/Any.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 #include <libutil/FSUtil.h>
 
 using builtin::copyPlist::Driver;
 using builtin::copyPlist::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 
 Driver::
 Driver()
@@ -38,7 +37,7 @@ name()
 }
 
 int Driver::
-run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());

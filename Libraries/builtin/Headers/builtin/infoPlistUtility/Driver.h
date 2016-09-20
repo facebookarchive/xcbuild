@@ -24,7 +24,7 @@ public:
     virtual std::string name();
 
 public:
-    virtual int run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem);
+    virtual int run(process::Context const *processContext, libutil::Filesystem *filesystem);
 };
 
 }

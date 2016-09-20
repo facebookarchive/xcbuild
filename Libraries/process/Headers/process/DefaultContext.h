@@ -7,20 +7,20 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __libutil_DefaultProcessContext_h
-#define __libutil_DefaultProcessContext_h
+#ifndef __process_DefaultContext_h
+#define __process_DefaultContext_h
 
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
-namespace libutil {
+namespace process {
 
 /*
  * A process context for the current process.
  */
-class DefaultProcessContext : public ProcessContext {
+class DefaultContext : public Context {
 public:
-    explicit DefaultProcessContext();
-    virtual ~DefaultProcessContext();
+    explicit DefaultContext();
+    virtual ~DefaultContext();
 
 public:
     virtual std::string executablePath() const;
@@ -40,4 +40,4 @@ public:
 
 }
 
-#endif  // !__libutil_DefaultProcessContext_h
+#endif  // !__process_DefaultContext_h

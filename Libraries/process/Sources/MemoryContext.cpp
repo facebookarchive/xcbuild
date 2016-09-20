@@ -7,12 +7,12 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <libutil/MemoryProcessContext.h>
+#include <process/MemoryContext.h>
 
-using libutil::MemoryProcessContext;
+using process::MemoryContext;
 
-MemoryProcessContext::
-MemoryProcessContext(
+MemoryContext::
+MemoryContext(
     std::string const &executablePath,
     std::string const &currentDirectory,
     std::vector<std::string> const &commandLineArguments,
@@ -21,7 +21,7 @@ MemoryProcessContext(
     int32_t groupID,
     std::string const &userName,
     std::string const &groupName) :
-    ProcessContext       (),
+    Context       (),
     _executablePath      (executablePath),
     _currentDirectory    (currentDirectory),
     _commandLineArguments(commandLineArguments),
@@ -33,26 +33,26 @@ MemoryProcessContext(
 {
 }
 
-MemoryProcessContext::
-MemoryProcessContext(ProcessContext const *processContext) :
-    MemoryProcessContext(
-        processContext->executablePath(),
-        processContext->currentDirectory(),
-        processContext->commandLineArguments(),
-        processContext->environmentVariables(),
-        processContext->userID(),
-        processContext->groupID(),
-        processContext->userName(),
-        processContext->groupName())
+MemoryContext::
+MemoryContext(Context const *context) :
+    MemoryContext(
+        context->executablePath(),
+        context->currentDirectory(),
+        context->commandLineArguments(),
+        context->environmentVariables(),
+        context->userID(),
+        context->groupID(),
+        context->userName(),
+        context->groupName())
 {
 }
 
-MemoryProcessContext::
-~MemoryProcessContext()
+MemoryContext::
+~MemoryContext()
 {
 }
 
-ext::optional<std::string> MemoryProcessContext::
+ext::optional<std::string> MemoryContext::
 environmentVariable(std::string const &variable) const
 {
     auto it = _environmentVariables.find(variable);

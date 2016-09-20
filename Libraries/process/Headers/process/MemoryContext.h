@@ -7,17 +7,17 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __libutil_MemoryProcessContext_h
-#define __libutil_MemoryProcessContext_h
+#ifndef __process_MemoryContext_h
+#define __process_MemoryContext_h
 
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
-namespace libutil {
+namespace process {
 
 /*
  * A process context with arbitrary values.
  */
-class MemoryProcessContext : public ProcessContext {
+class MemoryContext : public Context {
 private:
     std::string _executablePath;
     std::string _currentDirectory;
@@ -33,7 +33,7 @@ private:
     std::string _groupName;
 
 public:
-    MemoryProcessContext(
+    MemoryContext(
         std::string const &executablePath,
         std::string const &currentDirectory,
         std::vector<std::string> const &commandLineArguments,
@@ -42,8 +42,8 @@ public:
         int32_t groupID,
         std::string const &userName,
         std::string const &groupName);
-    explicit MemoryProcessContext(ProcessContext const *processContext);
-    virtual ~MemoryProcessContext();
+    explicit MemoryContext(Context const *context);
+    virtual ~MemoryContext();
 
 public:
     virtual std::string executablePath() const
@@ -93,4 +93,4 @@ public:
 
 }
 
-#endif  // !__libutil_MemoryProcessContext_h
+#endif  // !__process_MemoryContext_h

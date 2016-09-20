@@ -11,12 +11,11 @@
 #include <libutil/Base.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using xcsdk::Environment;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 
 static std::string
 PrimaryDeveloperRootLink()
@@ -45,7 +44,7 @@ ResolveDeveloperRoot(Filesystem const *filesystem, std::string const &path)
 }
 
 ext::optional<std::string> Environment::
-DeveloperRoot(ProcessContext const *processContext, Filesystem const *filesystem)
+DeveloperRoot(process::Context const *processContext, Filesystem const *filesystem)
 {
     if (auto path = processContext->environmentVariable("DEVELOPER_DIR")) {
         return ResolveDeveloperRoot(filesystem, *path);

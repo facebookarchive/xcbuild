@@ -12,7 +12,7 @@
 
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 #include <libutil/Subprocess.h>
 
 #include <unordered_set>
@@ -21,7 +21,6 @@ using builtin::copy::Driver;
 using builtin::copy::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 using libutil::Subprocess;
 
 Driver::
@@ -118,7 +117,7 @@ Run(Filesystem *filesystem, Options const &options, std::unordered_map<std::stri
 }
 
 int Driver::
-run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());

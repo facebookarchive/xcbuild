@@ -11,14 +11,13 @@
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #include <strings.h>
 
 using xcdriver::ListAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 ListAction::
 ListAction()
@@ -31,7 +30,7 @@ ListAction::
 }
 
 int ListAction::
-Run(ProcessContext const *processContext, Filesystem const *filesystem, Options const &options)
+Run(process::Context const *processContext, Filesystem const *filesystem, Options const &options)
 {
     ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(processContext, filesystem);
     if (!buildEnvironment) {

@@ -34,7 +34,7 @@ add_library(acdriver SHARED
             Sources/ContentsAction.cpp
             )
 
-target_link_libraries(acdriver PUBLIC xcassets util plist graphics dependency ext bom car)
+target_link_libraries(acdriver PUBLIC xcassets process util plist graphics dependency ext bom car)
 target_include_directories(acdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS acdriver DESTINATION usr/lib)
 

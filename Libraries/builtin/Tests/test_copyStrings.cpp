@@ -12,16 +12,14 @@
 #include <builtin/copyStrings/Driver.h>
 #include <libutil/Filesystem.h>
 #include <libutil/MemoryFilesystem.h>
-#include <libutil/ProcessContext.h>
-#include <libutil/MemoryProcessContext.h>
+#include <process/Context.h>
+#include <process/MemoryContext.h>
 #include <plist/Format/Encoding.h>
 
 using builtin::copyStrings::Driver;
 using builtin::copyStrings::Options;
 using libutil::Filesystem;
 using libutil::MemoryFilesystem;
-using libutil::ProcessContext;
-using libutil::MemoryProcessContext;
 
 static std::vector<uint8_t>
 Contents(std::string const &string)
@@ -45,7 +43,7 @@ TEST(copyStrings, CopyMultiple)
     });
 
     Driver driver;
-    MemoryProcessContext processContext = MemoryProcessContext(
+    process::MemoryContext processContext = process::MemoryContext(
         driver.name(),
         "/",
         {
@@ -91,7 +89,7 @@ TEST(copyStrings, InputOutputEncoding)
             });
 
             Driver driver;
-            MemoryProcessContext processContext = MemoryProcessContext(
+            process::MemoryContext processContext = process::MemoryContext(
                 driver.name(),
                 "/",
                 {

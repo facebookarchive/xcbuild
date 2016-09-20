@@ -20,7 +20,7 @@
 #include <xcdriver/UsageAction.h>
 #include <xcdriver/VersionAction.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #include <string>
 #include <vector>
@@ -29,7 +29,6 @@ using xcdriver::Driver;
 using xcdriver::Action;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 Driver::
 Driver()
@@ -42,7 +41,7 @@ Driver::
 }
 
 int Driver::
-Run(ProcessContext const *processContext, Filesystem *filesystem)
+Run(process::Context const *processContext, Filesystem *filesystem)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());

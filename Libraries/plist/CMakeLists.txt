@@ -66,7 +66,7 @@ target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHea
 install(TARGETS plist DESTINATION usr/lib)
 
 add_executable(plutil Tools/plutil.cpp)
-target_link_libraries(plutil plist util)
+target_link_libraries(plutil plist process util)
 install(TARGETS plutil DESTINATION usr/bin)
 
 if (BUILD_TESTING)

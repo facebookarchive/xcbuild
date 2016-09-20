@@ -10,7 +10,7 @@
 #include <builtin/lsRegisterURL/Driver.h>
 #include <builtin/lsRegisterURL/Options.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
@@ -23,7 +23,6 @@
 using builtin::lsRegisterURL::Driver;
 using builtin::lsRegisterURL::Options;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 Driver::
 Driver()
@@ -42,7 +41,7 @@ name()
 }
 
 int Driver::
-run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());

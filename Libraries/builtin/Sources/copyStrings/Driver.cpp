@@ -18,7 +18,7 @@
 #include <plist/Format/Encoding.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #include <strings.h>
 
@@ -26,7 +26,6 @@ using builtin::copyStrings::Driver;
 using builtin::copyStrings::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 
 Driver::
 Driver()
@@ -113,7 +112,7 @@ ValidateOptions(Options const &options)
 }
 
 int Driver::
-run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());

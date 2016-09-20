@@ -14,12 +14,11 @@
 #include <plist/Format/SimpleXML.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using xcworkspace::XC::Workspace;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 
 Workspace::
 Workspace()

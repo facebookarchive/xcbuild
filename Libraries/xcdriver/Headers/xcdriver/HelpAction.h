@@ -10,7 +10,7 @@
 #ifndef __xcdriver_HelpAction_h
 #define __xcdriver_HelpAction_h
 
-namespace libutil { class ProcessContext; }
+namespace process { class Context; }
 
 namespace xcdriver {
 
@@ -24,7 +24,7 @@ private:
 
 public:
     static int
-    Run(libutil::ProcessContext const *processContext);
+    Run(process::Context const *processContext);
 };
 
 }

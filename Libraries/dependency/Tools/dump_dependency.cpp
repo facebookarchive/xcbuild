@@ -13,15 +13,13 @@
 #include <dependency/MakefileDependencyInfo.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
-#include <libutil/DefaultProcessContext.h>
-#include <libutil/ProcessContext.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 
 #include <cassert>
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
-using libutil::DefaultProcessContext;
-using libutil::ProcessContext;
 
 static void
 DumpDependencyInfo(dependency::DependencyInfo const &dependencyInfo)
@@ -79,7 +77,7 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    DefaultProcessContext processContext = DefaultProcessContext();
+    process::DefaultContext processContext = process::DefaultContext();
 
     for (std::string const &input : processContext.commandLineArguments()) {
         if (!DumpDependencyInfo(&filesystem, input)) {

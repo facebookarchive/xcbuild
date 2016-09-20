@@ -28,14 +28,14 @@ public:
 
 public:
     virtual bool build(
-        libutil::ProcessContext const *processContext,
+        process::Context const *processContext,
         libutil::Filesystem *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters);
 
 private:
     bool buildAction(
-        libutil::ProcessContext const *processContext,
+        process::Context const *processContext,
         libutil::Filesystem *filesystem,
         Parameters const &buildParameters,
         pbxbuild::Build::Environment const &buildEnvironment,

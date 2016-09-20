@@ -7,20 +7,20 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __libutil_ProcessContext_h
-#define __libutil_ProcessContext_h
+#ifndef __process_Context_h
+#define __process_Context_h
 
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <ext/optional>
 
-namespace libutil {
+namespace process {
 
-class ProcessContext {
+class Context {
 protected:
-    ProcessContext();
-    virtual ~ProcessContext();
+    Context();
+    virtual ~Context();
 
 public:
     /*
@@ -85,9 +85,9 @@ public:
     /*
      * Get the system instance.
      */
-    static ProcessContext const *GetDefaultUNSAFE();
+    static Context const *GetDefaultUNSAFE();
 };
 
 }
 
-#endif  // !__libutil_ProcessContext_h
+#endif  // !__process_Context_h

@@ -9,16 +9,15 @@
 
 #include <builtin/copy/Driver.h>
 #include <libutil/DefaultFilesystem.h>
-#include <libutil/DefaultProcessContext.h>
+#include <process/DefaultContext.h>
 
 using libutil::DefaultFilesystem;
-using libutil::DefaultProcessContext;
 
 int
 main(int argc, char **argv, char **envp)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    DefaultProcessContext processContext = DefaultProcessContext();
+    process::DefaultContext processContext = process::DefaultContext();
 
     builtin::copy::Driver driver;
     return driver.run(&processContext, &filesystem);

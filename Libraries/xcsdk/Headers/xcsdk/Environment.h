@@ -14,7 +14,7 @@
 #include <ext/optional>
 
 namespace libutil { class Filesystem; };
-namespace libutil { class ProcessContext; };
+namespace process { class Context; };
 
 namespace xcsdk {
 
@@ -25,7 +25,7 @@ private:
 
 public:
     static ext::optional<std::string> DeveloperRoot(
-        libutil::ProcessContext const *processContext,
+        process::Context const *processContext,
         libutil::Filesystem const *filesystem);
 
 public:
