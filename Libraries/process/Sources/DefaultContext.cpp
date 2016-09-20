@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <libutil/DefaultProcessContext.h>
+#include <process/DefaultContext.h>
 #include <libutil/FSUtil.h>
 
 #include <sstream>
@@ -32,21 +32,21 @@
 
 extern "C" char **environ;
 
-using libutil::DefaultProcessContext;
+using process::DefaultContext;
 using libutil::FSUtil;
 
-DefaultProcessContext::
-DefaultProcessContext() :
-    ProcessContext()
+DefaultContext::
+DefaultContext() :
+    Context()
 {
 }
 
-DefaultProcessContext::
-~DefaultProcessContext()
+DefaultContext::
+~DefaultContext()
 {
 }
 
-std::string DefaultProcessContext::
+std::string DefaultContext::
 currentDirectory() const
 {
     char path[PATH_MAX + 1];
@@ -76,7 +76,7 @@ static void InitialExecutablePathInitialize(int argc, char **argv)
 #endif
 #endif
 
-std::string DefaultProcessContext::
+std::string DefaultContext::
 executablePath() const
 {
 #if defined(__APPLE__)
@@ -122,13 +122,13 @@ static void CommandLineArgumentsInitialize(int argc, char **argv)
     commandLineArgumentValues = argv;
 }
 
-std::vector<std::string> DefaultProcessContext::
+std::vector<std::string> DefaultContext::
 commandLineArguments() const
 {
     return std::vector<std::string>(commandLineArgumentValues + 1, commandLineArgumentValues + commandLineArgumentCount);
 }
 
-ext::optional<std::string> DefaultProcessContext::
+ext::optional<std::string> DefaultContext::
 environmentVariable(std::string const &variable) const
 {
     if (char *value = getenv(variable.c_str())) {
@@ -138,7 +138,7 @@ environmentVariable(std::string const &variable) const
     }
 }
 
-std::unordered_map<std::string, std::string> DefaultProcessContext::
+std::unordered_map<std::string, std::string> DefaultContext::
 environmentVariables() const
 {
     std::unordered_map<std::string, std::string> environment;
@@ -155,7 +155,7 @@ environmentVariables() const
     return environment;
 }
 
-std::string DefaultProcessContext::
+std::string DefaultContext::
 userName() const
 {
     std::string result;
@@ -177,7 +177,7 @@ userName() const
     return result;
 }
 
-std::string DefaultProcessContext::
+std::string DefaultContext::
 groupName() const
 {
     std::string result;
@@ -199,13 +199,13 @@ groupName() const
     return result;
 }
 
-int32_t DefaultProcessContext::
+int32_t DefaultContext::
 userID() const
 {
     return ::getuid();
 }
 
-int32_t DefaultProcessContext::
+int32_t DefaultContext::
 groupID() const
 {
     return ::getgid();

@@ -15,7 +15,7 @@
 
 #include <vector>
 
-namespace libutil { class ProcessContext; }
+namespace process { class Context; }
 
 namespace pbxsetting {
 
@@ -30,7 +30,7 @@ private:
 
 public:
     static Level
-    Environment(libutil::ProcessContext const *processContext);
+    Environment(process::Context const *processContext);
     static Level
     Internal(void);
     static Level
@@ -47,7 +47,7 @@ public:
      * All of the default setting levels, in order.
      */
     static std::vector<Level>
-    Levels(libutil::ProcessContext const *processContext);
+    Levels(process::Context const *processContext);
 };
 
 }

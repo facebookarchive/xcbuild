@@ -15,8 +15,8 @@
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
-#include <libutil/MemoryProcessContext.h>
+#include <process/Context.h>
+#include <process/MemoryContext.h>
 #include <libutil/Subprocess.h>
 
 #include <sys/types.h>
@@ -25,8 +25,6 @@
 using xcexecution::SimpleExecutor;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
-using libutil::MemoryProcessContext;
 using libutil::Subprocess;
 
 SimpleExecutor::
@@ -43,7 +41,7 @@ SimpleExecutor::
 
 bool SimpleExecutor::
 build(
-    ProcessContext const *processContext,
+    process::Context const *processContext,
     Filesystem *filesystem,
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
@@ -216,7 +214,7 @@ writeAuxiliaryFiles(
 
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 performInvocations(
-    ProcessContext const *processContext,
+    process::Context const *processContext,
     Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
@@ -254,7 +252,7 @@ performInvocations(
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
 
-                MemoryProcessContext driverContext = MemoryProcessContext(processContext);
+                process::MemoryContext driverContext = process::MemoryContext(processContext);
                 driverContext.executablePath() = invocation.executable().path();
                 driverContext.currentDirectory() = invocation.workingDirectory();
                 driverContext.commandLineArguments() = invocation.arguments();
@@ -282,7 +280,7 @@ performInvocations(
 
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 buildTarget(
-    ProcessContext const *processContext,
+    process::Context const *processContext,
     Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,

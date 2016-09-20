@@ -25,8 +25,8 @@
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/DefaultProcessContext.h>
-#include <libutil/ProcessContext.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 
 #include <algorithm>
 #include <iterator>
@@ -35,8 +35,6 @@
 using libutil::Filesystem;
 using libutil::DefaultFilesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
-using libutil::DefaultProcessContext;
 
 class Options {
 public:
@@ -640,7 +638,7 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    DefaultProcessContext processContext = DefaultProcessContext();
+    process::DefaultContext processContext = process::DefaultContext();
 
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext.commandLineArguments());

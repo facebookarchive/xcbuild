@@ -16,7 +16,6 @@
 
 namespace Build = pbxbuild::Build;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 Build::Environment::
 Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment) :
@@ -27,7 +26,7 @@ Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcs
 }
 
 ext::optional<Build::Environment> Build::Environment::
-Default(ProcessContext const *processContext, Filesystem const *filesystem)
+Default(process::Context const *processContext, Filesystem const *filesystem)
 {
     ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
     if (!developerRoot) {

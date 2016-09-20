@@ -7,24 +7,24 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #include <sstream>
 #include <unordered_set>
 
-using libutil::ProcessContext;
+using process::Context;
 
-ProcessContext::
-ProcessContext()
+Context::
+Context()
 {
 }
 
-ProcessContext::
-~ProcessContext()
+Context::
+~Context()
 {
 }
 
-std::vector<std::string> ProcessContext::
+std::vector<std::string> Context::
 executableSearchPaths() const
 {
     std::vector<std::string> paths;
@@ -47,18 +47,18 @@ executableSearchPaths() const
     return paths;
 }
 
-#include <libutil/DefaultProcessContext.h>
+#include <process/DefaultContext.h>
 
-using libutil::DefaultProcessContext;
+using process::DefaultContext;
 
-ProcessContext const *ProcessContext::
+Context const *Context::
 GetDefaultUNSAFE()
 {
-    static DefaultProcessContext *defaultProcessContext = nullptr;
-    if (defaultProcessContext == nullptr) {
-        defaultProcessContext = new DefaultProcessContext();
+    static DefaultContext *defaultContext = nullptr;
+    if (defaultContext == nullptr) {
+        defaultContext = new DefaultContext();
     }
 
-    return defaultProcessContext;
+    return defaultContext;
 }
 

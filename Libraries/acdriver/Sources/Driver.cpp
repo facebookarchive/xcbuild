@@ -15,7 +15,7 @@
 #include <acdriver/CompileAction.h>
 #include <acdriver/ContentsAction.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #include <algorithm>
 #include <iterator>
@@ -29,7 +29,6 @@ using acdriver::VersionAction;
 using acdriver::CompileAction;
 using acdriver::ContentsAction;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 Driver::
 Driver()
@@ -76,7 +75,7 @@ OptionsOutputFormat(Options const &options, Result *result)
 }
 
 int Driver::
-Run(ProcessContext const *processContext, Filesystem *filesystem)
+Run(process::Context const *processContext, Filesystem *filesystem)
 {
     Result result;
     Output output;

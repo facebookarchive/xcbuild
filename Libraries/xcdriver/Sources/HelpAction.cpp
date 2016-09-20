@@ -10,14 +10,13 @@
 #include <xcdriver/HelpAction.h>
 #include <xcdriver/Usage.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #include <cstdio>
 
 using xcdriver::HelpAction;
 using xcdriver::Usage;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 
 HelpAction::
 HelpAction()
@@ -30,7 +29,7 @@ HelpAction::
 }
 
 int HelpAction::
-Run(ProcessContext const *processContext)
+Run(process::Context const *processContext)
 {
     std::string path = processContext->executablePath();
     std::string text = Usage::Text(FSUtil::GetBaseName(path));

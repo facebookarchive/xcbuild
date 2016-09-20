@@ -20,11 +20,11 @@ target_include_directories(dependency PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Header
 install(TARGETS dependency DESTINATION usr/lib)
 
 add_executable(dependency-info-tool Tools/dependency-info-tool.cpp)
-target_link_libraries(dependency-info-tool dependency util)
+target_link_libraries(dependency-info-tool dependency process util)
 install(TARGETS dependency-info-tool DESTINATION usr/bin)
 
 add_executable(dump_dependency Tools/dump_dependency.cpp)
-target_link_libraries(dump_dependency dependency util)
+target_link_libraries(dump_dependency dependency process util)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(dependency BinaryDependencyInfo Tests/test_BinaryDependencyInfo.cpp)

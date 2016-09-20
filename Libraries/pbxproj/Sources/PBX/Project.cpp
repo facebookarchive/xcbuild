@@ -20,12 +20,11 @@
 #include <plist/Keys/Unpack.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using pbxproj::PBX::Project;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 
 Project::
 Project() :

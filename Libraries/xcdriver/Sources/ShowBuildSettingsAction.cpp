@@ -11,12 +11,11 @@
 #include <xcdriver/Options.h>
 #include <xcdriver/Action.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using xcdriver::ShowBuildSettingsAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 ShowBuildSettingsAction::
 ShowBuildSettingsAction()
@@ -29,7 +28,7 @@ ShowBuildSettingsAction::
 }
 
 int ShowBuildSettingsAction::
-Run(ProcessContext const *processContext, Filesystem const *filesystem, Options const &options)
+Run(process::Context const *processContext, Filesystem const *filesystem, Options const &options)
 {
     if (!Action::VerifyBuildActions(options.actions())) {
         return -1;

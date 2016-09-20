@@ -15,7 +15,7 @@
 #include <memory>
 
 namespace libutil { class Filesystem; }
-namespace libutil { class ProcessContext; }
+namespace process { class Context; }
 
 namespace pbxbuild {
 namespace Build { class Context; }
@@ -49,7 +49,7 @@ public:
      * Abstract build method. Override to implement the build.
      */
     virtual bool build(
-        libutil::ProcessContext const *processContext,
+        process::Context const *processContext,
         libutil::Filesystem *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters) = 0;

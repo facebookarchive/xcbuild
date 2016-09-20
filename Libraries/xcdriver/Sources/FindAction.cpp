@@ -14,12 +14,11 @@
 #include <xcsdk/SDK/Manager.h>
 #include <xcsdk/SDK/Target.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using xcdriver::FindAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 FindAction::
 FindAction()
@@ -32,7 +31,7 @@ FindAction::
 }
 
 int FindAction::
-Run(ProcessContext const *processContext, Filesystem const *filesystem, Options const &options)
+Run(process::Context const *processContext, Filesystem const *filesystem, Options const &options)
 {
     ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
     if (!developerRoot) {

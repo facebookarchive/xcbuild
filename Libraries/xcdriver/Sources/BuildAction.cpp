@@ -16,14 +16,13 @@
 #include <builtin/Registry.h>
 #include <libutil/Base.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #include <unistd.h>
 
 using xcdriver::BuildAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 BuildAction::
 BuildAction()
@@ -103,7 +102,7 @@ VerifySupportedOptions(Options const &options)
 }
 
 int BuildAction::
-Run(ProcessContext const *processContext, Filesystem *filesystem, Options const &options)
+Run(process::Context const *processContext, Filesystem *filesystem, Options const &options)
 {
     // TODO(grp): Implement these options.
     if (!VerifySupportedOptions(options)) {

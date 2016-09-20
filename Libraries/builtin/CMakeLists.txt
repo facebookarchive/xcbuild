@@ -49,7 +49,7 @@ if ("${CORE_SERVICES}" STREQUAL "CORE_SERVICES-NOTFOUND")
   set(CORE_SERVICES "")
 endif ()
 
-target_link_libraries(builtin PUBLIC util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
+target_link_libraries(builtin PUBLIC dependency util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
 target_include_directories(builtin PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS builtin DESTINATION usr/lib)
 

@@ -9,15 +9,14 @@
 
 #include <acdriver/Driver.h>
 #include <libutil/DefaultFilesystem.h>
-#include <libutil/DefaultProcessContext.h>
+#include <process/DefaultContext.h>
 
 using libutil::DefaultFilesystem;
-using libutil::DefaultProcessContext;
 
 int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    DefaultProcessContext processContext = DefaultProcessContext();
+    process::DefaultContext processContext = process::DefaultContext();
     return acdriver::Driver::Run(&processContext, &filesystem);
 }

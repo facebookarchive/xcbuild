@@ -19,7 +19,7 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/Subprocess.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 #include <libutil/md5.h>
 
 #include <sstream>
@@ -34,7 +34,6 @@ using libutil::Escape;
 using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::Subprocess;
-using libutil::ProcessContext;
 
 NinjaExecutor::
 NinjaExecutor(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, bool generate) :
@@ -271,7 +270,7 @@ ShouldGenerateNinja(Filesystem const *filesystem, bool generate, Parameters cons
 
 bool NinjaExecutor::
 build(
-    ProcessContext const *processContext,
+    process::Context const *processContext,
     Filesystem *filesystem,
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
@@ -302,7 +301,7 @@ build(
     /*
      * Find the dependency info tool.
      */
-    std::string executableRoot = FSUtil::GetDirectoryName(ProcessContext::GetDefaultUNSAFE()->executablePath());
+    std::string executableRoot = FSUtil::GetDirectoryName(process::Context::GetDefaultUNSAFE()->executablePath());
     std::string dependencyInfoToolPath = executableRoot + "/" + "dependency-info-tool";
 
     /*
@@ -428,7 +427,7 @@ build(
 
 bool NinjaExecutor::
 buildAction(
-    ProcessContext const *processContext,
+    process::Context const *processContext,
     Filesystem *filesystem,
     Parameters const &buildParameters,
     pbxbuild::Build::Environment const &buildEnvironment,

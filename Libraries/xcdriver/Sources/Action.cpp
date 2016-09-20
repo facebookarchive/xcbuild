@@ -11,13 +11,12 @@
 #include <xcdriver/Options.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using xcdriver::Action;
 using xcdriver::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 
 Action::
 Action()
@@ -30,7 +29,7 @@ Action::
 }
 
 std::vector<pbxsetting::Level> Action::
-CreateOverrideLevels(ProcessContext const *processContext, Filesystem const *filesystem, pbxsetting::Environment const &environment, Options const &options, std::string const &workingDirectory)
+CreateOverrideLevels(process::Context const *processContext, Filesystem const *filesystem, pbxsetting::Environment const &environment, Options const &options, std::string const &workingDirectory)
 {
     std::vector<pbxsetting::Level> levels;
 

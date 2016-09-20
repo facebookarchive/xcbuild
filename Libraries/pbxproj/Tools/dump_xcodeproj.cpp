@@ -16,8 +16,8 @@
 #include <xcscheme/xcscheme.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
-#include <libutil/DefaultProcessContext.h>
-#include <libutil/ProcessContext.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 
 #include <cstring>
 #include <cerrno>
@@ -185,7 +185,7 @@ GetHeaderFilePaths(PBX::Project::shared_ptr const &project,
 }
 
 void
-CompleteDump(ProcessContext const *processContext, Filesystem const *filesystem, PBX::Project::shared_ptr const &project)
+CompleteDump(process::Context const *processContext, Filesystem const *filesystem, PBX::Project::shared_ptr const &project)
 {
     printf("Project File: %s\n", project->projectFile().c_str());
     printf("Base Path:    %s\n", project->basePath().c_str());
@@ -400,7 +400,7 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    DefaultProcessContext processContext = DefaultProcessContext();
+    process::DefaultContext processContext = process::DefaultContext();
 
     if (argc < 2) {
         fprintf(stderr, "usage: %s filename.xcodeproj\n", argv[0]);

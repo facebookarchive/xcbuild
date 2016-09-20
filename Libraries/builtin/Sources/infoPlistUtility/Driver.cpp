@@ -24,13 +24,12 @@
 #include <plist/Format/XML.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using builtin::infoPlistUtility::Driver;
 using builtin::infoPlistUtility::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::ProcessContext;
 
 Driver::
 Driver()
@@ -151,7 +150,7 @@ CreateBuildEnvironment(std::unordered_map<std::string, std::string> const &envir
 }
 
 int Driver::
-run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());

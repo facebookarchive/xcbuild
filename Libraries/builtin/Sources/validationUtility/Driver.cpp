@@ -10,12 +10,11 @@
 #include <builtin/validationUtility/Driver.h>
 #include <builtin/validationUtility/Options.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using builtin::validationUtility::Driver;
 using builtin::validationUtility::Options;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 Driver::
 Driver()
@@ -34,7 +33,7 @@ name()
 }
 
 int Driver::
-run(libutil::ProcessContext const *processContext, libutil::Filesystem *filesystem)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());

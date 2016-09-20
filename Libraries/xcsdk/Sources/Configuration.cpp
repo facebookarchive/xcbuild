@@ -13,13 +13,12 @@
 #include <plist/String.h>
 #include <plist/Format/Any.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 #include <unistd.h>
 
 using xcsdk::Configuration;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 Configuration::
 Configuration(
@@ -31,7 +30,7 @@ Configuration(
 }
 
 std::vector<std::string> Configuration::
-DefaultPaths(ProcessContext const *processContext)
+DefaultPaths(process::Context const *processContext)
 {
     std::vector<std::string> defaultPaths;
     if (ext::optional<std::string> environmentPath = processContext->environmentVariable("XCSDK_CONFIGURATION_PATH")) {

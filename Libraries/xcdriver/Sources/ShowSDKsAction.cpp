@@ -15,12 +15,11 @@
 #include <xcsdk/SDK/Platform.h>
 #include <xcsdk/SDK/Target.h>
 #include <libutil/Filesystem.h>
-#include <libutil/ProcessContext.h>
+#include <process/Context.h>
 
 using xcdriver::ShowSDKsAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::ProcessContext;
 
 ShowSDKsAction::
 ShowSDKsAction()
@@ -33,7 +32,7 @@ ShowSDKsAction::
 }
 
 int ShowSDKsAction::
-Run(ProcessContext const *processContext, Filesystem const *filesystem, Options const &options)
+Run(process::Context const *processContext, Filesystem const *filesystem, Options const &options)
 {
     ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
     if (!developerRoot) {
