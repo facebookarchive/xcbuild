@@ -87,10 +87,12 @@ VerifyBuildActions(std::vector<std::string> const &actions)
 {
     for (std::string const &action : actions) {
         if (action != "build" &&
+            action != "build-for-testing" &&
             action != "analyze" &&
             action != "archive" &&
             action != "test" &&
-            action != "installsrc" &&
+            action != "test-without-building" &&
+            action != "install-src" &&
             action != "install" &&
             action != "clean") {
             fprintf(stderr, "error: unknown build action '%s'\n", action.c_str());

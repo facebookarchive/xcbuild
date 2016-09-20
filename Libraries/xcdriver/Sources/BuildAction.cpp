@@ -75,6 +75,10 @@ VerifySupportedOptions(Options const &options)
         fprintf(stderr, "warning: toolchain option not implemented\n");
     }
 
+    if (options.quiet() || options.verbose() || options.json() || options.hideShellScriptEnvironment()) {
+        fprintf(stderr, "warning: output options not implemented\n");
+    }
+
     if (options.destination() || options.destinationTimeout()) {
         fprintf(stderr, "warning: destination option not implemented\n");
     }
@@ -83,11 +87,7 @@ VerifySupportedOptions(Options const &options)
         fprintf(stderr, "warning: job control option not implemented\n");
     }
 
-    if (options.hideShellScriptEnvironment()) {
-        fprintf(stderr, "warning: output control option not implemented\n");
-    }
-
-    if (options.enableAddressSanitizer() || options.enableCodeCoverage()) {
+    if (options.enableAddressSanitizer() || options.enableThreadSanitizer() || options.enableCodeCoverage()) {
         fprintf(stderr, "warning: build mode option not implemented\n");
     }
 
@@ -97,6 +97,16 @@ VerifySupportedOptions(Options const &options)
 
     if (options.resultBundlePath()) {
         fprintf(stderr, "warning: result bundle path not implemented\n");
+    }
+
+    if (options.xctestrun() || !options.onlyTesting().empty() || !options.skipTesting().empty()) {
+        fprintf(stderr, "warning: testing options not implemented\n");
+    }
+
+    for (std::string const &action : options.actions()) {
+        if (action != "build") {
+            fprintf(stderr, "warning: non-build action %s not implemented\n", action.c_str());
+        }
     }
 
     return true;

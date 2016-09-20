@@ -23,10 +23,14 @@ class Options {
 private:
     ext::optional<bool>        _usage;
     ext::optional<bool>        _help;
-    ext::optional<bool>        _verbose;
     ext::optional<bool>        _license;
     ext::optional<bool>        _checkFirstLaunchStatus;
     ext::optional<bool>        _version;
+
+private:
+    ext::optional<bool>        _verbose;
+    ext::optional<bool>        _quiet;
+    ext::optional<bool>        _json;
 
 private:
     ext::optional<std::string> _project;
@@ -67,11 +71,17 @@ private:
 
 private:
     ext::optional<bool>        _enableAddressSanitizer;
+    ext::optional<bool>        _enableThreadSanitizer;
     ext::optional<bool>        _enableCodeCoverage;
 
 private:
     ext::optional<std::string> _resultBundlePath;
     ext::optional<std::string> _derivedDataPath;
+
+private:
+    ext::optional<std::string> _xctestrun;
+    std::vector<std::string>   _onlyTesting;
+    std::vector<std::string>   _skipTesting;
 
 private:
     ext::optional<bool>        _exportArchive;
@@ -99,14 +109,20 @@ public:
     { return _usage.value_or(false); }
     bool help() const
     { return _help.value_or(false); }
-    bool verbose() const
-    { return _verbose.value_or(false); }
     bool license() const
     { return _license.value_or(false); }
     bool checkFirstLaunchStatus() const
     { return _checkFirstLaunchStatus.value_or(false); }
     bool version() const
     { return _version.value_or(false); }
+
+public:
+    bool verbose() const
+    { return _verbose.value_or(false); }
+    bool quiet() const
+    { return _quiet.value_or(false); }
+    bool json() const
+    { return _json.value_or(false); }
 
 public:
     ext::optional<std::string> const &project() const
@@ -176,6 +192,8 @@ public:
 public:
     bool enableAddressSanitizer() const
     { return _enableAddressSanitizer.value_or(false); }
+    bool enableThreadSanitizer() const
+    { return _enableThreadSanitizer.value_or(false); }
     bool enableCodeCoverage() const
     { return _enableCodeCoverage.value_or(false); }
 
@@ -184,6 +202,14 @@ public:
     { return _resultBundlePath; }
     ext::optional<std::string> const &derivedDataPath() const
     { return _derivedDataPath; }
+
+public:
+    ext::optional<std::string> const &xctestrun() const
+    { return _xctestrun; }
+    std::vector<std::string> const &onlyTesting() const
+    { return _onlyTesting; }
+    std::vector<std::string> const &skipTesting() const
+    { return _skipTesting; }
 
 public:
     bool exportArchive() const
