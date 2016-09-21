@@ -15,6 +15,7 @@
     UTI = "com.apple.quicktime-movie";
     Extensions = (
         "mov",
+        "moov",
         "qt",
     );
     TypeCodes = (

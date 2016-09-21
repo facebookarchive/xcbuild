@@ -16,4 +16,6 @@
     Extensions = (
         "xcclassmodel",
     );
+    IsTransparent = NO;
+    AppliesToBuildRules = YES;
 }

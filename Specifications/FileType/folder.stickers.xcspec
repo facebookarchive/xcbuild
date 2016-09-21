@@ -9,11 +9,12 @@
 
 {
     Type = FileType;
-    Identifier = text.pbxproj;
-    BasedOn = text;
+    Identifier = folder.stickers;
+    BasedOn = folder.abstractassetcatalog;
 
-    UTI = "com.apple.xcode.projectdata";
+    UTI = "com.apple.dt.stickers";
     Extensions = (
-        "pbxproj",
+        "xcstickers",
     );
+    IsTransparent = NO;
 }

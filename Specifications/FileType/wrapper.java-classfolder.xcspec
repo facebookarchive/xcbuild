@@ -13,4 +13,5 @@
     BasedOn = wrapper;
 
     UTI = "com.apple.java-class-folder";
+    IsTransparent = NO;
 }

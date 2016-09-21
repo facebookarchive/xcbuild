@@ -14,4 +14,5 @@
 
     UTI = "public.c-plus-plus-source";
     GccDialectName = "c++";
+    AppliesToBuildRules = YES;
 }

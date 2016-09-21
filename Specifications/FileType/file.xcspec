@@ -13,6 +13,6 @@
 
     UTI = "public.data";
     MIMETypes = (
-        "application/octet-stream",
+        "application/x-octet-stream",
     );
 }

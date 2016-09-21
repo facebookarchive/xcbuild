@@ -13,4 +13,5 @@
     BasedOn = file;
 
     UTI = "public.archive";
+    IncludeInIndex = YES;
 }

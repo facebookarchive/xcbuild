@@ -9,13 +9,14 @@
 
 {
     Type = FileType;
-    Identifier = wrapper.dsym;
-    BasedOn = wrapper;
+    Identifier = text.pbxproject;
+    BasedOn = text;
 
-    UTI = "com.apple.xcode.dsym";
+    UTI = "com.apple.xcode.projectdata";
     Extensions = (
-        "dSYM",
-        "dsym",
+        "pbxproj",
     );
-    IsTransparent = NO;
+    FilenamePatterns = (
+        "project.pbxproj",
+    );
 }

@@ -16,4 +16,5 @@
     Extensions = (
         "rtfd",
     );
+    IsTransparent = NO;
 }

@@ -20,5 +20,8 @@
     MIMETypes = (
         "text/plain",
     );
+    TypeCodes = (
+        "TEXT",
+    );
     IsTextFile = YES;
 }

@@ -23,4 +23,5 @@
         "make",
         "gmk",
     );
+    RequiresHardTabs = YES;
 }

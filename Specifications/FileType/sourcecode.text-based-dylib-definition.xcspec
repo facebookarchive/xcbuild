@@ -18,4 +18,5 @@
     );
     IsLibrary = YES;
     IsDynamicLibrary = YES;
+    AppliesToBuildRules = NO;
 }

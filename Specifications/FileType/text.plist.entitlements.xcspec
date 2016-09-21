@@ -9,13 +9,11 @@
 
 {
     Type = FileType;
-    Identifier = wrapper.dsym;
-    BasedOn = wrapper;
+    Identifier = text.plist.entitlements;
+    BasedOn = text.plist;
 
-    UTI = "com.apple.xcode.dsym";
+    UTI = "com.apple.xcode.entitlements-property-list";
     Extensions = (
-        "dSYM",
-        "dsym",
+        "entitlements",
     );
-    IsTransparent = NO;
 }

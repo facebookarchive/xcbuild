@@ -12,9 +12,10 @@
     Identifier = sourcecode.c.c.preprocessed;
     BasedOn = sourcecode.c.c;
 
-    UTI = "public.c-source-preprocessed";
+    UTI = "public.c-source.preprocessed";
     Extensions = (
         "i",
     );
     IsPreprocessed = YES;
+    AppliesToBuildRules = NO;
 }

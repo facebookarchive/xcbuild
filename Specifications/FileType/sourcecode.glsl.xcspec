@@ -36,4 +36,5 @@
         "geom",
         "geometry",
     );
+    AppliesToBuildRules = YES;
 }

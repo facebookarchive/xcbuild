@@ -13,4 +13,7 @@
 
     UTI = "public.directory";
     IsFolder = YES;
+    IsTransparent = YES;
+    IncludeInIndex = YES;
+    CanSetIncludeInIndex = YES;
 }

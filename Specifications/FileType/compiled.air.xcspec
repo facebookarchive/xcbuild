@@ -16,4 +16,5 @@
     Extensions = (
         "air",
     );
+    AppliesToBuildRules = YES;
 }

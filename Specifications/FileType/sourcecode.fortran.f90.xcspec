@@ -17,5 +17,5 @@
         "f90",
         "f95",
     );
-    GccDialectName = "f95";
+    AppliesToBuildRules = NO;
 }

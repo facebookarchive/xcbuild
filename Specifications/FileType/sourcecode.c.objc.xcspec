@@ -17,4 +17,5 @@
         "m",
     );
     GccDialectName = "objective-c";
+    AppliesToBuildRules = NO;
 }

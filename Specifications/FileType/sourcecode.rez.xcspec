@@ -18,4 +18,5 @@
         "rez",
     );
     IsScannedForIncludes = YES;
+    AppliesToBuildRules = YES;
 }

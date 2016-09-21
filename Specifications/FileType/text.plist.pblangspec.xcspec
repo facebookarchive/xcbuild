@@ -12,7 +12,7 @@
     Identifier = text.plist.pblangspec;
     BasedOn = text.plist;
 
-    UTI = "com.apple.xcode.pblangspec-property-list";
+    UTI = "com.apple.projectbuilder.pblangspec-property-list";
     Extensions = (
         "pblangspec",
     );

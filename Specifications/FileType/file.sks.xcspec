@@ -16,4 +16,5 @@
     Extensions = (
         "sks",
     );
+    IsTransparent = NO;
 }

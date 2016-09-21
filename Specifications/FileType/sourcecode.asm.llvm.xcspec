@@ -17,4 +17,5 @@
         "ll",
         "llx",
     );
+    AppliesToBuildRules = YES;
 }

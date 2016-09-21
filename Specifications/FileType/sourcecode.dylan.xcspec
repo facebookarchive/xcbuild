@@ -17,4 +17,5 @@
         "lid",
         "dylan",
     );
+    AppliesToBuildRules = YES;
 }

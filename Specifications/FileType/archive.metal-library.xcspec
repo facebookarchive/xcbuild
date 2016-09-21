@@ -12,7 +12,7 @@
     Identifier = archive.metal-library;
     BasedOn = archive;
 
-    UTI = "archive.metal-library";
+    UTI = "com.apple.metal-library";
     Extensions = (
         "metallib",
     );

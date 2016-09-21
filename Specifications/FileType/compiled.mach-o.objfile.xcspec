@@ -16,4 +16,5 @@
     Extensions = (
         "o",
     );
+    AppliesToBuildRules = YES;
 }

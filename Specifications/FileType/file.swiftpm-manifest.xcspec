@@ -9,11 +9,10 @@
 
 {
     Type = FileType;
-    Identifier = archive.metal;
-    BasedOn = archive;
+    Identifier = file.swiftpm-manifest;
+    BasedOn = sourcecode.swift;
 
-    UTI = "com.apple.metal-archive";
-    Extensions = (
-        "metal-ar",
-    );
+    UTI = "com.apple.dt.swiftpm.manifest";
+    IsProjectWrapper = YES;
+    AppliesToBuildRules = NO;
 }

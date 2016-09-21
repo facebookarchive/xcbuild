@@ -12,9 +12,10 @@
     Identifier = sourcecode.c.objc.preprocessed;
     BasedOn = sourcecode.c.objc;
 
-    UTI = "public.objective-c-source-preprocessed";
+    UTI = "public.objective-c-source.preprocessed";
     Extensions = (
         "mi",
     );
     IsPreprocessed = YES;
+    AppliesToBuildRules = NO;
 }
