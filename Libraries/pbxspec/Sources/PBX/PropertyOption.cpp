@@ -22,7 +22,6 @@ PropertyOption() :
     _displayValues       (nullptr),
     _commandLineArgs     (nullptr),
     _additionalLinkerArgs(nullptr),
-    _defaultValue        (nullptr),
     _allowedValues       (nullptr),
     _values              (nullptr)
 {
@@ -47,19 +46,19 @@ PropertyOption::
         _allowedValues->release();
     }
 
-    if (_defaultValue != nullptr) {
-        _defaultValue->release();
-    }
-
     if (_commandLineArgs != nullptr) {
         _commandLineArgs->release();
     }
 }
 
-pbxsetting::Setting PropertyOption::
+ext::optional<pbxsetting::Setting> PropertyOption::
 defaultSetting(void) const
 {
-    return pbxsetting::Setting::Create(_name, pbxsetting::Value::FromObject(_defaultValue));
+    if (_defaultValue) {
+        return pbxsetting::Setting::Create(_name, *_defaultValue);
+    } else {
+        return ext::nullopt;
+    }
 }
 
 bool PropertyOption::
@@ -85,7 +84,7 @@ parse(plist::Dictionary const *dict)
     auto CLF    = unpack.cast <plist::String> ("CommandLineFlag");
     auto CLFIF  = unpack.cast <plist::String> ("CommandLineFlagIfFalse");
     auto CLPF   = unpack.cast <plist::String> ("CommandLinePrefixFlag");
-    auto DV     = unpack.cast <plist::Object> ("DefaultValue");
+    auto DV     = unpack.cast <plist::String> ("DefaultValue");
     auto AV     = unpack.cast <plist::Object> ("AllowedValues");
     auto V      = unpack.cast <plist::Object> ("Values");
     auto FTs    = unpack.cast <plist::Array> ("FileTypes");
@@ -182,7 +181,7 @@ parse(plist::Dictionary const *dict)
     }
 
     if (DV != nullptr) {
-        _defaultValue = DV->copy().release();
+        _defaultValue = pbxsetting::Value::Parse(DV->value());
     }
 
     if (AV != nullptr) {

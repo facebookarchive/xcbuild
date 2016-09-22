@@ -65,7 +65,7 @@ protected:
     ext::optional<pbxsetting::Value>         _commandLinePrefixFlag;
     plist::Object                            *_commandLineArgs;
     plist::Object                            *_additionalLinkerArgs;
-    plist::Object                            *_defaultValue;
+    ext::optional<pbxsetting::Value>          _defaultValue;
     plist::Object                            *_allowedValues;
     plist::Object                            *_values;
     ext::optional<std::vector<std::string>>  _architectures;
@@ -130,7 +130,7 @@ public:
     { return _avoidEmptyValues.value_or(false); }
     inline ext::optional<bool> avoidEmptyValuesOptional() const
     { return _avoidEmptyValues; }
-    inline plist::Object const *defaultValue() const
+    inline ext::optional<pbxsetting::Value> const &defaultValue() const
     { return _defaultValue; }
     inline plist::Object const *allowedValues() const
     { return _allowedValues; }
@@ -210,7 +210,7 @@ public:
     { return _setValueInEnvironmentVariable; }
 
 public:
-    pbxsetting::Setting defaultSetting(void) const;
+    ext::optional<pbxsetting::Setting> defaultSetting(void) const;
 
 protected:
     bool parse(plist::Dictionary const *dict);

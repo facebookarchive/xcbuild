@@ -40,8 +40,8 @@ defaultSettings(void) const
     std::vector<pbxsetting::Setting> settings;
     if (_options) {
         for (PBX::PropertyOption::shared_ptr const &option : *_options) {
-            if (option->defaultValue() != nullptr) {
-                settings.push_back(option->defaultSetting());
+            if (ext::optional<pbxsetting::Setting> setting = option->defaultSetting()) {
+                settings.push_back(*setting);
             }
         }
     }
