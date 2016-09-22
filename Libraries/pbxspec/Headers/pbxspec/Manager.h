@@ -21,7 +21,6 @@
 #include <pbxspec/PBX/Linker.h>
 #include <pbxspec/PBX/PackageType.h>
 #include <pbxspec/PBX/ProductType.h>
-#include <pbxspec/PBX/PropertyConditionFlavor.h>
 #include <pbxspec/PBX/Specification.h>
 #include <pbxspec/PBX/Tool.h>
 
@@ -114,12 +113,6 @@ public:
     productType(std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::ProductType::vector
     productTypes(std::vector<std::string> const &domains) const;
-
-public:
-    PBX::PropertyConditionFlavor::shared_ptr
-    propertyConditionFlavor(std::string const &identifier, std::vector<std::string> const &domains) const;
-    PBX::PropertyConditionFlavor::vector
-    propertyConditionFlavors(std::vector<std::string> const &domains) const;
 
 public:
     PBX::Tool::shared_ptr

@@ -21,7 +21,6 @@ char const * const FileType = "FileType";
 char const * const Linker = "Linker";
 char const * const PackageType = "PackageType";
 char const * const ProductType = "ProductType";
-char const * const PropertyConditionFlavor = "PropertyConditionFlavor";
 char const * const Tool = "Tool";
 
 } }

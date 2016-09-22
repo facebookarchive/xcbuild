@@ -30,7 +30,6 @@ using pbxspec::PBX::FileType;
 using pbxspec::PBX::Linker;
 using pbxspec::PBX::PackageType;
 using pbxspec::PBX::ProductType;
-using pbxspec::PBX::PropertyConditionFlavor;
 using pbxspec::PBX::Tool;
 using libutil::Filesystem;
 using libutil::FSUtil;
@@ -228,18 +227,6 @@ ProductType::vector Manager::
 productTypes(std::vector<std::string> const &domains) const
 {
     return findSpecifications <ProductType> (domains);
-}
-
-PropertyConditionFlavor::shared_ptr Manager::
-propertyConditionFlavor(std::string const &identifier, std::vector<std::string> const &domains) const
-{
-    return findSpecification <PropertyConditionFlavor> (domains, identifier);
-}
-
-PropertyConditionFlavor::vector Manager::
-propertyConditionFlavors(std::vector<std::string> const &domains) const
-{
-    return findSpecifications <PropertyConditionFlavor> (domains);
 }
 
 Tool::shared_ptr Manager::

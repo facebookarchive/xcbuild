@@ -22,7 +22,6 @@ extern char const * const FileType;
 extern char const * const Linker;
 extern char const * const PackageType;
 extern char const * const ProductType;
-extern char const * const PropertyConditionFlavor;
 extern char const * const Tool;
 
 } }

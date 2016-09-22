@@ -15,7 +15,6 @@
 #include <pbxspec/PBX/Linker.h>
 #include <pbxspec/PBX/PackageType.h>
 #include <pbxspec/PBX/ProductType.h>
-#include <pbxspec/PBX/PropertyConditionFlavor.h>
 #include <pbxspec/PBX/Tool.h>
 #include <pbxspec/Context.h>
 #include <pbxspec/Inherit.h>
@@ -182,8 +181,6 @@ Parse(Context *context, plist::Dictionary const *dict)
         return PackageType::Parse(context, dict);
     if (type == ProductType::Type())
         return ProductType::Parse(context, dict);
-    if (type == PropertyConditionFlavor::Type())
-        return PropertyConditionFlavor::Parse(context, dict);
     if (type == Tool::Type())
         return Tool::Parse(context, dict);
 

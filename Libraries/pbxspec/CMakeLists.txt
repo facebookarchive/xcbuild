@@ -22,7 +22,6 @@ add_library(pbxspec SHARED
             Sources/PBX/Linker.cpp
             Sources/PBX/PackageType.cpp
             Sources/PBX/ProductType.cpp
-            Sources/PBX/PropertyConditionFlavor.cpp
             Sources/PBX/PropertyOption.cpp
             Sources/PBX/Specification.cpp
             Sources/PBX/Tool.cpp
