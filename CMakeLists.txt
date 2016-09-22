@@ -12,7 +12,7 @@ project(xcbuild C CXX)
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_MACOSX_RPATH 1)
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
   set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
 else ()
   set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
