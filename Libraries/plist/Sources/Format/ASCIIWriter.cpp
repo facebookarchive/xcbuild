@@ -42,6 +42,10 @@ ASCIIWriter::
 static bool
 NeedsQuoting(std::string const &string)
 {
+    if (string.empty()) {
+        return true;
+    }
+
     for (char c : string) {
         if (!isalnum(c) && c != '_') {
             return true;
