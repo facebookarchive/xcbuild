@@ -8,21 +8,16 @@
  */
 
 #include <xcdriver/Usage.h>
-#include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
 
 #include <sstream>
 
 using xcdriver::Usage;
-using libutil::FSUtil;
-using libutil::SysUtil;
 
 std::string Usage::
-Text() {
-    std::string executable = FSUtil::GetBaseName(SysUtil::GetDefault()->executablePath());
-
+Text(std::string const &name) {
     std::ostringstream result;
-    result << "Usage: " << executable << " [-project <projectname>] "
+
+    result << "Usage: " << name << " [-project <projectname>] "
         "[[-target <targetname>]...|-alltargets] "
         "[-configuration <configurationname>] "
         "[-arch <architecture>]... "
@@ -33,7 +28,7 @@ Text() {
         "[-generate] "
         "[<buildaction>]..." << std::endl;
 
-    result << "       " << executable << " "
+    result << "       " << name << " "
         "[-project <projectname>] -scheme <schemeName> "
         "[-destination <destinationspecifier>]... "
         "[-configuration <configurationname>] "
@@ -46,7 +41,7 @@ Text() {
         "[-generate] "
         "[<buildaction>]..." << std::endl;
 
-    result << "       " << executable << " "
+    result << "       " << name << " "
         "-workspace <workspacename> -scheme <schemeName> "
         "[-destination <destinationspecifier>]... "
         "[-configuration <configurationname>] "
@@ -59,26 +54,26 @@ Text() {
         "[-generate] "
         "[<buildaction>]..." << std::endl;
 
-    result << "       " << executable << " -version "
+    result << "       " << name << " -version "
         "[-sdk [<sdkfullpath>|<sdkname>] "
         "[<infoitem>] ]" << std::endl;
 
-    result << "       " << executable << " -list "
+    result << "       " << name << " -list "
         "[[-project <projectname>]|[-workspace <workspacename>]]" << std::endl;
 
-    result << "       " << executable << " -showsdks" << std::endl;
+    result << "       " << name << " -showsdks" << std::endl;
 
-    result << "       " << executable << " -exportArchive "
+    result << "       " << name << " -exportArchive "
         "-archivePath <xcarchivepath> "
         "-exportPath <destinationpath> "
         "-exportOptionsPlist <plistpath>" << std::endl;
 
-    result << "       " << executable << " -exportLocalizations "
+    result << "       " << name << " -exportLocalizations "
         "-localizationPath <path> "
         "-project <projectname> "
         "[-exportLanguage <targetlanguage>...]" << std::endl;
 
-    result << "       " << executable << " -importLocalizations "
+    result << "       " << name << " -importLocalizations "
         "-localizationPath <path> "
         "-project <projectname>" << std::endl;
 

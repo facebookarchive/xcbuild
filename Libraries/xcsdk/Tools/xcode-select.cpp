@@ -10,6 +10,8 @@
 #include <xcsdk/Environment.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 #include <libutil/Options.h>
 #include <ext/optional>
 
@@ -128,13 +130,13 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+    process::DefaultContext processContext = process::DefaultContext();
 
     /*
      * Parse out the options, or print help & exit.
      */
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext.commandLineArguments());
     if (!result.first) {
         return Help(result.second);
     }
@@ -147,7 +149,7 @@ main(int argc, char **argv)
     } else if (options.version()) {
         return Version();
     } else if (options.printPath()) {
-        ext::optional<std::string> developer = xcsdk::Environment::DeveloperRoot(&filesystem);
+        ext::optional<std::string> developer = xcsdk::Environment::DeveloperRoot(&processContext, &filesystem);
         if (!developer) {
             fprintf(stderr, "error: no developer directory found\n");
             return 1;

@@ -16,14 +16,13 @@
 #include <builtin/Registry.h>
 #include <libutil/Base.h>
 #include <libutil/Filesystem.h>
-#include <libutil/SysUtil.h>
+#include <process/Context.h>
 
 #include <unistd.h>
 
 using xcdriver::BuildAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::SysUtil;
 
 BuildAction::
 BuildAction()
@@ -113,7 +112,7 @@ VerifySupportedOptions(Options const &options)
 }
 
 int BuildAction::
-Run(Filesystem *filesystem, Options const &options)
+Run(process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem, Options const &options)
 {
     // TODO(grp): Implement these options.
     if (!VerifySupportedOptions(options)) {
@@ -146,14 +145,19 @@ Run(Filesystem *filesystem, Options const &options)
     /*
      * Use the default build environment. We don't need anything custom here.
      */
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(filesystem);
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(processContext, filesystem);
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
     }
 
     /* The build settings passed in on the command line override all others. */
-    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(filesystem, buildEnvironment->baseEnvironment(), options, SysUtil::GetDefault()->currentDirectory());
+    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(
+        processContext,
+        filesystem,
+        buildEnvironment->baseEnvironment(),
+        options,
+        processContext->currentDirectory());
 
     /*
      * Create the build parameters. The executor uses this to load a workspace and create a
@@ -164,7 +168,7 @@ Run(Filesystem *filesystem, Options const &options)
     /*
      * Perform the build!
      */
-    bool success = executor->build(filesystem, *buildEnvironment, parameters);
+    bool success = executor->build(processContext, processLauncher, filesystem, *buildEnvironment, parameters);
     if (!success) {
         return 1;
     }

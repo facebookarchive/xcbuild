@@ -11,13 +11,11 @@
 #include <pbxsetting/Environment.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
 
 using pbxbuild::WorkspaceContext;
 using pbxbuild::DerivedDataHash;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::SysUtil;
 
 WorkspaceContext::
 WorkspaceContext(
@@ -240,13 +238,13 @@ LoadNestedProjects(
 }
 
 static void
-LoadProjectSchemes(Filesystem const *filesystem, std::vector<xcscheme::SchemeGroup::shared_ptr> *schemeGroups, std::vector<pbxproj::PBX::Project::shared_ptr> const &projects)
+LoadProjectSchemes(Filesystem const *filesystem, std::string const &userName, std::vector<xcscheme::SchemeGroup::shared_ptr> *schemeGroups, std::vector<pbxproj::PBX::Project::shared_ptr> const &projects)
 {
     /*
      * Load the schemes inside the projects.
      */
     for (pbxproj::PBX::Project::shared_ptr const &project : projects) {
-        xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(filesystem, SysUtil::GetDefault()->userName(), project->basePath(), project->projectFile(), project->name());
+        xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(filesystem, userName, project->basePath(), project->projectFile(), project->name());
         if (projectGroup != nullptr) {
             schemeGroups->push_back(projectGroup);
         }
@@ -268,7 +266,7 @@ CreateProjectMap(std::vector<pbxproj::PBX::Project::shared_ptr> const &projects)
 }
 
 WorkspaceContext WorkspaceContext::
-Workspace(Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace)
+Workspace(Filesystem const *filesystem, std::string const &userName, pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace)
 {
     std::vector<pbxproj::PBX::Project::shared_ptr> projects;
     std::vector<xcscheme::SchemeGroup::shared_ptr> schemeGroups;
@@ -277,7 +275,7 @@ Workspace(Filesystem const *filesystem, pbxsetting::Environment const &baseEnvir
     /*
      * Add the schemes from the workspace itself.
      */
-    xcscheme::SchemeGroup::shared_ptr workspaceGroup = xcscheme::SchemeGroup::Open(filesystem, SysUtil::GetDefault()->userName(), workspace->basePath(), workspace->projectFile(), workspace->name());
+    xcscheme::SchemeGroup::shared_ptr workspaceGroup = xcscheme::SchemeGroup::Open(filesystem, userName, workspace->basePath(), workspace->projectFile(), workspace->name());
     if (workspaceGroup != nullptr) {
         schemeGroups.push_back(workspaceGroup);
     }
@@ -295,7 +293,7 @@ Workspace(Filesystem const *filesystem, pbxsetting::Environment const &baseEnvir
     /*
      * Load schemes for all projects, including nested projects.
      */
-    LoadProjectSchemes(filesystem, &schemeGroups, projects);
+    LoadProjectSchemes(filesystem, userName, &schemeGroups, projects);
 
     /*
      * Determine the DerivedData path for the workspace.
@@ -306,7 +304,7 @@ Workspace(Filesystem const *filesystem, pbxsetting::Environment const &baseEnvir
 }
 
 WorkspaceContext WorkspaceContext::
-Project(Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project)
+Project(Filesystem const *filesystem, std::string const &userName, pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project)
 {
     std::vector<pbxproj::PBX::Project::shared_ptr> projects;
     std::vector<xcscheme::SchemeGroup::shared_ptr> schemeGroups;
@@ -325,7 +323,7 @@ Project(Filesystem const *filesystem, pbxsetting::Environment const &baseEnviron
     /*
      * Load schemes for all projects, including the root and nested projects.
      */
-    LoadProjectSchemes(filesystem, &schemeGroups, projects);
+    LoadProjectSchemes(filesystem, userName, &schemeGroups, projects);
 
     /*
      * Determine the DerivedData path for the root project.

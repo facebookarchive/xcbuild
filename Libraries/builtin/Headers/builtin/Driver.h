@@ -15,6 +15,7 @@
 #include <unordered_map>
 
 namespace libutil { class Filesystem; }
+namespace process { class Context; }
 
 namespace builtin {
 
@@ -27,10 +28,7 @@ public:
     virtual std::string name() = 0;
 
 public:
-    virtual int run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, libutil::Filesystem *filesystem, std::string const &workingDirectory) = 0;
-
-public:
-    int runc(int argc, char **argv, char **envp);
+    virtual int run(process::Context const *processContext, libutil::Filesystem *filesystem) = 0;
 };
 
 }

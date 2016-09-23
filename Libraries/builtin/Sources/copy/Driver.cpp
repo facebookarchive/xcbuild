@@ -9,11 +9,11 @@
 
 #include <builtin/copy/Driver.h>
 #include <builtin/copy/Options.h>
-
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
-#include <libutil/Subprocess.h>
+#include <process/Context.h>
+#include <process/MemoryContext.h>
+#include <process/Launcher.h>
 
 #include <unordered_set>
 
@@ -21,8 +21,6 @@ using builtin::copy::Driver;
 using builtin::copy::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::SysUtil;
-using libutil::Subprocess;
 
 Driver::
 Driver()
@@ -47,17 +45,34 @@ CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const
         return false;
     }
 
-    std::unordered_map<std::string, std::string> environment = SysUtil::GetDefault()->environmentVariables();
-    std::string workingDirectory = SysUtil::GetDefault()->currentDirectory();
+    // TODO: This shouldn't use external tools to copy.
+    process::Context const *context = process::Context::GetDefaultUNSAFE();
+    process::Launcher *launcher = process::Launcher::GetDefaultUNSAFE();
 
-    Subprocess cp;
-    if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }, environment, workingDirectory) || cp.exitcode() != 0) {
+    process::MemoryContext cp = process::MemoryContext(
+        "/bin/cp",
+        context->currentDirectory(),
+        { "-R", inputPath, outputPath },
+        context->environmentVariables(),
+        context->userID(),
+        context->groupID(),
+        context->userName(),
+        context->groupName());
+    if (launcher->launch(filesystem, &cp).value_or(-1) != 0) {
         return false;
     }
 
     /* Should preserve permissions but make writable. */
-    Subprocess chmod;
-    if (!chmod.execute(filesystem, "/bin/chmod", { "-R", "+w", outputPath }, environment, workingDirectory) || chmod.exitcode() != 0) {
+    process::MemoryContext chmod = process::MemoryContext(
+        "/bin/chmod",
+        context->currentDirectory(),
+        { "-R", "+w", outputPath },
+        context->environmentVariables(),
+        context->userID(),
+        context->groupID(),
+        context->userName(),
+        context->groupName());
+    if (launcher->launch(filesystem, &chmod).value_or(-1) != 0) {
         return false;
     }
 
@@ -116,14 +131,14 @@ Run(Filesystem *filesystem, Options const &options, std::string const &workingDi
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
         fprintf(stderr, "error: %s\n", result.second.c_str());
         return 1;
     }
 
-    return Run(filesystem, options, workingDirectory);
+    return Run(filesystem, options, processContext->currentDirectory());
 }

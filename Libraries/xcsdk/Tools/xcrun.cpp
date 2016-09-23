@@ -15,15 +15,16 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <libutil/Options.h>
-#include <libutil/Subprocess.h>
-#include <libutil/SysUtil.h>
+#include <process/Context.h>
+#include <process/DefaultContext.h>
+#include <process/MemoryContext.h>
+#include <process/Launcher.h>
+#include <process/DefaultLauncher.h>
 #include <pbxsetting/Type.h>
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::SysUtil;
-using libutil::Subprocess;
 
 class Options {
 private:
@@ -221,16 +222,13 @@ Version()
     return 0;
 }
 
-int
-main(int argc, char **argv)
+static int Run(Filesystem *filesystem, process::Context const *processContext, process::Launcher *processLauncher)
 {
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-
     /*
      * Parse out the options, or print help & exit.
      */
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
         return Help(result.second);
     }
@@ -251,15 +249,15 @@ main(int argc, char **argv)
      */
     ext::optional<std::string> toolchainsInput = options.toolchain();
     if (!toolchainsInput) {
-        toolchainsInput = SysUtil::GetDefault()->environmentVariable("TOOLCHAINS");
+        toolchainsInput = processContext->environmentVariable("TOOLCHAINS");
     }
     ext::optional<std::string> SDK = options.SDK();
     if (!SDK) {
-        SDK = SysUtil::GetDefault()->environmentVariable("SDKROOT");
+        SDK = processContext->environmentVariable("SDKROOT");
     }
-    bool verbose = options.verbose() || (bool)SysUtil::GetDefault()->environmentVariable("xcrun_verbose");
-    bool log = options.log() || (bool)SysUtil::GetDefault()->environmentVariable("xcrun_log");
-    bool nocache = options.noCache() || (bool)SysUtil::GetDefault()->environmentVariable("xcrun_nocache");
+    bool verbose = options.verbose() || (bool)processContext->environmentVariable("xcrun_verbose");
+    bool log = options.log() || (bool)processContext->environmentVariable("xcrun_log");
+    bool nocache = options.noCache() || (bool)processContext->environmentVariable("xcrun_nocache");
 
     /*
      * Warn about unhandled arguments.
@@ -269,20 +267,15 @@ main(int argc, char **argv)
     }
 
     /*
-     * Create filesystem.
-     */
-    DefaultFilesystem filesystem = DefaultFilesystem();
-
-    /*
      * Load the SDK manager from the developer root.
      */
-    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(&filesystem);
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
     if (!developerRoot) {
         fprintf(stderr, "error: unable to find developer root\n");
         return -1;
     }
-    auto configuration = xcsdk::Configuration::Load(&filesystem, xcsdk::Configuration::DefaultPaths());
-    auto manager = xcsdk::SDK::Manager::Open(&filesystem, *developerRoot, configuration);
+    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(processContext));
+    auto manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to load manager from '%s'\n", developerRoot->c_str());
         return -1;
@@ -403,13 +396,13 @@ main(int argc, char **argv)
          * or default paths.
          */
         std::vector<std::string> executablePaths = manager->executablePaths(target != nullptr ? target->platform() : nullptr, target, toolchains);
-        std::vector<std::string> defaultExecutablePaths = SysUtil::GetDefault()->executableSearchPaths();
+        std::vector<std::string> defaultExecutablePaths = processContext->executableSearchPaths();
         executablePaths.insert(executablePaths.end(), defaultExecutablePaths.begin(), defaultExecutablePaths.end());
 
         /*
          * Find the tool to execute.
          */
-        ext::optional<std::string> executable = filesystem.findExecutable(*options.tool(), executablePaths);
+        ext::optional<std::string> executable = filesystem->findExecutable(*options.tool(), executablePaths);
         if (!executable) {
             fprintf(stderr, "error: tool '%s' not found\n", options.tool()->c_str());
             return 1;
@@ -427,7 +420,7 @@ main(int argc, char **argv)
         } else {
             /* Run is the default. */
 
-            std::unordered_map<std::string, std::string> environment = SysUtil::GetDefault()->environmentVariables();
+            std::unordered_map<std::string, std::string> environment = processContext->environmentVariables();
 
             if (target != nullptr) {
                 /*
@@ -445,13 +438,34 @@ main(int argc, char **argv)
             if (verbose) {
                 printf("verbose: executing tool: %s\n", executable->c_str());
             }
-            Subprocess process;
-            if (!process.execute(&filesystem, *executable, options.args(), environment, SysUtil::GetDefault()->currentDirectory())) {
+
+            process::MemoryContext context = process::MemoryContext(
+                *executable,
+                processContext->currentDirectory(),
+                options.args(),
+                environment,
+                processContext->userID(),
+                processContext->groupID(),
+                processContext->userName(),
+                processContext->groupName());
+
+            ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
+            if (!exitCode) {
                 fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
                 return -1;
             }
 
-            return process.exitcode();
+            return *exitCode;
         }
     }
 }
+
+int
+main(int argc, char **argv)
+{
+    DefaultFilesystem filesystem = DefaultFilesystem();
+    process::DefaultContext processContext = process::DefaultContext();
+    process::DefaultLauncher processLauncher = process::DefaultLauncher();
+    return Run(&filesystem, &processContext, &processLauncher);
+}
+

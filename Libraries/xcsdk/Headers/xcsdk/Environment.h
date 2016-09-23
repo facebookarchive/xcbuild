@@ -14,6 +14,7 @@
 #include <ext/optional>
 
 namespace libutil { class Filesystem; };
+namespace process { class Context; };
 
 namespace xcsdk {
 
@@ -23,13 +24,17 @@ private:
     ~Environment();
 
 public:
-    static ext::optional<std::string> DeveloperRoot(libutil::Filesystem const *filesystem);
+    static ext::optional<std::string> DeveloperRoot(
+        process::Context const *processContext,
+        libutil::Filesystem const *filesystem);
 
 public:
     /*
      * Set a new developer root. Returns success;
      */
-    static bool WriteDeveloperRoot(libutil::Filesystem *filesystem, ext::optional<std::string> const &path);
+    static bool WriteDeveloperRoot(
+        libutil::Filesystem *filesystem,
+        ext::optional<std::string> const &path);
 };
 
 }

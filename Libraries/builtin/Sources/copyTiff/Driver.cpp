@@ -10,6 +10,7 @@
 #include <builtin/copyTiff/Driver.h>
 #include <builtin/copyTiff/Options.h>
 #include <libutil/Filesystem.h>
+#include <process/Context.h>
 
 using builtin::copyTiff::Driver;
 using builtin::copyTiff::Options;
@@ -32,10 +33,10 @@ name()
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, libutil::Filesystem *filesystem, std::string const &workingDirectory)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
         fprintf(stderr, "error: %s\n", result.second.c_str());
         return 1;

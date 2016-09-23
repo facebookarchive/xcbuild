@@ -18,7 +18,7 @@ add_library(xcsdk SHARED
             Sources/SDK/Toolchain.cpp
             )
 
-target_link_libraries(xcsdk PUBLIC pbxsetting util plist)
+target_link_libraries(xcsdk PUBLIC pbxsetting process util plist)
 target_include_directories(xcsdk PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS xcsdk DESTINATION usr/lib)
 

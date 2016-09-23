@@ -15,6 +15,8 @@
 
 #include <vector>
 
+namespace process { class Context; }
+
 namespace pbxsetting {
 
 /*
@@ -28,7 +30,7 @@ private:
 
 public:
     static Level
-    Environment(void);
+    Environment(process::Context const *processContext);
     static Level
     Internal(void);
     static Level
@@ -45,7 +47,7 @@ public:
      * All of the default setting levels, in order.
      */
     static std::vector<Level>
-    Levels(void);
+    Levels(process::Context const *processContext);
 };
 
 }

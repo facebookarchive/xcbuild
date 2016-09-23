@@ -12,10 +12,7 @@ add_library(util SHARED
             Sources/Filesystem.cpp
             Sources/DefaultFilesystem.cpp
             Sources/MemoryFilesystem.cpp
-            Sources/SysUtil.cpp
             Sources/Options.cpp
-            #
-            Sources/Subprocess.cpp
             #
             Sources/Escape.cpp
             Sources/Wildcard.cpp

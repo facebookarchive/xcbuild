@@ -11,14 +11,13 @@
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
 #include <libutil/Filesystem.h>
-#include <libutil/SysUtil.h>
+#include <process/Context.h>
 
 #include <strings.h>
 
 using xcdriver::ListAction;
 using xcdriver::Options;
 using libutil::Filesystem;
-using libutil::SysUtil;
 
 ListAction::
 ListAction()
@@ -31,18 +30,18 @@ ListAction::
 }
 
 int ListAction::
-Run(Filesystem const *filesystem, Options const &options)
+Run(process::Context const *processContext, Filesystem const *filesystem, Options const &options)
 {
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(filesystem);
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(processContext, filesystem);
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
     }
 
-    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(filesystem, buildEnvironment->baseEnvironment(), options, SysUtil::GetDefault()->currentDirectory());
+    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(processContext, filesystem, buildEnvironment->baseEnvironment(), options, processContext->currentDirectory());
     xcexecution::Parameters parameters = Action::CreateParameters(options, overrideLevels);
 
-    ext::optional<pbxbuild::WorkspaceContext> context = parameters.loadWorkspace(filesystem, *buildEnvironment, SysUtil::GetDefault()->currentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> context = parameters.loadWorkspace(filesystem, processContext->userName(), *buildEnvironment, processContext->currentDirectory());
     if (!context) {
         return -1;
     }

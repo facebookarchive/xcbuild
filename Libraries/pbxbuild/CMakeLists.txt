@@ -64,7 +64,7 @@ add_library(pbxbuild SHARED
             Sources/Build/DependencyResolver.cpp
             )
 
-target_link_libraries(pbxbuild PUBLIC xcsdk xcworkspace xcscheme pbxproj pbxspec pbxsetting dependency util plist ext)
+target_link_libraries(pbxbuild PUBLIC xcsdk xcworkspace xcscheme pbxproj pbxspec pbxsetting dependency process util plist ext)
 target_include_directories(pbxbuild PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS pbxbuild DESTINATION usr/lib)
 

@@ -10,7 +10,7 @@
 #include <pbxbuild/Tool/Invocation.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
+#include <process/Context.h>
 
 namespace Tool = pbxbuild::Tool;
 using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
@@ -18,7 +18,6 @@ using DependencyInfo = pbxbuild::Tool::Invocation::DependencyInfo;
 using Executable = pbxbuild::Tool::Invocation::Executable;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::SysUtil;
 
 AuxiliaryFile::Chunk::
 Chunk(Type type, ext::optional<std::vector<uint8_t>> const &data, ext::optional<std::string> const &file) :
@@ -115,7 +114,7 @@ Absolute(std::string const &path)
 Executable Executable::
 Builtin(std::string const &name)
 {
-    std::string executableRoot = FSUtil::GetDirectoryName(SysUtil::GetDefault()->executablePath());
+    std::string executableRoot = FSUtil::GetDirectoryName(process::Context::GetDefaultUNSAFE()->executablePath());
     std::string path = executableRoot + "/" + name;
     return Executable(path, name);
 }

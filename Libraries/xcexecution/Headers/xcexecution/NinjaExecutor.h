@@ -12,6 +12,7 @@
 
 #include <xcexecution/Executor.h>
 #include <pbxbuild/Tool/Invocation.h>
+#include <pbxbuild/DirectedGraph.h>
 
 namespace ninja { class Writer; }
 
@@ -27,17 +28,21 @@ public:
 
 public:
     virtual bool build(
+        process::Context const *processContext,
+        process::Launcher *processLauncher,
         libutil::Filesystem *filesystem,
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters);
 
 private:
     bool buildAction(
+        process::Context const *processContext,
         libutil::Filesystem *filesystem,
         Parameters const &buildParameters,
         pbxbuild::Build::Environment const &buildEnvironment,
         pbxbuild::Build::Context const &buildContext,
         pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph,
+        std::string const &dependencyInfoToolPath,
         std::string const &ninjaPath,
         std::string const &configurationHashPath,
         std::string const &intermediatesDirectory);
@@ -47,6 +52,7 @@ private:
         std::unordered_set<std::string> *seenDirectories);
     bool buildTargetInvocations(
         libutil::Filesystem *filesystem,
+        std::string const &dependencyInfoToolPath,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
         std::vector<pbxbuild::Tool::Invocation> const &invocations);
@@ -59,6 +65,7 @@ private:
     bool buildInvocation(
         ninja::Writer *writer,
         pbxbuild::Tool::Invocation const &invocation,
+        std::string const &dependencyInfoToolPath,
         std::string const &temporaryDirectory,
         std::string const &after);
 

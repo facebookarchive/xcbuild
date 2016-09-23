@@ -25,6 +25,8 @@
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 
 #include <algorithm>
 #include <iterator>
@@ -635,11 +637,11 @@ Modify(Filesystem *filesystem, Options const &options, std::string const &file, 
 int
 main(int argc, char **argv)
 {
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
     DefaultFilesystem filesystem = DefaultFilesystem();
+    process::DefaultContext processContext = process::DefaultContext();
 
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext.commandLineArguments());
     if (!result.first) {
         return Help(result.second);
     }

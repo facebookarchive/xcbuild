@@ -7,7 +7,7 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <libutil/SysUtil.h>
+#include <process/DefaultContext.h>
 #include <libutil/FSUtil.h>
 
 #include <sstream>
@@ -32,10 +32,21 @@
 
 extern "C" char **environ;
 
-using libutil::SysUtil;
+using process::DefaultContext;
 using libutil::FSUtil;
 
-std::string SysUtil::
+DefaultContext::
+DefaultContext() :
+    Context()
+{
+}
+
+DefaultContext::
+~DefaultContext()
+{
+}
+
+std::string DefaultContext::
 currentDirectory() const
 {
     char path[PATH_MAX + 1];
@@ -65,7 +76,7 @@ static void InitialExecutablePathInitialize(int argc, char **argv)
 #endif
 #endif
 
-std::string SysUtil::
+std::string DefaultContext::
 executablePath() const
 {
 #if defined(__APPLE__)
@@ -101,7 +112,23 @@ executablePath() const
 #endif
 }
 
-ext::optional<std::string> SysUtil::
+static int commandLineArgumentCount = 0;
+static char **commandLineArgumentValues = NULL;
+
+__attribute__((constructor))
+static void CommandLineArgumentsInitialize(int argc, char **argv)
+{
+    commandLineArgumentCount = argc;
+    commandLineArgumentValues = argv;
+}
+
+std::vector<std::string> DefaultContext::
+commandLineArguments() const
+{
+    return std::vector<std::string>(commandLineArgumentValues + 1, commandLineArgumentValues + commandLineArgumentCount);
+}
+
+ext::optional<std::string> DefaultContext::
 environmentVariable(std::string const &variable) const
 {
     if (char *value = getenv(variable.c_str())) {
@@ -111,7 +138,7 @@ environmentVariable(std::string const &variable) const
     }
 }
 
-std::unordered_map<std::string, std::string> SysUtil::
+std::unordered_map<std::string, std::string> DefaultContext::
 environmentVariables() const
 {
     std::unordered_map<std::string, std::string> environment;
@@ -128,30 +155,7 @@ environmentVariables() const
     return environment;
 }
 
-std::vector<std::string> SysUtil::
-executableSearchPaths() const
-{
-    std::vector<std::string> paths;
-
-    if (ext::optional<std::string> value = environmentVariable("PATH")) {
-        std::unordered_set<std::string> seen;
-
-        std::string path;
-        std::istringstream is(*value);
-        while (std::getline(is, path, ':')) {
-            if (seen.find(path) != seen.end()) {
-                continue;
-            }
-
-            paths.push_back(path);
-            seen.insert(path);
-        }
-    }
-
-    return paths;
-}
-
-std::string SysUtil::
+std::string DefaultContext::
 userName() const
 {
     std::string result;
@@ -173,7 +177,7 @@ userName() const
     return result;
 }
 
-std::string SysUtil::
+std::string DefaultContext::
 groupName() const
 {
     std::string result;
@@ -195,26 +199,15 @@ groupName() const
     return result;
 }
 
-int32_t SysUtil::
+int32_t DefaultContext::
 userID() const
 {
     return ::getuid();
 }
 
-int32_t SysUtil::
+int32_t DefaultContext::
 groupID() const
 {
     return ::getgid();
-}
-
-SysUtil const *SysUtil::
-GetDefault()
-{
-    static SysUtil *sysUtil = nullptr;
-    if (sysUtil == nullptr) {
-        sysUtil = new SysUtil();
-    }
-
-    return sysUtil;
 }
 

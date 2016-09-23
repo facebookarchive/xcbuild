@@ -11,13 +11,12 @@
 #include <xcdriver/Options.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
+#include <process/Context.h>
 
 using xcdriver::Action;
 using xcdriver::Options;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::SysUtil;
 
 Action::
 Action()
@@ -30,7 +29,7 @@ Action::
 }
 
 std::vector<pbxsetting::Level> Action::
-CreateOverrideLevels(Filesystem const *filesystem, pbxsetting::Environment const &environment, Options const &options, std::string const &workingDirectory)
+CreateOverrideLevels(process::Context const *processContext, Filesystem const *filesystem, pbxsetting::Environment const &environment, Options const &options, std::string const &workingDirectory)
 {
     std::vector<pbxsetting::Level> levels;
 
@@ -55,7 +54,7 @@ CreateOverrideLevels(Filesystem const *filesystem, pbxsetting::Environment const
         }
     }
 
-    if (ext::optional<std::string> configFile = SysUtil::GetDefault()->environmentVariable("XCODE_XCCONFIG_FILE")) {
+    if (ext::optional<std::string> configFile = processContext->environmentVariable("XCODE_XCCONFIG_FILE")) {
         std::string path = FSUtil::ResolveRelativePath(*configFile, workingDirectory);
         ext::optional<pbxsetting::XC::Config> config = pbxsetting::XC::Config::Load(filesystem, environment, path);
         if (!config) {

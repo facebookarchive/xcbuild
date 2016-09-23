@@ -7,61 +7,70 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#ifndef __libutil_SysUtil_h
-#define __libutil_SysUtil_h
+#ifndef __process_Context_h
+#define __process_Context_h
 
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <ext/optional>
 
-namespace libutil {
+namespace process {
 
-class SysUtil {
+class Context {
+protected:
+    Context();
+    virtual ~Context();
+
 public:
     /*
      * The path to the running executable.
      */
-    std::string executablePath() const;
+    virtual std::string executablePath() const = 0;
 
     /*
      * The current directory of the process.
      */
-    std::string currentDirectory() const;
+    virtual std::string currentDirectory() const = 0;
 
 public:
     /*
+     * Arguments to the process.
+     */
+    virtual std::vector<std::string> commandLineArguments() const = 0;
+
+    /*
      * All environment variables.
      */
-    std::unordered_map<std::string, std::string> environmentVariables() const;
+    virtual std::unordered_map<std::string, std::string> environmentVariables() const = 0;
+
+    /*
+     * Single environment variable.
+     */
+    virtual ext::optional<std::string> environmentVariable(std::string const &variable) const = 0;
 
 public:
     /*
      * Active user ID.
      */
-    int32_t userID() const;
+    virtual int32_t userID() const = 0;
 
     /*
      * Active group ID.
      */
-    int32_t groupID() const;
+    virtual int32_t groupID() const = 0;
 
     /*
      * Active user name.
      */
-    std::string userName() const;
+    virtual std::string userName() const = 0;
 
     /*
      * Active group name.
      */
-    std::string groupName() const;
+    virtual std::string groupName() const = 0;
 
 public:
-    /*
-     * Single environment variable.
-     */
-    ext::optional<std::string> environmentVariable(std::string const &variable) const;
-
     /*
      * The default environment search paths.
      */
@@ -76,9 +85,9 @@ public:
     /*
      * Get the system instance.
      */
-    static SysUtil const *GetDefault();
+    static Context const *GetDefaultUNSAFE();
 };
 
 }
 
-#endif  // !__libutil_SysUtil_h
+#endif  // !__process_Context_h

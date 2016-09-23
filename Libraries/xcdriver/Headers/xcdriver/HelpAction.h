@@ -10,6 +10,8 @@
 #ifndef __xcdriver_HelpAction_h
 #define __xcdriver_HelpAction_h
 
+namespace process { class Context; }
+
 namespace xcdriver {
 
 /*
@@ -22,7 +24,7 @@ private:
 
 public:
     static int
-    Run();
+    Run(process::Context const *processContext);
 };
 
 }

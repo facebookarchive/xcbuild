@@ -13,13 +13,12 @@
 #include <plist/String.h>
 #include <plist/Format/Any.h>
 #include <libutil/Filesystem.h>
-#include <libutil/SysUtil.h>
+#include <process/Context.h>
 
 #include <unistd.h>
 
 using xcsdk::Configuration;
 using libutil::Filesystem;
-using libutil::SysUtil;
 
 Configuration::
 Configuration(
@@ -31,13 +30,13 @@ Configuration(
 }
 
 std::vector<std::string> Configuration::
-DefaultPaths()
+DefaultPaths(process::Context const *processContext)
 {
     std::vector<std::string> defaultPaths;
-    if (ext::optional<std::string> environmentPath = SysUtil::GetDefault()->environmentVariable("XCSDK_CONFIGURATION_PATH")) {
+    if (ext::optional<std::string> environmentPath = processContext->environmentVariable("XCSDK_CONFIGURATION_PATH")) {
         defaultPaths.push_back(*environmentPath);
     } else {
-        ext::optional<std::string> homePath = SysUtil::GetDefault()->environmentVariable("HOME");
+        ext::optional<std::string> homePath = processContext->environmentVariable("HOME");
         if (getuid() != 0 && homePath) {
             defaultPaths.push_back(*homePath + "/.xcsdk/xcsdk_configuration.plist");
         }

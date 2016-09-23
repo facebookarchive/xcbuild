@@ -12,7 +12,8 @@
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 
 #include <dependency/DependencyInfo.h>
 #include <dependency/BinaryDependencyInfo.h>
@@ -25,7 +26,6 @@ using libutil::Escape;
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::SysUtil;
 
 class Options {
 private:
@@ -193,13 +193,12 @@ LoadDependencyInfo(Filesystem const *filesystem, std::string const &path, depend
 }
 
 static std::string
-SerializeMakefileDependencyInfo(std::string const &output, std::vector<std::string> const &inputs)
+SerializeMakefileDependencyInfo(std::string const &currentDirectory, std::string const &output, std::vector<std::string> const &inputs)
 {
     dependency::DependencyInfo dependencyInfo;
     dependencyInfo.outputs() = { output };
 
     /* Normalize path as Ninja requires matching paths. */
-    std::string currentDirectory = SysUtil::GetDefault()->currentDirectory();
     for (std::string const &input : inputs) {
         std::string path = FSUtil::ResolveRelativePath(input, currentDirectory);
         dependencyInfo.inputs().push_back(path);
@@ -215,13 +214,13 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+    process::DefaultContext processContext = process::DefaultContext();
 
     /*
      * Parse out the options, or print help & exit.
      */
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext.commandLineArguments());
     if (!result.first) {
         return Help(result.second);
     }
@@ -260,7 +259,7 @@ main(int argc, char **argv)
     /*
      * Serialize the output.
      */
-    std::string contents = SerializeMakefileDependencyInfo(*options.name(), inputs);
+    std::string contents = SerializeMakefileDependencyInfo(processContext.currentDirectory(), *options.name(), inputs);
 
     /*
      * Write out the output.
