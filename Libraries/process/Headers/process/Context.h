@@ -17,6 +17,9 @@
 
 namespace process {
 
+/*
+ * The information passed into a launched process.
+ */
 class Context {
 protected:
     Context();
@@ -26,23 +29,23 @@ public:
     /*
      * The path to the running executable.
      */
-    virtual std::string executablePath() const = 0;
+    virtual std::string const &executablePath() const = 0;
 
     /*
      * The current directory of the process.
      */
-    virtual std::string currentDirectory() const = 0;
+    virtual std::string const &currentDirectory() const = 0;
 
 public:
     /*
      * Arguments to the process.
      */
-    virtual std::vector<std::string> commandLineArguments() const = 0;
+    virtual std::vector<std::string> const &commandLineArguments() const = 0;
 
     /*
      * All environment variables.
      */
-    virtual std::unordered_map<std::string, std::string> environmentVariables() const = 0;
+    virtual std::unordered_map<std::string, std::string> const &environmentVariables() const = 0;
 
     /*
      * Single environment variable.
@@ -63,12 +66,12 @@ public:
     /*
      * Active user name.
      */
-    virtual std::string userName() const = 0;
+    virtual std::string const &userName() const = 0;
 
     /*
      * Active group name.
      */
-    virtual std::string groupName() const = 0;
+    virtual std::string const &groupName() const = 0;
 
 public:
     /*
@@ -83,7 +86,7 @@ public:
 
 public:
     /*
-     * Get the system instance.
+     * Get the system instance. Avoid if possible.
      */
     static Context const *GetDefaultUNSAFE();
 };

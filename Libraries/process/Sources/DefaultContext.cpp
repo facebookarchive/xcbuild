@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <cstring>
 #include <cassert>
+#include <thread>
 
 #include <pwd.h>
 #include <grp.h>
@@ -46,14 +47,22 @@ DefaultContext::
 {
 }
 
-std::string DefaultContext::
+std::string const &DefaultContext::
 currentDirectory() const
 {
-    char path[PATH_MAX + 1];
-    if (::getcwd(path, sizeof(path)) == nullptr) {
-        path[0] = '\0';
-    }
-    return path;
+    static std::string const *directory = nullptr;
+
+    std::once_flag flag;
+    std::call_once(flag, []{
+        char path[PATH_MAX + 1];
+        if (::getcwd(path, sizeof(path)) == nullptr) {
+            path[0] = '\0';
+        }
+
+        directory = new std::string(path);
+    });
+
+    return *directory;
 }
 
 #if defined(__linux__)
@@ -76,40 +85,44 @@ static void InitialExecutablePathInitialize(int argc, char **argv)
 #endif
 #endif
 
-std::string DefaultContext::
+std::string const &DefaultContext::
 executablePath() const
 {
+    static std::string const *executablePath = nullptr;
+
+    std::once_flag flag;
+    std::call_once(flag, []{
 #if defined(__APPLE__)
-    uint32_t size = 0;
-    if (_NSGetExecutablePath(NULL, &size) != -1) {
-        abort();
-    }
+        uint32_t size = 0;
+        if (_NSGetExecutablePath(NULL, &size) != -1) {
+            abort();
+        }
 
-    std::string buffer;
-    buffer.resize(size);
-    if (_NSGetExecutablePath(&buffer[0], &size) != 0) {
-        abort();
-    }
-
-    return FSUtil::NormalizePath(buffer);
+        std::string absolutePath;
+        absolutePath.resize(size);
+        if (_NSGetExecutablePath(&absolutePath[0], &size) != 0) {
+            abort();
+        }
 #elif defined(__linux__)
 #if __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16
-    char const *path = reinterpret_cast<char const *>(getauxval(AT_EXECFN));
-    if (path == NULL) {
-        assert(false);
-        abort();
-    }
+        char const *path = reinterpret_cast<char const *>(getauxval(AT_EXECFN));
+        if (path == NULL) {
+            abort();
+        }
 #elif defined(__GLIBC__)
-    char const *path = reinterpret_cast<char const *>(initialExecutablePath);
+        char const *path = reinterpret_cast<char const *>(initialExecutablePath);
+#else
+#error Requires glibc on Linux.
+#endif
+        std::string absolutePath = FSUtil::ResolveRelativePath(std::string(path), std::string(initialWorkingDirectory));
 #else
 #error Unsupported platform.
 #endif
 
-    std::string absolutePath = FSUtil::ResolveRelativePath(std::string(path), std::string(initialWorkingDirectory));
-    return FSUtil::NormalizePath(absolutePath);
-#else
-#error Unsupported platform.
-#endif
+        executablePath = new std::string(FSUtil::NormalizePath(absolutePath));
+    });
+
+    return *executablePath;
 }
 
 static int commandLineArgumentCount = 0;
@@ -122,10 +135,17 @@ static void CommandLineArgumentsInitialize(int argc, char **argv)
     commandLineArgumentValues = argv;
 }
 
-std::vector<std::string> DefaultContext::
+std::vector<std::string> const &DefaultContext::
 commandLineArguments() const
 {
-    return std::vector<std::string>(commandLineArgumentValues + 1, commandLineArgumentValues + commandLineArgumentCount);
+    static std::vector<std::string> const *arguments = nullptr;
+
+    std::once_flag flag;
+    std::call_once(flag, []{
+        arguments = new std::vector<std::string>(commandLineArgumentValues + 1, commandLineArgumentValues + commandLineArgumentCount);
+    });
+
+    return *arguments;
 }
 
 ext::optional<std::string> DefaultContext::
@@ -138,65 +158,74 @@ environmentVariable(std::string const &variable) const
     }
 }
 
-std::unordered_map<std::string, std::string> DefaultContext::
+std::unordered_map<std::string, std::string> const &DefaultContext::
 environmentVariables() const
 {
-    std::unordered_map<std::string, std::string> environment;
+    static std::unordered_map<std::string, std::string> const *environment = nullptr;
 
-    for (char **current = environ; *current; current++) {
-        std::string variable = *current;
-        std::string::size_type offset = variable.find('=');
+    std::once_flag flag;
+    std::call_once(flag, []{
+        std::unordered_map<std::string, std::string> values;
 
-        std::string name = variable.substr(0, offset);
-        std::string value = variable.substr(offset + 1);
-        environment.insert({ name, value });
-    }
+        for (char **current = environ; *current; current++) {
+            std::string variable = *current;
+            std::string::size_type offset = variable.find('=');
 
-    return environment;
+            std::string name = variable.substr(0, offset);
+            std::string value = variable.substr(offset + 1);
+            values.insert({ name, value });
+        }
+
+        environment = new std::unordered_map<std::string, std::string>(values);
+    });
+
+    return *environment;
 }
 
-std::string DefaultContext::
+std::string const &DefaultContext::
 userName() const
 {
-    std::string result;
+    static std::string const *userName = nullptr;
 
-    if (struct passwd const *pw = ::getpwuid(::getuid())) {
-        if (pw->pw_name != nullptr) {
-            result = std::string(pw->pw_name);
+    std::once_flag flag;
+    std::call_once(flag, []{
+        if (struct passwd const *pw = ::getpwuid(::getuid())) {
+            if (pw->pw_name != nullptr) {
+                userName = new std::string(pw->pw_name);
+            }
         }
-    }
 
-    if (result.empty()) {
-        std::ostringstream os;
-        os << ::getuid();
-        result = os.str();
-    }
+        if (userName == nullptr) {
+            std::ostringstream os;
+            os << ::getuid();
+            userName = new std::string(os.str());
+        }
+    });
 
-    ::endpwent();
-
-    return result;
+    return *userName;
 }
 
-std::string DefaultContext::
+std::string const &DefaultContext::
 groupName() const
 {
-    std::string result;
+    static std::string const *groupName = nullptr;
 
-    if (struct group const *gr = ::getgrgid(::getgid())) {
-        if (gr->gr_name != nullptr) {
-            result = gr->gr_name;
+    std::once_flag flag;
+    std::call_once(flag, []{
+        if (struct group const *gr = ::getgrgid(::getgid())) {
+            if (gr->gr_name != nullptr) {
+                groupName = new std::string(gr->gr_name);
+            }
         }
-    }
 
-    if (result.empty()) {
-        std::ostringstream os;
-        os << ::getgid();
-        result = os.str();
-    }
+        if (groupName == nullptr) {
+            std::ostringstream os;
+            os << ::getgid();
+            groupName = new std::string(os.str());
+        }
+    });
 
-    ::endgrent();
-
-    return result;
+    return *groupName;
 }
 
 int32_t DefaultContext::

@@ -46,23 +46,23 @@ public:
     virtual ~MemoryContext();
 
 public:
-    virtual std::string executablePath() const
+    virtual std::string const &executablePath() const
     { return _executablePath; }
     std::string &executablePath()
     { return _executablePath; }
 
-    virtual std::string currentDirectory() const
+    virtual std::string const &currentDirectory() const
     { return _currentDirectory; }
     std::string &currentDirectory()
     { return _currentDirectory; }
 
 public:
-    virtual std::vector<std::string> commandLineArguments() const
+    virtual std::vector<std::string> const &commandLineArguments() const
     { return _commandLineArguments; }
     std::vector<std::string> &commandLineArguments()
     { return _commandLineArguments; }
 
-    virtual std::unordered_map<std::string, std::string> environmentVariables() const
+    virtual std::unordered_map<std::string, std::string> const &environmentVariables() const
     { return _environmentVariables; }
     std::unordered_map<std::string, std::string> &environmentVariables()
     { return _environmentVariables; }
@@ -80,12 +80,12 @@ public:
     int32_t &groupID()
     { return _groupID; }
 
-    virtual std::string userName() const
+    virtual std::string const &userName() const
     { return _userName; }
     std::string &userName()
     { return _userName; }
 
-    virtual std::string groupName() const
+    virtual std::string const &groupName() const
     { return _groupName; }
     std::string &groupName()
     { return _groupName; }

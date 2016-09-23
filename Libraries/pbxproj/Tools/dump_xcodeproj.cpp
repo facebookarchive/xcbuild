@@ -414,8 +414,6 @@ main(int argc, char **argv)
         return -1;
     }
 
-    //fprintf(stderr, "parse ok\n");
-
     CompleteDump(&processContext, &filesystem, project);
 
     printf("Information about project \"%s\":\n",

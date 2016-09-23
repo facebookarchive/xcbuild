@@ -37,35 +37,35 @@ launch(Filesystem *filesystem, Context const *context)
     if (!filesystem->isExecutable(path)) {
         return ext::nullopt;
     }
-    char const *path_str = path.c_str();
+    char const *cPath = path.c_str();
 
     std::string directory = context->currentDirectory();
-    char const *work_dir = directory.c_str();
+    char const *cDirectory = directory.c_str();
 
     /* Compute command-line arguments. */
-    std::vector<char const *> exec_args;
-    exec_args.push_back(path_str);
+    std::vector<char const *> execArgs;
+    execArgs.push_back(cPath);
 
     std::vector<std::string> arguments = context->commandLineArguments();
     for (std::string const &argument : arguments) {
-        exec_args.push_back(argument.c_str());
+        execArgs.push_back(argument.c_str());
     }
 
-    exec_args.push_back(nullptr);
-    char *const *exec_args_data = const_cast<char *const *>(exec_args.data());
+    execArgs.push_back(nullptr);
+    char *const *cExecArgs = const_cast<char *const *>(execArgs.data());
 
     /* Compute environment variables. */
-    std::vector<std::string> env_values;
+    std::vector<std::string> envValues;
     for (auto const &value : context->environmentVariables()) {
-        env_values.push_back(value.first + "=" + value.second);
+        envValues.push_back(value.first + "=" + value.second);
     }
 
-    std::vector<char const *> exec_env;
-    for (auto const &value : env_values) {
-        exec_env.push_back(value.c_str());
+    std::vector<char const *> execEnv;
+    for (auto const &value : envValues) {
+        execEnv.push_back(value.c_str());
     }
-    exec_env.push_back(nullptr);
-    char *const *exec_env_data = const_cast<char *const *>(exec_env.data());
+    execEnv.push_back(nullptr);
+    char *const *cExecEnv = const_cast<char *const *>(execEnv.data());
 
     /* Compute user. */
     uid_t uid = context->userID();
@@ -80,7 +80,7 @@ launch(Filesystem *filesystem, Context const *context)
         return ext::nullopt;
     } else if (pid == 0) {
         /* Fork succeeded, new process. */
-        if (::chdir(work_dir) == -1) {
+        if (::chdir(cDirectory) == -1) {
             ::perror("chdir");
             ::_exit(1);
         }
@@ -95,7 +95,7 @@ launch(Filesystem *filesystem, Context const *context)
             ::_exit(1);
         }
 
-        ::execve(path_str, exec_args_data, exec_env_data);
+        ::execve(cPath, cExecArgs, cExecEnv);
         ::_exit(-1);
 
         return ext::nullopt;

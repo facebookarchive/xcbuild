@@ -15,7 +15,8 @@
 namespace process {
 
 /*
- * A process context for the current process.
+ * A process context for the current process. Generally, this should only
+ * be created in `main()` and passed down to anywhere else that needs it.
  */
 class DefaultContext : public Context {
 public:
@@ -23,19 +24,19 @@ public:
     virtual ~DefaultContext();
 
 public:
-    virtual std::string executablePath() const;
-    virtual std::string currentDirectory() const;
+    virtual std::string const &executablePath() const;
+    virtual std::string const &currentDirectory() const;
 
 public:
-    virtual std::vector<std::string> commandLineArguments() const;
-    virtual std::unordered_map<std::string, std::string> environmentVariables() const;
+    virtual std::vector<std::string> const &commandLineArguments() const;
+    virtual std::unordered_map<std::string, std::string> const &environmentVariables() const;
     virtual ext::optional<std::string> environmentVariable(std::string const &variable) const;
 
 public:
     virtual int32_t userID() const;
     virtual int32_t groupID() const;
-    virtual std::string userName() const;
-    virtual std::string groupName() const;
+    virtual std::string const &userName() const;
+    virtual std::string const &groupName() const;
 };
 
 }
