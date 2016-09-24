@@ -12,72 +12,30 @@
     Identifier = com.apple.buildsettings.standard;
 
     Options = (
-        /* SDK */
+        /* Core */
         {
-            Name = "SDKROOT";
+            Name = "ACTION";
             Type = String;
             DefaultValue = "";
         },
         {
-            Name = "ADDITIONAL_SDKS";
+            Name = "BUILD_COMPONENTS";
             Type = StringList;
             DefaultValue = "";
         },
         {
-            Name = "SUPPORTED_PLATFORMS";
-            Type = StringList;
+            Name = "PROJECT_NAME";
+            Type = String;
             DefaultValue = "";
         },
-
-
-        /* Bitcode */
         {
-            Name = "BITCODE_GENERATION_MODE";
-            Type = Enumeration;
-            Values = (
-                "marker",
-                "bitcode",
-            );
-            DefaultValue = "marker";
-        },
-        {
-            Name = "ENABLE_BITCODE";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-        {
-            Name = "HIDE_BITCODE_SYMBOLS";
-            Type = Boolean;
-            DefaultValue = YES;
+            Name = "TARGET_NAME";
+            Type = String;
+            DefaultValue = "";
         },
 
 
         /* Product Structure */
-        {
-            Name = "EXECUTABLE_EXTENSION";
-            Type = String;
-            DefaultValue = "";
-        },
-        {
-            Name = "EXECUTABLE_PREFIX";
-            Type = String;
-            DefaultValue = "";
-        },
-        {
-            Name = "PRIVATE_HEADERS_FOLDER_PATH";
-            Type = Path;
-            DefaultValue = "";
-        },
-        {
-            Name = "PUBLIC_HEADERS_FOLDER_PATH";
-            Type = Path;
-            DefaultValue = "";
-        },
-        {
-            Name = "WRAPPER_EXTENSION";
-            Type = String;
-            DefaultValue = "";
-        },
         {
             Name = "VERSIONS_FOLDER_PATH";
             Type = Path;
@@ -85,148 +43,11 @@
         },
 
 
-        /* Debugging */
-        {
-            Name = "DEBUG_INFORMATION_FORMAT";
-            Type = Enumeration;
-            Values = (
-                "dwarf",
-                "dwarf-with-dsym",
-            );
-            DefaultValue = "dwarf";
-        },
-        {
-            Name = "DWARF_DSYM_FILE_NAME";
-            Type = Path;
-            DefaultValue = "$(FULL_PRODUCT_NAME).dSYM";
-        },
-        {
-            Name = "DWARF_DSYM_FILE_SHOULD_ACCOMPANY_PRODUCT";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-        {
-            Name = "DWARF_DSYM_FOLDER_PATH";
-            Type = Path;
-            DefaultValue = "$(CONFIGURATION_BUILD_DIR)";
-        },
-
-
-        /* Testing */
-        {
-            Name = "TEST_HOST";
-            Type = Path;
-            DefaultValue = "";
-        },
-        {
-            Name = "TREAT_MISSING_BASELINES_AS_TEST_FAILURES";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-
-
         /* Search Paths */
-        {
-            Name = "ALWAYS_SEARCH_USER_PATHS";
-            Type = Boolean;
-            DefaultValue = YES;
-        },
         {
             Name = "ENABLE_DEFAULT_HEADER_SEARCH_PATHS";
             Type = Boolean;
             DefaultValue = YES;
-        },
-        {
-            Name = "FRAMEWORK_SEARCH_PATHS";
-            Type = PathList;
-            DefaultValue = "";
-        },
-        {
-            Name = "HEADER_SEARCH_PATHS";
-            Type = PathList;
-            DefaultValue = "";
-        },
-        {
-            Name = "LIBRARY_SEARCH_PATHS";
-            Type = PathList;
-            DefaultValue = "";
-        },
-        {
-            Name = "USER_HEADER_SEARCH_PATHS";
-            Type = StringList;
-            DefaultValue = "";
-        },
-
-
-        /* Precompiled Headers */
-        {
-            Name = "PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR";
-            Type = Boolean;
-            DefaultValue = YES;
-        },
-        {
-            Name = "SHARED_PRECOMPS_DIR";
-            Type = Path;
-            DefaultValue = "$(CACHE_ROOT)/SharedPrecompiledHeaders";
-        },
-
-
-        /* Included Sources */
-        {
-            Name = "INCLUDED_SOURCE_FILE_NAMES";
-            Type = StringList;
-            DefaultValue = "";
-        },
-        {
-            Name = "EXCLUDED_SOURCE_FILE_NAMES";
-            Type = StringList;
-            DefaultValue = "";
-        },
-
-
-        /* Recursive Search Path Expansion */
-        {
-            Name = "EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES";
-            Type = StringList;
-            DefaultValue = "*.nib *.lproj *.framework *.gch *.xcode* *.xcassets (*) .DS_Store CVS .svn .git .hg *.pbproj *.pbxproj";
-        },
-        {
-            Name = "INCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES";
-            Type = StringList;
-            DefaultValue = "";
-        },
-
-
-        /* Installation */
-        {
-            Name = "ALTERNATE_GROUP";
-            Type = String;
-            DefaultValue = "$(INSTALL_GROUP)";
-        },
-        {
-            Name = "ALTERNATE_MODE";
-            Type = String;
-            DefaultValue = "$(INSTALL_MODE_FLAG)";
-        },
-        {
-            Name = "ALTERNATE_OWNER";
-            Type = String;
-            DefaultValue = "$(INSTALL_OWNER)";
-        },
-        {
-            Name = "ALTERNATE_PERMISSIONS_FILES";
-            Type = StringList;
-            DefaultValue = "";
-        },
-        {
-            Name = "INSTALL_PATH";
-            Type = Path;
-            DefaultValue = "$(DSTROOT)";
-        },
-        {
-            Name = "SKIP_INSTALL";
-            Type = Boolean;
-            DefaultValue = NO;
         },
 
 
@@ -258,6 +79,469 @@
         },
 
 
+        /* Kernel Extension */
+        {
+            Name = "DEFAULT_KEXT_INSTALL_PATH";
+            Type = Path;
+            DefaultValue = "$(SYSTEM_KEXT_INSTALL_PATH)";
+        },
+        {
+            Name = "LIBRARY_KEXT_INSTALL_PATH";
+            Type = Path;
+            DefaultValue = "$(LOCAL_LIBRARY_DIR)/Extensions";
+        },
+        {
+            Name = "SYSTEM_KEXT_INSTALL_PATH";
+            Type = Path;
+            DefaultValue = "$(SYSTEM_LIBRARY_DIR)/Extensions";
+        },
+
+
+        /* Metal */
+        {
+            Name = "METAL_LIBRARY_FILE_BASE";
+            Type = String;
+            DefaultValue = "default";
+        },
+        {
+            Name = "METAL_LIBRARY_OUTPUT_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)";
+        },
+
+
+        /* Unsorted */
+        {
+            Name = "COLOR_DIAGNOSTICS";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "CURRENT_VERSION";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXCLUDED_INSTALLSRC_SUBDIRECTORY_PATTERNS";
+            Type = StringList;
+            DefaultValue = ".DS_Store .svn .git .hg CVS";
+        },
+        {
+            Name = "PRODUCT_BUNDLE_IDENTIFIER";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "XCODE_DEVELOPER_DIR_PATH";
+            Type = Path;
+        },
+
+
+
+        /*
+         * Shared between the following:
+         *  - com.apple.buildsettings.standard
+         *  - com.apple.build.system.core
+         *  - com.apple.build.system.native
+         */
+
+        /* SDKs */
+        {
+            Name = "ADDITIONAL_SDKS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "SDKROOT";
+            Type = Path;
+            DefaultValue = "";
+        },
+
+
+        /* Search Paths */
+        {
+            Name = "ALWAYS_SEARCH_USER_PATHS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "FRAMEWORK_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+        {
+            Name = "HEADER_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+        {
+            Name = "LIBRARY_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+        {
+            Name = "REZ_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+        {
+            Name = "USER_HEADER_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+
+
+        /* Recursive Search Path Expansion */
+        {
+            Name = "EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES";
+            Type = StringList;
+            DefaultValue = "*.nib *.lproj *.framework *.gch *.xcode* *.xcassets (*) .DS_Store CVS .svn .git .hg *.pbproj *.pbxproj";
+        },
+        {
+            Name = "INCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* Precompiled Headers */
+        {
+            Name = "PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "SHARED_PRECOMPS_DIR";
+            Type = Path;
+            DefaultValue = "$(OBJROOT)/SharedPrecompiledHeaders";
+        },
+
+
+        /* Debugging */
+        {
+            Name = "DEBUG_INFORMATION_FORMAT";
+            Type = Enumeration;
+            Values = (
+                "dwarf",
+                "dwarf-with-dsym",
+            );
+            DefaultValue = "dwarf";
+        },
+        {
+            Name = "DWARF_DSYM_FILE_NAME";
+            Type = String;
+            DefaultValue = "$(FULL_PRODUCT_NAME).dSYM";
+        },
+        {
+            Name = "DWARF_DSYM_FILE_SHOULD_ACCOMPANY_PRODUCT";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "DWARF_DSYM_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "$(CONFIGURATION_BUILD_DIR)";
+        },
+
+
+        /* Product Structure */
+        {
+            Name = "EXECUTABLE_EXTENSION";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXECUTABLE_PREFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "PRIVATE_HEADERS_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "PUBLIC_HEADERS_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "WRAPPER_EXTENSION";
+            Type = String;
+            DefaultValue = "";
+        },
+
+
+        /* Versioning */
+        {
+            Name = "CURRENT_PROJECT_VERSION";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSIONING_SYSTEM";
+            Type = Enumeration;
+            Values = (
+                "",
+                "apple-generic",
+            );
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_BUILDER";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_EXPORT_DECL";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_FILE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_PREFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_SUFFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+
+
+        /* Jam Build System */
+        {
+            Name = "PRECOMP_DESTINATION_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/PrefixHeaders";
+        },
+
+
+        /* com.apple.pbx.linkers.ld */
+        {
+            Name = "GENERATE_PROFILING_CODE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "INIT_ROUTINE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "ORDER_FILE";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "OTHER_LDFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "SECTORDER_FLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "WARNING_LDFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* com.apple.compilers.pbxcp */
+        {
+            Name = "REMOVE_HEADERS_FROM_EMBEDDED_BUNDLES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+
+
+        /* com.apple.build-tools.strip */
+        {
+            Name = "STRIPFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* com.apple.build-tasks.copy-strings-file */
+        {
+            Name = "STRINGS_FILE_OUTPUT_ENCODING";
+            Type = Enumeration;
+            Values = (
+                "UTF-16",
+                "UTF-8",
+                "binary",
+            );
+            DefaultValue = "UTF-16";
+        },
+
+
+        /* com.apple.build-tasks.copy-plist-file */
+        {
+            Name = "PLIST_FILE_OUTPUT_FORMAT";
+            Type = Enumeration;
+            Values = (
+                "same-as-input",
+                "XML",
+                "binary",
+            );
+            DefaultValue = "same-as-input";
+        },
+
+
+        /* com.apple.tools.info-plist-utility */
+        {
+            Name = "GENERATE_PKGINFO_FILE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "INFOPLIST_EXPAND_BUILD_SETTINGS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "INFOPLIST_FILE";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "INFOPLIST_OUTPUT_FORMAT";
+            Type = Enumeration;
+            Values = (
+                "same-as-input",
+                "XML",
+                "binary",
+            );
+            DefaultValue = "same-as-input";
+        },
+
+
+        /* Unsorted */
+        {
+            Name = "APPLY_RULES_IN_COPY_FILES";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "CREATE_INFOPLIST_SECTION_IN_BINARY";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "DEPLOYMENT_LOCATION";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "DYLIB_COMPATIBILITY_VERSION";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "DYLIB_CURRENT_VERSION";
+            Type = String;
+            DefaultValue = "";
+        },
+
+
+
+        /*
+         * Shared between the following:
+         *  - com.apple.buildsettings.standard
+         *  - com.apple.build.system.core
+         */
+
+        /* Bitcode */
+        {
+            Name = "BITCODE_GENERATION_MODE";
+            Type = Enumeration;
+            Values = (
+                "marker",
+                "bitcode",
+            );
+            DefaultValue = "marker";
+        },
+        {
+            Name = "ENABLE_BITCODE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "HIDE_BITCODE_SYMBOLS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+
+
+
+        /* Testing */
+        {
+            Name = "TEST_HOST";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "TREAT_MISSING_BASELINES_AS_TEST_FAILURES";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+
+
+        /* Included Sources */
+        {
+            Name = "INCLUDED_SOURCE_FILE_NAMES";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXCLUDED_SOURCE_FILE_NAMES";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* Installation */
+        {
+            Name = "ALTERNATE_GROUP";
+            Type = String;
+            DefaultValue = "$(INSTALL_GROUP)";
+        },
+        {
+            Name = "ALTERNATE_MODE";
+            Type = String;
+            DefaultValue = "$(INSTALL_MODE_FLAG)";
+        },
+        {
+            Name = "ALTERNATE_OWNER";
+            Type = String;
+            DefaultValue = "$(INSTALL_OWNER)";
+        },
+        {
+            Name = "ALTERNATE_PERMISSIONS_FILES";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "INSTALL_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "SKIP_INSTALL";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+
+
         /* Info.plist Preprocessing */
         {
             Name = "INFOPLIST_PREPROCESS";
@@ -277,43 +561,6 @@
         {
             Name = "INFOPLIST_OTHER_PREPROCESSOR_FLAGS";
             Type = StringList;
-            DefaultValue = "";
-        },
-
-
-        /* Versioning */
-        {
-            Name = "VERSIONING_SYSTEM";
-            Type = Enumeration;
-            Values = (
-                "",
-                "apple-generic",
-            );
-            DefaultValue = "";
-        },
-        {
-            Name = "VERSION_INFO_BUILDER";
-            Type = String;
-            DefaultValue = "$(USER)";
-        },
-        {
-            Name = "VERSION_INFO_EXPORT_DECL";
-            Type = String;
-            DefaultValue = "";
-        },
-        {
-            Name = "VERSION_INFO_FILE";
-            Type = String;
-            DefaultValue = "$(PRODUCT_NAME)_vers.c";
-        },
-        {
-            Name = "VERSION_INFO_PREFIX";
-            Type = String;
-            DefaultValue = "";
-        },
-        {
-            Name = "VERSION_INFO_SUFFIX";
-            Type = String;
             DefaultValue = "";
         },
 
@@ -338,16 +585,6 @@
 
         /* Kernel Extension */
         {
-            Name = "DEFAULT_KEXT_INSTALL_PATH";
-            Type = Path;
-            DefaultValue = "$(SYSTEM_KEXT_INSTALL_PATH)";
-        },
-        {
-            Name = "LIBRARY_KEXT_INSTALL_PATH";
-            Type = Path;
-            DefaultValue = "$(LOCAL_LIBRARY_DIR)/Extensions";
-        },
-        {
             Name = "MODULE_NAME";
             Type = String;
             DefaultValue = "";
@@ -367,31 +604,9 @@
             Type = String;
             DefaultValue = "";
         },
-        {
-            Name = "SYSTEM_KEXT_INSTALL_PATH";
-            Type = Path;
-            DefaultValue = "";
-            /* Set in code. */
-        },
 
 
-        /* Jam Build System */
-        {
-            Name = "PRECOMP_DESTINATION_DIR";
-            Type = Path;
-            DefaultValue = "$(TEMP_DIR)/PrefixHeaders";
-        },
-
-
-        /* com.apple.pbx.linkers.libtool */
-        {
-            Name = "OTHER_LIBTOOLFLAGS";
-            Type = StringList;
-            DefaultValue = "";
-        },
-
-
-        /* com.apple.pbx.linkers.ld.xcspec */
+        /* com.apple.pbx.linkers.ld */
         {
             Name = "BUNDLE_LOADER";
             Type = Path;
@@ -405,16 +620,6 @@
         {
             Name = "EXPORTED_SYMBOLS_FILE";
             Type = Path;
-            DefaultValue = "";
-        },
-        {
-            Name = "GENERATE_PROFILING_CODE";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-        {
-            Name = "INIT_ROUTINE";
-            Type = String;
             DefaultValue = "";
         },
         {
@@ -477,15 +682,6 @@
                 "staticlib",
                 "mh_object",
             );
-        },
-        {
-            Name = "ORDER_FILE";
-            Type = Path;
-            DefaultValue = "";
-        },
-        {
-            Name = "OTHER_LDFLAGS";
-            Type = StringList;
             DefaultValue = "";
         },
         {
@@ -494,62 +690,9 @@
             DefaultValue = NO;
         },
         {
-            Name = "SECTORDER_FLAGS";
-            Type = StringList;
-            DefaultValue = "";
-        },
-        {
             Name = "UNEXPORTED_SYMBOLS_FILE";
             Type = Path;
             DefaultValue = "";
-        },
-        {
-            Name = "WARNING_LDFLAGS";
-            Type = StringList;
-            DefaultValue = "";
-        },
-
-
-        /* com.apple.build-tasks.copy-strings-file */
-        {
-            Name = "STRINGS_FILE_OUTPUT_ENCODING";
-            Type = Enumeration;
-            Values = (
-                "UTF-16",
-                "UTF-8",
-                "binary",
-            );
-            DefaultValue = "binary";
-        },
-
-
-        /* com.apple.build-tasks.copy-plist-file */
-        {
-            Name = "PLIST_FILE_OUTPUT_FORMAT";
-            Type = Enumeration;
-            Values = (
-                "same-as-input",
-                "XML",
-                "binary",
-            );
-        },
-
-
-        /* com.apple.compilers.pbxcp */
-        {
-            Name = "COPYING_PRESERVES_HFS_DATA";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-        {
-            Name = "REMOVE_HEADERS_FROM_EMBEDDED_BUNDLES";
-            Type = Boolean;
-            DefaultValue = YES;
-        },
-        {
-            Name = "STRIP_BITCODE_FROM_COPIED_FILES";
-            Type = Boolean;
-            DefaultValue = NO;
         },
 
 
@@ -558,11 +701,6 @@
             Name = "SEPARATE_STRIP";
             Type = Boolean;
             DefaultValue = NO;
-        },
-        {
-            Name = "STRIPFLAGS";
-            Type = StringList;
-            DefaultValue = "";
         },
         {
             Name = "STRIP_STYLE";
@@ -576,79 +714,24 @@
         },
 
 
-        /* com.apple.tools.info-plist-utility */
+        /* com.apple.compilers.pbxcp */
         {
-            Name = "GENERATE_PKGINFO_FILE";
+            Name = "COPYING_PRESERVES_HFS_DATA";
             Type = Boolean;
             DefaultValue = NO;
         },
         {
-            Name = "INFOPLIST_EXPAND_BUILD_SETTINGS";
+            Name = "STRIP_BITCODE_FROM_COPIED_FILES";
             Type = Boolean;
-            DefaultValue = YES;
-        },
-        {
-            Name = "INFOPLIST_FILE";
-            Type = Path;
-            DefaultValue = "";
-        },
-        {
-            Name = "INFOPLIST_OUTPUT_FORMAT";
-            Type = Enumeration;
-            Values = (
-                "same-as-input",
-                "XML",
-                "binary",
-            );
-            DefaultValue = "same-as-input";
+            DefaultValue = NO;
         },
 
 
         /* Unsorted */
         {
-            Name = "APPLY_RULES_IN_COPY_FILES";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-        {
-            Name = "COLOR_DIAGNOSTICS";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-        {
-            Name = "CREATE_INFOPLIST_SECTION_IN_BINARY";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-        {
-            Name = "CURRENT_PROJECT_VERSION";
-            Type = String;
-            DefaultValue = "";
-        },
-        {
-            Name = "CURRENT_VERSION";
-            Type = String;
-            DefaultValue = "";
-        },
-        {
-            Name = "DEPLOYMENT_LOCATION";
-            Type = Boolean;
-            DefaultValue = NO;
-        },
-        {
             Name = "DEPLOYMENT_POSTPROCESSING";
             Type = Boolean;
             DefaultValue = NO;
-        },
-        {
-            Name = "DYLIB_COMPATIBILITY_VERSION";
-            Type = String;
-            DefaultValue = "";
-        },
-        {
-            Name = "DYLIB_CURRENT_VERSION";
-            Type = String;
-            DefaultValue = "";
         },
         {
             Name = "DYLIB_INSTALL_NAME_BASE";
@@ -656,18 +739,8 @@
             DefaultValue = "";
         },
         {
-            Name = "EXCLUDED_INSTALLSRC_SUBDIRECTORY_PATTERNS";
-            Type = StringList;
-            DefaultValue = "";
-            DefaultValue = ".DS_Store .svn .git .hg CVS";
-        },
-        {
             Name = "MACOSX_DEPLOYMENT_TARGET";
             Type = Enumeration;
-        },
-        {
-            Name = "PRODUCT_BUNDLE_IDENTIFIER";
-            Type = String;
             DefaultValue = "";
         },
         {
@@ -675,11 +748,6 @@
             Type = String;
             DefaultValue = "";
             /* Set in code. */
-        },
-        {
-            Name = "REZ_SEARCH_PATHS";
-            Type = StringList;
-            DefaultValue = "";
         },
         {
             Name = "SCAN_ALL_SOURCE_FILES_FOR_INCLUDES";
@@ -691,9 +759,39 @@
             Type = Boolean;
             DefaultValue = NO;
         },
+
+
+
+        /*
+         * Shared between the following:
+         *  - com.apple.buildsettings.standard
+         *  - com.apple.build.system.native
+         */
+
+        /* SDK */
         {
-            Name = "XCODE_DEVELOPER_DIR_PATH";
-            Type = Path;
+            Name = "SUPPORTED_PLATFORMS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* com.apple.pbx.linkers.libtool */
+        {
+            Name = "OTHER_LIBTOOLFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+
+        /*
+         * Overrides of shared properties.
+         */
+        {
+            Name = "MACOSX_DEPLOYMENT_TARGET";
+            Type = Enumeration;
+            DefaultValue = "$(inherited)";
         },
     );
 }

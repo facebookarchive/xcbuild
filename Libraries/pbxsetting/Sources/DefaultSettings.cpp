@@ -113,7 +113,6 @@ System(void)
         Setting::Parse("SYSTEM_DEVELOPER_USR_DIR", "$(DEVELOPER_USR_DIR)"),
         Setting::Parse("SYSTEM_DEVELOPER_UTILITIES_DIR", "$(DEVELOPER_DIR)/Applications/Utilities"),
         Setting::Parse("SYSTEM_DOCUMENTATION_DIR", "/Library/Documentation"),
-        Setting::Parse("SYSTEM_KEXT_INSTALL_PATH", "/System/Library/Extensions"),
         Setting::Parse("SYSTEM_LIBRARY_DIR", "/System/Library"),
 
         Setting::Create("OS", "MACOS"),
