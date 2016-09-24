@@ -10,11 +10,11 @@
 #include <process/DefaultContext.h>
 #include <libutil/FSUtil.h>
 
+#include <mutex>
 #include <sstream>
 #include <unordered_set>
 #include <cstring>
 #include <cassert>
-#include <thread>
 
 #include <pwd.h>
 #include <grp.h>
