@@ -24,7 +24,7 @@
 #include <plist/Format/Encoding.h>
 #include <plist/Format/XML.h>
 
-#include <histedit.h>
+#include <linenoise.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -38,14 +38,14 @@ class Options {
 public:
 
 private:
-    bool                     _help;
-    bool                     _xml;
+    ext::optional<bool>         _help;
+    ext::optional<bool>         _xml;
 
 private:
-    std::string              _command;
+    ext::optional<std::string>  _command;
 
 private:
-    std::string              _input;
+    std::string                 _input;
 
 public:
     Options();
@@ -53,12 +53,12 @@ public:
 
 public:
     bool help() const
-    { return _help; }
+    { return _help.value_or(false); }
     bool xml() const
-    { return _xml; }
+    { return _xml.value_or(false); }
 
 public:
-    std::string command() const
+    ext::optional<std::string> command() const
     { return _command; }
 
 public:
@@ -73,10 +73,7 @@ private:
 };
 
 Options::
-Options() :
-    _help   (false),
-    _xml    (false),
-    _command("")
+Options()
 {
 }
 
@@ -91,11 +88,11 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h") {
-        return libutil::Options::MarkBool(&_help, arg, it);
+        return libutil::Options::Current(&_help, arg, it);
     } else if (arg == "-x") {
-        return libutil::Options::MarkBool(&_xml, arg, it);
+        return libutil::Options::Current(&_xml, arg, it);
     } else if (arg == "-c") {
-        return libutil::Options::NextString(&_command, args, it);
+        return libutil::Options::Next<std::string>(&_command, args, it);
     } else if (!arg.empty() && arg[0] != '-') {
         _input = arg;
         return std::make_pair(true, std::string());
@@ -104,7 +101,8 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     }
 }
 
-plist::ObjectType parseType(std::string &typeString) {
+static plist::ObjectType
+ParseType(std::string const &typeString) {
     if (typeString == "string") {
         return plist::ObjectType::String;
     } else if (typeString == "dictionary") {
@@ -146,17 +144,39 @@ Help(std::string const &error = std::string())
     return (error.empty() ? 0 : -1);
 }
 
-static void parseCommandKeyPathString(const std::string &keyPathString, std::queue<std::string> &keyPath) {
+static void
+CommandHelp()
+{
+#define INDENT "  "
+    fprintf(stderr, "\nCommands help:\n");
+    fprintf(stderr, INDENT "Help - Print this information\n");
+    fprintf(stderr, INDENT "Exit - Exits this program\n");
+    fprintf(stderr, INDENT "Print [<KeyPath>] - Print value at KeyPath. (default KeyPath = root)\n");
+    fprintf(stderr, INDENT "Save - Save the changed plist file\n");
+    fprintf(stderr, INDENT "Set <KeyPath> <Value> - Set value at KeyPath to Value\n");
+    fprintf(stderr, INDENT "Add <KeyPath> <Type> <Value> - Set value at KeyPath to Value\n");
+    fprintf(stderr, INDENT "Clear <Type> - Clears all data, and sets root to of the given type\n");
+    fprintf(stderr, INDENT "Delete <KeyPath> - Removes entry at KeyPath\n");
+    fprintf(stderr, "\n<KeyPath>\n");
+    fprintf(stderr, INDENT ":= \"\"                             => root object\n");
+    fprintf(stderr, INDENT ":= <KeyPath>[:<Dictionary Key>]   => indexes into dictionary\n");
+    fprintf(stderr, INDENT ":= <KeyPath>[:<Array Index>]      => indexes into Array\n");
+    fprintf(stderr, "\n<Type> := (string|dictionary|array|bool|real|integer|date|data)\n\n");
+#undef INDENT
+}
+
+static void
+ParseCommandKeyPathString(std::string const &keyPathString, std::queue<std::string> *keyPath) {
     auto loc = keyPathString.find(':');
     if (loc == std::string::npos) {
         if (keyPathString.size() > 0) {
-            keyPath.push(keyPathString);
+            keyPath->push(keyPathString);
         }
     } else {
         if (loc > 0) {
-            keyPath.push(keyPathString.substr(0, loc));
+            keyPath->push(keyPathString.substr(0, loc));
         }
-        parseCommandKeyPathString(keyPathString.substr(loc + 1), keyPath);
+        ParseCommandKeyPathString(keyPathString.substr(loc + 1), keyPath);
     }
 }
 
@@ -184,7 +204,7 @@ static plist::Object *getObjectAtKeyPath(plist::Object *object, std::queue<std::
     if (remainingKeys.empty() || (leaveLastKey && remainingKeys.size() == 1)) {
         return object;
     } else if (!object) {
-        std::cerr << "Invalid key path (indexing into null object)" << std::endl;
+        fprintf(stderr, "Invalid key path (indexing into null object)\n");
         return nullptr;
     }
 
@@ -199,7 +219,7 @@ static plist::Object *getObjectAtKeyPath(plist::Object *object, std::queue<std::
             char *end = NULL;
             long long index = std::strtoll(currentKey.c_str(), &end, 0);
             if (end == currentKey.c_str() || index < 0) {
-                std::cerr << "Invalid array index" << std::endl;
+                fprintf(stderr, "Invalid array index\n");
                 return nullptr;
             }
 
@@ -208,7 +228,7 @@ static plist::Object *getObjectAtKeyPath(plist::Object *object, std::queue<std::
         }
         default:
             // Reached a state of non-collection object with remaining key path. error
-            std::cerr << "Invalid key path (indexing into non-collection object)" << std::endl;
+            fprintf(stderr, "Invalid key path (indexing into non-collection object)\n");
             return nullptr;
     }
 
@@ -225,7 +245,7 @@ Print(plist::Object *object, std::queue<std::string> &keyPath, bool xml, libutil
 {
     plist::Object *target = getObjectAtKeyPath(object, keyPath, false);
     if (!keyPath.empty() || !target) {
-        std::cerr << "Invalid key path (no object at key path)" << std::endl;
+        fprintf(stderr, "Invalid key path (no object at key path)\n");
         return false;
     }
 
@@ -258,7 +278,7 @@ Set(plist::Object *object, std::queue<std::string> &keyPath, plist::ObjectType t
 {
     plist::Object *target = getObjectAtKeyPath(object, keyPath, true);
     if (!target || keyPath.size() != 1) {
-        std::cerr << "Invalid key path (target object not found)" << std::endl;
+        fprintf(stderr, "Invalid key path (target object not found)\n");
         return false;
     }
 
@@ -291,7 +311,7 @@ Set(plist::Object *object, std::queue<std::string> &keyPath, plist::ObjectType t
             newObj = plist::Data::New(valueString);
             break;
         default:
-            std::cerr << "Not supported" << std::endl;
+            fprintf(stderr, "Not supported\n");
             return false;
     }
 
@@ -299,7 +319,7 @@ Set(plist::Object *object, std::queue<std::string> &keyPath, plist::ObjectType t
         case plist::ObjectType::Dictionary: {
             plist::Dictionary *dict = plist::CastTo<plist::Dictionary>(target);
             if (!overwrite && dict->value(targetKey)) {
-                std::cerr << "Cannot overwrite key path" << std::endl;
+                fprintf(stderr, "Cannot overwrite key path\n");
                 return false;
             }
             dict->set(targetKey, std::move(newObj));
@@ -309,19 +329,19 @@ Set(plist::Object *object, std::queue<std::string> &keyPath, plist::ObjectType t
             char *end = NULL;
             long long index = std::strtoll(targetKey.c_str(), &end, 0);
             if (end == targetKey.c_str() || index < 0) {
-                std::cerr << "Invalid array index" << std::endl;
+                fprintf(stderr, "Invalid array index\n");
                 return false;
             }
             plist::Array *array = plist::CastTo<plist::Array>(target);
             if (!overwrite && array->value(index)) {
-                std::cerr << "Cannot overwrite key path" << std::endl;
+                fprintf(stderr, "Cannot overwrite key path\n");
                 return false;
             }
             array->insert(index, std::move(newObj));
             return true;
         }
         default:
-            std::cerr << "Invalid key path (setting value on non-collection object)" << std::endl;
+            fprintf(stderr, "Invalid key path (setting value on non-collection object)\n");
             return false;
     }
 }
@@ -353,7 +373,7 @@ static bool Clear(RootObjectContainer &root, plist::ObjectType clearType) {
             root.object = plist::Data::New();
             break;
         default:
-            std::cerr << "Unsupported type" << std::endl;
+            fprintf(stderr, "Unsupported type\n");
             return false;
     }
     return true;
@@ -362,7 +382,7 @@ static bool Clear(RootObjectContainer &root, plist::ObjectType clearType) {
 static bool Delete(plist::Object *object, std::queue<std::string> &keyPath) {
     plist::Object *target = getObjectAtKeyPath(object, keyPath, true);
     if (!target || keyPath.size() != 1) {
-        std::cerr << "Invalid key path (target object not found)" << std::endl;
+        fprintf(stderr, "Invalid key path (target object not found)\n");
         return false;
     }
 
@@ -378,7 +398,7 @@ static bool Delete(plist::Object *object, std::queue<std::string> &keyPath) {
             char *end = NULL;
             long long index = std::strtoll(targetKey.c_str(), &end, 0);
             if (end == targetKey.c_str() || index < 0) {
-                std::cerr << "Invalid array index" << std::endl;
+                fprintf(stderr, "Invalid array index\n");
                 return false;
             }
 
@@ -387,29 +407,9 @@ static bool Delete(plist::Object *object, std::queue<std::string> &keyPath) {
             return true;
         }
         default:
-            std::cerr << "Invalid key path (removing value on non-collection object)" << std::endl;
+            fprintf(stderr, "Invalid key path (removing value on non-collection object)\n");
             return false;
     }
-}
-
-static void CommandHelp()
-{
-#define INDENT "  "
-    fprintf(stderr, "\nCommands help:\n");
-    fprintf(stderr, INDENT "Help - Print this information\n");
-    fprintf(stderr, INDENT "Exit - Exits this program\n");
-    fprintf(stderr, INDENT "Print [<KeyPath>] - Print value at KeyPath. (default KeyPath = root)\n");
-    fprintf(stderr, INDENT "Save - Save the changed plist file\n");
-    fprintf(stderr, INDENT "Set <KeyPath> <Value> - Set value at KeyPath to Value\n");
-    fprintf(stderr, INDENT "Add <KeyPath> <Type> <Value> - Set value at KeyPath to Value\n");
-    fprintf(stderr, INDENT "Clear <Type> - Clears all data, and sets root to of the given type\n");
-    fprintf(stderr, INDENT "Delete <KeyPath> - Removes entry at KeyPath\n");
-    fprintf(stderr, "\n<KeyPath>\n");
-    fprintf(stderr, INDENT ":= \"\"                             => root object\n");
-    fprintf(stderr, INDENT ":= <KeyPath>[:<Dictionary Key>]   => indexes into dictionary\n");
-    fprintf(stderr, INDENT ":= <KeyPath>[:<Array Index>]      => indexes into Array\n");
-    fprintf(stderr, "\n<Type> := (string|dictionary|array|bool|real|integer|date|data)\n\n");
-#undef INDENT
 }
 
 static bool
@@ -426,35 +426,32 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
     std::string command = tokens[0];
     if (command == "Print") {
         std::queue<std::string> keyPath;
-        if (tokens.size() < 2) {
-            parseCommandKeyPathString("", keyPath);
-        } else {
-            parseCommandKeyPathString(tokens[1], keyPath);
+        if (tokens.size() > 1) {
+            ParseCommandKeyPathString(tokens[1], &keyPath);
         }
         Print(root.object.get(), keyPath, xml);
     } else if (command == "Save") {
         std::queue<std::string> keyPath;
-        parseCommandKeyPathString("", keyPath);
         Print(root.object.get(), keyPath, xml, filesystem, path);
     } else if (command == "Exit") {
         return false;
     } else if (command == "Set") {
         if (tokens.size() < 2) {
-            std::cerr << "Set command requires KeyPath" << std::endl;
+            fprintf(stderr, "Set command requires KeyPath\n");
             return true;
         } else {
             std::queue<std::string> keyPath;
-            parseCommandKeyPathString(tokens[1], keyPath);
+            ParseCommandKeyPathString(tokens[1], &keyPath);
             Set(root.object.get(), keyPath, plist::ObjectType::String, parseCommandValueString(tokens.begin() + 2, tokens.end()));
         }
     } else if (command == "Add") {
         if (tokens.size() < 3) {
-            std::cerr << "Add command requires KeyPath and Type" << std::endl;
+            fprintf(stderr, "Add command requires KeyPath and Type\n");
             return true;
         } else {
             std::queue<std::string> keyPath;
-            parseCommandKeyPathString(tokens[1], keyPath);
-            plist::ObjectType type = parseType(tokens[2]);
+            ParseCommandKeyPathString(tokens[1], &keyPath);
+            plist::ObjectType type = ParseType(tokens[2]);
             Set(root.object.get(), keyPath, type, parseCommandValueString(tokens.begin() + 3, tokens.end()), false);
         }
     } else if (command == "Clear") {
@@ -462,34 +459,30 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
         if (tokens.size() < 2) {
             clearType = plist::ObjectType::Dictionary;
         } else {
-            clearType = parseType(tokens[1]);
+            clearType = ParseType(tokens[1]);
         }
         Clear(root, clearType);
     } else if (command == "Delete") {
         if (tokens.size() < 2) {
-            std::cerr << "Add command requires KeyPath" << std::endl;
+            fprintf(stderr, "Add command requires KeyPath\n");
             return true;
         }
         std::queue<std::string> keyPath;
-        parseCommandKeyPathString(tokens[1], keyPath);
+        ParseCommandKeyPathString(tokens[1], &keyPath);
         Delete(root.object.get(), keyPath);
     } else if (command == "Help") {
         CommandHelp();
     } else {
-        std::cerr << "Unrecognized command" << std::endl;
+        fprintf(stderr, "Unrecognized command\n");
     }
     return true;
-}
-
-static const char *prompt(EditLine *e) {
-  return "Command: ";
 }
 
 int
 main(int argc, char **argv)
 {
     std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-    auto filesystem = std::unique_ptr<libutil::Filesystem>(new libutil::DefaultFilesystem());
+    auto filesystem = libutil::DefaultFilesystem();
 
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -502,12 +495,12 @@ main(int argc, char **argv)
         return 1;
     }
 
-    if (!filesystem->exists(options.input())) {
+    if (!filesystem.exists(options.input())) {
         fprintf(stderr, "File does not exist, will be created: %s\n", options.input().c_str());
     }
 
     std::vector<uint8_t> contents;
-    if (!filesystem->read(&contents, options.input())) {
+    if (!filesystem.read(&contents, options.input())) {
         return false;
     }
 
@@ -526,46 +519,27 @@ main(int argc, char **argv)
     RootObjectContainer root;
     root.object = std::move(deserialize.first);
 
-    if (!options.command().empty()) {
-        ProcessCommand(filesystem.get(), options.input(), options.xml(), options.input(), root, options.command());
+    if (options.command()) {
+        ProcessCommand(&filesystem, options.input(), options.xml(), options.input(), root, *options.command());
         // saves
         std::queue<std::string> keyPath;
-        parseCommandKeyPathString("", keyPath);
-        Print(root.object.get(), keyPath, options.xml(), filesystem.get(), options.input());
+        Print(root.object.get(), keyPath, options.xml(), &filesystem, options.input());
     } else {
-        EditLine *el;
-        History *cmdhistory;
-        HistEvent ev;
-        int count;
         const char *line;
         bool keepReading = true;
 
-        el = el_init(argv[0], stdin, stdout, stderr);
-        el_set(el, EL_PROMPT, &prompt);
-        el_set(el, EL_EDITOR, "emacs");
-
-        cmdhistory = history_init();
-        history(cmdhistory, &ev, H_SETSIZE, 800);
-
-        /* This sets up the call back functions for history functionality */
-        el_set(el, EL_HIST, history, cmdhistory);
-
         while (keepReading) {
-            /* libedit calls will go here */
-            line = el_gets(el, &count);
-            if (count > 0) {
-              history(cmdhistory, &ev, H_ENTER, line);
-
-              /* strip trailing newline */
-              std::string strline = std::string(line, 0, count - 1);
-              keepReading = ProcessCommand(filesystem.get(), options.input(), options.xml(), options.input(), root, strline);
+            /* linenoise calls will go here */
+            line = linenoise("Command: ");
+            if (line[0] != '\0') {
+                linenoiseHistoryAdd(line);
+                std::string strline = std::string(line);
+                keepReading = ProcessCommand(&filesystem, options.input(), options.xml(), options.input(), root, strline);
             } else {
                 keepReading = false;
             }
+            linenoiseFree((void *)line);
         }
-
-        history_end(cmdhistory);
-        el_end(el);
     }
 
     return 0;
