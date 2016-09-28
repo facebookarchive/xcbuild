@@ -20,12 +20,24 @@ find_package(ZLIB REQUIRED)
 target_include_directories(car PRIVATE "${ZLIB_INCLUDE_DIR}")
 target_link_libraries(car PRIVATE ${ZLIB_LIBRARIES})
 
-find_library(COMPRESSION compression)
-if ("${COMPRESSION}" STREQUAL "COMPRESSION-NOTFOUND")
-  set(COMPRESSION "")
+set(LZFSE_SOURCE_DIR "${PROJECT_SOURCE_DIR}/ThirdParty/lzfse")
+if (IS_DIRECTORY "${LZFSE_SOURCE_DIR}")
+  set(LZFSE_BINARY_DIR "${PROJECT_BINARY_DIR}/lzfse") 
+  set(LZFSE_BUNDLE_MODE FALSE)
+  add_subdirectory("${LZFSE_SOURCE_DIR}" "${LZFSE_BINARY_DIR}" EXCLUDE_FROM_ALL)
+
+  target_compile_definitions(car PRIVATE HAVE_LZFSE=1)
+  target_link_libraries(car PRIVATE lzfse)
+  target_include_directories(car PRIVATE "${LZFSE_SOURCE_DIR}/src")
 endif ()
 
-target_link_libraries(car PUBLIC ext bom ${COMPRESSION})
+find_library(COMPRESSION compression)
+if (NOT "${COMPRESSION}" STREQUAL "COMPRESSION-NOTFOUND")
+  target_compile_definitions(car PRIVATE HAVE_COMPRESSION=1)
+  target_link_libraries(car PRIVATE "${COMPRESSION}") 
+endif ()
+
+target_link_libraries(car PUBLIC ext bom)
 target_include_directories(car PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS car DESTINATION usr/lib)
 
