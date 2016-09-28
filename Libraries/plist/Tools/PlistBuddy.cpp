@@ -35,8 +35,6 @@ typedef struct {
 } RootObjectContainer;
 
 class Options {
-public:
-
 private:
     ext::optional<bool>         _help;
     ext::optional<bool>         _xml;
@@ -180,7 +178,8 @@ ParseCommandKeyPathString(std::string const &keyPathString, std::queue<std::stri
     }
 }
 
-static std::string parseCommandValueString(std::vector<std::string>::const_iterator begin, std::vector<std::string>::const_iterator end) {
+static std::string
+ParseCommandValueString(std::vector<std::string>::const_iterator begin, std::vector<std::string>::const_iterator end) {
     if (begin == end) {
         return "";
     }
@@ -194,21 +193,21 @@ static std::string parseCommandValueString(std::vector<std::string>::const_itera
 
     std::string valueString = sstream.str();
     if (valueString.front() == '\"' && valueString.back() == '\"') {
-        // strip double quote if necessary
+        /* strip double quote if necessary */
         valueString = valueString.substr(1, valueString.size() - 2);
     }
     return valueString;
 }
 
-static plist::Object *getObjectAtKeyPath(plist::Object *object, std::queue<std::string> &remainingKeys, bool leaveLastKey = true) {
-    if (remainingKeys.empty() || (leaveLastKey && remainingKeys.size() == 1)) {
+static plist::Object *GetObjectAtKeyPath(plist::Object *object, std::queue<std::string> *remainingKeys, bool leaveLastKey = true) {
+    if (remainingKeys->empty() || (leaveLastKey && remainingKeys->size() == 1)) {
         return object;
     } else if (!object) {
         fprintf(stderr, "Invalid key path (indexing into null object)\n");
         return nullptr;
     }
 
-    std::string currentKey = remainingKeys.front();
+    std::string currentKey = remainingKeys->front();
 
     plist::Object *subObject = nullptr;
     switch (object->type()) {
@@ -235,15 +234,15 @@ static plist::Object *getObjectAtKeyPath(plist::Object *object, std::queue<std::
     if (!subObject) {
         return object;
     } else {
-        remainingKeys.pop();
-        return getObjectAtKeyPath(subObject, remainingKeys, leaveLastKey);
+        remainingKeys->pop();
+        return GetObjectAtKeyPath(subObject, remainingKeys, leaveLastKey);
     }
 }
 
 static bool
-Print(plist::Object *object, std::queue<std::string> &keyPath, bool xml, libutil::Filesystem *fileSystem = nullptr, std::string path = "-")
+Print(plist::Object *object, std::queue<std::string> &keyPath, bool xml, libutil::Filesystem *filesystem = nullptr, std::string path = "-")
 {
-    plist::Object *target = getObjectAtKeyPath(object, keyPath, false);
+    plist::Object *target = GetObjectAtKeyPath(object, &keyPath, false);
     if (!keyPath.empty() || !target) {
         fprintf(stderr, "Invalid key path (no object at key path)\n");
         return false;
@@ -264,8 +263,8 @@ Print(plist::Object *object, std::queue<std::string> &keyPath, bool xml, libutil
     }
 
     /* Print. */
-    if (fileSystem && path != "-") {
-        fileSystem->write(*serialize.first, path);
+    if (filesystem && path != "-") {
+        filesystem->write(*serialize.first, path);
     } else {
         std::copy(serialize.first->begin(), serialize.first->end(), std::ostream_iterator<char>(std::cout));
     }
@@ -276,7 +275,7 @@ Print(plist::Object *object, std::queue<std::string> &keyPath, bool xml, libutil
 static bool
 Set(plist::Object *object, std::queue<std::string> &keyPath, plist::ObjectType type, const std::string &valueString, bool overwrite = true)
 {
-    plist::Object *target = getObjectAtKeyPath(object, keyPath, true);
+    plist::Object *target = GetObjectAtKeyPath(object, &keyPath, true);
     if (!target || keyPath.size() != 1) {
         fprintf(stderr, "Invalid key path (target object not found)\n");
         return false;
@@ -346,31 +345,32 @@ Set(plist::Object *object, std::queue<std::string> &keyPath, plist::ObjectType t
     }
 }
 
-static bool Clear(RootObjectContainer &root, plist::ObjectType clearType) {
+static bool
+Clear(RootObjectContainer *root, plist::ObjectType clearType) {
     switch (clearType) {
         case plist::ObjectType::String:
-            root.object = plist::String::New();
+            root->object = plist::String::New();
             break;
         case plist::ObjectType::Dictionary:
-            root.object = plist::Dictionary::New();
+            root->object = plist::Dictionary::New();
             break;
         case plist::ObjectType::Array:
-            root.object = plist::Array::New();
+            root->object = plist::Array::New();
             break;
         case plist::ObjectType::Boolean:
-            root.object = plist::Boolean::New(false);
+            root->object = plist::Boolean::New(false);
             break;
         case plist::ObjectType::Real:
-            root.object = plist::Real::New();
+            root->object = plist::Real::New();
             break;
         case plist::ObjectType::Integer:
-            root.object = plist::Integer::New();
+            root->object = plist::Integer::New();
             break;
         case plist::ObjectType::Date:
-            root.object = plist::Date::New();
+            root->object = plist::Date::New();
             break;
         case plist::ObjectType::Data:
-            root.object = plist::Data::New();
+            root->object = plist::Data::New();
             break;
         default:
             fprintf(stderr, "Unsupported type\n");
@@ -379,14 +379,15 @@ static bool Clear(RootObjectContainer &root, plist::ObjectType clearType) {
     return true;
 }
 
-static bool Delete(plist::Object *object, std::queue<std::string> &keyPath) {
-    plist::Object *target = getObjectAtKeyPath(object, keyPath, true);
-    if (!target || keyPath.size() != 1) {
+static bool
+Delete(plist::Object *object, std::queue<std::string> *keyPath) {
+    plist::Object *target = GetObjectAtKeyPath(object, keyPath, true);
+    if (!target || keyPath->size() != 1) {
         fprintf(stderr, "Invalid key path (target object not found)\n");
         return false;
     }
 
-    std::string targetKey = keyPath.front();
+    std::string targetKey = keyPath->front();
 
     switch (target->type()) {
         case plist::ObjectType::Dictionary: {
@@ -442,7 +443,7 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
         } else {
             std::queue<std::string> keyPath;
             ParseCommandKeyPathString(tokens[1], &keyPath);
-            Set(root.object.get(), keyPath, plist::ObjectType::String, parseCommandValueString(tokens.begin() + 2, tokens.end()));
+            Set(root.object.get(), keyPath, plist::ObjectType::String, ParseCommandValueString(tokens.begin() + 2, tokens.end()));
         }
     } else if (command == "Add") {
         if (tokens.size() < 3) {
@@ -452,7 +453,7 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
             std::queue<std::string> keyPath;
             ParseCommandKeyPathString(tokens[1], &keyPath);
             plist::ObjectType type = ParseType(tokens[2]);
-            Set(root.object.get(), keyPath, type, parseCommandValueString(tokens.begin() + 3, tokens.end()), false);
+            Set(root.object.get(), keyPath, type, ParseCommandValueString(tokens.begin() + 3, tokens.end()), false);
         }
     } else if (command == "Clear") {
         plist::ObjectType clearType;
@@ -461,7 +462,7 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
         } else {
             clearType = ParseType(tokens[1]);
         }
-        Clear(root, clearType);
+        Clear(&root, clearType);
     } else if (command == "Delete") {
         if (tokens.size() < 2) {
             fprintf(stderr, "Add command requires KeyPath\n");
@@ -469,7 +470,7 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
         }
         std::queue<std::string> keyPath;
         ParseCommandKeyPathString(tokens[1], &keyPath);
-        Delete(root.object.get(), keyPath);
+        Delete(root.object.get(), &keyPath);
     } else if (command == "Help") {
         CommandHelp();
     } else {
@@ -529,7 +530,6 @@ main(int argc, char **argv)
         bool keepReading = true;
 
         while (keepReading) {
-            /* linenoise calls will go here */
             line = linenoise("Command: ");
             if (line[0] != '\0') {
                 linenoiseHistoryAdd(line);
