@@ -29,7 +29,7 @@ else ()
   find_package(PNG REQUIRED)
   target_link_libraries(graphics PUBLIC "${PNG_LIBRARIES}")
   target_include_directories(graphics PRIVATE "${PNG_INCLUDE_DIRS}")
-  set_target_properties(graphics PROPERTIES COMPILE_DEFINITIONS "${PNG_DEFINITIONS}")
+  target_compile_definitions(graphics PRIVATE "${PNG_DEFINITIONS}")
 endif ()
 
 install(TARGETS graphics DESTINATION usr/lib)
