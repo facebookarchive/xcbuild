@@ -69,10 +69,17 @@ add_executable(plutil Tools/plutil.cpp)
 target_link_libraries(plutil plist process util)
 install(TARGETS plutil DESTINATION usr/bin)
 
-add_executable(PlistBuddy Tools/PlistBuddy.cpp ${CMAKE_SOURCE_DIR}/ThirdParty/linenoise/linenoise.c)
-target_include_directories(PlistBuddy PRIVATE "${CMAKE_SOURCE_DIR}/ThirdParty/linenoise")
+add_executable(PlistBuddy Tools/PlistBuddy.cpp)
 target_link_libraries(PlistBuddy plist util)
 install(TARGETS PlistBuddy DESTINATION usr/bin)
+
+set(LINENOISE_ROOT "${CMAKE_SOURCE_DIR}/ThirdParty/linenoise")
+if (IS_DIRECTORY "${LINENOISE_ROOT}")
+  add_library(linenoise "${LINENOISE_ROOT}/linenoise.c")
+  target_include_directories(linenoise PUBLIC "${CMAKE_SOURCE_DIR}/ThirdParty/linenoise")
+
+  target_link_libraries(PlistBuddy linenoise)
+endif ()
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(plist Boolean Tests/test_Boolean.cpp)

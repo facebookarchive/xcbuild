@@ -7,8 +7,6 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <libutil/Options.h>
-#include <libutil/DefaultFilesystem.h>
 #include <plist/Array.h>
 #include <plist/Boolean.h>
 #include <plist/Data.h>
@@ -23,12 +21,22 @@
 #include <plist/Format/Binary.h>
 #include <plist/Format/Encoding.h>
 #include <plist/Format/XML.h>
+#include <libutil/Options.h>
+#include <libutil/Filesystem.h>
+#include <libutil/DefaultFilesystem.h>
 
-#include <linenoise.h>
 #include <iostream>
+#include <queue>
 #include <sstream>
 #include <string>
-#include <queue>
+
+#if __has_include(<linenoise.h>)
+#define HAVE_LINENOISE
+#include <linenoise.h>
+#endif
+
+using libutil::Filesystem;
+using libutil::DefaultFilesystem;
 
 typedef struct {
     std::unique_ptr<plist::Object> object;
@@ -164,42 +172,48 @@ CommandHelp()
 }
 
 static void
-ParseCommandKeyPathString(std::string const &keyPathString, std::queue<std::string> *keyPath) {
-    auto loc = keyPathString.find(':');
-    if (loc == std::string::npos) {
-        if (keyPathString.size() > 0) {
-            keyPath->push(keyPathString);
+ParseCommandKeyPathString(std::string const &keyPathString, std::queue<std::string> *keyPath)
+{
+    std::string::size_type prev = 0;
+    do {
+        std::string::size_type pos = keyPathString.find(':', prev);
+        std::string::size_type end = (pos == std::string::npos ? pos : pos - prev);
+
+        std::string key = keyPathString.substr(prev, end);
+        if (!key.empty()) {
+            keyPath->push(key);
         }
-    } else {
-        if (loc > 0) {
-            keyPath->push(keyPathString.substr(0, loc));
-        }
-        ParseCommandKeyPathString(keyPathString.substr(loc + 1), keyPath);
-    }
+
+        prev = (pos == std::string::npos ? pos : pos + 1);
+    } while (prev != std::string::npos);
 }
 
 static std::string
-ParseCommandValueString(std::vector<std::string>::const_iterator begin, std::vector<std::string>::const_iterator end) {
+ParseCommandValueString(std::vector<std::string>::const_iterator begin, std::vector<std::string>::const_iterator end)
+{
     if (begin == end) {
         return "";
     }
-    std::stringstream sstream;
+
+    std::string value;
     for (auto it = begin; it != end; it++) {
         if (it != begin) {
-            sstream << ' ';
+            value += ' ';
         }
-        sstream << it->c_str();
+        value += it->c_str();
     }
 
-    std::string valueString = sstream.str();
-    if (valueString.front() == '\"' && valueString.back() == '\"') {
-        /* strip double quote if necessary */
-        valueString = valueString.substr(1, valueString.size() - 2);
+    /* Strip double quotes if necessary. */
+    if (value.front() == '\"' && value.back() == '\"') {
+        value = value.substr(1, value.size() - 2);
     }
-    return valueString;
+
+    return value;
 }
 
-static plist::Object *GetObjectAtKeyPath(plist::Object *object, std::queue<std::string> *remainingKeys, bool leaveLastKey = true) {
+static plist::Object *
+GetObjectAtKeyPath(plist::Object *object, std::queue<std::string> *remainingKeys, bool leaveLastKey = true)
+{
     if (remainingKeys->empty() || (leaveLastKey && remainingKeys->size() == 1)) {
         return object;
     } else if (!object) {
@@ -226,7 +240,7 @@ static plist::Object *GetObjectAtKeyPath(plist::Object *object, std::queue<std::
             break;
         }
         default:
-            // Reached a state of non-collection object with remaining key path. error
+            /* Reached a non-collection object with remaining key path, error. */
             fprintf(stderr, "Invalid key path (indexing into non-collection object)\n");
             return nullptr;
     }
@@ -240,30 +254,34 @@ static plist::Object *GetObjectAtKeyPath(plist::Object *object, std::queue<std::
 }
 
 static bool
-Print(plist::Object *object, std::queue<std::string> &keyPath, bool xml, libutil::Filesystem *filesystem = nullptr, std::string path = "-")
+Print(plist::Object *object, std::queue<std::string> &keyPath, bool xml, Filesystem *filesystem = nullptr, std::string path = "-")
 {
     plist::Object *target = GetObjectAtKeyPath(object, &keyPath, false);
-    if (!keyPath.empty() || !target) {
+    if (!keyPath.empty() || target == nullptr) {
         fprintf(stderr, "Invalid key path (no object at key path)\n");
         return false;
     }
 
-    plist::Format::ASCII ascii = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
-    plist::Format::Any out = plist::Format::Any::Create<plist::Format::ASCII>(ascii);
-    /* Convert to xml if needed */
+    /*
+     * Determine output format.
+     */
+    ext::optional<plist::Format::Any> out;
     if (xml) {
         plist::Format::XML xml = plist::Format::XML::Create(plist::Format::Encoding::UTF8);
-        out  = plist::Format::Any::Create<plist::Format::XML>(xml);
+        out = plist::Format::Any::Create<plist::Format::XML>(xml);
+    } else {
+        plist::Format::ASCII ascii = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
+        out = plist::Format::Any::Create<plist::Format::ASCII>(ascii);
     }
 
-    auto serialize = plist::Format::Any::Serialize(target, out);
+    auto serialize = plist::Format::Any::Serialize(target, *out);
     if (serialize.first == nullptr) {
         fprintf(stderr, "error: %s\n", serialize.second.c_str());
         return false;
     }
 
     /* Print. */
-    if (filesystem && path != "-") {
+    if (filesystem != nullptr && path != "-") {
         filesystem->write(*serialize.first, path);
     } else {
         std::copy(serialize.first->begin(), serialize.first->end(), std::ostream_iterator<char>(std::cout));
@@ -414,7 +432,7 @@ Delete(plist::Object *object, std::queue<std::string> *keyPath) {
 }
 
 static bool
-ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std::string const &file, RootObjectContainer &root, std::string const &input)
+ProcessCommand(Filesystem *filesystem, std::string const &path, bool xml, RootObjectContainer &root, std::string const &input, bool *mutated)
 {
     std::vector<std::string> tokens;
     std::stringstream sstream(input);
@@ -444,6 +462,7 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
             std::queue<std::string> keyPath;
             ParseCommandKeyPathString(tokens[1], &keyPath);
             Set(root.object.get(), keyPath, plist::ObjectType::String, ParseCommandValueString(tokens.begin() + 2, tokens.end()));
+            *mutated = true;
         }
     } else if (command == "Add") {
         if (tokens.size() < 3) {
@@ -454,6 +473,7 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
             ParseCommandKeyPathString(tokens[1], &keyPath);
             plist::ObjectType type = ParseType(tokens[2]);
             Set(root.object.get(), keyPath, type, ParseCommandValueString(tokens.begin() + 3, tokens.end()), false);
+            *mutated = true;
         }
     } else if (command == "Clear") {
         plist::ObjectType clearType;
@@ -463,6 +483,7 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
             clearType = ParseType(tokens[1]);
         }
         Clear(&root, clearType);
+        *mutated = true;
     } else if (command == "Delete") {
         if (tokens.size() < 2) {
             fprintf(stderr, "Add command requires KeyPath\n");
@@ -471,6 +492,7 @@ ProcessCommand(libutil::Filesystem *filesystem, std::string path, bool xml, std:
         std::queue<std::string> keyPath;
         ParseCommandKeyPathString(tokens[1], &keyPath);
         Delete(root.object.get(), &keyPath);
+        *mutated = true;
     } else if (command == "Help") {
         CommandHelp();
     } else {
@@ -483,7 +505,7 @@ int
 main(int argc, char **argv)
 {
     std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
-    auto filesystem = libutil::DefaultFilesystem();
+    DefaultFilesystem filesystem = DefaultFilesystem();
 
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
@@ -491,9 +513,14 @@ main(int argc, char **argv)
         return Help(result.second);
     }
 
-    if (options.help() || options.input().empty()) {
+    if (options.help()) {
         Help();
-        return 1;
+        CommandHelp();
+        return 0;
+    }
+
+    if (options.input().empty()) {
+        return Help("no input specified");
     }
 
     if (!filesystem.exists(options.input())) {
@@ -502,7 +529,8 @@ main(int argc, char **argv)
 
     std::vector<uint8_t> contents;
     if (!filesystem.read(&contents, options.input())) {
-        return false;
+        fprintf(stderr, "error: unable to read %s\n", options.input().c_str());
+        return 1;
     }
 
     auto format = plist::Format::Any::Identify(contents);
@@ -521,24 +549,40 @@ main(int argc, char **argv)
     root.object = std::move(deserialize.first);
 
     if (options.command()) {
-        ProcessCommand(&filesystem, options.input(), options.xml(), options.input(), root, *options.command());
-        // saves
-        std::queue<std::string> keyPath;
-        Print(root.object.get(), keyPath, options.xml(), &filesystem, options.input());
+        bool mutated = false;
+        ProcessCommand(&filesystem, options.input(), options.xml(), root, *options.command(), &mutated);
+        if (mutated) {
+            /* Save result. */
+            std::queue<std::string> keyPath;
+            Print(root.object.get(), keyPath, options.xml(), &filesystem, options.input());
+        }
     } else {
-        const char *line;
+        char *line;
         bool keepReading = true;
 
         while (keepReading) {
+#if defined(HAVE_LINENOISE)
             line = linenoise("Command: ");
             if (line[0] != '\0') {
                 linenoiseHistoryAdd(line);
-                std::string strline = std::string(line);
-                keepReading = ProcessCommand(&filesystem, options.input(), options.xml(), options.input(), root, strline);
+#else
+            fprintf(stdout, "Command: ");
+
+            size_t size = 1024;
+            line = static_cast<char *>(malloc(size));
+            if (fgets(line, size, stdin) == line) {
+#endif
+
+                bool mutated = false;
+                keepReading = ProcessCommand(&filesystem, options.input(), options.xml(), root, std::string(line), &mutated);
             } else {
                 keepReading = false;
             }
-            linenoiseFree((void *)line);
+#if defined(HAVE_LINENOISE)
+            linenoiseFree(static_cast<void *>(line));
+#else
+            free(static_cast<void *>(line));
+#endif
         }
     }
 
