@@ -330,10 +330,10 @@ resolveBuildFiles(
                     if (tool->fileTypes() || tool->inputFileTypes()) {
                         std::vector<std::string> toolFileTypes;
                         if (tool->fileTypes()) {
-                            toolFileTypes->insert(toolFileTypes.end(), tool->fileTypes().begin(), tool->fileTypes.end());
+                            toolFileTypes.insert(toolFileTypes.end(), tool->fileTypes()->begin(), tool->fileTypes()->end());
                         }
                         if (tool->inputFileTypes()) {
-                            toolFileTypes->insert(toolFileTypes.end(), tool->inputFileTypes().begin(), tool->inputFileTypes.end());
+                            toolFileTypes.insert(toolFileTypes.end(), tool->inputFileTypes()->begin(), tool->inputFileTypes()->end());
                         }
 
                         std::string inputFileType = first.fileType()->identifier();
