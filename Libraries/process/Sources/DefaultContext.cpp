@@ -252,7 +252,7 @@ userHomeDirectory() const
     if (ext::optional<std::string> value = Context::userHomeDirectory()) {
         return value;
     } else {
-        char *home = getpwuid(getuid())->pw_dir;
+        char *home = ::getpwuid(::getuid())->pw_dir;
         return std::string(home);
     }
 }
