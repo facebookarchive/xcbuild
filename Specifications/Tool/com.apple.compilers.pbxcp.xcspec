@@ -12,13 +12,14 @@
     Identifier = com.apple.compilers.pbxcp;
     Name = "Copy Utility";
     CommandLine = "builtin-copy [options] [inputs] [output]";
-    RuleName = "$(pbxcp_rule_name) $(OutputFile:quote) $(InputFile:quote)";
+    RuleName = "$(pbxcp_rule_name:quote) $(OutputFile:quote) $(InputFile:quote)";
     DeeplyStatInputDirectories = YES;
 
     Options = (
         {
             Name = "VERBOSE_PBXCP";
             Type = Boolean;
+            DefaultValue = NO;
             CommandLineFlag = "-V";
         },
 
@@ -32,11 +33,13 @@
         {
             Name = "COPYING_PRESERVES_HFS_DATA";
             Type = Boolean;
+            DefaultValue = NO;
             CommandLineFlag = "-preserve-hfs-data";
         },
         {
             Name = "PBXCP_IGNORE_MISSING_INPUTS";
             Type = Boolean;
+            DefaultValue = NO;
             CommandLineFlag = "-ignore-missing-inputs";
         },
 
@@ -84,6 +87,7 @@
         {
             Name = "REMOVE_HEADER_DIRECTORIES";
             Type = Boolean;
+            DefaultValue = NO;
             CommandLineArgs = {
                 YES = (
                     "-exclude", "Headers",
@@ -103,15 +107,18 @@
         {
             Name = "PBXCP_STRIP_TOOL";
             Type = Path;
+            DefaultValue = "";
             CommandLineFlag = "-strip-tool";
         },
         {
             Name = "PBXCP_STRIP_BITCODE";
             Type = Boolean;
+            DefaultValue = NO;
         },
         {
             Name = "PBXCP_BITCODE_STRIP_MODE";
             Type = Enumeration;
+            DefaultValue = "";
             Condition = "$(PBXCP_STRIP_BITCODE) == YES";
             CommandLineArgs = {
                 "" = ( );
@@ -124,6 +131,7 @@
         {
             Name = "PBXCP_BITCODE_STRIP_TOOL";
             Type = Path;
+            DefaultValue = "";
             CommandLineFlag = "-bitcode-strip-tool";
         },
     );

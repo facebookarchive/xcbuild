@@ -15,6 +15,7 @@
     CommandLine = "lipo [options] -create [inputs] -output $(OutputPath)";
     RuleName = "CreateUniversalBinary $(OutputPath) $(variant) $(ARCHS:quote)";
 
+    BinaryFormats = ( "mach-o" );
     InputFileTypes = (
         "compiled.mach-o.bundle",
         "compiled.mach-o.dylib",

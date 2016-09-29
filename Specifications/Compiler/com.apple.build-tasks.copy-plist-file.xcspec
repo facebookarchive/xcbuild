@@ -12,7 +12,7 @@
     Identifier = com.apple.build-tasks.copy-plist-file;
     Name = "Copy Property List Utility";
 
-    CommandLine = "builtin-copyPlist [options] --outdir $(ProductResourcesDir)/$(InputFileName) -- $(InputFileRelativePath)";
+    CommandLine = "builtin-copyPlist [options] --outdir $(ProductResourcesDir) -- $(InputFileRelativePath)";
     RuleName = "CopyPlistFile $(ProductResourcesDir)/$(InputFileName) $(InputFileRelativePath)";
     InputFileTypes = (
         "file.bplist",
@@ -44,6 +44,7 @@
         {
             Name = "VALIDATE_PLIST_FILES_WHILE_COPYING";
             Type = Boolean;
+            DefaultValue = NO;
             CommandLineFlag = "--validate";
         },
     );

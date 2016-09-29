@@ -14,7 +14,7 @@
 
     CommandLine = "dsymutil [options] $(InputPath) -o $(OutputPath)";
     RuleName = "GenerateDSYMFile $(OutputPath) $(InputPath)";
-    FileTypes = (
+    InputFileTypes = (
         "archive.ar",
         "compiled.mach-o.bundle",
         "compiled.mach-o.dylib",

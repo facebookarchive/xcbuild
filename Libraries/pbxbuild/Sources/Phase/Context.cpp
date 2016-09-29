@@ -327,9 +327,16 @@ resolveBuildFiles(
                     // For example, the default compiler limits itself to just source files, despite its
                     // default build rule specifying that it accepts all C-family inputs, including headers.
                     // TODO(grp): Is this the right way to make .h files not get compiled as resources?
-                    if (tool->fileTypes()) {
+                    if (tool->fileTypes() || tool->inputFileTypes()) {
+                        std::vector<std::string> toolFileTypes;
+                        if (tool->fileTypes()) {
+                            toolFileTypes->insert(toolFileTypes.end(), tool->fileTypes().begin(), tool->fileTypes.end());
+                        }
+                        if (tool->inputFileTypes()) {
+                            toolFileTypes->insert(toolFileTypes.end(), tool->inputFileTypes().begin(), tool->inputFileTypes.end());
+                        }
+
                         std::string inputFileType = first.fileType()->identifier();
-                        std::vector<std::string> const &toolFileTypes = *tool->fileTypes();
                         bool toolAcceptsInputFileType = (toolFileTypes.empty() || std::find(toolFileTypes.begin(), toolFileTypes.end(), inputFileType) != toolFileTypes.end());
 
                         if (toolAcceptsInputFileType) {
