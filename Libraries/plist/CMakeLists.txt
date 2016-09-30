@@ -83,6 +83,7 @@ if (EXISTS "${LINENOISE_SOURCE}")
   endif ()
 
   target_link_libraries(PlistBuddy linenoise)
+  target_compile_definitions(PlistBuddy PRIVATE HAVE_LINENOISE)
 endif ()
 
 if (BUILD_TESTING)
