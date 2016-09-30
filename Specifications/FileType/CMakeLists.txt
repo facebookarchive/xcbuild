@@ -16,7 +16,6 @@ install(FILES
         archive.jar.xcspec
         archive.macbinary.xcspec
         archive.metal-library.xcspec
-        archive.metal.xcspec
         archive.ppob.xcspec
         archive.rsrc.xcspec
         archive.stuffit.xcspec
@@ -116,7 +115,7 @@ install(FILES
         text.html.xcspec
         text.json.xcspec
         text.man.xcspec
-        text.pbxproj.xcspec
+        text.pbxproject.xcspec
         text.plist.ibClassDescription.xcspec
         text.plist.info.xcspec
         text.plist.pbfilespec.xcspec
