@@ -47,6 +47,10 @@ protected:
     Specification();
 
 public:
+    bool operator==(Specification const &rhs) const;
+    bool operator!=(Specification const &rhs) const;
+
+public:
     virtual SpecificationType type() const = 0;
 
 public:
