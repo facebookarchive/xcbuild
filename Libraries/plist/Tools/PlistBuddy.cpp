@@ -26,12 +26,12 @@
 #include <libutil/DefaultFilesystem.h>
 
 #include <iostream>
+#include <iterator>
 #include <queue>
 #include <sstream>
 #include <string>
 
-#if __has_include(<linenoise.h>)
-#define HAVE_LINENOISE
+#if defined(HAVE_LINENOISE)
 #include <linenoise.h>
 #endif
 
