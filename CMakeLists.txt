@@ -28,8 +28,24 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 # Unused language features.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions")
 
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # These flags must be set before we include subdirectories so subprojects
+  # have these options enabled as well.
+  if (SANITIZER)
+    set(COMMON_FLAGS "${COMMON_FLAGS} -g -fno-omit-frame-pointer")
+  endif ()
+
+  if (SANITIZER STREQUAL "asan")
+    set(COMMON_FLAGS "${COMMON_FLAGS} -fsanitize=address")
+  elseif (SANITIZER STREQUAL "ubsan")
+    set(COMMON_FLAGS "${COMMON_FLAGS} -fsanitize=integer -fsanitize=undefined")
+  elseif (SANITIZER STREQUAL "tsan")
+    set(COMMON_FLAGS "${COMMON_FLAGS} -fsanitize=thread")
+  endif ()
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
+endif ()
 
 # Enable all warnings.
 add_compile_options(-Wall -Werror)
