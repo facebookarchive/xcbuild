@@ -13,6 +13,10 @@ project := project
 cmake := cmake
 cmake_flags := -DCMAKE_INSTALL_PREFIX=
 
+ifeq ($(CI),true)
+cmake_flags += -DSANITIZER=asan
+endif
+
 ninja := $(if $(shell which llbuild),llbuild ninja build,ninja)
 ninja_flags := $(if $(shell echo "$$NINJA_JOBS"),-j$(shell echo "$$NINJA_JOBS"),)
 
