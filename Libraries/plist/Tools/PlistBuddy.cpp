@@ -26,6 +26,7 @@
 #include <libutil/DefaultFilesystem.h>
 
 #include <iostream>
+#include <iterator>
 #include <queue>
 #include <sstream>
 #include <string>
