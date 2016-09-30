@@ -74,9 +74,10 @@ target_link_libraries(PlistBuddy plist util)
 install(TARGETS PlistBuddy DESTINATION usr/bin)
 
 set(LINENOISE_ROOT "${CMAKE_SOURCE_DIR}/ThirdParty/linenoise")
-if (IS_DIRECTORY "${LINENOISE_ROOT}")
-  add_library(linenoise "${LINENOISE_ROOT}/linenoise.c")
-  target_include_directories(linenoise PUBLIC "${CMAKE_SOURCE_DIR}/ThirdParty/linenoise")
+set(LINENOISE_SOURCE "${LINENOISE_ROOT}/linenoise.c")
+if (EXISTS "${LINENOISE_SOURCE}")
+  add_library(linenoise "${LINENOISE_SOURCE}")
+  target_include_directories(linenoise PUBLIC "${LINENOISE_ROOT}")
 
   target_link_libraries(PlistBuddy linenoise)
 endif ()
