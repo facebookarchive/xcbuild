@@ -460,10 +460,11 @@ Create(void)
     return std::make_shared <Manager> ();
 }
 
-std::string Manager::
+std::string const &Manager::
 AnyDomain()
 {
-    return "<<domain>>";
+    static std::string any = "<<domain>>";
+    return any;
 }
 
 std::vector<std::pair<std::string, std::string>> Manager::

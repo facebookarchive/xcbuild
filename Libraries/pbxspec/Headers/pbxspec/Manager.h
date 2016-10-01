@@ -146,7 +146,7 @@ public:
     Create(void);
 
 public:
-    static std::string
+    static std::string const &
     AnyDomain();
 
 public:
