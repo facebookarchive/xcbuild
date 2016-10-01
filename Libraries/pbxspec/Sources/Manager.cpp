@@ -288,15 +288,35 @@ bool Manager::
 inheritSpecification(PBX::Specification::shared_ptr const &specification)
 {
     if (specification->basedOnIdentifier() && specification->basedOnDomain() && specification->base() == nullptr) {
+        /* Find the base specification. */
+        PBX::Specification::shared_ptr base = this->specification(specification->type(), *specification->basedOnIdentifier(), { *specification->basedOnDomain() });
+
         /*
-         * Search the specified domain then in any domain. Some specifications inherit
-         * from domain/identifier pairs that don't exist in practice, but by using any
-         * domain they can successfully inherit from something potentially relevant.
+         * If searching the specified domain didn't find anything, search all
+         * domains.
+         * Some specifications inherit from domain/identifier pairs that don't
+         * exist in practice, but by using any domain they can successfully
+         * inherit from something potentially relevant.
          */
-        std::vector<std::string> domains = { *specification->basedOnDomain(), AnyDomain() };
+        if (!base) {
+            PBX::Specification::vector candidates = this->specifications(specification->type(), { *specification->basedOnIdentifier() });
+
+            /*
+             * Make sure that we're not trying to inherit from ourselves. This
+             * can happen if foo:identifier inherits from bar:identifer, and
+             * bar:identifier is not found; we'd would search for
+             * <any>:identifier and potentially find foo:identifier again.
+             */
+            auto I = std::find_if(candidates.begin(), candidates.end(),
+                                  [&specification](PBX::Specification::shared_ptr const &spec) -> bool {
+                                      return specification != spec;
+                                  });
+            if (I != candidates.end()) {
+                base = *I;
+            }
+        }
 
         /* Find the base specification. */
-        auto base = this->specification(specification->type(), *specification->basedOnIdentifier(), domains);
         if (base == nullptr) {
             fprintf(stderr, "error: cannot find base %s specification '%s:%s'\n", SpecificationTypes::Name(specification->type()).c_str(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
             return false;
