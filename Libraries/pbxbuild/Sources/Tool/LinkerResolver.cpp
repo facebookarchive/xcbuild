@@ -53,12 +53,22 @@ resolve(
         auxiliaries.push_back(fileList);
     }
 
-    std::unordered_set<std::string> libraryPaths;
+    /*
+     * Use an std::vector from which we'll remove duplicates later so we can
+     * preserve the ordering of our library search paths.
+     */
+    std::vector<std::string> libraryPaths;
+    libraryPaths.reserve(inputLibraries.size());
     for (Phase::File const &library : inputLibraries) {
         if (!library.fileType()->isFrameworkWrapper()) {
-            libraryPaths.insert(FSUtil::GetDirectoryName(library.path()));
+            libraryPaths.push_back(FSUtil::GetDirectoryName(library.path()));
         }
     }
+
+    // Eliminate duplicates.
+    libraryPaths.erase(std::unique(libraryPaths.begin(), libraryPaths.end()),
+                       libraryPaths.end());
+
     for (std::string const &libraryPath : libraryPaths) {
         special.push_back("-L" + libraryPath);
     }
