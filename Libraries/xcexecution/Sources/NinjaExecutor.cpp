@@ -191,6 +191,11 @@ WriteNinjaRegenerate(
     }
 
     /*
+     * If the generator has changed, the ninja file needs to be regenerated as well.
+     */
+    inputPathValues.push_back(ninja::Value::String(executablePath));
+
+    /*
      * Write out the Ninja rule to regenerate sources.
      */
     std::string ruleName = "regenerate";
