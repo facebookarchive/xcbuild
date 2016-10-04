@@ -377,14 +377,9 @@ Decode(struct car_rendition_value *value)
             return ext::nullopt;
         } else if (header1->compression == car_rendition_data_compression_magic_lzvn || header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
 #if HAVE_LIBCOMPRESSION
-            compression_algorithm algorithm;
-            if (header1->compression == car_rendition_data_compression_magic_lzvn) {
-                algorithm = (compression_algorithm)_COMPRESSION_LZVN;
-            } else if (header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
-                algorithm = COMPRESSION_LZFSE;
-            } else {
-                assert(false);
-            }
+            compression_algorithm algorithm = header1->compression == car_rendition_data_compression_magic_lzvn ?
+                (compression_algorithm)_COMPRESSION_LZVN :
+                COMPRESSION_LZFSE;
 
             size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, algorithm);
             if (compression_result != 0) {
