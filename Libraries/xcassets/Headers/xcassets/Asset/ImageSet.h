@@ -11,14 +11,17 @@
 #define __xcassets_Asset_ImageSet_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Slot/ColorSpace.h>
 #include <xcassets/Slot/DeviceSubtype.h>
 #include <xcassets/Slot/GraphicsFeatureSet.h>
 #include <xcassets/Slot/Idiom.h>
-#include <xcassets/Insets.h>
 #include <xcassets/Slot/MemoryRequirement.h>
-#include <xcassets/Resizing.h>
 #include <xcassets/Slot/Scale.h>
 #include <xcassets/Slot/SizeClass.h>
+#include <xcassets/Slot/WatchSubtype.h>
+#include <xcassets/Insets.h>
+#include <xcassets/Compression.h>
+#include <xcassets/Resizing.h>
 #include <xcassets/TemplateRenderingIntent.h>
 #include <plist/Dictionary.h>
 
@@ -38,12 +41,14 @@ public:
         ext::optional<bool>                     _unassigned;
 
     private:
+        ext::optional<Slot::ColorSpace>         _colorSpace;
+        ext::optional<Compression>              _compression;
         ext::optional<Slot::GraphicsFeatureSet> _graphicsFeatureSet;
         ext::optional<Slot::Idiom>              _idiom;
         ext::optional<Slot::MemoryRequirement>  _memory;
         ext::optional<Slot::Scale>              _scale;
         ext::optional<Slot::DeviceSubtype>      _subtype;
-        // TODO: screen-width
+        ext::optional<Slot::WatchSubtype>       _screenWidth;
         ext::optional<Slot::SizeClass>          _widthClass;
         ext::optional<Slot::SizeClass>          _heightClass;
 
@@ -60,6 +65,10 @@ public:
         { return _unassigned; }
 
     public:
+        ext::optional<Slot::ColorSpace> const &colorSpace() const
+        { return _colorSpace; }
+        ext::optional<Compression> const &compression() const
+        { return _compression; }
         ext::optional<Slot::GraphicsFeatureSet> const &graphicsFeatureSet() const
         { return _graphicsFeatureSet; }
         ext::optional<Slot::Idiom> const &idiom() const
@@ -70,9 +79,12 @@ public:
         { return _scale; }
         ext::optional<Slot::DeviceSubtype> const &subtype() const
         { return _subtype; }
-        // TODO: screen-width
-        ext::optional<Slot::SizeClass> const &widthClass() const;
-        ext::optional<Slot::SizeClass> const &heightClass() const;
+        ext::optional<Slot::WatchSubtype> const &screenWidth() const
+        { return _screenWidth; }
+        ext::optional<Slot::SizeClass> const &widthClass() const
+        { return _widthClass; }
+        ext::optional<Slot::SizeClass> const &heightClass() const
+        { return _heightClass; }
 
     public:
         ext::optional<Insets> const &alignmentInsets() const

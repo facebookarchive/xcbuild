@@ -11,6 +11,7 @@
 #define __xcassets_Asset_SpriteAtlas_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Compression.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -28,6 +29,7 @@ private:
     std::vector<std::shared_ptr<ImageSet>>  _children;
 
 private:
+    ext::optional<Compression>              _compression;
     ext::optional<std::vector<std::string>> _onDemandResourceTags;
     ext::optional<bool>                     _providesNamespace;
 
@@ -40,6 +42,8 @@ public:
     { return _children; }
 
 public:
+    ext::optional<Compression> const &compression() const
+    { return _compression; }
     ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
     { return _onDemandResourceTags; }
     bool providesNamespace() const

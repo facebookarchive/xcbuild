@@ -10,6 +10,8 @@
 #include <xcassets/Asset/ImageStack.h>
 #include <xcassets/Asset/ImageStackLayer.h>
 #include <libutil/Filesystem.h>
+#include <plist/Array.h>
+#include <plist/String.h>
 #include <plist/Keys/Unpack.h>
 
 using xcassets::Asset::ImageStack;
@@ -46,9 +48,32 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 
     // TODO: layers
     // TODO: canvasSize
+    auto P = unpack.cast <plist::Dictionary> ("properties");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
+
+    if (P != nullptr) {
+        std::unordered_set<std::string> seen;
+        auto unpack = plist::Keys::Unpack("Properties", P, &seen);
+
+        auto ODRT = unpack.cast <plist::Array> ("on-demand-resource-tags");
+
+        if (!unpack.complete(true)) {
+            fprintf(stderr, "%s", unpack.errorText().c_str());
+        }
+
+        if (ODRT != nullptr) {
+            _onDemandResourceTags = std::vector<std::string>();
+            _onDemandResourceTags->reserve(ODRT->count());
+
+            for (size_t n = 0; n < ODRT->count(); n++) {
+                if (auto string = ODRT->value<plist::String>(n)) {
+                    _onDemandResourceTags->push_back(string->value());
+                }
+            }
+        }
     }
 
     return true;

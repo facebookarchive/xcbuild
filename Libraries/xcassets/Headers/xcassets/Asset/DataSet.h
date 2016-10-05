@@ -11,6 +11,7 @@
 #define __xcassets_Asset_DataSet_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Slot/ColorSpace.h>
 #include <xcassets/Slot/Idiom.h>
 #include <xcassets/Slot/GraphicsFeatureSet.h>
 #include <xcassets/Slot/MemoryRequirement.h>
@@ -28,6 +29,7 @@ class DataSet : public Asset {
 public:
     class Data {
     private:
+        ext::optional<Slot::ColorSpace>         _colorSpace;
         ext::optional<std::string>              _fileName;
         ext::optional<Slot::Idiom>              _idiom;
         ext::optional<Slot::GraphicsFeatureSet> _graphicsFeatureSet;
@@ -35,6 +37,8 @@ public:
         ext::optional<std::string>              _UTI;
 
     public:
+        ext::optional<Slot::ColorSpace> const &colorSpace() const
+        { return _colorSpace; }
         ext::optional<std::string> const &fileName() const
         { return _fileName; }
         ext::optional<Slot::Idiom> const &idiom() const

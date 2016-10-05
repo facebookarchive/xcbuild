@@ -94,6 +94,8 @@ LaunchImageSupportsLandscape(xcassets::Slot::Idiom idiom, ext::optional<xcassets
             return false;
         case xcassets::Slot::Idiom::Car:
             return false;
+        case xcassets::Slot::Idiom::iOSMarketing:
+            return false;
     }
 
     abort();
@@ -149,6 +151,8 @@ LaunchImageScreenSize(xcassets::Slot::Idiom idiom, ext::optional<xcassets::Slot:
             case xcassets::Slot::Idiom::Watch:
                 return false;
             case xcassets::Slot::Idiom::Car:
+                return false;
+            case xcassets::Slot::Idiom::iOSMarketing:
                 return false;
         }
     }

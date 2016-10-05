@@ -15,6 +15,7 @@
 #include <xcassets/Slot/ImageSize.h>
 #include <xcassets/Slot/Scale.h>
 #include <xcassets/Slot/WatchIconRole.h>
+#include <xcassets/Slot/WatchSubtype.h>
 #include <xcassets/MatchingStyle.h>
 #include <plist/Dictionary.h>
 
@@ -38,7 +39,7 @@ public:
         ext::optional<Slot::ImageSize>     _imageSize;
         ext::optional<Slot::Scale>         _scale;
         ext::optional<Slot::WatchIconRole> _role;
-        // TODO: subtype (watch)
+        ext::optional<Slot::WatchSubtype>  _subtype;
 
     public:
         ext::optional<std::string> const &fileName() const
@@ -59,7 +60,8 @@ public:
         { return _scale; }
         ext::optional<Slot::WatchIconRole> const &role() const
         { return _role; }
-        // TODO: subtype (watch)
+        ext::optional<Slot::WatchSubtype> const &subtype() const
+        { return _subtype; }
 
     private:
         friend class AppIconSet;

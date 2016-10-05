@@ -22,6 +22,7 @@ parse(plist::Dictionary const *dict)
     std::unordered_set<std::string> seen;
     auto unpack = plist::Keys::Unpack("ImageSetImage", dict, &seen);
 
+    auto CS  = unpack.cast <plist::String> ("color-space");
     auto F   = unpack.cast <plist::String> ("filename");
     auto I   = unpack.cast <plist::String> ("idiom");
     auto GFS = unpack.cast <plist::String> ("graphics-feature-set");
@@ -30,6 +31,10 @@ parse(plist::Dictionary const *dict)
 
     if (!unpack.complete(true)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
+
+    if (CS != nullptr) {
+        _colorSpace = Slot::ColorSpaces::Parse(CS->value());
     }
 
     if (F != nullptr) {
