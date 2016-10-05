@@ -29,6 +29,11 @@ enum class AssetType {
     ImageStackLayer,
     LaunchImage,
     SpriteAtlas,
+    Sticker,
+    StickerPack,
+    StickerSequence,
+    Stickers,
+    StickersIconSet,
 };
 
 }

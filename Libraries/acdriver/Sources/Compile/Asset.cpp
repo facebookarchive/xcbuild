@@ -21,10 +21,15 @@
 #include <acdriver/Compile/ImageStackLayer.h>
 #include <acdriver/Compile/LaunchImage.h>
 #include <acdriver/Compile/SpriteAtlas.h>
+#include <acdriver/Compile/Sticker.h>
+#include <acdriver/Compile/StickerPack.h>
+#include <acdriver/Compile/StickerSequence.h>
+#include <acdriver/Compile/StickersIconSet.h>
 #include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <xcassets/Asset/Catalog.h>
 #include <xcassets/Asset/Group.h>
+#include <xcassets/Asset/Stickers.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
@@ -42,6 +47,10 @@ using acdriver::Compile::ImageStack;
 using acdriver::Compile::ImageStackLayer;
 using acdriver::Compile::LaunchImage;
 using acdriver::Compile::SpriteAtlas;
+using acdriver::Compile::Sticker;
+using acdriver::Compile::StickerPack;
+using acdriver::Compile::StickerSequence;
+using acdriver::Compile::StickersIconSet;
 using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
@@ -163,6 +172,31 @@ Compile(
             auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
             Compile::SpriteAtlas::Compile(spriteAtlas, filesystem, compileOutput, result);
             CompileChildren(spriteAtlas->children(), asset, filesystem, compileOutput, result);
+            break;
+        }
+        case xcassets::Asset::AssetType::Sticker: {
+            auto sticker = std::static_pointer_cast<xcassets::Asset::Sticker>(asset);
+            Compile::Sticker::Compile(sticker, filesystem, compileOutput, result);
+            break;
+        }
+        case xcassets::Asset::AssetType::StickerPack: {
+            auto stickerPack = std::static_pointer_cast<xcassets::Asset::StickerPack>(asset);
+            Compile::StickerPack::Compile(stickerPack, filesystem, compileOutput, result);
+            break;
+        }
+        case xcassets::Asset::AssetType::StickerSequence: {
+            auto stickerSequence = std::static_pointer_cast<xcassets::Asset::StickerSequence>(asset);
+            Compile::StickerSequence::Compile(stickerSequence, filesystem, compileOutput, result);
+            break;
+        }
+        case xcassets::Asset::AssetType::Stickers: {
+            auto stickers = std::static_pointer_cast<xcassets::Asset::Stickers>(asset);
+            CompileChildren(stickers->children(), asset, filesystem, compileOutput, result);
+            break;
+        }
+        case xcassets::Asset::AssetType::StickersIconSet: {
+            auto stickersIconSet = std::static_pointer_cast<xcassets::Asset::StickersIconSet>(asset);
+            Compile::StickersIconSet::Compile(stickersIconSet, filesystem, compileOutput, result);
             break;
         }
     }

@@ -206,6 +206,7 @@ WarnUnsupportedOptions(Options const &options, Result *result)
     }
 
     if (options.stickerPackStringsFile()) {
+        /* Option format: `sticker-pack:language-identifier:path`. */
         result->normal(Result::Severity::Warning, "sticker pack strings file not supported");
     }
 
