@@ -31,6 +31,10 @@ add_library(acdriver SHARED
             Sources/Compile/ImageStackLayer.cpp
             Sources/Compile/LaunchImage.cpp
             Sources/Compile/SpriteAtlas.cpp
+            Sources/Compile/Sticker.cpp
+            Sources/Compile/StickerPack.cpp
+            Sources/Compile/StickerSequence.cpp
+            Sources/Compile/StickersIconSet.cpp
             Sources/ContentsAction.cpp
             )
 

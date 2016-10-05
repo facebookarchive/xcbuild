@@ -44,6 +44,11 @@ add_library(xcassets SHARED
             Sources/Asset/ImageStackLayer.cpp
             Sources/Asset/LaunchImage.cpp
             Sources/Asset/SpriteAtlas.cpp
+            Sources/Asset/Sticker.cpp
+            Sources/Asset/StickerPack.cpp
+            Sources/Asset/StickerSequence.cpp
+            Sources/Asset/Stickers.cpp
+            Sources/Asset/StickersIconSet.cpp
             )
 
 target_link_libraries(xcassets PUBLIC util plist ext)

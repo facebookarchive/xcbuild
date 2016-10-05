@@ -26,6 +26,11 @@
 #include <xcassets/Asset/ImageStackLayer.h>
 #include <xcassets/Asset/LaunchImage.h>
 #include <xcassets/Asset/SpriteAtlas.h>
+#include <xcassets/Asset/Sticker.h>
+#include <xcassets/Asset/StickerPack.h>
+#include <xcassets/Asset/StickerSequence.h>
+#include <xcassets/Asset/Stickers.h>
+#include <xcassets/Asset/StickersIconSet.h>
 #include <plist/Array.h>
 #include <plist/Boolean.h>
 #include <plist/Dictionary.h>
@@ -244,6 +249,32 @@ AppendContents(plist::Dictionary *dict, std::string *text, int indent, std::shar
             auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
             AppendProvidesNamespace(dict, text, indent, spriteAtlas->providesNamespace());
             AppendChildren(dict, text, indent, spriteAtlas->children());
+            break;
+        }
+        case xcassets::Asset::AssetType::Sticker: {
+            auto sticker = std::static_pointer_cast<xcassets::Asset::Sticker>(asset);
+            // TODO: Sticker details.
+            break;
+        }
+        case xcassets::Asset::AssetType::StickerPack: {
+            auto stickerPack = std::static_pointer_cast<xcassets::Asset::StickerPack>(asset);
+            // TODO: Sticker pack details.
+            AppendChildren(dict, text, indent, stickerPack->children());
+            break;
+        }
+        case xcassets::Asset::AssetType::StickerSequence: {
+            auto stickerSequence = std::static_pointer_cast<xcassets::Asset::StickerSequence>(asset);
+            // TODO: Sticker sequence details.
+            break;
+        }
+        case xcassets::Asset::AssetType::Stickers: {
+            auto stickers = std::static_pointer_cast<xcassets::Asset::Stickers>(asset);
+            AppendChildren(dict, text, indent, stickers->children());
+            break;
+        }
+        case xcassets::Asset::AssetType::StickersIconSet: {
+            auto stickersIconSet = std::static_pointer_cast<xcassets::Asset::StickersIconSet>(asset);
+            // TODO: Stickers icon set details.
             break;
         }
     }
