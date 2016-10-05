@@ -31,6 +31,8 @@ Parse(std::string const &value)
         return Idiom::Watch;
     } else if (value == "car") {
         return Idiom::Car;
+    } else if (value == "ios-marketing") {
+        return Idiom::iOSMarketing;
     } else {
         fprintf(stderr, "warning: unknown idiom %s\n", value.c_str());
         return ext::nullopt;
@@ -55,6 +57,8 @@ String(Idiom idiom)
             return "watch";
         case Idiom::Car:
             return "car";
+        case Idiom::iOSMarketing:
+            return "ios-marketing";
     }
 
     abort();

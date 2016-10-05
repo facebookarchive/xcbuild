@@ -8,12 +8,14 @@
 #
 
 add_library(xcassets SHARED
+            Sources/Compression.cpp
             Sources/Insets.cpp
             Sources/Resizing.cpp
             Sources/ContentReference.cpp
             Sources/FullyQualifiedName.cpp
             Sources/MatchingStyle.cpp
             Sources/TemplateRenderingIntent.cpp
+            Sources/Slot/ColorSpace.cpp
             Sources/Slot/DeviceSubtype.cpp
             Sources/Slot/GraphicsFeatureSet.cpp
             Sources/Slot/Idiom.cpp
@@ -25,6 +27,7 @@ add_library(xcassets SHARED
             Sources/Slot/SizeClass.cpp
             Sources/Slot/SystemVersion.cpp
             Sources/Slot/WatchIconRole.cpp
+            Sources/Slot/WatchSubtype.cpp
             Sources/Asset/Asset.cpp
             Sources/Asset/AppIconSet.cpp
             Sources/Asset/BrandAssets.cpp

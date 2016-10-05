@@ -10,11 +10,9 @@
 #include <xcassets/Asset/Catalog.h>
 #include <plist/Keys/Unpack.h>
 #include <libutil/Filesystem.h>
-#include <libutil/FSUtil.h>
 
 using xcassets::Asset::Catalog;
 using libutil::Filesystem;
-using libutil::FSUtil;
 
 bool Catalog::
 load(Filesystem const *filesystem)
@@ -37,7 +35,7 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         return false;
     }
 
-    /* No contents is allowed for . */
+    /* No contents is allowed for catalogs. */
     if (dict != nullptr) {
         auto unpack = plist::Keys::Unpack("Catalog", dict, seen);
 

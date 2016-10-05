@@ -53,11 +53,16 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
             std::unordered_set<std::string> seen;
             auto unpack = plist::Keys::Unpack("Properties", P, &seen);
 
+            auto CT   = unpack.cast <plist::String> ("compression-type");
             auto ODRT = unpack.cast <plist::Array> ("on-demand-resource-tags");
             auto PN   = unpack.cast <plist::Boolean> ("provides-namespace");
 
             if (!unpack.complete(true)) {
                 fprintf(stderr, "%s", unpack.errorText().c_str());
+            }
+
+            if (CT != nullptr) {
+                _compression = Compressions::Parse(CT->value());
             }
 
             if (ODRT != nullptr) {

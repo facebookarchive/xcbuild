@@ -43,7 +43,7 @@ parse(plist::Dictionary const *dict)
     auto Z  = unpack.cast <plist::String> ("size");
     auto S  = unpack.cast <plist::String> ("scale");
     auto R  = unpack.cast <plist::String> ("role");
-    // TODO: subtype (watch)
+    auto B  = unpack.cast <plist::String> ("subtype");
     auto U  = unpack.cast <plist::Boolean> ("unassigned");
     auto MS = unpack.cast <plist::String> ("matching-style");
 
@@ -69,6 +69,10 @@ parse(plist::Dictionary const *dict)
 
     if (R != nullptr) {
         _role = Slot::WatchIconRoles::Parse(R->value());
+    }
+
+    if (B != nullptr) {
+        _subtype = Slot::WatchSubtypes::ParsePhysicalSize(B->value());
     }
 
     if (U != nullptr) {

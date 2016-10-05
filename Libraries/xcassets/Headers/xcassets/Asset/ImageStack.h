@@ -30,7 +30,7 @@ private:
 private:
     // TODO layers
     // TODO canvasSize
-    // TODO on-demand-resource-tags
+    ext::optional<std::vector<std::string>> _onDemandResourceTags;
 
 private:
     friend class Asset;
@@ -43,7 +43,8 @@ public:
 public:
     // TODO layers
     // TODO canvasSize
-    // TODO on-demand-resource-tags
+    ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
+    { return _onDemandResourceTags; }
 
 public:
     static AssetType Type()
