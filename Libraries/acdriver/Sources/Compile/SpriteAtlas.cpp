@@ -29,7 +29,7 @@ Compile(
         spriteAtlas->path(),
         { Output::AssetReference(spriteAtlas) },
         "Not Implemented",
-        "sprite atlas yet supported");
+        "sprite atlas not yet supported");
 
     return false;
 }

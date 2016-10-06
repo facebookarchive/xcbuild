@@ -29,7 +29,7 @@ Compile(
         sticker->path(),
         { Output::AssetReference(sticker) },
         "Not Implemented",
-        "sticker yet supported");
+        "sticker not yet supported");
 
     return false;
 }
