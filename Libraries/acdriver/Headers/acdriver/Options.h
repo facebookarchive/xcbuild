@@ -35,6 +35,13 @@ private:
 
 private:
     ext::optional<std::string> _compile;
+
+    /*
+     * extension: allows changing the name of the output file, including the file extension.
+     * "Assets.car" will be used if unspecified.
+     */
+    ext::optional<std::string> _compileOutputFilename;
+
     ext::optional<std::string> _exportDependencyInfo;
 
 private:
@@ -73,7 +80,8 @@ public:
     { return _printContents.value_or(false); }
     ext::optional<std::string> const &compile() const
     { return _compile; }
-
+    ext::optional<std::string> const &compileOutputFilename() const
+    { return _compileOutputFilename; }
 public:
     ext::optional<std::string> const &outputFormat() const
     { return _outputFormat; }

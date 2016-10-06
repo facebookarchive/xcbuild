@@ -262,7 +262,8 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
      * If necessary, create output archive to write into.
      */
     if (compileOutput.format() == Compile::Output::Format::Compiled) {
-        std::string path = compileOutput.root() + "/" + "Assets.car";
+        std::string outputFilename = options.compileOutputFilename().value_or("Assets.car");
+        std::string path = compileOutput.root() + "/" + outputFilename;
 
         ext::optional<car::Writer> writer = CreateWriter(path);
         if (!writer) {

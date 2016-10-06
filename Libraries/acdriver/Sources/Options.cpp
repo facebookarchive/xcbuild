@@ -32,6 +32,8 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::Current<bool>(&_printContents, arg);
     } else if (arg == "--compile") {
         return libutil::Options::Next<std::string>(&_compile, args, it);
+    } else if (arg == "--compile-output-filename") {
+        return libutil::Options::Next<std::string>(&_compileOutputFilename, args, it);
     } else if (arg == "--output-format") {
         return libutil::Options::Next<std::string>(&_outputFormat, args, it);
     } else if (arg == "--warnings") {
