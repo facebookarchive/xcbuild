@@ -29,7 +29,7 @@ Compile(
         gcComplicationSet->path(),
         { Output::AssetReference(gcComplicationSet) },
         "Not Implemented",
-        "gc leaderboard set yet supported");
+        "gc leaderboard set not yet supported");
 
     return false;
 }

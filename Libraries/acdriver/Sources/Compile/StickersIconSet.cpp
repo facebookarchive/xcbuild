@@ -29,7 +29,7 @@ Compile(
         stickersIconSet->path(),
         { Output::AssetReference(stickersIconSet) },
         "Not Implemented",
-        "stickers icon set yet supported");
+        "stickers icon set not yet supported");
 
     return false;
 }
