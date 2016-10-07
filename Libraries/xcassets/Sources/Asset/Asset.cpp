@@ -12,6 +12,7 @@
 #include <xcassets/Asset/BrandAssets.h>
 #include <xcassets/Asset/Catalog.h>
 #include <xcassets/Asset/ComplicationSet.h>
+#include <xcassets/Asset/CubeTextureSet.h>
 #include <xcassets/Asset/DataSet.h>
 #include <xcassets/Asset/GCDashboardImage.h>
 #include <xcassets/Asset/GCLeaderboard.h>
@@ -22,7 +23,14 @@
 #include <xcassets/Asset/ImageStack.h>
 #include <xcassets/Asset/ImageStackLayer.h>
 #include <xcassets/Asset/LaunchImage.h>
+#include <xcassets/Asset/MipmapSet.h>
+#include <xcassets/Asset/Sticker.h>
+#include <xcassets/Asset/StickerPack.h>
+#include <xcassets/Asset/StickerSequence.h>
+#include <xcassets/Asset/Stickers.h>
+#include <xcassets/Asset/StickersIconSet.h>
 #include <xcassets/Asset/SpriteAtlas.h>
+#include <xcassets/Asset/TextureSet.h>
 #include <plist/Keys/Unpack.h>
 #include <plist/Format/JSON.h>
 #include <plist/String.h>
@@ -174,6 +182,9 @@ Load(Filesystem const *filesystem, std::string const &path, std::vector<std::str
     } else if (extension == ComplicationSet::Extension()) {
         auto complicationSet = std::unique_ptr<ComplicationSet>(new ComplicationSet(name, resolvedPath));
         asset = libutil::static_unique_pointer_cast<Asset>(std::move(complicationSet));
+    } else if (extension == CubeTextureSet::Extension()) {
+        auto cubeTextureSet = std::unique_ptr<CubeTextureSet>(new CubeTextureSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(cubeTextureSet));
     } else if (extension == DataSet::Extension()) {
         auto dataSet = std::unique_ptr<DataSet>(new DataSet(name, resolvedPath));
         asset = libutil::static_unique_pointer_cast<Asset>(std::move(dataSet));
@@ -204,9 +215,30 @@ Load(Filesystem const *filesystem, std::string const &path, std::vector<std::str
     } else if (extension == LaunchImage::Extension()) {
         auto launchImage = std::unique_ptr<LaunchImage>(new LaunchImage(name, resolvedPath));
         asset = libutil::static_unique_pointer_cast<Asset>(std::move(launchImage));
+    } else if (extension == MipmapSet::Extension()) {
+        auto mipmapSet = std::unique_ptr<MipmapSet>(new MipmapSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(mipmapSet));
     } else if (extension == SpriteAtlas::Extension()) {
         auto spriteAtlas = std::unique_ptr<SpriteAtlas>(new SpriteAtlas(name, resolvedPath));
         asset = libutil::static_unique_pointer_cast<Asset>(std::move(spriteAtlas));
+    } else if (extension == Sticker::Extension()) {
+        auto sticker = std::unique_ptr<Sticker>(new Sticker(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(sticker));
+    } else if (extension == StickerPack::Extension()) {
+        auto stickerPack = std::unique_ptr<StickerPack>(new StickerPack(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(stickerPack));
+    } else if (extension == StickerSequence::Extension()) {
+        auto stickerSequence = std::unique_ptr<StickerSequence>(new StickerSequence(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(stickerSequence));
+    } else if (extension == Stickers::Extension()) {
+        auto stickers = std::unique_ptr<Stickers>(new Stickers(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(stickers));
+    } else if (extension == StickersIconSet::Extension()) {
+        auto stickersIconSet = std::unique_ptr<StickersIconSet>(new StickersIconSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(stickersIconSet));
+    } else if (extension == TextureSet::Extension()) {
+        auto textureSet = std::unique_ptr<TextureSet>(new TextureSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(textureSet));
     } else {
         /*
          * Directories with unknown extensions are treated as groups.
