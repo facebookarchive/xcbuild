@@ -14,6 +14,25 @@
 
 using xcassets::Asset::ImageStack;
 
+bool ImageStack::Layer::
+parse(plist::Dictionary const *dict)
+{
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("ImageStackLayer", dict, &seen);
+
+    auto F = unpack.cast <plist::String> ("filename");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
+
+    if (F != nullptr) {
+        _fileName = F->value();
+    }
+
+    return true;
+}
+
 bool ImageStack::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
@@ -28,9 +47,8 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 
     auto unpack = plist::Keys::Unpack("ImageStack", dict, seen);
 
-    // TODO: layers
-    // TODO: canvasSize
-    auto P = unpack.cast <plist::Dictionary> ("properties");
+    auto P  = unpack.cast <plist::Dictionary> ("properties");
+    auto Ls = unpack.cast <plist::Array> ("layers");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
@@ -41,6 +59,7 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         auto unpack = plist::Keys::Unpack("Properties", P, &seen);
 
         auto ODRT = unpack.cast <plist::Array> ("on-demand-resource-tags");
+        // TODO: canvasSize
 
         if (!unpack.complete(true)) {
             fprintf(stderr, "%s", unpack.errorText().c_str());
@@ -53,6 +72,19 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
             for (size_t n = 0; n < ODRT->count(); n++) {
                 if (auto string = ODRT->value<plist::String>(n)) {
                     _onDemandResourceTags->push_back(string->value());
+                }
+            }
+        }
+    }
+
+    if (Ls != nullptr) {
+        _layers = std::vector<Layer>();
+
+        for (size_t n = 0; n < Ls->count(); ++n) {
+            if (auto dict = Ls->value<plist::Dictionary>(n)) {
+                Layer layer;
+                if (layer.parse(dict)) {
+                    _layers->push_back(layer);
                 }
             }
         }

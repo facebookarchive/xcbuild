@@ -14,6 +14,25 @@
 
 using xcassets::Asset::StickerPack;
 
+bool StickerPack::Sticker::
+parse(plist::Dictionary const *dict)
+{
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("StickerPackSticker", dict, &seen);
+
+    auto F = unpack.cast <plist::String> ("filename");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
+
+    if (F != nullptr) {
+        _fileName = F->value();
+    }
+
+    return true;
+}
+
 bool StickerPack::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
@@ -28,8 +47,8 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 
     auto unpack = plist::Keys::Unpack("StickerPack", dict, seen);
 
-    // TODO: stickers
-    auto P = unpack.cast <plist::Dictionary> ("properties");
+    auto P  = unpack.cast <plist::Dictionary> ("properties");
+    auto Ss = unpack.cast <plist::Array> ("stickers");
 
     if (!unpack.complete(check)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
@@ -47,6 +66,19 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 
         if (GS != nullptr) {
             _gridSize = StickerGridSizes::Parse(GS->value());
+        }
+    }
+
+    if (Ss != nullptr) {
+        _stickers = std::vector<Sticker>();
+
+        for (size_t n = 0; n < Ss->count(); ++n) {
+            if (auto dict = Ss->value<plist::Dictionary>(n)) {
+                Sticker sticker;
+                if (sticker.parse(dict)) {
+                    _stickers->push_back(sticker);
+                }
+            }
         }
     }
 

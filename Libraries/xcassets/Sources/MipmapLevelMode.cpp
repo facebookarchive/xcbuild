@@ -30,9 +30,9 @@ Parse(std::string const &value)
 }
 
 std::string MipmapLevelModes::
-String(MipmapLevelMode templateRenderingIntent)
+String(MipmapLevelMode mipmapLevelMode)
 {
-    switch (templateRenderingIntent) {
+    switch (mipmapLevelMode) {
         case MipmapLevelMode::None:
             return "none";
         case MipmapLevelMode::All:

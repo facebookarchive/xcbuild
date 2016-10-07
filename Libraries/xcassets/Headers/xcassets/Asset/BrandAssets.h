@@ -11,6 +11,9 @@
 #define __xcassets_Asset_BrandAssets_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Slot/Idiom.h>
+#include <xcassets/Slot/ImageSize.h>
+#include <xcassets/BrandAssetRole.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -21,22 +24,40 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageSet;
-
 class BrandAssets : public Asset {
+public:
+    class BrandAsset {
+    private:
+        ext::optional<Slot::Idiom>     _idiom;
+        ext::optional<std::string>     _fileName;
+        ext::optional<BrandAssetRole>  _role;
+        ext::optional<Slot::ImageSize> _size;
+
+    public:
+        ext::optional<Slot::Idiom> const &idiom() const
+        { return _idiom; }
+        ext::optional<std::string> const &fileName() const
+        { return _fileName; }
+        ext::optional<BrandAssetRole> const &role() const
+        { return _role; }
+        ext::optional<Slot::ImageSize> const &size() const
+        { return _size; }
+
+    private:
+        friend class BrandAssets;
+        bool parse(plist::Dictionary const *dict);
+    };
+
 private:
-    // TODO: assets
+    ext::optional<std::vector<BrandAsset>> _assets;
 
 private:
     friend class Asset;
     using Asset::Asset;
 
 public:
-    // TODO: assets
-
-public:
-    // TODO: this->children<ImageSet>();
-    // TODO: this->children<ImageStack>();
+    ext::optional<std::vector<BrandAsset>> const &assets() const
+    { return _assets; }
 
 public:
     static AssetType Type()
@@ -56,4 +77,3 @@ protected:
 }
 
 #endif // !__xcassets_Asset_BrandAssets_h
-

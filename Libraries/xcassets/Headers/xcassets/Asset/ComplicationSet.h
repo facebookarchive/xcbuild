@@ -11,6 +11,8 @@
 #define __xcassets_Asset_ComplicationSet_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Slot/Idiom.h>
+#include <xcassets/WatchComplicationRole.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -21,18 +23,37 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageSet;
-
 class ComplicationSet : public Asset {
+public:
+    class ComplicationAsset {
+    private:
+        ext::optional<Slot::Idiom>           _idiom;
+        ext::optional<std::string>           _fileName;
+        ext::optional<WatchComplicationRole> _role;
+
+    public:
+        ext::optional<Slot::Idiom> const &idiom() const
+        { return _idiom; }
+        ext::optional<std::string> const &fileName() const
+        { return _fileName; }
+        ext::optional<WatchComplicationRole> const &role() const
+        { return _role; }
+
+    private:
+        friend class ComplicationSet;
+        bool parse(plist::Dictionary const *dict);
+    };
+
 private:
-    // TODO: assets
+    ext::optional<std::vector<ComplicationAsset>> _assets;
 
 private:
     friend class Asset;
     using Asset::Asset;
 
 public:
-    // TODO: assets
+    ext::optional<std::vector<ComplicationAsset>> const &assets() const
+    { return _assets; }
 
 public:
     static AssetType Type()

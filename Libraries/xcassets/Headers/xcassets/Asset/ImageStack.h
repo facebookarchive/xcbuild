@@ -23,8 +23,22 @@ namespace xcassets {
 namespace Asset {
 
 class ImageStack : public Asset {
+public:
+    class Layer {
+    private:
+        ext::optional<std::string>     _fileName;
+
+    public:
+        ext::optional<std::string> const &fileName() const
+        { return _fileName; }
+
+    private:
+        friend class ImageStack;
+        bool parse(plist::Dictionary const *dict);
+    };
+
 private:
-    // TODO layers
+    ext::optional<std::vector<Layer>>       _layers;
     // TODO canvasSize
     ext::optional<std::vector<std::string>> _onDemandResourceTags;
 
@@ -33,7 +47,8 @@ private:
     using Asset::Asset;
 
 public:
-    // TODO layers
+    ext::optional<std::vector<Layer>> const &layers() const
+    { return _layers; }
     // TODO canvasSize
     ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
     { return _onDemandResourceTags; }

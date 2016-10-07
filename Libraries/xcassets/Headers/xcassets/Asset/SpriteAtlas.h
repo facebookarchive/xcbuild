@@ -22,8 +22,6 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageSet;
-
 class SpriteAtlas : public Asset {
 private:
     ext::optional<Compression>              _compression;
@@ -43,9 +41,6 @@ public:
     { return _providesNamespace.value_or(false); }
     ext::optional<bool> providesNamespaceOptional() const
     { return _providesNamespace; }
-
-public:
-    // TODO: this->children<ImageSet>();
 
 public:
     static AssetType Type()
