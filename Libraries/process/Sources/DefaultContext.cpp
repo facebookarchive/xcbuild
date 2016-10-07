@@ -128,12 +128,18 @@ executablePath() const
 static int commandLineArgumentCount = 0;
 static char **commandLineArgumentValues = NULL;
 
+#if !defined(__linux__)
 __attribute__((constructor))
+#endif
 static void CommandLineArgumentsInitialize(int argc, char **argv)
 {
     commandLineArgumentCount = argc;
     commandLineArgumentValues = argv;
 }
+
+#if defined(__linux__)
+__attribute__((section(".init_array"))) auto commandLineArgumentInitializer = &CommandLineArgumentsInitialize;
+#endif
 
 std::vector<std::string> const &DefaultContext::
 commandLineArguments() const
