@@ -33,9 +33,6 @@ private:
     // TODO: textures
 
 private:
-    std::vector<std::unique_ptr<MipmapSet>> _children;
-
-private:
     friend class Asset;
     using Asset::Asset;
 
@@ -49,10 +46,6 @@ public:
     // TODO: textures
 
 public:
-    std::vector<std::unique_ptr<MipmapSet>> const &children() const
-    { return _children; }
-
-public:
     static AssetType Type()
     { return AssetType::TextureSet; }
     virtual AssetType type() const
@@ -63,7 +56,6 @@ public:
     { return std::string("textureset"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

@@ -11,6 +11,7 @@
 #define __xcassets_Asset_GCDashboardImage_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Asset/ImageSet.h>
 #include <xcassets/ContentReference.h>
 #include <plist/Dictionary.h>
 
@@ -22,12 +23,9 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageSet;
-
 class GCDashboardImage : public Asset {
 private:
-    ext::optional<ContentReference>        _contentReference;
-    std::vector<std::unique_ptr<ImageSet>> _children;
+    ext::optional<ContentReference> _contentReference;
 
 private:
     friend class Asset;
@@ -36,8 +34,10 @@ private:
 public:
     ext::optional<ContentReference> const &contentReference() const
     { return _contentReference; }
-    std::vector<std::unique_ptr<ImageSet>> const &children() const
-    { return _children; }
+
+public:
+    ImageSet const *contentEmbedded() const
+    { return this->child<ImageSet>(); }
 
 public:
     static AssetType Type()
@@ -50,7 +50,6 @@ public:
     { return std::string("gcdashboardimage"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

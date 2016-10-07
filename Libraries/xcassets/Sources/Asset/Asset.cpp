@@ -33,12 +33,14 @@
 #include <xcassets/Asset/TextureSet.h>
 #include <plist/Keys/Unpack.h>
 #include <plist/Format/JSON.h>
+#include <plist/Boolean.h>
 #include <plist/String.h>
 #include <plist/Integer.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 
 using xcassets::Asset::Asset;
+using xcassets::FullyQualifiedName;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -52,6 +54,45 @@ Asset(FullyQualifiedName const &name, std::string const &path) :
 Asset::
 ~Asset()
 {
+}
+
+Asset const *Asset::
+child(std::string const &fileName, ext::optional<AssetType> type) const
+{
+    for (std::unique_ptr<Asset> const &asset : _children) {
+        if (asset->type() != type) {
+            /* Wrong kind of asset. */
+            continue;
+        }
+
+        if (FSUtil::GetBaseName(asset->path()) == fileName) {
+            return asset.get();
+        }
+    }
+
+    return nullptr;
+}
+
+Asset const *Asset::
+child(ext::optional<AssetType> type) const
+{
+    Asset const *candidate = nullptr;
+
+    for (std::unique_ptr<Asset> const &asset : _children) {
+        if (asset->type() != type) {
+            /* Wrong kind of asset. */
+            continue;
+        }
+
+        if (candidate != nullptr) {
+            /* Multiple assets: which one? */
+            return nullptr;
+        }
+
+        candidate = asset.get();
+    }
+
+    return candidate;
 }
 
 bool Asset::
@@ -96,50 +137,6 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
     }
 
     return true;
-}
-
-bool Asset::
-loadChildren(Filesystem const *filesystem, std::vector<std::unique_ptr<Asset>> *children, bool providesNamespace)
-{
-    bool error = false;
-
-    filesystem->enumerateDirectory(_path, [&](std::string const &fileName) -> void {
-        std::string path = _path + "/" + fileName;
-
-        if (filesystem->isDirectory(path)) {
-            std::vector<std::string> groups = _name.groups();
-            if (providesNamespace) {
-                // TODO: Should fully qualified names include extensions?
-                groups.push_back(_name.name());
-            }
-
-            std::unique_ptr<Asset> asset = Asset::Load(filesystem, path, groups);
-            if (asset == nullptr) {
-                fprintf(stderr, "error: failed to load asset: %s\n", path.c_str());
-                error = true;
-                return;
-            }
-
-            children->push_back(std::move(asset));
-        }
-    });
-
-    return !error;
-}
-
-bool Asset::
-hasChildren(libutil::Filesystem const *filesystem)
-{
-    bool hasChildren = false;
-
-    filesystem->enumerateDirectory(_path, [this, filesystem, &hasChildren](std::string const &fileName) -> void {
-        std::string path = _path + "/" + fileName;
-        if (filesystem->isDirectory(path)) {
-            hasChildren = true;
-        }
-    });
-
-    return hasChildren;
 }
 
 std::unique_ptr<Asset> Asset::
@@ -254,14 +251,13 @@ Load(Filesystem const *filesystem, std::string const &path, std::vector<std::str
     return asset;
 }
 
-bool Asset::
-load(Filesystem const *filesystem)
+static bool
+LoadContents(Filesystem const *filesystem, std::string const &path, std::unique_ptr<plist::Dictionary> *contentsDictionary)
 {
     /*
      * Configure the asset with the contents.
      */
-    std::unique_ptr<plist::Dictionary> contentsDictionary;
-    std::string contentsPath = _path + "/" + "Contents.json";
+    std::string contentsPath = path + "/" + "Contents.json";
 
     /*
      * Check if the contents file exists. Not existing is valid for some asset types.
@@ -290,7 +286,71 @@ load(Filesystem const *filesystem)
             return false;
         }
 
-        contentsDictionary = plist::static_unique_pointer_cast<plist::Dictionary>(std::move(deserialized.first));
+        *contentsDictionary = plist::static_unique_pointer_cast<plist::Dictionary>(std::move(deserialized.first));
+    }
+
+    return true;
+}
+
+static bool
+LoadChildren(Filesystem const *filesystem, std::string const &path, FullyQualifiedName const &name, bool providesNamespace, std::vector<std::unique_ptr<Asset>> *children)
+{
+    bool error = false;
+
+    filesystem->enumerateDirectory(path, [&](std::string const &fileName) -> void {
+        std::string child = path + "/" + fileName;
+
+        if (filesystem->isDirectory(child)) {
+            std::vector<std::string> groups = name.groups();
+            if (providesNamespace) {
+                // TODO: Should fully qualified names include extensions?
+                groups.push_back(name.name());
+            }
+
+            std::unique_ptr<Asset> asset = Asset::Load(filesystem, child, groups);
+            if (asset == nullptr) {
+                fprintf(stderr, "error: failed to load asset: %s\n", child.c_str());
+                error = true;
+                return;
+            }
+
+            children->push_back(std::move(asset));
+        }
+    });
+
+    return error;
+}
+
+bool Asset::
+load(Filesystem const *filesystem)
+{
+    /*
+     * Load the contents. This can succeed but not load anything.
+     */
+    std::unique_ptr<plist::Dictionary> contentsDictionary;
+    if (!LoadContents(filesystem, _path, &contentsDictionary)) {
+        return false;
+    }
+
+    /*
+     * Note that some asset types have a field `provides-namespace` that affects
+     * how children are loaded, which won't be loaded until parsing. To avoid
+     * the cyclical dependency, pre-parse the `provides-namespace` key here.
+     */
+    bool providesNamespace = false;
+    if (contentsDictionary != nullptr) {
+        if (auto properties = contentsDictionary->value<plist::Dictionary>("properties")) {
+            if (auto provides = properties->value<plist::Boolean>("provides-namespace")) {
+                providesNamespace = provides->value();
+            }
+        }
+    }
+
+    /*
+     * Load children now, so parsing can reference them.
+     */
+    if (!LoadChildren(filesystem, _path, _name, providesNamespace, &_children)) {
+        /* A child failing to load is not an error for this asset. */
     }
 
     /*

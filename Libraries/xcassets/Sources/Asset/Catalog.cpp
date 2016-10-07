@@ -15,20 +15,6 @@ using xcassets::Asset::Catalog;
 using libutil::Filesystem;
 
 bool Catalog::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren(filesystem, &_children)) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
-
-bool Catalog::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
     if (!Asset::parse(dict, seen, false)) {

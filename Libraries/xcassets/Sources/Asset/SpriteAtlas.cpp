@@ -16,21 +16,6 @@
 
 using xcassets::Asset::SpriteAtlas;
 using xcassets::Asset::ImageSet;
-using libutil::Filesystem;
-
-bool SpriteAtlas::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren<ImageSet>(filesystem, &_children, _providesNamespace.value_or(false))) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool SpriteAtlas::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)

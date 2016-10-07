@@ -23,19 +23,12 @@ namespace Asset {
 
 class Group : public Asset {
 private:
-    std::vector<std::unique_ptr<Asset>>     _children;
-
-private:
     ext::optional<std::vector<std::string>> _onDemandResourceTags;
     ext::optional<bool>                     _providesNamespace;
 
 private:
     friend class Asset;
     using Asset::Asset;
-
-public:
-    std::vector<std::unique_ptr<Asset>> const &children() const
-    { return _children; }
 
 public:
     ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
@@ -59,7 +52,6 @@ public:
     { return ext::nullopt; }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

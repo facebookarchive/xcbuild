@@ -11,28 +11,16 @@
 #include <plist/Keys/Unpack.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
-#include <libutil/Filesystem.h>
 
 using xcassets::Asset::Sticker;
-using libutil::Filesystem;
-
-bool Sticker::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (this->hasChildren(filesystem)) {
-        fprintf(stderr, "warning: unexpected child assets\n");
-    }
-
-    return true;
-}
 
 bool Sticker::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
+    if (!this->children().empty()) {
+        fprintf(stderr, "warning: unexpected child assets\n");
+    }
+
     if (!Asset::parse(dict, seen, false)) {
         return false;
     }

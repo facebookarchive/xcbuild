@@ -13,21 +13,6 @@
 
 using xcassets::Asset::ComplicationSet;
 using xcassets::Asset::ImageSet;
-using libutil::Filesystem;
-
-bool ComplicationSet::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren<ImageSet>(filesystem, &_children)) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool ComplicationSet::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)

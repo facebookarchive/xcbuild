@@ -26,9 +26,6 @@ class ImageSet;
 
 class SpriteAtlas : public Asset {
 private:
-    std::vector<std::unique_ptr<ImageSet>>  _children;
-
-private:
     ext::optional<Compression>              _compression;
     ext::optional<std::vector<std::string>> _onDemandResourceTags;
     ext::optional<bool>                     _providesNamespace;
@@ -36,10 +33,6 @@ private:
 private:
     friend class Asset;
     using Asset::Asset;
-
-public:
-    std::vector<std::unique_ptr<ImageSet>> const &children() const
-    { return _children; }
 
 public:
     ext::optional<Compression> const &compression() const
@@ -52,6 +45,9 @@ public:
     { return _providesNamespace; }
 
 public:
+    // TODO: this->children<ImageSet>();
+
+public:
     static AssetType Type()
     { return AssetType::SpriteAtlas; }
     virtual AssetType type() const
@@ -62,7 +58,6 @@ public:
     { return std::string("spriteatlas"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 
