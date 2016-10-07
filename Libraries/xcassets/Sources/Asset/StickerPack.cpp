@@ -12,24 +12,7 @@
 #include <plist/String.h>
 #include <plist/Keys/Unpack.h>
 
-#include <cstdlib>
-
 using xcassets::Asset::StickerPack;
-using libutil::Filesystem;
-
-bool StickerPack::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren(filesystem, &_children)) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool StickerPack::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)

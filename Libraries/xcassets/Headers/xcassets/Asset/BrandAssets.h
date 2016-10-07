@@ -25,10 +25,6 @@ class ImageSet;
 
 class BrandAssets : public Asset {
 private:
-    // TODO: image set and image stack
-    std::vector<std::unique_ptr<Asset>> _children;
-
-private:
     // TODO: assets
 
 private:
@@ -36,12 +32,11 @@ private:
     using Asset::Asset;
 
 public:
-    // TODO: image set and image stack
-    std::vector<std::unique_ptr<Asset>> const &children() const
-    { return _children; }
+    // TODO: assets
 
 public:
-    // TODO: assets
+    // TODO: this->children<ImageSet>();
+    // TODO: this->children<ImageStack>();
 
 public:
     static AssetType Type()
@@ -54,7 +49,6 @@ public:
     { return std::string("brandassets"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

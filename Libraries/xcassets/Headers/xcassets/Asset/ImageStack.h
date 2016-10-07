@@ -24,20 +24,13 @@ namespace Asset {
 
 class ImageStack : public Asset {
 private:
-    std::vector<std::unique_ptr<ImageStackLayer>> _children;
-
-private:
     // TODO layers
     // TODO canvasSize
-    ext::optional<std::vector<std::string>>       _onDemandResourceTags;
+    ext::optional<std::vector<std::string>> _onDemandResourceTags;
 
 private:
     friend class Asset;
     using Asset::Asset;
-
-public:
-    std::vector<std::unique_ptr<ImageStackLayer>> const &children() const
-    { return _children; }
 
 public:
     // TODO layers
@@ -56,7 +49,6 @@ public:
     { return std::string("imagestack"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

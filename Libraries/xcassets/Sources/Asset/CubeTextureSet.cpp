@@ -9,7 +9,6 @@
 
 #include <xcassets/Asset/CubeTextureSet.h>
 #include <xcassets/Asset/MipmapSet.h>
-#include <libutil/Filesystem.h>
 #include <plist/Array.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
@@ -17,21 +16,6 @@
 
 using xcassets::Asset::CubeTextureSet;
 using xcassets::Asset::MipmapSet;
-using libutil::Filesystem;
-
-bool CubeTextureSet::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren<MipmapSet>(filesystem, &_children)) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool CubeTextureSet::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)

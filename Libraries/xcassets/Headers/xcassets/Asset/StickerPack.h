@@ -28,7 +28,6 @@ private:
 
 private:
     // TODO: stickers
-    std::vector<std::unique_ptr<Asset>> _children;
 
 private:
     friend class Asset;
@@ -40,8 +39,6 @@ public:
 
 public:
     // TODO: stickers
-    std::vector<std::unique_ptr<Asset>> const &children() const
-    { return _children; }
 
 public:
     static AssetType Type()
@@ -54,7 +51,6 @@ public:
     { return std::string("stickerpack"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

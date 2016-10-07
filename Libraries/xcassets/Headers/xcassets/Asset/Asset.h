@@ -35,6 +35,9 @@ private:
     ext::optional<std::string> _author;
     ext::optional<int>         _version;
 
+private:
+    std::vector<std::unique_ptr<Asset>> _children;
+
 protected:
     Asset(FullyQualifiedName const &name, std::string const &path);
 
@@ -68,6 +71,32 @@ public:
 
 public:
     /*
+     * All assets contained in the asset.
+     */
+    std::vector<std::unique_ptr<Asset>> const &children() const
+    { return _children; }
+
+public:
+    /*
+     * A specific child asset, by file name.
+     */
+    Asset const *
+    child(std::string const &fileName, ext::optional<AssetType> = ext::nullopt) const;
+    template<typename T>
+    T const *child(std::string const &fileName) const
+    { return static_cast<T const *>(child(fileName, T::Type())); }
+
+public:
+    /*
+     * An only child asset of a type.
+     */
+    Asset const *child(ext::optional<AssetType> type = ext::nullopt) const;
+    template<typename T>
+    T const *child() const
+    { return static_cast<T const *>(child(T::Type())); }
+
+public:
+    /*
      * Load an asset from a directory.
      */
     static std::unique_ptr<Asset> Load(
@@ -78,7 +107,7 @@ public:
 
 protected:
     /*
-     * Load the asset from the filesystem. Default implementation calls parse; override to load children.
+     * Load the asset from the filesystem. Default implementation calls parse with contents.
      */
     virtual bool load(libutil::Filesystem const *filesystem);
 
@@ -86,44 +115,9 @@ protected:
      * Override to parse the contents, which can be null.
      */
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
-
-protected:
-    /*
-     * Without loading, checks for child assets.
-     */
-    bool hasChildren(libutil::Filesystem const *filesystem);
-
-    /*
-     * Iterate children of this asset and load them.
-     */
-    bool loadChildren(libutil::Filesystem const *filesystem, std::vector<std::unique_ptr<Asset>> *children, bool providesNamespace = false);
-
-    /*
-     * Load children of a specific type.
-     */
-    template<typename T>
-    bool loadChildren(libutil::Filesystem const *filesystem, std::vector<std::unique_ptr<T>> *children, bool providesNamespace = false)
-    {
-        std::vector<std::unique_ptr<Asset>> assets;
-        if (!loadChildren(filesystem, &assets)) {
-            return false;
-        }
-
-        bool error = false;
-        for (std::unique_ptr<Asset> &asset : assets) {
-            if (asset->type() == T::Type()) {
-                auto child = libutil::static_unique_pointer_cast<T>(std::move(asset));
-                children->push_back(std::move(child));
-            } else {
-                error = true;
-            }
-        }
-        return !error;
-    }
 };
 
 }
 }
 
 #endif // !__xcassets_Asset_Asset_h
-

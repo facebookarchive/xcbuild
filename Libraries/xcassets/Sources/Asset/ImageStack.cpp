@@ -8,29 +8,11 @@
  */
 
 #include <xcassets/Asset/ImageStack.h>
-#include <xcassets/Asset/ImageStackLayer.h>
-#include <libutil/Filesystem.h>
 #include <plist/Array.h>
 #include <plist/String.h>
 #include <plist/Keys/Unpack.h>
 
 using xcassets::Asset::ImageStack;
-using xcassets::Asset::ImageStackLayer;
-using libutil::Filesystem;
-
-bool ImageStack::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren<ImageStackLayer>(filesystem, &_children)) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool ImageStack::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)

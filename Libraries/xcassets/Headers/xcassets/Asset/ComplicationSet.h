@@ -25,18 +25,11 @@ class ImageSet;
 
 class ComplicationSet : public Asset {
 private:
-    std::vector<std::unique_ptr<ImageSet>>  _children;
-
-private:
     // TODO: assets
 
 private:
     friend class Asset;
     using Asset::Asset;
-
-public:
-    std::vector<std::unique_ptr<ImageSet>> const &children() const
-    { return _children; }
 
 public:
     // TODO: assets
@@ -52,7 +45,6 @@ public:
     { return std::string("complicationset"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

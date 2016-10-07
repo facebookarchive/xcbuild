@@ -8,30 +8,12 @@
  */
 
 #include <xcassets/Asset/TextureSet.h>
-#include <xcassets/Asset/MipmapSet.h>
-#include <libutil/Filesystem.h>
 #include <plist/Array.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
 #include <plist/Keys/Unpack.h>
 
 using xcassets::Asset::TextureSet;
-using xcassets::Asset::MipmapSet;
-using libutil::Filesystem;
-
-bool TextureSet::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren<MipmapSet>(filesystem, &_children)) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool TextureSet::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
