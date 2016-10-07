@@ -37,7 +37,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::Sticker; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::Sticker; }
 
 public:

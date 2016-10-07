@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool SpriteAtlas::
 Compile(
-    std::shared_ptr<xcassets::Asset::SpriteAtlas> const &spriteAtlas,
+    xcassets::Asset::SpriteAtlas const *spriteAtlas,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

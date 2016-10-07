@@ -42,7 +42,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::ImageStackLayer; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::ImageStackLayer; }
 
 public:

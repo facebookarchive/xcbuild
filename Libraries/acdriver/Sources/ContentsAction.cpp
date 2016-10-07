@@ -70,10 +70,17 @@ AppendText(std::string *text, int indent, std::string const &add)
 }
 
 static bool
-AppendContents(plist::Dictionary *dict, std::string *text, int indent, std::shared_ptr<xcassets::Asset::Asset> const &asset);
+AppendContents(plist::Dictionary *dict, std::string *text, int indent, xcassets::Asset::Asset const *asset);
 
 static bool
 AppendContents(plist::Dictionary *dict, std::string *text, int indent, xcassets::Asset::ImageSet::Image const &image);
+
+template<typename T>
+static bool
+AppendContents(plist::Dictionary *dict, std::string *text, int indent, std::unique_ptr<T> const &asset)
+{
+    return AppendContents(dict, text, indent, asset.get());
+}
 
 template<typename T>
 static void
@@ -165,7 +172,7 @@ AppendContents(plist::Dictionary *dict, std::string *text, int indent, xcassets:
 }
 
 static bool
-AppendContents(plist::Dictionary *dict, std::string *text, int indent, std::shared_ptr<xcassets::Asset::Asset> const &asset)
+AppendContents(plist::Dictionary *dict, std::string *text, int indent, xcassets::Asset::Asset const *asset)
 {
     /* Includes the file extension. */
     std::string filename = FSUtil::GetBaseName(asset->path());
@@ -173,126 +180,134 @@ AppendContents(plist::Dictionary *dict, std::string *text, int indent, std::shar
 
     switch (asset->type()) {
         case xcassets::Asset::AssetType::AppIconSet: {
-            auto appIconSet = std::static_pointer_cast<xcassets::Asset::AppIconSet>(asset);
+            auto appIconSet = static_cast<xcassets::Asset::AppIconSet const *>(asset);
+            (void)appIconSet;
             break;
         }
         case xcassets::Asset::AssetType::BrandAssets: {
-            auto brandAssets = std::static_pointer_cast<xcassets::Asset::BrandAssets>(asset);
+            auto brandAssets = static_cast<xcassets::Asset::BrandAssets const *>(asset);
             AppendChildren(dict, text, indent, brandAssets->children());
             break;
         }
         case xcassets::Asset::AssetType::Catalog: {
-            auto catalog = std::static_pointer_cast<xcassets::Asset::Catalog>(asset);
+            auto catalog = static_cast<xcassets::Asset::Catalog const *>(asset);
             AppendChildren(dict, text, indent, catalog->children());
             break;
         }
         case xcassets::Asset::AssetType::ComplicationSet: {
-            auto complicationSet = std::static_pointer_cast<xcassets::Asset::ComplicationSet>(asset);
+            auto complicationSet = static_cast<xcassets::Asset::ComplicationSet const *>(asset);
             AppendChildren(dict, text, indent, complicationSet->children());
             break;
         }
         case xcassets::Asset::AssetType::CubeTextureSet: {
-            auto cubeTextureSet = std::static_pointer_cast<xcassets::Asset::CubeTextureSet>(asset);
+            auto cubeTextureSet = static_cast<xcassets::Asset::CubeTextureSet const *>(asset);
             // TODO: Cube texture set details.
             AppendChildren(dict, text, indent, cubeTextureSet->children());
             break;
         }
         case xcassets::Asset::AssetType::DataSet: {
-            auto dataSet = std::static_pointer_cast<xcassets::Asset::DataSet>(asset);
+            auto dataSet = static_cast<xcassets::Asset::DataSet const *>(asset);
             // TODO: Data set details.
+            (void)dataSet;
             break;
         }
         case xcassets::Asset::AssetType::GCDashboardImage: {
-            auto dashboardImage = std::static_pointer_cast<xcassets::Asset::GCDashboardImage>(asset);
+            auto dashboardImage = static_cast<xcassets::Asset::GCDashboardImage const *>(asset);
             AppendContentReference(dict, text, indent, dashboardImage->contentReference());
             AppendChildren(dict, text, indent, dashboardImage->children());
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboard: {
-            auto leaderboard = std::static_pointer_cast<xcassets::Asset::GCLeaderboard>(asset);
+            auto leaderboard = static_cast<xcassets::Asset::GCLeaderboard const *>(asset);
             AppendContentReference(dict, text, indent, leaderboard->contentReference());
             AppendChildren(dict, text, indent, leaderboard->children());
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboardSet: {
-            auto leaderboardSet = std::static_pointer_cast<xcassets::Asset::GCLeaderboardSet>(asset);
+            auto leaderboardSet = static_cast<xcassets::Asset::GCLeaderboardSet const *>(asset);
             AppendContentReference(dict, text, indent, leaderboardSet->contentReference());
             AppendChildren(dict, text, indent, leaderboardSet->children());
             break;
         }
         case xcassets::Asset::AssetType::Group: {
-            auto group = std::static_pointer_cast<xcassets::Asset::Group>(asset);
+            auto group = static_cast<xcassets::Asset::Group const *>(asset);
             AppendProvidesNamespace(dict, text, indent, group->providesNamespace());
             AppendChildren(dict, text, indent, group->children());
             break;
         }
         case xcassets::Asset::AssetType::IconSet: {
-            auto iconSet = std::static_pointer_cast<xcassets::Asset::IconSet>(asset);
+            auto iconSet = static_cast<xcassets::Asset::IconSet const *>(asset);
             // TODO: Icon set details.
+            (void)iconSet;
             break;
         }
         case xcassets::Asset::AssetType::ImageSet: {
-            auto imageSet = std::static_pointer_cast<xcassets::Asset::ImageSet>(asset);
+            auto imageSet = static_cast<xcassets::Asset::ImageSet const *>(asset);
             if (imageSet->images()) {
                 AppendChildren(dict, text, indent, *imageSet->images());
             }
             break;
         }
         case xcassets::Asset::AssetType::ImageStack: {
-            auto imageStack = std::static_pointer_cast<xcassets::Asset::ImageStack>(asset);
+            auto imageStack = static_cast<xcassets::Asset::ImageStack const *>(asset);
             AppendChildren(dict, text, indent, imageStack->children());
             break;
         }
         case xcassets::Asset::AssetType::ImageStackLayer: {
-            auto imageStackLayer = std::static_pointer_cast<xcassets::Asset::ImageStackLayer>(asset);
+            auto imageStackLayer = static_cast<xcassets::Asset::ImageStackLayer const *>(asset);
             AppendContentReference(dict, text, indent, imageStackLayer->contentReference());
             // TODO: AppendChildren(dict, text, indent, imageStackLayer->children());
             break;
         }
         case xcassets::Asset::AssetType::LaunchImage: {
-            auto launchImage = std::static_pointer_cast<xcassets::Asset::LaunchImage>(asset);
+            auto launchImage = static_cast<xcassets::Asset::LaunchImage const *>(asset);
             // TODO: Launch image details.
+            (void)launchImage;
             break;
         }
         case xcassets::Asset::AssetType::MipmapSet: {
-            auto mipmapSet = std::static_pointer_cast<xcassets::Asset::MipmapSet>(asset);
+            auto mipmapSet = static_cast<xcassets::Asset::MipmapSet const *>(asset);
             // TODO: Mipmap set details.
+            (void)mipmapSet;
             break;
         }
         case xcassets::Asset::AssetType::SpriteAtlas: {
-            auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
+            auto spriteAtlas = static_cast<xcassets::Asset::SpriteAtlas const *>(asset);
             AppendProvidesNamespace(dict, text, indent, spriteAtlas->providesNamespace());
             AppendChildren(dict, text, indent, spriteAtlas->children());
             break;
         }
         case xcassets::Asset::AssetType::Sticker: {
-            auto sticker = std::static_pointer_cast<xcassets::Asset::Sticker>(asset);
+            auto sticker = static_cast<xcassets::Asset::Sticker const *>(asset);
             // TODO: Sticker details.
+            (void)sticker;
             break;
         }
         case xcassets::Asset::AssetType::StickerPack: {
-            auto stickerPack = std::static_pointer_cast<xcassets::Asset::StickerPack>(asset);
+            auto stickerPack = static_cast<xcassets::Asset::StickerPack const *>(asset);
             // TODO: Sticker pack details.
             AppendChildren(dict, text, indent, stickerPack->children());
             break;
         }
         case xcassets::Asset::AssetType::StickerSequence: {
-            auto stickerSequence = std::static_pointer_cast<xcassets::Asset::StickerSequence>(asset);
+            auto stickerSequence = static_cast<xcassets::Asset::StickerSequence const *>(asset);
             // TODO: Sticker sequence details.
+            (void)stickerSequence;
             break;
         }
         case xcassets::Asset::AssetType::Stickers: {
-            auto stickers = std::static_pointer_cast<xcassets::Asset::Stickers>(asset);
+            auto stickers = static_cast<xcassets::Asset::Stickers const *>(asset);
             AppendChildren(dict, text, indent, stickers->children());
             break;
         }
         case xcassets::Asset::AssetType::StickersIconSet: {
-            auto stickersIconSet = std::static_pointer_cast<xcassets::Asset::StickersIconSet>(asset);
+            auto stickersIconSet = static_cast<xcassets::Asset::StickersIconSet const *>(asset);
             // TODO: Stickers icon set details.
+            (void)stickersIconSet;
             break;
         }
         case xcassets::Asset::AssetType::TextureSet: {
-            auto textureSet = std::static_pointer_cast<xcassets::Asset::TextureSet>(asset);
+            auto textureSet = static_cast<xcassets::Asset::TextureSet const *>(asset);
             // TODO: Texture set details.
             AppendChildren(dict, text, indent, textureSet->children());
             break;
@@ -326,7 +341,7 @@ run(Filesystem const *filesystem, Options const &options, Output *output, Result
          * Create the description of the contents.
          */
         auto dict = plist::Dictionary::New();
-        if (AppendContents(dict.get(), &text, 0, catalog)) {
+        if (AppendContents(dict.get(), &text, 0, catalog.get())) {
             array->append(std::move(dict));
         }
     }

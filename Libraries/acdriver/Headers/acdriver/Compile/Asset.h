@@ -31,7 +31,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::Asset> const &asset,
+        xcassets::Asset::Asset const *asset,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

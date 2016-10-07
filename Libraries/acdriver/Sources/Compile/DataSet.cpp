@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool DataSet::
 Compile(
-    std::shared_ptr<xcassets::Asset::DataSet> const &dataSet,
+    xcassets::Asset::DataSet const *dataSet,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

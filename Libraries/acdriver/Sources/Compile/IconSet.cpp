@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool IconSet::
 Compile(
-    std::shared_ptr<xcassets::Asset::IconSet> const &iconSet,
+    xcassets::Asset::IconSet const *iconSet,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

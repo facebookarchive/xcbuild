@@ -297,7 +297,7 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
         /*
          * Compile the asset catalog.
          */
-        if (!Compile::Asset::Compile(catalog, filesystem, &compileOutput, result)) {
+        if (!Compile::Asset::Compile(catalog.get(), filesystem, &compileOutput, result)) {
             /* Error already printed. */
             continue;
         }

@@ -49,10 +49,10 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
     return true;
 }
 
-std::shared_ptr<Stickers> Stickers::
+std::unique_ptr<Stickers> Stickers::
 Load(libutil::Filesystem const *filesystem, std::string const &path)
 {
     auto asset = Asset::Load(filesystem, path, { }, Stickers::Extension());
-    return std::static_pointer_cast<Stickers>(asset);
+    return libutil::static_unique_pointer_cast<Stickers>(std::move(asset));
 }
 

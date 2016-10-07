@@ -77,7 +77,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::LaunchImage; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::LaunchImage; }
 
 public:

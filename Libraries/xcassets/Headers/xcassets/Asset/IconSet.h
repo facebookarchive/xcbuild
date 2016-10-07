@@ -65,7 +65,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::IconSet; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::IconSet; }
 
 public:

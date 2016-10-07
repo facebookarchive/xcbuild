@@ -27,7 +27,7 @@ class ImageStack;
 class GCLeaderboard : public Asset {
 private:
     ext::optional<ContentReference>          _contentReference;
-    std::vector<std::shared_ptr<ImageStack>> _children;
+    std::vector<std::unique_ptr<ImageStack>> _children;
 
 private:
     friend class Asset;
@@ -36,13 +36,13 @@ private:
 public:
     ext::optional<ContentReference> const &contentReference() const
     { return _contentReference; }
-    std::vector<std::shared_ptr<ImageStack>> const &children() const
+    std::vector<std::unique_ptr<ImageStack>> const &children() const
     { return _children; }
 
 public:
     static AssetType Type()
     { return AssetType::GCLeaderboard; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::GCLeaderboard; }
 
 public:

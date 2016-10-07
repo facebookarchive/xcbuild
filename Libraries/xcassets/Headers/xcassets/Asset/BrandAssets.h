@@ -26,7 +26,7 @@ class ImageSet;
 class BrandAssets : public Asset {
 private:
     // TODO: image set and image stack
-    std::vector<std::shared_ptr<Asset>> _children;
+    std::vector<std::unique_ptr<Asset>> _children;
 
 private:
     // TODO: assets
@@ -37,7 +37,7 @@ private:
 
 public:
     // TODO: image set and image stack
-    std::vector<std::shared_ptr<Asset>> const &children() const
+    std::vector<std::unique_ptr<Asset>> const &children() const
     { return _children; }
 
 public:
@@ -46,7 +46,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::BrandAssets; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::BrandAssets; }
 
 public:

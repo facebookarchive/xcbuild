@@ -32,7 +32,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::GCDashboardImage> const &gcDashboardImage,
+        xcassets::Asset::GCDashboardImage const *gcDashboardImage,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

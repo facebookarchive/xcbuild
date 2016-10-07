@@ -57,7 +57,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::MipmapSet; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::MipmapSet; }
 
 public:

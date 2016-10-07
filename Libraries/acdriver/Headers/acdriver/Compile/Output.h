@@ -137,7 +137,7 @@ public:
     /*
      * The identifier of an asset for use in results.
      */
-    static std::string AssetReference(std::shared_ptr<xcassets::Asset::Asset> const &asset);
+    static std::string AssetReference(xcassets::Asset::Asset const *asset);
 };
 
 }

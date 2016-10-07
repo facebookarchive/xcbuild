@@ -33,7 +33,7 @@ private:
     // TODO: textures
 
 private:
-    std::vector<std::shared_ptr<MipmapSet>> _children;
+    std::vector<std::unique_ptr<MipmapSet>> _children;
 
 private:
     friend class Asset;
@@ -49,13 +49,13 @@ public:
     // TODO: textures
 
 public:
-    std::vector<std::shared_ptr<MipmapSet>> const &children() const
+    std::vector<std::unique_ptr<MipmapSet>> const &children() const
     { return _children; }
 
 public:
     static AssetType Type()
     { return AssetType::TextureSet; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::TextureSet; }
 
 public:

@@ -30,7 +30,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::LaunchImage> const &launchImage,
+        xcassets::Asset::LaunchImage const *launchImage,
         Output *compileOutput,
         Result *result);
 };

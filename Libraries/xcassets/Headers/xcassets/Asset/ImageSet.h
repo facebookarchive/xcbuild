@@ -117,7 +117,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::ImageSet; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::ImageSet; }
 
 public:
