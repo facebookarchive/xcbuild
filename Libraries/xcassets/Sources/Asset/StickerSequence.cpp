@@ -64,9 +64,9 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         auto unpack = plist::Keys::Unpack("Properties", P, &seen);
 
         auto AL = unpack.cast <plist::String> ("accessibility-label");
-        auto D  = unpack.cast <plist::Real> ("duration");
+        auto D  = unpack.coerce <plist::Real> ("duration");
         auto DT = unpack.cast <plist::String> ("duration-type");
-        auto R  = unpack.cast <plist::Real> ("repetitions");
+        auto R  = unpack.coerce <plist::Real> ("repetitions");
 
         if (!unpack.complete(true)) {
             fprintf(stderr, "%s", unpack.errorText().c_str());

@@ -58,9 +58,9 @@ Parse(std::string const &value)
 }
 
 std::string MipmapLevels::
-String(MipmapLevel templateRenderingIntent)
+String(MipmapLevel mipmapLevel)
 {
-    switch (templateRenderingIntent) {
+    switch (mipmapLevel) {
         case MipmapLevel::Base:
             return "base";
         case MipmapLevel::Level1:

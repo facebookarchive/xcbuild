@@ -23,8 +23,6 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageStack;
-
 class GCLeaderboard : public Asset {
 private:
     ext::optional<ContentReference> _contentReference;

@@ -23,11 +23,23 @@ namespace xcassets {
 namespace Asset {
 
 class StickerPack : public Asset {
-private:
-    ext::optional<StickerGridSize>      _gridSize;
+public:
+    class Sticker {
+    private:
+        ext::optional<std::string>     _fileName;
+
+    public:
+        ext::optional<std::string> const &fileName() const
+        { return _fileName; }
+
+    private:
+        friend class StickerPack;
+        bool parse(plist::Dictionary const *dict);
+    };
 
 private:
-    // TODO: stickers
+    ext::optional<StickerGridSize>      _gridSize;
+    ext::optional<std::vector<Sticker>> _stickers;
 
 private:
     friend class Asset;
@@ -36,9 +48,8 @@ private:
 public:
     ext::optional<StickerGridSize> const &gridSize() const
     { return _gridSize; }
-
-public:
-    // TODO: stickers
+    ext::optional<std::vector<Sticker>> const &stickers() const
+    { return _stickers; }
 
 public:
     static AssetType Type()

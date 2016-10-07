@@ -8,7 +8,9 @@
 #
 
 add_library(xcassets SHARED
+            Sources/BrandAssetRole.cpp
             Sources/Compression.cpp
+            Sources/CubeFace.cpp
             Sources/Insets.cpp
             Sources/Resizing.cpp
             Sources/ContentReference.cpp
@@ -21,6 +23,8 @@ add_library(xcassets SHARED
             Sources/StickerGridSize.cpp
             Sources/TextureInterpretation.cpp
             Sources/TextureOrigin.cpp
+            Sources/TexturePixelFormat.cpp
+            Sources/WatchComplicationRole.cpp
             Sources/Slot/ColorSpace.cpp
             Sources/Slot/DeviceSubtype.cpp
             Sources/Slot/GraphicsFeatureSet.cpp
