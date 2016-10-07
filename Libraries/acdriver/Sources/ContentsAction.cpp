@@ -15,6 +15,7 @@
 #include <xcassets/Asset/BrandAssets.h>
 #include <xcassets/Asset/Catalog.h>
 #include <xcassets/Asset/ComplicationSet.h>
+#include <xcassets/Asset/CubeTextureSet.h>
 #include <xcassets/Asset/DataSet.h>
 #include <xcassets/Asset/GCDashboardImage.h>
 #include <xcassets/Asset/GCLeaderboard.h>
@@ -25,12 +26,14 @@
 #include <xcassets/Asset/ImageStack.h>
 #include <xcassets/Asset/ImageStackLayer.h>
 #include <xcassets/Asset/LaunchImage.h>
+#include <xcassets/Asset/MipmapSet.h>
 #include <xcassets/Asset/SpriteAtlas.h>
 #include <xcassets/Asset/Sticker.h>
 #include <xcassets/Asset/StickerPack.h>
 #include <xcassets/Asset/StickerSequence.h>
 #include <xcassets/Asset/Stickers.h>
 #include <xcassets/Asset/StickersIconSet.h>
+#include <xcassets/Asset/TextureSet.h>
 #include <plist/Array.h>
 #include <plist/Boolean.h>
 #include <plist/Dictionary.h>
@@ -188,6 +191,12 @@ AppendContents(plist::Dictionary *dict, std::string *text, int indent, std::shar
             AppendChildren(dict, text, indent, complicationSet->children());
             break;
         }
+        case xcassets::Asset::AssetType::CubeTextureSet: {
+            auto cubeTextureSet = std::static_pointer_cast<xcassets::Asset::CubeTextureSet>(asset);
+            // TODO: Cube texture set details.
+            AppendChildren(dict, text, indent, cubeTextureSet->children());
+            break;
+        }
         case xcassets::Asset::AssetType::DataSet: {
             auto dataSet = std::static_pointer_cast<xcassets::Asset::DataSet>(asset);
             // TODO: Data set details.
@@ -245,6 +254,11 @@ AppendContents(plist::Dictionary *dict, std::string *text, int indent, std::shar
             // TODO: Launch image details.
             break;
         }
+        case xcassets::Asset::AssetType::MipmapSet: {
+            auto mipmapSet = std::static_pointer_cast<xcassets::Asset::MipmapSet>(asset);
+            // TODO: Mipmap set details.
+            break;
+        }
         case xcassets::Asset::AssetType::SpriteAtlas: {
             auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
             AppendProvidesNamespace(dict, text, indent, spriteAtlas->providesNamespace());
@@ -275,6 +289,12 @@ AppendContents(plist::Dictionary *dict, std::string *text, int indent, std::shar
         case xcassets::Asset::AssetType::StickersIconSet: {
             auto stickersIconSet = std::static_pointer_cast<xcassets::Asset::StickersIconSet>(asset);
             // TODO: Stickers icon set details.
+            break;
+        }
+        case xcassets::Asset::AssetType::TextureSet: {
+            auto textureSet = std::static_pointer_cast<xcassets::Asset::TextureSet>(asset);
+            // TODO: Texture set details.
+            AppendChildren(dict, text, indent, textureSet->children());
             break;
         }
     }

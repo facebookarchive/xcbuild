@@ -14,7 +14,11 @@ add_library(xcassets SHARED
             Sources/ContentReference.cpp
             Sources/FullyQualifiedName.cpp
             Sources/MatchingStyle.cpp
+            Sources/MipmapLevel.cpp
+            Sources/MipmapLevelMode.cpp
             Sources/TemplateRenderingIntent.cpp
+            Sources/TextureInterpretation.cpp
+            Sources/TextureOrigin.cpp
             Sources/Slot/ColorSpace.cpp
             Sources/Slot/DeviceSubtype.cpp
             Sources/Slot/GraphicsFeatureSet.cpp
@@ -33,6 +37,7 @@ add_library(xcassets SHARED
             Sources/Asset/BrandAssets.cpp
             Sources/Asset/Catalog.cpp
             Sources/Asset/ComplicationSet.cpp
+            Sources/Asset/CubeTextureSet.cpp
             Sources/Asset/DataSet.cpp
             Sources/Asset/GCDashboardImage.cpp
             Sources/Asset/GCLeaderboardSet.cpp
@@ -43,12 +48,14 @@ add_library(xcassets SHARED
             Sources/Asset/ImageStack.cpp
             Sources/Asset/ImageStackLayer.cpp
             Sources/Asset/LaunchImage.cpp
+            Sources/Asset/MipmapSet.cpp
             Sources/Asset/SpriteAtlas.cpp
             Sources/Asset/Sticker.cpp
             Sources/Asset/StickerPack.cpp
             Sources/Asset/StickerSequence.cpp
             Sources/Asset/Stickers.cpp
             Sources/Asset/StickersIconSet.cpp
+            Sources/Asset/TextureSet.cpp
             )
 
 target_link_libraries(xcassets PUBLIC util plist ext)
