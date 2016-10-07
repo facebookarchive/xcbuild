@@ -17,8 +17,6 @@
 #include <cstdlib>
 
 using xcassets::Asset::StickerSequence;
-using DurationType = StickerSequence::DurationType;
-using DurationTypes = StickerSequence::DurationTypes;
 using libutil::Filesystem;
 
 bool StickerSequence::
@@ -97,7 +95,7 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         }
 
         if (DT != nullptr) {
-            _durationType = DurationTypes::Parse(DT->value());
+            _durationType = StickerDurationTypes::Parse(DT->value());
         }
 
         if (R != nullptr) {
@@ -119,30 +117,4 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
     }
 
     return true;
-}
-
-ext::optional<DurationType> DurationTypes::
-Parse(std::string const &value)
-{
-    if (value == "fixed") {
-        return DurationType::Fixed;
-    } else if (value == "fps") {
-        return DurationType::FPS;
-    } else {
-        fprintf(stderr, "warning: unknown platform %s\n", value.c_str());
-        return ext::nullopt;
-    }
-}
-
-std::string DurationTypes::
-String(DurationType platform)
-{
-    switch (platform) {
-        case DurationType::Fixed:
-            return "fixed";
-        case DurationType::FPS:
-            return "fps";
-    }
-
-    abort();
 }

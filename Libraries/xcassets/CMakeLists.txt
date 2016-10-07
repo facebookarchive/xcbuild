@@ -17,6 +17,8 @@ add_library(xcassets SHARED
             Sources/MipmapLevel.cpp
             Sources/MipmapLevelMode.cpp
             Sources/TemplateRenderingIntent.cpp
+            Sources/StickerDurationType.cpp
+            Sources/StickerGridSize.cpp
             Sources/TextureInterpretation.cpp
             Sources/TextureOrigin.cpp
             Sources/Slot/ColorSpace.cpp
