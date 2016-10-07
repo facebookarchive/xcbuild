@@ -15,8 +15,6 @@
 #include <cstdlib>
 
 using xcassets::Asset::StickerPack;
-using GridSize = StickerPack::GridSize;
-using GridSizes = StickerPack::GridSizes;
 using libutil::Filesystem;
 
 bool StickerPack::
@@ -65,39 +63,9 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         }
 
         if (GS != nullptr) {
-            _gridSize = GridSizes::Parse(GS->value());
+            _gridSize = StickerGridSizes::Parse(GS->value());
         }
     }
 
     return true;
-}
-
-ext::optional<GridSize> GridSizes::
-Parse(std::string const &value)
-{
-    if (value == "small") {
-        return GridSize::Small;
-    } else if (value == "regular") {
-        return GridSize::Regular;
-    } else if (value == "large") {
-        return GridSize::Large;
-    } else {
-        fprintf(stderr, "warning: unknown platform %s\n", value.c_str());
-        return ext::nullopt;
-    }
-}
-
-std::string GridSizes::
-String(GridSize platform)
-{
-    switch (platform) {
-        case GridSize::Small:
-            return "small";
-        case GridSize::Regular:
-            return "regular";
-        case GridSize::Large:
-            return "large";
-    }
-
-    abort();
 }

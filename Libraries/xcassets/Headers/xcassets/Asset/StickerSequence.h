@@ -11,6 +11,7 @@
 #define __xcassets_Asset_StickerSequence_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/StickerDurationType.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -22,39 +23,6 @@ namespace xcassets {
 namespace Asset {
 
 class StickerSequence : public Asset {
-public:
-    /*
-     * How the duration field is interpreted.
-     */
-    enum class DurationType {
-        /*
-         * Fixed number of seconds.
-         */
-        Fixed,
-        /*
-         * Frames to show per second.
-         */
-        FPS,
-    };
-
-public:
-    class DurationTypes {
-    private:
-        DurationTypes();
-        ~DurationTypes();
-
-    public:
-        /*
-         * Parse a duration type string.
-         */
-        static ext::optional<DurationType> Parse(std::string const &value);
-
-        /*
-         * String representation of a duration type.
-         */
-        static std::string String(DurationType value);
-    };
-
 public:
     class Frame {
     private:
@@ -70,13 +38,13 @@ public:
     };
 
 private:
-    ext::optional<std::vector<Frame>> _frames;
+    ext::optional<std::vector<Frame>>  _frames;
 
 private:
-    ext::optional<std::string>        _accessibilityLabel;
-    ext::optional<DurationType>       _durationType;
-    ext::optional<double>             _duration;
-    ext::optional<double>             _repetitions;
+    ext::optional<std::string>         _accessibilityLabel;
+    ext::optional<StickerDurationType> _durationType;
+    ext::optional<double>              _duration;
+    ext::optional<double>              _repetitions;
 
 private:
     friend class Asset;
@@ -87,7 +55,7 @@ public:
     { return _frames; }
 
 public:
-    ext::optional<DurationType> const &durationType() const
+    ext::optional<StickerDurationType> const &durationType() const
     { return _durationType; }
     ext::optional<double> const &duration() const
     { return _duration; }

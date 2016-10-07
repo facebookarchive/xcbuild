@@ -11,6 +11,7 @@
 #define __xcassets_Asset_StickerPack_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/StickerGridSize.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -22,36 +23,8 @@ namespace xcassets {
 namespace Asset {
 
 class StickerPack : public Asset {
-public:
-    /*
-     * The sizes to display stickers to pick.
-     */
-    enum class GridSize {
-        Small,
-        Regular,
-        Large,
-    };
-
-public:
-    class GridSizes {
-    private:
-        GridSizes();
-        ~GridSizes();
-
-    public:
-        /*
-         * Parse a grid size string.
-         */
-        static ext::optional<GridSize> Parse(std::string const &value);
-
-        /*
-         * String representation of a grid size.
-         */
-        static std::string String(GridSize value);
-    };
-
 private:
-    ext::optional<GridSize>             _gridSize;
+    ext::optional<StickerGridSize>      _gridSize;
 
 private:
     // TODO: stickers
@@ -62,7 +35,7 @@ private:
     using Asset::Asset;
 
 public:
-    ext::optional<GridSize> const &gridSize() const
+    ext::optional<StickerGridSize> const &gridSize() const
     { return _gridSize; }
 
 public:
