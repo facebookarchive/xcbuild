@@ -13,6 +13,7 @@
 #include <xcassets/Asset/AssetType.h>
 #include <xcassets/FullyQualifiedName.h>
 #include <plist/Dictionary.h>
+#include <libutil/Base.h>
 
 #include <memory>
 #include <set>
@@ -36,38 +37,40 @@ private:
 
 protected:
     Asset(FullyQualifiedName const &name, std::string const &path);
+
+public:
     virtual ~Asset();
 
 public:
     /*
      * The dynamic type of the asset.
      */
-    virtual AssetType type() = 0;
+    virtual AssetType type() const = 0;
 
 public:
     /*
      * The path to the asset.
      */
-    std::string const &path()
+    std::string const &path() const
     { return _path; }
 
     /*
      * The name of the asset.
      */
-    FullyQualifiedName const &name()
+    FullyQualifiedName const &name() const
     { return _name; }
 
 public:
-    ext::optional<std::string> const &author()
+    ext::optional<std::string> const &author() const
     { return _author; }
-    ext::optional<int> const &version()
+    ext::optional<int> const &version() const
     { return _version; }
 
 public:
     /*
      * Load an asset from a directory.
      */
-    static std::shared_ptr<Asset> Load(
+    static std::unique_ptr<Asset> Load(
         libutil::Filesystem const *filesystem,
         std::string const &path,
         std::vector<std::string> const &groups,
@@ -93,24 +96,24 @@ protected:
     /*
      * Iterate children of this asset and load them.
      */
-    bool loadChildren(libutil::Filesystem const *filesystem, std::vector<std::shared_ptr<Asset>> *children, bool providesNamespace = false);
+    bool loadChildren(libutil::Filesystem const *filesystem, std::vector<std::unique_ptr<Asset>> *children, bool providesNamespace = false);
 
     /*
      * Load children of a specific type.
      */
     template<typename T>
-    bool loadChildren(libutil::Filesystem const *filesystem, std::vector<std::shared_ptr<T>> *children, bool providesNamespace = false)
+    bool loadChildren(libutil::Filesystem const *filesystem, std::vector<std::unique_ptr<T>> *children, bool providesNamespace = false)
     {
-        std::vector<std::shared_ptr<Asset>> assets;
+        std::vector<std::unique_ptr<Asset>> assets;
         if (!loadChildren(filesystem, &assets)) {
             return false;
         }
 
         bool error = false;
-        for (std::shared_ptr<Asset> const &asset : assets) {
+        for (std::unique_ptr<Asset> &asset : assets) {
             if (asset->type() == T::Type()) {
-                auto child = std::static_pointer_cast<T>(asset);
-                children->push_back(child);
+                auto child = libutil::static_unique_pointer_cast<T>(std::move(asset));
+                children->push_back(std::move(child));
             } else {
                 error = true;
             }

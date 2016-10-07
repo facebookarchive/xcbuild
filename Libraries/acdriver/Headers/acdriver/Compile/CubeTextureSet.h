@@ -32,7 +32,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::CubeTextureSet> const &cubeTextureSet,
+        xcassets::Asset::CubeTextureSet const *cubeTextureSet,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

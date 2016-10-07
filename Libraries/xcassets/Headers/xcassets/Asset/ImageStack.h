@@ -11,6 +11,7 @@
 #define __xcassets_Asset_ImageStack_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Asset/ImageStackLayer.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -21,23 +22,21 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageStackLayer;
-
 class ImageStack : public Asset {
 private:
-    std::vector<std::shared_ptr<ImageStackLayer>> _children;
+    std::vector<std::unique_ptr<ImageStackLayer>> _children;
 
 private:
     // TODO layers
     // TODO canvasSize
-    ext::optional<std::vector<std::string>> _onDemandResourceTags;
+    ext::optional<std::vector<std::string>>       _onDemandResourceTags;
 
 private:
     friend class Asset;
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<ImageStackLayer>> const &children() const
+    std::vector<std::unique_ptr<ImageStackLayer>> const &children() const
     { return _children; }
 
 public:
@@ -49,7 +48,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::ImageStack; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::ImageStack; }
 
 public:

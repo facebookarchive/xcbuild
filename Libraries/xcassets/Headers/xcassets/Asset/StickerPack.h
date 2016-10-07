@@ -28,7 +28,7 @@ private:
 
 private:
     // TODO: stickers
-    std::vector<std::shared_ptr<Asset>> _children;
+    std::vector<std::unique_ptr<Asset>> _children;
 
 private:
     friend class Asset;
@@ -40,13 +40,13 @@ public:
 
 public:
     // TODO: stickers
-    std::vector<std::shared_ptr<Asset>> const &children() const
+    std::vector<std::unique_ptr<Asset>> const &children() const
     { return _children; }
 
 public:
     static AssetType Type()
     { return AssetType::StickerPack; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::StickerPack; }
 
 public:

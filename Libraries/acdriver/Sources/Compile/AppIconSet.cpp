@@ -47,7 +47,7 @@ SizeSuffix(xcassets::Slot::ImageSize const &size)
 
 bool AppIconSet::
 Compile(
-    std::shared_ptr<xcassets::Asset::AppIconSet> const &appIconSet,
+    xcassets::Asset::AppIconSet const *appIconSet,
     Output *compileOutput,
     Result *result)
 {

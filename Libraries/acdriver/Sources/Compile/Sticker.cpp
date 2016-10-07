@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool Sticker::
 Compile(
-    std::shared_ptr<xcassets::Asset::Sticker> const &sticker,
+    xcassets::Asset::Sticker const *sticker,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

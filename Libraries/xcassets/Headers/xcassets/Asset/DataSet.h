@@ -72,7 +72,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::DataSet; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::DataSet; }
 
 public:

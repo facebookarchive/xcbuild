@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool MipmapSet::
 Compile(
-    std::shared_ptr<xcassets::Asset::MipmapSet> const &mipmapSet,
+    xcassets::Asset::MipmapSet const *mipmapSet,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

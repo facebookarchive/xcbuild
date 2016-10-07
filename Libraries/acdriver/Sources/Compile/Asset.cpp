@@ -65,8 +65,8 @@ using libutil::FSUtil;
 template<typename T>
 static bool
 CompileChildren(
-    std::vector<T> const &assets,
-    std::shared_ptr<xcassets::Asset::Asset> const &asset,
+    std::vector<std::unique_ptr<T>> const &assets,
+    xcassets::Asset::Asset const *asset,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)
@@ -74,7 +74,7 @@ CompileChildren(
     bool success = true;
 
     for (auto const &asset : assets) {
-        if (!Asset::Compile(asset, filesystem, compileOutput, result)) {
+        if (!Asset::Compile(asset.get(), filesystem, compileOutput, result)) {
             success = false;
         }
     }
@@ -84,7 +84,7 @@ CompileChildren(
 
 bool Asset::
 Compile(
-    std::shared_ptr<xcassets::Asset::Asset> const &asset,
+    xcassets::Asset::Asset const *asset,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)
@@ -94,130 +94,130 @@ Compile(
 
     switch (asset->type()) {
         case xcassets::Asset::AssetType::AppIconSet: {
-            auto appIconSet = std::static_pointer_cast<xcassets::Asset::AppIconSet>(asset);
+            auto appIconSet = static_cast<xcassets::Asset::AppIconSet const *>(asset);
             if (appIconSet->name().name() == compileOutput->appIcon()) {
                 Compile::AppIconSet::Compile(appIconSet, compileOutput, result);
             }
             break;
         }
         case xcassets::Asset::AssetType::BrandAssets: {
-            auto brandAssets = std::static_pointer_cast<xcassets::Asset::BrandAssets>(asset);
+            auto brandAssets = static_cast<xcassets::Asset::BrandAssets const *>(asset);
             Compile::BrandAssets::Compile(brandAssets, filesystem, compileOutput, result);
             CompileChildren(brandAssets->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::Catalog: {
-            auto catalog = std::static_pointer_cast<xcassets::Asset::Catalog>(asset);
+            auto catalog = static_cast<xcassets::Asset::Catalog const *>(asset);
             CompileChildren(catalog->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ComplicationSet: {
-            auto complicationSet = std::static_pointer_cast<xcassets::Asset::ComplicationSet>(asset);
+            auto complicationSet = static_cast<xcassets::Asset::ComplicationSet const *>(asset);
             Compile::ComplicationSet::Compile(complicationSet, filesystem, compileOutput, result);
             CompileChildren(complicationSet->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::CubeTextureSet: {
-            auto cubeTextureSet = std::static_pointer_cast<xcassets::Asset::CubeTextureSet>(asset);
+            auto cubeTextureSet = static_cast<xcassets::Asset::CubeTextureSet const *>(asset);
             Compile::CubeTextureSet::Compile(cubeTextureSet, filesystem, compileOutput, result);
             CompileChildren(cubeTextureSet->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::DataSet: {
-            auto dataSet = std::static_pointer_cast<xcassets::Asset::DataSet>(asset);
+            auto dataSet = static_cast<xcassets::Asset::DataSet const *>(asset);
             Compile::DataSet::Compile(dataSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCDashboardImage: {
-            auto dashboardImage = std::static_pointer_cast<xcassets::Asset::GCDashboardImage>(asset);
+            auto dashboardImage = static_cast<xcassets::Asset::GCDashboardImage const *>(asset);
             Compile::GCDashboardImage::Compile(dashboardImage, filesystem, compileOutput, result);
             CompileChildren(dashboardImage->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboard: {
-            auto leaderboard = std::static_pointer_cast<xcassets::Asset::GCLeaderboard>(asset);
+            auto leaderboard = static_cast<xcassets::Asset::GCLeaderboard const *>(asset);
             Compile::GCLeaderboard::Compile(leaderboard, filesystem, compileOutput, result);
             CompileChildren(leaderboard->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::GCLeaderboardSet: {
-            auto leaderboardSet = std::static_pointer_cast<xcassets::Asset::GCLeaderboardSet>(asset);
+            auto leaderboardSet = static_cast<xcassets::Asset::GCLeaderboardSet const *>(asset);
             Compile::GCLeaderboardSet::Compile(leaderboardSet, filesystem, compileOutput, result);
             CompileChildren(leaderboardSet->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::Group: {
-            auto group = std::static_pointer_cast<xcassets::Asset::Group>(asset);
+            auto group = static_cast<xcassets::Asset::Group const *>(asset);
             CompileChildren(group->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::IconSet: {
-            auto iconSet = std::static_pointer_cast<xcassets::Asset::IconSet>(asset);
+            auto iconSet = static_cast<xcassets::Asset::IconSet const *>(asset);
             Compile::IconSet::Compile(iconSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageSet: {
-            auto imageSet = std::static_pointer_cast<xcassets::Asset::ImageSet>(asset);
+            auto imageSet = static_cast<xcassets::Asset::ImageSet const *>(asset);
             Compile::ImageSet::Compile(imageSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageStack: {
-            auto imageStack = std::static_pointer_cast<xcassets::Asset::ImageStack>(asset);
+            auto imageStack = static_cast<xcassets::Asset::ImageStack const *>(asset);
             Compile::ImageStack::Compile(imageStack, filesystem, compileOutput, result);
             CompileChildren(imageStack->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::ImageStackLayer: {
-            auto imageStackLayer = std::static_pointer_cast<xcassets::Asset::ImageStackLayer>(asset);
+            auto imageStackLayer = static_cast<xcassets::Asset::ImageStackLayer const *>(asset);
             Compile::ImageStackLayer::Compile(imageStackLayer, filesystem, compileOutput, result);
             // TODO: CompileChildren(imageStackLayer->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::LaunchImage: {
-            auto launchImage = std::static_pointer_cast<xcassets::Asset::LaunchImage>(asset);
+            auto launchImage = static_cast<xcassets::Asset::LaunchImage const *>(asset);
             if (launchImage->name().name() == compileOutput->launchImage()) {
                 Compile::LaunchImage::Compile(launchImage, compileOutput, result);
             }
             break;
         }
         case xcassets::Asset::AssetType::MipmapSet: {
-            auto mipmapSet = std::static_pointer_cast<xcassets::Asset::MipmapSet>(asset);
+            auto mipmapSet = static_cast<xcassets::Asset::MipmapSet const *>(asset);
             Compile::MipmapSet::Compile(mipmapSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::SpriteAtlas: {
-            auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
+            auto spriteAtlas = static_cast<xcassets::Asset::SpriteAtlas const *>(asset);
             Compile::SpriteAtlas::Compile(spriteAtlas, filesystem, compileOutput, result);
             CompileChildren(spriteAtlas->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::Sticker: {
-            auto sticker = std::static_pointer_cast<xcassets::Asset::Sticker>(asset);
+            auto sticker = static_cast<xcassets::Asset::Sticker const *>(asset);
             Compile::Sticker::Compile(sticker, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::StickerPack: {
-            auto stickerPack = std::static_pointer_cast<xcassets::Asset::StickerPack>(asset);
+            auto stickerPack = static_cast<xcassets::Asset::StickerPack const *>(asset);
             Compile::StickerPack::Compile(stickerPack, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::StickerSequence: {
-            auto stickerSequence = std::static_pointer_cast<xcassets::Asset::StickerSequence>(asset);
+            auto stickerSequence = static_cast<xcassets::Asset::StickerSequence const *>(asset);
             Compile::StickerSequence::Compile(stickerSequence, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::Stickers: {
-            auto stickers = std::static_pointer_cast<xcassets::Asset::Stickers>(asset);
+            auto stickers = static_cast<xcassets::Asset::Stickers const *>(asset);
             CompileChildren(stickers->children(), asset, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::StickersIconSet: {
-            auto stickersIconSet = std::static_pointer_cast<xcassets::Asset::StickersIconSet>(asset);
+            auto stickersIconSet = static_cast<xcassets::Asset::StickersIconSet const *>(asset);
             Compile::StickersIconSet::Compile(stickersIconSet, filesystem, compileOutput, result);
             break;
         }
         case xcassets::Asset::AssetType::TextureSet: {
-            auto textureSet = std::static_pointer_cast<xcassets::Asset::TextureSet>(asset);
+            auto textureSet = static_cast<xcassets::Asset::TextureSet const *>(asset);
             Compile::TextureSet::Compile(textureSet, filesystem, compileOutput, result);
             CompileChildren(textureSet->children(), asset, filesystem, compileOutput, result);
             break;

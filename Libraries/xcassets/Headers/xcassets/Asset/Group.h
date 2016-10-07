@@ -23,7 +23,7 @@ namespace Asset {
 
 class Group : public Asset {
 private:
-    std::vector<std::shared_ptr<Asset>>     _children;
+    std::vector<std::unique_ptr<Asset>>     _children;
 
 private:
     ext::optional<std::vector<std::string>> _onDemandResourceTags;
@@ -34,7 +34,7 @@ private:
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<Asset>> const &children() const
+    std::vector<std::unique_ptr<Asset>> const &children() const
     { return _children; }
 
 public:
@@ -48,7 +48,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::Group; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::Group; }
 
 public:

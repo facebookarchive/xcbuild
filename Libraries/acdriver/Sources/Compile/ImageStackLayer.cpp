@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool ImageStackLayer::
 Compile(
-    std::shared_ptr<xcassets::Asset::ImageStackLayer> const &imageStackLayer,
+    xcassets::Asset::ImageStackLayer const *imageStackLayer,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

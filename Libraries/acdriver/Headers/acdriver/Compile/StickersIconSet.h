@@ -32,7 +32,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::StickersIconSet> const &stickersIconSet,
+        xcassets::Asset::StickersIconSet const *stickersIconSet,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

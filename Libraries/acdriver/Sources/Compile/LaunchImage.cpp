@@ -200,7 +200,7 @@ ImageSizeValue(size_t width, size_t height)
 
 bool LaunchImage::
 Compile(
-    std::shared_ptr<xcassets::Asset::LaunchImage> const &launchImage,
+    xcassets::Asset::LaunchImage const *launchImage,
     Output *compileOutput,
     Result *result)
 {

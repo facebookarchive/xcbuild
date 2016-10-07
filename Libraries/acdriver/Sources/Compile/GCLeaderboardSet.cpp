@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool GCLeaderboardSet::
 Compile(
-    std::shared_ptr<xcassets::Asset::GCLeaderboardSet> const &gcComplicationSet,
+    xcassets::Asset::GCLeaderboardSet const *gcComplicationSet,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

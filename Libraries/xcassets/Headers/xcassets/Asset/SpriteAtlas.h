@@ -26,7 +26,7 @@ class ImageSet;
 
 class SpriteAtlas : public Asset {
 private:
-    std::vector<std::shared_ptr<ImageSet>>  _children;
+    std::vector<std::unique_ptr<ImageSet>>  _children;
 
 private:
     ext::optional<Compression>              _compression;
@@ -38,7 +38,7 @@ private:
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<ImageSet>> const &children() const
+    std::vector<std::unique_ptr<ImageSet>> const &children() const
     { return _children; }
 
 public:
@@ -54,7 +54,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::SpriteAtlas; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::SpriteAtlas; }
 
 public:

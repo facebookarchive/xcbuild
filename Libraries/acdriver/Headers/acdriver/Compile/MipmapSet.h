@@ -32,7 +32,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::MipmapSet> const &mipmapSet,
+        xcassets::Asset::MipmapSet const *mipmapSet,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

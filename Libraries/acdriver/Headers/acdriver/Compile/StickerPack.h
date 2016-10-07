@@ -32,7 +32,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::StickerPack> const &stickerPack,
+        xcassets::Asset::StickerPack const *stickerPack,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

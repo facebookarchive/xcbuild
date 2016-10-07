@@ -49,10 +49,10 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
     return true;
 }
 
-std::shared_ptr<Catalog> Catalog::
+std::unique_ptr<Catalog> Catalog::
 Load(libutil::Filesystem const *filesystem, std::string const &path)
 {
     auto asset = Asset::Load(filesystem, path, { }, Catalog::Extension());
-    return std::static_pointer_cast<Catalog>(asset);
+    return libutil::static_unique_pointer_cast<Catalog>(std::move(asset));
 }
 

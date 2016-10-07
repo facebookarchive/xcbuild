@@ -97,7 +97,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::StickersIconSet; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::StickersIconSet; }
 
 public:

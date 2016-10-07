@@ -91,7 +91,7 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
 }
 
 bool Asset::
-loadChildren(Filesystem const *filesystem, std::vector<std::shared_ptr<Asset>> *children, bool providesNamespace)
+loadChildren(Filesystem const *filesystem, std::vector<std::unique_ptr<Asset>> *children, bool providesNamespace)
 {
     bool error = false;
 
@@ -105,14 +105,14 @@ loadChildren(Filesystem const *filesystem, std::vector<std::shared_ptr<Asset>> *
                 groups.push_back(_name.name());
             }
 
-            std::shared_ptr<Asset> asset = Asset::Load(filesystem, path, groups);
+            std::unique_ptr<Asset> asset = Asset::Load(filesystem, path, groups);
             if (asset == nullptr) {
                 fprintf(stderr, "error: failed to load asset: %s\n", path.c_str());
                 error = true;
                 return;
             }
 
-            children->push_back(asset);
+            children->push_back(std::move(asset));
         }
     });
 
@@ -134,7 +134,7 @@ hasChildren(libutil::Filesystem const *filesystem)
     return hasChildren;
 }
 
-std::shared_ptr<Asset> Asset::
+std::unique_ptr<Asset> Asset::
 Load(Filesystem const *filesystem, std::string const &path, std::vector<std::string> const &groups, ext::optional<std::string> const &overrideExtension)
 {
     std::string resolvedPath = filesystem->resolvePath(path);
@@ -161,58 +161,58 @@ Load(Filesystem const *filesystem, std::string const &path, std::vector<std::str
     /*
      * Create an asset of the right type.
      */
-    std::shared_ptr<Asset> asset = nullptr;
+    std::unique_ptr<Asset> asset = nullptr;
     if (extension == AppIconSet::Extension()) {
-        auto appIconSet = std::shared_ptr<AppIconSet>(new AppIconSet(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(appIconSet);
+        auto appIconSet = std::unique_ptr<AppIconSet>(new AppIconSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(appIconSet));
     } else if (extension == BrandAssets::Extension()) {
-        auto brandAssets = std::shared_ptr<BrandAssets>(new BrandAssets(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(brandAssets);
+        auto brandAssets = std::unique_ptr<BrandAssets>(new BrandAssets(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(brandAssets));
     } else if (extension == Catalog::Extension()) {
-        auto catalog = std::shared_ptr<Catalog>(new Catalog(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(catalog);
+        auto catalog = std::unique_ptr<Catalog>(new Catalog(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(catalog));
     } else if (extension == ComplicationSet::Extension()) {
-        auto complicationSet = std::shared_ptr<ComplicationSet>(new ComplicationSet(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(complicationSet);
+        auto complicationSet = std::unique_ptr<ComplicationSet>(new ComplicationSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(complicationSet));
     } else if (extension == DataSet::Extension()) {
-        auto dataSet = std::shared_ptr<DataSet>(new DataSet(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(dataSet);
+        auto dataSet = std::unique_ptr<DataSet>(new DataSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(dataSet));
     } else if (extension == GCDashboardImage::Extension()) {
-        auto gcDashboardImage = std::shared_ptr<GCDashboardImage>(new GCDashboardImage(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(gcDashboardImage);
+        auto gcDashboardImage = std::unique_ptr<GCDashboardImage>(new GCDashboardImage(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(gcDashboardImage));
     } else if (extension == GCLeaderboard::Extension()) {
-        auto gcLeaderboard = std::shared_ptr<GCLeaderboard>(new GCLeaderboard(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(gcLeaderboard);
+        auto gcLeaderboard = std::unique_ptr<GCLeaderboard>(new GCLeaderboard(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(gcLeaderboard));
     } else if (extension == GCLeaderboardSet::Extension()) {
-        auto gcLeaderboardSet = std::shared_ptr<GCLeaderboardSet>(new GCLeaderboardSet(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(gcLeaderboardSet);
+        auto gcLeaderboardSet = std::unique_ptr<GCLeaderboardSet>(new GCLeaderboardSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(gcLeaderboardSet));
     } else if (extension == Group::Extension()) {
-        auto group = std::shared_ptr<Group>(new Group(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(group);
+        auto group = std::unique_ptr<Group>(new Group(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(group));
     } else if (extension == IconSet::Extension()) {
-        auto iconSet = std::shared_ptr<IconSet>(new IconSet(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(iconSet);
+        auto iconSet = std::unique_ptr<IconSet>(new IconSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(iconSet));
     } else if (extension == ImageSet::Extension()) {
-        auto imageSet = std::shared_ptr<ImageSet>(new ImageSet(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(imageSet);
+        auto imageSet = std::unique_ptr<ImageSet>(new ImageSet(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(imageSet));
     } else if (extension == ImageStack::Extension()) {
-        auto imageStack = std::shared_ptr<ImageStack>(new ImageStack(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(imageStack);
+        auto imageStack = std::unique_ptr<ImageStack>(new ImageStack(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(imageStack));
     } else if (extension == ImageStackLayer::Extension()) {
-        auto imageStackLayer = std::shared_ptr<ImageStackLayer>(new ImageStackLayer(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(imageStackLayer);
+        auto imageStackLayer = std::unique_ptr<ImageStackLayer>(new ImageStackLayer(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(imageStackLayer));
     } else if (extension == LaunchImage::Extension()) {
-        auto launchImage = std::shared_ptr<LaunchImage>(new LaunchImage(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(launchImage);
+        auto launchImage = std::unique_ptr<LaunchImage>(new LaunchImage(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(launchImage));
     } else if (extension == SpriteAtlas::Extension()) {
-        auto spriteAtlas = std::shared_ptr<SpriteAtlas>(new SpriteAtlas(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(spriteAtlas);
+        auto spriteAtlas = std::unique_ptr<SpriteAtlas>(new SpriteAtlas(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(spriteAtlas));
     } else {
         /*
          * Directories with unknown extensions are treated as groups.
          */
-        auto group = std::shared_ptr<Group>(new Group(name, resolvedPath));
-        asset = std::static_pointer_cast<Asset>(group);
+        auto group = std::unique_ptr<Group>(new Group(name, resolvedPath));
+        asset = libutil::static_unique_pointer_cast<Asset>(std::move(group));
     }
 
     if (!asset->load(filesystem)) {

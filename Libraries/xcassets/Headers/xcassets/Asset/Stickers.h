@@ -17,20 +17,20 @@ namespace Asset {
 
 class Stickers : public Asset {
 private:
-    std::vector<std::shared_ptr<Asset>> _children;
+    std::vector<std::unique_ptr<Asset>> _children;
 
 private:
     friend class Asset;
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<Asset>> const &children() const
+    std::vector<std::unique_ptr<Asset>> const &children() const
     { return _children; }
 
 public:
     static AssetType Type()
     { return AssetType::Stickers; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::Stickers; }
 
 public:
@@ -41,7 +41,7 @@ public:
     /*
      * Load an sticker catalog from a directory.
      */
-    static std::shared_ptr<Stickers> Load(libutil::Filesystem const *filesystem, std::string const &path);
+    static std::unique_ptr<Stickers> Load(libutil::Filesystem const *filesystem, std::string const &path);
 
 protected:
     virtual bool load(libutil::Filesystem const *filesystem);

@@ -32,7 +32,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::ImageStackLayer> const &imageStackLayer,
+        xcassets::Asset::ImageStackLayer const *imageStackLayer,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool CubeTextureSet::
 Compile(
-    std::shared_ptr<xcassets::Asset::CubeTextureSet> const &cubeTextureSet,
+    xcassets::Asset::CubeTextureSet const *cubeTextureSet,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

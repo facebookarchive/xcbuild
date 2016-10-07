@@ -37,7 +37,7 @@ Print(std::string const &string, int indent)
 }
 
 static void
-DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
+DumpAsset(Asset const *asset, int indent = 0)
 {
     Print("name: " + asset->name().name(), indent);
     Print("identifier: " + asset->name().string(), indent);
@@ -51,7 +51,7 @@ DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
     }
 
     if (asset->type() == AppIconSet::Type()) {
-        auto appIconSet = std::static_pointer_cast<AppIconSet>(asset);
+        auto appIconSet = static_cast<AppIconSet const *>(asset);
         Print("type: AppIconSet", indent);
         Print("pre-rendered: " + std::to_string(appIconSet->preRendered()), indent);
 
@@ -75,15 +75,15 @@ DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
             }
         }
     } else if (asset->type() == Catalog::Type()) {
-        auto catalog = std::static_pointer_cast<Catalog>(asset);
+        auto catalog = static_cast<Catalog const *>(asset);
         Print("type: Catalog", indent);
 
-        for (std::shared_ptr<Asset> const &child : catalog->children()) {
+        for (std::unique_ptr<Asset> const &child : catalog->children()) {
             Print("", indent);
-            DumpAsset(child, indent + 1);
+            DumpAsset(child.get(), indent + 1);
         }
     } else if (asset->type() == Group::Type()) {
-        auto group = std::static_pointer_cast<Group>(asset);
+        auto group = static_cast<Group const *>(asset);
         Print("type: Group", indent);
 
         if (group->onDemandResourceTags()) {
@@ -91,12 +91,12 @@ DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
         }
         Print("provides namespace: " + std::to_string(group->providesNamespace()), indent);
 
-        for (std::shared_ptr<Asset> const &child : group->children()) {
+        for (std::unique_ptr<Asset> const &child : group->children()) {
             Print("", indent);
-            DumpAsset(child, indent + 1);
+            DumpAsset(child.get(), indent + 1);
         }
     } else if (asset->type() == ImageSet::Type()) {
-        auto imageSet = std::static_pointer_cast<ImageSet>(asset);
+        auto imageSet = static_cast<ImageSet const *>(asset);
         Print("type: ImageSet", indent);
 
         if (imageSet->onDemandResourceTags()) {
@@ -122,7 +122,7 @@ DumpAsset(std::shared_ptr<Asset> const &asset, int indent = 0)
             }
         }
     } else if (asset->type() == DataSet::Type()) {
-        auto dataSet = std::static_pointer_cast<DataSet>(asset);
+        auto dataSet = static_cast<DataSet const *>(asset);
         Print("type: DataSet", indent);
 
         if (dataSet->onDemandResourceTags()) {
@@ -159,8 +159,8 @@ main(int argc, char **argv)
         return 1;
     }
 
-    std::shared_ptr<Asset> asset = Asset::Load(&filesystem, argv[1], { });
-    DumpAsset(asset);
+    std::unique_ptr<Asset> asset = Asset::Load(&filesystem, argv[1], { });
+    DumpAsset(asset.get());
 
     return 0;
 }
