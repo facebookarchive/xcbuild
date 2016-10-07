@@ -18,6 +18,7 @@ enum class AssetType {
     BrandAssets,
     Catalog,
     ComplicationSet,
+    CubeTextureSet,
     DataSet,
     GCDashboardImage,
     GCLeaderboard,
@@ -28,12 +29,14 @@ enum class AssetType {
     ImageStack,
     ImageStackLayer,
     LaunchImage,
+    MipmapSet,
     SpriteAtlas,
     Sticker,
     StickerPack,
     StickerSequence,
     Stickers,
     StickersIconSet,
+    TextureSet,
 };
 
 }

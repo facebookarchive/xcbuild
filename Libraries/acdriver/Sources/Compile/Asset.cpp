@@ -11,6 +11,7 @@
 #include <acdriver/Compile/AppIconSet.h>
 #include <acdriver/Compile/BrandAssets.h>
 #include <acdriver/Compile/ComplicationSet.h>
+#include <acdriver/Compile/CubeTextureSet.h>
 #include <acdriver/Compile/DataSet.h>
 #include <acdriver/Compile/GCDashboardImage.h>
 #include <acdriver/Compile/GCLeaderboard.h>
@@ -20,11 +21,13 @@
 #include <acdriver/Compile/ImageStack.h>
 #include <acdriver/Compile/ImageStackLayer.h>
 #include <acdriver/Compile/LaunchImage.h>
+#include <acdriver/Compile/MipmapSet.h>
 #include <acdriver/Compile/SpriteAtlas.h>
 #include <acdriver/Compile/Sticker.h>
 #include <acdriver/Compile/StickerPack.h>
 #include <acdriver/Compile/StickerSequence.h>
 #include <acdriver/Compile/StickersIconSet.h>
+#include <acdriver/Compile/TextureSet.h>
 #include <acdriver/Compile/Output.h>
 #include <acdriver/Result.h>
 #include <xcassets/Asset/Catalog.h>
@@ -37,6 +40,7 @@ using acdriver::Compile::Asset;
 using acdriver::Compile::AppIconSet;
 using acdriver::Compile::BrandAssets;
 using acdriver::Compile::ComplicationSet;
+using acdriver::Compile::CubeTextureSet;
 using acdriver::Compile::DataSet;
 using acdriver::Compile::GCDashboardImage;
 using acdriver::Compile::GCLeaderboard;
@@ -46,11 +50,13 @@ using acdriver::Compile::ImageSet;
 using acdriver::Compile::ImageStack;
 using acdriver::Compile::ImageStackLayer;
 using acdriver::Compile::LaunchImage;
+using acdriver::Compile::MipmapSet;
 using acdriver::Compile::SpriteAtlas;
 using acdriver::Compile::Sticker;
 using acdriver::Compile::StickerPack;
 using acdriver::Compile::StickerSequence;
 using acdriver::Compile::StickersIconSet;
+using acdriver::Compile::TextureSet;
 using acdriver::Compile::Output;
 using acdriver::Result;
 using libutil::Filesystem;
@@ -111,6 +117,12 @@ Compile(
             CompileChildren(complicationSet->children(), asset, filesystem, compileOutput, result);
             break;
         }
+        case xcassets::Asset::AssetType::CubeTextureSet: {
+            auto cubeTextureSet = std::static_pointer_cast<xcassets::Asset::CubeTextureSet>(asset);
+            Compile::CubeTextureSet::Compile(cubeTextureSet, filesystem, compileOutput, result);
+            CompileChildren(cubeTextureSet->children(), asset, filesystem, compileOutput, result);
+            break;
+        }
         case xcassets::Asset::AssetType::DataSet: {
             auto dataSet = std::static_pointer_cast<xcassets::Asset::DataSet>(asset);
             Compile::DataSet::Compile(dataSet, filesystem, compileOutput, result);
@@ -168,6 +180,11 @@ Compile(
             }
             break;
         }
+        case xcassets::Asset::AssetType::MipmapSet: {
+            auto mipmapSet = std::static_pointer_cast<xcassets::Asset::MipmapSet>(asset);
+            Compile::MipmapSet::Compile(mipmapSet, filesystem, compileOutput, result);
+            break;
+        }
         case xcassets::Asset::AssetType::SpriteAtlas: {
             auto spriteAtlas = std::static_pointer_cast<xcassets::Asset::SpriteAtlas>(asset);
             Compile::SpriteAtlas::Compile(spriteAtlas, filesystem, compileOutput, result);
@@ -197,6 +214,12 @@ Compile(
         case xcassets::Asset::AssetType::StickersIconSet: {
             auto stickersIconSet = std::static_pointer_cast<xcassets::Asset::StickersIconSet>(asset);
             Compile::StickersIconSet::Compile(stickersIconSet, filesystem, compileOutput, result);
+            break;
+        }
+        case xcassets::Asset::AssetType::TextureSet: {
+            auto textureSet = std::static_pointer_cast<xcassets::Asset::TextureSet>(asset);
+            Compile::TextureSet::Compile(textureSet, filesystem, compileOutput, result);
+            CompileChildren(textureSet->children(), asset, filesystem, compileOutput, result);
             break;
         }
     }
