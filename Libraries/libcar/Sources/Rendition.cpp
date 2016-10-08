@@ -130,7 +130,7 @@ static ext::optional<std::vector<uint8_t>> Encode(Rendition const *rendition, ex
 static Rendition::ResizeMode
 ResizeModeFromLayout(enum car_rendition_value_layout layout)
 {
-    switch(layout) {
+    switch (layout) {
         case car_rendition_value_layout_one_part_fixed_size:
         case car_rendition_value_layout_three_part_horizontal_uniform:
         case car_rendition_value_layout_three_part_vertical_uniform:
@@ -149,6 +149,7 @@ ResizeModeFromLayout(enum car_rendition_value_layout layout)
             return Rendition::ResizeMode::HorizontalUniformVerticalScale;
         case car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform:
             return Rendition::ResizeMode::HorizontalScaleVerticalUniform;
+        case car_rendition_value_layout_nine_part_edges_only:
         case car_rendition_value_layout_six_part:
         case car_rendition_value_layout_gradient:
         case car_rendition_value_layout_effect:
@@ -317,7 +318,7 @@ Decode(struct car_rendition_value *value)
     struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((uintptr_t)value + sizeof(struct car_rendition_value) + value->info_len);
 
     if (strncmp(header1->magic, "MLEC", sizeof(header1->magic)) != 0) {
-        fprintf(stderr, "error: header1 magic is wrong, can't possibly decode\n");
+        fprintf(stderr, "error: header1 magic is wrong (%.4s), can't possibly decode\n", header1->magic);
         return ext::nullopt;
     }
 

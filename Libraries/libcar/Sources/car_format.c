@@ -12,9 +12,15 @@
 const char *const car_header_variable = "CARHEADER";
 const char *const car_key_format_variable = "KEYFORMAT";
 const char *const car_facet_keys_variable = "FACETKEYS";
+const char *const car_renditions_variable = "RENDITIONS";
+
+const char *const car_extended_metadata_variable = "EXTENDED_METADATA";
+const char *const car_bitmap_keys_variable = "BITMAPKEYS";
+const char *const car_globals_variable = "CARGLOBALS";
+const char *const car_external_keys_variable = "EXTERNAL_KEYS";
+
 const char *const car_part_info_variable = "PART_INFO";
 const char *const car_element_info_variable = "ELEMENT_INFO";
-const char *const car_renditions_variable = "RENDITIONS";
 const char *const car_colors_variable = "COLORS";
 const char *const car_fonts_variable = "FONTS";
 const char *const car_font_sizes_variable = "FONTSIZES";
@@ -42,5 +48,7 @@ const char *const car_attribute_identifier_names[_car_attribute_identifier_count
     [car_attribute_identifier_size_class_vertical] = "size_class_vertical",
     [car_attribute_identifier_memory_class] = "memory_class",
     [car_attribute_identifier_graphics_class] = "graphics_class",
+    [car_attribute_identifier_display_gamut] = "display_gamut",
+    [car_attribute_identifier_deployment_target] = "deployment_target",
 };
 
