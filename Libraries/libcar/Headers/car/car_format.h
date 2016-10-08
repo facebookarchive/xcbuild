@@ -108,9 +108,11 @@ enum car_attribute_identifier {
     car_attribute_identifier_size_class_vertical = 21,
     car_attribute_identifier_memory_class = 22,
     car_attribute_identifier_graphics_class = 23,
+    car_attribute_identifier_display_gamut = 24,
+    car_attribute_identifier_deployment_target = 25,
 
     /* Not a real value; used as a marker for the maximum identifier. */
-    _car_attribute_identifier_count = 24,
+    _car_attribute_identifier_count = 26,
 };
 
 enum car_attribute_identifier_size_value {
@@ -195,6 +197,11 @@ struct car_header {
     uint32_t color_space_id; // 01 00 00 00
     uint32_t key_semantics; // 01 00 00 00
 } __attribute__((packed));
+
+struct car_extended_metadata {
+    char magic[4]; // 'META'
+    char contents[1024]; // string
+};
 
 struct car_key_format {
     char magic[4]; // 'tmfk'
@@ -297,6 +304,7 @@ enum car_rendition_value_layout {
     car_rendition_value_layout_nine_part_scale = 31,
     car_rendition_value_layout_nine_part_horizontal_uniform_vertical_scale = 32,
     car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform = 33,
+    car_rendition_value_layout_nine_part_edges_only = 34,
     car_rendition_value_layout_six_part = 40,
     car_rendition_value_layout_animation_filmstrip = 50,
 
@@ -420,9 +428,15 @@ enum car_rendition_data_compression_magic {
 extern const char *const car_header_variable;
 extern const char *const car_key_format_variable;
 extern const char *const car_facet_keys_variable;
+extern const char *const car_renditions_variable;
+
+extern const char *const car_extended_metadata_variable;
+extern const char *const car_bitmap_keys_variable;
+extern const char *const car_globals_variable;
+extern const char *const car_external_keys_variable;
+
 extern const char *const car_part_info_variable;
 extern const char *const car_element_info_variable;
-extern const char *const car_renditions_variable;
 extern const char *const car_colors_variable;
 extern const char *const car_fonts_variable;
 extern const char *const car_font_sizes_variable;

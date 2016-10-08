@@ -125,6 +125,13 @@ dump() const
     printf("Key Semantics: %x\n", header->key_semantics);
     printf("\n");
 
+    int extended_metadata_index = bom_variable_get(_bom.get(), car_extended_metadata_variable);
+    if (extended_metadata_index != -1) {
+        struct car_extended_metadata *extended = (struct car_extended_metadata *)bom_index_get(_bom.get(), extended_metadata_index, NULL);
+        printf("Extended metadata: %s\n", extended->contents);
+        printf("\n");
+    }
+
     int key_format_index = bom_variable_get(_bom.get(), car_key_format_variable);
     struct car_key_format *keyfmt = (struct car_key_format *)bom_index_get(_bom.get(), key_format_index, NULL);
 
