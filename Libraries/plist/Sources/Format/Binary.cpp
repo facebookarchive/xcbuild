@@ -150,16 +150,18 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             off_t  offset = *reinterpret_cast <off_t *> (arg1);
             size_t nbytes = *reinterpret_cast <size_t *> (arg2);
 
-            std::vector <uint8_t> bytes;
+            std::vector<uint8_t> bytes;
 
             if (nbytes > 0) {
-                if (ReadSeek(opaque, offset, SEEK_SET) < 0)
+                if (ReadSeek(opaque, offset, SEEK_SET) < 0) {
                     return nullptr;
+                }
 
                 bytes.resize(nbytes);
-                size_t nread = ReadData(opaque, &bytes[0], nbytes);
-                if (nread < nbytes)
+                size_t nread = ReadData(opaque, bytes.data(), nbytes);
+                if (nread < nbytes) {
                     return nullptr;
+                }
             }
 
             return Data::New(std::move(bytes)).release();
@@ -173,13 +175,16 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             std::string string;
 
             if (nchars > 0) {
-                if (ReadSeek(opaque, offset, SEEK_SET) < 0)
+                if (ReadSeek(opaque, offset, SEEK_SET) < 0) {
                     return nullptr;
+                }
 
-                string.resize(nchars);
-                size_t nread = ReadData(opaque, &string[0], sizeof(char) * nchars);
-                if (nread < nchars)
+                size_t nbytes = sizeof(char) * nchars;
+                string.resize(nbytes);
+                size_t nread = ReadData(opaque, &string[0], nbytes);
+                if (nread < nbytes) {
                     return nullptr;
+                }
             }
 
             return String::New(std::move(string)).release();
@@ -192,13 +197,16 @@ Create(void *opaque, ABPRecordType type, void *arg1, void *arg2, void *arg3)
             std::vector<uint8_t> buffer;
 
             if (nchars > 0) {
-                if (ReadSeek(opaque, offset, SEEK_SET) < 0)
+                if (ReadSeek(opaque, offset, SEEK_SET) < 0) {
                     return nullptr;
+                }
 
-                buffer.resize(nchars);
-                size_t nread = ReadData(opaque, buffer.data(), sizeof(uint16_t) * nchars);
-                if (nread < nchars)
+                size_t nbytes = sizeof(uint16_t) * nchars;
+                buffer.resize(nbytes);
+                size_t nread = ReadData(opaque, buffer.data(), nbytes);
+                if (nread < nbytes) {
                     return nullptr;
+                }
             }
 
             buffer = Encodings::Convert(buffer, Encoding::UTF16BE, Encoding::UTF8);
