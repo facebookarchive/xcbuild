@@ -65,8 +65,29 @@ public:
         bool parse(plist::Dictionary const *dict);
     };
 
+public:
+    class FileReference {
+    public:
+        ext::optional<std::string>       _regionVariantName;
+        ext::optional<pbxsetting::Value> _path;
+
+    protected:
+        friend class ProductType;
+        FileReference();
+
+    public:
+        inline ext::optional<std::string> const &regionVariantName() const
+        { return _regionVariantName; }
+        inline ext::optional<pbxsetting::Value> const &path() const
+        { return _path; }
+
+    protected:
+        bool parse(plist::Dictionary const *dict);
+    };
+
 protected:
     friend class Validation;
+    friend class FileReference;
 
 protected:
     ext::optional<std::string>              _defaultTargetName;
@@ -81,16 +102,24 @@ protected:
     ext::optional<bool>                     _supportsZeroLink;
     ext::optional<bool>                     _alwaysPerformSeparateStrip;
     ext::optional<bool>                     _wantsSimpleTargetEditing;
+    ext::optional<bool>                     _wantsSimpleTargetEditingWithoutCapabilities;
     ext::optional<bool>                     _addWatchCompanionRequirement;
     ext::optional<bool>                     _runsOnProxy;
     ext::optional<bool>                     _disableSchemeAutocreation;
     ext::optional<bool>                     _validateEmbeddedBinaries;
     ext::optional<bool>                     _supportsOnDemandResources;
     ext::optional<bool>                     _canEmbedAddressSanitizerLibraries;
+    ext::optional<bool>                     _canEmbedCompilerSanitizerLibraries;
+    ext::optional<bool>                     _provisioningProfileRequired;
+    ext::optional<bool>                     _provisioningProfileSupported;
     ext::optional<std::string>              _runpathSearchPathForEmbeddedFrameworks;
     ext::optional<bool>                     _isEmbeddable;
     ext::optional<std::vector<BuildPhaseInjection>> _buildPhaseInjectionsWhenEmbedding;
     ext::optional<std::string>              _requiredBuiltProductsDir;
+    ext::optional<std::vector<std::string>> _allowedBuildPhases;
+    ext::optional<std::unordered_map<std::string, std::vector<std::string>>> _allowedFileTypes;
+    ext::optional<std::unordered_map<std::string, std::vector<FileReference>>> _buildPhaseFileRefAdditions;
+    ext::optional<pbxsetting::Level>        _infoPlistAdditions;
 
 protected:
     ProductType();
@@ -167,6 +196,12 @@ public:
     { return _wantsSimpleTargetEditing; }
 
 public:
+    inline bool wantsSimpleTargetEditingWithoutCapabilities() const
+    { return _wantsSimpleTargetEditingWithoutCapabilities.value_or(false); }
+    inline ext::optional<bool> wantsSimpleTargetEditingWithoutCapabilitiesOptional() const
+    { return _wantsSimpleTargetEditingWithoutCapabilities; }
+
+public:
     inline bool addWatchCompanionRequirement() const
     { return _addWatchCompanionRequirement.value_or(false); }
     inline ext::optional<bool> addWatchCompanionRequirementOptional() const
@@ -201,6 +236,20 @@ public:
     { return _canEmbedAddressSanitizerLibraries.value_or(false); }
     inline ext::optional<bool> canEmbedAddressSanitizerLibrariesOptional() const
     { return _canEmbedAddressSanitizerLibraries; }
+    inline bool canEmbedCompilerSanitizerLibraries() const
+    { return _canEmbedCompilerSanitizerLibraries.value_or(false); }
+    inline ext::optional<bool> canEmbedCompilerSanitizerLibrariesOptional() const
+    { return _canEmbedCompilerSanitizerLibraries; }
+
+public:
+    inline bool provisioningProfileRequired() const
+    { return _provisioningProfileRequired.value_or(false); }
+    inline ext::optional<bool> provisioningProfileRequiredOptional() const
+    { return _provisioningProfileRequired; }
+    inline bool provisioningProfileSupported() const
+    { return _provisioningProfileSupported.value_or(false); }
+    inline ext::optional<bool> provisioningProfileSupportedOptional() const
+    { return _provisioningProfileSupported; }
 
 public:
     inline ext::optional<std::string> const &runpathSearchPathForEmbeddedFrameworks() const
@@ -215,6 +264,16 @@ public:
     { return _buildPhaseInjectionsWhenEmbedding; }
     inline ext::optional<std::string> const &requiredBuiltProductsDir() const
     { return _requiredBuiltProductsDir; }
+    inline ext::optional<std::vector<std::string>> const &allowedBuildPhases() const
+    { return _allowedBuildPhases; }
+    inline ext::optional<std::unordered_map<std::string, std::vector<std::string>>> const &allowedFileTypes() const
+    { return _allowedFileTypes; }
+
+public:
+    inline ext::optional<std::unordered_map<std::string, std::vector<FileReference>>> const &buildPhaseFileRefAdditions() const
+    { return _buildPhaseFileRefAdditions; }
+    inline ext::optional<pbxsetting::Level> const &infoPlistAdditions() const
+    { return _infoPlistAdditions; }
 
 protected:
     friend class Specification;
