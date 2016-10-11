@@ -47,7 +47,7 @@ parse(plist::Dictionary const *dict)
 }
 
 Toolchain::shared_ptr Toolchain::
-Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string const &path)
+Open(Filesystem const *filesystem, std::string const &path)
 {
     if (path.empty()) {
         return nullptr;

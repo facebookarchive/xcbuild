@@ -32,6 +32,7 @@ install(TARGETS xcode-select DESTINATION usr/bin)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(xcsdk PlatformVersion Tests/test_PlatformVersion.cpp)
+  ADD_UNIT_GTEST(xcsdk Toolchain Tests/test_Toolchain.cpp)
   ADD_UNIT_GTEST(xcsdk Configuration Tests/test_Configuration.cpp)
   ADD_UNIT_GTEST(xcsdk Manager Tests/test_Manager.cpp)
 endif ()

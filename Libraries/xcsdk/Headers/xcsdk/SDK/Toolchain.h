@@ -48,7 +48,7 @@ public:
     std::vector<std::string> executablePaths() const;
 
 public:
-    static Toolchain::shared_ptr Open(libutil::Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string const &path);
+    static Toolchain::shared_ptr Open(libutil::Filesystem const *filesystem, std::string const &path);
 
 public:
     static std::string DefaultIdentifier(void);

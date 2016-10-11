@@ -173,7 +173,7 @@ Open(Filesystem const *filesystem, std::string const &path, ext::optional<Config
                 return;
             }
 
-            auto toolchain = SDK::Toolchain::Open(filesystem, manager, toolchainsPath + "/" + filename);
+            auto toolchain = SDK::Toolchain::Open(filesystem, toolchainsPath + "/" + filename);
             if (toolchain != nullptr) {
                 toolchains.push_back(toolchain);
             }
