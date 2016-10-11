@@ -71,6 +71,7 @@ private:
     ext::optional<std::string> _targetName;
     ext::optional<std::string> _filterForDeviceModel;
     ext::optional<std::string> _filterForDeviceOsVersion;
+    ext::optional<std::string> _assetPackOutputSpecifications;
 
 public:
     Options();
@@ -148,6 +149,8 @@ public:
     { return _filterForDeviceModel; }
     ext::optional<std::string> const &filterForDeviceOsVersion() const
     { return _filterForDeviceOsVersion; }
+    ext::optional<std::string> const &assetPackOutputSpecifications() const
+    { return _assetPackOutputSpecifications; }
 
 private:
     friend class libutil::Options;
