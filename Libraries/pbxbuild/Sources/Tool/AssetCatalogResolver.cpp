@@ -13,8 +13,11 @@
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxsetting/Type.h>
+#include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
+using libutil::FSUtil;
 
 Tool::AssetCatalogResolver::
 AssetCatalogResolver(pbxspec::PBX::Compiler::shared_ptr const &tool) :
@@ -28,11 +31,33 @@ resolve(
     pbxsetting::Environment const &baseEnvironment,
     std::vector<Phase::File> const &inputs) const
 {
+    std::vector<std::string> absoluteInputPaths;
+    std::vector<std::string> assetPaths;
+    std::vector<std::string> stickerPackStrings;
+    for (Phase::File const &input : inputs) {
+        if (input.fileType()->identifier() == "text.plist.strings") {
+            std::string strings;
+            strings += FSUtil::GetBaseNameWithoutExtension(input.path());
+            strings += ":";
+            strings += input.localization();
+            strings += ":";
+            strings += input.path();
+            stickerPackStrings.push_back(strings);
+        } else {
+            assetPaths.push_back(input.path());
+        }
+
+        std::string absoluteInputPath = FSUtil::ResolveRelativePath(input.path(), toolContext->workingDirectory());
+        absoluteInputPaths.push_back(absoluteInputPath);
+    }
+
     /*
      * Create the custom environment with the tool options.
      */
     pbxsetting::Level level = pbxsetting::Level({
         InterfaceBuilderCommon::TargetedDeviceSetting(baseEnvironment),
+        pbxsetting::Setting::Create("ASSETCATALOG_COMPILER_INPUTS", pbxsetting::Type::FormatList(assetPaths)),
+        pbxsetting::Setting::Create("ASSETCATALOG_COMPILER_STICKER_PACK_STRINGS", pbxsetting::Type::FormatList(stickerPackStrings)),
     });
     pbxsetting::Environment assetCatalogEnvironment = pbxsetting::Environment(baseEnvironment);
     assetCatalogEnvironment.insertFront(level, false);
@@ -40,7 +65,7 @@ resolve(
     /*
      * Resolve the tool options.
      */
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, assetCatalogEnvironment, toolContext->workingDirectory(), inputs);
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, assetCatalogEnvironment, toolContext->workingDirectory(), std::vector<Phase::File>());
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
@@ -105,7 +130,7 @@ resolve(
     invocation.arguments() = arguments;
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
+    invocation.inputs() = absoluteInputPaths;
     invocation.outputs() = outputs;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();

@@ -217,6 +217,9 @@ Group(std::vector<Phase::File> const &files)
             /* Keyed on both the file name and tool. */
             std::string base = FSUtil::GetBaseNameWithoutExtension(file.path());
             groupedCommonBase[compiler->identifier()][base].push_back(file);
+        } else if (grouping == "actool") {
+            groupedTool[compiler->identifier()].push_back(file);
+            // TODO: group strings files with a base name matching a sticker pack in an asset catalog. how?
         } else if (grouping == "ib-base-region-and-strings") {
             /* Only "Base" region files. See below for finding additional grouped files. */
             if (file.localization() == "Base") {

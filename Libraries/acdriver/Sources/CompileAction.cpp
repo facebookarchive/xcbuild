@@ -206,7 +206,7 @@ WarnUnsupportedOptions(Options const &options, Result *result)
     }
 
     if (options.stickerPackIdentifierPrefix() || options.stickerPackStringsFile()) {
-        /* Strings file format: `sticker-pack:language-identifier:path`. */
+        /* Strings file format: `sticker-pack-name:language-identifier:path`. */
         result->normal(Result::Severity::Warning, "sticker pack not supported");
     }
 
