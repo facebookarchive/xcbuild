@@ -55,7 +55,10 @@ Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string
 
     std::string settingsFileName = path + "/ToolchainInfo.plist";
     if (!filesystem->isReadable(settingsFileName)) {
-        return nullptr;
+        settingsFileName = path + "/Info.plist";
+        if (!filesystem->isReadable(settingsFileName)) {
+            return nullptr;
+        }
     }
 
     std::string realPath = filesystem->resolvePath(settingsFileName);
