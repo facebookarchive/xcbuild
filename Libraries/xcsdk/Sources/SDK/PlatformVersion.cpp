@@ -12,21 +12,32 @@
 #include <plist/Dictionary.h>
 #include <plist/String.h>
 #include <plist/Format/Any.h>
+#include <plist/Keys/Unpack.h>
 
 using xcsdk::SDK::PlatformVersion;
 using libutil::Filesystem;
 
-PlatformVersion::PlatformVersion()
+PlatformVersion::
+PlatformVersion()
 {
 }
 
 bool PlatformVersion::
 parse(plist::Dictionary const *dict)
 {
-    auto PN  = dict->value <plist::String> ("ProjectName");
-    auto PBV = dict->value <plist::String> ("ProductBuildVersion");
-    auto BV  = dict->value <plist::String> ("BuildVersion");
-    auto SV  = dict->value <plist::String> ("SourceVersion");
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("PlatformVersion", dict, &seen);
+
+    auto PN     = unpack.cast <plist::String> ("ProjectName");
+    auto PBV    = unpack.cast <plist::String> ("ProductBuildVersion");
+    auto BV     = unpack.cast <plist::String> ("BuildVersion");
+    auto SV     = unpack.cast <plist::String> ("SourceVersion");
+    auto CFBSVS = unpack.cast <plist::String> ("CFBundleShortVersionString");
+    auto CFBV   = unpack.cast <plist::String> ("CFBundleVersion");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
 
     if (PN != nullptr) {
         _projectName = PN->value();
@@ -44,6 +55,14 @@ parse(plist::Dictionary const *dict)
         _sourceVersion = SV->value();
     }
 
+    if (CFBSVS != nullptr) {
+        _bundleShortVersionString = CFBSVS->value();
+    }
+
+    if (CFBV != nullptr) {
+        _bundleVersion = CFBV->value();
+    }
+
     return true;
 }
 
@@ -54,6 +73,9 @@ Open(Filesystem const *filesystem, std::string const &path)
         return nullptr;
     }
 
+    /*
+     * Read version info.
+     */
     std::string versionFileName = path + "/version.plist";
     if (!filesystem->isReadable(versionFileName)) {
         return nullptr;
@@ -69,9 +91,9 @@ Open(Filesystem const *filesystem, std::string const &path)
         return nullptr;
     }
 
-    //
-    // Parse property list
-    //
+    /*
+     * Parse property list.
+     */
     auto result = plist::Format::Any::Deserialize(contents);
     if (result.first == nullptr) {
         return nullptr;
@@ -82,9 +104,9 @@ Open(Filesystem const *filesystem, std::string const &path)
         return nullptr;
     }
 
-    //
-    // Parse the version dictionary and create the object.
-    //
+    /*
+     * Parse the version dictionary and create the object.
+     */
     auto platformVersion = std::make_shared<PlatformVersion>();
     if (!platformVersion->parse(plist)) {
         return nullptr;

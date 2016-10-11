@@ -314,7 +314,7 @@ static int Run(Filesystem *filesystem, process::Context const *processContext, p
         if (target == nullptr) {
             fprintf(stderr, "verbose: not using any SDK\n");
         } else {
-            fprintf(stderr, "verbose: using sdk '%s': %s\n", target->canonicalName().c_str(), target->path().c_str());
+            fprintf(stderr, "verbose: using sdk '%s': %s\n", target->canonicalName().value_or(target->bundleName()).c_str(), target->path().c_str());
         }
     }
 
@@ -325,10 +325,10 @@ static int Run(Filesystem *filesystem, process::Context const *processContext, p
         if (options.showSDKPath()) {
             printf("%s\n", target->path().c_str());
         } else if (options.showSDKVersion()) {
-            printf("%s\n", target->version().c_str());
+            printf("%s\n", target->version().value_or("").c_str());
         } else if (options.showSDKBuildVersion()) {
             if (auto product = target->product()) {
-                printf("%s\n", product->buildVersion().c_str());
+                printf("%s\n", product->buildVersion().value_or("").c_str());
             } else {
                 fprintf(stderr, "error: sdk has no build version\n");
                 return -1;
@@ -342,7 +342,7 @@ static int Run(Filesystem *filesystem, process::Context const *processContext, p
             }
         } else if (options.showSDKPlatformVersion()) {
             if (auto platform = target->platform()) {
-                printf("%s\n", platform->version().c_str());
+                printf("%s\n", platform->version().value_or("").c_str());
             } else {
                 fprintf(stderr, "error: sdk has no platform\n");
                 return -1;
@@ -385,7 +385,9 @@ static int Run(Filesystem *filesystem, process::Context const *processContext, p
         if (verbose) {
             fprintf(stderr, "verbose: using toolchain(s):");
             for (xcsdk::SDK::Toolchain::shared_ptr const &toolchain : toolchains) {
-                fprintf(stderr, " '%s'", toolchain->identifier().c_str());
+                if (toolchain->identifier()) {
+                    fprintf(stderr, " '%s'", toolchain->identifier()->c_str());
+                }
             }
             fprintf(stderr, "\n");
         }

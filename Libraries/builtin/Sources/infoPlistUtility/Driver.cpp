@@ -97,6 +97,8 @@ ExpandBuildSettings(plist::Object *value, pbxsetting::Environment const &environ
 static void
 AddBuildEnvironment(plist::Dictionary *root, pbxsetting::Environment const &environment)
 {
+    // TODO: This should use `xcsdk::SDK::Platform::additionalInfo()`.
+
     root->set("DTCompiler", plist::String::New(environment.resolve("DEFAULT_COMPILER")));
     root->set("DTXcode", plist::String::New(environment.resolve("XCODE_VERSION_ACTUAL")));
     root->set("DTXcodeBuild", plist::String::New(environment.resolve("XCODE_PRODUCT_BUILD_VERSION")));

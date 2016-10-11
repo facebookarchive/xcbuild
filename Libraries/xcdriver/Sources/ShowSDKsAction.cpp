@@ -48,9 +48,9 @@ Run(process::Context const *processContext, Filesystem const *filesystem, Option
     }
 
     for (auto const &platform : manager->platforms()) {
-        printf("%s SDKs:\n", platform->description().c_str());
+        printf("%s SDKs:\n", platform->description().value_or(platform->name()).c_str());
         for (auto const &target : platform->targets()) {
-            printf("\t%-32s-sdk %s\n", target->displayName().c_str(), target->canonicalName().c_str());
+            printf("\t%-32s-sdk %s\n", target->displayName().value_or(target->bundleName()).c_str(), target->canonicalName().value_or(target->bundleName()).c_str());
         }
         printf("\n");
     }
