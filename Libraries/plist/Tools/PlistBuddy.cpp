@@ -432,7 +432,7 @@ Delete(plist::Object *object, std::queue<std::string> *keyPath) {
 }
 
 static bool
-ProcessCommand(Filesystem *filesystem, std::string const &path, bool xml, RootObjectContainer &root, std::string const &input, bool *mutated)
+ProcessCommand(Filesystem *filesystem, std::string const &path, bool xml, RootObjectContainer &root, std::string const &input, bool *mutated, bool *keepReading)
 {
     std::vector<std::string> tokens;
     std::stringstream sstream(input);
@@ -448,31 +448,37 @@ ProcessCommand(Filesystem *filesystem, std::string const &path, bool xml, RootOb
         if (tokens.size() > 1) {
             ParseCommandKeyPathString(tokens[1], &keyPath);
         }
-        Print(root.object.get(), keyPath, xml);
+        return Print(root.object.get(), keyPath, xml);
     } else if (command == "Save") {
         std::queue<std::string> keyPath;
-        Print(root.object.get(), keyPath, xml, filesystem, path);
+        return Print(root.object.get(), keyPath, xml, filesystem, path);
     } else if (command == "Exit") {
-        return false;
+        return true;
     } else if (command == "Set") {
         if (tokens.size() < 2) {
             fprintf(stderr, "Set command requires KeyPath\n");
-            return true;
+            return false;
         } else {
             std::queue<std::string> keyPath;
             ParseCommandKeyPathString(tokens[1], &keyPath);
-            Set(root.object.get(), keyPath, plist::ObjectType::String, ParseCommandValueString(tokens.begin() + 2, tokens.end()));
+            if (!Set(root.object.get(), keyPath, plist::ObjectType::String, ParseCommandValueString(tokens.begin() + 2, tokens.end()))) {
+                /* don't set mutated */
+                return false;
+            }
             *mutated = true;
         }
     } else if (command == "Add") {
         if (tokens.size() < 3) {
             fprintf(stderr, "Add command requires KeyPath and Type\n");
-            return true;
+            return false;
         } else {
             std::queue<std::string> keyPath;
             ParseCommandKeyPathString(tokens[1], &keyPath);
             plist::ObjectType type = ParseType(tokens[2]);
-            Set(root.object.get(), keyPath, type, ParseCommandValueString(tokens.begin() + 3, tokens.end()), false);
+            if (!Set(root.object.get(), keyPath, type, ParseCommandValueString(tokens.begin() + 3, tokens.end()), false)) {
+                /* don't set mutated */
+                return false;
+            }
             *mutated = true;
         }
     } else if (command == "Clear") {
@@ -482,21 +488,29 @@ ProcessCommand(Filesystem *filesystem, std::string const &path, bool xml, RootOb
         } else {
             clearType = ParseType(tokens[1]);
         }
-        Clear(&root, clearType);
+        if (!Clear(&root, clearType)) {
+            /* don't set mutated */
+            return false;
+        }
         *mutated = true;
     } else if (command == "Delete") {
         if (tokens.size() < 2) {
             fprintf(stderr, "Add command requires KeyPath\n");
-            return true;
+            /* don't set mutated */
+            return false;
         }
         std::queue<std::string> keyPath;
         ParseCommandKeyPathString(tokens[1], &keyPath);
-        Delete(root.object.get(), &keyPath);
+        if (!Delete(root.object.get(), &keyPath)) {
+            /* don't set mutated */
+            return false;
+        }
         *mutated = true;
     } else if (command == "Help") {
         CommandHelp();
     } else {
         fprintf(stderr, "Unrecognized command\n");
+        return false;
     }
     return true;
 }
@@ -548,9 +562,12 @@ main(int argc, char **argv)
     RootObjectContainer root;
     root.object = std::move(deserialize.first);
 
+    bool success = true;
     if (options.command()) {
+        bool keepReading = true; // unused here
         bool mutated = false;
-        ProcessCommand(&filesystem, options.input(), options.xml(), root, *options.command(), &mutated);
+        success &= ProcessCommand(&filesystem, options.input(), options.xml(), root, *options.command(), &mutated, &keepReading);
+        /* If there was a failure, mutated would be false */
         if (mutated) {
             /* Save result. */
             std::queue<std::string> keyPath;
@@ -559,7 +576,6 @@ main(int argc, char **argv)
     } else {
         char *line;
         bool keepReading = true;
-
         while (keepReading) {
 #if defined(HAVE_LINENOISE)
             line = linenoise("Command: ");
@@ -574,7 +590,7 @@ main(int argc, char **argv)
 #endif
 
                 bool mutated = false;
-                keepReading = ProcessCommand(&filesystem, options.input(), options.xml(), root, std::string(line), &mutated);
+                success &= ProcessCommand(&filesystem, options.input(), options.xml(), root, std::string(line), &mutated, &keepReading);
             } else {
                 keepReading = false;
             }
@@ -586,5 +602,5 @@ main(int argc, char **argv)
         }
     }
 
-    return 0;
+    return (success ? 0 : 1);
 }
