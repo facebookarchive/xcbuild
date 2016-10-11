@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <string>
+#include <ext/optional>
 
 namespace libutil { class Filesystem; };
 namespace plist { class Dictionary; }
@@ -23,25 +24,25 @@ public:
     typedef std::shared_ptr <Product> shared_ptr;
 
 private:
-    std::string _productName;
-    std::string _productVersion;
-    std::string _productUserVisibleVersion;
-    std::string _productBuildVersion;
-    std::string _productCopyright;
+    ext::optional<std::string> _productName;
+    ext::optional<std::string> _productVersion;
+    ext::optional<std::string> _productUserVisibleVersion;
+    ext::optional<std::string> _productBuildVersion;
+    ext::optional<std::string> _productCopyright;
 
 public:
     Product();
 
 public:
-    inline std::string const &name() const
+    inline ext::optional<std::string> const &name() const
     { return _productName; }
-    inline std::string const &version() const
+    inline ext::optional<std::string> const &version() const
     { return _productVersion; }
-    inline std::string const &userVisibleVersion() const
+    inline ext::optional<std::string> const &userVisibleVersion() const
     { return _productUserVisibleVersion; }
-    inline std::string const &buildVersion() const
+    inline ext::optional<std::string> const &buildVersion() const
     { return _productBuildVersion; }
-    inline std::string const &copyright() const
+    inline ext::optional<std::string> const &copyright() const
     { return _productCopyright; }
 
 public:

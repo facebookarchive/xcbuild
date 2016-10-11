@@ -384,13 +384,21 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
         pbxsetting::Setting::Parse("GCC_VERSION", "$(DEFAULT_COMPILER)"),
     }), false);
 
-    environment.insertFront(sdk->platform()->defaultProperties(), false);
+    if (sdk->platform()->defaultProperties()) {
+        environment.insertFront(*sdk->platform()->defaultProperties(), false);
+    }
     environment.insertFront(PlatformArchitecturesLevel(buildEnvironment.specManager(), specDomains), false);
-    environment.insertFront(sdk->defaultProperties(), false);
+    if (sdk->defaultProperties()) {
+        environment.insertFront(*sdk->defaultProperties(), false);
+    }
     environment.insertFront(sdk->platform()->settings(), false);
     environment.insertFront(sdk->settings(), false);
-    environment.insertFront(sdk->customProperties(), false);
-    environment.insertFront(sdk->platform()->overrideProperties(), false);
+    if (sdk->customProperties()) {
+        environment.insertFront(*sdk->customProperties(), false);
+    }
+    if (sdk->platform()->overrideProperties()) {
+        environment.insertFront(*sdk->platform()->overrideProperties(), false);
+    }
 
     if (packageType != nullptr) {
         environment.insertFront(PackageTypeLevel(packageType), false);
@@ -435,6 +443,7 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     std::vector<xcsdk::SDK::Toolchain::shared_ptr> toolchains;
     for (std::string const &toolchainName : pbxsetting::Type::ParseList(environment.resolve("TOOLCHAINS"))) {
         if (xcsdk::SDK::Toolchain::shared_ptr toolchain = buildEnvironment.sdkManager()->findToolchain(toolchainName)) {
+            // TODO: Apply toolchain override build settings.
             toolchains.push_back(toolchain);
         }
     }

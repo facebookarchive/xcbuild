@@ -36,8 +36,8 @@ DefaultPaths(process::Context const *processContext)
     if (ext::optional<std::string> environmentPath = processContext->environmentVariable("XCSDK_CONFIGURATION_PATH")) {
         defaultPaths.push_back(*environmentPath);
     } else {
-        ext::optional<std::string> homePath = processContext->environmentVariable("HOME");
-        if (getuid() != 0 && homePath) {
+        ext::optional<std::string> homePath = processContext->userHomeDirectory();
+        if (homePath) {
             defaultPaths.push_back(*homePath + "/.xcsdk/xcsdk_configuration.plist");
         }
         defaultPaths.push_back("/var/db/xcsdk_configuration.plist");

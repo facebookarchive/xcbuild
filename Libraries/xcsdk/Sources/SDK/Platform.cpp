@@ -12,9 +12,12 @@
 #include <pbxsetting/Type.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <plist/Array.h>
+#include <plist/Boolean.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
 #include <plist/Format/Any.h>
+#include <plist/Keys/Unpack.h>
 
 #include <algorithm>
 
@@ -24,9 +27,7 @@ using libutil::FSUtil;
 
 Platform::
 Platform() :
-    _defaultDebuggerSettings(nullptr),
-    _defaultProperties      (pbxsetting::Level({ })),
-    _overrideProperties     (pbxsetting::Level({ }))
+    _defaultDebuggerSettings(nullptr)
 {
 }
 
@@ -63,7 +64,7 @@ settings() const
 {
     std::vector<pbxsetting::Setting> settings = {
         pbxsetting::Setting::Create("PLATFORM_NAME", _name),
-        pbxsetting::Setting::Create("PLATFORM_DISPLAY_NAME", _description),
+        pbxsetting::Setting::Create("PLATFORM_DISPLAY_NAME", _description.value_or("")),
         pbxsetting::Setting::Create("PLATFORM_DIR", _path),
 
         pbxsetting::Setting::Parse("PLATFORM_DEVELOPER_USR_DIR", "$(PLATFORM_DIR)/Developer/usr"),
@@ -73,7 +74,7 @@ settings() const
         pbxsetting::Setting::Parse("PLATFORM_DEVELOPER_SDK_DIR", "$(PLATFORM_DIR)/Developer/SDKs"),
         pbxsetting::Setting::Parse("PLATFORM_DEVELOPER_TOOLS_DIR", "$(PLATFORM_DIR)/Developer/Tools"),
 
-        pbxsetting::Setting::Create("PLATFORM_PRODUCT_BUILD_VERSION", _platformVersion ? _platformVersion->buildVersion() : ""),
+        pbxsetting::Setting::Create("PLATFORM_PRODUCT_BUILD_VERSION", _platformVersion != nullptr ? _platformVersion->buildVersion().value_or("") : ""),
         // TODO(grp): PLATFORM_PREFERRED_ARCH
 
         // TODO(grp): CORRESPONDING_DEVICE_PLATFORM_NAME
@@ -132,7 +133,7 @@ settings() const
 
     std::vector<std::string> supportedPlatformNames;
     std::shared_ptr<Manager> manager = _manager.lock();
-    if (manager && !_familyIdentifier.empty()) {
+    if (manager && _familyIdentifier) {
         for (Platform::shared_ptr const &platform : manager->platforms()) {
             if (platform->familyIdentifier() == _familyIdentifier) {
                 supportedPlatformNames.push_back(platform->name());
@@ -155,17 +156,46 @@ executablePaths() const
 bool Platform::
 parse(plist::Dictionary const *dict)
 {
-    auto I   = dict->value <plist::String> ("Identifier");
-    auto N   = dict->value <plist::String> ("Name");
-    auto D   = dict->value <plist::String> ("Description");
-    auto T   = dict->value <plist::String> ("Type");
-    auto V   = dict->value <plist::String> ("Version");
-    auto FI  = dict->value <plist::String> ("FamilyIdentifier");
-    auto FN  = dict->value <plist::String> ("FamilyName");
-    auto Ic  = dict->value <plist::String> ("Icon");
-    auto DDS = dict->value <plist::Dictionary> ("DefaultDebuggerSettings");
-    auto DP  = dict->value <plist::Dictionary> ("DefaultProperties");
-    auto OP  = dict->value <plist::Dictionary> ("OverrideProperties");
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("Platform", dict, &seen);
+
+    auto I   = unpack.cast <plist::String> ("Identifier");
+    auto N   = unpack.cast <plist::String> ("Name");
+    auto D   = unpack.cast <plist::String> ("Description");
+    auto T   = unpack.cast <plist::String> ("Type");
+    auto V   = unpack.cast <plist::String> ("Version");
+    auto FI  = unpack.cast <plist::String> ("FamilyIdentifier");
+    auto FN  = unpack.cast <plist::String> ("FamilyName");
+    auto Ic  = unpack.cast <plist::String> ("Icon");
+    auto DDS = unpack.cast <plist::Dictionary> ("DefaultDebuggerSettings");
+    auto DP  = unpack.cast <plist::Dictionary> ("DefaultProperties");
+    auto OP  = unpack.cast <plist::Dictionary> ("OverrideProperties");
+    auto AI  = unpack.cast <plist::Dictionary> ("AdditionalInfo");
+    auto IDP = unpack.coerce <plist::Boolean> ("IsDeploymentPlatform");
+    auto MSV = unpack.cast <plist::String> ("MinimumSDKVersion");
+    auto RSS = unpack.cast <plist::String> ("RuntimeSystemSpecification");
+
+    /* Ignored: not platform related. */
+    (void)unpack.cast <plist::String> ("CFBundleName");
+    (void)unpack.cast <plist::String> ("CFBundleIdentifier");
+    (void)unpack.cast <plist::String> ("CFBundleVersion");
+    (void)unpack.cast <plist::String> ("CFBundleShortVersionString");
+    (void)unpack.cast <plist::Array> ("CFBundleSupportedPlatforms");
+    (void)unpack.cast <plist::String> ("CFBundleDevelopmentRegion");
+
+    /* Ignored: build machine info. */
+    (void)unpack.cast <plist::String> ("DTSDKBuild");
+    (void)unpack.cast <plist::String> ("DTSDKName");
+    (void)unpack.cast <plist::String> ("DTPlatformBuild");
+    (void)unpack.cast <plist::String> ("DTPlatformVersion");
+    (void)unpack.cast <plist::String> ("DTCompiler");
+    (void)unpack.cast <plist::String> ("DTXcode");
+    (void)unpack.cast <plist::String> ("DTXcodeBuild");
+    (void)unpack.cast <plist::String> ("BuildMachineOSBuild");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
 
     if (I != nullptr) {
         _identifier = I->value();
@@ -231,6 +261,32 @@ parse(plist::Dictionary const *dict)
         _overrideProperties = pbxsetting::Level(settings);
     }
 
+    if (AI != nullptr) {
+        std::vector<pbxsetting::Setting> settings;
+        for (size_t n = 0; n < AI->count(); n++) {
+            auto AIK = AI->key(n);
+            auto AIV = AI->value <plist::String> (AIK);
+
+            if (AIV != nullptr) {
+                pbxsetting::Setting setting = pbxsetting::Setting::Parse(AIK, AIV->value());
+                settings.push_back(setting);
+            }
+        }
+        _additionalInfo = pbxsetting::Level(settings);
+    }
+
+    if (IDP != nullptr) {
+        _isDeploymentPlatform = IDP->value();
+    }
+
+    if (MSV != nullptr) {
+        _minimumSDKVersion = MSV->value();
+    }
+
+    if (RSS != nullptr) {
+        _runtimeSystemSpecification = RSS->value();
+    }
+
     return true;
 }
 
@@ -241,6 +297,9 @@ Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string
         return nullptr;
     }
 
+    /*
+     * Load platform info.
+     */
     std::string settingsFileName = path + "/Info.plist";
     if (!filesystem->isReadable(settingsFileName)) {
         return nullptr;
@@ -256,9 +315,9 @@ Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string
         return nullptr;
     }
 
-    //
-    // Parse property list
-    //
+    /*
+     * Parse platform info property list.
+     */
     auto result = plist::Format::Any::Deserialize(contents);
     if (result.first == nullptr) {
         return nullptr;
@@ -269,29 +328,28 @@ Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string
         return nullptr;
     }
 
-    //
-    // Parse the SDK platform dictionary and create the object.
-    //
+    /*
+     * Create the platform object.
+     */
     auto platform = std::make_shared<Platform>();
     platform->_manager = manager;
+    platform->_path = FSUtil::GetDirectoryName(realPath);
 
+    /*
+     * Parse platform info dictionary.
+     */
     if (!platform->parse(plist)) {
         return nullptr;
     }
 
-    //
-    // Save some useful info
-    //
-    platform->_path = FSUtil::GetDirectoryName(realPath);
-
-    //
-    // Parse version information
-    //
+    /*
+     * Load platform version information.
+     */
     platform->_platformVersion = PlatformVersion::Open(filesystem, platform->_path);
 
-    //
-    // Lookup all the SDKs inside the platform
-    //
+    /*
+     * Load all the SDKs inside the platform.
+     */
     std::string sdksPath = platform->_path + "/Developer/SDKs";
     filesystem->enumerateDirectory(sdksPath, [&](std::string const &filename) -> void {
         if (FSUtil::GetFileExtension(filename) != "sdk") {

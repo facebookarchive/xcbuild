@@ -12,22 +12,31 @@
 #include <plist/Dictionary.h>
 #include <plist/String.h>
 #include <plist/Format/Any.h>
+#include <plist/Keys/Unpack.h>
 
 using xcsdk::SDK::Product;
 using libutil::Filesystem;
 
-Product::Product()
+Product::
+Product()
 {
 }
 
 bool Product::
 parse(plist::Dictionary const *dict)
 {
-    auto PN   = dict->value <plist::String> ("ProductName");
-    auto PV   = dict->value <plist::String> ("ProductVersion");
-    auto PUVV = dict->value <plist::String> ("ProductUserVisibleVersion");
-    auto PBV  = dict->value <plist::String> ("ProductBuildVersion");
-    auto PC   = dict->value <plist::String> ("ProductCopyright");
+    std::unordered_set<std::string> seen;
+    auto unpack = plist::Keys::Unpack("Product", dict, &seen);
+
+    auto PN   = unpack.cast <plist::String> ("ProductName");
+    auto PV   = unpack.cast <plist::String> ("ProductVersion");
+    auto PUVV = unpack.cast <plist::String> ("ProductUserVisibleVersion");
+    auto PBV  = unpack.cast <plist::String> ("ProductBuildVersion");
+    auto PC   = unpack.cast <plist::String> ("ProductCopyright");
+
+    if (!unpack.complete(true)) {
+        fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
 
     if (PN != nullptr) {
         _productName = PN->value();
@@ -59,6 +68,9 @@ Open(Filesystem const *filesystem, std::string const &path)
         return nullptr;
     }
 
+    /*
+     * Load information.
+     */
     std::string settingsFileName = path + "/System/Library/CoreServices/SystemVersion.plist";
     if (!filesystem->isReadable(settingsFileName)) {
         return nullptr;
@@ -74,9 +86,9 @@ Open(Filesystem const *filesystem, std::string const &path)
         return nullptr;
     }
 
-    //
-    // Parse property list
-    //
+    /*
+     * Parse property list.
+     */
     auto result = plist::Format::Any::Deserialize(contents);
     if (result.first == nullptr) {
         return nullptr;
@@ -87,9 +99,9 @@ Open(Filesystem const *filesystem, std::string const &path)
         return nullptr;
     }
 
-    //
-    // Parse the Product dictionary and create the object.
-    //
+    /*
+     * Parse the dictionary and create the object.
+     */
     auto product = std::make_shared <Product> ();
     if (!product->parse(plist)) {
         return nullptr;
