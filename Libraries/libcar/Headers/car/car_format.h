@@ -197,7 +197,7 @@ struct car_header {
 } __attribute__((packed));
 
 struct car_key_format {
-    char magic[4]; // 'kfmt'
+    char magic[4]; // 'tmfk'
     uint32_t reserved;
     uint32_t num_identifiers;
     uint32_t identifier_list[0];
