@@ -55,7 +55,7 @@ ResolveBuildFiles(Filesystem const *filesystem, Phase::Environment const &phaseE
 
     for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildFiles) {
         if (buildFile->fileRef() == nullptr) {
-            fprintf(stderr, "error: build file is missing file reference\n");
+            fprintf(stderr, "warning: build phase input does not reference a file\n");
             continue;
         }
 
