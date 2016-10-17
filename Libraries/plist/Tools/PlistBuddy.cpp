@@ -88,6 +88,40 @@ Options::
 {
 }
 
+static std::unique_ptr<plist::Object>
+ReadPlistObjectFromFile(Filesystem &filesystem, std::string filepath)
+{
+    if (filepath.empty()) {
+        fprintf(stderr, "no input specified\n");
+        return NULL;
+    }
+
+    if (!filesystem.exists(filepath)) {
+        fprintf(stderr, "File does not exist: %s\n", filepath.c_str());
+        return NULL;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem.read(&contents, filepath)) {
+        fprintf(stderr, "error: unable to read %s\n", filepath.c_str());
+        return NULL;
+    }
+
+    auto format = plist::Format::Any::Identify(contents);
+    if (format == nullptr) {
+        fprintf(stderr, "error: input %s not a plist\n", filepath.c_str());
+        return NULL;
+    }
+
+    auto deserialize = plist::Format::Any::Deserialize(contents, *format);
+    if (!deserialize.first) {
+        fprintf(stderr, "error: %s\n", deserialize.second.c_str());
+        return NULL;
+    }
+
+    return std::move(deserialize.first);
+}
+
 std::pair<bool, std::string> Options::
 parseArgument(std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it)
 {
@@ -163,6 +197,7 @@ CommandHelp()
     fprintf(stderr, INDENT "Add <KeyPath> <Type> <Value> - Set value at KeyPath to Value\n");
     fprintf(stderr, INDENT "Clear <Type> - Clears all data, and sets root to of the given type\n");
     fprintf(stderr, INDENT "Delete <KeyPath> - Removes entry at KeyPath\n");
+    fprintf(stderr, INDENT "Merge <file> [<KeyPath>] - Merges data from <file> to KeyPath if exists, otherwise to root\n");
     fprintf(stderr, "\n<KeyPath>\n");
     fprintf(stderr, INDENT ":= \"\"                             => root object\n");
     fprintf(stderr, INDENT ":= <KeyPath>[:<Dictionary Key>]   => indexes into dictionary\n");
@@ -432,6 +467,53 @@ Delete(plist::Object *object, std::queue<std::string> *keyPath) {
 }
 
 static bool
+Merge(plist::Object *object, std::string &merge_file, std::queue<std::string> &keyPath, Filesystem *filesystem)
+{
+    std::unique_ptr<plist::Object> mergeObject = ReadPlistObjectFromFile(*filesystem, merge_file);
+    if (mergeObject == nullptr) {
+        fprintf(stderr, "Merge target plist file not found\n");
+        return false;
+    }
+
+    plist::Object *mergeTarget = GetObjectAtKeyPath(object, &keyPath, false);
+    if (!keyPath.empty() || mergeTarget == nullptr) {
+        fprintf(stderr, "Invalid key path (no object at key path)\n");
+        return false;
+    }
+
+    switch (mergeTarget->type()) {
+        case plist::ObjectType::Dictionary:
+            switch (mergeObject->type()) {
+                case plist::ObjectType::Dictionary:
+                    plist::CastTo<plist::Dictionary>(mergeTarget)->merge(plist::CastTo<plist::Dictionary>(mergeObject.get()));
+                    return true;
+                case plist::ObjectType::Array:
+                    fprintf(stderr, "Cannot merge array into dictionary\n");
+                    return false;
+                default:
+                    // add object to empty key
+                    plist::CastTo<plist::Dictionary>(mergeTarget)->set("", std::move(mergeObject));
+                    return true;
+            }
+        case plist::ObjectType::Array:
+            switch (mergeObject->type()) {
+                case plist::ObjectType::Dictionary:
+                    fprintf(stderr, "Cannot merge dictionary into array\n");
+                    return false;
+                case plist::ObjectType::Array:
+                    plist::CastTo<plist::Array>(mergeTarget)->merge(plist::CastTo<plist::Array>(mergeObject.get()));
+                    return true;
+                default:
+                    plist::CastTo<plist::Array>(mergeTarget)->append(std::move(mergeObject));
+                    return true;
+            }
+        default:
+            fprintf(stderr, "Object at KeyPath is not container\n");
+            return false;
+    }
+}
+
+static bool
 ProcessCommand(Filesystem *filesystem, std::string const &path, bool xml, RootObjectContainer &root, std::string const &input, bool *mutated, bool *keepReading)
 {
     std::vector<std::string> tokens;
@@ -506,6 +588,16 @@ ProcessCommand(Filesystem *filesystem, std::string const &path, bool xml, RootOb
             return false;
         }
         *mutated = true;
+    } else if (command == "Merge") {
+        std::queue<std::string> keyPath;
+        if (tokens.size() > 2) {
+            ParseCommandKeyPathString(tokens[2], &keyPath);
+        }
+
+        if (!Merge(root.object.get(), tokens[1], keyPath, filesystem)) {
+            return false;
+        }
+        *mutated = true;
     } else if (command == "Help") {
         CommandHelp();
     } else {
@@ -533,34 +625,19 @@ main(int argc, char **argv)
         return 0;
     }
 
-    if (options.input().empty()) {
-        return Help("no input specified");
-    }
-
-    if (!filesystem.exists(options.input())) {
-        fprintf(stderr, "File does not exist, will be created: %s\n", options.input().c_str());
-    }
-
-    std::vector<uint8_t> contents;
-    if (!filesystem.read(&contents, options.input())) {
-        fprintf(stderr, "error: unable to read %s\n", options.input().c_str());
-        return 1;
-    }
-
-    auto format = plist::Format::Any::Identify(contents);
-    if (format == nullptr) {
-        fprintf(stderr, "error: input %s not a plist\n", options.input().c_str());
-        return 1;
-    }
-
-    auto deserialize = plist::Format::Any::Deserialize(contents, *format);
-    if (!deserialize.first) {
-        fprintf(stderr, "error: %s\n", deserialize.second.c_str());
-        return 1;
+    if (!options.input().empty() && !filesystem.exists(options.input())) {
+        fprintf(stderr, "File does not exist, will create %s\n", options.input().c_str());
+        if (!filesystem.createFile(options.input())) {
+            fprintf(stderr, "Failed to create file at path %s\n", options.input().c_str());
+            return 1;
+        }
     }
 
     RootObjectContainer root;
-    root.object = std::move(deserialize.first);
+    root.object = ReadPlistObjectFromFile(filesystem, options.input());
+    if (!root.object) {
+        return 1;
+    }
 
     bool success = true;
     if (options.command()) {
