@@ -88,40 +88,6 @@ Options::
 {
 }
 
-static std::unique_ptr<plist::Object>
-ReadPlistObjectFromFile(Filesystem &filesystem, std::string filepath)
-{
-    if (filepath.empty()) {
-        fprintf(stderr, "no input specified\n");
-        return NULL;
-    }
-
-    if (!filesystem.exists(filepath)) {
-        fprintf(stderr, "File does not exist: %s\n", filepath.c_str());
-        return NULL;
-    }
-
-    std::vector<uint8_t> contents;
-    if (!filesystem.read(&contents, filepath)) {
-        fprintf(stderr, "error: unable to read %s\n", filepath.c_str());
-        return NULL;
-    }
-
-    auto format = plist::Format::Any::Identify(contents);
-    if (format == nullptr) {
-        fprintf(stderr, "error: input %s not a plist\n", filepath.c_str());
-        return NULL;
-    }
-
-    auto deserialize = plist::Format::Any::Deserialize(contents, *format);
-    if (!deserialize.first) {
-        fprintf(stderr, "error: %s\n", deserialize.second.c_str());
-        return NULL;
-    }
-
-    return std::move(deserialize.first);
-}
-
 std::pair<bool, std::string> Options::
 parseArgument(std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it)
 {
@@ -204,6 +170,34 @@ CommandHelp()
     fprintf(stderr, INDENT ":= <KeyPath>[:<Array Index>]      => indexes into Array\n");
     fprintf(stderr, "\n<Type> := (string|dictionary|array|bool|real|integer|date|data)\n\n");
 #undef INDENT
+}
+
+static std::unique_ptr<plist::Object>
+ReadPropertyList(Filesystem const *filesystem, std::string const &path)
+{
+    if (path.empty()) {
+        fprintf(stderr, "error: no input specified\n");
+        return NULL;
+    }
+
+    if (!filesystem->exists(path)) {
+        fprintf(stderr, "error: file does not exist: %s\n", path.c_str());
+        return NULL;
+    }
+
+    std::vector<uint8_t> contents;
+    if (!filesystem->read(&contents, path)) {
+        fprintf(stderr, "error: unable to read %s\n", path.c_str());
+        return NULL;
+    }
+
+    auto deserialize = plist::Format::Any::Deserialize(contents);
+    if (!deserialize.first) {
+        fprintf(stderr, "error: %s\n", deserialize.second.c_str());
+        return NULL;
+    }
+
+    return std::move(deserialize.first);
 }
 
 static void
@@ -467,49 +461,48 @@ Delete(plist::Object *object, std::queue<std::string> *keyPath) {
 }
 
 static bool
-Merge(plist::Object *object, std::string &merge_file, std::queue<std::string> &keyPath, Filesystem *filesystem)
+Merge(plist::Object *object, std::string &mergeSource, std::queue<std::string> *keyPath, Filesystem const *filesystem)
 {
-    std::unique_ptr<plist::Object> mergeObject = ReadPlistObjectFromFile(*filesystem, merge_file);
+    std::unique_ptr<plist::Object> mergeObject = ReadPropertyList(filesystem, mergeSource);
     if (mergeObject == nullptr) {
-        fprintf(stderr, "Merge target plist file not found\n");
+        fprintf(stderr, "Unable to read merge source file\n");
         return false;
     }
 
-    plist::Object *mergeTarget = GetObjectAtKeyPath(object, &keyPath, false);
-    if (!keyPath.empty() || mergeTarget == nullptr) {
+    plist::Object *mergeTarget = GetObjectAtKeyPath(object, keyPath, false);
+    if (!keyPath->empty() || mergeTarget == nullptr) {
         fprintf(stderr, "Invalid key path (no object at key path)\n");
         return false;
     }
 
-    switch (mergeTarget->type()) {
-        case plist::ObjectType::Dictionary:
-            switch (mergeObject->type()) {
-                case plist::ObjectType::Dictionary:
-                    plist::CastTo<plist::Dictionary>(mergeTarget)->merge(plist::CastTo<plist::Dictionary>(mergeObject.get()));
-                    return true;
-                case plist::ObjectType::Array:
-                    fprintf(stderr, "Cannot merge array into dictionary\n");
-                    return false;
-                default:
-                    // add object to empty key
-                    plist::CastTo<plist::Dictionary>(mergeTarget)->set("", std::move(mergeObject));
-                    return true;
-            }
-        case plist::ObjectType::Array:
-            switch (mergeObject->type()) {
-                case plist::ObjectType::Dictionary:
-                    fprintf(stderr, "Cannot merge dictionary into array\n");
-                    return false;
-                case plist::ObjectType::Array:
-                    plist::CastTo<plist::Array>(mergeTarget)->merge(plist::CastTo<plist::Array>(mergeObject.get()));
-                    return true;
-                default:
-                    plist::CastTo<plist::Array>(mergeTarget)->append(std::move(mergeObject));
-                    return true;
-            }
-        default:
-            fprintf(stderr, "Object at KeyPath is not container\n");
+    if (auto mergeTargetDictionary = plist::CastTo<plist::Dictionary>(mergeTarget)) {
+        if (auto mergeObjectDictionary = plist::CastTo<plist::Dictionary>(mergeObject.get())) {
+            mergeTargetDictionary->merge(mergeObjectDictionary);
+            return true;
+        } else if (auto mergeObjectArray = plist::CastTo<plist::Array>(mergeObject.get())) {
+            (void)mergeObjectArray;
+            fprintf(stderr, "Cannot merge array into dictionary\n");
             return false;
+        } else {
+            /* Add object to empty key. */
+            mergeTargetDictionary->set("", std::move(mergeObject));
+            return true;
+        }
+    } else if (auto mergeTargetArray = plist::CastTo<plist::Array>(mergeTarget)) {
+        if (auto mergeObjectDictionary = plist::CastTo<plist::Dictionary>(mergeObject.get())) {
+            (void)mergeObjectDictionary;
+            fprintf(stderr, "Cannot merge dictionary into array\n");
+            return false;
+        } else if (auto mergeObjectArray = plist::CastTo<plist::Array>(mergeObject.get())) {
+            mergeTargetArray->merge(mergeObjectArray);
+            return true;
+        } else {
+            mergeTargetArray->append(std::move(mergeObject));
+            return true;
+        }
+    } else {
+        fprintf(stderr, "Object at KeyPath is not a container\n");
+        return false;
     }
 }
 
@@ -594,7 +587,7 @@ ProcessCommand(Filesystem *filesystem, std::string const &path, bool xml, RootOb
             ParseCommandKeyPathString(tokens[2], &keyPath);
         }
 
-        if (!Merge(root.object.get(), tokens[1], keyPath, filesystem)) {
+        if (!Merge(root.object.get(), tokens[1], &keyPath, filesystem)) {
             return false;
         }
         *mutated = true;
@@ -634,7 +627,7 @@ main(int argc, char **argv)
     }
 
     RootObjectContainer root;
-    root.object = ReadPlistObjectFromFile(filesystem, options.input());
+    root.object = ReadPropertyList(&filesystem, options.input());
     if (!root.object) {
         return 1;
     }
