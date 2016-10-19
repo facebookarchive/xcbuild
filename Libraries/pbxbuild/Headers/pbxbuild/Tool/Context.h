@@ -28,7 +28,6 @@ class Context {
 private:
     xcsdk::SDK::Target::shared_ptr _sdk;
     std::vector<xcsdk::SDK::Toolchain::shared_ptr> _toolchains;
-    std::vector<std::string>       _executablePaths;
     std::string                    _workingDirectory;
 
 private:
@@ -49,7 +48,6 @@ public:
     Context(
         xcsdk::SDK::Target::shared_ptr const &sdk,
         std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains,
-        std::vector<std::string> const &executablePaths,
         std::string const &workingDirectory,
         SearchPaths const &searchPaths);
     ~Context();
@@ -59,8 +57,6 @@ public:
     { return _sdk; }
     std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains() const
     { return _toolchains; }
-    std::vector<std::string> const &executablePaths() const
-    { return _executablePaths; }
     std::string const &workingDirectory() const
     { return _workingDirectory; }
 
