@@ -28,6 +28,9 @@ Any(Type type, Contents const &contents) :
         case Type::ASCII:
             _contents.ascii = contents.ascii;
             break;
+        case Type::JSON:
+            _contents.json = contents.json;
+            break;
     }
 }
 
@@ -50,6 +53,9 @@ Any::
         case Type::ASCII:
             _contents.ascii.~ASCII();
             break;
+        case Type::JSON:
+	    _contents.json.~JSON();
+	    break;
     }
 }
 
@@ -82,6 +88,7 @@ Identify(std::vector<uint8_t> const &contents)
     FORMAT(Binary);
     FORMAT(XML);
     FORMAT(ASCII);
+    FORMAT(JSON);
 
 #undef FORMAT
 
@@ -106,6 +113,8 @@ Deserialize(std::vector<uint8_t> const &contents, Any const &format)
             return DeserializeImpl<XML>(contents, format);
         case Type::ASCII:
             return DeserializeImpl<ASCII>(contents, format);
+        case Type::JSON:
+	    return DeserializeImpl<JSON>(contents, format);
     }
 
     abort();
@@ -133,6 +142,8 @@ Serialize(Object const *object, Any const &format)
             return SerializeImpl<XML>(object, format);
         case Type::ASCII:
             return SerializeImpl<ASCII>(object, format);
+        case Type::JSON:
+            return SerializeImpl<JSON>(object, format);
     }
 
     abort();

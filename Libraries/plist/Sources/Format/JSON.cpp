@@ -17,6 +17,7 @@ using plist::Format::JSON;
 using plist::Format::JSONParser;
 using plist::Format::JSONWriter;
 using plist::Object;
+using plist::Format::Type;
 
 JSON::
 JSON()
@@ -29,8 +30,34 @@ template<>
 std::unique_ptr<JSON> Format<JSON>::
 Identify(std::vector<uint8_t> const &contents)
 {
-    /* JSON is not a standard format. */
-    return nullptr;
+    for (auto bp = contents.begin(); bp != contents.end();) {
+        /* Conceal zeroes for UTF-16/32 encodings. */
+        if (*bp == 0 || isspace(*bp)) {
+            bp++;
+        } else if (*bp == '{' || *bp == '[') {
+            return std::unique_ptr<JSON>(new JSON(JSON::Create()));
+        } else if (bp - contents.begin() < 4) {
+            /*
+             * We conceal some BOM chars for UTF encodings in the first
+             * four bytes.
+             */
+            switch (*bp) {
+                case 0xfe: /* UTF-16/32 */
+                case 0xff:
+                case 0xef: /* UTF-8 */
+                case 0xbb:
+                case 0xbf:
+                    bp++;
+                    break;
+                default:
+                    return nullptr;
+            }
+        } else {
+            return nullptr;
+        }
+    }
+
+  return nullptr;
 }
 
 template<>
@@ -72,6 +99,12 @@ Serialize(Object const *object, JSON const &format)
 }
 
 } }
+
+Type JSON::
+FormatType()
+{
+    return Type::JSON;
+}
 
 JSON JSON::
 Create()
