@@ -51,6 +51,7 @@ private:
         std::vector<pbxbuild::Tool::Invocation> const &invocations,
         std::unordered_set<std::string> *seenDirectories);
     bool buildTargetInvocations(
+        process::Context const *processContext,
         libutil::Filesystem *filesystem,
         std::string const &dependencyInfoToolPath,
         pbxproj::PBX::Target::shared_ptr const &target,
@@ -65,6 +66,7 @@ private:
     bool buildInvocation(
         ninja::Writer *writer,
         pbxbuild::Tool::Invocation const &invocation,
+        std::string const &executablePath,
         std::string const &dependencyInfoToolPath,
         std::string const &temporaryDirectory,
         std::string const &after);

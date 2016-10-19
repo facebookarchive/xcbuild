@@ -13,9 +13,9 @@
 #include <process/Context.h>
 
 namespace Tool = pbxbuild::Tool;
-using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
-using DependencyInfo = pbxbuild::Tool::Invocation::DependencyInfo;
-using Executable = pbxbuild::Tool::Invocation::Executable;
+using AuxiliaryFile = Tool::Invocation::AuxiliaryFile;
+using DependencyInfo = Tool::Invocation::DependencyInfo;
+using Executable = Tool::Invocation::Executable;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -67,61 +67,45 @@ DependencyInfo(dependency::DependencyInfoFormat format, std::string const &path)
 }
 
 Executable::
-Executable(std::string const &path, std::string const &builtin) :
-    _path   (path),
-    _builtin(builtin)
+Executable(
+    ext::optional<std::string> const &external,
+    ext::optional<std::string> const &builtin) :
+    _external(external),
+    _builtin (builtin)
 {
-}
-
-std::string const &Executable::
-displayName() const
-{
-    /* If the tool is builtin. */
-    bool builtin = !_builtin.empty();
-
-    /* The user-facing name of the executable. For builtin ones, prefer the shorter built-in name. */
-    return (builtin ? _builtin : _path);
 }
 
 Executable Executable::
-Determine(std::string const &executable, std::vector<std::string> const &executablePaths)
+External(std::string const &path)
 {
-    std::string builtinPrefix = "builtin-";
-    bool builtin = executable.compare(0, builtinPrefix.size(), builtinPrefix) == 0;
-
-    if (builtin) {
-        /* Has a builtin prefix. */
-        return Builtin(executable);
-    } else {
-        std::string path = executable;
-
-        if (!FSUtil::IsAbsolutePath(executable)) {
-            /* Not absolute, look in the search paths. */
-            // TODO(grp): Handle when the executable is not found.
-            path = Filesystem::GetDefaultUNSAFE()->findExecutable(executable, executablePaths).value_or(std::string());
-        }
-
-        return Absolute(path);
-    }
-}
-
-Executable Executable::
-Absolute(std::string const &path)
-{
-    return Executable(path, std::string());
+    return Executable(path, ext::nullopt);
 }
 
 Executable Executable::
 Builtin(std::string const &name)
 {
-    std::string executableRoot = FSUtil::GetDirectoryName(process::Context::GetDefaultUNSAFE()->executablePath());
-    std::string path = executableRoot + "/" + name;
-    return Executable(path, name);
+    return Executable(ext::nullopt, name);
+}
+
+ext::optional<Executable> Executable::
+Determine(std::string const &executable)
+{
+    if (executable.empty()) {
+        return ext::nullopt;
+    }
+
+    std::string builtinPrefix = "builtin-";
+    if (executable.compare(0, builtinPrefix.size(), builtinPrefix) == 0) {
+        /* Has a builtin prefix. */
+        return Builtin(executable);
+    } else {
+        /* Unknown external tool. */
+        return External(executable);
+    }
 }
 
 Tool::Invocation::
 Invocation() :
-    _executable             (Executable(std::string(), std::string())),
     _showEnvironmentInLog   (true),
     _createsProductStructure(false)
 {

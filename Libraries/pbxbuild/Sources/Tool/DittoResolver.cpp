@@ -29,7 +29,7 @@ resolve(
     std::string logMessage = "Ditto " + targetPath + " " + sourcePath;
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Absolute("/usr/bin/ditto"); // TODO(grp): Ditto is not portable.
+    invocation.executable() = Tool::Invocation::Executable::External("/usr/bin/ditto"); // TODO(grp): Ditto is not portable.
     invocation.arguments() = { "-rsrc", sourcePath, targetPath };
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = { FSUtil::ResolveRelativePath(sourcePath, toolContext->workingDirectory()) };

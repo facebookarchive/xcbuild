@@ -29,7 +29,7 @@ resolve(
     std::string logMessage = "MkDir " + directory;
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Absolute("/bin/mkdir");
+    invocation.executable() = Tool::Invocation::Executable::External("/bin/mkdir");
     invocation.arguments() = { "-p", directory };
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.outputs() = { FSUtil::ResolveRelativePath(directory, toolContext->workingDirectory()) };

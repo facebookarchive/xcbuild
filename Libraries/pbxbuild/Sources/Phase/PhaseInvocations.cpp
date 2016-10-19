@@ -52,7 +52,6 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
     Tool::Context toolContext = Tool::Context(
         targetEnvironment.sdk(),
         targetEnvironment.toolchains(),
-        targetEnvironment.executablePaths(),
         targetEnvironment.workingDirectory(),
         searchPaths);
 

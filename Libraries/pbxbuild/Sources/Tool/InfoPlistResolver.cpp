@@ -63,7 +63,7 @@ resolve(
     environmentVariables.insert(buildSettingValues.begin(), buildSettingValues.end());
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = tokens.arguments();
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();

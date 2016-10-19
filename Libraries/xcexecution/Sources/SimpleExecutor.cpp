@@ -224,19 +224,18 @@ performInvocations(
 {
     for (pbxbuild::Tool::Invocation const &invocation : orderedInvocations) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
-        if (invocation.executable().path().empty()) {
+        if (!invocation.executable()) {
             continue;
         }
+        pbxbuild::Tool::Invocation::Executable const &executable = *invocation.executable();
 
         if (invocation.createsProductStructure() != createProductStructure) {
             continue;
         }
 
-        std::map<std::string, std::string> sortedEnvironment = std::map<std::string, std::string>(invocation.environment().begin(), invocation.environment().end());
-
-        xcformatter::Formatter::Print(_formatter->beginInvocation(invocation, invocation.executable().displayName(), createProductStructure));
-
         if (!_dryRun) {
+            bool success = true;
+
             for (std::string const &output : invocation.outputs()) {
                 std::string directory = FSUtil::GetDirectoryName(output);
 
@@ -245,39 +244,66 @@ performInvocations(
                 }
             }
 
-            process::MemoryContext context = process::MemoryContext(
-                invocation.executable().path(),
-                invocation.workingDirectory(),
-                invocation.arguments(),
-                invocation.environment(),
-                processContext->userID(),
-                processContext->groupID(),
-                processContext->userName(),
-                processContext->groupName());
+            if (ext::optional<std::string> const &builtin = executable.builtin()) {
+                /* Builtin tool, find and run in-process. */
+                if (std::shared_ptr<builtin::Driver> driver = _builtins.driver(*builtin)) {
+                    xcformatter::Formatter::Print(_formatter->beginInvocation(invocation, *builtin, createProductStructure));
 
-            if (!invocation.executable().builtin().empty()) {
-                /* For built-in tools, run them in-process. */
-                std::shared_ptr<builtin::Driver> driver = _builtins.driver(invocation.executable().builtin());
-                if (driver == nullptr) {
-                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
+                    process::MemoryContext context = process::MemoryContext(
+                        *builtin,
+                        invocation.workingDirectory(),
+                        invocation.arguments(),
+                        invocation.environment(),
+                        processContext->userID(),
+                        processContext->groupID(),
+                        processContext->userName(),
+                        processContext->groupName());
+                    success = driver->run(&context, filesystem) != 0;
+
+                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, *builtin, createProductStructure));
+                } else {
+                    /* Failed to find builtin tool. */
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
+            } else if (ext::optional<std::string> const &external = executable.external()) {
+                /* External tool, find on the filesystem. */
+                ext::optional<std::string> path;
+                if (FSUtil::IsAbsolutePath(*external)) {
+                    if (filesystem->isExecutable(*external)) {
+                        path = external;
+                    }
+                } else {
+                    path = filesystem->findExecutable(*external, targetEnvironment.executablePaths());
+                }
 
-                if (driver->run(&context, filesystem) != 0) {
-                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
+                if (path) {
+                    xcformatter::Formatter::Print(_formatter->beginInvocation(invocation, *path, createProductStructure));
+
+                    process::MemoryContext context = process::MemoryContext(
+                        *path,
+                        invocation.workingDirectory(),
+                        invocation.arguments(),
+                        invocation.environment(),
+                        processContext->userID(),
+                        processContext->groupID(),
+                        processContext->userName(),
+                        processContext->groupName());
+                    ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
+                    success = (exitCode && *exitCode == 0);
+
+                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, *path, createProductStructure));
+                } else {
+                    /* Failed to find executable. */
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
             } else {
-                /* External tool, run the tool externally. */
-                ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
-                if (!exitCode || *exitCode != 0) {
-                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
-                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
-                }
+                abort();
+            }
+
+            if (!success) {
+                return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
             }
         }
-
-        xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
     }
 
     return std::make_pair(true, std::vector<pbxbuild::Tool::Invocation>());

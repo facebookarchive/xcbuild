@@ -42,8 +42,8 @@ ResolveInternal(
      * Add the copy-specific build settings.
      */
     pbxsetting::Level copyLevel = pbxsetting::Level({
-        pbxsetting::Setting::Create("PBXCP_STRIP_TOOL", Filesystem::GetDefaultUNSAFE()->findExecutable("strip", toolContext->executablePaths()).value_or(std::string())),
-        pbxsetting::Setting::Create("PBXCP_BITCODE_STRIP_TOOL", Filesystem::GetDefaultUNSAFE()->findExecutable("bitcode_strip", toolContext->executablePaths()).value_or(std::string())),
+        // TODO: pbxsetting::Setting::Create("PBXCP_STRIP_TOOL", toolchain->path() + "/usr/bin/strip"),
+        // TODO: pbxsetting::Setting::Create("PBXCP_BITCODE_STRIP_TOOL", toolchain->path() + "/usr/bin/bitcode_strip"),
         pbxsetting::Setting::Create("pbxcp_rule_name", logMessageTitle),
     });
 
@@ -91,7 +91,7 @@ ResolveInternal(
      * Create the copy invocation.
      */
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = tokens.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
