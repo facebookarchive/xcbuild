@@ -17,6 +17,8 @@ install(FILES
         com.apple.compilers.llvm.clang.1_0.astbuilder.xcspec
         com.apple.compilers.llvm.clang.1_0.compiler.xcspec
         com.apple.compilers.llvm.clang.1_0.migrator.xcspec
+        com.apple.compilers.llvm.clang.1_0.migrator.xctest.xcspec
         com.apple.compilers.llvm.clang.1_0.xcspec
         com.apple.compilers.model.coredata.xcspec
+        com.apple.compilers.model.coredatamapping.xcspec
         DESTINATION Library/Xcode/Specifications)

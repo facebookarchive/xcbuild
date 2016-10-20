@@ -9,9 +9,9 @@
 
 {
     Type = Compiler;
-    Identifier = com.apple.compilers.llvm.clang.1_0.migrator;
+    Identifier = com.apple.compilers.llvm.clang.1_0.migrator.xctest;
     BasedOn = com.apple.compilers.llvm.clang.1_0;
-    Name = "Objective-C Migrator";
+    Name = "XCTest Migrator";
 
     /* TODO: Everything */
 }

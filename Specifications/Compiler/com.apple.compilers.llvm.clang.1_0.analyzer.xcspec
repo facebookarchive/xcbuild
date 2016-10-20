@@ -12,16 +12,7 @@
     Identifier = com.apple.compilers.llvm.clang.1_0.analyzer;
     BasedOn = com.apple.compilers.llvm.clang.1_0;
     Name = "Static Analyzer";
+    RuleName = "Analyze $(InputPath)";
 
-    RuleName = "Analyze $(InputFile)";
-
-    InputFileTypes = (
-        "sourcecode.c.c",
-        "sourcecode.c.objc",
-        "sourcecode.cpp.cpp",
-        "sourcecode.cpp.objcpp",
-    );
-
-    OutputDir = "$(TEMP_DIR)/StaticAnalyzer";
-    OutputFileExtension = "plist";
+    /* TODO: Everything */
 }
