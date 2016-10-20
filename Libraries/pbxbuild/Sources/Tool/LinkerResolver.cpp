@@ -93,15 +93,18 @@ resolve(
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
     if (_linker->identifier() == Tool::LinkerResolver::LinkerToolIdentifier()) {
         if (_linker->dependencyInfoFile()) {
-            auto info = Tool::Invocation::DependencyInfo(
-                dependency::DependencyInfoFormat::Binary,
-                environment.expand(*_linker->dependencyInfoFile()));
-            dependencyInfo.push_back(info);
+            auto dependencyInfoFile = environment.expand(*_linker->dependencyInfoFile());
+            if (!dependencyInfoFile.empty()) {
+                auto info = Tool::Invocation::DependencyInfo(
+                    dependency::DependencyInfoFormat::Binary,
+                    dependencyInfoFile);
+                dependencyInfo.push_back(info);
 
-            special.push_back("-Xlinker");
-            special.push_back("-dependency_info");
-            special.push_back("-Xlinker");
-            special.push_back(info.path());
+                special.push_back("-Xlinker");
+                special.push_back("-dependency_info");
+                special.push_back("-Xlinker");
+                special.push_back(info.path());
+            }
         }
     }
 
