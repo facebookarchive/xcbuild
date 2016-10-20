@@ -52,6 +52,7 @@ install(FILES
         file.xcplaygroundpage.xcspec
         file.xcspec
         file.xib.xcspec
+        folder.abstractassetcatalog.xcspec
         folder.assetcatalog.xcspec
         folder.iconset.xcspec
         folder.imagecatalog.xcspec
