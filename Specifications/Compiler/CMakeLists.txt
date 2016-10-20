@@ -13,6 +13,10 @@ install(FILES
         com.apple.build-tasks.ls-register-url.xcspec
         com.apple.compilers.assetcatalog.xcspec
         com.apple.compilers.gcc.xcspec
+        com.apple.compilers.llvm.clang.1_0.analyzer.xcspec
+        com.apple.compilers.llvm.clang.1_0.astbuilder.xcspec
         com.apple.compilers.llvm.clang.1_0.compiler.xcspec
+        com.apple.compilers.llvm.clang.1_0.migrator.xcspec
         com.apple.compilers.llvm.clang.1_0.xcspec
+        com.apple.compilers.model.coredata.xcspec
         DESTINATION Library/Xcode/Specifications)

@@ -1,0 +1,74 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+(
+    {
+        Type = Compiler;
+        Identifier = com.apple.compilers.model.coredata;
+        Name = "Data Model Compiler (momc)";
+
+        CommandLine = "momc [options] $(InputFile) $(ProductResourcesDir)/";
+
+        RuleName = "DataModelCompile $(ProductResourcesDir)/ $(InputFile)";
+
+        InputFileTypes = (
+            "wrapper.xcdatamodel",
+            "wrapper.xcdatamodeld",
+        );
+
+        Outputs = (
+            "$(ProductResourcesDir)/$(InputFileBase)$(MOMC_OUTPUT_SUFFIX)",
+        );
+
+        CommandOutputParser = (
+            ("()()error:(.*$)", emit-error),
+            ("()()warning:(.*$)", emit-warning),
+        );
+
+        Options = (
+            {
+                Name = "MOMC_OUTPUT_SUFFIX";
+                Type = String;
+                DefaultValue = "$(MOMC_OUTPUT_SUFFIX_$(InputFileSuffix))";
+            },
+            {
+                Name = "MOMC_OUTPUT_SUFFIX_.xcdatamodel";
+                Type = String;
+                DefaultValue = ".mom";
+            },
+            {
+                Name = "MOMC_OUTPUT_SUFFIX_.xcdatamodeld";
+                Type = String;
+                DefaultValue = ".momd";
+            },
+        );
+    },
+    {
+        Type = Compiler;
+        Identifier = com.apple.compilers.model.coredatamapping;
+        Name = "Data Mapping Model Compiler (mapc)";
+
+        CommandLine = "mapc [options] $(InputFile) $(ProductResourcesDir)/$(InputFileBase).cdm";
+
+        RuleName = "MappingModelCompile $(ProductResourcesDir)/$(InputFileBase).cdm $(InputFile)";
+
+        InputFileTypes = (
+            "wrapper.xcmappingmodel",
+        );
+
+        Outputs = (
+            "$(ProductResourcesDir)/$(InputFileBase).cdm",
+        );
+
+        CommandOutputParser = (
+            ("()()error:(.*$)", emit-error),
+            ("()()warning:(.*$)", emit-warning),
+        );
+    },
+)
