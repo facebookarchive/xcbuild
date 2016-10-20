@@ -48,14 +48,17 @@ install(FILES
         file.scp.xcspec
         file.sks.xcspec
         file.storyboard.xcspec
+        file.swiftpm-manifest.xcspec
         file.uicatalog.xcspec
         file.xcplaygroundpage.xcspec
         file.xcspec
         file.xib.xcspec
+        folder.abstractassetcatalog.xcspec
         folder.assetcatalog.xcspec
         folder.iconset.xcspec
         folder.imagecatalog.xcspec
         folder.skatlas.xcspec
+        folder.stickers
         folder.xcspec
         image.bmp.xcspec
         image.gif.xcspec
