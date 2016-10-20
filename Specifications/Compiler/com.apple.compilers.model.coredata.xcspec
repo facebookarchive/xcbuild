@@ -7,68 +7,40 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-(
-    {
-        Type = Compiler;
-        Identifier = com.apple.compilers.model.coredata;
-        Name = "Data Model Compiler (momc)";
+{
+    Type = Compiler;
+    Identifier = com.apple.compilers.model.coredata;
+    Name = "Data Model Compiler";
 
-        CommandLine = "momc [options] $(InputFile) $(ProductResourcesDir)/";
+    CommandLine = "momc [options] $(InputPath) $(ProductResourcesDir)/";
 
-        RuleName = "DataModelCompile $(ProductResourcesDir)/ $(InputFile)";
+    RuleName = "DataModelCompile $(ProductResourcesDir)/ $(InputPath)";
 
-        InputFileTypes = (
-            "wrapper.xcdatamodel",
-            "wrapper.xcdatamodeld",
-        );
+    InputFileTypes = (
+        "wrapper.xcdatamodel",
+        "wrapper.xcdatamodeld",
+    );
 
-        Outputs = (
-            "$(ProductResourcesDir)/$(InputFileBase)$(MOMC_OUTPUT_SUFFIX)",
-        );
+    Outputs = (
+        "$(ProductResourcesDir)/$(InputFileBase)$(MOMC_OUTPUT_SUFFIX)",
+    );
 
-        CommandOutputParser = (
-            ("()()error:(.*$)", emit-error),
-            ("()()warning:(.*$)", emit-warning),
-        );
-
-        Options = (
-            {
-                Name = "MOMC_OUTPUT_SUFFIX";
-                Type = String;
-                DefaultValue = "$(MOMC_OUTPUT_SUFFIX_$(InputFileSuffix))";
-            },
-            {
-                Name = "MOMC_OUTPUT_SUFFIX_.xcdatamodel";
-                Type = String;
-                DefaultValue = ".mom";
-            },
-            {
-                Name = "MOMC_OUTPUT_SUFFIX_.xcdatamodeld";
-                Type = String;
-                DefaultValue = ".momd";
-            },
-        );
-    },
-    {
-        Type = Compiler;
-        Identifier = com.apple.compilers.model.coredatamapping;
-        Name = "Data Mapping Model Compiler (mapc)";
-
-        CommandLine = "mapc [options] $(InputFile) $(ProductResourcesDir)/$(InputFileBase).cdm";
-
-        RuleName = "MappingModelCompile $(ProductResourcesDir)/$(InputFileBase).cdm $(InputFile)";
-
-        InputFileTypes = (
-            "wrapper.xcmappingmodel",
-        );
-
-        Outputs = (
-            "$(ProductResourcesDir)/$(InputFileBase).cdm",
-        );
-
-        CommandOutputParser = (
-            ("()()error:(.*$)", emit-error),
-            ("()()warning:(.*$)", emit-warning),
-        );
-    },
-)
+    Options = (
+        {
+            Name = "MOMC_OUTPUT_SUFFIX";
+            Type = String;
+            DefaultValue = "$(MOMC_OUTPUT_SUFFIX_$(InputFileSuffix))";
+        },
+        {
+            Name = "MOMC_OUTPUT_SUFFIX_.xcdatamodel";
+            Type = String;
+            DefaultValue = ".mom";
+        },
+        {
+            Name = "MOMC_OUTPUT_SUFFIX_.xcdatamodeld";
+            Type = String;
+            DefaultValue = ".momd";
+        },
+        /* TODO: Complete options */
+    );
+}

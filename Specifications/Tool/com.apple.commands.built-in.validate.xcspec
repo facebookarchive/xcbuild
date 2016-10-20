@@ -10,7 +10,7 @@
 {
     Type = Tool;
     Identifier = com.apple.build-tools.platform.validate;
-    Name = Validate;
+    Name = "Validate Product";
 
     CommandLine = "builtin-validationUtility [options] [input]";
 
@@ -18,9 +18,16 @@
         "$(TEMP_FILE_DIR)/com.apple.build-tools.platform.validate"
     );
 
-    CommandOutputParser = (
-        ("()()error:(.*$)", emit-error),
-        ("()()warning:(.*$)", emit-warning),
+    EnvironmentVariables = {
+        "PRODUCT_TYPE" = "$(PRODUCT_TYPE)";
+    };
+
+    Options = (
+        {
+            Name = "ValidateForStore";
+            Type = Boolean;
+            CommandLineFlag = "-validate-for-store";
+        },
     );
 }
 

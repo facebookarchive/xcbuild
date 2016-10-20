@@ -13,7 +13,7 @@
     BasedOn = com.apple.compilers.llvm.clang.1_0;
     Name = "AST Builder";
 
-    RuleName = "BuildAST $(InputFile)";
+    RuleName = "Build AST from $(InputPath)";
 
     InputFileTypes = (
         "sourcecode.c.c",
@@ -22,6 +22,15 @@
         "sourcecode.cpp.objcpp",
     );
 
-    SourceFileOption = "--fsyntax-only";
+    SourceFileOption = "-fsyntax-only";
     OutputFileExtension = "ast";
+
+    OverriddingProperties = {
+        "CLANG_RETAIN_COMMENTS_FROM_SYSTEM_HEADERS" = YES;
+        "CLEAN_PRECOMPS" = NO;
+        "ENABLE_HEADER_DEPENDENCIES" = YES;
+        "SHARED_PRECOMPS_DIR" = "$(INDEX_PRECOMPS_DIR)";
+    };
+
+    /* TODO: Fully flesh out this spec */
 }

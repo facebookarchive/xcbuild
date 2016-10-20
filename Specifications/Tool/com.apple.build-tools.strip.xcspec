@@ -14,9 +14,11 @@
 
     CommandLine = "strip [options] [input]";
 
-    RuleName = "Strip $(InputFile)";
+    RuleName = "Strip $(InputPath)";
 
     Outputs = (
         "$(OutputPath)",
     );
+
+    /* TODO: Add options */
 }
