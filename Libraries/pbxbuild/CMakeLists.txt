@@ -26,6 +26,7 @@ add_library(pbxbuild SHARED
             Sources/Tool/ModuleMapInfo.cpp
             Sources/Tool/PrecompiledHeaderInfo.cpp
             Sources/Tool/SearchPaths.cpp
+            Sources/Tool/ResolverCommon.cpp
             Sources/Tool/CopyResolver.cpp
             Sources/Tool/DittoResolver.cpp
             Sources/Tool/SymlinkResolver.cpp
