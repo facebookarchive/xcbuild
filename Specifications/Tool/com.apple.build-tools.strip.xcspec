@@ -13,12 +13,31 @@
     Name = "Strip";
 
     CommandLine = "strip [options] [input]";
-
     RuleName = "Strip $(InputPath)";
 
     Outputs = (
         "$(OutputPath)",
     );
 
-    /* TODO: Add options */
+    Options = (
+        {
+            Name = "STRIP_STYLE";
+            Type = Enumeration;
+            Values = (
+                "all",
+                "non-global",
+                "debugging",
+            );
+            CommandLineArgs = {
+                "all" = ( );
+                "non-global" = ( "-x" );
+                "debugging" = ( "-S" );
+            };
+        },
+        {
+            Name = "STRIPFLAGS";
+            Type = StringList;
+            CommandLinePrefixFlag = "";
+        },
+    );
 }

@@ -12,15 +12,13 @@
     Identifier = com.apple.compilers.model.coredata;
     Name = "Data Model Compiler";
 
-    CommandLine = "momc [options] $(InputPath) $(ProductResourcesDir)/";
-
     RuleName = "DataModelCompile $(ProductResourcesDir)/ $(InputPath)";
+    CommandLine = "momc [options] $(InputPath) $(ProductResourcesDir)/";
 
     InputFileTypes = (
         "wrapper.xcdatamodel",
         "wrapper.xcdatamodeld",
     );
-
     Outputs = (
         "$(ProductResourcesDir)/$(InputFileBase)$(MOMC_OUTPUT_SUFFIX)",
     );
@@ -41,6 +39,7 @@
             Type = String;
             DefaultValue = ".momd";
         },
-        /* TODO: Complete options */
+
+        /* TODO: Options. */
     );
 }

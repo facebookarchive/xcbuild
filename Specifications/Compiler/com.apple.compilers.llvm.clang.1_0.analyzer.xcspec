@@ -12,7 +12,8 @@
     Identifier = com.apple.compilers.llvm.clang.1_0.analyzer;
     BasedOn = com.apple.compilers.llvm.clang.1_0;
     Name = "Static Analyzer";
+
     RuleName = "Analyze $(InputPath)";
 
-    /* TODO: Everything */
+    /* TODO: Complete. */
 }
