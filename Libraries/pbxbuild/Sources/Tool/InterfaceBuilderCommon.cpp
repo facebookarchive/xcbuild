@@ -62,11 +62,11 @@ TargetedDeviceSetting(pbxsetting::Environment const &environment)
 std::vector<std::string> Tool::InterfaceBuilderCommon::
 DeploymentTargetArguments(pbxsetting::Environment const &environment)
 {
-    std::string min_deploy_target = environment.resolve(environment.resolve("DEPLOYMENT_TARGET_SETTING_NAME"));
-    if (min_deploy_target.empty()) {
-        return {};
+    std::string deploymentTarget = environment.resolve(environment.resolve("DEPLOYMENT_TARGET_SETTING_NAME"));
+    if (deploymentTarget.empty()) {
+        return std::vector<std::string>();
     } else {
-        return { "--minimum-deployment-target", min_deploy_target };
+        return { "--minimum-deployment-target", deploymentTarget };
     }
 }
 
