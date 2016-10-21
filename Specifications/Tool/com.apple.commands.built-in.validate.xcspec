@@ -13,14 +13,13 @@
     Name = "Validate Product";
 
     CommandLine = "builtin-validationUtility [options] [input]";
-
-    Outputs = (
-        "$(TEMP_FILE_DIR)/com.apple.build-tools.platform.validate"
-    );
-
     EnvironmentVariables = {
         "PRODUCT_TYPE" = "$(PRODUCT_TYPE)";
     };
+
+    Outputs = (
+        "$(TEMP_FILE_DIR)/com.apple.build-tools.platform.validate",
+    );
 
     Options = (
         {

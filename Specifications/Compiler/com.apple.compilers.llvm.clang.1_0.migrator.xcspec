@@ -13,5 +13,5 @@
     BasedOn = com.apple.compilers.llvm.clang.1_0;
     Name = "Objective-C Migrator";
 
-    /* TODO: Everything */
+    /* TODO: Complete. */
 }

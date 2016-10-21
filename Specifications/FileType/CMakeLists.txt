@@ -58,7 +58,7 @@ install(FILES
         folder.iconset.xcspec
         folder.imagecatalog.xcspec
         folder.skatlas.xcspec
-        folder.stickers
+        folder.stickers.xcspec
         folder.xcspec
         image.bmp.xcspec
         image.gif.xcspec

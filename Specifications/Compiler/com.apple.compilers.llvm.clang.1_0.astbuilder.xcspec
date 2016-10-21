@@ -24,13 +24,12 @@
 
     SourceFileOption = "-fsyntax-only";
     OutputFileExtension = "ast";
-
-    OverriddingProperties = {
+    OverridingProperties = {
         "CLANG_RETAIN_COMMENTS_FROM_SYSTEM_HEADERS" = YES;
         "CLEAN_PRECOMPS" = NO;
         "ENABLE_HEADER_DEPENDENCIES" = YES;
         "SHARED_PRECOMPS_DIR" = "$(INDEX_PRECOMPS_DIR)";
     };
 
-    /* TODO: Fully flesh out this spec */
+    /* TODO: Complete. */
 }

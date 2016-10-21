@@ -13,16 +13,14 @@
     Name = "Data Mapping Model Compiler";
 
     CommandLine = "mapc [options] $(InputPath) $(ProductResourcesDir)/$(InputFileBase).cdm";
-
     RuleName = "MappingModelCompile $(ProductResourcesDir)/$(InputFileBase).cdm $(InputPath)";
 
     InputFileTypes = (
         "wrapper.xcmappingmodel",
     );
-
     Outputs = (
         "$(ProductResourcesDir)/$(InputFileBase).cdm",
     );
 
-    /* TODO: Add options */
+    /* TODO: Options. */
 }
