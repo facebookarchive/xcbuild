@@ -499,6 +499,7 @@ PlatformDomains(std::unordered_map<std::string, std::string> const &platforms)
     auto iphoneos = platforms.find("iphoneos");
     if (iphoneos != platforms.end()) {
         std::string root = iphoneos->second + "/Developer/Library/Xcode/PrivatePlugIns/IDEiOSPlatformSupportCore.ideplugin/Contents/Resources";
+        domains.push_back({ "iphoneos-shared", root + "/" + "Shared.xcspec" });
         domains.push_back({ "iphoneos", root + "/" + "Device.xcspec" });
         domains.push_back({ "iphonesimulator", root + "/" + "Simulator.xcspec" });
     }
@@ -506,18 +507,16 @@ PlatformDomains(std::unordered_map<std::string, std::string> const &platforms)
     auto appletvos = platforms.find("appletvos");
     if (appletvos != platforms.end()) {
         std::string root = appletvos->second + "/Developer/Library/Xcode/PrivatePlugIns/IDEAppleTVSupportCore.ideplugin/Contents/Resources";
-        domains.push_back({ "appletvos", root + "/" + "Shared.xcspec" });
+        domains.push_back({ "appletvos-shared", root + "/" + "Shared.xcspec" });
         domains.push_back({ "appletvos", root + "/" + "Device.xcspec" });
-        domains.push_back({ "appletvsimulator", root + "/" + "Shared.xcspec" });
         domains.push_back({ "appletvsimulator", root + "/" + "Simulator.xcspec" });
     }
 
     auto watchos = platforms.find("watchos");
     if (watchos != platforms.end()) {
         std::string root = watchos->second + "/Developer/Library/Xcode/PrivatePlugIns/IDEWatchSupportCore.ideplugin/Contents/Resources";
-        domains.push_back({ "watchos", root + "/" + "Shared.xcspec" });
+        domains.push_back({ "watchos-shared", root + "/" + "Shared.xcspec" });
         domains.push_back({ "watchos", root + "/" + "Device.xcspec" });
-        domains.push_back({ "watchsimulator", root + "/" + "Shared.xcspec" });
         domains.push_back({ "watchsimulator", root + "/" + "Simulator.xcspec" });
     }
 
