@@ -62,10 +62,16 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::Next<std::string>(&_appIcon, args, it);
     } else if (arg == "--launch-image") {
         return libutil::Options::Next<std::string>(&_launchImage, args, it);
+    } else if (arg == "--flattened-app-icon-path") {
+        return libutil::Options::Next<std::string>(&_flattenedAppIconPath, args, it);
     } else if (arg == "--sticker-pack-identifier-prefix") {
         return libutil::Options::Next<std::string>(&_stickerPackIdentifierPrefix, args, it);
     } else if (arg == "--sticker-pack-strings-file") {
         return libutil::Options::Next<std::string>(&_stickerPackStringsFile, args, it);
+    } else if (arg == "--leaderboard-identifier-prefix") {
+        return libutil::Options::Next<std::string>(&_leaderboardIdentifierPrefix, args, it);
+    } else if (arg == "--leaderboard-set-identifier-prefix") {
+        return libutil::Options::Next<std::string>(&_leaderboardSetIdentifierPrefix, args, it);
     } else if (arg == "--enable-on-demand-resources") {
         return libutil::Options::Next<bool>(&_enableOnDemandResources, args, it, true);
     } else if (arg == "--enable-incremental-distill") {

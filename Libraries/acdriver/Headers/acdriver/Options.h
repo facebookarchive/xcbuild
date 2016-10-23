@@ -57,10 +57,13 @@ private:
     ext::optional<std::string> _outputPartialInfoPlist;
     ext::optional<std::string> _appIcon;
     ext::optional<std::string> _launchImage;
+    ext::optional<std::string> _flattenedAppIconPath;
 
 private:
     ext::optional<std::string> _stickerPackIdentifierPrefix;
     ext::optional<std::string> _stickerPackStringsFile;
+    ext::optional<std::string> _leaderboardIdentifierPrefix;
+    ext::optional<std::string> _leaderboardSetIdentifierPrefix;
 
 private:
     ext::optional<bool>        _enableOnDemandResources;
@@ -121,12 +124,18 @@ public:
     { return _appIcon; }
     ext::optional<std::string> const &launchImage() const
     { return _launchImage; }
+    ext::optional<std::string> const &flattenedAppIconPath() const
+    { return _flattenedAppIconPath; }
 
 public:
     ext::optional<std::string> const &stickerPackIdentifierPrefix() const
     { return _stickerPackIdentifierPrefix; }
     ext::optional<std::string> const &stickerPackStringsFile() const
     { return _stickerPackStringsFile; }
+    ext::optional<std::string> const &leaderboardIdentifierPrefix() const
+    { return _leaderboardIdentifierPrefix; }
+    ext::optional<std::string> const &leaderboardSetIdentifierPrefix() const
+    { return _leaderboardSetIdentifierPrefix; }
 
 public:
     bool enableOnDemandResources() const

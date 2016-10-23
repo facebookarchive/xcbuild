@@ -201,13 +201,17 @@ WarnUnsupportedOptions(Options const &options, Result *result)
         result->normal(Result::Severity::Warning, "platform not supported");
     }
 
-    if (options.stickerPackIdentifierPrefix()) {
-        result->normal(Result::Severity::Warning, "sticker pack identifier prefix not supported");
+    if (options.flattenedAppIconPath()) {
+        result->normal(Result::Severity::Warning, "flattened app icon not supported");
     }
 
-    if (options.stickerPackStringsFile()) {
-        /* Option format: `sticker-pack:language-identifier:path`. */
-        result->normal(Result::Severity::Warning, "sticker pack strings file not supported");
+    if (options.stickerPackIdentifierPrefix() || options.stickerPackStringsFile()) {
+        /* Strings file format: `sticker-pack:language-identifier:path`. */
+        result->normal(Result::Severity::Warning, "sticker pack not supported");
+    }
+
+    if (options.leaderboardIdentifierPrefix() || options.leaderboardSetIdentifierPrefix()) {
+        result->normal(Result::Severity::Warning, "leaderboard set not supportd");
     }
 
     if (!options.targetDevice().empty()) {
