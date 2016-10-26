@@ -156,8 +156,7 @@ NextFormatType(plist::Format::Type *type, std::vector<std::string> const &args, 
         } else if (*format == "openstep1" || *format == "ascii1") {
             *type = plist::Format::Type::ASCII;
         } else if (*format == "json") {
-            // TODO(grp): Support JSON output.
-            return std::make_pair(false, "JSON not yet implemented");
+            *type = plist::Format::Type::JSON;
         } else {
             return std::make_pair(false, "unknown format " + *format);
         }
@@ -285,7 +284,7 @@ NextAdjustment(Options::Adjustment *adjustment, Options::Adjustment::Type type, 
 
         object = std::move(deserialize.first);
     } else if (*arg == "-json") {
-        return std::make_pair(false, "JSON not yet implemented");
+        return std::make_pair(false, "JSON");
     } else {
         return std::make_pair(false, "unknown type option " + *arg);
     }
@@ -403,13 +402,13 @@ Help(std::string const &error = std::string())
     fprintf(stderr, INDENT "-data <base64>\n");
     fprintf(stderr, INDENT "-date <iso8601>\n");
     fprintf(stderr, INDENT "-xml <plist>\n");
-    fprintf(stderr, INDENT "-json <json> (not yet implemented)\n");
+    fprintf(stderr, INDENT "-json <json>\n");
 
     fprintf(stderr, "\nformats:\n");
     fprintf(stderr, INDENT "xml1\n");
     fprintf(stderr, INDENT "binary1\n");
     fprintf(stderr, INDENT "openstep1\n");
-    fprintf(stderr, INDENT "json (not yet implemented)\n");
+    fprintf(stderr, INDENT "json\n");
 #undef INDENT
 
     return (error.empty() ? 0 : -1);

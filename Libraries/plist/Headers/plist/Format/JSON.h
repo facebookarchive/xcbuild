@@ -22,6 +22,9 @@ private:
     JSON();
 
 public:
+    static Type FormatType();
+
+public:
     static JSON Create();
 };
 

@@ -17,6 +17,7 @@ enum class Type {
     Binary,
     XML,
     ASCII,
+    JSON,
 };
 
 }
