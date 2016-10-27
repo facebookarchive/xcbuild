@@ -29,8 +29,7 @@
  *
  * Strings
  *
- *  JSON      '...'
- *            "..."  quoted chars like \', unicode chars, multiple-line
+ *  JSON      "..."  quoted chars like \", unicode chars, multiple-line
  *  ASCII:    '...'
  *            "..."  quoted chars like \', multiple-line
  *
@@ -216,7 +215,7 @@ ASCIIPListLexerReadData(ASCIIPListLexer *lexer)
 static int
 ASCIIPListLexerReadString(ASCIIPListLexer *lexer)
 {
-    if (lexer->pointer[0] == '\'') {
+    if (lexer->pointer[0] == '\'' && lexer->style != kASCIIPListLexerStyleJSON) {
         return ASCIIPListLexerReadSingleQuotedString(lexer);
     } else if (lexer->pointer[0] == '\"') {
         return ASCIIPListLexerReadDoubleQuotedString(lexer);
@@ -226,7 +225,7 @@ ASCIIPListLexerReadString(ASCIIPListLexer *lexer)
 }
 
 static int
-ASCIIPListLexerReadNumber(ASCIIPListLexer *lexer)
+ASCIIPListLexerReadJSONNumber(ASCIIPListLexer *lexer)
 {
     bool integer = true;
     char const *p = lexer->pointer;
@@ -234,19 +233,31 @@ ASCIIPListLexerReadNumber(ASCIIPListLexer *lexer)
 
     lexer->tokenBegin = (p - lexer->inputBuffer);
 
-    if (*p == '+' || *p == '-')
+    if (*p == '-') {
         p++;
+    }
 
-    if (!isdigit(*p))
+    if (!isdigit(*p)) {
         return kASCIIPListLexerInvalidToken;
+    }
+    bool zero = (*p == '0');
+    while (isdigit(*p)) {
+        /* Numbers cannot start with zero. */
+        if (zero && *p != '0') {
+            return kASCIIPListLexerInvalidToken;
+        }
 
-    while (isdigit(*p))
         p++;
+    }
 
     if (*p == '.') {
         integer = false;
 
         p++;
+
+        if (!isdigit(*p)) {
+            return kASCIIPListLexerInvalidToken;
+        }
         while (isdigit(*p)) {
             p++;
         }
@@ -260,6 +271,9 @@ ASCIIPListLexerReadNumber(ASCIIPListLexer *lexer)
             p++;
         }
 
+        if (!isdigit(*p)) {
+            return kASCIIPListLexerInvalidToken;
+        }
         while (isdigit(*p)) {
             p++;
         }
@@ -420,7 +434,7 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
                     lexer->pointer = p;
                     lexer->tokenBegin = p - lexer->inputBuffer;
                     lexer->tokenLength = 1;
-                    int rc = ASCIIPListLexerReadNumber(lexer);
+                    int rc = ASCIIPListLexerReadJSONNumber(lexer);
                     if (rc != kASCIIPListLexerInvalidToken) {
                         return rc;
                     }
@@ -440,7 +454,7 @@ ASCIIPListLexerReadToken(ASCIIPListLexer *lexer)
                  if (isdigit(*p)) {
                      lexer->pointer = p;
                      if (lexer->style == kASCIIPListLexerStyleJSON) {
-                         int rc = ASCIIPListLexerReadNumber(lexer);
+                         int rc = ASCIIPListLexerReadJSONNumber(lexer);
                          if (rc != kASCIIPListLexerInvalidToken) {
                              return rc;
                          }
