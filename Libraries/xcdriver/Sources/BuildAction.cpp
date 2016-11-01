@@ -13,6 +13,7 @@
 #include <xcexecution/NinjaExecutor.h>
 #include <xcexecution/SimpleExecutor.h>
 #include <xcformatter/DefaultFormatter.h>
+#include <xcformatter/NullFormatter.h>
 #include <builtin/Registry.h>
 #include <libutil/Base.h>
 #include <libutil/Filesystem.h>
@@ -42,6 +43,9 @@ CreateFormatter(ext::optional<std::string> const &formatter)
         bool color = isatty(fileno(stdout));
 
         auto formatter = xcformatter::DefaultFormatter::Create(color);
+        return std::static_pointer_cast<xcformatter::Formatter>(formatter);
+    } else if (*formatter == "null") {
+        auto formatter = xcformatter::NullFormatter::Create();
         return std::static_pointer_cast<xcformatter::Formatter>(formatter);
     }
 
