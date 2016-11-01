@@ -35,7 +35,7 @@ public:
         pbxbuild::Build::Environment const &buildEnvironment,
         Parameters const &buildParameters);
 
-private:
+public:
     bool writeAuxiliaryFiles(
         libutil::Filesystem *filesystem,
         pbxproj::PBX::Target::shared_ptr const &target,
@@ -45,8 +45,7 @@ private:
         process::Context const *processContext,
         process::Launcher *processLauncher,
         libutil::Filesystem *filesystem,
-        pbxproj::PBX::Target::shared_ptr const &target,
-        pbxbuild::Target::Environment const &targetEnvironment,
+        std::vector<std::string> const &executablePaths,
         std::vector<pbxbuild::Tool::Invocation> const &orderedInvocations,
         bool createProductStructure);
     std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> buildTarget(
