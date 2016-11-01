@@ -217,8 +217,7 @@ performInvocations(
     process::Context const *processContext,
     process::Launcher *processLauncher,
     Filesystem *filesystem,
-    pbxproj::PBX::Target::shared_ptr const &target,
-    pbxbuild::Target::Environment const &targetEnvironment,
+    std::vector<std::string> const &executablePaths,
     std::vector<pbxbuild::Tool::Invocation> const &orderedInvocations,
     bool createProductStructure)
 {
@@ -258,7 +257,8 @@ performInvocations(
                         processContext->groupID(),
                         processContext->userName(),
                         processContext->groupName());
-                    success = driver->run(&context, filesystem) != 0;
+                    int exitCode = driver->run(&context, filesystem);
+                    success = (exitCode == 0);
 
                     xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, *builtin, createProductStructure));
                 } else {
@@ -273,7 +273,7 @@ performInvocations(
                         path = external;
                     }
                 } else {
-                    path = filesystem->findExecutable(*external, targetEnvironment.executablePaths());
+                    path = filesystem->findExecutable(*external, executablePaths);
                 }
 
                 if (path) {
@@ -329,13 +329,13 @@ buildTarget(
     }
 
     xcformatter::Formatter::Print(_formatter->beginCreateProductStructure(target));
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(processContext, processLauncher, filesystem, target, targetEnvironment, *orderedInvocations, true);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(processContext, processLauncher, filesystem, targetEnvironment.executablePaths(), *orderedInvocations, true);
     xcformatter::Formatter::Print(_formatter->finishCreateProductStructure(target));
     if (!structureResult.first) {
         return structureResult;
     }
 
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(processContext, processLauncher, filesystem, target, targetEnvironment, *orderedInvocations, false);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(processContext, processLauncher, filesystem, targetEnvironment.executablePaths(), *orderedInvocations, false);
     if (!invocationsResult.first) {
         return invocationsResult;
     }
