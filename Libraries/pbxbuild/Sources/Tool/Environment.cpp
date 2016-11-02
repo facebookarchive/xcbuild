@@ -81,8 +81,8 @@ OutputLevel(std::string const &output)
     });
 }
 
-static Tool::Environment
-CreateInternal(
+Tool::Environment Tool::Environment::
+Create(
     pbxspec::PBX::Tool::shared_ptr const &tool,
     pbxsetting::Environment const &baseEnvironment,
     std::string const &workingDirectory,
@@ -196,32 +196,4 @@ CreateInternal(
     }
 
     return Tool::Environment(tool, environment, inputPaths, outputPaths);
-}
-
-Tool::Environment Tool::Environment::
-Create(
-    pbxspec::PBX::Tool::shared_ptr const &tool,
-    pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
-    std::vector<std::string> const &inputs,
-    std::vector<std::string> const &outputs)
-{
-    std::vector<Tool::Input> toolInputs;
-    for (std::string const &input : inputs) {
-        Tool::Input toolInput = Tool::Input(input, nullptr);
-        toolInputs.push_back(toolInput);
-    }
-
-    return CreateInternal(tool, environment, workingDirectory, toolInputs, outputs);
-}
-
-Tool::Environment Tool::Environment::
-Create(
-    pbxspec::PBX::Tool::shared_ptr const &tool,
-    pbxsetting::Environment const &environment,
-    std::string const &workingDirectory,
-    std::vector<Tool::Input> const &inputs,
-    std::vector<std::string> const &outputs)
-{
-    return CreateInternal(tool, environment, workingDirectory, inputs, outputs);
 }

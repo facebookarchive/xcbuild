@@ -306,6 +306,8 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         /* Note that INFOPLIST_FILE is the input, and INFOPLIST_PATH is the output. */
         std::string infoPlistFile = environment.resolve("INFOPLIST_FILE");
         if (!infoPlistFile.empty()) {
+            Tool::Input infoPlistInput = Tool::Input(infoPlistFile, nullptr); // TODO: use property list file type
+
             if (pbxsetting::Type::ParseBoolean(environment.resolve("INFOPLIST_PREPROCESS"))) {
                 if (Tool::ToolResolver const *toolResolver = phaseContext->toolResolver(phaseEnvironment, "com.apple.compilers.cpp")) {
                     std::string infoPlistIntermediate = environment.resolve("TEMP_DIR") + "/" + "Preprocessed-Info.plist";
@@ -318,7 +320,8 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
 
                     pbxsetting::Environment preprocessEnvironment = pbxsetting::Environment(environment);
                     preprocessEnvironment.insertFront(level, false);
-                    toolResolver->resolve(&phaseContext->toolContext(), preprocessEnvironment, { infoPlistFile }, { infoPlistIntermediate });
+
+                    toolResolver->resolve(&phaseContext->toolContext(), preprocessEnvironment, { infoPlistInput }, infoPlistIntermediate);
 
                     /* Use the preprocessed result as the input below. */
                     infoPlistFile = std::move(infoPlistIntermediate);
@@ -328,7 +331,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
             }
 
             if (Tool::InfoPlistResolver const *infoPlistResolver = phaseContext->infoPlistResolver(phaseEnvironment)) {
-                infoPlistResolver->resolve(&phaseContext->toolContext(), environment, infoPlistFile);
+                infoPlistResolver->resolve(&phaseContext->toolContext(), environment, infoPlistInput);
             } else {
                 fprintf(stderr, "warning: could not find info plist tool\n");
             }

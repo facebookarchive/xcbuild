@@ -84,21 +84,23 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         std::string variantProductsOutput = productsDirectory + "/" + variantProductsPath;
 
         bool createUniversalBinary = targetEnvironment.architectures().size() > 1;
-        std::vector<std::string> universalBinaryInputs;
+        std::vector<Tool::Input> universalBinaryInputs;
 
         for (std::string const &arch : targetEnvironment.architectures()) {
             pbxsetting::Environment archEnvironment = pbxsetting::Environment(variantEnvironment);
             archEnvironment.insertFront(Phase::Environment::ArchitectureLevel(arch), false);
 
-            std::vector<std::string> sourceOutputs;
+            std::vector<Tool::Input> sourceOutputs;
             auto it = phaseContext->toolContext().variantArchitectureInvocations().find(std::make_pair(variant, arch));
             if (it != phaseContext->toolContext().variantArchitectureInvocations().end()) {
                 std::vector<Tool::Invocation> const &sourceInvocations = it->second;
                 for (Tool::Invocation const &invocation : sourceInvocations) {
                     for (std::string const &output : invocation.outputs()) {
                         // TODO(grp): Is this the right set of source outputs to link?
+                        // TODO(grp): Use the object file file type and include in input.
                         if (FSUtil::GetFileExtension(output) == "o") {
-                            sourceOutputs.push_back(output);
+                            Tool::Input outputInput = Tool::Input(output, nullptr);
+                            sourceOutputs.push_back(outputInput);
                         }
                     }
                 }
@@ -109,7 +111,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
                 std::string architectureIntermediatesOutput = architectureIntermediatesDirectory + "/" + variantIntermediatesName;
 
                 linkerResolver->resolve(&phaseContext->toolContext(), archEnvironment, sourceOutputs, files, architectureIntermediatesOutput, linkerArguments, linkerExecutable);
-                universalBinaryInputs.push_back(architectureIntermediatesOutput);
+                universalBinaryInputs.push_back(Tool::Input(architectureIntermediatesOutput, nullptr));
             } else {
                 linkerResolver->resolve(&phaseContext->toolContext(), archEnvironment, sourceOutputs, files, variantProductsOutput, linkerArguments, linkerExecutable);
             }
@@ -120,8 +122,9 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         }
 
         if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {
+            Tool::Input outputInput = Tool::Input(variantProductsOutput, nullptr);
             std::string dsymfile = variantEnvironment.resolve("DWARF_DSYM_FOLDER_PATH") + "/" + variantEnvironment.resolve("DWARF_DSYM_FILE_NAME");
-            dsymutilResolver->resolve(&phaseContext->toolContext(), variantEnvironment, { variantProductsOutput }, { dsymfile });
+            dsymutilResolver->resolve(&phaseContext->toolContext(), variantEnvironment, { outputInput }, dsymfile);
         }
     }
 

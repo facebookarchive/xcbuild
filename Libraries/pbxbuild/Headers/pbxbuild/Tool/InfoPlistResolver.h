@@ -12,6 +12,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Phase/Environment.h>
+#include <pbxbuild/Tool/Input.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -34,7 +35,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &input) const;
+        Tool::Input const &input) const;
 
 public:
     static std::string ToolIdentifier()

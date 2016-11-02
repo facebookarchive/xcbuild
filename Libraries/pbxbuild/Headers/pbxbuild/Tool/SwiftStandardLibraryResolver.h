@@ -11,6 +11,7 @@
 #define __pbxbuild_Tool_SwiftStandardLibraryResolver_h
 
 #include <pbxbuild/Base.h>
+#include <pbxbuild/Tool/Input.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Phase/Environment.h>
 
@@ -30,7 +31,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &executable,
+        Tool::Input const &executable,
         std::vector<std::string> const &directories) const;
 
 public:

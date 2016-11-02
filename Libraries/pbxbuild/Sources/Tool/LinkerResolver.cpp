@@ -32,7 +32,7 @@ void Tool::LinkerResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    std::vector<std::string> const &inputFiles,
+    std::vector<Tool::Input> const &inputFiles,
     std::vector<Tool::Input> const &inputLibraries,
     std::string const &output,
     std::vector<std::string> const &additionalArguments,
@@ -46,8 +46,8 @@ resolve(
     if (_linker->supportsInputFileList() || _linker->identifier() == Tool::LinkerResolver::LibtoolToolIdentifier()) {
         std::string path = environment.expand(pbxsetting::Value::Parse("$(LINK_FILE_LIST_$(variant)_$(arch))"));
         std::string contents;
-        for (std::string const &input : inputFiles) {
-            contents += input + "\n";
+        for (Tool::Input const &input : inputFiles) {
+            contents += input.path() + "\n";
         }
         auto fileList = Tool::Invocation::AuxiliaryFile::Data(path, std::vector<uint8_t>(contents.begin(), contents.end()));
         auxiliaries.push_back(fileList);
@@ -60,7 +60,7 @@ resolve(
     std::vector<std::string> libraryPaths;
     libraryPaths.reserve(inputLibraries.size());
     for (Tool::Input const &library : inputLibraries) {
-        if (!library.fileType()->isFrameworkWrapper()) {
+        if (library.fileType() == nullptr || !library.fileType()->isFrameworkWrapper()) {
             libraryPaths.push_back(FSUtil::GetDirectoryName(library.path()));
         }
     }
@@ -79,7 +79,7 @@ resolve(
 
     for (Tool::Input const &library : inputLibraries) {
         std::string base = FSUtil::GetBaseNameWithoutExtension(library.path());
-        if (library.fileType()->isFrameworkWrapper()) {
+        if (library.fileType() != nullptr && library.fileType()->isFrameworkWrapper()) {
             special.push_back("-framework");
             special.push_back(base);
         } else {

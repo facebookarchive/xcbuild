@@ -29,7 +29,7 @@ void Tool::SwiftStandardLibraryResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::string const &executable,
+    Tool::Input const &executable,
     std::vector<std::string> const &directories) const
 {
     pbxsetting::Level level = pbxsetting::Level({

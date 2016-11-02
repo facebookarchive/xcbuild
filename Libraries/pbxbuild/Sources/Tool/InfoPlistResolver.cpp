@@ -34,7 +34,7 @@ void Tool::InfoPlistResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    std::string const &input) const
+    Tool::Input const &input) const
 {
     bool pkginfoFile = pbxsetting::Type::ParseBoolean(environment.resolve("GENERATE_PKGINFO_FILE"));
 
