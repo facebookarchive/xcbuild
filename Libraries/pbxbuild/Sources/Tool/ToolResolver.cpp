@@ -66,7 +66,7 @@ void Tool::ToolResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    std::vector<std::string> const &inputs,
+    std::vector<Tool::Input> const &inputs,
     std::vector<std::string> const &outputs,
     std::string const &logMessage) const
 {

@@ -58,13 +58,6 @@ public:
         std::string const &workingDirectory,
         std::vector<Tool::Input> const &inputs,
         std::vector<std::string> const &outputs = { });
-    static Tool::Environment
-    Create(
-        pbxspec::PBX::Tool::shared_ptr const &tool,
-        pbxsetting::Environment const &environment,
-        std::string const &workingDirectory,
-        std::vector<std::string> const &inputs,
-        std::vector<std::string> const &outputs = { });
 };
 
 }

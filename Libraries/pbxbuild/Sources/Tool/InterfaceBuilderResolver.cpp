@@ -38,7 +38,7 @@ resolve(
     std::vector<Tool::Input> primaryInputs;
     std::vector<std::string> localizationStringsFiles;
     for (Tool::Input const &input : inputs) {
-        if (input.fileType()->identifier() == "text.plist.strings") {
+        if (input.fileType() != nullptr && input.fileType()->identifier() == "text.plist.strings") {
             /* The format here is as expected by ibtool. */
             localizationStringsFiles.push_back(input.localization().value_or("") + ":" + input.path());
         } else {

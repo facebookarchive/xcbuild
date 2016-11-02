@@ -46,7 +46,8 @@ ProcessModuleMap(
     toolContext->invocations().push_back(invocation);
 
     /* Copy in the module map as part of the build. */
-    copyResolver->resolve(toolContext, environment, { entry.intermediatePath() }, FSUtil::GetDirectoryName(entry.finalPath()), "Ditto");
+    Tool::Input input = Tool::Input(entry.intermediatePath(), nullptr);
+    copyResolver->resolve(toolContext, environment, { input }, FSUtil::GetDirectoryName(entry.finalPath()), "Ditto");
 }
 
 bool Phase::ModuleMapResolver::

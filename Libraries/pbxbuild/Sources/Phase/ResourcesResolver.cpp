@@ -43,12 +43,14 @@ LinkStoryboards(Phase::Environment const &phaseEnvironment, Phase::Context *phas
         return false;
     }
 
-    std::vector<std::string> storyboardOutputs;
+    std::vector<Tool::Input> storyboardOutputs;
     for (Tool::Invocation const &invocation : phaseContext->toolContext().invocations()) {
         for (std::string const &output : invocation.outputs()) {
             // TODO(grp): Is this the right set of storyboards to link?
+            // TODO(grp): Use the compiled storyboard file type and include in input.
             if (FSUtil::GetFileExtension(output) == "storyboardc") {
-                storyboardOutputs.push_back(output);
+                Tool::Input outputInput = Tool::Input(output, nullptr);
+                storyboardOutputs.push_back(outputInput);
             }
         }
     }

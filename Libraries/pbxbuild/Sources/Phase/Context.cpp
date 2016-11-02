@@ -266,7 +266,7 @@ Group(std::vector<Tool::Input> const &files)
          * the ungrouped  inputs so they don't get added again to the result.
          */
         ungrouped.erase(std::remove_if(ungrouped.begin(), ungrouped.end(), [&](Tool::Input const &ungroupedFile) {
-            if (ungroupedFile.fileType()->identifier() == "text.plist.strings") {
+            if (ungroupedFile.fileType() != nullptr && ungroupedFile.fileType()->identifier() == "text.plist.strings") {
                 if (ungroupedFile.localizationGroupIdentifier() == file.localizationGroupIdentifier()) {
                     inputs.push_back(ungroupedFile);
                     return true;
@@ -310,7 +310,8 @@ resolveBuildFiles(
 
         Target::BuildRules::BuildRule::shared_ptr const &buildRule = first.buildRule();
         if (buildRule == nullptr && fallbackToolIdentifier.empty()) {
-            fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", first.path().c_str(), first.fileType()->identifier().c_str());
+            std::string fileTypeName = (first.fileType() != nullptr ? first.fileType()->identifier() : "unknown");
+            fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", first.path().c_str(), fileTypeName.c_str());
             continue;
         }
 
@@ -326,24 +327,28 @@ resolveBuildFiles(
 
             if (buildRule != nullptr) {
                 if (pbxspec::PBX::Tool::shared_ptr const &tool = buildRule->tool()) {
-                    // Some tools additionally limit their file types beyond what their build rule allows.
-                    // For example, the default compiler limits itself to just source files, despite its
-                    // default build rule specifying that it accepts all C-family inputs, including headers.
+                    /*
+                     * Some tools additionally limit their file types beyond what their build rule allows.
+                     * For example, the default compiler limits itself to just source files, despite its
+                     * default build rule specifying that it accepts all C-family inputs, including headers.
+                     */
                     // TODO(grp): Is this the right way to make .h files not get compiled as resources?
                     if (tool->fileTypes() || tool->inputFileTypes()) {
-                        std::vector<std::string> toolFileTypes;
-                        if (tool->fileTypes()) {
-                            toolFileTypes.insert(toolFileTypes.end(), tool->fileTypes()->begin(), tool->fileTypes()->end());
-                        }
-                        if (tool->inputFileTypes()) {
-                            toolFileTypes.insert(toolFileTypes.end(), tool->inputFileTypes()->begin(), tool->inputFileTypes()->end());
-                        }
+                        if (first.fileType() != nullptr) {
+                            std::vector<std::string> toolFileTypes;
+                            if (tool->fileTypes()) {
+                                toolFileTypes.insert(toolFileTypes.end(), tool->fileTypes()->begin(), tool->fileTypes()->end());
+                            }
+                            if (tool->inputFileTypes()) {
+                                toolFileTypes.insert(toolFileTypes.end(), tool->inputFileTypes()->begin(), tool->inputFileTypes()->end());
+                            }
 
-                        std::string inputFileType = first.fileType()->identifier();
-                        bool toolAcceptsInputFileType = (toolFileTypes.empty() || std::find(toolFileTypes.begin(), toolFileTypes.end(), inputFileType) != toolFileTypes.end());
+                            std::string inputFileType = first.fileType()->identifier();
+                            bool toolAcceptsInputFileType = (toolFileTypes.empty() || std::find(toolFileTypes.begin(), toolFileTypes.end(), inputFileType) != toolFileTypes.end());
 
-                        if (toolAcceptsInputFileType) {
-                            toolIdentifier = tool->identifier();
+                            if (toolAcceptsInputFileType) {
+                                toolIdentifier = tool->identifier();
+                            }
                         }
                     } else {
                         toolIdentifier = tool->identifier();

@@ -34,13 +34,6 @@ public:
         std::string const &outputDirectory,
         std::string const &logMessageTitle) const;
 
-    void resolve(
-        Tool::Context *toolContext,
-        pbxsetting::Environment const &environment,
-        std::vector<std::string> const &input,
-        std::string const &outputDirectory,
-        std::string const &logMessageTitle) const;
-
 public:
     static std::string ToolIdentifier()
     { return "com.apple.compilers.pbxcp"; }

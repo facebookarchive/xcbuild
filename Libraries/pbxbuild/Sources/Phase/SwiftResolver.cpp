@@ -143,13 +143,14 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     /*
      * Find the inputs to the standard library tool.
      */
-    std::string executable = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("EXECUTABLE_PATH");
+    std::string executablePath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("EXECUTABLE_PATH");
+    Tool::Input executableInput = Tool::Input(executablePath, nullptr);
     std::vector<std::string> directories = CollectScanDirectories(phaseEnvironment, environment, targetEnvironment.sdk(), phaseEnvironment.target());
 
     /*
      * Copy the standard library.
      */
-    swiftStandardLibraryResolver->resolve(&phaseContext->toolContext(), environment, executable, directories);
+    swiftStandardLibraryResolver->resolve(&phaseContext->toolContext(), environment, executableInput, directories);
 
     return true;
 }

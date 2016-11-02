@@ -32,7 +32,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::vector<std::string> const &inputFiles,
+        std::vector<Tool::Input> const &inputFiles,
         std::vector<Tool::Input> const &inputLibraries,
         std::string const &output,
         std::vector<std::string> const &additionalArguments,
