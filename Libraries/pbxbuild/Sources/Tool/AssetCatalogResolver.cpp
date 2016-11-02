@@ -29,17 +29,17 @@ void Tool::AssetCatalogResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::vector<Phase::File> const &inputs) const
+    std::vector<Tool::Input> const &inputs) const
 {
     std::vector<std::string> absoluteInputPaths;
     std::vector<std::string> assetPaths;
     std::vector<std::string> stickerPackStrings;
-    for (Phase::File const &input : inputs) {
-        if (input.fileType()->identifier() == "text.plist.strings") {
+    for (Tool::Input const &input : inputs) {
+        if (input.fileType() != nullptr && input.fileType()->identifier() == "text.plist.strings") {
             std::string strings;
             strings += FSUtil::GetBaseNameWithoutExtension(input.path());
             strings += ":";
-            strings += input.localization();
+            strings += input.localization().value_or("");
             strings += ":";
             strings += input.path();
             stickerPackStrings.push_back(strings);
@@ -65,7 +65,7 @@ resolve(
     /*
      * Resolve the tool options.
      */
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, assetCatalogEnvironment, toolContext->workingDirectory(), std::vector<Phase::File>());
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, assetCatalogEnvironment, toolContext->workingDirectory(), std::vector<Tool::Input>());
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
@@ -115,7 +115,7 @@ resolve(
             environment.expand(*_tool->dependencyInfoFile())));
     }
     if (_tool->deeplyStatInputDirectories()) {
-        for (Phase::File const &input : inputs) {
+        for (Tool::Input const &input : inputs) {
             /* Create a dependency info file to track the input directory contents. */
             auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, input.path());
             dependencyInfo.push_back(info);

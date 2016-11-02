@@ -40,7 +40,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        Phase::File const &file) const;
+        Tool::Input const &file) const;
 
 public:
     pbxspec::PBX::Tool::shared_ptr const &tool() const

@@ -30,7 +30,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::vector<Phase::File> const &input) const;
+        std::vector<Tool::Input> const &input) const;
 
 public:
     static std::string ToolIdentifier()

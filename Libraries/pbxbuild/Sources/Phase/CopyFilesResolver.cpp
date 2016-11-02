@@ -85,15 +85,15 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string path = environment.expand(_buildPhase->dstPath());
     std::string outputDirectory = root + "/" + path;
 
-    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
-    std::vector<std::vector<Phase::File>> groups = Phase::Context::Group(files);
+    std::vector<Tool::Input> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
+    std::vector<std::vector<Tool::Input>> groups = Phase::Context::Group(files);
 
     if (pbxsetting::Type::ParseBoolean(environment.resolve("APPLY_RULES_IN_COPY_FILES"))) {
         if (!phaseContext->resolveBuildFiles(phaseEnvironment, environment, _buildPhase, groups, outputDirectory, Tool::CopyResolver::ToolIdentifier())) {
             return false;
         }
     } else {
-        for (Phase::File const &file : files) {
+        for (Tool::Input const &file : files) {
             copyResolver->resolve(&phaseContext->toolContext(), environment, { file }, outputDirectory, "PBXCp");
         }
     }

@@ -33,7 +33,7 @@ public:
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
         std::vector<std::string> const &inputFiles,
-        std::vector<Phase::File> const &inputLibraries,
+        std::vector<Tool::Input> const &inputLibraries,
         std::string const &output,
         std::vector<std::string> const &additionalArguments,
         std::string const &executable = ""

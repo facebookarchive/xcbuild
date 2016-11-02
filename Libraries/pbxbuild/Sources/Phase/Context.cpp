@@ -178,18 +178,18 @@ toolResolver(Phase::Environment const &phaseEnvironment, std::string const &iden
     return &_toolResolvers.at(identifier);
 }
 
-std::vector<std::vector<Phase::File>> Phase::Context::
-Group(std::vector<Phase::File> const &files)
+std::vector<std::vector<Tool::Input>> Phase::Context::
+Group(std::vector<Tool::Input> const &files)
 {
-    std::vector<Phase::File> ungrouped;
-    std::unordered_map<std::string, std::vector<Phase::File>> groupedTool;
-    std::unordered_map<std::string, std::unordered_map<std::string, std::vector<Phase::File>>> groupedCommonBase;
-    std::vector<Phase::File> groupedBaseRegion;
+    std::vector<Tool::Input> ungrouped;
+    std::unordered_map<std::string, std::vector<Tool::Input>> groupedTool;
+    std::unordered_map<std::string, std::unordered_map<std::string, std::vector<Tool::Input>>> groupedCommonBase;
+    std::vector<Tool::Input> groupedBaseRegion;
 
     /*
      * Determine which grouping method to use for each file.
      */
-    for (Phase::File const &file : files) {
+    for (Tool::Input const &file : files) {
         /* Get the tool used for the file. If null, then no grouping possible. */
         Target::BuildRules::BuildRule::shared_ptr const &buildRule = file.buildRule();
         if (buildRule == nullptr || buildRule->tool() == nullptr || buildRule->tool()->type() != pbxspec::PBX::Compiler::Type()) {
@@ -236,7 +236,7 @@ Group(std::vector<Phase::File> const &files)
     /*
      * Build up the result, a list of each set of grouped inputs.
      */
-    std::vector<std::vector<Phase::File>> result;
+    std::vector<std::vector<Tool::Input>> result;
 
     /*
      * Add tool groupings to the result.
@@ -257,15 +257,15 @@ Group(std::vector<Phase::File> const &files)
     /*
      * Add base region groupings to the result.
      */
-    for (Phase::File const &file : groupedBaseRegion) {
-        std::vector<Phase::File> inputs = { file };
+    for (Tool::Input const &file : groupedBaseRegion) {
+        std::vector<Tool::Input> inputs = { file };
 
         /*
          * Find all .strings files from the same build file (i.e. same variant group)
          * as the base. Add them to the inputs for this group, and remove them from
          * the ungrouped  inputs so they don't get added again to the result.
          */
-        ungrouped.erase(std::remove_if(ungrouped.begin(), ungrouped.end(), [&](Phase::File const &ungroupedFile) {
+        ungrouped.erase(std::remove_if(ungrouped.begin(), ungrouped.end(), [&](Tool::Input const &ungroupedFile) {
             if (ungroupedFile.fileType()->identifier() == "text.plist.strings") {
                 if (ungroupedFile.buildFile() == file.buildFile()) {
                     inputs.push_back(ungroupedFile);
@@ -283,7 +283,7 @@ Group(std::vector<Phase::File> const &files)
      * Add ungrouped files to the result, one grouping per file. Note this must come
      * after the base region grouping above as the base region modifies the ungrouped.
      */
-    for (Phase::File const &file : ungrouped) {
+    for (Tool::Input const &file : ungrouped) {
         result.push_back({ file });
     }
 
@@ -295,13 +295,13 @@ resolveBuildFiles(
     Phase::Environment const &phaseEnvironment,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
-    std::vector<std::vector<Phase::File>> const &groups,
+    std::vector<std::vector<Tool::Input>> const &groups,
     std::string const &outputDirectory,
     std::string const &fallbackToolIdentifier)
 {
-    for (std::vector<Phase::File> const &files : groups) {
+    for (std::vector<Tool::Input> const &files : groups) {
         assert(!files.empty());
-        Phase::File const &first = files.front();
+        Tool::Input const &first = files.front();
 
         std::string fileOutputDirectory = outputDirectory;
         if (first.localization()) {

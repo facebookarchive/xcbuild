@@ -34,7 +34,7 @@ public:
     void resolveSource(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        Phase::File const &input,
+        Tool::Input const &input,
         std::string const &outputDirectory) const;
     void resolvePrecompiledHeader(
         Tool::Context *toolContext,

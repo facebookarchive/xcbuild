@@ -32,7 +32,7 @@ void Tool::ToolResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    std::vector<Phase::File> const &inputs,
+    std::vector<Tool::Input> const &inputs,
     std::string const &outputDirectory,
     std::string const &logMessage) const
 {
@@ -43,7 +43,7 @@ resolve(
 
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
     if (_tool->deeplyStatInputDirectories()) {
-        for (Phase::File const &input : inputs) {
+        for (Tool::Input const &input : inputs) {
             /* Create a dependency info file to track the input directory contents. */
             auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, input.path());
             dependencyInfo.push_back(info);

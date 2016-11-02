@@ -71,7 +71,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string workingDirectory = targetEnvironment.workingDirectory();
     std::string productsDirectory = targetEnvironment.environment().resolve("BUILT_PRODUCTS_DIR");
 
-    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
+    std::vector<Tool::Input> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, targetEnvironment.environment(), _buildPhase->files());
 
     for (std::string const &variant : targetEnvironment.variants()) {
         pbxsetting::Environment variantEnvironment = pbxsetting::Environment(targetEnvironment.environment());

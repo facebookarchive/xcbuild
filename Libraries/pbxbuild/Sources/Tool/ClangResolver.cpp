@@ -200,7 +200,7 @@ void Tool::ClangResolver::
 resolveSource(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    Phase::File const &input,
+    Tool::Input const &input,
     std::string const &outputDirectory) const
 {
     Tool::HeadermapInfo const &headermapInfo = toolContext->headermapInfo();

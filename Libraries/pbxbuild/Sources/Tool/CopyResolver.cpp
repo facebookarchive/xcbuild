@@ -34,7 +34,7 @@ ResolveInternal(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
     std::vector<std::string> const &inputPaths,
-    ext::optional<std::vector<Phase::File>> const &inputs,
+    ext::optional<std::vector<Tool::Input>> const &inputs,
     std::string const &outputDirectory,
     std::string const &logMessageTitle)
 {
@@ -124,12 +124,12 @@ void Tool::CopyResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::vector<Phase::File> const &inputs,
+    std::vector<Tool::Input> const &inputs,
     std::string const &outputDirectory,
     std::string const &logMessageTitle) const
 {
     std::vector<std::string> inputPaths;
-    std::transform(inputs.begin(), inputs.end(), std::back_inserter(inputPaths), [&](Phase::File const &input) -> std::string {
+    std::transform(inputs.begin(), inputs.end(), std::back_inserter(inputPaths), [&](Tool::Input const &input) -> std::string {
         return input.path();
     });
 

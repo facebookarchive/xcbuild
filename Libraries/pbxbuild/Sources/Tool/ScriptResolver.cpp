@@ -131,7 +131,7 @@ void Tool::ScriptResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    Phase::File const &input) const
+    Tool::Input const &input) const
 {
     Target::BuildRules::BuildRule::shared_ptr const &buildRule = input.buildRule();
     if (buildRule == nullptr || buildRule->script().empty()) {
