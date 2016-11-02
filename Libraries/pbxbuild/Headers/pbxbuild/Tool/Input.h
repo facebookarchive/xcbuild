@@ -10,7 +10,6 @@
 #ifndef __pbxbuild_Tool_Input_h
 #define __pbxbuild_Tool_Input_h
 
-#include <pbxbuild/Base.h>
 #include <pbxbuild/Target/BuildRules.h>
 
 #include <string>

@@ -239,16 +239,13 @@ resolve(
 }
 
 std::unique_ptr<Tool::HeadermapResolver> Tool::HeadermapResolver::
-Create(Phase::Environment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, pbxspec::PBX::Compiler::shared_ptr const &compiler)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool(Tool::HeadermapResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr headermapTool = specManager->tool(Tool::HeadermapResolver::ToolIdentifier(), specDomains);
     if (headermapTool == nullptr) {
         fprintf(stderr, "warning: could not find headermap tool\n");
         return nullptr;
     }
 
-    return std::unique_ptr<Tool::HeadermapResolver>(new Tool::HeadermapResolver(headermapTool, compiler, buildEnvironment.specManager()));
+    return std::unique_ptr<Tool::HeadermapResolver>(new Tool::HeadermapResolver(headermapTool, compiler, specManager));
 }

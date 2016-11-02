@@ -122,6 +122,7 @@ bool Phase::SwiftResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext) const
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
     pbxsetting::Environment const &environment = targetEnvironment.environment();
 
     /*
@@ -135,7 +136,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     /*
      * Get the tool for copying the standard library.
      */
-    std::unique_ptr<Tool::SwiftStandardLibraryResolver> swiftStandardLibraryResolver = Tool::SwiftStandardLibraryResolver::Create(phaseEnvironment);
+    std::unique_ptr<Tool::SwiftStandardLibraryResolver> swiftStandardLibraryResolver = Tool::SwiftStandardLibraryResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     if (swiftStandardLibraryResolver == nullptr) {
         return false;
     }

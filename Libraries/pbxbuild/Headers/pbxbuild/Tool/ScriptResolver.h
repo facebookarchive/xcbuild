@@ -10,11 +10,9 @@
 #ifndef __pbxbuild_Tool_ScriptResolver_h
 #define __pbxbuild_Tool_ScriptResolver_h
 
-#include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Target/BuildRules.h>
-#include <pbxbuild/Phase/Environment.h>
-#include <pbxbuild/Phase/File.h>
+#include <pbxbuild/Tool/Input.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -52,7 +50,7 @@ public:
 
 public:
     static std::unique_ptr<ScriptResolver>
-    Create(Phase::Environment const &phaseEnvironment);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains);
 };
 
 }

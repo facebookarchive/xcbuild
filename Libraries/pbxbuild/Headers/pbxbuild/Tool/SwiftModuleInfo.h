@@ -10,7 +10,6 @@
 #ifndef __pbxbuild_Tool_SwiftModuleInfo_h
 #define __pbxbuild_Tool_SwiftModuleInfo_h
 
-#include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 
 namespace pbxbuild {

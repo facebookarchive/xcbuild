@@ -15,6 +15,8 @@
 #include <pbxbuild/Tool/Context.h>
 #include <pbxsetting/Environment.h>
 #include <pbxsetting/Type.h>
+#include <xcsdk/SDK/Platform.h>
+#include <xcsdk/SDK/Target.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
 #include <plist/Format/JSON.h>
@@ -22,7 +24,6 @@
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
-namespace Phase = pbxbuild::Phase;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -451,12 +452,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::SwiftResolver> Tool::SwiftResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Compiler::shared_ptr swiftTool = buildEnvironment.specManager()->compiler(Tool::SwiftResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Compiler::shared_ptr swiftTool = specManager->compiler(Tool::SwiftResolver::ToolIdentifier(), specDomains);
     if (swiftTool == nullptr) {
         fprintf(stderr, "warning: could not find asset catalog compiler\n");
         return nullptr;

@@ -10,9 +10,7 @@
 #ifndef __pbxbuild_Tool_SwiftResolver_h
 #define __pbxbuild_Tool_SwiftResolver_h
 
-#include <pbxbuild/Base.h>
-#include <pbxbuild/Phase/Environment.h>
-#include <pbxbuild/Phase/File.h>
+#include <pbxbuild/Tool/Input.h>
 #include <pbxbuild/Tool/DittoResolver.h>
 
 namespace pbxbuild {
@@ -40,7 +38,7 @@ public:
 
 public:
     static std::unique_ptr<SwiftResolver>
-    Create(Phase::Environment const &phaseEnvironment);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains);
 };
 
 }

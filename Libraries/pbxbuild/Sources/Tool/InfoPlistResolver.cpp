@@ -76,12 +76,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::InfoPlistResolver> Tool::InfoPlistResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr infoPlistTool = buildEnvironment.specManager()->tool(Tool::InfoPlistResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr infoPlistTool = specManager->tool(Tool::InfoPlistResolver::ToolIdentifier(), specDomains);
     if (infoPlistTool == nullptr) {
         fprintf(stderr, "warning: could not find info plist tool\n");
         return nullptr;

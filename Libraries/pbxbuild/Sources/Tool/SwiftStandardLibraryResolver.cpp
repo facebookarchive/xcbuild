@@ -56,12 +56,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::SwiftStandardLibraryResolver> Tool::SwiftStandardLibraryResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr swiftStandardLibraryTool = buildEnvironment.specManager()->tool(Tool::SwiftStandardLibraryResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr swiftStandardLibraryTool = specManager->tool(Tool::SwiftStandardLibraryResolver::ToolIdentifier(), specDomains);
     if (swiftStandardLibraryTool == nullptr) {
         fprintf(stderr, "warning: could not find swift standard library tool\n");
         return nullptr;

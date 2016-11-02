@@ -10,7 +10,8 @@
 #ifndef __pbxbuild_Tool_CompilerCommon_h
 #define __pbxbuild_Tool_CompilerCommon_h
 
-#include <pbxbuild/Base.h>
+#include <string>
+#include <vector>
 
 namespace pbxsetting { class Environment; }
 

@@ -39,12 +39,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::MakeDirectoryResolver> Tool::MakeDirectoryResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr mkdirTool = buildEnvironment.specManager()->tool(Tool::MakeDirectoryResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr mkdirTool = specManager->tool(Tool::MakeDirectoryResolver::ToolIdentifier(), specDomains);
     if (mkdirTool == nullptr) {
         fprintf(stderr, "warning: could not find mkdir tool\n");
         return nullptr;

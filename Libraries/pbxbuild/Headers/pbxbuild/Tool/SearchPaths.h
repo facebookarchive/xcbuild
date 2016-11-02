@@ -10,14 +10,13 @@
 #ifndef __pbxbuild_Tool_SearchPaths_h
 #define __pbxbuild_Tool_SearchPaths_h
 
-#include <pbxbuild/Base.h>
+#include <string>
+#include <vector>
 
 namespace pbxsetting { class Environment; }
 
 namespace pbxbuild {
 namespace Tool {
-
-class Context;
 
 class SearchPaths {
 private:

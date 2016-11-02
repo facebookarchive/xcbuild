@@ -133,12 +133,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::LinkerResolver> Tool::LinkerResolver::
-Create(Phase::Environment const &phaseEnvironment, std::string const &identifier)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, std::string const &identifier)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Linker::shared_ptr linker = buildEnvironment.specManager()->linker(identifier, targetEnvironment.specDomains());
+    pbxspec::PBX::Linker::shared_ptr linker = specManager->linker(identifier, specDomains);
     if (linker == nullptr) {
         fprintf(stderr, "warning: could not find linker %s\n", identifier.c_str());
         return nullptr;
