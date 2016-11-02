@@ -10,7 +10,6 @@
 #ifndef __pbxbuild_Tool_Context_h
 #define __pbxbuild_Tool_Context_h
 
-#include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
@@ -20,6 +19,10 @@
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <xcsdk/SDK/Target.h>
 #include <xcsdk/SDK/Toolchain.h>
+
+#include <map>
+#include <string>
+#include <vector>
 
 namespace pbxbuild {
 namespace Tool {

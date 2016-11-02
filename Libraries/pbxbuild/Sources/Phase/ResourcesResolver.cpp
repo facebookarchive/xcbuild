@@ -37,8 +37,9 @@ static bool
 LinkStoryboards(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
 
-    std::unique_ptr<Tool::InterfaceBuilderStoryboardLinkerResolver> storyboardLinkerResolver = Tool::InterfaceBuilderStoryboardLinkerResolver::Create(phaseEnvironment);
+    std::unique_ptr<Tool::InterfaceBuilderStoryboardLinkerResolver> storyboardLinkerResolver = Tool::InterfaceBuilderStoryboardLinkerResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     if (storyboardLinkerResolver == nullptr) {
         return false;
     }

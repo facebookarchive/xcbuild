@@ -18,7 +18,6 @@
 #include <algorithm>
 
 namespace Tool = pbxbuild::Tool;
-namespace Phase = pbxbuild::Phase;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -99,12 +98,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::CopyResolver> Tool::CopyResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr copyTool = buildEnvironment.specManager()->tool(Tool::CopyResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr copyTool = specManager->tool(Tool::CopyResolver::ToolIdentifier(), specDomains);
     if (copyTool == nullptr) {
         fprintf(stderr, "warning: could not find copy tool\n");
         return nullptr;

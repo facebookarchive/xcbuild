@@ -8,6 +8,7 @@
  */
 
 #include <pbxbuild/Phase/Context.h>
+#include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/AssetCatalogResolver.h>
 #include <pbxbuild/Tool/ClangResolver.h>
@@ -47,7 +48,10 @@ Tool::AssetCatalogResolver const *Phase::Context::
 assetCatalogResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_assetCatalogResolver == nullptr) {
-        _assetCatalogResolver = Tool::AssetCatalogResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _assetCatalogResolver = Tool::AssetCatalogResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _assetCatalogResolver.get();
@@ -57,7 +61,12 @@ Tool::ClangResolver const *Phase::Context::
 clangResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_clangResolver == nullptr) {
-        _clangResolver = Tool::ClangResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        // TODO(grp): This should probably try a number of other compilers if it's not clang.
+        std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
+        _clangResolver = Tool::ClangResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), gccVersion);
     }
 
     return _clangResolver.get();
@@ -67,7 +76,10 @@ Tool::CopyResolver const *Phase::Context::
 copyResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_copyResolver == nullptr) {
-        _copyResolver = Tool::CopyResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _copyResolver = Tool::CopyResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _copyResolver.get();
@@ -77,7 +89,10 @@ Tool::DittoResolver const *Phase::Context::
 dittoResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_dittoResolver == nullptr) {
-        _dittoResolver = Tool::DittoResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _dittoResolver = Tool::DittoResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _dittoResolver.get();
@@ -87,7 +102,10 @@ Tool::InfoPlistResolver const *Phase::Context::
 infoPlistResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_infoPlistResolver == nullptr) {
-        _infoPlistResolver = Tool::InfoPlistResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _infoPlistResolver = Tool::InfoPlistResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _infoPlistResolver.get();
@@ -97,7 +115,10 @@ Tool::InterfaceBuilderResolver const *Phase::Context::
 interfaceBuilderCompilerResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_interfaceBuilderCompilerResolver == nullptr) {
-        _interfaceBuilderCompilerResolver = Tool::InterfaceBuilderResolver::Create(phaseEnvironment, Tool::InterfaceBuilderResolver::CompilerToolIdentifier());
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _interfaceBuilderCompilerResolver = Tool::InterfaceBuilderResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), Tool::InterfaceBuilderResolver::CompilerToolIdentifier());
     }
 
     return _interfaceBuilderCompilerResolver.get();
@@ -107,7 +128,10 @@ Tool::InterfaceBuilderResolver const *Phase::Context::
 interfaceBuilderStoryboardCompilerResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_interfaceBuilderStoryboardCompilerResolver == nullptr) {
-        _interfaceBuilderStoryboardCompilerResolver = Tool::InterfaceBuilderResolver::Create(phaseEnvironment, Tool::InterfaceBuilderResolver::StoryboardCompilerToolIdentifier());
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _interfaceBuilderStoryboardCompilerResolver = Tool::InterfaceBuilderResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), Tool::InterfaceBuilderResolver::StoryboardCompilerToolIdentifier());
     }
 
     return _interfaceBuilderStoryboardCompilerResolver.get();
@@ -117,7 +141,10 @@ Tool::MakeDirectoryResolver const *Phase::Context::
 makeDirectoryResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_makeDirectoryResolver == nullptr) {
-        _makeDirectoryResolver = Tool::MakeDirectoryResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _makeDirectoryResolver = Tool::MakeDirectoryResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _makeDirectoryResolver.get();
@@ -127,7 +154,10 @@ Tool::ScriptResolver const *Phase::Context::
 scriptResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_scriptResolver == nullptr) {
-        _scriptResolver = Tool::ScriptResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _scriptResolver = Tool::ScriptResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _scriptResolver.get();
@@ -137,7 +167,10 @@ Tool::SwiftResolver const *Phase::Context::
 swiftResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_swiftResolver == nullptr) {
-        _swiftResolver = Tool::SwiftResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _swiftResolver = Tool::SwiftResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _swiftResolver.get();
@@ -147,7 +180,10 @@ Tool::SymlinkResolver const *Phase::Context::
 symlinkResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_symlinkResolver == nullptr) {
-        _symlinkResolver = Tool::SymlinkResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _symlinkResolver = Tool::SymlinkResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _symlinkResolver.get();
@@ -157,7 +193,10 @@ Tool::TouchResolver const *Phase::Context::
 touchResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_touchResolver == nullptr) {
-        _touchResolver = Tool::TouchResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _touchResolver = Tool::TouchResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _touchResolver.get();
@@ -167,7 +206,10 @@ Tool::ToolResolver const *Phase::Context::
 toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier)
 {
     if (_toolResolvers.find(identifier) == _toolResolvers.end()) {
-        std::unique_ptr<Tool::ToolResolver> toolResolver = Tool::ToolResolver::Create(phaseEnvironment, identifier);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        std::unique_ptr<Tool::ToolResolver> toolResolver = Tool::ToolResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), identifier);
         if (toolResolver == nullptr) {
             return nullptr;
         }

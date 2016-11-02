@@ -10,8 +10,12 @@
 #ifndef __pbxbuild_Tool_Invocation_h
 #define __pbxbuild_Tool_Invocation_h
 
-#include <pbxbuild/Base.h>
 #include <dependency/DependencyInfoFormat.h>
+
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <ext/optional>
 
 namespace pbxbuild {
 namespace Tool {

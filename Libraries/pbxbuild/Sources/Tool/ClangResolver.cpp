@@ -8,7 +8,6 @@
  */
 
 #include <pbxbuild/Tool/ClangResolver.h>
-#include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/CompilerCommon.h>
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
@@ -333,19 +332,13 @@ resolveSource(
 }
 
 std::unique_ptr<Tool::ClangResolver> Tool::ClangResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, std::string const &compilerIdentifier)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    // TODO(grp): This should probably try a number of other compilers if it's not clang.
-    std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
-
     // TODO(grp): Depending on the build action, add a different suffix than ".compiler".
-    pbxspec::PBX::Compiler::shared_ptr defaultCompiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomains());
+    pbxspec::PBX::Compiler::shared_ptr defaultCompiler = specManager->compiler(compilerIdentifier + ".compiler", specDomains);
     if (defaultCompiler == nullptr) {
         // TODO(grp): Should this fallback to a hardcoded default compiler here?
-        defaultCompiler = buildEnvironment.specManager()->compiler("com.apple.compilers.llvm.clang.1_0.compiler", targetEnvironment.specDomains());
+        defaultCompiler = specManager->compiler("com.apple.compilers.llvm.clang.1_0.compiler", specDomains);
         if (defaultCompiler == nullptr) {
             fprintf(stderr, "error: couldn't get default compiler\n");
             return nullptr;

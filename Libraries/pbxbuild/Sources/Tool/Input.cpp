@@ -8,7 +8,6 @@
  */
 
 #include <pbxbuild/Tool/Input.h>
-#include <pbxbuild/Target/Environment.h>
 
 namespace Tool = pbxbuild::Tool;
 namespace Target = pbxbuild::Target;

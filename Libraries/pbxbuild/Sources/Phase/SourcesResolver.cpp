@@ -102,13 +102,14 @@ bool Phase::SourcesResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
 
     Tool::ClangResolver const *clangResolver = phaseContext->clangResolver(phaseEnvironment);
     if (clangResolver == nullptr) {
         return false;
     }
 
-    std::unique_ptr<Tool::HeadermapResolver> headermapResolver = Tool::HeadermapResolver::Create(phaseEnvironment, clangResolver->compiler());
+    std::unique_ptr<Tool::HeadermapResolver> headermapResolver = Tool::HeadermapResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), clangResolver->compiler());
     if (headermapResolver == nullptr) {
         return false;
     }

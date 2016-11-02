@@ -39,12 +39,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::DittoResolver> Tool::DittoResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr dittoTool = buildEnvironment.specManager()->tool(Tool::DittoResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr dittoTool = specManager->tool(Tool::DittoResolver::ToolIdentifier(), specDomains);
     if (dittoTool == nullptr) {
         fprintf(stderr, "warning: could not find ditto tool\n");
         return nullptr;

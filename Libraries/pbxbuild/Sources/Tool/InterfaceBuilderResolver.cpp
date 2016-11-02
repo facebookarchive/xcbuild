@@ -109,12 +109,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::InterfaceBuilderResolver> Tool::InterfaceBuilderResolver::
-Create(Phase::Environment const &phaseEnvironment, std::string const &toolIdentifier)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, std::string const &toolIdentifier)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Compiler::shared_ptr interfaceBuilderTool = buildEnvironment.specManager()->compiler(toolIdentifier, targetEnvironment.specDomains());
+    pbxspec::PBX::Compiler::shared_ptr interfaceBuilderTool = specManager->compiler(toolIdentifier, specDomains);
     if (interfaceBuilderTool == nullptr) {
         fprintf(stderr, "warning: could not find interface builder tool\n");
         return nullptr;

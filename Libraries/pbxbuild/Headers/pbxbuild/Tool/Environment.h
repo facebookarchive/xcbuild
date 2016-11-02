@@ -10,8 +10,7 @@
 #ifndef __pbxbuild_Tool_Environment_h
 #define __pbxbuild_Tool_Environment_h
 
-#include <pbxbuild/Base.h>
-#include <pbxbuild/Phase/File.h>
+#include <pbxbuild/Tool/Input.h>
 #include <pbxsetting/Environment.h>
 
 namespace pbxbuild {

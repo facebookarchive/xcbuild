@@ -10,7 +10,7 @@
 #ifndef __pbxbuild_Tool_InterfaceBuilderCommon_h
 #define __pbxbuild_Tool_InterfaceBuilderCommon_h
 
-#include <pbxbuild/Base.h>
+#include <pbxsetting/Setting.h>
 
 #include <string>
 #include <vector>

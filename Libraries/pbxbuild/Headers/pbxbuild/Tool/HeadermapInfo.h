@@ -10,7 +10,8 @@
 #ifndef __pbxbuild_Tool_HeadermapInfo_h
 #define __pbxbuild_Tool_HeadermapInfo_h
 
-#include <pbxbuild/Base.h>
+#include <string>
+#include <vector>
 
 namespace pbxbuild {
 namespace Tool {

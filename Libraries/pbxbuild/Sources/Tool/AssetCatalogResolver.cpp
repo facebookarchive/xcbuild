@@ -138,12 +138,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::AssetCatalogResolver> Tool::AssetCatalogResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Compiler::shared_ptr assetCatalogTool = buildEnvironment.specManager()->compiler(Tool::AssetCatalogResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Compiler::shared_ptr assetCatalogTool = specManager->compiler(Tool::AssetCatalogResolver::ToolIdentifier(), specDomains);
     if (assetCatalogTool == nullptr) {
         fprintf(stderr, "warning: could not find asset catalog compiler\n");
         return nullptr;

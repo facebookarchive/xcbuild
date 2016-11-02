@@ -42,13 +42,14 @@ bool Phase::FrameworksResolver::
 resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
 
     Tool::CompilationInfo const &compilationInfo = phaseContext->toolContext().compilationInfo();
 
-    std::unique_ptr<Tool::LinkerResolver> ldResolver = Tool::LinkerResolver::Create(phaseEnvironment, Tool::LinkerResolver::LinkerToolIdentifier());
-    std::unique_ptr<Tool::LinkerResolver> libtoolResolver = Tool::LinkerResolver::Create(phaseEnvironment, Tool::LinkerResolver::LibtoolToolIdentifier());
-    std::unique_ptr<Tool::LinkerResolver> lipoResolver = Tool::LinkerResolver::Create(phaseEnvironment, Tool::LinkerResolver::LipoToolIdentifier());
-    std::unique_ptr<Tool::ToolResolver> dsymutilResolver = Tool::ToolResolver::Create(phaseEnvironment, "com.apple.tools.dsymutil");
+    std::unique_ptr<Tool::LinkerResolver> ldResolver = Tool::LinkerResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), Tool::LinkerResolver::LinkerToolIdentifier());
+    std::unique_ptr<Tool::LinkerResolver> libtoolResolver = Tool::LinkerResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), Tool::LinkerResolver::LibtoolToolIdentifier());
+    std::unique_ptr<Tool::LinkerResolver> lipoResolver = Tool::LinkerResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), Tool::LinkerResolver::LipoToolIdentifier());
+    std::unique_ptr<Tool::ToolResolver> dsymutilResolver = Tool::ToolResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), "com.apple.tools.dsymutil");
     if (ldResolver == nullptr || libtoolResolver == nullptr || lipoResolver == nullptr || dsymutilResolver == nullptr) {
         fprintf(stderr, "error: couldn't get linker tools\n");
         return false;

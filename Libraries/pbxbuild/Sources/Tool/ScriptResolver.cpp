@@ -9,6 +9,7 @@
 
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxsetting/Environment.h>
 #include <pbxsetting/Level.h>
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/Type.h>
@@ -189,12 +190,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::ScriptResolver> Tool::ScriptResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr scriptTool = buildEnvironment.specManager()->tool(ScriptResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr scriptTool = specManager->tool(ScriptResolver::ToolIdentifier(), specDomains);
     if (scriptTool == nullptr) {
         fprintf(stderr, "warning: could not find shell script tool\n");
         return nullptr;

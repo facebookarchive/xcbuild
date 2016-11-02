@@ -52,12 +52,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::TouchResolver> Tool::TouchResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr touchTool = buildEnvironment.specManager()->tool(Tool::TouchResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr touchTool = specManager->tool(Tool::TouchResolver::ToolIdentifier(), specDomains);
     if (touchTool == nullptr) {
         fprintf(stderr, "warning: could not find touch tool\n");
         return nullptr;
