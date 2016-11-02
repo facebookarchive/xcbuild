@@ -154,7 +154,7 @@ resolve(
         pbxsetting::Setting::Parse("INPUT_FILE_NAME", "$(INPUT_FILE_PATH:file)"),
         pbxsetting::Setting::Parse("INPUT_FILE_BASE", "$(INPUT_FILE_PATH:base)"),
         pbxsetting::Setting::Parse("INPUT_FILE_SUFFIX", "$(INPUT_FILE_PATH:suffix)"),
-        pbxsetting::Setting::Create("INPUT_FILE_REGION_PATH_COMPONENT", input.localization()), // TODO(grp): Verify format of this.
+        pbxsetting::Setting::Create("INPUT_FILE_REGION_PATH_COMPONENT", input.localization().value_or("")), // TODO(grp): Verify format of this.
     });
 
     pbxsetting::Environment ruleEnvironment = pbxsetting::Environment(environment);

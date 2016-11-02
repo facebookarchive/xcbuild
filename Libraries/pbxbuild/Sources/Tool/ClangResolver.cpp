@@ -215,8 +215,8 @@ resolveSource(
     std::string outputExtension = _compiler->outputFileExtension().value_or("o");
 
     std::string outputBaseName = FSUtil::GetBaseNameWithoutExtension(input.path());
-    if (!input.fileNameDisambiguator().empty()) {
-        outputBaseName = input.fileNameDisambiguator();
+    if (input.fileNameDisambiguator()) {
+        outputBaseName = *input.fileNameDisambiguator();
     }
     std::string output = resolvedOutputDirectory + "/" + outputBaseName + "." + outputExtension;
 

@@ -57,12 +57,15 @@ namespace Tool {
  */
 class Input {
 private:
-    std::string _path;
-    std::string _localization;
-    std::string _uniquefier;
+    std::string                _path;
+    ext::optional<std::string> _localization;
+    ext::optional<std::string> _uniquefier;
 
 public:
-    Input(std::string const &path, std::string const &localization, std::string const &uniquefier) :
+    Input(
+        std::string const &path,
+        ext::optional<std::string> const &localization,
+        ext::optional<std::string> const &uniquefier) :
         _path        (path),
         _localization(localization),
         _uniquefier  (uniquefier)
@@ -72,9 +75,9 @@ public:
 public:
     std::string const &path() const
     { return _path; }
-    std::string const &localization() const
+    ext::optional<std::string> const &localization() const
     { return _localization; }
-    std::string const &uniquefier() const
+    ext::optional<std::string> const &uniquefier() const
     { return _uniquefier; }
 };
 
@@ -95,7 +98,7 @@ InputLevel(Tool::Input const &input, std::string const &workingDirectory)
         pbxsetting::Setting::Parse("InputFileBase", "$(InputFile:base)"),
         pbxsetting::Setting::Parse("InputFileSuffix", "$(InputFile:suffix)"),
         pbxsetting::Setting::Create("InputFileRelativePath", relativeInputPath),
-        pbxsetting::Setting::Create("InputFileBaseUniquefier", input.uniquefier()),
+        pbxsetting::Setting::Create("InputFileBaseUniquefier", input.uniquefier().value_or("")),
         pbxsetting::Setting::Create("InputFileTextEncoding", ""), // TODO(grp): Text encoding.
     });
 }
@@ -140,8 +143,8 @@ CreateInternal(
     std::string tempResourcesDirectory = environment.resolve("TARGET_TEMP_DIR");
     if (!inputs.empty()) {
         Tool::Input const &input = inputs.front();
-        if (!input.localization().empty()) {
-            std::string localizationPath = input.localization() + ".lproj";
+        if (input.localization()) {
+            std::string localizationPath = *input.localization() + ".lproj";
             productResourcesDirectory += "/" + localizationPath;
             tempResourcesDirectory += "/" + localizationPath;
         }
