@@ -13,6 +13,9 @@
 #include <pbxbuild/Base.h>
 #include <pbxbuild/Target/BuildRules.h>
 
+#include <string>
+#include <ext/optional>
+
 namespace libutil { class Filesystem; }
 namespace pbxsetting { class Environment; }
 
@@ -32,8 +35,8 @@ private:
 
 private:
     std::string                               _path;
-    std::string                               _localization;
-    std::string                               _fileNameDisambiguator;
+    ext::optional<std::string>                _localization;
+    ext::optional<std::string>                _fileNameDisambiguator;
 
 public:
     File(
@@ -41,8 +44,8 @@ public:
         Target::BuildRules::BuildRule::shared_ptr const &buildRule,
         pbxspec::PBX::FileType::shared_ptr const &fileType,
         std::string const &path,
-        std::string const &localization,
-        std::string const &fileNameDisambiguator);
+        ext::optional<std::string> const &localization,
+        ext::optional<std::string> const &fileNameDisambiguator);
     ~File();
 
 public:
@@ -75,7 +78,7 @@ public:
      * The localization this file is for.  This is relevant for variant groups,
      * which contain many versions of the same file for different lproj outputs.
      */
-    std::string const &localization() const
+    ext::optional<std::string> const &localization() const
     { return _localization; }
 
     /*
@@ -83,7 +86,7 @@ public:
      * same base name within a target. This should be used for the output
      * path in order to avoid overwriting outputs.
      */
-    std::string const &fileNameDisambiguator() const
+    ext::optional<std::string> const &fileNameDisambiguator() const
     { return _fileNameDisambiguator; }
 
 public:

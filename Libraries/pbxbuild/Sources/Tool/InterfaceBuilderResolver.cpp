@@ -40,7 +40,7 @@ resolve(
     for (Phase::File const &input : inputs) {
         if (input.fileType()->identifier() == "text.plist.strings") {
             /* The format here is as expected by ibtool. */
-            localizationStringsFiles.push_back(input.localization() + ":" + input.path());
+            localizationStringsFiles.push_back(input.localization().value_or("") + ":" + input.path());
         } else {
             primaryInputs.push_back(input);
         }
