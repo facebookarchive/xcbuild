@@ -87,14 +87,14 @@ public:
     /*
      * Groups the files according to the tools used to build them.
      */
-    static std::vector<std::vector<Phase::File>> Group(std::vector<Phase::File> const &files);
+    static std::vector<std::vector<Tool::Input>> Group(std::vector<Tool::Input> const &files);
 
 public:
     bool resolveBuildFiles(
         Phase::Environment const &phaseEnvironment,
         pbxsetting::Environment const &environment,
         pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
-        std::vector<std::vector<Phase::File>> const &groups,
+        std::vector<std::vector<Tool::Input>> const &groups,
         std::string const &outputDirectory,
         std::string const &fallbackToolIdentifier = std::string());
 };

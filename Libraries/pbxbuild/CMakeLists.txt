@@ -15,6 +15,7 @@ add_library(pbxbuild SHARED
             Sources/FileTypeResolver.cpp
             Sources/Tool/Context.cpp
             Sources/Tool/Environment.cpp
+            Sources/Tool/Input.cpp
             Sources/Tool/Invocation.cpp
             Sources/Tool/Tokens.cpp
             Sources/Tool/OptionsResult.cpp

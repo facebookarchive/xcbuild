@@ -33,7 +33,7 @@ resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
     std::vector<std::string> const &inputFiles,
-    std::vector<Phase::File> const &inputLibraries,
+    std::vector<Tool::Input> const &inputLibraries,
     std::string const &output,
     std::vector<std::string> const &additionalArguments,
     std::string const &executable)
@@ -59,7 +59,7 @@ resolve(
      */
     std::vector<std::string> libraryPaths;
     libraryPaths.reserve(inputLibraries.size());
-    for (Phase::File const &library : inputLibraries) {
+    for (Tool::Input const &library : inputLibraries) {
         if (!library.fileType()->isFrameworkWrapper()) {
             libraryPaths.push_back(FSUtil::GetDirectoryName(library.path()));
         }
@@ -77,7 +77,7 @@ resolve(
         special.push_back("-F" + environment.resolve("BUILT_PRODUCTS_DIR"));
     }
 
-    for (Phase::File const &library : inputLibraries) {
+    for (Tool::Input const &library : inputLibraries) {
         std::string base = FSUtil::GetBaseNameWithoutExtension(library.path());
         if (library.fileType()->isFrameworkWrapper()) {
             special.push_back("-framework");

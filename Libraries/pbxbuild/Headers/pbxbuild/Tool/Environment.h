@@ -56,7 +56,7 @@ public:
         pbxspec::PBX::Tool::shared_ptr const &tool,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory,
-        std::vector<Phase::File> const &inputs,
+        std::vector<Tool::Input> const &inputs,
         std::vector<std::string> const &outputs = { });
     static Tool::Environment
     Create(

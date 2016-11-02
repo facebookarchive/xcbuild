@@ -49,41 +49,6 @@ outputs(std::string const &workingDirectory) const
     return outputs;
 }
 
-namespace pbxbuild {
-namespace Tool {
-
-/*
- * Holder object for the data from either a `Phase::File` or a simple path.
- */
-class Input {
-private:
-    std::string                _path;
-    ext::optional<std::string> _localization;
-    ext::optional<std::string> _uniquefier;
-
-public:
-    Input(
-        std::string const &path,
-        ext::optional<std::string> const &localization,
-        ext::optional<std::string> const &uniquefier) :
-        _path        (path),
-        _localization(localization),
-        _uniquefier  (uniquefier)
-    {
-    }
-
-public:
-    std::string const &path() const
-    { return _path; }
-    ext::optional<std::string> const &localization() const
-    { return _localization; }
-    ext::optional<std::string> const &uniquefier() const
-    { return _uniquefier; }
-};
-
-}
-}
-
 static pbxsetting::Level
 InputLevel(Tool::Input const &input, std::string const &workingDirectory)
 {
@@ -98,7 +63,7 @@ InputLevel(Tool::Input const &input, std::string const &workingDirectory)
         pbxsetting::Setting::Parse("InputFileBase", "$(InputFile:base)"),
         pbxsetting::Setting::Parse("InputFileSuffix", "$(InputFile:suffix)"),
         pbxsetting::Setting::Create("InputFileRelativePath", relativeInputPath),
-        pbxsetting::Setting::Create("InputFileBaseUniquefier", input.uniquefier().value_or("")),
+        pbxsetting::Setting::Create("InputFileBaseUniquefier", input.fileNameDisambiguator().value_or("")),
         pbxsetting::Setting::Create("InputFileTextEncoding", ""), // TODO(grp): Text encoding.
     });
 }
@@ -243,7 +208,7 @@ Create(
 {
     std::vector<Tool::Input> toolInputs;
     for (std::string const &input : inputs) {
-        Tool::Input toolInput = Tool::Input(input, std::string(), std::string());
+        Tool::Input toolInput = Tool::Input(nullptr, nullptr, nullptr, input, ext::nullopt, ext::nullopt);
         toolInputs.push_back(toolInput);
     }
 
@@ -255,14 +220,8 @@ Create(
     pbxspec::PBX::Tool::shared_ptr const &tool,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory,
-    std::vector<Phase::File> const &inputs,
+    std::vector<Tool::Input> const &inputs,
     std::vector<std::string> const &outputs)
 {
-    std::vector<Tool::Input> toolInputs;
-    for (Phase::File const &input : inputs) {
-        Tool::Input toolInput = Tool::Input(input.path(), input.localization(), input.fileNameDisambiguator());
-        toolInputs.push_back(toolInput);
-    }
-
-    return CreateInternal(tool, environment, workingDirectory, toolInputs, outputs);
+    return CreateInternal(tool, environment, workingDirectory, inputs, outputs);
 }

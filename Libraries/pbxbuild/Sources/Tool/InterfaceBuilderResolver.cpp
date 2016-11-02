@@ -30,14 +30,14 @@ void Tool::InterfaceBuilderResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::vector<Phase::File> const &inputs) const
+    std::vector<Tool::Input> const &inputs) const
 {
     /*
      * Filter arguments as either a real input or a localization-specific strings file.
      */
-    std::vector<Phase::File> primaryInputs;
+    std::vector<Tool::Input> primaryInputs;
     std::vector<std::string> localizationStringsFiles;
-    for (Phase::File const &input : inputs) {
+    for (Tool::Input const &input : inputs) {
         if (input.fileType()->identifier() == "text.plist.strings") {
             /* The format here is as expected by ibtool. */
             localizationStringsFiles.push_back(input.localization().value_or("") + ":" + input.path());

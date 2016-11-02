@@ -87,7 +87,7 @@ AppendOutputs(
     std::string const &outputDirectory,
     std::string const &moduleName,
     std::string const &modulePath,
-    std::vector<Phase::File> const &inputs,
+    std::vector<Tool::Input> const &inputs,
     bool includeBitcode)
 {
     std::unique_ptr<plist::Dictionary> outputInfo = plist::Dictionary::New();
@@ -99,7 +99,7 @@ AppendOutputs(
     module->set("swift-dependencies", plist::String::New(moduleDependencies));
     outputInfo->set("", std::move(module));
 
-    for (Phase::File const &input : inputs) {
+    for (Tool::Input const &input : inputs) {
         std::string name = FSUtil::GetBaseNameWithoutExtension(input.path());
 
         /* Add input argument. */
@@ -305,7 +305,7 @@ void Tool::SwiftResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::vector<Phase::File> const &inputs,
+    std::vector<Tool::Input> const &inputs,
     std::string const &outputDirectory) const
 {
     /*
@@ -332,7 +332,7 @@ resolve(
 
     /* Compile as a library if no main.swift. */
     bool hasMain = false;
-    for (Phase::File const &input : inputs) {
+    for (Tool::Input const &input : inputs) {
         if (FSUtil::GetBaseName(input.path()) == "main.swift") {
             hasMain = true;
             break;

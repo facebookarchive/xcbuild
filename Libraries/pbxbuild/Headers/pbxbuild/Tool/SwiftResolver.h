@@ -31,7 +31,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::vector<Phase::File> const &input,
+        std::vector<Tool::Input> const &input,
         std::string const &outputDirectory) const;
 
 public:
