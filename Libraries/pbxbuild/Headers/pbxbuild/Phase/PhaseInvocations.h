@@ -11,6 +11,7 @@
 #define __pbxbuild_Phase_PhaseInvocations_h
 
 #include <pbxbuild/Base.h>
+#include <pbxbuild/Tool/AuxiliaryFile.h>
 #include <pbxbuild/Tool/Invocation.h>
 
 namespace pbxbuild {
@@ -20,15 +21,20 @@ class Environment;
 
 class PhaseInvocations {
 private:
-    std::vector<Tool::Invocation> _invocations;
+    std::vector<Tool::Invocation>    _invocations;
+    std::vector<Tool::AuxiliaryFile> _auxiliaryFiles;
 
 public:
-    PhaseInvocations(std::vector<Tool::Invocation> const &invocations);
+    PhaseInvocations(
+        std::vector<Tool::Invocation> const &invocations,
+        std::vector<Tool::AuxiliaryFile> const &auxiliaryFiles);
     ~PhaseInvocations();
 
 public:
     std::vector<Tool::Invocation> const &invocations() const
     { return _invocations; }
+    std::vector<Tool::AuxiliaryFile> const &auxiliaryFiles() const
+    { return _auxiliaryFiles; }
 
 public:
     static PhaseInvocations

@@ -13,51 +13,10 @@
 #include <process/Context.h>
 
 namespace Tool = pbxbuild::Tool;
-using AuxiliaryFile = Tool::Invocation::AuxiliaryFile;
 using DependencyInfo = Tool::Invocation::DependencyInfo;
 using Executable = Tool::Invocation::Executable;
 using libutil::Filesystem;
 using libutil::FSUtil;
-
-AuxiliaryFile::Chunk::
-Chunk(Type type, ext::optional<std::vector<uint8_t>> const &data, ext::optional<std::string> const &file) :
-    _type(type),
-    _data(data),
-    _file(file)
-{
-}
-
-AuxiliaryFile::Chunk AuxiliaryFile::Chunk::
-Data(std::vector<uint8_t> const &data)
-{
-    return Chunk(Type::Data, data, ext::nullopt);
-}
-
-AuxiliaryFile::Chunk AuxiliaryFile::Chunk::
-File(std::string const &file)
-{
-    return Chunk(Type::File, ext::nullopt, file);
-}
-
-AuxiliaryFile::
-AuxiliaryFile(std::string const &path, std::vector<Chunk> const &chunks, bool executable) :
-    _path      (path),
-    _chunks    (chunks),
-    _executable(executable)
-{
-}
-
-AuxiliaryFile AuxiliaryFile::
-Data(std::string const &path, std::vector<uint8_t> const &data, bool executable)
-{
-    return AuxiliaryFile(path, { Chunk::Data(data) }, executable);
-}
-
-AuxiliaryFile AuxiliaryFile::
-File(std::string const &path, std::string const &file, bool executable)
-{
-    return AuxiliaryFile(path, { Chunk::File(file) }, executable);
-}
 
 DependencyInfo::
 DependencyInfo(dependency::DependencyInfoFormat format, std::string const &path) :

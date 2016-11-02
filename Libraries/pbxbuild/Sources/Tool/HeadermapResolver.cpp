@@ -18,7 +18,6 @@
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
-using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
 using pbxbuild::HeaderMap;
 using pbxbuild::FileTypeResolver;
 using libutil::Filesystem;
@@ -198,17 +197,16 @@ resolve(
     std::string headermapFileForGeneratedFiles               = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES");
     std::string headermapFileForProjectFiles                 = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES");
 
-    std::vector<AuxiliaryFile> auxiliaryFiles = {
-        AuxiliaryFile::Data(headermapFile, targetName.write()),
-        AuxiliaryFile::Data(headermapFileForOwnTargetHeaders, ownTargetHeaders.write()),
-        AuxiliaryFile::Data(headermapFileForAllTargetHeaders, allTargetHeaders.write()),
-        AuxiliaryFile::Data(headermapFileForAllNonFrameworkTargetHeaders, allNonFrameworkTargetHeaders.write()),
-        AuxiliaryFile::Data(headermapFileForGeneratedFiles, generatedFiles.write()),
-        AuxiliaryFile::Data(headermapFileForProjectFiles, projectHeaders.write()),
+    std::vector<Tool::AuxiliaryFile> auxiliaryFiles = {
+        Tool::AuxiliaryFile::Data(headermapFile, targetName.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForOwnTargetHeaders, ownTargetHeaders.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForAllTargetHeaders, allTargetHeaders.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForAllNonFrameworkTargetHeaders, allNonFrameworkTargetHeaders.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForGeneratedFiles, generatedFiles.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForProjectFiles, projectHeaders.write()),
     };
 
-    Tool::Invocation invocation;
-    invocation.auxiliaryFiles().insert(invocation.auxiliaryFiles().end(), auxiliaryFiles.begin(), auxiliaryFiles.end());
+    toolContext->auxiliaryFiles().insert(toolContext->auxiliaryFiles().end(), auxiliaryFiles.begin(), auxiliaryFiles.end());
 
     std::vector<std::string> systemHeadermapFiles;
     std::vector<std::string> userHeadermapFiles;
@@ -230,8 +228,6 @@ resolve(
             userHeadermapFiles.push_back(headermapFileForProjectFiles);
         }
     }
-
-    toolContext->invocations().push_back(invocation);
 
     Tool::HeadermapInfo *headermapInfo = &toolContext->headermapInfo();
     headermapInfo->systemHeadermapFiles().insert(headermapInfo->systemHeadermapFiles().end(), systemHeadermapFiles.begin(), systemHeadermapFiles.end());

@@ -39,7 +39,7 @@ resolve(
     std::string const &executable)
 {
     std::vector<std::string> special;
-    std::vector<Tool::Invocation::AuxiliaryFile> auxiliaries;
+    std::vector<Tool::AuxiliaryFile> auxiliaries;
 
     special.insert(special.end(), additionalArguments.begin(), additionalArguments.end());
 
@@ -49,7 +49,7 @@ resolve(
         for (Tool::Input const &input : inputFiles) {
             contents += input.path() + "\n";
         }
-        auto fileList = Tool::Invocation::AuxiliaryFile::Data(path, std::vector<uint8_t>(contents.begin(), contents.end()));
+        auto fileList = Tool::AuxiliaryFile::Data(path, std::vector<uint8_t>(contents.begin(), contents.end()));
         auxiliaries.push_back(fileList);
     }
 
@@ -126,10 +126,11 @@ resolve(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
-    invocation.auxiliaryFiles() = auxiliaries;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();
     toolContext->invocations().push_back(invocation);
+
+    toolContext->auxiliaryFiles().insert(toolContext->auxiliaryFiles().end(), auxiliaries.begin(), auxiliaries.end());
 }
 
 std::unique_ptr<Tool::LinkerResolver> Tool::LinkerResolver::

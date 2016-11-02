@@ -29,8 +29,9 @@ namespace Tool = pbxbuild::Tool;
 namespace Target = pbxbuild::Target;
 
 Phase::PhaseInvocations::
-PhaseInvocations(std::vector<Tool::Invocation> const &invocations) :
-    _invocations(invocations)
+PhaseInvocations(std::vector<Tool::Invocation> const &invocations, std::vector<Tool::AuxiliaryFile> const &auxiliaryFiles) :
+    _invocations   (invocations),
+    _auxiliaryFiles(auxiliaryFiles)
 {
 }
 
@@ -208,6 +209,6 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
             break;
     }
 
-    return Phase::PhaseInvocations(phaseContext.toolContext().invocations());
+    return Phase::PhaseInvocations(phaseContext.toolContext().invocations(), phaseContext.toolContext().auxiliaryFiles());
 }
 

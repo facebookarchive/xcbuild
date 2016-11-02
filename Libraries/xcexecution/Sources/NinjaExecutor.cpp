@@ -570,17 +570,15 @@ buildAction(
          */
         std::string targetWriteAuxiliaryFiles = TargetNinjaWriteAuxiliaryFiles(target);
         std::vector<ninja::Value> auxiliaryFileOutputs = { ninja::Value::String(targetBegin) };
-        for (pbxbuild::Tool::Invocation const &invocation : phaseInvocations.invocations()) {
-            for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-                auxiliaryFileOutputs.push_back(ninja::Value::String(auxiliaryFile.path()));
-            }
+        for (pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile : phaseInvocations.auxiliaryFiles()) {
+            auxiliaryFileOutputs.push_back(ninja::Value::String(auxiliaryFile.path()));
         }
         writer.build({ ninja::Value::String(targetWriteAuxiliaryFiles) }, "phony", auxiliaryFileOutputs);
 
         /*
          * Write out the Ninja file to build this target.
          */
-        if (!buildTargetInvocations(processContext, filesystem, dependencyInfoToolPath, target, *targetEnvironment, phaseInvocations.invocations())) {
+        if (!buildTargetInvocations(processContext, filesystem, dependencyInfoToolPath, target, *targetEnvironment, phaseInvocations.auxiliaryFiles(), phaseInvocations.invocations())) {
             fprintf(stderr, "error: failed to build target ninja\n");
             return false;
         }
@@ -670,6 +668,7 @@ buildTargetInvocations(
     std::string const &dependencyInfoToolPath,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
+    std::vector<pbxbuild::Tool::AuxiliaryFile> const &auxiliaryFiles,
     std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
     /*
@@ -687,16 +686,18 @@ buildTargetInvocations(
     std::string temporaryDirectory = environment.resolve("TARGET_TEMP_DIR");
 
     /*
+     * Write auxiliary files to run first.
+     */
+    for (pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile : auxiliaryFiles) {
+        if (!buildAuxiliaryFile(&writer, auxiliaryFile, targetBegin)) {
+            return false;
+        }
+    }
+
+    /*
      * Add the build command for each invocation.
      */
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
-        /* Write auxiliary files to run first. */
-        for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-            if (!buildAuxiliaryFile(&writer, auxiliaryFile, targetBegin)) {
-                return false;
-            }
-        }
-
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
         if (invocation.executable()) {
             /* Find invocation executable. */
@@ -729,7 +730,7 @@ buildTargetInvocations(
 bool NinjaExecutor::
 buildAuxiliaryFile(
     ninja::Writer *writer,
-    pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile,
+    pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile,
     std::string const &after)
 {
     std::vector<ninja::Value> inputs;
@@ -741,11 +742,11 @@ buildAuxiliaryFile(
      */
     std::string escapedPath = Escape::Shell(auxiliaryFile.path());
     std::string exec = "echo -n > " + escapedPath;
-    for (pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
+    for (pbxbuild::Tool::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
         exec += " && ";
 
         switch (chunk.type()) {
-            case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::Data: {
+            case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::Data: {
                 // FIXME: use base64 directly, rather than through plist
                 auto data = plist::Data::New(*chunk.data());
                 exec += "echo " + data->base64Value();
@@ -753,7 +754,7 @@ buildAuxiliaryFile(
                 exec += "base64 --decode";
                 break;
             }
-            case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::File: {
+            case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::File: {
                 exec += "cat " + Escape::Shell(*chunk.file());
                 inputs.push_back(ninja::Value::String(*chunk.file()));
                 break;
