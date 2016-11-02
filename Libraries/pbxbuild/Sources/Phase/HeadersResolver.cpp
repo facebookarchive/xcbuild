@@ -47,7 +47,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::vector<Tool::Input> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
 
     for (Tool::Input const &file : files) {
-        std::vector<std::string> const &attributes = file.buildFile()->attributes();
+        std::vector<std::string> const &attributes = file.attributes().value_or(std::vector<std::string>());
         bool isPublic  = std::find(attributes.begin(), attributes.end(), "Public") != attributes.end();
         bool isPrivate = std::find(attributes.begin(), attributes.end(), "Private") != attributes.end();
 

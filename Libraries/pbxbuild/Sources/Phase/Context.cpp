@@ -267,7 +267,7 @@ Group(std::vector<Tool::Input> const &files)
          */
         ungrouped.erase(std::remove_if(ungrouped.begin(), ungrouped.end(), [&](Tool::Input const &ungroupedFile) {
             if (ungroupedFile.fileType()->identifier() == "text.plist.strings") {
-                if (ungroupedFile.buildFile() == file.buildFile()) {
+                if (ungroupedFile.localizationGroupIdentifier() == file.localizationGroupIdentifier()) {
                     inputs.push_back(ungroupedFile);
                     return true;
                 }
