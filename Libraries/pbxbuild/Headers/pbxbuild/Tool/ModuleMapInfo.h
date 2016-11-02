@@ -10,7 +10,7 @@
 #ifndef __pbxbuild_Tool_ModuleMapInfo_h
 #define __pbxbuild_Tool_ModuleMapInfo_h
 
-#include <pbxbuild/Tool/Invocation.h>
+#include <pbxbuild/Tool/AuxiliaryFile.h>
 
 #include <string>
 #include <ext/optional>
@@ -28,15 +28,15 @@ public:
      */
     class Entry {
     private:
-        Tool::Invocation::AuxiliaryFile::Chunk _contents;
+        Tool::AuxiliaryFile::Chunk _contents;
 
     private:
-        std::string _intermediatePath;
-        std::string _finalPath;
+        std::string                _intermediatePath;
+        std::string                _finalPath;
 
     public:
         Entry(
-            Tool::Invocation::AuxiliaryFile::Chunk const &contents,
+            Tool::AuxiliaryFile::Chunk const &contents,
             std::string const &intermediatePath,
             std::string const &finalPath);
 
@@ -44,7 +44,7 @@ public:
         /*
          * The contents of the module map. May reference a file.
          */
-        Tool::Invocation::AuxiliaryFile::Chunk const &contents() const
+        Tool::AuxiliaryFile::Chunk const &contents() const
         { return _contents; }
 
     public:

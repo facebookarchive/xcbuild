@@ -11,6 +11,7 @@
 #define __xcexecution_NinjaExecutor_h
 
 #include <xcexecution/Executor.h>
+#include <pbxbuild/Tool/AuxiliaryFile.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/DirectedGraph.h>
 
@@ -56,12 +57,13 @@ private:
         std::string const &dependencyInfoToolPath,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
+        std::vector<pbxbuild::Tool::AuxiliaryFile> const &auxiliaryFiles,
         std::vector<pbxbuild::Tool::Invocation> const &invocations);
 
 private:
     bool buildAuxiliaryFile(
         ninja::Writer *writer,
-        pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile,
+        pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile,
         std::string const &after);
     bool buildInvocation(
         ninja::Writer *writer,

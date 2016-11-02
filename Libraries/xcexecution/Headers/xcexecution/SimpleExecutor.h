@@ -11,6 +11,7 @@
 #define __xcexecution_SimpleExecutor_h
 
 #include <xcexecution/Executor.h>
+#include <pbxbuild/Tool/AuxiliaryFile.h>
 #include <builtin/Registry.h>
 
 namespace xcexecution {
@@ -38,9 +39,7 @@ public:
 public:
     bool writeAuxiliaryFiles(
         libutil::Filesystem *filesystem,
-        pbxproj::PBX::Target::shared_ptr const &target,
-        pbxbuild::Target::Environment const &targetEnvironment,
-        std::vector<pbxbuild::Tool::Invocation> const &invocations);
+        std::vector<pbxbuild::Tool::AuxiliaryFile> const &auxiliaryFiles);
     std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> performInvocations(
         process::Context const *processContext,
         process::Launcher *processLauncher,
@@ -54,6 +53,7 @@ public:
         libutil::Filesystem *filesystem,
         pbxproj::PBX::Target::shared_ptr const &target,
         pbxbuild::Target::Environment const &targetEnvironment,
+        std::vector<pbxbuild::Tool::AuxiliaryFile> const &auxiliaryFiles,
         std::vector<pbxbuild::Tool::Invocation> const &invocations);
 
 public:

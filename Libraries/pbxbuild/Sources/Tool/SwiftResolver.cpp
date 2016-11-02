@@ -84,7 +84,7 @@ AppendOutputs(
     std::vector<std::string> *args,
     std::vector<std::string> *outputs,
     std::vector<Tool::Invocation::DependencyInfo> *dependencyInfo,
-    std::vector<Tool::Invocation::AuxiliaryFile> *auxiliaryFiles,
+    std::vector<Tool::AuxiliaryFile> *auxiliaryFiles,
     std::string const &outputDirectory,
     std::string const &moduleName,
     std::string const &modulePath,
@@ -151,7 +151,7 @@ AppendOutputs(
     } else {
         /* Write output map as an auxiliary file. */
         std::string outputInfoPath = outputDirectory + "/" + moduleName + "-OutputFileMap.json";
-        auto outputInfoFile = Tool::Invocation::AuxiliaryFile::Data(outputInfoPath, *serialized.first);
+        auto outputInfoFile = Tool::AuxiliaryFile::Data(outputInfoPath, *serialized.first);
         auxiliaryFiles->push_back(outputInfoFile);
 
         /* Add output info to the arguments. */
@@ -238,7 +238,7 @@ AppendObjcHeader(
 static void
 AppendUnderlyingModule(
     std::vector<std::string> *args,
-    std::vector<Tool::Invocation::AuxiliaryFile> *auxiliaryFiles,
+    std::vector<Tool::AuxiliaryFile> *auxiliaryFiles,
     Tool::Context const *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &headerName)
@@ -261,10 +261,10 @@ AppendUnderlyingModule(
     unextendedModuleMap += "}\n";
 
     auto unextendedModuleMapData = std::vector<uint8_t>(unextendedModuleMap.begin(), unextendedModuleMap.end());
-    auto unextendedModuleMapChunk = Tool::Invocation::AuxiliaryFile::Chunk::Data(unextendedModuleMapData);
+    auto unextendedModuleMapChunk = Tool::AuxiliaryFile::Chunk::Data(unextendedModuleMapData);
 
     std::string unextendedModuleMapPath = environment.resolve("TARGET_TEMP_DIR") + "/" + "unextended-module.modulemap";
-    auto unextendedModuleMapFile = Tool::Invocation::AuxiliaryFile(unextendedModuleMapPath, { moduleMap->contents(), unextendedModuleMapChunk });
+    auto unextendedModuleMapFile = Tool::AuxiliaryFile(unextendedModuleMapPath, { moduleMap->contents(), unextendedModuleMapChunk });
     auxiliaryFiles->push_back(unextendedModuleMapFile);
 
     /*
@@ -289,7 +289,7 @@ AppendUnderlyingModule(
     unextendedModuleOverlay += "}\n";
 
     auto unextendedModuleOverlayData = std::vector<uint8_t>(unextendedModuleOverlay.begin(), unextendedModuleOverlay.end());
-    auto unextendedModuleOverlayFile = Tool::Invocation::AuxiliaryFile::Data(unextendedModuleOverlayPath, unextendedModuleOverlayData);
+    auto unextendedModuleOverlayFile = Tool::AuxiliaryFile::Data(unextendedModuleOverlayPath, unextendedModuleOverlayData);
     auxiliaryFiles->push_back(unextendedModuleOverlayFile);
 
     /*
@@ -323,7 +323,7 @@ resolve(
      */
     std::vector<std::string> outputs;
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
-    std::vector<Tool::Invocation::AuxiliaryFile> auxiliaryFiles;
+    std::vector<Tool::AuxiliaryFile> auxiliaryFiles;
     std::vector<std::string> arguments = tokens.arguments();
 
     /*
@@ -403,12 +403,16 @@ resolve(
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = outputs;
     invocation.dependencyInfo() = dependencyInfo;
-    invocation.auxiliaryFiles() = auxiliaryFiles;
     invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
 
     auto variantArchitectureKey = std::make_pair(environment.resolve("variant"), environment.resolve("arch"));
     toolContext->variantArchitectureInvocations()[variantArchitectureKey].push_back(invocation);
+
+    /*
+     * Add the auxiliary files.
+     */
+    toolContext->auxiliaryFiles().insert(toolContext->auxiliaryFiles().end(), auxiliaryFiles.begin(), auxiliaryFiles.end());
 
     /*
      * Add the Swift module info so the module can be copied.

@@ -13,6 +13,7 @@ add_library(pbxbuild SHARED
             Sources/DerivedDataHash.cpp
             Sources/WorkspaceContext.cpp
             Sources/FileTypeResolver.cpp
+            Sources/Tool/AuxiliaryFile.cpp
             Sources/Tool/Context.cpp
             Sources/Tool/Environment.cpp
             Sources/Tool/Input.cpp

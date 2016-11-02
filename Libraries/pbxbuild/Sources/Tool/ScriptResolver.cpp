@@ -109,7 +109,7 @@ resolve(
 
     std::string scriptFilePath = phaseEnvironment.expand(scriptPath);
     std::string contents = (!buildPhase->shellPath().empty() ? "#!" + buildPhase->shellPath() + "\n" : "") + buildPhase->shellScript();
-    auto scriptFile = Tool::Invocation::AuxiliaryFile::Data(scriptFilePath, std::vector<uint8_t>(contents.begin(), contents.end()), true);
+    auto scriptFile = Tool::AuxiliaryFile::Data(scriptFilePath, std::vector<uint8_t>(contents.begin(), contents.end()), true);
 
     pbxsetting::Environment scriptEnvironment = pbxsetting::Environment(environment);
     scriptEnvironment.insertFront(ScriptInputOutputLevel(inputFiles, outputFiles, true), false);
@@ -122,10 +122,11 @@ resolve(
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.phonyInputs() = inputFiles; /* User-specified, may not exist. */
     invocation.outputs() = outputFiles;
-    invocation.auxiliaryFiles() = { scriptFile };
     invocation.logMessage() = phaseEnvironment.expand(logMessage);
     invocation.showEnvironmentInLog() = buildPhase->showEnvVarsInLog();
     toolContext->invocations().push_back(invocation);
+
+    toolContext->auxiliaryFiles().push_back(scriptFile);
 }
 
 void Tool::ScriptResolver::

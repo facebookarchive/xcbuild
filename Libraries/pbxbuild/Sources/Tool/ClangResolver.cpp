@@ -169,7 +169,7 @@ resolvePrecompiledHeader(
     std::string logTitle = DialectIsCPlusPlus(dialect) ? "ProcessPCH++" : "ProcessPCH";
     std::string logMessage = CompileLogMessage(_compiler, logTitle, input.path(), dialect, output, env, toolContext->workingDirectory());
 
-    auto serializedFile = Tool::Invocation::AuxiliaryFile::Data(
+    auto serializedFile = Tool::AuxiliaryFile::Data(
         env.expand(precompiledHeaderInfo.serializedOutputPath()),
         precompiledHeaderInfo.serialize());
 
@@ -188,9 +188,10 @@ resolvePrecompiledHeader(
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.dependencyInfo() = dependencyInfo;
-    invocation.auxiliaryFiles().push_back(serializedFile);
     invocation.logMessage() = logMessage;
     toolContext->invocations().push_back(invocation);
+
+    toolContext->auxiliaryFiles().push_back(serializedFile);
 }
 
 void Tool::ClangResolver::

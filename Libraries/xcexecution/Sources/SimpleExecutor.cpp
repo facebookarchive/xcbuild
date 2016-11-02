@@ -85,7 +85,7 @@ build(
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
         xcformatter::Formatter::Print(_formatter->finishCheckDependencies(target));
 
-        auto result = buildTarget(processContext, processLauncher, filesystem, target, *targetEnvironment, phaseInvocations.invocations());
+        auto result = buildTarget(processContext, processLauncher, filesystem, target, *targetEnvironment, phaseInvocations.auxiliaryFiles(), phaseInvocations.invocations());
         if (!result.first) {
             xcformatter::Formatter::Print(_formatter->finishTarget(*buildContext, target));
             xcformatter::Formatter::Print(_formatter->failure(*buildContext, result.second));
@@ -150,68 +150,62 @@ SortInvocations(std::vector<pbxbuild::Tool::Invocation> const &invocations)
 bool SimpleExecutor::
 writeAuxiliaryFiles(
     Filesystem *filesystem,
-    pbxproj::PBX::Target::shared_ptr const &target,
-    pbxbuild::Target::Environment const &targetEnvironment,
-    std::vector<pbxbuild::Tool::Invocation> const &invocations)
+    std::vector<pbxbuild::Tool::AuxiliaryFile> const &auxiliaryFiles)
 {
-    xcformatter::Formatter::Print(_formatter->beginWriteAuxiliaryFiles(target));
-    for (pbxbuild::Tool::Invocation const &invocation : invocations) {
-        for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-            std::string directory = FSUtil::GetDirectoryName(auxiliaryFile.path());
-            if (filesystem->type(directory) != Filesystem::Type::Directory) {
-                xcformatter::Formatter::Print(_formatter->createAuxiliaryDirectory(directory));
-
-                if (!_dryRun) {
-                    if (!filesystem->createDirectory(directory, true)) {
-                        return false;
-                    }
-                }
-            }
-
-            xcformatter::Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
+    for (pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile : auxiliaryFiles) {
+        std::string directory = FSUtil::GetDirectoryName(auxiliaryFile.path());
+        if (filesystem->type(directory) != Filesystem::Type::Directory) {
+            xcformatter::Formatter::Print(_formatter->createAuxiliaryDirectory(directory));
 
             if (!_dryRun) {
-                std::vector<uint8_t> data;
-
-                for (pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
-                    switch (chunk.type()) {
-                        case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::Data: {
-                            data.insert(data.end(), chunk.data()->begin(), chunk.data()->end());
-                            break;
-                        }
-                        case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::File: {
-                            std::vector<uint8_t> contents;
-                            if (!filesystem->read(&contents, *chunk.file())) {
-                                return false;
-                            }
-                            data.insert(data.end(), contents.begin(), contents.end());
-                            break;
-                        }
-                        default: abort();
-                    }
-                }
-
-                if (!filesystem->write(data, auxiliaryFile.path())) {
+                if (!filesystem->createDirectory(directory, true)) {
                     return false;
                 }
             }
+        }
 
-            if (auxiliaryFile.executable() && !filesystem->isExecutable(auxiliaryFile.path())) {
-                xcformatter::Formatter::Print(_formatter->setAuxiliaryExecutable(auxiliaryFile.path()));
+        xcformatter::Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
 
-                if (!_dryRun) {
-                    Permissions permissions = Permissions(
-                        { Permissions::Permission::Read, Permissions::Permission::Write, Permissions::Permission::Execute },
-                        { Permissions::Permission::Read, Permissions::Permission::Execute },
-                        { Permissions::Permission::Read, Permissions::Permission::Execute });
-                    if (!filesystem->writeFilePermissions(auxiliaryFile.path(), Permissions::Operation::Set, permissions)) {
-                        return false;
+        if (!_dryRun) {
+            std::vector<uint8_t> data;
+
+            for (pbxbuild::Tool::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
+                switch (chunk.type()) {
+                    case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::Data: {
+                        data.insert(data.end(), chunk.data()->begin(), chunk.data()->end());
+                        break;
                     }
+                    case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::File: {
+                        std::vector<uint8_t> contents;
+                        if (!filesystem->read(&contents, *chunk.file())) {
+                            return false;
+                        }
+                        data.insert(data.end(), contents.begin(), contents.end());
+                        break;
+                    }
+                    default: abort();
+                }
+            }
+
+            if (!filesystem->write(data, auxiliaryFile.path())) {
+                return false;
+            }
+        }
+
+        if (auxiliaryFile.executable() && !filesystem->isExecutable(auxiliaryFile.path())) {
+            xcformatter::Formatter::Print(_formatter->setAuxiliaryExecutable(auxiliaryFile.path()));
+
+            if (!_dryRun) {
+                Permissions permissions = Permissions(
+                    { Permissions::Permission::Read, Permissions::Permission::Write, Permissions::Permission::Execute },
+                    { Permissions::Permission::Read, Permissions::Permission::Execute },
+                    { Permissions::Permission::Read, Permissions::Permission::Execute });
+                if (!filesystem->writeFilePermissions(auxiliaryFile.path(), Permissions::Operation::Set, permissions)) {
+                    return false;
                 }
             }
         }
     }
-    xcformatter::Formatter::Print(_formatter->finishWriteAuxiliaryFiles(target));
 
     return true;
 }
@@ -320,9 +314,13 @@ buildTarget(
     Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
+    std::vector<pbxbuild::Tool::AuxiliaryFile> const &auxiliaryFiles,
     std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
-    if (!writeAuxiliaryFiles(filesystem, target, targetEnvironment, invocations)) {
+    xcformatter::Formatter::Print(_formatter->beginWriteAuxiliaryFiles(target));
+    bool auxiliaryFilesSuccess = this->writeAuxiliaryFiles(filesystem, auxiliaryFiles);
+    xcformatter::Formatter::Print(_formatter->finishWriteAuxiliaryFiles(target));
+    if (!auxiliaryFilesSuccess) {
         return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>());
     }
 

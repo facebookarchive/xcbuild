@@ -29,23 +29,26 @@ namespace Tool {
 
 class Context {
 private:
-    xcsdk::SDK::Target::shared_ptr _sdk;
+    xcsdk::SDK::Target::shared_ptr   _sdk;
     std::vector<xcsdk::SDK::Toolchain::shared_ptr> _toolchains;
-    std::string                    _workingDirectory;
+    std::string                      _workingDirectory;
 
 private:
-    SearchPaths                    _searchPaths;
+    SearchPaths                      _searchPaths;
 
 private:
-    HeadermapInfo                  _headermapInfo;
-    ModuleMapInfo                  _moduleMapInfo;
-    CompilationInfo                _compilationInfo;
-    std::vector<SwiftModuleInfo>   _swiftModuleInfo;
-    std::vector<std::string>       _additionalInfoPlistContents;
+    HeadermapInfo                    _headermapInfo;
+    ModuleMapInfo                    _moduleMapInfo;
+    CompilationInfo                  _compilationInfo;
+    std::vector<SwiftModuleInfo>     _swiftModuleInfo;
+    std::vector<std::string>         _additionalInfoPlistContents;
 
 private:
-    std::vector<Tool::Invocation> _invocations;
+    std::vector<Tool::Invocation>    _invocations;
     std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation>> _variantArchitectureInvocations;
+
+private:
+    std::vector<Tool::AuxiliaryFile> _auxiliaryFiles;
 
 public:
     Context(
@@ -102,6 +105,14 @@ public:
     { return _invocations; }
     std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation>> &variantArchitectureInvocations()
     { return _variantArchitectureInvocations; }
+
+public:
+    std::vector<Tool::AuxiliaryFile> const &auxiliaryFiles() const
+    { return _auxiliaryFiles; }
+
+public:
+    std::vector<Tool::AuxiliaryFile> &auxiliaryFiles()
+    { return _auxiliaryFiles; }
 };
 
 }
