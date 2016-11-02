@@ -221,7 +221,7 @@ resolveSource(
     std::string output = resolvedOutputDirectory + "/" + outputBaseName + "." + outputExtension;
 
     pbxspec::PBX::FileType::shared_ptr const &fileType = input.fileType();
-    std::vector<std::string> const &inputArguments = input.buildFile()->compilerFlags();
+    std::vector<std::string> inputArguments = input.compilerFlags().value_or(std::vector<std::string>());
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
     Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), { input }, { output });

@@ -29,43 +29,33 @@ class Environment;
  */
 class Input {
 private:
-    pbxproj::PBX::BuildFile::shared_ptr       _buildFile;
-    Target::BuildRules::BuildRule::shared_ptr _buildRule;
+    std::string                               _path;
     pbxspec::PBX::FileType::shared_ptr        _fileType;
 
 private:
-    std::string                               _path;
-    ext::optional<std::string>                _localization;
+    Target::BuildRules::BuildRule::shared_ptr _buildRule;
     ext::optional<std::string>                _fileNameDisambiguator;
+
+private:
+    ext::optional<std::string>                _localization;
+    ext::optional<std::string>                _localizationGroupIdentifier;
+
+private:
+    ext::optional<std::vector<std::string>>   _attributes;
+    ext::optional<std::vector<std::string>>   _compilerFlags;
 
 public:
     Input(
-        pbxproj::PBX::BuildFile::shared_ptr const &buildFile,
-        Target::BuildRules::BuildRule::shared_ptr const &buildRule,
-        pbxspec::PBX::FileType::shared_ptr const &fileType,
         std::string const &path,
+        pbxspec::PBX::FileType::shared_ptr const &fileType,
+        Target::BuildRules::BuildRule::shared_ptr const &buildRule,
+        ext::optional<std::string> const &fileNameDisambiguator,
         ext::optional<std::string> const &localization,
-        ext::optional<std::string> const &fileNameDisambiguator);
+        ext::optional<std::string> const &localizationGroupIdentifier,
+        ext::optional<std::vector<std::string>> const &attributes,
+        ext::optional<std::vector<std::string>> const &compilerFlags);
+    Input(std::string const &path, pbxspec::PBX::FileType::shared_ptr const &fileType);
     ~Input();
-
-public:
-    /*
-     * The build file entry saying *to* build this file. May be nullptr.
-     */
-    pbxproj::PBX::BuildFile::shared_ptr const &buildFile() const
-    { return _buildFile; }
-
-    /*
-     * The build file entry saying *how* to build this file.
-     */
-    Target::BuildRules::BuildRule::shared_ptr const &buildRule() const
-    { return _buildRule; }
-
-    /*
-     * The type of this file.
-     */
-    pbxspec::PBX::FileType::shared_ptr const &fileType() const
-    { return _fileType; }
 
 public:
     /*
@@ -75,11 +65,17 @@ public:
     { return _path; }
 
     /*
-     * The localization this file is for. This is relevant for variant groups,
-     * which contain many versions of the same file for different lproj outputs.
+     * The type of this file. Optional.
      */
-    ext::optional<std::string> const &localization() const
-    { return _localization; }
+    pbxspec::PBX::FileType::shared_ptr const &fileType() const
+    { return _fileType; }
+
+public:
+    /*
+     * The build rule saying *how* to build this file. Optional.
+     */
+    Target::BuildRules::BuildRule::shared_ptr const &buildRule() const
+    { return _buildRule; }
 
     /*
      * A disambiguation identifier for different files with the same base name
@@ -88,6 +84,34 @@ public:
      */
     ext::optional<std::string> const &fileNameDisambiguator() const
     { return _fileNameDisambiguator; }
+
+public:
+    /*
+     * The localization this file is for. This is relevant for variant groups,
+     * which contain many versions of the same file for different lproj outputs.
+     */
+    ext::optional<std::string> const &localization() const
+    { return _localization; }
+
+    /*
+     * An opaque identifier of a localization group. Individual localizations
+     * are found within a group.
+     */
+    ext::optional<std::string> const &localizationGroupIdentifier() const
+    { return _localizationGroupIdentifier; }
+
+public:
+    /*
+     * Additional attributes of the file, usually header properties.
+     */
+    ext::optional<std::vector<std::string>> const &attributes() const
+    { return _attributes; }
+
+    /*
+     * Additional flags to add when compiling the file.
+     */
+    ext::optional<std::vector<std::string>> const &compilerFlags() const
+    { return _compilerFlags; }
 };
 
 }

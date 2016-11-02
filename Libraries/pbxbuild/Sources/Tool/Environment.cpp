@@ -208,7 +208,7 @@ Create(
 {
     std::vector<Tool::Input> toolInputs;
     for (std::string const &input : inputs) {
-        Tool::Input toolInput = Tool::Input(nullptr, nullptr, nullptr, input, ext::nullopt, ext::nullopt);
+        Tool::Input toolInput = Tool::Input(input, nullptr);
         toolInputs.push_back(toolInput);
     }
 
