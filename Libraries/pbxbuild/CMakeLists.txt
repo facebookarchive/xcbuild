@@ -75,8 +75,8 @@ target_link_libraries(dump_hmap pbxbuild util plist)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(pbxbuild DirectedGraph Tests/test_DirectedGraph.cpp)
-  ADD_UNIT_GTEST(pbxbuild OptionsResolver Tests/test_OptionsResolver.cpp)
-  target_link_libraries(test_pbxbuild_OptionsResolver PRIVATE pbxspec pbxsetting plist)
+  ADD_UNIT_GTEST(pbxbuild OptionsResult Tests/test_OptionsResult.cpp)
+  target_link_libraries(test_pbxbuild_OptionsResult PRIVATE pbxspec pbxsetting plist)
   ADD_UNIT_GTEST(pbxbuild DerivedDataHash Tests/test_DerivedDataHash.cpp)
 endif ()
 
