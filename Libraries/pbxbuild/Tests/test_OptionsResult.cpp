@@ -67,7 +67,7 @@ static pbxspec::PBX::FileType::shared_ptr const FileType = nullptr;
 /*
  * Test basic command line flags for boolean types.
  */
-TEST(OptionsResolver, Boolean)
+TEST(OptionsResult, Boolean)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -118,7 +118,7 @@ TEST(OptionsResolver, Boolean)
 /*
  * Test basic command line flags for string types.
  */
-TEST(OptionsResolver, String)
+TEST(OptionsResult, String)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -191,7 +191,7 @@ TEST(OptionsResolver, String)
 /*
  * Test basic command line flags for string list types.
  */
-TEST(OptionsResolver, StringList)
+TEST(OptionsResult, StringList)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -241,7 +241,7 @@ TEST(OptionsResolver, StringList)
 /*
  * Test the `CommandLineFlagIfFalse` option for booleans.
  */
-TEST(OptionsResolver, FlagIfFalse)
+TEST(OptionsResult, FlagIfFalse)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -291,7 +291,7 @@ TEST(OptionsResolver, FlagIfFalse)
 /*
  * Test the `CommandLineFlagPrefix` option for all option types.
  */
-TEST(OptionsResolver, PrefixFlag)
+TEST(OptionsResult, PrefixFlag)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -350,7 +350,7 @@ TEST(OptionsResolver, PrefixFlag)
 /*
  * Test the `CommandLineArgs` option array for all option types.
  */
-TEST(OptionsResolver, CommandLineArgsArray)
+TEST(OptionsResult, CommandLineArgsArray)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -403,7 +403,7 @@ TEST(OptionsResolver, CommandLineArgsArray)
 /*
  * Test the `CommandLineArgs` option dictionary for all option types.
  */
-TEST(OptionsResolver, CommandLineArgsDictionary)
+TEST(OptionsResult, CommandLineArgsDictionary)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -461,7 +461,7 @@ TEST(OptionsResolver, CommandLineArgsDictionary)
 /*
  * Test the `Values` and `AllowedValues` option dictionaries for all option types.
  */
-TEST(OptionsResolver, ValuesArguments)
+TEST(OptionsResult, ValuesArguments)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -517,7 +517,7 @@ TEST(OptionsResolver, ValuesArguments)
 /*
  * Test the `AdditionalLinkerArgs` option.
  */
-TEST(OptionsResolver, AdditionalLinkerArgs)
+TEST(OptionsResult, AdditionalLinkerArgs)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -561,7 +561,7 @@ TEST(OptionsResolver, AdditionalLinkerArgs)
 /*
  * Test the environment variables options.
  */
-TEST(OptionsResolver, EnvironmentVariables)
+TEST(OptionsResult, EnvironmentVariables)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
@@ -601,7 +601,7 @@ TEST(OptionsResolver, EnvironmentVariables)
 /*
  * Test the `Architectures` option is respected.
  */
-TEST(OptionsResolver, Architectures)
+TEST(OptionsResult, Architectures)
 {
     std::vector<pbxspec::PBX::PropertyOption::shared_ptr> options = {
         OPTION({
