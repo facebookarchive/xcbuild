@@ -26,17 +26,6 @@ public:
 
 public:
     /*
-     * Test if a path is a directory.
-     */
-    virtual bool isDirectory(std::string const &path) const = 0;
-
-    /*
-     * Test if a path is a symbolic link.
-     */
-    virtual bool isSymbolicLink(std::string const &path) const = 0;
-
-public:
-    /*
      * Test if a file is readable.
      */
     virtual bool isReadable(std::string const &path) const = 0;
@@ -53,16 +42,15 @@ public:
 
 public:
     /*
+     * Test if a path is a file.
+     */
+    virtual bool isFile(std::string const &path) const = 0;
+
+    /*
      * Create a file. Succeeds if created or already exists.
      */
     virtual bool createFile(std::string const &path) = 0;
 
-    /*
-     * Create a directory. Succeeds if created or already exists.
-     */
-    virtual bool createDirectory(std::string const &path) = 0;
-
-public:
     /*
      * Read from a file.
      */
@@ -74,6 +62,22 @@ public:
     virtual bool write(std::vector<uint8_t> const &contents, std::string const &path) = 0;
 
     /*
+     * Copy a file to a new path.
+     */
+    virtual bool copyFile(std::string const &from, std::string const &to);
+
+    /*
+     * Delete a file.
+     */
+    virtual bool removeFile(std::string const &path) = 0;
+
+public:
+    /*
+     * Test if a path is a symbolic link.
+     */
+    virtual bool isSymbolicLink(std::string const &path) const = 0;
+
+    /*
      * Read the destination of the symbolic link, relative to its containing directory.
      */
     virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const = 0;
@@ -83,32 +87,47 @@ public:
      */
     virtual bool writeSymbolicLink(std::string const &target, std::string const &path) = 0;
 
+    /*
+     * Copy a symbolic link to a new path.
+     */
+    virtual bool copySymbolicLink(std::string const &from, std::string const &to);
+
+    /*
+     * Remove a symbolic link.
+     */
+    virtual bool removeSymbolicLink(std::string const &path) = 0;
+
 public:
     /*
-     * Delete a file.
+     * Test if a path is a directory.
      */
-    virtual bool removeFile(std::string const &path) = 0;
+    virtual bool isDirectory(std::string const &path) const = 0;
+
+    /*
+     * Create a directory. Succeeds if created or already exists.
+     */
+    virtual bool createDirectory(std::string const &path, bool recursive) = 0;
+
+    /*
+     * Enumerate contents of a directory.
+     */
+    virtual bool readDirectory(std::string const &path, bool recursive, std::function<void(std::string const &)> const &cb) const = 0;
+
+    /*
+     * Copy a directory to a new path, optionally recursively.
+     */
+    virtual bool copyDirectory(std::string const &from, std::string const &to, bool recursive);
+
+    /*
+     * Remove a directory, optionally recursively..
+     */
+    virtual bool removeDirectory(std::string const &path, bool recursive) = 0;
 
 public:
     /*
      * Resolves and normalizes a path through symbolic links.
      */
     virtual std::string resolvePath(std::string const &path) const = 0;
-
-public:
-    /*
-     * Enumerate contents of a directory.
-     */
-    virtual bool enumerateDirectory(
-        std::string const &path,
-        std::function<void(std::string const &)> const &cb) const = 0;
-
-    /*
-     * Enumerate the contents of a directory recursively.
-     */
-    bool enumerateRecursive(
-        std::string const &path,
-        std::function<bool(std::string const &)> const &cb) const;
 
 public:
     /*

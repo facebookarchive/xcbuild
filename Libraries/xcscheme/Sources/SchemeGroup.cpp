@@ -58,7 +58,7 @@ Open(Filesystem const *filesystem, ext::optional<std::string> const &userName, s
     std::string schemePath;
 
     schemePath = path + "/xcshareddata/xcschemes";
-    filesystem->enumerateDirectory(schemePath, [&](std::string const &filename) -> void {
+    filesystem->readDirectory(schemePath, false, [&](std::string const &filename) -> void {
         if (FSUtil::GetFileExtension(filename) != "xcscheme") {
             return;
         }
@@ -78,7 +78,7 @@ Open(Filesystem const *filesystem, ext::optional<std::string> const &userName, s
 
     if (userName) {
         schemePath = path + "/xcuserdata/" + *userName + ".xcuserdatad/xcschemes";
-        filesystem->enumerateDirectory(schemePath, [&](std::string const &filename) -> void {
+        filesystem->readDirectory(schemePath, false, [&](std::string const &filename) -> void {
             if (FSUtil::GetFileExtension(filename) != "xcscheme") {
                 return;
             }

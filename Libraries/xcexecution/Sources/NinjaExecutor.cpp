@@ -252,7 +252,7 @@ WriteNinjaRegenerate(
 static bool
 WriteNinja(Filesystem *filesystem, ninja::Writer const &writer, std::string const &path)
 {
-    if (!filesystem->createDirectory(FSUtil::GetDirectoryName(path))) {
+    if (!filesystem->createDirectory(FSUtil::GetDirectoryName(path), true)) {
         return false;
     }
 

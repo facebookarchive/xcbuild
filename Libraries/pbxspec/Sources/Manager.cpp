@@ -361,26 +361,28 @@ registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string,
         };
 
         if (filesystem->isDirectory(domain.second)) {
-            filesystem->enumerateRecursive(domain.second, [&](std::string const &filename) -> bool {
+            filesystem->readDirectory(domain.second, true, [&](std::string const &filename) -> bool {
+                std::string path = domain.second + "/" + filename;
+
                 /* Support both *.xcspec and *.pbfilespec as a few of the latter remain in use. */
-                if (FSUtil::GetFileExtension(filename) != "xcspec" && FSUtil::GetFileExtension(filename) != "pbfilespec") {
+                if (FSUtil::GetFileExtension(path) != "xcspec" && FSUtil::GetFileExtension(path) != "pbfilespec") {
                     return true;
                 }
 
                 /* For *.pbfilespec files, default to FileType specifications. */
-                bool file = FSUtil::GetFileExtension(filename) == "pbfilespec";
+                bool file = FSUtil::GetFileExtension(path) == "pbfilespec";
                 context.defaultType = (file ? "FileType" : std::string());
 
-                if (!filesystem->isDirectory(filename)) {
+                if (!filesystem->isDirectory(path)) {
 #if 0
-                    fprintf(stderr, "importing specification '%s'\n", filename.c_str());
+                    fprintf(stderr, "importing specification '%s'\n", path.c_str());
 #endif
 
-                    ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(filesystem, &context, filename);
+                    ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(filesystem, &context, path);
                     if (fileSpecifications) {
                         specifications.insert(specifications.end(), fileSpecifications->begin(), fileSpecifications->end());
                     } else {
-                        fprintf(stderr, "warning: failed to import specification '%s'\n", filename.c_str());
+                        fprintf(stderr, "warning: failed to import specification '%s'\n", path.c_str());
                     }
                 }
                 return true;

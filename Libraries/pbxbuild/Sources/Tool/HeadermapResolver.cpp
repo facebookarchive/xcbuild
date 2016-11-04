@@ -108,7 +108,7 @@ resolve(
 
     std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, compilerEnvironment, target, toolContext->searchPaths(), toolContext->workingDirectory());
     for (std::string const &path : headermapSearchPaths) {
-        Filesystem::GetDefaultUNSAFE()->enumerateDirectory(path, [&](std::string const &fileName) -> bool {
+        Filesystem::GetDefaultUNSAFE()->readDirectory(path, false, [&](std::string const &fileName) -> bool {
             // TODO(grp): Use FileTypeResolver when reliable.
             std::string extension = FSUtil::GetFileExtension(fileName);
             if (extension != "h" && extension != "hpp") {

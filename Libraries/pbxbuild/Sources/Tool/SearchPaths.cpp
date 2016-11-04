@@ -56,15 +56,15 @@ AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &envir
             args->push_back(root);
 
             std::string absoluteRoot = FSUtil::ResolveRelativePath(root, workingDirectory);
-            filesystem->enumerateRecursive(absoluteRoot, [&](std::string const &path) -> bool {
+            filesystem->readDirectory(absoluteRoot, true, [&](std::string const &relative) -> bool {
                 // TODO(grp): Use build settings for included and excluded recursive paths.
                 // Included: INCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES
                 // Excluded: EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES
                 // Follow: RECURSIVE_SEARCH_PATHS_FOLLOW_SYMLINKS
 
-                if (filesystem->isDirectory(path)) {
-                    std::string relativePath = root + "/" + path.substr(absoluteRoot.size() + 1);
-                    args->push_back(relativePath);
+                std::string absolute = absoluteRoot + "/" + relative;
+                if (filesystem->isDirectory(absolute)) {
+                    args->push_back(relative);
                 }
                 return true;
             });

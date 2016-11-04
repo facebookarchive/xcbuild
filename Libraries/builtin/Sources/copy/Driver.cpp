@@ -41,7 +41,7 @@ name()
 static bool
 CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const &outputPath)
 {
-    if (!filesystem->createDirectory(FSUtil::GetDirectoryName(outputPath))) {
+    if (!filesystem->createDirectory(FSUtil::GetDirectoryName(outputPath), true)) {
         return false;
     }
 

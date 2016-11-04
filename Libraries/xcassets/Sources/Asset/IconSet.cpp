@@ -98,7 +98,7 @@ load(Filesystem const *filesystem)
         return false;
     }
 
-    filesystem->enumerateDirectory(this->path(), [this](std::string const &name) {
+    filesystem->readDirectory(this->path(), false, [this](std::string const &name) {
         std::string path = this->path() + "/" + name;
         if (ext::optional<Icon> icon = Icon::Parse(path)) {
             _icons.push_back(*icon);
