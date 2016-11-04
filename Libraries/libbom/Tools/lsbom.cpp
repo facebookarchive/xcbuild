@@ -431,9 +431,9 @@ main(int argc, char **argv)
             printf("%s\n", path.c_str());
         } else {
             // TODO: Respect options about what to print.
-            std::stringstream octConvertingStream;
-            octConvertingStream << std::oct << ntohs(path_info_2_value->mode);
-            std::string mode = octConvertingStream.str();
+            std::stringstream stream;
+            stream << std::oct << ntohs(path_info_2_value->mode);
+            std::string mode = stream.str();
             std::string UID = std::to_string(ntohl(path_info_2_value->user));
             std::string GID = std::to_string(ntohl(path_info_2_value->group));
             printf("%s\t%s\t%s/%s\n", path.c_str(), mode.c_str(), UID.c_str(), GID.c_str());
