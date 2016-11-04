@@ -297,7 +297,7 @@ LoadChildren(Filesystem const *filesystem, std::string const &path, FullyQualifi
 {
     bool error = false;
 
-    filesystem->enumerateDirectory(path, [&](std::string const &fileName) -> void {
+    filesystem->readDirectory(path, false, [&](std::string const &fileName) -> void {
         std::string child = path + "/" + fileName;
 
         if (filesystem->isDirectory(child)) {

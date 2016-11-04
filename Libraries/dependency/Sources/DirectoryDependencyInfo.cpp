@@ -33,8 +33,8 @@ Deserialize(Filesystem const *filesystem, std::string const &directory)
     }
 
     /* Recursively add all paths under this directory. */
-    filesystem->enumerateRecursive(directory, [&](std::string const &path) -> bool {
-        inputs.push_back(path);
+    filesystem->readDirectory(directory, true, [&](std::string const &path) -> bool {
+        inputs.push_back(directory + "/" + path);
         return true;
     });
 

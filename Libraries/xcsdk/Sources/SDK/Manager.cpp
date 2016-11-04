@@ -168,7 +168,7 @@ Open(Filesystem const *filesystem, std::string const &path, ext::optional<Config
 
     std::vector<std::shared_ptr<Toolchain>> toolchains;
     for (std::string const &toolchainsPath : toolchainsPaths) {
-        filesystem->enumerateDirectory(toolchainsPath, [&](std::string const &filename) -> void {
+        filesystem->readDirectory(toolchainsPath, false, [&](std::string const &filename) -> void {
             if (FSUtil::GetFileExtension(filename) != "xctoolchain") {
                 return;
             }
@@ -189,7 +189,7 @@ Open(Filesystem const *filesystem, std::string const &path, ext::optional<Config
 
     std::vector<std::shared_ptr<Platform>> platforms;
     for (std::string const &platformsPath : platformsPaths) {
-        filesystem->enumerateDirectory(platformsPath, [&](std::string const &filename) -> void {
+        filesystem->readDirectory(platformsPath, false, [&](std::string const &filename) -> void {
             if (FSUtil::GetFileExtension(filename) != "platform") {
                 return;
             }

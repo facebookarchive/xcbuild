@@ -17,21 +17,100 @@ using libutil::Filesystem;
 using libutil::FSUtil;
 
 bool Filesystem::
-enumerateRecursive(
-    std::string const &path,
-    std::function<bool(std::string const &)> const &cb) const
+copyFile(std::string const &from, std::string const &to)
 {
-    this->enumerateDirectory(path, [&](std::string const &filename) -> void {
-        std::string full = path + "/" + filename;
-        cb(full);
-    });
+    std::vector<uint8_t> contents;
 
-    this->enumerateDirectory(path, [&](std::string const &filename) -> void {
-        std::string full = path + "/" + filename;
-        if (this->isDirectory(full) && !this->isSymbolicLink(full)) {
-            this->enumerateRecursive(full, cb);
+    if (!this->read(&contents, from)) {
+        return false;
+    }
+
+    if (!this->write(contents, to)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Filesystem::
+copySymbolicLink(std::string const &from, std::string const &to)
+{
+    ext::optional<std::string> target = this->readSymbolicLink(from);
+    if (!target) {
+        return false;
+    }
+
+    /*
+     * Remove any existing symbolic link to overwrite, in the same way that copying
+     * a file overwrites an existing file at the same path, but not a directory.
+     */
+    if (this->isSymbolicLink(to)) {
+        if (!this->removeSymbolicLink(to)) {
+            return false;
         }
-    });
+    }
+
+    if (!this->writeSymbolicLink(to, *target)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Filesystem::
+copyDirectory(std::string const &from, std::string const &to, bool recursive)
+{
+    if (!this->isDirectory(from)) {
+        return false;
+    }
+
+    /*
+     * Remove any existing directory to overwrite, in the same way that copying
+     * a file overwrites an existing file at the same path, but not a directory.
+     */
+    if (this->isDirectory(to)) {
+        if (!this->removeDirectory(to, recursive)) {
+            return false;
+        }
+    }
+
+    if (!this->createDirectory(to, false)) {
+        return false;
+    }
+
+    if (recursive) {
+        bool success = true;
+
+        success &= this->readDirectory(from, recursive, [this, &from, &to, &success](std::string const &path) {
+            std::string fromPath = from + "/" + path;
+            std::string toPath = to + "/" + path;
+
+            if (this->isSymbolicLink(fromPath)) {
+                if (!this->copySymbolicLink(fromPath, toPath)) {
+                    success = false;
+                    return false;
+                }
+            } else if (this->isDirectory(fromPath)) {
+                if (!this->copyDirectory(fromPath, toPath, false)) {
+                    success = false;
+                    return false;
+                }
+            } else if (this->isFile(fromPath)) {
+                if (!this->copyFile(fromPath, toPath)) {
+                    success = false;
+                    return false;
+                }
+            } else {
+                /* Unknown entry type; can't copy. */
+            }
+
+            return true;
+        });
+
+        if (!success) {
+            return false;
+        }
+    }
 
     return true;
 }

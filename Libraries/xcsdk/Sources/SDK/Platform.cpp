@@ -351,7 +351,7 @@ Open(Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::string
      * Load all the SDKs inside the platform.
      */
     std::string sdksPath = platform->_path + "/Developer/SDKs";
-    filesystem->enumerateDirectory(sdksPath, [&](std::string const &filename) -> void {
+    filesystem->readDirectory(sdksPath, false, [&](std::string const &filename) -> void {
         if (FSUtil::GetFileExtension(filename) != "sdk") {
             return;
         }
