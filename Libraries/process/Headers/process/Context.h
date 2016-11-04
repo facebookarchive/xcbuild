@@ -83,12 +83,6 @@ public:
      * The home directory from the environment.
      */
     virtual ext::optional<std::string> userHomeDirectory() const;
-
-public:
-    /*
-     * Get the system instance. Avoid if possible.
-     */
-    static Context const *GetDefaultUNSAFE();
 };
 
 }

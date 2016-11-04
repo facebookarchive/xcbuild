@@ -53,18 +53,3 @@ userHomeDirectory() const
     return environmentVariable("HOME");
 }
 
-#include <process/DefaultContext.h>
-
-using process::DefaultContext;
-
-Context const *Context::
-GetDefaultUNSAFE()
-{
-    static DefaultContext *defaultContext = nullptr;
-    if (defaultContext == nullptr) {
-        defaultContext = new DefaultContext();
-    }
-
-    return defaultContext;
-}
-

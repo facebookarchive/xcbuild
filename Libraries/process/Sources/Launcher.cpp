@@ -21,18 +21,3 @@ Launcher::
 {
 }
 
-#include <process/DefaultLauncher.h>
-
-using process::DefaultLauncher;
-
-Launcher *Launcher::
-GetDefaultUNSAFE()
-{
-    static DefaultLauncher *defaultLauncher = nullptr;
-    if (defaultLauncher == nullptr) {
-        defaultLauncher = new DefaultLauncher();
-    }
-
-    return defaultLauncher;
-}
-
