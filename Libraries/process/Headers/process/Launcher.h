@@ -33,12 +33,6 @@ public:
      * that launching a process could arbitrarily affect the filesystem.
      */
     virtual ext::optional<int> launch(libutil::Filesystem *filesystem, Context const *context) = 0;
-
-public:
-    /*
-     * Get the system instance.
-     */
-    static Launcher *GetDefaultUNSAFE();
 };
 
 }

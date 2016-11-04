@@ -20,6 +20,7 @@
 using builtin::copy::Driver;
 using builtin::copy::Options;
 using libutil::Filesystem;
+using libutil::Permissions;
 using libutil::FSUtil;
 
 Driver::
@@ -41,42 +42,54 @@ name()
 static bool
 CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const &outputPath)
 {
-    if (!filesystem->createDirectory(FSUtil::GetDirectoryName(outputPath), true)) {
+    /* Must be writable once copied to allow subsequent builds to overwrite. */
+    Permissions permissions;
+    permissions.user(Permissions::Permission::Write, true);
+    Permissions::Operation operation = Permissions::Operation::Add;
+
+    ext::optional<Filesystem::Type> type = filesystem->type(inputPath);
+    if (!type) {
+        /* Unknown type or doesn't exist. */
         return false;
     }
 
-    // TODO: This shouldn't use external tools to copy.
-    process::Context const *context = process::Context::GetDefaultUNSAFE();
-    process::Launcher *launcher = process::Launcher::GetDefaultUNSAFE();
+    switch (*type) {
+        case Filesystem::Type::File: {
+            if (!filesystem->copyFile(inputPath, outputPath)) {
+                return false;
+            }
 
-    process::MemoryContext cp = process::MemoryContext(
-        "/bin/cp",
-        context->currentDirectory(),
-        { "-R", inputPath, outputPath },
-        context->environmentVariables(),
-        context->userID(),
-        context->groupID(),
-        context->userName(),
-        context->groupName());
-    if (launcher->launch(filesystem, &cp).value_or(-1) != 0) {
-        return false;
+            if (!filesystem->writeFilePermissions(outputPath, operation, permissions)) {
+                return false;
+            }
+
+            return true;
+        }
+        case Filesystem::Type::SymbolicLink: {
+            if (!filesystem->copySymbolicLink(inputPath, outputPath)) {
+                return false;
+            }
+
+            if (!filesystem->writeSymbolicLinkPermissions(outputPath, operation, permissions)) {
+                return false;
+            }
+
+            return true;
+        }
+        case Filesystem::Type::Directory: {
+            if (!filesystem->copyDirectory(inputPath, outputPath, true)) {
+                return false;
+            }
+
+            if (!filesystem->writeDirectoryPermissions(outputPath, operation, permissions, true)) {
+                return false;
+            }
+
+            return true;
+        }
     }
 
-    /* Should preserve permissions but make writable. */
-    process::MemoryContext chmod = process::MemoryContext(
-        "/bin/chmod",
-        context->currentDirectory(),
-        { "-R", "+w", outputPath },
-        context->environmentVariables(),
-        context->userID(),
-        context->groupID(),
-        context->userName(),
-        context->groupName());
-    if (launcher->launch(filesystem, &chmod).value_or(-1) != 0) {
-        return false;
-    }
-
-    return true;
+    abort();
 }
 
 static int
@@ -99,7 +112,14 @@ Run(Filesystem *filesystem, Options const &options, std::string const &workingDi
     }
 
     std::string const &output = FSUtil::ResolveRelativePath(*options.output(), workingDirectory);
+    if (!filesystem->createDirectory(output, true)) {
+        return false;
+    }
+
+#if 0
+    // TODO: handle excludes paths
     auto excludes = std::unordered_set<std::string>(options.excludes().begin(), options.excludes().end());
+#endif
 
     for (std::string input : options.inputs()) {
         input = FSUtil::ResolveRelativePath(input, workingDirectory);
