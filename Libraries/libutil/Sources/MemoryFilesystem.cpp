@@ -16,6 +16,7 @@
 
 using libutil::MemoryFilesystem;
 using libutil::Filesystem;
+using libutil::Permissions;
 using libutil::FSUtil;
 
 MemoryFilesystem::Entry::
@@ -175,6 +176,59 @@ bool MemoryFilesystem::
 isExecutable(std::string const &path) const
 {
     return this->exists(path);
+}
+
+static Permissions
+AllPermissions()
+{
+    return Permissions(
+        { Permissions::Permission::Read, Permissions::Permission::Write, Permissions::Permission::Execute },
+        { Permissions::Permission::Read, Permissions::Permission::Write, Permissions::Permission::Execute },
+        { Permissions::Permission::Read, Permissions::Permission::Write, Permissions::Permission::Execute });
+}
+
+ext::optional<Permissions> MemoryFilesystem::
+readFilePermissions(std::string const &path) const
+{
+    if (this->type(path) != Type::File) {
+        return ext::nullopt;
+    }
+
+    return AllPermissions();
+}
+
+ext::optional<Permissions> MemoryFilesystem::
+readSymbolicLinkPermissions(std::string const &path) const
+{
+    return ext::nullopt;
+}
+
+ext::optional<Permissions> MemoryFilesystem::
+readDirectoryPermissions(std::string const &path) const
+{
+    if (this->type(path) != Type::Directory) {
+        return ext::nullopt;
+    }
+
+    return AllPermissions();
+}
+
+bool MemoryFilesystem::
+writeFilePermissions(std::string const &path, Permissions::Operation operation, Permissions permissions)
+{
+    return this->type(path) == Type::File;
+}
+
+bool MemoryFilesystem::
+writeSymbolicLinkPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions)
+{
+    return this->type(path) == Type::SymbolicLink;
+}
+
+bool MemoryFilesystem::
+writeDirectoryPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions, bool recursive)
+{
+    return this->type(path) == Type::Directory;
 }
 
 bool MemoryFilesystem::
@@ -383,7 +437,7 @@ removeDirectory(std::string const &path, bool recursive)
 std::string MemoryFilesystem::
 resolvePath(std::string const &path) const
 {
-    if (exists(path)) {
+    if (this->exists(path)) {
         return FSUtil::NormalizePath(path);
     } else {
         return std::string();

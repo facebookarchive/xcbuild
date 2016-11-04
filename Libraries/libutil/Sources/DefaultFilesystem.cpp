@@ -27,6 +27,7 @@
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
+using libutil::Permissions;
 
 bool DefaultFilesystem::
 exists(std::string const &path) const
@@ -70,6 +71,177 @@ bool DefaultFilesystem::
 isExecutable(std::string const &path) const
 {
     return ::access(path.c_str(), X_OK) == 0;
+}
+
+static Permissions
+ModePermissions(mode_t mode)
+{
+    Permissions permissions;
+    permissions.flag(Permissions::Flag::Sticky, (mode & S_ISVTX) != 0);
+    permissions.flag(Permissions::Flag::SetUserID, (mode & S_ISUID) != 0);
+    permissions.flag(Permissions::Flag::SetGroupID, (mode & S_ISGID) != 0);
+    permissions.user(Permissions::Permission::Read, (mode & S_IRUSR) != 0);
+    permissions.user(Permissions::Permission::Write, (mode & S_IWUSR) != 0);
+    permissions.user(Permissions::Permission::Execute, (mode & S_IXUSR) != 0);
+    permissions.group(Permissions::Permission::Read, (mode & S_IRGRP) != 0);
+    permissions.group(Permissions::Permission::Write, (mode & S_IWGRP) != 0);
+    permissions.group(Permissions::Permission::Execute, (mode & S_IXGRP) != 0);
+    permissions.other(Permissions::Permission::Read, (mode & S_IROTH) != 0);
+    permissions.other(Permissions::Permission::Write, (mode & S_IWOTH) != 0);
+    permissions.other(Permissions::Permission::Execute, (mode & S_IXOTH) != 0);
+    return permissions;
+}
+
+ext::optional<Permissions> DefaultFilesystem::
+readFilePermissions(std::string const &path) const
+{
+    struct stat st;
+    if (::stat(path.c_str(), &st) < 0) {
+        return ext::nullopt;
+    }
+
+    return ModePermissions(st.st_mode);
+}
+
+ext::optional<Permissions> DefaultFilesystem::
+readSymbolicLinkPermissions(std::string const &path) const
+{
+    struct stat st;
+    if (::lstat(path.c_str(), &st) < 0) {
+        return ext::nullopt;
+    }
+
+    return ModePermissions(st.st_mode);
+}
+
+ext::optional<Permissions> DefaultFilesystem::
+readDirectoryPermissions(std::string const &path) const
+{
+    struct stat st;
+    if (::stat(path.c_str(), &st) < 0) {
+        return ext::nullopt;
+    }
+
+    return ModePermissions(st.st_mode);
+}
+
+static mode_t
+PermissionsMode(Permissions permissions)
+{
+    mode_t mode = 0;
+    mode |= (permissions.flag(Permissions::Flag::Sticky) ? S_ISVTX : 0);
+    mode |= (permissions.flag(Permissions::Flag::SetUserID) ? S_ISUID : 0);
+    mode |= (permissions.flag(Permissions::Flag::SetGroupID) ? S_ISUID : 0);
+    mode |= (permissions.user(Permissions::Permission::Read) ? S_IRUSR : 0);
+    mode |= (permissions.user(Permissions::Permission::Write) ? S_IWUSR : 0);
+    mode |= (permissions.user(Permissions::Permission::Execute) ? S_IXUSR : 0);
+    mode |= (permissions.group(Permissions::Permission::Read) ? S_IRUSR : 0);
+    mode |= (permissions.group(Permissions::Permission::Write) ? S_IWUSR : 0);
+    mode |= (permissions.group(Permissions::Permission::Execute) ? S_IXUSR : 0);
+    mode |= (permissions.other(Permissions::Permission::Read) ? S_IRUSR : 0);
+    mode |= (permissions.other(Permissions::Permission::Write) ? S_IWUSR : 0);
+    mode |= (permissions.other(Permissions::Permission::Execute) ? S_IXUSR : 0);
+    return mode;
+}
+
+bool DefaultFilesystem::
+writeFilePermissions(std::string const &path, Permissions::Operation operation, Permissions permissions)
+{
+    ext::optional<Permissions> updated = this->readFilePermissions(path);
+    if (!updated) {
+        return false;
+    }
+
+    updated->combine(operation, permissions);
+    mode_t mode = PermissionsMode(*updated);
+
+    if (::chmod(path.c_str(), mode) != 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool DefaultFilesystem::
+writeSymbolicLinkPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions)
+{
+#if defined(__APPLE__) || defined(__FreeBSD__)
+    ext::optional<Permissions> updated = this->readSymbolicLinkPermissions(path);
+    if (!updated) {
+        return false;
+    }
+
+    updated->combine(operation, permissions);
+    mode_t mode = PermissionsMode(*updated);
+
+    if (::lchmod(path.c_str(), mode) != 0) {
+        return false;
+    }
+
+    return true;
+#else
+    /* Symbolic links have no permissions on most filesystems. */
+    return true;
+#endif
+}
+
+bool DefaultFilesystem::
+writeDirectoryPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions, bool recursive)
+{
+    ext::optional<Permissions> updated = this->readDirectoryPermissions(path);
+    if (!updated) {
+        return false;
+    }
+
+    updated->combine(operation, permissions);
+    mode_t mode = PermissionsMode(*updated);
+
+    if (::chmod(path.c_str(), mode) != 0) {
+        return false;
+    }
+
+    if (recursive) {
+        bool success = true;
+
+        success &= this->readDirectory(path, recursive, [this, &path, &operation, &permissions, &success](std::string const &name) {
+            std::string full = path + "/" + name;
+
+            ext::optional<Type> type = this->type(full);
+            if (!type) {
+                return false;
+            }
+
+            switch (*type) {
+                case Type::File:
+                    if (!this->writeFilePermissions(full, operation, permissions)) {
+                        success = false;
+                        return false;
+                    }
+                    break;
+                case Type::Directory:
+                    /* Already recursing directory; don't need to recurse again. */
+                    if (!this->writeDirectoryPermissions(full, operation, permissions, false)) {
+                        success = false;
+                        return false;
+                    }
+                    break;
+                case Type::SymbolicLink:
+                    if (!this->writeSymbolicLinkPermissions(full, operation, permissions)) {
+                        success = false;
+                        return false;
+                    }
+                    break;
+            }
+
+            return true;
+        });
+
+        if (!success) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool DefaultFilesystem::
@@ -159,13 +331,26 @@ bool DefaultFilesystem::
 copyFile(std::string const &from, std::string const &to)
 {
 #if defined(__APPLE__) || defined(__FreeBSD__)
-    if (this->type(from) != Type::File) {
+    ext::optional<Type> fromType = this->type(from);
+    if (fromType != Type::File && fromType != Type::SymbolicLink) {
         return false;
     }
 
-    if (this->type(to) == Type::File) {
-        if (!this->removeFile(to)) {
-            return false;
+    ext::optional<Type> toType = this->type(to);
+    if (toType) {
+        switch (*toType) {
+            case Type::File:
+                if (!this->removeFile(to)) {
+                    return false;
+                }
+                break;
+            case Type::SymbolicLink:
+                if (!this->removeSymbolicLink(to)) {
+                    return false;
+                }
+                break;
+            case Type::Directory:
+                return false;
         }
     }
 
@@ -373,7 +558,7 @@ removeDirectory(std::string const &path, bool recursive)
     if (recursive) {
         bool success = true;
 
-        this->readDirectory(path, recursive, [this, &path, &success](std::string const &name) {
+        success &= this->readDirectory(path, recursive, [this, &path, &success](std::string const &name) {
             std::string full = path + "/" + name;
 
             ext::optional<Type> type = this->type(full);

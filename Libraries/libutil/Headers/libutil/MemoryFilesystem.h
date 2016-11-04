@@ -77,6 +77,8 @@ public:
     virtual bool isExecutable(std::string const &path) const;
 
 public:
+    virtual ext::optional<Permissions> readFilePermissions(std::string const &path) const;
+    virtual bool writeFilePermissions(std::string const &path, Permissions::Operation operation, Permissions permissions);
     virtual bool createFile(std::string const &path);
     virtual bool read(std::vector<uint8_t> *contents, std::string const &path, size_t offset = 0, ext::optional<size_t> length = ext::nullopt) const;
     virtual bool write(std::vector<uint8_t> const &contents, std::string const &path);
@@ -84,12 +86,16 @@ public:
     virtual bool removeFile(std::string const &path);
 
 public:
+    virtual ext::optional<Permissions> readSymbolicLinkPermissions(std::string const &path) const;
+    virtual bool writeSymbolicLinkPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions);
     virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const;
     virtual bool writeSymbolicLink(std::string const &target, std::string const &path);
     virtual bool copySymbolicLink(std::string const &from, std::string const &to);
     virtual bool removeSymbolicLink(std::string const &path);
 
 public:
+    virtual ext::optional<Permissions> readDirectoryPermissions(std::string const &path) const;
+    virtual bool writeDirectoryPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions, bool recursive);
     virtual bool createDirectory(std::string const &path, bool recursive);
     virtual bool readDirectory(std::string const &path, bool recursive, std::function<void(std::string const &)> const &cb) const;
     virtual bool copyDirectory(std::string const &from, std::string const &to, bool recursive);

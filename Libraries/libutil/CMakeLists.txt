@@ -12,6 +12,8 @@ add_library(util SHARED
             Sources/Filesystem.cpp
             Sources/DefaultFilesystem.cpp
             Sources/MemoryFilesystem.cpp
+            Sources/Permissions.cpp
+            #
             Sources/Options.cpp
             #
             Sources/Escape.cpp
