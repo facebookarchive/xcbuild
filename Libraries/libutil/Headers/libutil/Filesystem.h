@@ -10,6 +10,8 @@
 #ifndef __libutil_Filesystem_h
 #define __libutil_Filesystem_h
 
+#include <libutil/Permissions.h>
+
 #include <functional>
 #include <string>
 #include <vector>
@@ -66,6 +68,17 @@ public:
 
 public:
     /*
+     * Retrieve permissions for a file.
+     */
+    virtual ext::optional<Permissions> readFilePermissions(std::string const &path) const = 0;
+
+    /*
+     * Set permissions for a file.
+     */
+    virtual bool writeFilePermissions(std::string const &path, Permissions::Operation operation, Permissions permissions) = 0;
+
+public:
+    /*
      * Create a file. Succeeds if created or already exists.
      */
     virtual bool createFile(std::string const &path) = 0;
@@ -92,6 +105,16 @@ public:
 
 public:
     /*
+     * Retrieve permissions for a symbolic link.
+     */
+    virtual ext::optional<Permissions> readSymbolicLinkPermissions(std::string const &path) const = 0;
+
+    /*
+     * Set permissions for a symbolic link.
+     */
+    virtual bool writeSymbolicLinkPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions) = 0;
+
+    /*
      * Read the destination of the symbolic link, relative to its containing directory.
      */
     virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const = 0;
@@ -112,6 +135,16 @@ public:
     virtual bool removeSymbolicLink(std::string const &path) = 0;
 
 public:
+    /*
+     * Retrieve permissions for a directory.
+     */
+    virtual ext::optional<Permissions> readDirectoryPermissions(std::string const &path) const = 0;
+
+    /*
+     * Set permissions for a directory.
+     */
+    virtual bool writeDirectoryPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions, bool recursive) = 0;
+
     /*
      * Create a directory. Succeeds if created or already exists.
      */
