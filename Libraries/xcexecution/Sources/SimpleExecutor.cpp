@@ -258,7 +258,7 @@ performInvocations(
                         processContext->groupID(),
                         processContext->userName(),
                         processContext->groupName());
-                    success = driver->run(&context, filesystem) != 0;
+                    success = driver->run(&context, filesystem) == 0;
 
                     xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, *builtin, createProductStructure));
                 } else {
