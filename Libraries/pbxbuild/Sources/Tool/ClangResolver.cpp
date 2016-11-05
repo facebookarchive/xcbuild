@@ -90,6 +90,13 @@ AppendCustomFlags(std::vector<std::string> *args, pbxsetting::Environment const 
 }
 
 static void
+AppendPreprocessorDefinitionFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment)
+{
+    std::vector<std::string> preprocessorDefinitions = pbxsetting::Type::ParseList(environment.resolve("GCC_PREPROCESSOR_DEFINITIONS"));
+    Tool::CompilerCommon::AppendCompountFlags(args, "-D", true, preprocessorDefinitions);
+}
+
+static void
 AppendNotUsedInPrecompsFlags(std::vector<std::string> *args, pbxsetting::Environment const &environment)
 {
     std::vector<std::string> preprocessorDefinitions = pbxsetting::Type::ParseList(environment.resolve("GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS"));
@@ -242,6 +249,7 @@ resolveSource(
     Tool::CompilerCommon::AppendIncludePathFlags(&arguments, env, toolContext->searchPaths(), headermapInfo);
     AppendFrameworkPathFlags(&arguments, env, toolContext->searchPaths());
     AppendCustomFlags(&arguments, env, fileType->GCCDialectName());
+    AppendPreprocessorDefinitionFlags(&arguments, env);
 
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(env.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
     std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");
