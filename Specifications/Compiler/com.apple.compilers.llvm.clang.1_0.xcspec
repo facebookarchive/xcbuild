@@ -378,13 +378,13 @@
             Name = "GCC_PREPROCESSOR_DEFINITIONS";
             Type = StringList;
             DefaultValue = "";
-            /* Added in code. */
+            CommandLinePrefixFlag = "-D";
         },
         {
             Name = "GCC_PRODUCT_TYPE_PREPROCESSOR_DEFINITIONS";
             Type = StringList;
             DefaultValue = "";
-            /* Added in code. */
+            CommandLinePrefixFlag = "-D";
         },
         {
             Name = "GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS";
