@@ -44,24 +44,19 @@ public:
      * or an additional format supported by plutil.
      */
     class Format {
-    public:
-         enum class Additional {
-             JSON,
-         };
-
     private:
-         ext::optional<plist::Format::Type> _type;
-         ext::optional<Additional>          _additional;
+         ext::optional<plist::Format::Any>  _any;
+         ext::optional<plist::Format::JSON> _json;
 
     public:
-        explicit Format(plist::Format::Type type);
-        explicit Format(Additional additional);
+        explicit Format(plist::Format::Any const &any);
+        explicit Format(plist::Format::JSON const &json);
 
     public:
-        ext::optional<plist::Format::Type> const &type() const
-        { return _type; }
-        ext::optional<Additional> const &additional() const
-        { return _additional; }
+        ext::optional<plist::Format::Any> const &any() const
+        { return _any; }
+        ext::optional<plist::Format::JSON> const &json() const
+        { return _json; }
     };
 
 public:
@@ -163,14 +158,14 @@ Options::
 }
 
 Options::Format::
-Format(plist::Format::Type type) :
-    _type(type)
+Format(plist::Format::Any const &any) :
+    _any(any)
 {
 }
 
 Options::Format::
-Format(Additional additional) :
-    _additional(additional)
+Format(plist::Format::JSON const &json) :
+    _json(json)
 {
 }
 
@@ -189,13 +184,16 @@ NextFormat(ext::optional<Options::Format> *format, std::vector<std::string> cons
     std::pair<bool, std::string> result = libutil::Options::Next<std::string>(&value, args, it);
     if (result.first) {
         if (*value == "xml1") {
-            *format = Options::Format(plist::Format::Type::XML);
+            auto xml = plist::Format::XML::Create(plist::Format::Encoding::UTF8);
+            *format = Options::Format(plist::Format::Any::Create(xml));
         } else if (*value == "binary1") {
-            *format = Options::Format(plist::Format::Type::Binary);
+            auto binary = plist::Format::Binary::Create();
+            *format = Options::Format(plist::Format::Any::Create(binary));
         } else if (*value == "openstep1" || *value == "ascii1") {
-            *format = Options::Format(plist::Format::Type::ASCII);
+            auto ascii = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
+            *format = Options::Format(plist::Format::Any::Create(ascii));
         } else if (*value == "json") {
-            *format = Options::Format(Options::Format::Additional::JSON);
+            *format = Options::Format(plist::Format::JSON::Create());
         } else {
             return std::make_pair(false, "unknown format " + *value);
         }
@@ -507,7 +505,7 @@ Lint(Options const &options, std::string const &file)
 }
 
 static bool
-Print(Filesystem *filesystem, Options const &options, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
+Print(Filesystem *filesystem, Options const &options, std::unique_ptr<plist::Object> object)
 {
     /* Convert to ASCII. */
     plist::Format::ASCII out = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
@@ -602,7 +600,7 @@ PerformAdjustment(plist::Object *object, plist::Object **rootObject, std::string
 }
 
 static bool
-Modify(Filesystem *filesystem, Options const &options, std::string const &file, std::unique_ptr<plist::Object> object, plist::Format::Any const &format)
+Modify(Filesystem *filesystem, Options const &options, std::string const &file, std::unique_ptr<plist::Object> object, Options::Format const &inputFormat)
 {
     plist::Object *writeObject = object.get();
 
@@ -642,38 +640,14 @@ Modify(Filesystem *filesystem, Options const &options, std::string const &file, 
 
     /* Convert to desired format. */
     std::pair<std::unique_ptr<std::vector<uint8_t>>, std::string> serialize;
-    if (ext::optional<Options::Format> format = options.convert()) {
-        if (ext::optional<plist::Format::Type> type = format->type()) {
-            switch (*type) {
-                case plist::Format::Type::Binary: {
-                    plist::Format::Binary binary = plist::Format::Binary::Create();
-                    serialize = plist::Format::Binary::Serialize(writeObject, binary);
-                    break;
-                }
-                case plist::Format::Type::XML: {
-                    plist::Format::XML xml = plist::Format::XML::Create(plist::Format::Encoding::UTF8);
-                    serialize = plist::Format::XML::Serialize(writeObject, xml);
-                    break;
-                }
-                case plist::Format::Type::ASCII: {
-                    plist::Format::ASCII ascii = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
-                    serialize = plist::Format::ASCII::Serialize(writeObject, ascii);
-                    break;
-                }
-                default: abort();
-            }
-        } else if (ext::optional<Options::Format::Additional> additional = format->additional()) {
-            switch (*additional) {
-                case Options::Format::Additional::JSON: {
-                    plist::Format::JSON json = plist::Format::JSON::Create();
-                    serialize = plist::Format::JSON::Serialize(writeObject, json);
-                    break;
-                }
-                default: abort();
-            }
-        } else {
-            abort();
-        }
+
+    Options::Format outputFormat = options.convert().value_or(inputFormat);
+    if (ext::optional<plist::Format::Any> any = outputFormat.any()) {
+        serialize = plist::Format::Any::Serialize(writeObject, *any);
+    } else if (ext::optional<plist::Format::JSON> json = outputFormat.json()) {
+        serialize = plist::Format::JSON::Serialize(writeObject, *json);
+    } else {
+        abort();
     }
 
     if (serialize.first == nullptr) {
@@ -733,25 +707,38 @@ main(int argc, char **argv)
                 continue;
             }
 
-            auto format = plist::Format::Any::Identify(result.second);
-            if (format == nullptr) {
-                fprintf(stderr, "error: input %s not a plist\n", file.c_str());
-                success = false;
-                continue;
-            }
+            /* Deserialize input, storing input format. */
+            ext::optional<Options::Format> format;
+            std::unique_ptr<plist::Object> root;
 
-            auto deserialize = plist::Format::Any::Deserialize(result.second, *format);
-            if (!deserialize.first) {
-                fprintf(stderr, "error: %s\n", deserialize.second.c_str());
-                success = false;
-                continue;
+            if (auto any = plist::Format::Any::Identify(result.second)) {
+                auto deserialize = plist::Format::Any::Deserialize(result.second, *any);
+                if (deserialize.first != nullptr) {
+                    root = std::move(deserialize.first);
+                    format = Options::Format(*any);
+                } else {
+                    fprintf(stderr, "error: %s\n", deserialize.second.c_str());
+                    success = false;
+                    continue;
+                }
+            } else {
+                auto json = plist::Format::JSON::Create();
+                auto deserialize = plist::Format::JSON::Deserialize(result.second, json);
+                if (deserialize.first != nullptr) {
+                    root = std::move(deserialize.first);
+                    format = Options::Format(json);
+                } else {
+                    fprintf(stderr, "error: input %s not a plist or json\n", file.c_str());
+                    success = false;
+                    continue;
+                }
             }
 
             /* Perform the sepcific action. */
             if (modify) {
-                success &= Modify(&filesystem, options, file, std::move(deserialize.first), *format);
+                success &= Modify(&filesystem, options, file, std::move(root), *format);
             } else if (options.print()) {
-                success &= Print(&filesystem, options, std::move(deserialize.first), *format);
+                success &= Print(&filesystem, options, std::move(root));
             } else if (options.lint() || true) {
                 success &= Lint(options, file);
             }
