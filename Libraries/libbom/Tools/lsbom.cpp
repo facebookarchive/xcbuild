@@ -114,67 +114,89 @@ Options::
 {
 }
 
+static ext::optional<std::vector<Options::PrintItem>>
+ParsePrintFormat(std::string const &print)
+{
+    std::vector<Options::PrintItem> format;
+
+    for (char c : print) {
+        switch (c) {
+            case 'c': format.push_back(Options::PrintItem::Checksum); break;
+            case 'f': format.push_back(Options::PrintItem::FileName); break;
+            case 'F': format.push_back(Options::PrintItem::FileNameQuoted); break;
+            case 'g': format.push_back(Options::PrintItem::GroupID); break;
+            case 'G': format.push_back(Options::PrintItem::GroupName); break;
+            case 'm': format.push_back(Options::PrintItem::Permissions); break;
+            case 'M': format.push_back(Options::PrintItem::PermissionsText); break;
+            case 's': format.push_back(Options::PrintItem::FileSize); break;
+            case 'S': format.push_back(Options::PrintItem::FileSizeFormatted); break;
+            case 't': format.push_back(Options::PrintItem::ModificationTime); break;
+            case 'T': format.push_back(Options::PrintItem::ModificationTimeFormatted); break;
+            case 'u': format.push_back(Options::PrintItem::UserID); break;
+            case 'U': format.push_back(Options::PrintItem::UserName); break;
+            case '/': format.push_back(Options::PrintItem::UserGroupID); break;
+            case '?': format.push_back(Options::PrintItem::UserGroupName); break;
+            default: return ext::nullopt;
+        }
+    }
+
+    return format;
+}
 
 std::pair<bool, std::string> Options::
 parseArgument(std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it)
 {
     std::string const &arg = **it;
 
-    if (arg == "-h" || arg == "--help") {
-        return libutil::Options::Current<bool>(&_help, arg, it);
-    } else if (arg == "-b") {
-        return libutil::Options::Current<bool>(&_includeBlockDevices, arg, it);
-    } else if (arg == "-c") {
-        return libutil::Options::Current<bool>(&_includeCharacterDevices, arg, it);
-    } else if (arg == "-d") {
-        return libutil::Options::Current<bool>(&_includeDirectories, arg, it);
-    } else if (arg == "-f") {
-        return libutil::Options::Current<bool>(&_includeFiles, arg, it);
-    } else if (arg == "-l") {
-        return libutil::Options::Current<bool>(&_includeSymbolicLinks, arg, it);
-    } else if (arg == "-m") {
-        return libutil::Options::Current<bool>(&_printMTime, arg, it);
-    } else if (arg == "-s") {
-        return libutil::Options::Current<bool>(&_onlyPath, arg, it);
-    } else if (arg == "-x") {
-        return libutil::Options::Current<bool>(&_noModes, arg, it);
+    if (arg == "--help") {
+        return libutil::Options::Current<bool>(&_help, arg);
     } else if (arg == "--arch") {
         return libutil::Options::Next<std::string>(&_arch, args, it);
-    } else if (arg == "-p") {
-        ext::optional<std::string> print;
-        auto result = libutil::Options::Next<std::string>(&print, args, it);
-        if (!result.first) {
-            return result;
-        }
+    } else if (arg.empty() || arg[0] != '-') {
+        return libutil::Options::Current<std::string>(&_input, arg);
+    } else {
+        auto result = std::make_pair(true, std::string());
 
-        _printFormat = std::vector<PrintItem>();
-        for (char c : *print) {
-            switch (c) {
-                case 'c': _printFormat->push_back(PrintItem::Checksum); break;
-                case 'f': _printFormat->push_back(PrintItem::FileName); break;
-                case 'F': _printFormat->push_back(PrintItem::FileNameQuoted); break;
-                case 'g': _printFormat->push_back(PrintItem::GroupID); break;
-                case 'G': _printFormat->push_back(PrintItem::GroupName); break;
-                case 'm': _printFormat->push_back(PrintItem::Permissions); break;
-                case 'M': _printFormat->push_back(PrintItem::PermissionsText); break;
-                case 's': _printFormat->push_back(PrintItem::FileSize); break;
-                case 'S': _printFormat->push_back(PrintItem::FileSizeFormatted); break;
-                case 't': _printFormat->push_back(PrintItem::ModificationTime); break;
-                case 'T': _printFormat->push_back(PrintItem::ModificationTimeFormatted); break;
-                case 'u': _printFormat->push_back(PrintItem::UserID); break;
-                case 'U': _printFormat->push_back(PrintItem::UserName); break;
-                case '/': _printFormat->push_back(PrintItem::UserGroupID); break;
-                case '?': _printFormat->push_back(PrintItem::UserGroupName); break;
-                default:
-                    return std::make_pair(false, "unknown print option " + std::string(1, c));
+        for (auto ait = std::next(arg.begin()), end = arg.end(); ait != end; ++ait) {
+            switch (*ait) {
+                case 'h': result = libutil::Options::Current<bool>(&_help, arg); break;
+                case 'b': result = libutil::Options::Current<bool>(&_includeBlockDevices, arg); break;
+                case 'c': result = libutil::Options::Current<bool>(&_includeCharacterDevices, arg); break;
+                case 'd': result = libutil::Options::Current<bool>(&_includeDirectories, arg); break;
+                case 'f': result = libutil::Options::Current<bool>(&_includeFiles, arg); break;
+                case 'l': result = libutil::Options::Current<bool>(&_includeSymbolicLinks, arg); break;
+                case 'm': result = libutil::Options::Current<bool>(&_printMTime, arg); break;
+                case 's': result = libutil::Options::Current<bool>(&_onlyPath, arg); break;
+                case 'x': result = libutil::Options::Current<bool>(&_noModes, arg); break;
+                case 'p': {
+                    ext::optional<std::string> print;
+                    if (ait != std::prev(arg.end())) {
+                        /* Use remaining characters and end outer loop. */
+                        print = std::string(std::next(ait), arg.end());
+                        ait = std::prev(arg.end());
+                    } else {
+                        /* No more characters, try the next option. */
+                        result = libutil::Options::Next<std::string>(&print, args, it);
+                    }
+
+                    if (print) {
+                        _printFormat = ParsePrintFormat(*print);
+                        if (!_printFormat) {
+                            result = std::make_pair(false, "invalid print format " + *print);
+                        }
+                    }
+
+                    break;
+                }
+                default: result = std::make_pair(false, "unknown argument " + arg); break;
+            }
+
+            if (!result.first) {
+                return result;
             }
         }
 
-        return std::make_pair(true, std::string());
-    } else if (!arg.empty() && arg[0] != '-') {
-        return libutil::Options::Current<std::string>(&_input, arg);
-    } else {
-        return std::make_pair(false, "unknown argument " + arg);
+        return result;
     }
 }
 
