@@ -91,4 +91,5 @@ install(TARGETS builtin-embeddedBinaryValidationUtility DESTINATION usr/bin)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(builtin copyStrings Tests/test_copyStrings.cpp)
+  ADD_UNIT_GTEST(builtin copyPlist Tests/test_copyPlist.cpp)
 endif ()

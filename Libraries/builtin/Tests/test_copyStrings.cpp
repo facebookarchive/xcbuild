@@ -8,17 +8,12 @@
  */
 
 #include <gtest/gtest.h>
-#include <builtin/copyStrings/Options.h>
 #include <builtin/copyStrings/Driver.h>
-#include <libutil/Filesystem.h>
 #include <libutil/MemoryFilesystem.h>
-#include <process/Context.h>
 #include <process/MemoryContext.h>
 #include <plist/Format/Encoding.h>
 
 using builtin::copyStrings::Driver;
-using builtin::copyStrings::Options;
-using libutil::Filesystem;
 using libutil::MemoryFilesystem;
 
 static std::vector<uint8_t>
@@ -27,7 +22,7 @@ Contents(std::string const &string)
     return std::vector<uint8_t>(string.begin(), string.end());
 }
 
-TEST(copyString, Name)
+TEST(copyStrings, Name)
 {
     Driver driver;
     EXPECT_EQ(driver.name(), "builtin-copyStrings");
