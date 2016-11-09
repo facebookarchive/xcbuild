@@ -11,7 +11,7 @@
     Type = Tool;
     Identifier = com.apple.compilers.pbxcp;
     Name = "Copy Utility";
-    CommandLine = "builtin-copy [options] [inputs] [output]";
+    ExecPath = "builtin-copy";
     RuleName = "$(pbxcp_rule_name:quote) $(OutputFile:quote) $(InputFile:quote)";
     DeeplyStatInputDirectories = YES;
 
