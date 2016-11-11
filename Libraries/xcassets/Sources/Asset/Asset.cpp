@@ -148,7 +148,7 @@ Load(Filesystem const *filesystem, std::string const &path, std::vector<std::str
     /*
      * Assets are always in directories.
      */
-    if (!filesystem->isDirectory(resolvedPath)) {
+    if (filesystem->type(resolvedPath) != Filesystem::Type::Directory) {
         return nullptr;
     }
 
@@ -300,7 +300,7 @@ LoadChildren(Filesystem const *filesystem, std::string const &path, FullyQualifi
     filesystem->readDirectory(path, false, [&](std::string const &fileName) -> void {
         std::string child = path + "/" + fileName;
 
-        if (filesystem->isDirectory(child)) {
+        if (filesystem->type(child) == Filesystem::Type::Directory) {
             std::vector<std::string> groups = name.groups();
             if (providesNamespace) {
                 // TODO: Should fully qualified names include extensions?

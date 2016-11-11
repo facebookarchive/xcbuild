@@ -28,7 +28,7 @@ Deserialize(Filesystem const *filesystem, std::string const &directory)
     std::vector<std::string> inputs;
 
     /* Verify is directory. */
-    if (!filesystem->isDirectory(directory)) {
+    if (filesystem->type(directory) != Filesystem::Type::Directory) {
         return ext::nullopt;
     }
 

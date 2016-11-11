@@ -15,6 +15,7 @@
 #include <cassert>
 
 using libutil::MemoryFilesystem;
+using libutil::Filesystem;
 using libutil::FSUtil;
 
 MemoryFilesystem::Entry::
@@ -27,7 +28,7 @@ Entry(std::string const &name, Type type) :
 MemoryFilesystem::Entry *MemoryFilesystem::Entry::
 child(std::string const &name)
 {
-    assert(_type == MemoryFilesystem::Entry::Type::Directory);
+    assert(_type == Type::Directory);
 
     for (MemoryFilesystem::Entry &entry : _children) {
         if (entry.name() == name) {
@@ -41,7 +42,7 @@ child(std::string const &name)
 MemoryFilesystem::Entry const *MemoryFilesystem::Entry::
 child(std::string const &name) const
 {
-    assert(_type == MemoryFilesystem::Entry::Type::Directory);
+    assert(_type == Type::Directory);
 
     for (MemoryFilesystem::Entry const &entry : _children) {
         if (entry.name() == name) {
@@ -55,7 +56,7 @@ child(std::string const &name) const
 MemoryFilesystem::Entry MemoryFilesystem::Entry::
 File(std::string const &name, std::vector<uint8_t> const &contents)
 {
-    MemoryFilesystem::Entry entry = MemoryFilesystem::Entry(name, MemoryFilesystem::Entry::Type::File);
+    MemoryFilesystem::Entry entry = MemoryFilesystem::Entry(name, Type::File);
     entry.contents() = contents;
     return entry;
 }
@@ -63,7 +64,7 @@ File(std::string const &name, std::vector<uint8_t> const &contents)
 MemoryFilesystem::Entry MemoryFilesystem::Entry::
 Directory(std::string const &name, std::vector<Entry> const &children)
 {
-    MemoryFilesystem::Entry entry = MemoryFilesystem::Entry(name, MemoryFilesystem::Entry::Type::Directory);
+    MemoryFilesystem::Entry entry = MemoryFilesystem::Entry(name, Type::Directory);
     entry.children() = children;
     return entry;
 }
@@ -93,7 +94,7 @@ WalkPath(
     }
 
     T *current = &filesystem->root();
-    assert(current->type() == MemoryFilesystem::Entry::Type::Directory);
+    assert(current->type() == Filesystem::Type::Directory);
 
     std::string::size_type start = 0;
     std::string::size_type end = normalized.find('/', start);
@@ -119,7 +120,7 @@ WalkPath(
         }
 
         /* Path component not found or not directory. */
-        if (next == nullptr || next->type() != MemoryFilesystem::Entry::Type::Directory) {
+        if (next == nullptr || next->type() != Filesystem::Type::Directory) {
             return false;
         }
 
@@ -138,6 +139,24 @@ exists(std::string const &path) const
         /* Nothing to do. */
         return entry;
     });
+}
+
+ext::optional<Filesystem::Type> MemoryFilesystem::
+type(std::string const &path) const
+{
+    ext::optional<Type> type;
+
+    if (!WalkPath<MemoryFilesystem::Entry const>(this, path, false, [&type](MemoryFilesystem::Entry const *parent, std::string const &name, MemoryFilesystem::Entry const *entry) -> MemoryFilesystem::Entry const * {
+        if (entry != nullptr) {
+            type = entry->type();
+        }
+
+        return entry;
+    })) {
+        return ext::nullopt;
+    }
+
+    return type;
 }
 
 bool MemoryFilesystem::
@@ -159,23 +178,11 @@ isExecutable(std::string const &path) const
 }
 
 bool MemoryFilesystem::
-isFile(std::string const &path) const
-{
-    return WalkPath<MemoryFilesystem::Entry const>(this, path, false, [](MemoryFilesystem::Entry const *parent, std::string const &name, MemoryFilesystem::Entry const *entry) -> MemoryFilesystem::Entry const * {
-        if (entry != nullptr && entry->type() != MemoryFilesystem::Entry::Type::File) {
-            return nullptr;
-        }
-
-        return entry;
-    });
-}
-
-bool MemoryFilesystem::
 createFile(std::string const &path)
 {
     return WalkPath<MemoryFilesystem::Entry>(this, path, false, [](MemoryFilesystem::Entry *parent, std::string const &name, MemoryFilesystem::Entry *entry) -> MemoryFilesystem::Entry * {
         if (entry != nullptr) {
-            if (entry->type() == MemoryFilesystem::Entry::Type::File) {
+            if (entry->type() == Type::File) {
                 /* Exists as a file. */
                 return entry;
             } else {
@@ -196,7 +203,7 @@ bool MemoryFilesystem::
 read(std::vector<uint8_t> *contents, std::string const &path, size_t offset, ext::optional<size_t> length) const
 {
     return WalkPath<MemoryFilesystem::Entry const>(this, path, false, [&](MemoryFilesystem::Entry const *parent, std::string const &name, MemoryFilesystem::Entry const *entry) -> MemoryFilesystem::Entry const * {
-        if (entry == nullptr || entry->type() != MemoryFilesystem::Entry::Type::File) {
+        if (entry == nullptr || entry->type() != Type::File) {
             return nullptr;
         }
 
@@ -217,7 +224,7 @@ write(std::vector<uint8_t> const &contents, std::string const &path)
 {
     return WalkPath<MemoryFilesystem::Entry>(this, path, false, [&](MemoryFilesystem::Entry *parent, std::string const &name, MemoryFilesystem::Entry *entry) -> MemoryFilesystem::Entry * {
         if (entry != nullptr) {
-            if (entry->type() == MemoryFilesystem::Entry::Type::File) {
+            if (entry->type() == Type::File) {
                 /* Exists as a file, replace contents. */
                 entry->contents() = contents;
                 return entry;
@@ -246,7 +253,7 @@ removeFile(std::string const &path)
 {
     return WalkPath<MemoryFilesystem::Entry>(this, path, false, [](MemoryFilesystem::Entry *parent, std::string const &name, MemoryFilesystem::Entry *entry) -> MemoryFilesystem::Entry * {
         if (entry != nullptr) {
-            if (entry->type() == MemoryFilesystem::Entry::Type::File) {
+            if (entry->type() == Type::File) {
                 /* Found, remove it. */
                 std::vector<MemoryFilesystem::Entry> *children = &parent->children();
                 children->erase(std::remove_if(children->begin(), children->end(), [&](MemoryFilesystem::Entry const &entry) {
@@ -262,12 +269,6 @@ removeFile(std::string const &path)
             return nullptr;
         }
     });
-}
-
-bool MemoryFilesystem::
-isSymbolicLink(std::string const &path) const
-{
-    return false;
 }
 
 ext::optional<std::string> MemoryFilesystem::
@@ -295,23 +296,11 @@ removeSymbolicLink(std::string const &path)
 }
 
 bool MemoryFilesystem::
-isDirectory(std::string const &path) const
-{
-    return WalkPath<MemoryFilesystem::Entry const>(this, path, false, [](MemoryFilesystem::Entry const *parent, std::string const &name, MemoryFilesystem::Entry const *entry) -> MemoryFilesystem::Entry const * {
-        if (entry != nullptr && entry->type() != MemoryFilesystem::Entry::Type::Directory) {
-            return nullptr;
-        }
-
-        return entry;
-    });
-}
-
-bool MemoryFilesystem::
 createDirectory(std::string const &path, bool recursive)
 {
     return WalkPath<MemoryFilesystem::Entry>(this, path, recursive, [](MemoryFilesystem::Entry *parent, std::string const &name, MemoryFilesystem::Entry *entry) -> MemoryFilesystem::Entry * {
         if (entry != nullptr) {
-            if (entry->type() == MemoryFilesystem::Entry::Type::Directory) {
+            if (entry->type() == Type::Directory) {
                 /* Intermediate directory already exists. */
                 return entry;
             } else {
@@ -348,7 +337,7 @@ readDirectory(std::string const &path, bool recursive, std::function<void(std::s
         /* Process subdirectories. */
         if (recursive) {
             for (MemoryFilesystem::Entry const &child : entry->children()) {
-                if (child.type() == MemoryFilesystem::Entry::Type::Directory) {
+                if (child.type() == Type::Directory) {
                     std::string path = (subpath ? *subpath + "/" + child.name() : child.name());
                     process(path, &child);
                 }
@@ -357,7 +346,7 @@ readDirectory(std::string const &path, bool recursive, std::function<void(std::s
     };
 
     return WalkPath<MemoryFilesystem::Entry const>(this, path, false, [&process](MemoryFilesystem::Entry const *parent, std::string const &name, MemoryFilesystem::Entry const *entry) -> MemoryFilesystem::Entry const * {
-        if (entry != nullptr && entry->type() == MemoryFilesystem::Entry::Type::Directory) {
+        if (entry != nullptr && entry->type() == Type::Directory) {
             /* Found directory, process. */
             process(ext::nullopt, entry);
             return entry;
@@ -372,7 +361,7 @@ bool MemoryFilesystem::
 removeDirectory(std::string const &path, bool recursive)
 {
     return WalkPath<MemoryFilesystem::Entry>(this, path, false, [&recursive](MemoryFilesystem::Entry *parent, std::string const &name, MemoryFilesystem::Entry *entry) -> MemoryFilesystem::Entry * {
-        if (entry != nullptr && entry->type() == MemoryFilesystem::Entry::Type::Directory) {
+        if (entry != nullptr && entry->type() == Type::Directory) {
             /* Only remove empty directories unless recursive. */
             if (!recursive && !entry->children().empty()) {
                 return nullptr;

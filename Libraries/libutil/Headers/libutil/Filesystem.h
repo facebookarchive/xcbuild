@@ -20,9 +20,33 @@ namespace libutil {
 class Filesystem {
 public:
     /*
-     * Test if a file exists.
+     * The type of a filesystem entry.
+     */
+    enum class Type {
+        /*
+         * A regular file with contents.
+         */
+        File,
+        /*
+         * A symbolic link to another entry.
+         */
+        SymbolicLink,
+        /*
+         * A directory containing other entries.
+         */
+        Directory,
+    };
+
+public:
+    /*
+     * Test if a filesystem entry exists.
      */
     virtual bool exists(std::string const &path) const = 0;
+
+    /*
+     * Get the type of a filesystem entry.
+     */
+    virtual ext::optional<Type> type(std::string const &path) const = 0;
 
 public:
     /*
@@ -41,11 +65,6 @@ public:
     virtual bool isExecutable(std::string const &path) const = 0;
 
 public:
-    /*
-     * Test if a path is a file.
-     */
-    virtual bool isFile(std::string const &path) const = 0;
-
     /*
      * Create a file. Succeeds if created or already exists.
      */
@@ -73,11 +92,6 @@ public:
 
 public:
     /*
-     * Test if a path is a symbolic link.
-     */
-    virtual bool isSymbolicLink(std::string const &path) const = 0;
-
-    /*
      * Read the destination of the symbolic link, relative to its containing directory.
      */
     virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const = 0;
@@ -98,11 +112,6 @@ public:
     virtual bool removeSymbolicLink(std::string const &path) = 0;
 
 public:
-    /*
-     * Test if a path is a directory.
-     */
-    virtual bool isDirectory(std::string const &path) const = 0;
-
     /*
      * Create a directory. Succeeds if created or already exists.
      */
