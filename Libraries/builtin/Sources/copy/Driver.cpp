@@ -108,7 +108,7 @@ Run(Filesystem *filesystem, Options const &options, std::string const &workingDi
             input = filesystem->resolvePath(input);
         }
 
-        if (!filesystem->isDirectory(input) && !filesystem->isReadable(input)) {
+        if (filesystem->type(input) != Filesystem::Type::Directory && !filesystem->isReadable(input)) {
             if (options.ignoreMissingInputs()) {
                 continue;
             } else {

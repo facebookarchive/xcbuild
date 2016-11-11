@@ -26,11 +26,32 @@
 #endif
 
 using libutil::DefaultFilesystem;
+using libutil::Filesystem;
 
 bool DefaultFilesystem::
 exists(std::string const &path) const
 {
     return ::access(path.c_str(), F_OK) == 0;
+}
+
+ext::optional<Filesystem::Type> DefaultFilesystem::
+type(std::string const &path) const
+{
+    struct stat st;
+    if (::lstat(path.c_str(), &st) < 0) {
+        return ext::nullopt;
+    }
+
+    if (S_ISREG(st.st_mode)) {
+        return Type::File;
+    } else if (S_ISLNK(st.st_mode)) {
+        return Type::SymbolicLink;
+    } else if (S_ISDIR(st.st_mode)) {
+        return Type::Directory;
+    } else {
+        /* Unsupported file type, e.g. character or block device. */
+        return ext::nullopt;
+    }
 }
 
 bool DefaultFilesystem::
@@ -49,17 +70,6 @@ bool DefaultFilesystem::
 isExecutable(std::string const &path) const
 {
     return ::access(path.c_str(), X_OK) == 0;
-}
-
-bool DefaultFilesystem::
-isFile(std::string const &path) const
-{
-    struct stat st;
-    if (::stat(path.c_str(), &st) < 0) {
-        return false;
-    }
-
-    return S_ISREG(st.st_mode);
 }
 
 bool DefaultFilesystem::
@@ -149,11 +159,11 @@ bool DefaultFilesystem::
 copyFile(std::string const &from, std::string const &to)
 {
 #if defined(__APPLE__) || defined(__FreeBSD__)
-    if (!this->isFile(from)) {
+    if (this->type(from) != Type::File) {
         return false;
     }
 
-    if (this->isFile(to)) {
+    if (this->type(to) == Type::File) {
         if (!this->removeFile(to)) {
             return false;
         }
@@ -179,17 +189,6 @@ removeFile(std::string const &path)
         return false;
     }
     return true;
-}
-
-bool DefaultFilesystem::
-isSymbolicLink(std::string const &path) const
-{
-    struct stat st;
-    if (::lstat(path.c_str(), &st) < 0) {
-        return false;
-    }
-
-    return S_ISLNK(st.st_mode);
 }
 
 ext::optional<std::string> DefaultFilesystem::
@@ -219,11 +218,11 @@ bool DefaultFilesystem::
 copySymbolicLink(std::string const &from, std::string const &to)
 {
 #if defined(__APPLE__) || defined(__FreeBSD__)
-    if (!this->isSymbolicLink(from)) {
+    if (this->type(from) != Type::SymbolicLink) {
         return false;
     }
 
-    if (this->isSymbolicLink(to)) {
+    if (this->type(to) == Type::SymbolicLink) {
         if (!this->removeSymbolicLink(to)) {
             return false;
         }
@@ -245,24 +244,13 @@ copySymbolicLink(std::string const &from, std::string const &to)
 bool DefaultFilesystem::
 removeSymbolicLink(std::string const &path)
 {
-    if (this->isSymbolicLink(path)) {
+    if (this->type(path) == Type::SymbolicLink) {
         if (::unlink(path.c_str()) != 0) {
             return false;
         }
     }
 
     return true;
-}
-
-bool DefaultFilesystem::
-isDirectory(std::string const &path) const
-{
-    struct stat st;
-    if (::stat(path.c_str(), &st) < 0) {
-        return false;
-    }
-
-    return S_ISDIR(st.st_mode);
 }
 
 bool DefaultFilesystem::
@@ -280,7 +268,7 @@ createDirectory(std::string const &path, bool recursive)
         std::stack<std::string> create;
 
         /* Build up list of directories to create. */
-        while (!this->isDirectory(path)) {
+        while (this->type(path) != Type::Directory) {
             create.push(current);
             current = FSUtil::GetDirectoryName(current);
         }
@@ -335,7 +323,7 @@ readDirectory(std::string const &path, bool recursive, std::function<void(std::s
 
                 std::string full = absolute + "/" + entry->d_name;
 
-                if (this->isDirectory(full) && !this->isSymbolicLink(full)) {
+                if (this->type(full) == Type::Directory) {
                     std::string path = (relative ? *relative + "/" + entry->d_name : entry->d_name);
                     if (!process(full, path)) {
                         ::closedir(dp);
@@ -356,11 +344,11 @@ bool DefaultFilesystem::
 copyDirectory(std::string const &from, std::string const &to, bool recursive)
 {
 #if defined(__APPLE__) || defined(__FreeBSD__)
-    if (!this->isDirectory(from)) {
+    if (this->type(from) != Type::Directory) {
         return false;
     }
 
-    if (this->isDirectory(to)) {
+    if (this->type(to) == Type::Directory) {
         if (!this->removeDirectory(to, recursive)) {
             return false;
         }
@@ -387,23 +375,31 @@ removeDirectory(std::string const &path, bool recursive)
 
         this->readDirectory(path, recursive, [this, &path, &success](std::string const &name) {
             std::string full = path + "/" + name;
-            if (this->isDirectory(full)) {
-                if (!this->removeDirectory(full, false)) {
-                    success = false;
-                    return false;
-                }
-            } else if (this->isSymbolicLink(full)) {
-                if (!this->removeSymbolicLink(full)) {
-                    success = false;
-                    return false;
-                }
-            } else if (this->isFile(full)) {
-                if (!this->removeFile(full)) {
-                    success = false;
-                    return false;
-                }
-            } else {
-                /* Unknown type, can't remove. */
+
+            ext::optional<Type> type = this->type(full);
+            if (!type) {
+                return false;
+            }
+
+            switch (*type) {
+                case Type::File:
+                    if (!this->removeFile(full)) {
+                        success = false;
+                        return false;
+                    }
+                    break;
+                case Type::SymbolicLink:
+                    if (!this->removeSymbolicLink(full)) {
+                        success = false;
+                        return false;
+                    }
+                    break;
+                case Type::Directory:
+                    if (!this->removeDirectory(full, false)) {
+                        success = false;
+                        return false;
+                    }
+                    break;
             }
 
             return true;

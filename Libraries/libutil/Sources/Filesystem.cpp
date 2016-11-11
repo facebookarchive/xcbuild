@@ -44,7 +44,7 @@ copySymbolicLink(std::string const &from, std::string const &to)
      * Remove any existing symbolic link to overwrite, in the same way that copying
      * a file overwrites an existing file at the same path, but not a directory.
      */
-    if (this->isSymbolicLink(to)) {
+    if (this->type(to) == Type::SymbolicLink) {
         if (!this->removeSymbolicLink(to)) {
             return false;
         }
@@ -60,7 +60,7 @@ copySymbolicLink(std::string const &from, std::string const &to)
 bool Filesystem::
 copyDirectory(std::string const &from, std::string const &to, bool recursive)
 {
-    if (!this->isDirectory(from)) {
+    if (this->type(from) != Type::Directory) {
         return false;
     }
 
@@ -68,7 +68,7 @@ copyDirectory(std::string const &from, std::string const &to, bool recursive)
      * Remove any existing directory to overwrite, in the same way that copying
      * a file overwrites an existing file at the same path, but not a directory.
      */
-    if (this->isDirectory(to)) {
+    if (this->type(to) == Type::Directory) {
         if (!this->removeDirectory(to, recursive)) {
             return false;
         }
@@ -85,23 +85,30 @@ copyDirectory(std::string const &from, std::string const &to, bool recursive)
             std::string fromPath = from + "/" + path;
             std::string toPath = to + "/" + path;
 
-            if (this->isSymbolicLink(fromPath)) {
-                if (!this->copySymbolicLink(fromPath, toPath)) {
-                    success = false;
-                    return false;
-                }
-            } else if (this->isDirectory(fromPath)) {
-                if (!this->copyDirectory(fromPath, toPath, false)) {
-                    success = false;
-                    return false;
-                }
-            } else if (this->isFile(fromPath)) {
-                if (!this->copyFile(fromPath, toPath)) {
-                    success = false;
-                    return false;
-                }
-            } else {
-                /* Unknown entry type; can't copy. */
+            ext::optional<Type> type = this->type(fromPath);
+            if (!type) {
+                return false;
+            }
+
+            switch (*type) {
+                case Type::File:
+                    if (!this->copyFile(fromPath, toPath)) {
+                        success = false;
+                        return false;
+                    }
+                    break;
+                case Type::SymbolicLink:
+                    if (!this->copySymbolicLink(fromPath, toPath)) {
+                        success = false;
+                        return false;
+                    }
+                    break;
+                case Type::Directory:
+                    if (!this->copyDirectory(fromPath, toPath, false)) {
+                        success = false;
+                        return false;
+                    }
+                    break;
             }
 
             return true;

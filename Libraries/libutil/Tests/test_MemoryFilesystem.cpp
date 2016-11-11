@@ -11,6 +11,7 @@
 #include <libutil/MemoryFilesystem.h>
 
 using libutil::MemoryFilesystem;
+using libutil::Filesystem;
 
 static std::vector<uint8_t>
 Contents(std::string const &string)
@@ -47,17 +48,17 @@ TEST(MemoryFilesystem, Exists)
     EXPECT_FALSE(filesystem.exists("/invalid1/invalid2"));
 }
 
-TEST(MemoryFilesystem, IsSymbolicLink)
+TEST(MemoryFilesystem, Type)
 {
     auto filesystem = BasicFilesystem();
-    EXPECT_FALSE(filesystem.isSymbolicLink("/"));
-    EXPECT_FALSE(filesystem.isSymbolicLink("/file1"));
-    EXPECT_FALSE(filesystem.isSymbolicLink("/dir1"));
-    EXPECT_FALSE(filesystem.isSymbolicLink("/dir2"));
-    EXPECT_FALSE(filesystem.isSymbolicLink("/dir2/file2"));
-    EXPECT_FALSE(filesystem.isSymbolicLink("/dir2/dir3"));
-    EXPECT_FALSE(filesystem.isSymbolicLink("/invalid"));
-    EXPECT_FALSE(filesystem.isSymbolicLink("/invalid1/invalid2"));
+    EXPECT_EQ(filesystem.type("/"), Filesystem::Type::Directory);
+    EXPECT_EQ(filesystem.type("/dir1"), Filesystem::Type::Directory);
+    EXPECT_EQ(filesystem.type("/dir2"), Filesystem::Type::Directory);
+    EXPECT_EQ(filesystem.type("/dir2/dir3"), Filesystem::Type::Directory);
+    EXPECT_EQ(filesystem.type("/file1"), Filesystem::Type::File);
+    EXPECT_EQ(filesystem.type("/dir2/file2"), Filesystem::Type::File);
+    EXPECT_EQ(filesystem.type("/invalid"), ext::nullopt);
+    EXPECT_EQ(filesystem.type("/invalid1/invalid2"), ext::nullopt);
 }
 
 TEST(MemoryFilesystem, IsReadable)
@@ -100,18 +101,6 @@ TEST(MemoryFilesystem, IsExecutable)
     EXPECT_FALSE(filesystem.isExecutable("/invalid"));
     EXPECT_FALSE(filesystem.isExecutable("/dir1/invalid"));
     EXPECT_FALSE(filesystem.isExecutable("/invalid1/invalid2"));
-}
-
-TEST(MemoryFilesystem, IsFile)
-{
-    auto filesystem = BasicFilesystem();
-    EXPECT_TRUE(filesystem.isFile("/file1"));
-    EXPECT_TRUE(filesystem.isFile("/dir2/file2"));
-    EXPECT_FALSE(filesystem.isFile("/invalid"));
-    EXPECT_FALSE(filesystem.isFile("/invalid1/invalid2"));
-    EXPECT_FALSE(filesystem.isFile("/"));
-    EXPECT_FALSE(filesystem.isFile("/dir1"));
-    EXPECT_FALSE(filesystem.isFile("/dir2/dir3"));
 }
 
 TEST(MemoryFilesystem, CreateFile)
@@ -197,9 +186,9 @@ TEST(MemoryFilesystem, Write)
     EXPECT_EQ(contents, Contents("new"));
 
     /* Can't write to a directory. */
-    EXPECT_TRUE(filesystem.isDirectory("/dir1"));
+    EXPECT_EQ(filesystem.type("/dir1"), Filesystem::Type::Directory);
     EXPECT_FALSE(filesystem.write(Contents("new"), "/dir1"));
-    EXPECT_TRUE(filesystem.isDirectory("/dir1"));
+    EXPECT_EQ(filesystem.type("/dir1"), Filesystem::Type::Directory);
 
     /* Can't write in nonexistent directory. */
     EXPECT_FALSE(filesystem.exists("/invalid/new"));
@@ -249,64 +238,51 @@ TEST(MemoryFilesystem, RemoveFile)
     EXPECT_FALSE(filesystem.removeFile("/invalid"));
 }
 
-TEST(MemoryFilesystem, IsDirectory)
-{
-    auto filesystem = BasicFilesystem();
-    EXPECT_TRUE(filesystem.isDirectory("/"));
-    EXPECT_TRUE(filesystem.isDirectory("/dir1"));
-    EXPECT_TRUE(filesystem.isDirectory("/dir2"));
-    EXPECT_TRUE(filesystem.isDirectory("/dir2/dir3"));
-    EXPECT_FALSE(filesystem.isDirectory("/file1"));
-    EXPECT_FALSE(filesystem.isDirectory("/dir2/file2"));
-    EXPECT_FALSE(filesystem.isDirectory("/invalid"));
-    EXPECT_FALSE(filesystem.isDirectory("/invalid1/invalid2"));
-}
-
 TEST(MemoryFilesystem, CreateDirectory)
 {
     auto filesystem = BasicFilesystem();
 
     /* Create existing directory, non-recursive. */
-    EXPECT_TRUE(filesystem.isDirectory("/dir1"));
+    EXPECT_EQ(filesystem.type("/dir1"), Filesystem::Type::Directory);
     EXPECT_TRUE(filesystem.createDirectory("/dir1", false));
-    EXPECT_TRUE(filesystem.isDirectory("/dir1"));
+    EXPECT_EQ(filesystem.type("/dir1"), Filesystem::Type::Directory);
 
     /* Create existing directory, recursive. */
-    EXPECT_TRUE(filesystem.isDirectory("/dir1"));
+    EXPECT_EQ(filesystem.type("/dir1"), Filesystem::Type::Directory);
     EXPECT_TRUE(filesystem.createDirectory("/dir1", true));
-    EXPECT_TRUE(filesystem.isDirectory("/dir1"));
+    EXPECT_EQ(filesystem.type("/dir1"), Filesystem::Type::Directory);
 
     /* Create new directory, non-recursive. */
     EXPECT_FALSE(filesystem.exists("/new1"));
     EXPECT_TRUE(filesystem.createDirectory("/new1", false));
-    EXPECT_TRUE(filesystem.isDirectory("/new1"));
+    EXPECT_EQ(filesystem.type("/new1"), Filesystem::Type::Directory);
 
     /* Create new directory, recursive. */
     EXPECT_FALSE(filesystem.exists("/new2"));
     EXPECT_TRUE(filesystem.createDirectory("/new2", true));
-    EXPECT_TRUE(filesystem.isDirectory("/new2"));
+    EXPECT_EQ(filesystem.type("/new2"), Filesystem::Type::Directory);
 
     /* Create new subdirectory, non-recursive. */
     EXPECT_FALSE(filesystem.exists("/dir1/new1"));
     EXPECT_TRUE(filesystem.createDirectory("/dir1/new1", false));
-    EXPECT_TRUE(filesystem.isDirectory("/dir1/new1"));
+    EXPECT_EQ(filesystem.type("/dir1/new1"), Filesystem::Type::Directory);
 
     /* Create new subdirectory, recursive. */
     EXPECT_FALSE(filesystem.exists("/dir1/new2"));
     EXPECT_TRUE(filesystem.createDirectory("/dir1/new2", true));
-    EXPECT_TRUE(filesystem.isDirectory("/dir1/new2"));
+    EXPECT_EQ(filesystem.type("/dir1/new2"), Filesystem::Type::Directory);
 
     /* Can't create nested directories when non-recursive. */
     EXPECT_FALSE(filesystem.exists("/invalid/new1"));
     EXPECT_FALSE(filesystem.createDirectory("/invalid/new1", false));
-    EXPECT_FALSE(filesystem.isDirectory("/invalid/new1"));
-    EXPECT_FALSE(filesystem.isDirectory("/invalid"));
+    EXPECT_EQ(filesystem.type("/invalid/new1"), ext::nullopt);
+    EXPECT_EQ(filesystem.type("/invalid"), ext::nullopt);
 
     /* Can create nested directories when recursive. */
     EXPECT_FALSE(filesystem.exists("/invalid/new2"));
     EXPECT_TRUE(filesystem.createDirectory("/invalid/new2", true));
-    EXPECT_TRUE(filesystem.isDirectory("/invalid/new2"));
-    EXPECT_TRUE(filesystem.isDirectory("/invalid"));
+    EXPECT_EQ(filesystem.type("/invalid/new2"), Filesystem::Type::Directory);
+    EXPECT_EQ(filesystem.type("/invalid"), Filesystem::Type::Directory);
 }
 
 TEST(MemoryFilesystem, ReadDirectory)
@@ -375,31 +351,29 @@ TEST(MemoryFilesystem, CopyDirectory)
 
     /* Can copy into a new path non-recursive. */
     EXPECT_TRUE(filesystem.copyDirectory("/dir1", "/copied1", false));
-    EXPECT_TRUE(filesystem.isDirectory("/copied1"));
-    EXPECT_FALSE(filesystem.isFile("/copied1/file2"));
+    EXPECT_EQ(filesystem.type("/copied1"), Filesystem::Type::Directory);
 
     /* Cannot overwrite non-empty directory when non-recursive. */
     EXPECT_FALSE(filesystem.copyDirectory("/dir1", "/dir2", false));
 
     /* Can overwrite empty directory when non-recursive. */
     EXPECT_TRUE(filesystem.copyDirectory("/dir1", "/dir2/dir3", false));
-    EXPECT_TRUE(filesystem.isDirectory("/dir2/dir3"));
-    EXPECT_FALSE(filesystem.isFile("/dir2/dir3/file2"));
+    EXPECT_EQ(filesystem.type("/dir2/dir3"), Filesystem::Type::Directory);
 
     /* Can copy into a new path recursive. */
     EXPECT_TRUE(filesystem.copyDirectory("/dir1", "/copied1", true));
-    EXPECT_TRUE(filesystem.isDirectory("/copied1"));
-    EXPECT_TRUE(filesystem.isFile("/copied1/file2"));
+    EXPECT_EQ(filesystem.type("/copied1"), Filesystem::Type::Directory);
+    EXPECT_EQ(filesystem.type("/copied1/file2"), Filesystem::Type::File);
 
     /* Can overwrite empty directory when recursive. */
     EXPECT_TRUE(filesystem.copyDirectory("/dir1", "/dir2/dir3", true));
-    EXPECT_TRUE(filesystem.isDirectory("/dir2/dir3"));
-    EXPECT_TRUE(filesystem.isFile("/dir2/dir3/file2"));
+    EXPECT_EQ(filesystem.type("/dir2/dir3"), Filesystem::Type::Directory);
+    EXPECT_EQ(filesystem.type("/dir2/dir3/file2"), Filesystem::Type::File);
 
     /* Can overwrite non-empty directory when recursive. */
     EXPECT_TRUE(filesystem.copyDirectory("/dir1", "/dir2", true));
-    EXPECT_FALSE(filesystem.isDirectory("/dir2/dir3"));
-    EXPECT_TRUE(filesystem.isFile("/dir2/file2"));
+    EXPECT_EQ(filesystem.type("/dir2/dir3"), ext::nullopt);
+    EXPECT_EQ(filesystem.type("/dir2/file2"), Filesystem::Type::File);
 }
 
 TEST(MemoryFilesystem, RemoveDirectory)
@@ -408,17 +382,17 @@ TEST(MemoryFilesystem, RemoveDirectory)
 
     /* Can remove empty directory when non-recursive. */
     EXPECT_TRUE(filesystem.removeDirectory("/dir2/dir3", false));
-    EXPECT_FALSE(filesystem.isDirectory("/dir2/dir3"));
+    EXPECT_EQ(filesystem.type("/dir2/dir3"), ext::nullopt);
 
     /* Can't remove non-empty directory when non-recursive. */
     EXPECT_FALSE(filesystem.removeDirectory("/dir1", false));
-    EXPECT_TRUE(filesystem.isFile("/dir1/file2"));
-    EXPECT_TRUE(filesystem.isDirectory("/dir1"));
+    EXPECT_EQ(filesystem.type("/dir1/file2"), Filesystem::Type::File);
+    EXPECT_EQ(filesystem.type("/dir1"), Filesystem::Type::Directory);
 
     /* Can't remove non-empty directory when non-recursive. */
     EXPECT_TRUE(filesystem.removeDirectory("/dir1", true));
-    EXPECT_FALSE(filesystem.isFile("/dir1/file2"));
-    EXPECT_FALSE(filesystem.isDirectory("/dir1"));
+    EXPECT_EQ(filesystem.type("/dir1/file2"), ext::nullopt);
+    EXPECT_EQ(filesystem.type("/dir1"), ext::nullopt);
 
     /* Can't remove files. */
     EXPECT_TRUE(filesystem.exists("/file1"));

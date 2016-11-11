@@ -42,7 +42,7 @@ ResolveDeveloperRoot(Filesystem const *filesystem, std::string const &path)
      * Support finding the developer directory inside an application directory.
      */
     std::string application = path + "/Contents/Developer";
-    if (filesystem->isDirectory(application)) {
+    if (filesystem->type(application) == Filesystem::Type::Directory) {
         return application;
     }
 
@@ -78,7 +78,7 @@ DeveloperRoot(process::Context const *processContext, Filesystem const *filesyst
         "/Developer",
     };
     for (std::string const &path : defaults) {
-        if (filesystem->isDirectory(path)) {
+        if (filesystem->type(path) == Filesystem::Type::Directory) {
             return path;
         }
     }

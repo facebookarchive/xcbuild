@@ -45,7 +45,7 @@ AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &envir
             std::string sdkPath = FSUtil::NormalizePath(environment.resolve("SDKROOT") + path);
 
             // TODO(grp): Testing if the directory exists seems fragile.
-            if (filesystem->isDirectory(sdkPath)) {
+            if (filesystem->type(sdkPath) == Filesystem::Type::Directory) {
                 path = sdkPath;
             }
         }
@@ -63,7 +63,7 @@ AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &envir
                 // Follow: RECURSIVE_SEARCH_PATHS_FOLLOW_SYMLINKS
 
                 std::string absolute = absoluteRoot + "/" + relative;
-                if (filesystem->isDirectory(absolute)) {
+                if (filesystem->type(absolute) == Filesystem::Type::Directory) {
                     args->push_back(relative);
                 }
                 return true;

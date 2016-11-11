@@ -157,7 +157,7 @@ writeAuxiliaryFiles(
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
         for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
             std::string directory = FSUtil::GetDirectoryName(auxiliaryFile.path());
-            if (!filesystem->isDirectory(directory)) {
+            if (filesystem->type(directory) != Filesystem::Type::Directory) {
                 xcformatter::Formatter::Print(_formatter->createAuxiliaryDirectory(directory));
 
                 if (!_dryRun) {

@@ -41,12 +41,12 @@ Open(Filesystem const *filesystem, ext::optional<std::string> const &userName, s
         return nullptr;
     }
 
-    if (!filesystem->isDirectory(basePath) || !filesystem->isDirectory(path)) {
+    std::string realPath = filesystem->resolvePath(path);
+    if (realPath.empty()) {
         return nullptr;
     }
 
-    std::string realPath = filesystem->resolvePath(path);
-    if (realPath.empty()) {
+    if (filesystem->type(basePath) != Filesystem::Type::Directory || filesystem->type(realPath) != Filesystem::Type::Directory) {
         return nullptr;
     }
 

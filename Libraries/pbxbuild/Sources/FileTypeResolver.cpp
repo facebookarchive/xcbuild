@@ -42,7 +42,7 @@ pbxspec::PBX::FileType::shared_ptr FileTypeResolver::
 Resolve(Filesystem const *filesystem, pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, std::string const &filePath)
 {
     bool isReadable = filesystem->isReadable(filePath);
-    bool isFolder = isReadable && filesystem->isDirectory(filePath);
+    bool isFolder = isReadable && filesystem->type(filePath) == Filesystem::Type::Directory;
 
     std::string fileExtension = FSUtil::GetFileExtension(filePath);
     std::string fileName = FSUtil::GetBaseName(filePath);
