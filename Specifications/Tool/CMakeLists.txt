@@ -8,13 +8,17 @@
 #
 
 install(FILES
+        com.apple.build-tools.nmedit.xcspec
         com.apple.build-tools.strip.xcspec
         com.apple.commands.built-in.compilation-database-generator.xcspec
         com.apple.commands.built-in.headermap-generator.xcspec
         com.apple.commands.built-in.validate.xcspec
         com.apple.commands.shell-script.xcspec
         com.apple.compilers.cpp.xcspec
+        com.apple.compilers.lex.xcspec
         com.apple.compilers.pbxcp.xcspec
+        com.apple.compilers.resource-copier.xcspec
+        com.apple.compilers.yacc.xcspec
         com.apple.tools.ditto.xcspec
         com.apple.tools.dsymutil.xcspec
         com.apple.tools.info-plist-utility.xcspec

@@ -11,6 +11,6 @@
     Type = Tool;
     Identifier = com.apple.compilers.resource-copier;
     Name = "Resource Copier";
-}
 
-/* TODO: Complete */
+    /* No options. */
+}

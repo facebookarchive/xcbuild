@@ -9,10 +9,10 @@
 
 {
     Type = Tool;
-    Identifier = com.apple.compilers.lex;
-    Name = "Lex";
-    ExecDescription = "Lex $(InputFile)";
-    InputFileTypes = ( "sourcecode.lex" );
-}
+    Identifier = com.apple.build-tools.nmedit;
+    Name = "Symbol Editor";
 
-/* TODO: Complete */
+    ExecPath = "nmedit";
+
+    /* No options. */
+}
