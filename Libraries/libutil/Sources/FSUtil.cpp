@@ -12,33 +12,31 @@
 #include <cstring>
 
 #include <strings.h>
-#include <unistd.h>
-#include <libgen.h>
 
 using libutil::FSUtil;
 
 std::string FSUtil::
 GetDirectoryName(std::string const &path)
 {
-    if (path.find('/') == std::string::npos) {
-        // dirname() returns '.' for empty
+    std::string::size_type pos = path.rfind('/');
+    if (pos == std::string::npos) {
         return std::string();
+    } else if (pos == 0) {
+        return "/";
+    } else {
+        return path.substr(0, pos);
     }
-
-    std::string copy(path);
-    return ::dirname(&copy[0]);
 }
 
 std::string FSUtil::
 GetBaseName(std::string const &path)
 {
-    if (path.empty()) {
-        // basename() returns '.' for empty
-        return std::string();
+    std::string::size_type pos = path.rfind('/');
+    if (pos == std::string::npos) {
+        return path;
+    } else {
+        return path.substr(pos + 1);
     }
-
-    std::string copy(path);
-    return ::basename(&copy[0]);
 }
 
 std::string FSUtil::
