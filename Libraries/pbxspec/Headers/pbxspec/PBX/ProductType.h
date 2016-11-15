@@ -128,7 +128,7 @@ public:
     virtual ~ProductType();
 
 public:
-    inline char const *type() const override
+    inline SpecificationType type() const override
     { return ProductType::Type(); }
 
 public:
@@ -287,8 +287,8 @@ protected:
     static ProductType::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Type()
-    { return Types::ProductType; }
+    static inline SpecificationType Type()
+    { return SpecificationType::ProductType; }
 };
 
 } }

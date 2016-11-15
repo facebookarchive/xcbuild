@@ -8,6 +8,7 @@
  */
 
 #include <pbxspec/PBX/BuildPhase.h>
+#include <pbxspec/Context.h>
 #include <plist/Dictionary.h>
 #include <plist/Keys/Unpack.h>
 

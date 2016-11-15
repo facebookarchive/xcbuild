@@ -18,19 +18,9 @@
 
 using pbxspec::Manager;
 using pbxspec::Context;
-using pbxspec::PBX::Specification;
-using pbxspec::PBX::Architecture;
-using pbxspec::PBX::BuildPhase;
-using pbxspec::PBX::BuildRule;
-using pbxspec::PBX::BuildSettings;
-using pbxspec::PBX::BuildStep;
-using pbxspec::PBX::BuildSystem;
-using pbxspec::PBX::Compiler;
-using pbxspec::PBX::FileType;
-using pbxspec::PBX::Linker;
-using pbxspec::PBX::PackageType;
-using pbxspec::PBX::ProductType;
-using pbxspec::PBX::Tool;
+using pbxspec::SpecificationType;
+using pbxspec::SpecificationTypes;
+namespace PBX = pbxspec::PBX;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -46,12 +36,8 @@ Manager::
 
 template <typename T>
 typename T::vector Manager::
-findSpecifications(std::vector<std::string> const &domains, char const *type) const
+findSpecifications(std::vector<std::string> const &domains, SpecificationType type) const
 {
-    if (type == nullptr) {
-        return typename T::vector();
-    }
-
     typename T::vector specifications;
 
     for (std::string const &domain : domains) {
@@ -82,11 +68,11 @@ findSpecifications(std::vector<std::string> const &domains, char const *type) co
 
 template <typename T>
 typename T::shared_ptr Manager::
-findSpecification(std::vector<std::string> const &domains, std::string const &identifier, char const *type) const
+findSpecification(std::vector<std::string> const &domains, std::string const &identifier, SpecificationType type) const
 {
     typename T::vector vector = findSpecifications <T> (domains, type);
 
-    auto I = std::find_if(vector.begin(), vector.end(), [&identifier](Specification::shared_ptr const &spec) -> bool {
+    auto I = std::find_if(vector.begin(), vector.end(), [&identifier](PBX::Specification::shared_ptr const &spec) -> bool {
         return identifier == spec->identifier();
     });
 
@@ -97,172 +83,172 @@ findSpecification(std::vector<std::string> const &domains, std::string const &id
     return nullptr;
 }
 
-Specification::shared_ptr Manager::
-specification(char const *type, std::string const &identifier, std::vector<std::string> const &domains) const
+PBX::Specification::shared_ptr Manager::
+specification(SpecificationType type, std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Specification> (domains, identifier, type);
+    return findSpecification <PBX::Specification> (domains, identifier, type);
 }
 
-Specification::vector Manager::
-specifications(char const *type, std::vector<std::string> const &domains) const
+PBX::Specification::vector Manager::
+specifications(SpecificationType type, std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Specification> (domains, type);
+    return findSpecifications <PBX::Specification> (domains, type);
 }
 
-Architecture::shared_ptr Manager::
+PBX::Architecture::shared_ptr Manager::
 architecture(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Architecture> (domains, identifier);
+    return findSpecification <PBX::Architecture> (domains, identifier);
 }
 
-Architecture::vector Manager::
+PBX::Architecture::vector Manager::
 architectures(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Architecture> (domains);
+    return findSpecifications <PBX::Architecture> (domains);
 }
 
-BuildPhase::shared_ptr Manager::
+PBX::BuildPhase::shared_ptr Manager::
 buildPhase(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <BuildPhase> (domains, identifier);
+    return findSpecification <PBX::BuildPhase> (domains, identifier);
 }
 
-BuildPhase::vector Manager::
+PBX::BuildPhase::vector Manager::
 buildPhases(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <BuildPhase> (domains);
+    return findSpecifications <PBX::BuildPhase> (domains);
 }
 
-BuildSettings::shared_ptr Manager::
+PBX::BuildSettings::shared_ptr Manager::
 buildSettings(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <BuildSettings> (domains, identifier);
+    return findSpecification <PBX::BuildSettings> (domains, identifier);
 }
 
-BuildSettings::vector Manager::
+PBX::BuildSettings::vector Manager::
 buildSettingses(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <BuildSettings> (domains);
+    return findSpecifications <PBX::BuildSettings> (domains);
 }
 
-BuildStep::shared_ptr Manager::
+PBX::BuildStep::shared_ptr Manager::
 buildStep(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <BuildStep> (domains, identifier);
+    return findSpecification <PBX::BuildStep> (domains, identifier);
 }
 
-BuildStep::vector Manager::
+PBX::BuildStep::vector Manager::
 buildSteps(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <BuildStep> (domains);
+    return findSpecifications <PBX::BuildStep> (domains);
 }
 
-BuildSystem::shared_ptr Manager::
+PBX::BuildSystem::shared_ptr Manager::
 buildSystem(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <BuildSystem> (domains, identifier);
+    return findSpecification <PBX::BuildSystem> (domains, identifier);
 }
 
-BuildSystem::vector Manager::
+PBX::BuildSystem::vector Manager::
 buildSystems(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <BuildSystem> (domains);
+    return findSpecifications <PBX::BuildSystem> (domains);
 }
 
-Compiler::shared_ptr Manager::
+PBX::Compiler::shared_ptr Manager::
 compiler(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Compiler> (domains, identifier);
+    return findSpecification <PBX::Compiler> (domains, identifier);
 }
 
-Compiler::vector Manager::
+PBX::Compiler::vector Manager::
 compilers(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Compiler> (domains);
+    return findSpecifications <PBX::Compiler> (domains);
 }
 
-FileType::shared_ptr Manager::
+PBX::FileType::shared_ptr Manager::
 fileType(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <FileType> (domains, identifier);
+    return findSpecification <PBX::FileType> (domains, identifier);
 }
 
-FileType::vector Manager::
+PBX::FileType::vector Manager::
 fileTypes(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <FileType> (domains);
+    return findSpecifications <PBX::FileType> (domains);
 }
 
-Linker::shared_ptr Manager::
+PBX::Linker::shared_ptr Manager::
 linker(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Linker> (domains, identifier);
+    return findSpecification <PBX::Linker> (domains, identifier);
 }
 
-Linker::vector Manager::
+PBX::Linker::vector Manager::
 linkers(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Linker> (domains);
+    return findSpecifications <PBX::Linker> (domains);
 }
 
-PackageType::shared_ptr Manager::
+PBX::PackageType::shared_ptr Manager::
 packageType(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <PackageType> (domains, identifier);
+    return findSpecification <PBX::PackageType> (domains, identifier);
 }
 
-PackageType::vector Manager::
+PBX::PackageType::vector Manager::
 packageTypes(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <PackageType> (domains);
+    return findSpecifications <PBX::PackageType> (domains);
 }
 
-ProductType::shared_ptr Manager::
+PBX::ProductType::shared_ptr Manager::
 productType(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <ProductType> (domains, identifier);
+    return findSpecification <PBX::ProductType> (domains, identifier);
 }
 
-ProductType::vector Manager::
+PBX::ProductType::vector Manager::
 productTypes(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <ProductType> (domains);
+    return findSpecifications <PBX::ProductType> (domains);
 }
 
-Tool::shared_ptr Manager::
+PBX::Tool::shared_ptr Manager::
 tool(std::string const &identifier, std::vector<std::string> const &domains) const
 {
-    return findSpecification <Tool> (domains, identifier);
+    return findSpecification <PBX::Tool> (domains, identifier);
 }
 
-Tool::vector Manager::
+PBX::Tool::vector Manager::
 tools(std::vector<std::string> const &domains) const
 {
-    return findSpecifications <Tool> (domains);
+    return findSpecifications <PBX::Tool> (domains);
 }
 
-BuildRule::vector Manager::
+PBX::BuildRule::vector Manager::
 synthesizedBuildRules(std::vector<std::string> const &domains) const
 {
-    BuildRule::vector buildRules;
+    PBX::BuildRule::vector buildRules;
 
-    for (Compiler::shared_ptr const &compiler : compilers(domains)) {
+    for (PBX::Compiler::shared_ptr const &compiler : compilers(domains)) {
         if (compiler->synthesizeBuildRule() && compiler->inputFileTypes()) {
-            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(*compiler->inputFileTypes(), compiler->identifier()));
+            PBX::BuildRule::shared_ptr buildRule = std::make_shared <PBX::BuildRule> (PBX::BuildRule(*compiler->inputFileTypes(), compiler->identifier()));
             buildRules.push_back(buildRule);
         }
     }
 
-    for (Linker::shared_ptr const &linker : linkers(domains)) {
+    for (PBX::Linker::shared_ptr const &linker : linkers(domains)) {
         if (linker->synthesizeBuildRule() && linker->inputFileTypes()) {
-            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(*linker->inputFileTypes(), linker->identifier()));
+            PBX::BuildRule::shared_ptr buildRule = std::make_shared <PBX::BuildRule> (PBX::BuildRule(*linker->inputFileTypes(), linker->identifier()));
             buildRules.push_back(buildRule);
         }
     }
 
-    for (Tool::shared_ptr const &tool : tools(domains)) {
+    for (PBX::Tool::shared_ptr const &tool : tools(domains)) {
         if (tool->synthesizeBuildRule() && tool->inputFileTypes()) {
-            BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule(*tool->inputFileTypes(), tool->identifier()));
+            PBX::BuildRule::shared_ptr buildRule = std::make_shared <PBX::BuildRule> (PBX::BuildRule(*tool->inputFileTypes(), tool->identifier()));
             buildRules.push_back(buildRule);
         }
     }
@@ -273,13 +259,8 @@ synthesizedBuildRules(std::vector<std::string> const &domains) const
 void Manager::
 addSpecification(PBX::Specification::shared_ptr const &spec)
 {
-    if (!spec) {
+    if (spec == nullptr) {
         fprintf(stderr, "error: registering null specification\n");
-        return;
-    }
-
-    if (spec->type() == nullptr) {
-        fprintf(stderr, "error: registering a specification with null type\n");
         return;
     }
 
@@ -292,7 +273,7 @@ addSpecification(PBX::Specification::shared_ptr const &spec)
         }
 
         fprintf(stderr, "error: registering %s specification '%s' in domain %s twice\n",
-                spec->type(), spec->identifier().c_str(), spec->domain().c_str());
+                SpecificationTypes::Name(spec->type()).c_str(), spec->identifier().c_str(), spec->domain().c_str());
         return;
     }
 
@@ -317,12 +298,12 @@ inheritSpecification(PBX::Specification::shared_ptr const &specification)
         /* Find the base specification. */
         auto base = this->specification(specification->type(), *specification->basedOnIdentifier(), domains);
         if (base == nullptr) {
-            fprintf(stderr, "error: cannot find base %s specification '%s:%s'\n", specification->type(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
+            fprintf(stderr, "error: cannot find base %s specification '%s:%s'\n", SpecificationTypes::Name(specification->type()).c_str(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
             return false;
         }
 
 #if 0
-        fprintf(stderr, "debug: inheriting %s:%s (%s) from %s:%s (%s)\n", specification->domain().c_str(), specification->identifier().c_str(), specification->type(), base->domain().c_str(), base->identifier().c_str(), base->type());
+        fprintf(stderr, "debug: inheriting %s:%s (%s) from %s:%s (%s)\n", specification->domain().c_str(), specification->identifier().c_str(), SpecificationTypes::Name(specification->type()).c_str(), base->domain().c_str(), base->identifier().c_str(), SpecificationTypes::Name(base->type()).c_str());
 #endif
 
         /*
@@ -335,7 +316,7 @@ inheritSpecification(PBX::Specification::shared_ptr const &specification)
 
         /* Perform inheritance. */
         if (!specification->inherit(base)) {
-            fprintf(stderr, "error: could not inherit from base %s specification '%s:%s'\n", specification->type(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
+            fprintf(stderr, "error: could not inherit from base %s specification '%s:%s'\n", SpecificationTypes::Name(specification->type()).c_str(), specification->basedOnDomain()->c_str(), specification->basedOnIdentifier()->c_str());
             return false;
         }
     }
@@ -356,9 +337,8 @@ registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string,
             continue;
         }
 
-        Context context = {
-            .domain = domain.first,
-        };
+        Context context;
+        context.domain = domain.first;
 
         std::string realPath = filesystem->resolvePath(domain.second);
         if (realPath.empty()) {
@@ -381,15 +361,17 @@ registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string,
                     }
 
                     /* For *.pbfilespec files, default to FileType specifications. */
-                    bool file = FSUtil::GetFileExtension(path) == "pbfilespec";
-                    context.defaultType = (file ? "FileType" : std::string());
+                    ext::optional<SpecificationType> defaultType;
+                    if (FSUtil::GetFileExtension(path) == "pbfilespec") {
+                        defaultType = SpecificationType::FileType;
+                    }
 
                     if (filesystem->type(path) != Filesystem::Type::Directory) {
 #if 0
                         fprintf(stderr, "importing specification '%s'\n", path.c_str());
 #endif
 
-                        ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(filesystem, &context, path);
+                        ext::optional<PBX::Specification::vector> fileSpecifications = PBX::Specification::Open(filesystem, &context, path, defaultType);
                         if (fileSpecifications) {
                             specifications.insert(specifications.end(), fileSpecifications->begin(), fileSpecifications->end());
                         } else {
@@ -405,7 +387,7 @@ registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string,
 #if 0
                 fprintf(stderr, "importing specification '%s'\n", realPath.c_str());
 #endif
-                ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(filesystem, &context, realPath);
+                ext::optional<PBX::Specification::vector> fileSpecifications = PBX::Specification::Open(filesystem, &context, realPath);
                 if (fileSpecifications) {
                     specifications.insert(specifications.end(), fileSpecifications->begin(), fileSpecifications->end());
                 } else {
@@ -461,7 +443,7 @@ registerBuildRules(Filesystem const *filesystem, std::string const &path)
         size_t count  = array->count();
         for (size_t n = 0; n < count; n++) {
             if (auto dict = array->value <plist::Dictionary> (n)) {
-                BuildRule::shared_ptr buildRule = std::make_shared <BuildRule> (BuildRule());
+                PBX::BuildRule::shared_ptr buildRule = std::make_shared <PBX::BuildRule> (PBX::BuildRule());
                 if (buildRule->parse(dict)) {
                     _buildRules.push_back(buildRule);
                 }
