@@ -8,6 +8,7 @@
  */
 
 #include <pbxspec/PBX/Architecture.h>
+#include <pbxspec/Context.h>
 #include <pbxspec/Inherit.h>
 #include <pbxsetting/Type.h>
 #include <plist/Array.h>

@@ -9,7 +9,7 @@
 
 #include <pbxspec/PBX/FileType.h>
 #include <pbxspec/PBX/BuildPhaseInjection.h>
-#include <pbxspec/Manager.h>
+#include <pbxspec/Context.h>
 #include <pbxspec/Inherit.h>
 #include <plist/Array.h>
 #include <plist/Boolean.h>

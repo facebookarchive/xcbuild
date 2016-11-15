@@ -73,7 +73,7 @@ public:
     virtual ~Compiler();
 
 public:
-    inline char const *type() const override
+    inline SpecificationType type() const override
     { return Compiler::Type(); }
 
 public:
@@ -273,8 +273,8 @@ protected:
     static Compiler::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Type()
-    { return Types::Compiler; }
+    static inline SpecificationType Type()
+    { return SpecificationType::Compiler; }
 };
 
 } }

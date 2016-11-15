@@ -18,7 +18,6 @@
 #include <pbxspec/PBX/Tool.h>
 #include <pbxspec/Context.h>
 #include <pbxspec/Inherit.h>
-#include <pbxspec/Manager.h>
 #include <plist/Array.h>
 #include <plist/Boolean.h>
 #include <plist/Dictionary.h>
@@ -29,7 +28,8 @@
 #include <libutil/Filesystem.h>
 
 using pbxspec::PBX::Specification;
-using pbxspec::Manager;
+using pbxspec::SpecificationType;
+using pbxspec::SpecificationTypes;
 using libutil::Filesystem;
 
 Specification::
@@ -129,68 +129,66 @@ parse(Context *context, plist::Dictionary const *dict, std::unordered_set<std::s
 }
 
 bool Specification::
-ParseType(Context *context, plist::Dictionary const *dict, std::string const &expectedType, std::string *determinedType)
+ParseType(Context *context, plist::Dictionary const *dict, SpecificationType expectedType)
 {
-    std::string type;
-
     auto T = dict->value <plist::String> ("Type");
     if (T == nullptr) {
-        if (!context->defaultType.empty()) {
-            type = context->defaultType;
-        } else {
-            return false;
-        }
-    } else {
-        type = T->value();
+        /* Must have been a default type. */
+        return true;
     }
 
-    if (determinedType != nullptr) {
-        *determinedType = type;
-    }
-
+    ext::optional<SpecificationType> type = SpecificationTypes::Parse(T->value());
     return (type == expectedType);
 }
 
 Specification::shared_ptr Specification::
-Parse(Context *context, plist::Dictionary const *dict)
+Parse(Context *context, plist::Dictionary const *dict, ext::optional<SpecificationType> defaultType)
 {
-    std::string type;
-    ParseType(context, dict, std::string(), &type);
-    if (type.empty()) {
-        fprintf(stderr, "error: specification missing type\n");
-        return nullptr;
+    ext::optional<SpecificationType> type;
+    if (auto T = dict->value<plist::String>("Type")) {
+        type = SpecificationTypes::Parse(T->value());
+        if (!type) {
+            fprintf(stderr, "error: specification type '%s' not supported\n", T->value().c_str());
+            return nullptr;
+        }
+    } else {
+        type = defaultType;
+        if (!type) {
+            fprintf(stderr, "error: no specification type\n");
+            return nullptr;
+        }
     }
 
-    if (type == Architecture::Type())
-        return Architecture::Parse(context, dict);
-    if (type == BuildPhase::Type())
-        return BuildPhase::Parse(context, dict);
-    if (type == BuildSettings::Type())
-        return BuildSettings::Parse(context, dict);
-    if (type == BuildStep::Type())
-        return BuildStep::Parse(context, dict);
-    if (type == BuildSystem::Type())
-        return BuildSystem::Parse(context, dict);
-    if (type == Compiler::Type())
-        return Compiler::Parse(context, dict);
-    if (type == FileType::Type())
-        return FileType::Parse(context, dict);
-    if (type == Linker::Type())
-        return Linker::Parse(context, dict);
-    if (type == PackageType::Type())
-        return PackageType::Parse(context, dict);
-    if (type == ProductType::Type())
-        return ProductType::Parse(context, dict);
-    if (type == Tool::Type())
-        return Tool::Parse(context, dict);
+    switch (*type) {
+        case SpecificationType::Architecture:
+            return Architecture::Parse(context, dict);
+        case SpecificationType::BuildPhase:
+            return BuildPhase::Parse(context, dict);
+        case SpecificationType::BuildSettings:
+            return BuildSettings::Parse(context, dict);
+        case SpecificationType::BuildStep:
+            return BuildStep::Parse(context, dict);
+        case SpecificationType::BuildSystem:
+            return BuildSystem::Parse(context, dict);
+        case SpecificationType::Compiler:
+            return Compiler::Parse(context, dict);
+        case SpecificationType::FileType:
+            return FileType::Parse(context, dict);
+        case SpecificationType::Linker:
+            return Linker::Parse(context, dict);
+        case SpecificationType::PackageType:
+            return PackageType::Parse(context, dict);
+        case SpecificationType::ProductType:
+            return ProductType::Parse(context, dict);
+        case SpecificationType::Tool:
+            return Tool::Parse(context, dict);
+    }
 
-    fprintf(stderr, "error: specification type '%s' not supported\n", type.c_str());
-
-    return nullptr;
+    abort();
 }
 
 ext::optional<Specification::vector> Specification::
-Open(Filesystem const *filesystem, Context *context, std::string const &filename)
+Open(Filesystem const *filesystem, Context *context, std::string const &filename, ext::optional<SpecificationType> defaultType)
 {
     if (filename.empty()) {
         fprintf(stderr, "error: empty specification path\n");
@@ -223,7 +221,7 @@ Open(Filesystem const *filesystem, Context *context, std::string const &filename
     // if it's an array then multiple specifications are present.
     //
     if (auto dict = plist::CastTo <plist::Dictionary> (plist.get())) {
-        if (auto spec = Parse(context, dict)) {
+        if (auto spec = Parse(context, dict, defaultType)) {
             return Specification::vector({ spec });
         } else {
             fprintf(stderr, "error: single specification failed to parse\n");
@@ -235,7 +233,7 @@ Open(Filesystem const *filesystem, Context *context, std::string const &filename
 
         for (size_t n = 0; n < array->count(); n++) {
             if (auto dict = array->value <plist::Dictionary> (n)) {
-                if (auto spec = Parse(context, dict)) {
+                if (auto spec = Parse(context, dict, defaultType)) {
                     specifications.push_back(spec);
                 } else {
                     fprintf(stderr, "error: specification failed to parse\n");
@@ -250,7 +248,7 @@ Open(Filesystem const *filesystem, Context *context, std::string const &filename
         if (errors == 0 || array->count() == 0) {
             return specifications;
         } else {
-            fprintf(stderr, "error: specification failed to parse, errors %lu\n", errors);
+            fprintf(stderr, "error: specification failed to parse, errors %zu\n", errors);
             return ext::nullopt;
         }
     }
