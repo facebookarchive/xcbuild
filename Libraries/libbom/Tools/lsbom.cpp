@@ -459,13 +459,13 @@ main(int argc, char **argv)
             std::string UID = std::to_string(ntohl(path_info_2_value->user));
             std::string GID = std::to_string(ntohl(path_info_2_value->group));
             printf("%s\t%s\t%s/%s", path.c_str(), mode.c_str(), UID.c_str(), GID.c_str());
-            
+
             if (path_info_2_value->type == bom_path_type_file) {
                 std::string size = std::to_string(ntohl(path_info_2_value->size));
                 std::string checksum = std::to_string(ntohl(path_info_2_value->checksum));
                 printf("\t%s\t%s", size.c_str(), checksum.c_str());
             }
-            
+
             printf("\n");
         }
     }, reinterpret_cast<void *>(&context));

@@ -134,37 +134,37 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 
     if (!_separator) {
         if (arg == "-h" || arg == "--help" || arg == "-help") {
-            return libutil::Options::Current<bool>(&_help, arg, it);
+            return libutil::Options::Current<bool>(&_help, arg);
         } else if (arg == "--version" || arg == "-version") {
-            return libutil::Options::Current<bool>(&_version, arg, it);
+            return libutil::Options::Current<bool>(&_version, arg);
         } else if (arg == "-r" || arg == "--run" || arg == "-run") {
-            return libutil::Options::Current<bool>(&_run, arg, it);
+            return libutil::Options::Current<bool>(&_run, arg);
         } else if (arg == "-f" || arg == "--find" || arg == "-find") {
-            return libutil::Options::Current<bool>(&_find, arg, it);
+            return libutil::Options::Current<bool>(&_find, arg);
         } else if (arg == "--show-sdk-path" || arg == "-show-sdk-path") {
-            return libutil::Options::Current<bool>(&_showSDKPath, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKPath, arg);
         } else if (arg == "--show-sdk-version" || arg == "-show-sdk-version") {
-            return libutil::Options::Current<bool>(&_showSDKVersion, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKVersion, arg);
         } else if (arg == "--show-sdk-build-version" || arg == "-show-sdk-build-version") {
-            return libutil::Options::Current<bool>(&_showSDKBuildVersion, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKBuildVersion, arg);
         } else if (arg == "--show-sdk-platform-path" || arg == "-show-sdk-platform-path") {
-            return libutil::Options::Current<bool>(&_showSDKPlatformPath, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKPlatformPath, arg);
         } else if (arg == "--show-sdk-platform-version" || arg == "-show-sdk-platform-version") {
-            return libutil::Options::Current<bool>(&_showSDKPlatformVersion, arg, it);
+            return libutil::Options::Current<bool>(&_showSDKPlatformVersion, arg);
         } else if (arg == "-l" || arg == "--log" || arg == "-log") {
-            return libutil::Options::Current<bool>(&_log, arg, it);
+            return libutil::Options::Current<bool>(&_log, arg);
         } else if (arg == "-v" || arg == "--verbose" || arg == "-verbose") {
-            return libutil::Options::Current<bool>(&_verbose, arg, it);
+            return libutil::Options::Current<bool>(&_verbose, arg);
         } else if (arg == "-n" || arg == "--no-cache" || arg == "-no-cache") {
-            return libutil::Options::Current<bool>(&_noCache, arg, it);
+            return libutil::Options::Current<bool>(&_noCache, arg);
         } else if (arg == "-k" || arg == "--kill-cache" || arg == "-kill-cache") {
-            return libutil::Options::Current<bool>(&_killCache, arg, it);
+            return libutil::Options::Current<bool>(&_killCache, arg);
         } else if (arg == "--sdk" || arg == "-sdk") {
             return libutil::Options::Next<std::string>(&_SDK, args, it);
         } else if (arg == "--toolchain" || arg == "-toolchain") {
             return libutil::Options::Next<std::string>(&_toolchain, args, it);
         } else if (arg == "--") {
-            return libutil::Options::Current<bool>(&_separator, arg, it);
+            return libutil::Options::Current<bool>(&_separator, arg);
         }
     }
 

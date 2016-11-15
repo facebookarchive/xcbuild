@@ -94,9 +94,9 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h") {
-        return libutil::Options::Current(&_help, arg, it);
+        return libutil::Options::Current(&_help, arg);
     } else if (arg == "-x") {
-        return libutil::Options::Current(&_xml, arg, it);
+        return libutil::Options::Current(&_xml, arg);
     } else if (arg == "-c") {
         return libutil::Options::Next<std::string>(&_command, args, it);
     } else if (!arg.empty() && arg[0] != '-') {
