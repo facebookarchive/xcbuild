@@ -40,9 +40,9 @@ public:
     typedef std::shared_ptr <Manager> shared_ptr;
 
 private:
-    std::unordered_set<std::string>                                           _domains;
-    std::map<std::string, std::map<char const *, PBX::Specification::vector>> _specifications;
-    PBX::BuildRule::vector                                                    _buildRules;
+    std::unordered_set<std::string>                                                _domains;
+    std::map<std::string, std::map<SpecificationType, PBX::Specification::vector>> _specifications;
+    PBX::BuildRule::vector                                                         _buildRules;
 
 public:
     Manager();
@@ -50,9 +50,9 @@ public:
 
 public:
     PBX::Specification::shared_ptr
-    specification(char const *type, std::string const &identifier, std::vector<std::string> const &domains) const;
+    specification(SpecificationType type, std::string const &identifier, std::vector<std::string> const &domains) const;
     PBX::Specification::vector
-    specifications(char const *type, std::vector<std::string> const &domains) const;
+    specifications(SpecificationType type, std::vector<std::string> const &domains) const;
 
 public:
     PBX::Architecture::shared_ptr
@@ -136,10 +136,10 @@ private:
 private:
     template <typename T>
     typename T::shared_ptr
-    findSpecification(std::vector<std::string> const &domains, std::string const &identifier, char const *type = T::Type()) const;
+    findSpecification(std::vector<std::string> const &domains, std::string const &identifier, SpecificationType type = T::Type()) const;
     template <typename T>
     typename T::vector
-    findSpecifications(std::vector<std::string> const &domains, char const *type = T::Type()) const;
+    findSpecifications(std::vector<std::string> const &domains, SpecificationType type = T::Type()) const;
 
 public:
     static Manager::shared_ptr
