@@ -27,11 +27,11 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-removefile") {
-        return libutil::Options::Current<bool>(&_removeFile, arg, it);
+        return libutil::Options::Current<bool>(&_removeFile, arg);
     } else if (arg == "-entitlements") {
-        return libutil::Options::Current<bool>(&_entitlements, arg, it);
+        return libutil::Options::Current<bool>(&_entitlements, arg);
     } else if (arg == "-resourcerules") {
-        return libutil::Options::Current<bool>(&_resourceRules, arg, it);
+        return libutil::Options::Current<bool>(&_resourceRules, arg);
     } else if (arg == "-o") {
         return libutil::Options::Next<std::string>(&_output, args, it);
     } else if (!arg.empty() && arg[0] != '-') {

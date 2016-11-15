@@ -29,7 +29,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 
     if (!_separator) {
         if (arg == "--validate") {
-            return libutil::Options::Current<bool>(&_validate, arg, it);
+            return libutil::Options::Current<bool>(&_validate, arg);
         } else if (arg == "--convert") {
             return libutil::Options::Next<std::string>(&_convertFormat, args, it);
         } else if (arg == "--outdir") {
