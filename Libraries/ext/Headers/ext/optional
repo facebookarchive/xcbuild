@@ -168,6 +168,14 @@ namespace std { namespace experimental { inline namespace fundamentals_v1 {
 #endif
 #endif
 
+#if defined(__clang__) || defined(__GNUC__)
+#define _EXT_ALWAYS_INLINE __attribute__ ((__always_inline__))
+#define _EXT_DEFAULT_VISIBILITY __attribute__ ((__visibility__("default")))
+#else
+#define _EXT_ALWAYS_INLINE
+#define _EXT_DEFAULT_VISIBILITY
+#endif
+
 namespace ext {
 
 template<typename, typename _Tp> struct __select_2nd { typedef _Tp type; };
@@ -238,8 +246,7 @@ struct __is_swappable
 
 template <bool, class _Tp>
 struct __is_nothrow_swappable_imp
-    : public std::integral_constant<bool, noexcept(swap(std::declval<_Tp&>(),
-                                                   std::declval<_Tp&>()))>
+    : public std::true_type
 {
 };
 
@@ -299,18 +306,18 @@ protected:
     };
     bool __engaged_ = false;
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     ~__optional_storage()
     {
         if (__engaged_)
             __val_.~value_type();
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr __optional_storage() noexcept
         :  __null_state_('\0') {}
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     __optional_storage(const __optional_storage& __x)
         :  __engaged_(__x.__engaged_)
         {
@@ -318,7 +325,7 @@ protected:
                 ::new(std::addressof(__val_)) value_type(__x.__val_);
         }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     __optional_storage(__optional_storage&& __x)
                       noexcept(std::is_nothrow_move_constructible<value_type>::value)
         :  __engaged_(__x.__engaged_)
@@ -327,18 +334,18 @@ protected:
                 ::new(std::addressof(__val_)) value_type(std::move(__x.__val_));
         }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr __optional_storage(const value_type& __v)
         :  __val_(__v),
            __engaged_(true) {}
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr __optional_storage(value_type&& __v)
         :  __val_(std::move(__v)),
            __engaged_(true) {}
 
     template <class... _Args>
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr
     explicit __optional_storage(in_place_t, _Args&&... __args)
        :  __val_(std::forward<_Args>(__args)...),
@@ -357,11 +364,11 @@ protected:
     };
     bool __engaged_ = false;
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr __optional_storage() noexcept
         :  __null_state_('\0') {}
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     __optional_storage(const __optional_storage& __x)
         :  __engaged_(__x.__engaged_)
         {
@@ -369,7 +376,7 @@ protected:
                 ::new(std::addressof(__val_)) value_type(__x.__val_);
         }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     __optional_storage(__optional_storage&& __x)
                       noexcept(std::is_nothrow_move_constructible<value_type>::value)
         :  __engaged_(__x.__engaged_)
@@ -378,18 +385,18 @@ protected:
                 ::new(std::addressof(__val_)) value_type(std::move(__x.__val_));
         }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr __optional_storage(const value_type& __v)
         :  __val_(__v),
            __engaged_(true) {}
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr __optional_storage(value_type&& __v)
         :  __val_(std::move(__v)),
            __engaged_(true) {}
 
     template <class... _Args>
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr
     explicit __optional_storage(in_place_t, _Args&&... __args)
        :  __val_(std::forward<_Args>(__args)...),
@@ -415,14 +422,14 @@ public:
     static_assert(std::is_nothrow_destructible<value_type>::value,
         "Instantiation of optional with an object type that is not noexcept destructible is undefined behavior.");
 
-    __attribute__ ((__always_inline__)) constexpr optional() noexcept {}
-    __attribute__ ((__always_inline__)) optional(const optional&) = default;
-    __attribute__ ((__always_inline__)) optional(optional&&) = default;
-    __attribute__ ((__always_inline__)) ~optional() = default;
-    __attribute__ ((__always_inline__)) constexpr optional(nullopt_t) noexcept {}
-    __attribute__ ((__always_inline__)) constexpr optional(const value_type& __v)
+    _EXT_ALWAYS_INLINE constexpr optional() noexcept {}
+    _EXT_ALWAYS_INLINE optional(const optional&) = default;
+    _EXT_ALWAYS_INLINE optional(optional&&) = default;
+    _EXT_ALWAYS_INLINE ~optional() = default;
+    _EXT_ALWAYS_INLINE constexpr optional(nullopt_t) noexcept {}
+    _EXT_ALWAYS_INLINE constexpr optional(const value_type& __v)
         : __base(__v) {}
-    __attribute__ ((__always_inline__)) constexpr optional(value_type&& __v)
+    _EXT_ALWAYS_INLINE constexpr optional(value_type&& __v)
         : __base(std::move(__v)) {}
 
     template <class... _Args,
@@ -431,7 +438,7 @@ public:
                            std::is_constructible<value_type, _Args...>::value
                       >::type
              >
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr
     explicit optional(in_place_t, _Args&&... __args)
         : __base(in_place, std::forward<_Args>(__args)...) {}
@@ -442,12 +449,12 @@ public:
                            std::is_constructible<value_type, std::initializer_list<_Up>&, _Args...>::value
                       >::type
              >
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr
     explicit optional(in_place_t, std::initializer_list<_Up> __il, _Args&&... __args)
         : __base(in_place, __il, std::forward<_Args>(__args)...) {}
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     optional& operator=(nullopt_t) noexcept
     {
         if (this->__engaged_)
@@ -458,7 +465,7 @@ public:
         return *this;
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     optional&
     operator=(const optional& __opt)
     {
@@ -478,7 +485,7 @@ public:
         return *this;
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     optional&
     operator=(optional&& __opt)
         noexcept(std::is_nothrow_move_assignable<value_type>::value &&
@@ -508,7 +515,7 @@ public:
                           std::is_assignable<value_type&, _Up>::value
                       >::type
              >
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     optional&
     operator=(_Up&& __v)
     {
@@ -528,7 +535,7 @@ public:
                           std::is_constructible<value_type, _Args...>::value
                       >::type
              >
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     void
     emplace(_Args&&... __args)
     {
@@ -543,7 +550,7 @@ public:
                           std::is_constructible<value_type, std::initializer_list<_Up>&, _Args...>::value
                       >::type
              >
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     void
     emplace(std::initializer_list<_Up> __il, _Args&&... __args)
     {
@@ -552,7 +559,7 @@ public:
         this->__engaged_ = true;
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     void
     swap(optional& __opt)
         noexcept(std::is_nothrow_move_constructible<value_type>::value &&
@@ -580,7 +587,7 @@ public:
         }
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr
     value_type const*
     operator->() const
@@ -589,7 +596,7 @@ public:
         return __operator_arrow(__has_operator_addressof<value_type>{});
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     value_type*
     operator->()
     {
@@ -597,7 +604,7 @@ public:
         return std::addressof(this->__val_);
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr
     const value_type&
     operator*() const
@@ -606,7 +613,7 @@ public:
         return this->__val_;
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     value_type&
     operator*()
     {
@@ -614,10 +621,10 @@ public:
         return this->__val_;
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr explicit operator bool() const noexcept {return this->__engaged_;}
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr value_type const& value() const
     {
         return (!this->__engaged_) ?
@@ -629,7 +636,7 @@ public:
         this->__val_;
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     value_type& value()
     {
         return (!this->__engaged_) ?
@@ -642,7 +649,7 @@ public:
     }
 
     template <class _Up>
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr value_type value_or(_Up&& __v) const&
     {
         static_assert(std::is_copy_constructible<value_type>::value,
@@ -654,7 +661,7 @@ public:
     }
 
     template <class _Up>
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     value_type value_or(_Up&& __v) &&
     {
         static_assert(std::is_move_constructible<value_type>::value,
@@ -666,14 +673,14 @@ public:
     }
 
 private:
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     value_type const*
     __operator_arrow(std::true_type) const
     {
         return std::addressof(this->__val_);
     }
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     constexpr
     value_type const*
     __operator_arrow(std::false_type) const
@@ -684,7 +691,7 @@ private:
 
 // Comparisons between optionals
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator==(const optional<_Tp>& __x, const optional<_Tp>& __y)
@@ -697,7 +704,7 @@ operator==(const optional<_Tp>& __x, const optional<_Tp>& __y)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator!=(const optional<_Tp>& __x, const optional<_Tp>& __y)
@@ -706,7 +713,7 @@ operator!=(const optional<_Tp>& __x, const optional<_Tp>& __y)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<(const optional<_Tp>& __x, const optional<_Tp>& __y)
@@ -719,7 +726,7 @@ operator<(const optional<_Tp>& __x, const optional<_Tp>& __y)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>(const optional<_Tp>& __x, const optional<_Tp>& __y)
@@ -728,7 +735,7 @@ operator>(const optional<_Tp>& __x, const optional<_Tp>& __y)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<=(const optional<_Tp>& __x, const optional<_Tp>& __y)
@@ -737,7 +744,7 @@ operator<=(const optional<_Tp>& __x, const optional<_Tp>& __y)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>=(const optional<_Tp>& __x, const optional<_Tp>& __y)
@@ -748,7 +755,7 @@ operator>=(const optional<_Tp>& __x, const optional<_Tp>& __y)
 
 // Comparisons with nullopt
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator==(const optional<_Tp>& __x, nullopt_t) noexcept
@@ -757,7 +764,7 @@ operator==(const optional<_Tp>& __x, nullopt_t) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator==(nullopt_t, const optional<_Tp>& __x) noexcept
@@ -766,7 +773,7 @@ operator==(nullopt_t, const optional<_Tp>& __x) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator!=(const optional<_Tp>& __x, nullopt_t) noexcept
@@ -775,7 +782,7 @@ operator!=(const optional<_Tp>& __x, nullopt_t) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator!=(nullopt_t, const optional<_Tp>& __x) noexcept
@@ -784,7 +791,7 @@ operator!=(nullopt_t, const optional<_Tp>& __x) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<(const optional<_Tp>&, nullopt_t) noexcept
@@ -793,7 +800,7 @@ operator<(const optional<_Tp>&, nullopt_t) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<(nullopt_t, const optional<_Tp>& __x) noexcept
@@ -802,7 +809,7 @@ operator<(nullopt_t, const optional<_Tp>& __x) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<=(const optional<_Tp>& __x, nullopt_t) noexcept
@@ -811,7 +818,7 @@ operator<=(const optional<_Tp>& __x, nullopt_t) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<=(nullopt_t, const optional<_Tp>& __x) noexcept
@@ -820,7 +827,7 @@ operator<=(nullopt_t, const optional<_Tp>& __x) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>(const optional<_Tp>& __x, nullopt_t) noexcept
@@ -829,7 +836,7 @@ operator>(const optional<_Tp>& __x, nullopt_t) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>(nullopt_t, const optional<_Tp>& __x) noexcept
@@ -838,7 +845,7 @@ operator>(nullopt_t, const optional<_Tp>& __x) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>=(const optional<_Tp>&, nullopt_t) noexcept
@@ -847,7 +854,7 @@ operator>=(const optional<_Tp>&, nullopt_t) noexcept
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>=(nullopt_t, const optional<_Tp>& __x) noexcept
@@ -857,7 +864,7 @@ operator>=(nullopt_t, const optional<_Tp>& __x) noexcept
 
 // Comparisons with T
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator==(const optional<_Tp>& __x, const _Tp& __v)
@@ -866,7 +873,7 @@ operator==(const optional<_Tp>& __x, const _Tp& __v)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator==(const _Tp& __v, const optional<_Tp>& __x)
@@ -875,7 +882,7 @@ operator==(const _Tp& __v, const optional<_Tp>& __x)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator!=(const optional<_Tp>& __x, const _Tp& __v)
@@ -884,7 +891,7 @@ operator!=(const optional<_Tp>& __x, const _Tp& __v)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator!=(const _Tp& __v, const optional<_Tp>& __x)
@@ -893,7 +900,7 @@ operator!=(const _Tp& __v, const optional<_Tp>& __x)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<(const optional<_Tp>& __x, const _Tp& __v)
@@ -902,7 +909,7 @@ operator<(const optional<_Tp>& __x, const _Tp& __v)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<(const _Tp& __v, const optional<_Tp>& __x)
@@ -911,7 +918,7 @@ operator<(const _Tp& __v, const optional<_Tp>& __x)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<=(const optional<_Tp>& __x, const _Tp& __v)
@@ -920,7 +927,7 @@ operator<=(const optional<_Tp>& __x, const _Tp& __v)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator<=(const _Tp& __v, const optional<_Tp>& __x)
@@ -929,7 +936,7 @@ operator<=(const _Tp& __v, const optional<_Tp>& __x)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>(const optional<_Tp>& __x, const _Tp& __v)
@@ -938,7 +945,7 @@ operator>(const optional<_Tp>& __x, const _Tp& __v)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>(const _Tp& __v, const optional<_Tp>& __x)
@@ -947,7 +954,7 @@ operator>(const _Tp& __v, const optional<_Tp>& __x)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>=(const optional<_Tp>& __x, const _Tp& __v)
@@ -956,7 +963,7 @@ operator>=(const optional<_Tp>& __x, const _Tp& __v)
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 bool
 operator>=(const _Tp& __v, const optional<_Tp>& __x)
@@ -966,7 +973,7 @@ operator>=(const _Tp& __v, const optional<_Tp>& __x)
 
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 void
 swap(optional<_Tp>& __x, optional<_Tp>& __y) noexcept(noexcept(__x.swap(__y)))
 {
@@ -974,7 +981,7 @@ swap(optional<_Tp>& __x, optional<_Tp>& __y) noexcept(noexcept(__x.swap(__y)))
 }
 
 template <class _Tp>
-inline __attribute__ ((__always_inline__))
+inline _EXT_ALWAYS_INLINE
 constexpr
 optional<typename std::decay<_Tp>::type>
 make_optional(_Tp&& __v)
@@ -987,12 +994,12 @@ make_optional(_Tp&& __v)
 namespace std {
 
 template <class _Tp>
-struct __attribute__ ((__visibility__("default"))) hash<ext::optional<_Tp> >
+struct _EXT_DEFAULT_VISIBILITY hash<ext::optional<_Tp> >
 {
     typedef ext::optional<_Tp> argument_type;
     typedef size_t        result_type;
 
-    __attribute__ ((__always_inline__))
+    _EXT_ALWAYS_INLINE
     result_type operator()(const argument_type& __opt) const noexcept
     {
         return static_cast<bool>(__opt) ? hash<_Tp>()(*__opt) : 0;
