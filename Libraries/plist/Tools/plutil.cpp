@@ -349,11 +349,11 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     }
 
     if (arg == "-help") {
-        return libutil::Options::Current<bool>(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg);
     } else if (arg == "-lint") {
-        return libutil::Options::Current<bool>(&_lint, arg, it);
+        return libutil::Options::Current<bool>(&_lint, arg);
     } else if (arg == "-p") {
-        return libutil::Options::Current<bool>(&_print, arg, it);
+        return libutil::Options::Current<bool>(&_print, arg);
     } else if (arg == "-convert") {
         ext::optional<Options::Format> format;
         std::pair<bool, std::string> result = NextFormat(&format, args, it);
@@ -406,11 +406,11 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     } else if (arg == "-o") {
         return libutil::Options::Next<std::string>(&_output, args, it);
     } else if (arg == "-s") {
-        return libutil::Options::Current<bool>(&_silent, arg, it);
+        return libutil::Options::Current<bool>(&_silent, arg);
     } else if (arg == "-r") {
-        return libutil::Options::Current<bool>(&_humanReadable, arg, it);
+        return libutil::Options::Current<bool>(&_humanReadable, arg);
     } else if (arg == "--") {
-        return libutil::Options::Current<bool>(&_separator, arg, it);
+        return libutil::Options::Current<bool>(&_separator, arg);
     } else if (!arg.empty() && arg[0] != '-') {
         return libutil::Options::AppendCurrent<std::string>(&_inputs, arg);
     } else {
