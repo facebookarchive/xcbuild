@@ -48,7 +48,7 @@ dump() const
         uint16_t value = entry.second;
 
         if (identifier < sizeof(car_attribute_identifier_names) / sizeof(*car_attribute_identifier_names)) {
-            printf("[%02d] %-24s = %-6d | %-4x\n", identifier, car_attribute_identifier_names[identifier] ?: "(unknown)", value, value);
+            printf("[%02d] %-24s = %-6d | %-4x\n", identifier, car_attribute_identifier_names[identifier] ? car_attribute_identifier_names[identifier] : "(unknown)", value, value);
         } else {
             printf("[%02d] %-24s = %-6d | %-4x\n", identifier, "(unknown)", value, value);
         }
