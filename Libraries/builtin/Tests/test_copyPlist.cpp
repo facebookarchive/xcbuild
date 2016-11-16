@@ -65,11 +65,7 @@ TEST(copyPlist, CopyMultiple)
             "--outdir", "output",
             "--convert", "ascii1",
         },
-        std::unordered_map<std::string, std::string>(),
-        0,
-        0,
-        "root",
-        "wheel");
+        std::unordered_map<std::string, std::string>());
     EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
     contents.clear();

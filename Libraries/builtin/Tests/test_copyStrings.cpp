@@ -47,11 +47,7 @@ TEST(copyStrings, CopyMultiple)
             "--outdir", "output",
             "--outputencoding", "utf-8",
         },
-        std::unordered_map<std::string, std::string>(),
-        0,
-        0,
-        "root",
-        "wheel");
+        std::unordered_map<std::string, std::string>());
     EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
     contents.clear();
@@ -93,11 +89,7 @@ TEST(copyStrings, InputOutputEncoding)
                     "--inputencoding", entry1.first,
                     "--outputencoding", entry2.first,
                 },
-                std::unordered_map<std::string, std::string>(),
-                0,
-                0,
-                "root",
-                "wheel");
+                std::unordered_map<std::string, std::string>());
             EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
             std::vector<uint8_t> contents;

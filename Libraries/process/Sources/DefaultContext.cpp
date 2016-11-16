@@ -16,8 +16,9 @@
 #include <cstring>
 #include <cassert>
 
-#include <pwd.h>
-#include <grp.h>
+#if _WIN32
+#include <windows.h>
+#else
 #include <unistd.h>
 #include <sys/select.h>
 #include <errno.h>
@@ -188,71 +189,3 @@ environmentVariables() const
     return *environment;
 }
 
-std::string const &DefaultContext::
-userName() const
-{
-    static std::string const *userName = nullptr;
-
-    std::once_flag flag;
-    std::call_once(flag, []{
-        if (struct passwd const *pw = ::getpwuid(::getuid())) {
-            if (pw->pw_name != nullptr) {
-                userName = new std::string(pw->pw_name);
-            }
-        }
-
-        if (userName == nullptr) {
-            std::ostringstream os;
-            os << ::getuid();
-            userName = new std::string(os.str());
-        }
-    });
-
-    return *userName;
-}
-
-std::string const &DefaultContext::
-groupName() const
-{
-    static std::string const *groupName = nullptr;
-
-    std::once_flag flag;
-    std::call_once(flag, []{
-        if (struct group const *gr = ::getgrgid(::getgid())) {
-            if (gr->gr_name != nullptr) {
-                groupName = new std::string(gr->gr_name);
-            }
-        }
-
-        if (groupName == nullptr) {
-            std::ostringstream os;
-            os << ::getgid();
-            groupName = new std::string(os.str());
-        }
-    });
-
-    return *groupName;
-}
-
-int32_t DefaultContext::
-userID() const
-{
-    return ::getuid();
-}
-
-int32_t DefaultContext::
-groupID() const
-{
-    return ::getgid();
-}
-
-ext::optional<std::string> DefaultContext::
-userHomeDirectory() const
-{
-    if (ext::optional<std::string> value = Context::userHomeDirectory()) {
-        return value;
-    } else {
-        char *home = getpwuid(getuid())->pw_dir;
-        return std::string(home);
-    }
-}

@@ -116,7 +116,7 @@ VerifySupportedOptions(Options const &options)
 }
 
 int BuildAction::
-Run(process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem, Options const &options)
+Run(process::User const *user, process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem, Options const &options)
 {
     // TODO(grp): Implement these options.
     if (!VerifySupportedOptions(options)) {
@@ -149,7 +149,7 @@ Run(process::Context const *processContext, process::Launcher *processLauncher, 
     /*
      * Use the default build environment. We don't need anything custom here.
      */
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(processContext, filesystem);
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(user, processContext, filesystem);
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
@@ -172,7 +172,7 @@ Run(process::Context const *processContext, process::Launcher *processLauncher, 
     /*
      * Perform the build!
      */
-    bool success = executor->build(processContext, processLauncher, filesystem, *buildEnvironment, parameters);
+    bool success = executor->build(user, processContext, processLauncher, filesystem, *buildEnvironment, parameters);
     if (!success) {
         return 1;
     }

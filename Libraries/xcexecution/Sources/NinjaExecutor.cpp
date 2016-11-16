@@ -21,6 +21,7 @@
 #include <process/Context.h>
 #include <process/MemoryContext.h>
 #include <process/Launcher.h>
+#include <process/User.h>
 #include <libutil/md5.h>
 
 #include <sstream>
@@ -311,6 +312,7 @@ ShouldGenerateNinja(Filesystem const *filesystem, bool generate, Parameters cons
 
 bool NinjaExecutor::
 build(
+    process::User const *user,
     process::Context const *processContext,
     process::Launcher *processLauncher,
     Filesystem *filesystem,
@@ -356,7 +358,7 @@ build(
          * Load the workspace. This can be quite slow, so only do it if it's needed to generate
          * the Ninja file. Similarly, only resolve dependencies in that case.
          */
-        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, processContext->userName(), buildEnvironment, processContext->currentDirectory());
+        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, user->userName(), buildEnvironment, processContext->currentDirectory());
         if (!workspaceContext) {
             fprintf(stderr, "error: unable to load workspace\n");
             return false;
@@ -456,12 +458,7 @@ build(
             *executable,
             intermediatesDirectory,
             arguments,
-            processContext->environmentVariables(),
-            processContext->userID(),
-            processContext->groupID(),
-            processContext->userName(),
-            processContext->groupName());
-
+            processContext->environmentVariables());
         ext::optional<int> exitCode = processLauncher->launch(filesystem, &ninja);
         if (!exitCode || *exitCode != 0) {
             return false;

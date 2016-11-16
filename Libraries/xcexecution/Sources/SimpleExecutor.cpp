@@ -18,6 +18,7 @@
 #include <process/Context.h>
 #include <process/MemoryContext.h>
 #include <process/Launcher.h>
+#include <process/User.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -42,13 +43,14 @@ SimpleExecutor::
 
 bool SimpleExecutor::
 build(
+    process::User const *user,
     process::Context const *processContext,
     process::Launcher *processLauncher,
     Filesystem *filesystem,
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
 {
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, processContext->userName(), buildEnvironment, processContext->currentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, user->userName(), buildEnvironment, processContext->currentDirectory());
     if (!workspaceContext) {
         return false;
     }
@@ -251,11 +253,7 @@ performInvocations(
                         *builtin,
                         invocation.workingDirectory(),
                         invocation.arguments(),
-                        invocation.environment(),
-                        processContext->userID(),
-                        processContext->groupID(),
-                        processContext->userName(),
-                        processContext->groupName());
+                        invocation.environment());
                     int exitCode = driver->run(&context, filesystem);
                     success = (exitCode == 0);
 
@@ -286,11 +284,7 @@ performInvocations(
                         *path,
                         invocation.workingDirectory(),
                         invocation.arguments(),
-                        environment,
-                        processContext->userID(),
-                        processContext->groupID(),
-                        processContext->userName(),
-                        processContext->groupName());
+                        environment);
                     ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
                     success = (exitCode && *exitCode == 0);
 

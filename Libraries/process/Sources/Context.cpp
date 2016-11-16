@@ -47,9 +47,3 @@ executableSearchPaths() const
     return paths;
 }
 
-ext::optional<std::string> Context::
-userHomeDirectory() const
-{
-    return environmentVariable("HOME");
-}
-
