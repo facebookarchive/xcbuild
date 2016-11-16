@@ -15,6 +15,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::LegacyTarget;
+using pbxproj::Context;
 
 LegacyTarget::
 LegacyTarget() :

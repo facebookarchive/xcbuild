@@ -10,6 +10,8 @@
 #include <pbxbuild/Phase/Environment.h>
 
 namespace Phase = pbxbuild::Phase;
+namespace Build = pbxbuild::Build;
+namespace Target = pbxbuild::Target;
 
 Phase::Environment::
 Environment(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target, Target::Environment const &targetEnvironment) :

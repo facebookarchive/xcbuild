@@ -40,6 +40,7 @@
 #include <libutil/FSUtil.h>
 
 using xcassets::Asset::Asset;
+using xcassets::Asset::AssetType;
 using xcassets::FullyQualifiedName;
 using libutil::Filesystem;
 using libutil::FSUtil;

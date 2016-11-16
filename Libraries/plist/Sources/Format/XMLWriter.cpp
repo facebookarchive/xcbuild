@@ -20,6 +20,7 @@ using plist::Integer;
 using plist::Real;
 using plist::Boolean;
 using plist::Data;
+using plist::Date;
 using plist::UID;
 using plist::Array;
 using plist::Dictionary;

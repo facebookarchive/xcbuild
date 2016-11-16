@@ -31,6 +31,7 @@
 #endif
 
 using car::Rendition;
+using car::AttributeList;
 
 Rendition::Data::
 Data(std::vector<uint8_t> const &data, Format format) :

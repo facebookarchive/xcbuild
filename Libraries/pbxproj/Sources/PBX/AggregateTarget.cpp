@@ -13,6 +13,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::AggregateTarget;
+using pbxproj::Context;
 
 AggregateTarget::
 AggregateTarget() :

@@ -11,6 +11,7 @@
 
 namespace Build = pbxbuild::Build;
 namespace Target = pbxbuild::Target;
+using pbxbuild::WorkspaceContext;
 
 Build::Context::
 Context(
