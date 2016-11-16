@@ -48,10 +48,7 @@ _car_tree_iterator(Reader const *reader, const char *tree_variable, bom_tree_ite
         return;
     }
 
-    struct _car_iterator_ctx iterator_ctx = {
-        .reader = reader,
-        .iterator = iterator,
-    };
+    struct _car_iterator_ctx iterator_ctx = { reader, iterator };
     bom_tree_iterate(tree, tree_iterator, &iterator_ctx);
     bom_tree_free(tree);
 }

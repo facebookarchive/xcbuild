@@ -306,14 +306,13 @@ resolveSchemeDependencies(Build::Context const &context) const
             }
         }
 
-        DependenciesContext dependenciesContext = {
-            .buildEnvironment = &_buildEnvironment,
-            .buildContext     = &context,
-            .graph = &graph,
-            .buildAction = buildAction,
-            .positional = &positional,
-            .productNameToTarget = &productNameToTarget,
-        };
+        DependenciesContext dependenciesContext;
+        dependenciesContext.buildEnvironment = &_buildEnvironment;
+        dependenciesContext.buildContext = &context;
+        dependenciesContext.graph = &graph;
+        dependenciesContext.buildAction = buildAction;
+        dependenciesContext.positional = &positional;
+        dependenciesContext.productNameToTarget = &productNameToTarget;
         AddDependencies(dependenciesContext, target);
     }
 
@@ -355,14 +354,13 @@ resolveLegacyDependencies(Build::Context const &context, bool allTargets, ext::o
             }
         }
 
-        DependenciesContext dependenciesContext = {
-            .buildEnvironment = &_buildEnvironment,
-            .buildContext     = &context,
-            .graph = &graph,
-            .buildAction = nullptr,
-            .positional = &positional,
-            .productNameToTarget = &productNameToTarget,
-        };
+        DependenciesContext dependenciesContext;
+        dependenciesContext.buildEnvironment = &_buildEnvironment;
+        dependenciesContext.buildContext = &context;
+        dependenciesContext.graph = &graph;
+        dependenciesContext.buildAction = nullptr;
+        dependenciesContext.positional = &positional;
+        dependenciesContext.productNameToTarget = &productNameToTarget;
         AddDependencies(dependenciesContext, target);
     }
 

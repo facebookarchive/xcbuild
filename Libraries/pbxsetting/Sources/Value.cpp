@@ -164,7 +164,7 @@ ParseValue(std::string const &value, size_t from, ValueDelimiter end = kDelimite
             }
         }
         if (to == std::string::npos) {
-            return { .found = false, .end = from, .value = Value(entries) };
+            return { false, from, Value(entries) };
         }
 
         size_t pno = value.find("$(", search_offset);
@@ -198,7 +198,7 @@ ParseValue(std::string const &value, size_t from, ValueDelimiter end = kDelimite
                 entries.push_back(Value::Entry(value.substr(append_offset, length)));
             }
 
-            return { .found = true, .end = to, .value = Value(entries) };
+            return { true, to, Value(entries) };
         }
 
         ParseResult result = ParseValue(value, open + openlen, start);
