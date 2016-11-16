@@ -16,8 +16,13 @@ using plist::UnixTime;
 void UnixTime::
 Decode(uint64_t in, struct tm &out)
 {
+#if _WIN32
+    time_t const t = in;
+    ::gmtime_s(&out, &t);
+#else
     time_t t = in;
     ::gmtime_r(&t, &out);
+#endif
 }
 
 uint64_t UnixTime::
