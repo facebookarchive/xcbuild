@@ -56,10 +56,19 @@ add_library(plist
             Sources/Format/Any.cpp
             )
 
-find_package(LibXml2 REQUIRED)
-target_include_directories(plist PRIVATE "${LIBXML2_INCLUDE_DIR}")
-target_compile_definitions(plist PRIVATE "${LIBXML2_DEFINITIONS}")
-target_link_libraries(plist PRIVATE ${LIBXML2_LIBRARIES})
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+  if ("${CMAKE_CXX_PLATFORM_ID}" STREQUAL "MinGW")
+    # MinGW is missing the library for XmlLite.
+    target_link_libraries(plist PRIVATE ole32)
+  else ()
+    target_link_libraries(plist PRIVATE XmlLite ole32)
+  endif ()
+else ()
+  find_package(LibXml2 REQUIRED)
+  target_include_directories(plist PRIVATE "${LIBXML2_INCLUDE_DIR}")
+  target_compile_definitions(plist PRIVATE "${LIBXML2_DEFINITIONS}")
+  target_link_libraries(plist PRIVATE ${LIBXML2_LIBRARIES})
+endif ()
 
 target_include_directories(plist PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")

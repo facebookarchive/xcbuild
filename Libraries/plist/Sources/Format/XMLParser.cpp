@@ -84,7 +84,7 @@ onStartElement(std::string const &name, std::unordered_map<std::string, std::str
         return;
     }
 
-    if (!beginObject(name)) {
+    if (!beginObject(name, depth)) {
         return;
     }
 }
@@ -113,9 +113,9 @@ onCharacterData(std::string const &cdata, size_t)
 }
 
 inline bool XMLParser::
-inContainer() const
+inContainer(size_t depth) const
 {
-    return (depth() == 1 || inDictionary() || inArray());
+    return (depth == 1 || inDictionary() || inArray());
 }
 
 inline bool XMLParser::
@@ -148,7 +148,7 @@ isExpectingCDATA() const
 }
 
 bool XMLParser::
-beginObject(std::string const &name)
+beginObject(std::string const &name, size_t depth)
 {
     if (inDictionary()) {
         if (name == "key") {
@@ -167,7 +167,7 @@ beginObject(std::string const &name)
         }
     }
 
-    if (!inContainer()) {
+    if (!inContainer(depth)) {
         error("unexpected '%s' element in a non-container element.",
                 name.c_str());
         return false;
