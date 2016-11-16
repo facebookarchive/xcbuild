@@ -18,6 +18,7 @@
 #include <libutil/Filesystem.h>
 
 #include <algorithm>
+#include <iterator>
 #include <set>
 
 namespace Build = pbxbuild::Build;
