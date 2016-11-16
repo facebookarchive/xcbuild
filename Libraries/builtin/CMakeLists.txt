@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(builtin SHARED
+add_library(builtin
             Sources/Driver.cpp
             Sources/Registry.cpp
             #
