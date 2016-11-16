@@ -14,7 +14,9 @@
 
 #include <cstdlib>
 
+#if defined(__APPLE__)
 #include <unistd.h>
+#endif
 
 using pbxsetting::DefaultSettings;
 using pbxsetting::Level;
