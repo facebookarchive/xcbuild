@@ -14,6 +14,8 @@
 #include <pbxsetting/Type.h>
 #include <libutil/FSUtil.h>
 
+#include <iterator>
+
 namespace Tool = pbxbuild::Tool;
 using libutil::FSUtil;
 

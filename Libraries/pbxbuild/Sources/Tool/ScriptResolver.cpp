@@ -17,6 +17,7 @@
 #include <libutil/FSUtil.h>
 
 #include <algorithm>
+#include <iterator>
 
 namespace Tool = pbxbuild::Tool;
 using libutil::Escape;
