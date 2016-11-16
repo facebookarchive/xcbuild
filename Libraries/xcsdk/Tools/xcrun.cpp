@@ -20,6 +20,8 @@
 #include <process/MemoryContext.h>
 #include <process/Launcher.h>
 #include <process/DefaultLauncher.h>
+#include <process/User.h>
+#include <process/DefaultUser.h>
 #include <pbxsetting/Type.h>
 
 using libutil::DefaultFilesystem;
@@ -222,7 +224,7 @@ Version()
     return 0;
 }
 
-static int Run(Filesystem *filesystem, process::Context const *processContext, process::Launcher *processLauncher)
+static int Run(Filesystem *filesystem, process::User const *user, process::Context const *processContext, process::Launcher *processLauncher)
 {
     /*
      * Parse out the options, or print help & exit.
@@ -269,12 +271,12 @@ static int Run(Filesystem *filesystem, process::Context const *processContext, p
     /*
      * Load the SDK manager from the developer root.
      */
-    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(user, processContext, filesystem);
     if (!developerRoot) {
         fprintf(stderr, "error: unable to find developer root\n");
         return -1;
     }
-    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(processContext));
+    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(user, processContext));
     auto manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
     if (manager == nullptr) {
         fprintf(stderr, "error: unable to load manager from '%s'\n", developerRoot->c_str());
@@ -445,11 +447,7 @@ static int Run(Filesystem *filesystem, process::Context const *processContext, p
                 *executable,
                 processContext->currentDirectory(),
                 options.args(),
-                environment,
-                processContext->userID(),
-                processContext->groupID(),
-                processContext->userName(),
-                processContext->groupName());
+                environment);
 
             ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
             if (!exitCode) {
@@ -468,6 +466,7 @@ main(int argc, char **argv)
     DefaultFilesystem filesystem = DefaultFilesystem();
     process::DefaultContext processContext = process::DefaultContext();
     process::DefaultLauncher processLauncher = process::DefaultLauncher();
-    return Run(&filesystem, &processContext, &processLauncher);
+    process::DefaultUser user = process::DefaultUser();
+    return Run(&filesystem, &user, &processContext, &processLauncher);
 }
 

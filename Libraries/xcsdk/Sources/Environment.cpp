@@ -12,6 +12,7 @@
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <process/Context.h>
+#include <process/User.h>
 
 using xcsdk::Environment;
 using libutil::Filesystem;
@@ -50,13 +51,13 @@ ResolveDeveloperRoot(Filesystem const *filesystem, std::string const &path)
 }
 
 ext::optional<std::string> Environment::
-DeveloperRoot(process::Context const *processContext, Filesystem const *filesystem)
+DeveloperRoot(process::User const *user, process::Context const *processContext, Filesystem const *filesystem)
 {
     if (auto path = processContext->environmentVariable("DEVELOPER_DIR")) {
         return ResolveDeveloperRoot(filesystem, *path);
     }
 
-    if (ext::optional<std::string> userHomeDirectory = processContext->userHomeDirectory()) {
+    if (ext::optional<std::string> userHomeDirectory = user->userHomeDirectory()) {
         if (auto path = filesystem->readSymbolicLink(UserDeveloperRootLink(*userHomeDirectory))) {
             return path;
         }

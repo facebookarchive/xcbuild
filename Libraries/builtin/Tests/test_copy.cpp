@@ -34,11 +34,7 @@ Process(std::string const &executable, std::vector<std::string> const &arguments
         executable,
         "/",
         arguments,
-        std::unordered_map<std::string, std::string>(),
-        0,
-        0,
-        "root",
-        "wheel");
+        std::unordered_map<std::string, std::string>());
 }
 
 TEST(copy, Name)

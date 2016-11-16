@@ -75,11 +75,7 @@ TEST(SimpleExecutor, PropagateToolResult)
         "",
         "/",
         std::vector<std::string>(),
-        std::unordered_map<std::string, std::string>(),
-        0,
-        0,
-        "user",
-        "group");
+        std::unordered_map<std::string, std::string>());
 
     /* Create invocations to execute. */
     auto builtinSuccess = pbxbuild::Tool::Invocation();

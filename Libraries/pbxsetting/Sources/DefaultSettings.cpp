@@ -11,6 +11,7 @@
 #include <pbxsetting/Type.h>
 #include <libutil/FSUtil.h>
 #include <process/Context.h>
+#include <process/User.h>
 
 #include <cstdlib>
 
@@ -25,7 +26,7 @@ using pbxsetting::Type;
 using libutil::FSUtil;
 
 Level DefaultSettings::
-Environment(process::Context const *processContext)
+Environment(process::User const *user, process::Context const *processContext)
 {
     std::vector<Setting> settings;
 
@@ -37,10 +38,10 @@ Environment(process::Context const *processContext)
         }
     }
 
-    settings.push_back(Setting::Create("UID", Type::FormatInteger(processContext->userID())));
-    settings.push_back(Setting::Create("USER", processContext->userName()));
-    settings.push_back(Setting::Create("GID", Type::FormatInteger(processContext->groupID())));
-    settings.push_back(Setting::Create("GROUP", processContext->groupName()));
+    settings.push_back(Setting::Create("UID", user->userID()));
+    settings.push_back(Setting::Create("USER", user->userName()));
+    settings.push_back(Setting::Create("GID", user->groupID()));
+    settings.push_back(Setting::Create("GROUP", user->groupName()));
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));
@@ -172,10 +173,10 @@ Build(void)
 }
 
 std::vector<Level> DefaultSettings::
-Levels(process::Context const *processContext)
+Levels(process::User const *user, process::Context const *processContext)
 {
     return {
-        Environment(processContext),
+        Environment(user, processContext),
         Internal(),
         Local(),
         System(),

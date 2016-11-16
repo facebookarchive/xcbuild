@@ -54,35 +54,9 @@ public:
 
 public:
     /*
-     * Active user ID.
-     */
-    virtual int32_t userID() const = 0;
-
-    /*
-     * Active group ID.
-     */
-    virtual int32_t groupID() const = 0;
-
-    /*
-     * Active user name.
-     */
-    virtual std::string const &userName() const = 0;
-
-    /*
-     * Active group name.
-     */
-    virtual std::string const &groupName() const = 0;
-
-public:
-    /*
      * The default environment search paths.
      */
     std::vector<std::string> executableSearchPaths() const;
-
-    /*
-     * The home directory from the environment.
-     */
-    virtual ext::optional<std::string> userHomeDirectory() const;
 };
 
 }

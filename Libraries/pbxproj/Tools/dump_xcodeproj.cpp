@@ -18,6 +18,8 @@
 #include <libutil/Filesystem.h>
 #include <process/DefaultContext.h>
 #include <process/Context.h>
+#include <process/DefaultUser.h>
+#include <process/User.h>
 
 #include <cstring>
 #include <cerrno>
@@ -185,14 +187,14 @@ GetHeaderFilePaths(PBX::Project::shared_ptr const &project,
 }
 
 void
-CompleteDump(process::Context const *processContext, Filesystem const *filesystem, PBX::Project::shared_ptr const &project)
+CompleteDump(process::User const *user, Filesystem const *filesystem, PBX::Project::shared_ptr const &project)
 {
     printf("Project File: %s\n", project->projectFile().c_str());
     printf("Base Path:    %s\n", project->basePath().c_str());
     printf("Name:         %s\n", project->name().c_str());
 
     printf("Schemes:\n");
-    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(filesystem, processContext->userName(), project->basePath(), project->projectFile(), project->name());
+    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(filesystem, user->userName(), project->basePath(), project->projectFile(), project->name());
     for (auto &I : group->schemes()) {
         printf("\t%s [%s]%s\n", I->name().c_str(),
                 I->shared() ? "Shared" : I->owner().c_str(),
@@ -400,7 +402,7 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    process::DefaultContext processContext = process::DefaultContext();
+    process::DefaultUser user = process::DefaultUser();
 
     if (argc < 2) {
         fprintf(stderr, "usage: %s filename.xcodeproj\n", argv[0]);
@@ -414,7 +416,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    CompleteDump(&processContext, &filesystem, project);
+    CompleteDump(&user, &filesystem, project);
 
     printf("Information about project \"%s\":\n",
             project->name().c_str());
@@ -442,7 +444,7 @@ main(int argc, char **argv)
     }
     printf("\n");
 
-    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(&filesystem, processContext.userName(), project->basePath(), project->projectFile(), project->name());
+    xcscheme::SchemeGroup::shared_ptr group = xcscheme::SchemeGroup::Open(&filesystem, user.userName(), project->basePath(), project->projectFile(), project->name());
     if (!group->schemes().empty()) {
         printf("%4sSchemes:\n", "");
         for (auto scheme : group->schemes()) {
