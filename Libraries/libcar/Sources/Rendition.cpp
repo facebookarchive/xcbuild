@@ -241,9 +241,9 @@ Load(
     rendition.fileName() = std::string(value->metadata.name, sizeof(value->metadata.name));
     rendition.width() = value->width;
     rendition.height() = value->height;
-    rendition.scale() = (float)value->scale_factor / 100.0;
-    rendition.isVector() = (int)value->flags.is_vector;
-    rendition.isOpaque() = (int)value->flags.is_opaque;
+    rendition.scale() = static_cast<double>(value->scale_factor) / 100.0;
+    rendition.isVector() = static_cast<bool>(value->flags.is_vector);
+    rendition.isOpaque() = static_cast<bool>(value->flags.is_opaque);
 
     enum car_rendition_value_layout layout = (enum car_rendition_value_layout)value->metadata.layout;
     rendition.layout() = layout;
@@ -312,7 +312,7 @@ Decode(struct car_rendition_value *value)
     size_t bytes_per_pixel = Rendition::Data::FormatSize(format);
     size_t uncompressed_length = value->width * value->height * bytes_per_pixel;
     Rendition::Data data = Rendition::Data(std::vector<uint8_t>(uncompressed_length), format);
-    void *uncompressed_data = static_cast<void *>(data.data().data());
+    uint8_t *uncompressed_data = static_cast<uint8_t *>(data.data().data());
 
     /* Advance past the header and the info section. We just want the data. */
     struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((uintptr_t)value + sizeof(struct car_rendition_value) + value->info_len);
@@ -348,15 +348,15 @@ Decode(struct car_rendition_value *value)
             strm.zfree = Z_NULL;
             strm.opaque = Z_NULL;
             strm.avail_in = compressed_length;
-            strm.next_in = (Bytef *)compressed_data;
+            strm.next_in = static_cast<Bytef *>(compressed_data);
 
-            int ret = inflateInit2(&strm, 16+MAX_WBITS);
+            int ret = inflateInit2(&strm, 16 + MAX_WBITS);
             if (ret != Z_OK) {
                return ext::nullopt;
             }
 
             strm.avail_out = uncompressed_length;
-            strm.next_out = (Bytef *)uncompressed_data;
+            strm.next_out = static_cast<Bytef *>(uncompressed_data);
 
             ret = inflate(&strm, Z_NO_FLUSH);
             if (ret != Z_OK && ret != Z_STREAM_END) {
@@ -382,7 +382,7 @@ Decode(struct car_rendition_value *value)
                 (compression_algorithm)_COMPRESSION_LZVN :
                 COMPRESSION_LZFSE;
 
-            size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, algorithm);
+            size_t compression_result = compression_decode_buffer(uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, algorithm);
             if (compression_result != 0) {
                 offset += compression_result;
                 compressed_data = (void *)((uintptr_t)compressed_data + compressed_length);
@@ -427,7 +427,7 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
         return data->data();
     }
 
-    // The selected algorithm, only zlib for now
+    /* The selected algorithm, only zlib for now. */
     enum car_rendition_data_compression_magic compression_magic = car_rendition_data_compression_magic_zlib;
     size_t bytes_per_pixel = Rendition::Data::FormatSize(data->format());
 
@@ -436,16 +436,18 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
 
     std::vector<uint8_t> compressed_vector;
     if (compression_magic == car_rendition_data_compression_magic_zlib) {
-        int deflateLevel = Z_DEFAULT_COMPRESSION;
-        int windowSize = 16+MAX_WBITS;
         z_stream zlibStream;
         memset(&zlibStream, 0, sizeof(zlibStream));
-        zlibStream.next_in = (Bytef*)uncompressed_data;
-        zlibStream.avail_in = (uInt)uncompressed_length;
+        zlibStream.next_in = static_cast<Bytef *>(uncompressed_data);
+        zlibStream.avail_in = static_cast<uInt>(uncompressed_length);
+
+        int deflateLevel = Z_DEFAULT_COMPRESSION;
+        int windowSize = 16 + MAX_WBITS;
         int err = deflateInit2(&zlibStream, deflateLevel, Z_DEFLATED, windowSize, 8, Z_DEFAULT_STRATEGY);
         if (err != Z_OK) {
             return ext::nullopt;
         }
+
         while (true) {
             uint8_t tmp[4096];
             zlibStream.next_out = (Bytef*)&tmp;
@@ -498,7 +500,7 @@ write() const
 {
     // Create header
     struct car_rendition_value header;
-    bzero(&header, sizeof(struct car_rendition_value));
+    memset(static_cast<void *>(&header), 0, sizeof(struct car_rendition_value));
     strncpy(header.magic, "ISTC", 4);
     header.version = 1;
     // header.flags.is_header_flagged_fpo = 0;
@@ -510,7 +512,7 @@ write() const
 
     header.width = _width;
     header.height = _height;
-    header.scale_factor = (uint32_t)(_scale * 100);
+    header.scale_factor = static_cast<uint32_t>(_scale * 100);
     header.color_space_id = 1;
 
     header.metadata.layout = _layout;

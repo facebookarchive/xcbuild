@@ -127,7 +127,7 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         }
 
         if (V != nullptr) {
-            _version = V->value();
+            _version = static_cast<int>(V->value());
 
             if (_version != 1) {
                 fprintf(stderr, "warning: unknown version: %d", *_version);

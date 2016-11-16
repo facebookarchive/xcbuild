@@ -253,7 +253,7 @@ handleDictionary(Dictionary const *dictionary, bool root)
 
     _lastKey = false;
 
-    for (int i = 0; i < dictionary->count(); ++i) {
+    for (size_t i = 0; i < dictionary->count(); ++i) {
         _lastKey = false;
 
         if (!writeEscapedString(dictionary->key(i), !_lastKey)) {
@@ -297,7 +297,7 @@ handleArray(Array const *array, bool root)
 
     _indent++;
 
-    for (int i = 0; i < array->count(); ++i) {
+    for (size_t i = 0; i < array->count(); ++i) {
         /* Write ',' if not first entry. */
         if (i != 0) {
             if (!writeString(",\n", false)) {
