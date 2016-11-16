@@ -12,6 +12,11 @@
 
 #include <process/Launcher.h>
 
+#include <string>
+#include <functional>
+#include <unordered_map>
+#include <ext/optional>
+
 namespace process {
 
 /*

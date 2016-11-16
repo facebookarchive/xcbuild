@@ -8,9 +8,11 @@
  */
 
 #include <process/MemoryLauncher.h>
+#include <process/Context.h>
 #include <libutil/Filesystem.h>
 
 using process::MemoryLauncher;
+using process::Context;
 using libutil::Filesystem;
 
 MemoryLauncher::
