@@ -30,6 +30,19 @@
 extern "C" {
 #endif
 
+#if _MSC_VER
+#define __BOM_PACKED_STRUCT_BEGIN __pragma(pack(push, 1))
+#define __BOM_PACKED_STRUCT_END __pragma(pack(pop))
+#else
+#define __BOM_PACKED_STRUCT_BEGIN
+#define __BOM_PACKED_STRUCT_END __attribute__((packed))
+#endif
+
+#if _MSC_VER
+__pragma(warning(push))
+__pragma(warning(disable: 4200))
+#endif
+
 /**
  * Build of Materials format (BOM)
  *
@@ -62,7 +75,7 @@ extern "C" {
  * in the tree has indexes pointing to both key and value data for that item.
  */
 
-struct bom_header {
+__BOM_PACKED_STRUCT_BEGIN struct bom_header {
   char magic[8]; // = BOMStore
   uint32_t version; // = 1?
   uint32_t block_count; // = 73 = 0x49?
@@ -70,51 +83,55 @@ struct bom_header {
   uint32_t index_length; // Length of second part
   uint32_t variables_offset;
   uint32_t trailer_len; // FIXME: What does this data at the end mean?
-} __attribute__((packed));
+} __BOM_PACKED_STRUCT_END;
 
-struct bom_index {
+__BOM_PACKED_STRUCT_BEGIN struct bom_index {
   uint32_t address;
   uint32_t length;
-} __attribute__((packed));
+} __BOM_PACKED_STRUCT_END;
 
-struct bom_index_header {
+__BOM_PACKED_STRUCT_BEGIN struct bom_index_header {
   uint32_t count; // FIXME: What is this? It is not the length of the array...
   struct bom_index index[0];
-} __attribute__((packed));
+} __BOM_PACKED_STRUCT_END;
 
-struct bom_variable {
+__BOM_PACKED_STRUCT_BEGIN struct bom_variable {
   uint32_t index;
   uint8_t length;
   char name[0]; // length
-} __attribute__((packed));
+} __BOM_PACKED_STRUCT_END;
 
-struct bom_variables {
+__BOM_PACKED_STRUCT_BEGIN struct bom_variables {
   uint32_t count; // Number of entries that follow
-  struct bom_variable first[0];
-} __attribute__((packed));
+  // Followed by bom_variable entries
+} __BOM_PACKED_STRUCT_END;
 
-struct bom_tree { // 21 bytes
+__BOM_PACKED_STRUCT_BEGIN struct bom_tree { // 21 bytes
   char magic[4]; // = "tree"
   uint32_t version;
   uint32_t child; // FIXME: Not sure about this one...
   uint32_t node_size; // byte count of each entry in the tree (BOMPaths)
   uint32_t path_count; // total number of paths in all leaves combined
   uint8_t unknown3;
-} __attribute__((packed));
+} __BOM_PACKED_STRUCT_END;
 
-struct bom_tree_entry_indexes {
+__BOM_PACKED_STRUCT_BEGIN struct bom_tree_entry_indexes {
   uint32_t value_index;
   uint32_t key_index;
-} __attribute__((packed));
+} __BOM_PACKED_STRUCT_END;
 
-struct bom_tree_entry {
+__BOM_PACKED_STRUCT_BEGIN struct bom_tree_entry {
   uint16_t is_leaf; // if 0 then this entry refers to other BOMPaths entries
   uint16_t count;  // for leaf, count of paths. for top level, (# of leafs - 1)
   uint32_t forward;  // next leaf, when there are multiple leafs
   uint32_t backward; // previous leaf, when there are multiple leafs
   struct bom_tree_entry_indexes indexes[0];
-} __attribute__((packed));
+} __BOM_PACKED_STRUCT_END;
 
+
+#if _MSC_VER
+__pragma(warning(pop))
+#endif
 
 #ifdef __cplusplus
 }
