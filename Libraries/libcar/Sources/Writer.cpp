@@ -100,7 +100,7 @@ write() const
     strncpy(header->magic, "RATC", 4);
     header->ui_version = 0x131; // TODO
     header->storage_version = 0xC; // TODO
-    header->storage_timestamp = time(NULL); // TODO
+    header->storage_timestamp = static_cast<uint32_t>(time(NULL)); // TODO
     header->rendition_count = 0;
     strncpy(header->file_creator, "asset catalog compiler\n", sizeof(header->file_creator));
     strncpy(header->other_creator, "version 1.0", sizeof(header->other_creator));

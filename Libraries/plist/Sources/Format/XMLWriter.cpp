@@ -193,7 +193,7 @@ handleDictionary(Dictionary const *dictionary)
 
     _indent++;
 
-    for (int i = 0; i < dictionary->count(); ++i) {
+    for (size_t i = 0; i < dictionary->count(); ++i) {
         if (!writeString("\n", false)) {
             return false;
         }
@@ -239,7 +239,7 @@ handleArray(Array const *array)
 
     _indent++;
 
-    for (int i = 0; i < array->count(); ++i) {
+    for (size_t i = 0; i < array->count(); ++i) {
         if (!writeString("\n", false)) {
             return false;
         }

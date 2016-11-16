@@ -126,7 +126,7 @@ AddBuildEnvironment(plist::Dictionary *root, pbxsetting::Environment const &envi
             std::string entry = (noff == std::string::npos ? targetedDeviceFamily.substr(off) : targetedDeviceFamily.substr(off, noff));
 
             if (!entry.empty()) {
-                int value = pbxsetting::Type::ParseInteger(entry);
+                int64_t value = pbxsetting::Type::ParseInteger(entry);
                 deviceFamily->append(plist::Integer::New(value));
             }
 

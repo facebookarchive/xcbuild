@@ -564,7 +564,8 @@ PerformAdjustment(plist::Object *object, plist::Object **rootObject, std::string
                 break;
         }
     } else if (plist::Array *array = plist::CastTo<plist::Array>(object)) {
-        uint64_t index = std::stoull(key.c_str(), NULL, 0);
+        unsigned long long index_ = std::stoull(key.c_str(), NULL, 0);
+        size_t index = static_cast<size_t>(index_);
 
         switch (adjustment.type()) {
             case Options::Adjustment::Type::Insert: {
@@ -622,7 +623,7 @@ Modify(Filesystem *filesystem, Options const &options, std::string const &file, 
                     currentObject = dict->value(key);
                 } else if (plist::Array *array = plist::CastTo<plist::Array>(currentObject)) {
                     uint64_t index = std::stoull(key.c_str(), NULL, 0);
-                    currentObject = array->value(index);
+                    currentObject = array->value(static_cast<size_t>(index));
                 }
             } else {
                 /* Final key path: perform the action. */
