@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(bom SHARED
+add_library(bom
             Sources/bom.c
             Sources/bom_memory.c
             Sources/bom_tree.c

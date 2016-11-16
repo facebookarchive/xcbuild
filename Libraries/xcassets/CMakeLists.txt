@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(xcassets SHARED
+add_library(xcassets
             Sources/BrandAssetRole.cpp
             Sources/Compression.cpp
             Sources/CubeFace.cpp

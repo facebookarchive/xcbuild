@@ -10,11 +10,24 @@
 project(xcbuild C CXX)
 
 cmake_minimum_required(VERSION 3.0)
-set(CMAKE_MACOSX_RPATH 1)
+cmake_policy(SET CMP0054 NEW)
 
-if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
+set(BUILD_SHARED_LIBS True CACHE BOOL "Build shared libraries." FORCE)
+
+# Platform options.
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+  # Export all symbols to avoid needing a `.def` file or `__dllexport`.
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS True)
+
+  if ("${CMAKE_CXX_PLATFORM_ID}" STREQUAL "MinGW")
+    # Use MinGW formatting rather than MSVCRT for C99 support.
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__USE_MINGW_ANSI_STDIO=1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__USE_MINGW_ANSI_STDIO=1")
+  endif ()
+elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+  set(CMAKE_MACOSX_RPATH True)
   set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
-else ()
+elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
   set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 endif ()
 
@@ -22,23 +35,44 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+# Language version.
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" OR "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
+  # C++ is by default. C99 is not supported.
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else ()
+  message(WARNING "Compiler not supported to enable C++11.")
+endif ()
 
 # Unused language features.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" OR "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions")
+else ()
+  message(WARNING "Compiler not supported to disable exceptions and RTTI.")
+endif ()
 
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND NOT "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC") OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+endif ()
 
 # Enable all warnings.
-add_compile_options(-Wall -Werror)
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  add_compile_options(-Wno-multichar -Wno-sign-compare)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" OR "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
+  add_compile_options(/D_CRT_SECURE_NO_WARNINGS) # TODO: /Wall /WX
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  add_compile_options(-Wall -Werror)
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_compile_options(-Wno-multichar -Wno-sign-compare)
+  endif ()
+else ()
+  message(WARNING "Compiler not supported to enable warnings.")
 endif ()
 
 # Enable color diagnostics.
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND NOT "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
   add_compile_options(-fcolor-diagnostics)
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "5.0")
   add_compile_options(-fdiagnostics-color)

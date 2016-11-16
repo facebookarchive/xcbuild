@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(process SHARED
+add_library(process
             Sources/Context.cpp
             Sources/DefaultContext.cpp
             Sources/MemoryContext.cpp

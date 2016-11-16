@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(pbxsetting SHARED
+add_library(pbxsetting
             Sources/Condition.cpp
             Sources/DefaultSettings.cpp
             Sources/Environment.cpp

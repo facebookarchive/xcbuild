@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(car SHARED
+add_library(car
             Sources/Reader.cpp
             Sources/AttributeList.cpp
             Sources/Facet.cpp

@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(plist SHARED
+add_library(plist
             Sources/ObjectType.cpp
             Sources/Array.cpp
             Sources/Boolean.cpp

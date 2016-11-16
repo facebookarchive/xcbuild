@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(xcworkspace SHARED
+add_library(xcworkspace
             Sources/XC/Workspace.cpp
             Sources/XC/FileRef.cpp
             Sources/XC/Group.cpp

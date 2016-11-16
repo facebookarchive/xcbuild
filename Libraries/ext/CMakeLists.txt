@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(ext SHARED
+add_library(ext
             Sources/optional.cpp
             )
 
