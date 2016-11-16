@@ -10,7 +10,13 @@
 #include <graphics/Format/PNG.h>
 
 #include <iterator>
+#include <memory>
 #include <ext/optional>
+
+#if _WIN32
+#define CINTERFACE
+#define COBJMACROS
+#endif
 
 #if _WIN32
 #include <winsock2.h>
@@ -19,10 +25,164 @@
 #endif
 
 using graphics::Format::PNG;
-using graphics::Image;
 using graphics::PixelFormat;
+using graphics::Image;
 
-#if defined(__APPLE__)
+#if _WIN32
+
+#include <windows.h>
+#include <gdiplus.h>
+#include <ole2.h>
+
+static ext::optional<PixelFormat>
+PixelFormatForPixelFormat(Gdiplus::PixelFormat pixelFormat)
+{
+    /* Windows is always little-endian. */
+    static PixelFormat::Order const order = PixelFormat::Order::Reversed;
+
+    switch (pixelFormat) {
+        case PixelFormat24bppRGB:
+            return PixelFormat(PixelFormat::Color::RGB, order, PixelFormat::Alpha::None);
+        case PixelFormat32bppRGB:
+            return PixelFormat(PixelFormat::Color::RGB, order, PixelFormat::Alpha::IgnoredFirst);
+        case PixelFormat32bppARGB:
+            return PixelFormat(PixelFormat::Color::RGB, order, PixelFormat::Alpha::First);
+        case PixelFormat32bppPARGB:
+            return PixelFormat(PixelFormat::Color::RGB, order, PixelFormat::Alpha::PremultipliedFirst);
+        case PixelFormat1bppIndexed:
+        case PixelFormat4bppIndexed:
+        case PixelFormat8bppIndexed:
+        case PixelFormat16bppRGB555:
+        case PixelFormat16bppRGB565:
+        case PixelFormat16bppARGB1555:
+        case PixelFormat48bppRGB:
+        case PixelFormat64bppARGB:
+        case PixelFormat64bppPARGB:
+            return ext::nullopt;
+        default: abort();
+    }
+}
+
+template<typename T, typename D>
+static std::unique_ptr<T, D>
+CustomUnique(T *value, D &&deleter)
+{
+    return std::unique_ptr<T, D>(value, std::move(deleter));
+}
+
+std::pair<ext::optional<Image>, std::string> PNG::
+Read(std::vector<uint8_t> const &contents)
+{
+    /*
+     * Start GDI+.
+     */
+    Gdiplus::GdiplusStartupInput input;
+    ULONG_PTR _token;
+    Gdiplus::GdiplusStartup(&_token, &input, NULL);
+    auto token = CustomUnique(reinterpret_cast<void const *>(_token), [](void const *token) {
+        Gdiplus::GdiplusShutdown(reinterpret_cast<ULONG_PTR>(token));
+    });
+    (void)token;
+
+    /*
+     * Create memory handle with contents.
+     */
+    auto memory = CustomUnique(GlobalAlloc(GMEM_MOVEABLE, contents.size()), [](HGLOBAL handle) {
+        GlobalFree(handle);
+    });
+    if (memory == nullptr) {
+        return std::make_pair(ext::nullopt, "failed to allocate memory");
+    }
+    void *memoryData = GlobalLock(memory.get());
+    if (memoryData == nullptr) {
+        return std::make_pair(ext::nullopt, "failed to lock memory");
+    }
+    memcpy(memoryData, contents.data(), contents.size());
+    if (GlobalUnlock(memory.get()) || GetLastError() != NO_ERROR) {
+        return std::make_pair(ext::nullopt, "failed to unlock memory");
+    }
+
+    /*
+     * Create stream for data.
+     */
+    IStream *_stream = nullptr;
+    if (CreateStreamOnHGlobal(memory.get(), FALSE, &_stream) != S_OK) {
+        return std::make_pair(ext::nullopt, "failed to create stream");
+    }
+    auto stream = CustomUnique(_stream, [](IStream *stream) {
+        IStream_Release(stream);
+    });
+
+    /*
+     * Load image into bitmap.
+     */
+    Gdiplus::GpBitmap *_bitmap = nullptr;
+    if (Gdiplus::DllExports::GdipCreateBitmapFromStream(stream.get(), &_bitmap) != Gdiplus::Ok) {
+        return std::make_pair(ext::nullopt, "failed to load bitmap");
+    }
+    auto bitmap = CustomUnique(_bitmap, [](Gdiplus::GpBitmap *bitmap) {
+        Gdiplus::DllExports::GdipDisposeImage(bitmap);
+    });
+
+    /*
+     * Get image size information.
+     */
+    UINT width;
+    if (Gdiplus::DllExports::GdipGetImageWidth(bitmap.get(), &width) != Gdiplus::Ok) {
+        return std::make_pair(ext::nullopt, "failed to get width");
+    }
+    UINT height;
+    if (Gdiplus::DllExports::GdipGetImageHeight(bitmap.get(), &height) != Gdiplus::Ok) {
+        return std::make_pair(ext::nullopt, "failed to get height");
+    }
+
+    /*
+     * Determine pixel format.
+     */
+    Gdiplus::PixelFormat pixelFormat;
+    if (Gdiplus::DllExports::GdipGetImagePixelFormat(bitmap.get(), &pixelFormat) != Gdiplus::Ok) {
+        return std::make_pair(ext::nullopt, "failed to get pixel format");
+    }
+    ext::optional<PixelFormat> format = PixelFormatForPixelFormat(pixelFormat);
+    if (!format) {
+        /* Unsupported format, use a supported default. */
+        pixelFormat = (Gdiplus::IsAlphaPixelFormat(pixelFormat) ? PixelFormat32bppPARGB : PixelFormat24bppRGB);
+        format = PixelFormatForPixelFormat(pixelFormat);
+    }
+
+    /*
+     * Lock memory to read bitmap pixels.
+     */
+    Gdiplus::BitmapData data;
+    Gdiplus::GpRect rect = { 0, 0, static_cast<INT>(width), static_cast<INT>(height) };
+    if (Gdiplus::DllExports::GdipBitmapLockBits(bitmap.get(), &rect, Gdiplus::ImageLockModeRead, pixelFormat, &data) != Gdiplus::Ok) {
+        return std::make_pair(ext::nullopt, "failed to lock bits");
+    }
+
+    /*
+     * Copy pixels from the image.
+     */
+    auto pixels = std::vector<uint8_t>(width * height * format->bytesPerPixel());
+    for (size_t line = 0; line < height; line++) {
+        uint8_t *scan = static_cast<uint8_t *>(data.Scan0) + (static_cast<int>(line) * data.Stride);
+        uint8_t *out = pixels.data() + (width * line);
+
+        /* Copy pixels from scan line. */
+        memcpy(out, scan, width * format->bytesPerPixel());
+    }
+
+    /*
+     * Done reading; unlock bitmap memory.
+     */
+    if (Gdiplus::DllExports::GdipBitmapUnlockBits(bitmap.get(), &data) != Gdiplus::Ok) {
+        return std::make_pair(ext::nullopt, "failed to unlock bits");
+    }
+
+    Image image = Image(width, height, *format, pixels);
+    return std::make_pair(image, std::string());
+}
+
+#elif defined(__APPLE__)
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
@@ -37,7 +197,7 @@ class CFHandleDeleter
 public:
     void operator()(CF_CONSUMED CF object)
     {
-        if (object != NULL) {
+        if (object != nullptr) {
             CFRelease(object);
         }
     }
@@ -540,3 +700,4 @@ Write(Image const &image)
 
     return std::make_pair(png, std::string());
 }
+
