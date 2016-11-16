@@ -480,7 +480,7 @@ Write(Image const &image)
     strm.next_in = buffer.data();
 
     /* Maximum compressed size is x1.01 + 12 the uncompressed size. */
-    std::vector<uint8_t> compressed = std::vector<uint8_t>(buffer.size() * 1.01 + 12);
+    std::vector<uint8_t> compressed = std::vector<uint8_t>(static_cast<size_t>(buffer.size() * 1.01) + 12);
 
     do {
         strm.avail_out = compressed.size() - strm.total_out;
