@@ -12,6 +12,8 @@
 #include <libutil/Filesystem.h>
 #include <process/DefaultContext.h>
 #include <process/Context.h>
+#include <process/DefaultUser.h>
+#include <process/User.h>
 #include <libutil/Options.h>
 #include <ext/optional>
 
@@ -131,6 +133,7 @@ main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
     process::DefaultContext processContext = process::DefaultContext();
+    process::DefaultUser user = process::DefaultUser();
 
     /*
      * Parse out the options, or print help & exit.
@@ -149,7 +152,7 @@ main(int argc, char **argv)
     } else if (options.version()) {
         return Version();
     } else if (options.printPath()) {
-        ext::optional<std::string> developer = xcsdk::Environment::DeveloperRoot(&processContext, &filesystem);
+        ext::optional<std::string> developer = xcsdk::Environment::DeveloperRoot(&user, &processContext, &filesystem);
         if (!developer) {
             fprintf(stderr, "error: no developer directory found\n");
             return 1;

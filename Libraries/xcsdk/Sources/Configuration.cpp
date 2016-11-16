@@ -14,6 +14,7 @@
 #include <plist/Format/Any.h>
 #include <libutil/Filesystem.h>
 #include <process/Context.h>
+#include <process/User.h>
 
 using xcsdk::Configuration;
 using libutil::Filesystem;
@@ -28,13 +29,13 @@ Configuration(
 }
 
 std::vector<std::string> Configuration::
-DefaultPaths(process::Context const *processContext)
+DefaultPaths(process::User const *user, process::Context const *processContext)
 {
     std::vector<std::string> defaultPaths;
     if (ext::optional<std::string> environmentPath = processContext->environmentVariable("XCSDK_CONFIGURATION_PATH")) {
         defaultPaths.push_back(*environmentPath);
     } else {
-        ext::optional<std::string> homePath = processContext->userHomeDirectory();
+        ext::optional<std::string> homePath = user->userHomeDirectory();
         if (homePath) {
             defaultPaths.push_back(*homePath + "/.xcsdk/xcsdk_configuration.plist");
         }

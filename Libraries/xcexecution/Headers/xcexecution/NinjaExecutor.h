@@ -29,6 +29,7 @@ public:
 
 public:
     virtual bool build(
+        process::User const *user,
         process::Context const *processContext,
         process::Launcher *processLauncher,
         libutil::Filesystem *filesystem,

@@ -15,6 +15,8 @@
 #include <libutil/Strings.h>
 #include <process/DefaultContext.h>
 #include <process/Context.h>
+#include <process/DefaultUser.h>
+#include <process/User.h>
 
 #include <algorithm>
 #include <cstring>
@@ -154,6 +156,7 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
+    process::DefaultUser user = process::DefaultUser();
     process::DefaultContext processContext = process::DefaultContext();
 
     if (argc < 2) {
@@ -174,7 +177,7 @@ main(int argc, char **argv)
     printf("Base Path:      %s\n", workspace->basePath().c_str());
     printf("Name:           %s\n", workspace->name().c_str());
 
-    auto workspaceGroup = xcscheme::SchemeGroup::Open(&filesystem, processContext.userName(), workspace->basePath(), workspace->projectFile(), workspace->name());
+    auto workspaceGroup = xcscheme::SchemeGroup::Open(&filesystem, user.userName(), workspace->basePath(), workspace->projectFile(), workspace->name());
 
     printf("Schemes:\n");
     if (workspaceGroup) {
@@ -219,7 +222,7 @@ main(int argc, char **argv)
                 std::string path = MakePath(&filesystem, *workspace, g, fref.location(), false);
                 auto project = PBX::Project::Open(&filesystem, path);
                 if (project) {
-                    auto projectGroup = xcscheme::SchemeGroup::Open(&filesystem, processContext.userName(), project->basePath(), project->projectFile(), project->name());
+                    auto projectGroup = xcscheme::SchemeGroup::Open(&filesystem, user.userName(), project->basePath(), project->projectFile(), project->name());
                     if (projectGroup) {
                         schemes.insert(schemes.end(),
                                        projectGroup->schemes().begin(),

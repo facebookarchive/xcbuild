@@ -31,15 +31,6 @@ public:
     virtual std::vector<std::string> const &commandLineArguments() const;
     virtual std::unordered_map<std::string, std::string> const &environmentVariables() const;
     virtual ext::optional<std::string> environmentVariable(std::string const &variable) const;
-
-public:
-    virtual int32_t userID() const;
-    virtual int32_t groupID() const;
-    virtual std::string const &userName() const;
-    virtual std::string const &groupName() const;
-
-public:
-    virtual ext::optional<std::string> userHomeDirectory() const;
 };
 
 }

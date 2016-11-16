@@ -188,10 +188,6 @@ launch(Filesystem *filesystem, Context const *context)
     execEnv.push_back(nullptr);
     char *const *cExecEnv = const_cast<char *const *>(execEnv.data());
 
-    /* Compute user. */
-    uid_t uid = context->userID();
-    gid_t gid = context->groupID();
-
     /* Setup parent-child stdout/stderr pipe. */
     int pfd[2];
     bool pipe_setup_success = true;
@@ -229,16 +225,6 @@ launch(Filesystem *filesystem, Context const *context)
 
         if (::chdir(cDirectory) == -1) {
             ::perror("chdir");
-            ::_exit(1);
-        }
-
-        if (::setuid(uid) == -1) {
-            ::perror("setuid");
-            ::_exit(1);
-        }
-
-        if (::setgid(gid) == -1) {
-            ::perror("setgid");
             ::_exit(1);
         }
 

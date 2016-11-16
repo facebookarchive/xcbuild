@@ -26,22 +26,12 @@ private:
     std::vector<std::string> _commandLineArguments;
     std::unordered_map<std::string, std::string> _environmentVariables;
 
-private:
-    int32_t     _userID;
-    int32_t     _groupID;
-    std::string _userName;
-    std::string _groupName;
-
 public:
     MemoryContext(
         std::string const &executablePath,
         std::string const &currentDirectory,
         std::vector<std::string> const &commandLineArguments,
-        std::unordered_map<std::string, std::string> const &environmentVariables,
-        int32_t userID,
-        int32_t groupID,
-        std::string const &userName,
-        std::string const &groupName);
+        std::unordered_map<std::string, std::string> const &environmentVariables);
     explicit MemoryContext(Context const *context);
     virtual ~MemoryContext();
 
@@ -68,27 +58,6 @@ public:
     { return _environmentVariables; }
 
     virtual ext::optional<std::string> environmentVariable(std::string const &variable) const;
-
-public:
-    virtual int32_t userID() const
-    { return _userID; }
-    int32_t &userID()
-    { return _userID; }
-
-    virtual int32_t groupID() const
-    { return _groupID; }
-    int32_t &groupID()
-    { return _groupID; }
-
-    virtual std::string const &userName() const
-    { return _userName; }
-    std::string &userName()
-    { return _userName; }
-
-    virtual std::string const &groupName() const
-    { return _groupName; }
-    std::string &groupName()
-    { return _groupName; }
 };
 
 }

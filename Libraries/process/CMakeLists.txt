@@ -14,6 +14,9 @@ add_library(process
             Sources/Launcher.cpp
             Sources/DefaultLauncher.cpp
             Sources/MemoryLauncher.cpp
+            Sources/User.cpp
+            Sources/DefaultUser.cpp
+            Sources/MemoryUser.cpp
             )
 
 target_link_libraries(process PUBLIC ext util)

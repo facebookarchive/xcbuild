@@ -41,7 +41,7 @@ Driver::
 }
 
 int Driver::
-Run(process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem)
+Run(process::User const *user, process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem)
 {
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
@@ -53,13 +53,13 @@ Run(process::Context const *processContext, process::Launcher *processLauncher, 
     Action::Type action = Action::Determine(options);
     switch (action) {
         case Action::Build:
-            return BuildAction::Run(processContext, processLauncher, filesystem, options);
+            return BuildAction::Run(user, processContext, processLauncher, filesystem, options);
         case Action::ShowBuildSettings:
-            return ShowBuildSettingsAction::Run(processContext, filesystem, options);
+            return ShowBuildSettingsAction::Run(user, processContext, filesystem, options);
         case Action::List:
-            return ListAction::Run(processContext, filesystem, options);
+            return ListAction::Run(user, processContext, filesystem, options);
         case Action::Version:
-            return VersionAction::Run(processContext, filesystem, options);
+            return VersionAction::Run(user, processContext, filesystem, options);
         case Action::Usage:
             return UsageAction::Run(processContext);
         case Action::Help:
@@ -70,9 +70,9 @@ Run(process::Context const *processContext, process::Launcher *processLauncher, 
             fprintf(stderr, "warning: check first launch not implemented\n");
             break;
         case Action::ShowSDKs:
-            return ShowSDKsAction::Run(processContext, filesystem, options);
+            return ShowSDKsAction::Run(user, processContext, filesystem, options);
         case Action::Find:
-            return FindAction::Run(processContext, filesystem, options);
+            return FindAction::Run(user, processContext, filesystem, options);
         case Action::ExportArchive:
             fprintf(stderr, "warning: export archive not implemented\n");
             break;
