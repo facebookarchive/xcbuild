@@ -360,15 +360,20 @@ registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string,
             .domain = domain.first,
         };
 
-        ext::optional<Filesystem::Type> type = filesystem->type(domain.second);
+        std::string realPath = filesystem->resolvePath(domain.second);
+        if (realPath.empty()) {
+            continue;
+        }
+
+        ext::optional<Filesystem::Type> type = filesystem->type(realPath);
         if (!type) {
             continue;
         }
 
         switch (*type) {
             case Filesystem::Type::Directory: {
-                filesystem->readDirectory(domain.second, true, [&](std::string const &filename) -> bool {
-                    std::string path = domain.second + "/" + filename;
+                filesystem->readDirectory(realPath, true, [&](std::string const &filename) -> bool {
+                    std::string path = realPath + "/" + filename;
 
                     /* Support both *.xcspec and *.pbfilespec as a few of the latter remain in use. */
                     if (FSUtil::GetFileExtension(path) != "xcspec" && FSUtil::GetFileExtension(path) != "pbfilespec") {
@@ -398,13 +403,13 @@ registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string,
             case Filesystem::Type::SymbolicLink:
             case Filesystem::Type::File: {
 #if 0
-                fprintf(stderr, "importing specification '%s'\n", domain.second.c_str());
+                fprintf(stderr, "importing specification '%s'\n", realPath.c_str());
 #endif
-                ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(filesystem, &context, domain.second);
+                ext::optional<PBX::Specification::vector> fileSpecifications = Specification::Open(filesystem, &context, realPath);
                 if (fileSpecifications) {
                     specifications.insert(specifications.end(), fileSpecifications->begin(), fileSpecifications->end());
                 } else {
-                    fprintf(stderr, "warning: failed to import specification '%s'\n", domain.second.c_str());
+                    fprintf(stderr, "warning: failed to import specification '%s'\n", realPath.c_str());
                 }
                 break;
             }
