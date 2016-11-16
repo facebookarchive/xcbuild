@@ -37,7 +37,7 @@ public:
     static ext::optional<T>
     Override(ext::optional<T> const &current, ext::optional<T> const &base)
     {
-        return current ?: base;
+        return current ? current : base;
     }
 
 public:
