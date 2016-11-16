@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(util SHARED
+add_library(util
             Sources/FSUtil.cpp
             Sources/Filesystem.cpp
             Sources/DefaultFilesystem.cpp

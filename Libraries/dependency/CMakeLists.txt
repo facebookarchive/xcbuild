@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(dependency SHARED
+add_library(dependency
             Sources/DependencyInfo.cpp
             Sources/DependencyInfoFormat.cpp
             Sources/BinaryDependencyInfo.cpp

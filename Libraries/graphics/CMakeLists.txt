@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(graphics SHARED
+add_library(graphics
             Sources/Image.cpp
             Sources/PixelFormat.cpp
             Sources/Format/PNG.cpp

@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(xcscheme SHARED
+add_library(xcscheme
             Sources/SchemeGroup.cpp
             Sources/XC/Action.cpp
             Sources/XC/ActionContent.cpp

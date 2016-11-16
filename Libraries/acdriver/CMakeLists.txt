@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(acdriver SHARED
+add_library(acdriver
             Sources/Options.cpp
             Sources/Driver.cpp
             Sources/Output.cpp

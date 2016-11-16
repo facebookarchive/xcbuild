@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(ninja SHARED
+add_library(ninja
             Sources/Writer.cpp
             Sources/Value.cpp
             )

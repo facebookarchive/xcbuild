@@ -8,7 +8,7 @@
 #
 
 
-add_library(xcexecution SHARED
+add_library(xcexecution
             Sources/Parameters.cpp
             Sources/Executor.cpp
             Sources/SimpleExecutor.cpp

@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(pbxproj SHARED
+add_library(pbxproj
             Sources/Context.cpp
             Sources/ISA.cpp
             Sources/PlistHelpers.cpp
