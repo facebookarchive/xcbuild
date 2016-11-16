@@ -13,6 +13,7 @@
 #include <plist/String.h>
 
 using xcworkspace::XC::GroupItem;
+using xcworkspace::XC::Workspace;
 
 GroupItem::
 GroupItem(Type type) :

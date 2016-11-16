@@ -15,6 +15,7 @@
 #include <pbxproj/Context.h>
 
 using pbxproj::PBX::TargetDependency;
+using pbxproj::Context;
 
 TargetDependency::
 TargetDependency() :

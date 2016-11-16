@@ -13,6 +13,7 @@
 
 using pbxsetting::Setting;
 using pbxsetting::Condition;
+using pbxsetting::Value;
 
 Setting::
 Setting(std::string const &name, Condition const &condition, Value const &value) :

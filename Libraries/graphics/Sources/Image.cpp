@@ -8,9 +8,11 @@
  */
 
 #include <graphics/Image.h>
+
 #include <cassert>
 
 using graphics::Image;
+using graphics::PixelFormat;
 
 Image::
 Image(size_t width, size_t height, PixelFormat format, std::vector<uint8_t> const &data) :

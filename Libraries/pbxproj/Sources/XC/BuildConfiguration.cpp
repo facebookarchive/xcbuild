@@ -11,6 +11,7 @@
 #include <pbxproj/Context.h>
 
 using pbxproj::XC::BuildConfiguration;
+using pbxproj::Context;
 
 BuildConfiguration::
 BuildConfiguration() :

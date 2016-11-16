@@ -11,6 +11,7 @@
 #include <pbxproj/PBX/Project.h>
 
 using pbxproj::Context;
+namespace PBX = pbxproj::PBX;
 
 void Context::
 cacheObject(PBX::Object::shared_ptr const &O, std::string const &id)

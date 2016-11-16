@@ -22,6 +22,7 @@ using plist::Boolean;
 using plist::Data;
 using plist::Date;
 using plist::Array;
+using plist::UID;
 using plist::Dictionary;
 using plist::CastTo;
 
