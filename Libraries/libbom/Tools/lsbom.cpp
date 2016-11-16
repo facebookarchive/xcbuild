@@ -17,7 +17,11 @@
 #include <sstream>
 #include <iomanip>
 
+#if _WIN32
+#include <winsock2.h>
+#else
 #include <arpa/inet.h>
+#endif
 
 class Options {
 public:

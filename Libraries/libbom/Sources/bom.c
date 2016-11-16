@@ -14,9 +14,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
-#include <arpa/inet.h>
 #include <assert.h>
 #include <stdint.h>
+
+#if _WIN32
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
 
 struct bom_context {
     struct bom_context_memory memory;
