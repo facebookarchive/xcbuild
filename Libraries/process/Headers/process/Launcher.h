@@ -10,14 +10,13 @@
 #ifndef __process_Launcher_h
 #define __process_Launcher_h
 
-#include <process/Context.h>
-
-#include <sstream>
 #include <ext/optional>
 
 namespace libutil { class Filesystem; }
 
 namespace process {
+
+class Context;
 
 /*
  * Abstract process launcher.
