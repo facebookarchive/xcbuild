@@ -12,7 +12,7 @@
 
 #include <cassert>
 
-#if !defined(__APPLE__)
+#if defined(__linux__)
 #include <endian.h>
 #endif
 
@@ -82,7 +82,7 @@ enum class Endian {
 
 #if defined(__BIG_ENDIAN__) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN)
 static Endian const HostEndian = Endian::Big;
-#elif defined(__LITTLE_ENDIAN__) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN)
+#elif defined(__LITTLE_ENDIAN__) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || _WIN32
 static Endian const HostEndian = Endian::Little;
 #else
 #error Unknown endianness.

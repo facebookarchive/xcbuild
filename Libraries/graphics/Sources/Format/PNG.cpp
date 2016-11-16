@@ -12,6 +12,12 @@
 #include <iterator>
 #include <ext/optional>
 
+#if _WIN32
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
+
 using graphics::Format::PNG;
 using graphics::Image;
 using graphics::PixelFormat;
@@ -360,7 +366,6 @@ Read(std::vector<uint8_t> const &contents)
 
 #endif
 
-#include <arpa/inet.h>
 #include <zlib.h>
 
 std::pair<ext::optional<std::vector<uint8_t>>, std::string> PNG::
