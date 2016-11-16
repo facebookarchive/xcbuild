@@ -15,8 +15,6 @@
 #include <libutil/Filesystem.h>
 #include <process/Context.h>
 
-#include <unistd.h>
-
 using xcsdk::Configuration;
 using libutil::Filesystem;
 

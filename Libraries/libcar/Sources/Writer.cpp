@@ -15,6 +15,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <ctime>
+
 #include <string.h>
 
 using car::Writer;
