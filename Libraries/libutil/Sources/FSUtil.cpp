@@ -11,7 +11,9 @@
 
 #include <cstring>
 
+#if !_WIN32
 #include <strings.h>
+#endif
 
 using libutil::FSUtil;
 
@@ -114,7 +116,11 @@ IsFileExtension(std::string const &path, std::string const &extension, bool inse
     }
 
     if (insensitive) {
+#if _WIN32
+        return ::_stricmp(pathExtension.c_str(), extension.c_str()) == 0;
+#else
         return ::strcasecmp(pathExtension.c_str(), extension.c_str()) == 0;
+#endif
     } else {
         return pathExtension == extension;
     }
@@ -131,7 +137,11 @@ IsFileExtension(std::string const &path, std::initializer_list<std::string> cons
     for (auto const &extension : extensions) {
         bool match = false;
         if (insensitive) {
+#if _WIN32
+            match = ::_stricmp(pathExtension.c_str(), extension.c_str()) == 0;
+#else
             match = ::strcasecmp(pathExtension.c_str(), extension.c_str()) == 0;
+#endif
         } else {
             match = pathExtension == extension;
         }

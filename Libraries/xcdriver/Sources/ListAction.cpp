@@ -13,7 +13,11 @@
 #include <libutil/Filesystem.h>
 #include <process/Context.h>
 
+#if _WIN32
+#include <cstring>
+#else
 #include <strings.h>
+#endif
 
 using xcdriver::ListAction;
 using xcdriver::Options;
@@ -53,7 +57,11 @@ Run(process::Context const *processContext, Filesystem const *filesystem, Option
     }
 
     std::sort(schemes.begin(), schemes.end(), [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool {
+#if _WIN32
+        return ::_stricmp(a->name().c_str(), b->name().c_str()) < 0;
+#else
         return ::strcasecmp(a->name().c_str(), b->name().c_str()) < 0;
+#endif
     });
 
     auto I = std::unique(schemes.begin(), schemes.end(), [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool {

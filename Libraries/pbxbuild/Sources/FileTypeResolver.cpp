@@ -14,7 +14,12 @@
 #include <libutil/Wildcard.h>
 
 #include <cassert>
+
+#if _WIN32
+#include <cstring>
+#else
 #include <strings.h>
+#endif
 
 using pbxbuild::FileTypeResolver;
 using pbxbuild::DirectedGraph;
@@ -71,7 +76,11 @@ Resolve(Filesystem const *filesystem, pbxspec::Manager::shared_ptr const &specMa
 
             for (std::string const &extension : *fileType->extensions()) {
                 // TODO(grp): Is this correct? Needed for handling ".S" as ".s", but might be over-broad.
-                if (strcasecmp(extension.c_str(), fileExtension.c_str()) == 0) {
+#if _WIN32
+                if (::_stricmp(extension.c_str(), fileExtension.c_str()) == 0) {
+#else
+                if (::strcasecmp(extension.c_str(), fileExtension.c_str()) == 0) {
+#endif
                     matched = true;
                 }
             }
