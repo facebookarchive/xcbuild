@@ -13,6 +13,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::Object;
+using pbxproj::Context;
 
 Object::
 Object(std::string const &isa) :

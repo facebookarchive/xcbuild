@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 
 using xcexecution::SimpleExecutor;
+using xcexecution::Parameters;
 using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::Permissions;

@@ -12,6 +12,7 @@
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
+namespace Phase = pbxbuild::Phase;
 using libutil::FSUtil;
 
 Tool::DittoResolver::

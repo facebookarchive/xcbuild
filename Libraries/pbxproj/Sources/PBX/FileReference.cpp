@@ -15,6 +15,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::FileReference;
+using pbxproj::Context;
 
 FileReference::
 FileReference() :

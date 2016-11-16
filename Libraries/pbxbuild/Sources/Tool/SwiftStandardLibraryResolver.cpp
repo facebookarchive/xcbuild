@@ -18,6 +18,7 @@
 #include <pbxsetting/Type.h>
 
 namespace Tool = pbxbuild::Tool;
+namespace Phase = pbxbuild::Phase;
 
 Tool::SwiftStandardLibraryResolver::
 SwiftStandardLibraryResolver(pbxspec::PBX::Tool::shared_ptr const &tool) :

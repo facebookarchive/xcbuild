@@ -13,6 +13,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::Group;
+using pbxproj::Context;
 
 Group::
 Group() :

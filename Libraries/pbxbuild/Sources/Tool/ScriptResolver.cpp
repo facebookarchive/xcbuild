@@ -18,6 +18,7 @@
 #include <algorithm>
 
 namespace Tool = pbxbuild::Tool;
+namespace Phase = pbxbuild::Phase;
 using libutil::Escape;
 using libutil::FSUtil;
 

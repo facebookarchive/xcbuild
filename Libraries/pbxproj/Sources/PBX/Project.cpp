@@ -23,6 +23,7 @@
 #include <process/Context.h>
 
 using pbxproj::PBX::Project;
+using pbxproj::Context;
 using libutil::Filesystem;
 using libutil::FSUtil;
 

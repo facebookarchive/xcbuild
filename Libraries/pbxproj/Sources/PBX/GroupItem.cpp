@@ -13,6 +13,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::GroupItem;
+using pbxproj::Context;
 
 GroupItem::
 GroupItem(std::string const &isa, Type type) :

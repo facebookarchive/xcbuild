@@ -17,6 +17,9 @@
 #include <map>
 
 using car::Facet;
+using car::AttributeList;
+using car::Rendition;
+using car::Reader;
 
 Facet::
 Facet(std::string const &name, AttributeList const &attributes) :
@@ -30,7 +33,7 @@ dump() const
 {
     fprintf(stderr, "Facet: %s\n", _name.c_str());
 
-    ext::optional<car::AttributeList> attributes = this->attributes();
+    ext::optional<AttributeList> attributes = this->attributes();
     if (attributes) {
         attributes->dump();
     }
@@ -39,7 +42,7 @@ dump() const
 void Facet::
 renditionIterate(Reader const *archive, std::function<void(Rendition const &)> const &iterator) const
 {
-    ext::optional<car::AttributeList> attributes = this->attributes();
+    ext::optional<AttributeList> attributes = this->attributes();
     if (!attributes) {
         return;
     }
@@ -58,7 +61,7 @@ renditionIterate(Reader const *archive, std::function<void(Rendition const &)> c
 Facet Facet::
 Load(std::string const &name, struct car_facet_value const *value)
 {
-    AttributeList attributes = car::AttributeList::Load(value->attributes_count, value->attributes);
+    AttributeList attributes = AttributeList::Load(value->attributes_count, value->attributes);
     return Facet(name, attributes);
 }
 

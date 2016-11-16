@@ -13,6 +13,7 @@
 #include <libutil/FSUtil.h>
 
 using xcassets::Asset::IconSet;
+namespace Slot = xcassets::Slot;
 using libutil::Filesystem;
 using libutil::FSUtil;
 

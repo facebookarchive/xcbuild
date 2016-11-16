@@ -8,9 +8,10 @@
  */
 
 #include <ninja/Writer.h>
-#include <ninja/Value.h>
 
 using ninja::Writer;
+using ninja::Binding;
+using ninja::Value;
 
 Writer::
 Writer()
@@ -61,13 +62,13 @@ comment(std::string const &text)
 }
 
 void Writer::
-subninja(ninja::Value const &path)
+subninja(Value const &path)
 {
     command("subninja", path.resolve(Value::EscapeMode::PathList));
 }
 
 void Writer::
-include(ninja::Value const &path)
+include(Value const &path)
 {
     command("include", path.resolve(Value::EscapeMode::PathList));
 }

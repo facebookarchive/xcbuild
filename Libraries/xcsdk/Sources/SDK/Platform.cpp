@@ -22,6 +22,8 @@
 #include <algorithm>
 
 using xcsdk::SDK::Platform;
+using xcsdk::SDK::Manager;
+using xcsdk::SDK::Target;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
