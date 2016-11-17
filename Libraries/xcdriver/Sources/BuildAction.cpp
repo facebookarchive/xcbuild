@@ -19,7 +19,9 @@
 #include <libutil/Filesystem.h>
 #include <process/Context.h>
 
+#if !_WIN32
 #include <unistd.h>
+#endif
 
 using xcdriver::BuildAction;
 using xcdriver::Options;
@@ -39,8 +41,13 @@ static std::shared_ptr<xcformatter::Formatter>
 CreateFormatter(ext::optional<std::string> const &formatter)
 {
     if (!formatter || *formatter == "default") {
+#if _WIN32
+        // TODO: Support color output on Windows.
+        bool color = false;
+#else
         /* Only use color if attached to a terminal. */
         bool color = isatty(fileno(stdout));
+#endif
 
         auto formatter = xcformatter::DefaultFormatter::Create(color);
         return std::static_pointer_cast<xcformatter::Formatter>(formatter);
