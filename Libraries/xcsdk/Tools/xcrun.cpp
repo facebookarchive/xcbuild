@@ -302,7 +302,7 @@ static int Run(Filesystem *filesystem, process::Context const *processContext, p
              return -1;
         }
     } else {
-        target = target = manager->findTarget(defaultSDK);
+        target = manager->findTarget(defaultSDK);
         /* nullptr target is not an error (except later on if SDK information is requested) */
         if (showSDKValue && target == nullptr) {
             printf("error: unable os find default sdk: '%s'\n", defaultSDK.c_str());
