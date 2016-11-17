@@ -39,7 +39,7 @@ add_library(plist SHARED
             Sources/Format/SimpleXMLParser.cpp
             Sources/Format/SimpleXML.cpp
             #
-            Sources/Format/ABPCommon.cpp
+            Sources/Format/ABPContext.cpp
             Sources/Format/ABPReader.cpp
             Sources/Format/ABPWriter.cpp
             Sources/Format/Binary.cpp
