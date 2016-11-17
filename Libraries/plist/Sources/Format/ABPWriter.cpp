@@ -7,9 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <plist/Format/ABPWriterPrivate.h>
+#include <plist/Format/ABPWriter.h>
 #include <plist/Format/Encoding.h>
 #include <plist/Objects.h>
+
+#include <cassert>
 
 using plist::Format::Encoding;
 using plist::Format::Encodings;
@@ -32,61 +34,55 @@ enum {
     kABPWriteObjectValue     = (1 << 2)  /* Write only the value if not yet written. */
 };
 
-static bool
-_ABPWritePreflightObject(ABPContext *context, Object const *object,
-        uint32_t flags);
-
-static bool
-_ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags);
-
-static bool
-__ABPWriteOffsetTable(ABPContext *context)
+bool ABPWriter::
+writeOffsetTable()
 {
     uint64_t n;
     uint64_t highestOffset;
 
     /* Update offset in trailer. */
-    context->trailer.offsetTableEndOffset = __ABPTell(context);
+    this->_trailer.offsetTableEndOffset = this->tell();
 
     /* Highest offset is offset table offset */
-    highestOffset = context->trailer.offsetTableEndOffset;
+    highestOffset = this->_trailer.offsetTableEndOffset;
 
     /* Estimate offset integer size. */
     if (highestOffset > UINT32_MAX) {
-        context->trailer.offsetIntByteSize = sizeof(uint64_t);
+        this->_trailer.offsetIntByteSize = sizeof(uint64_t);
     } else if (highestOffset > UINT16_MAX) {
-        context->trailer.offsetIntByteSize = sizeof(uint32_t);
+        this->_trailer.offsetIntByteSize = sizeof(uint32_t);
     } else if (highestOffset > UINT8_MAX) {
-        context->trailer.offsetIntByteSize = sizeof(uint16_t);
+        this->_trailer.offsetIntByteSize = sizeof(uint16_t);
     } else {
-        context->trailer.offsetIntByteSize = sizeof(uint8_t);
+        this->_trailer.offsetIntByteSize = sizeof(uint8_t);
     }
 
     /* Write out the offsets. */
-    for (n = 0; n < context->trailer.objectsCount; n++) {
-        if (!__ABPWriteOffset(context, context->offsets[n]))
+    for (n = 0; n < this->_trailer.objectsCount; n++) {
+        if (!this->writeOffset(this->_offsets[n])) {
             return false;
+        }
     }
 
     return true;
 }
 
-static bool
-__ABPWriteNullWithArg(ABPContext *context, void *ignored)
+bool ABPWriter::
+writeNull(Null const *null)
 {
-    return __ABPWriteByte(context, __ABPRecordTypeToByte(kABPRecordTypeNull, 0));
+    return this->writeByte(__ABPRecordTypeToByte(kABPRecordTypeNull, 0));
 }
 
-static bool
-__ABPWriteBool(ABPContext *context, Boolean const *value)
+bool ABPWriter::
+writeBool(Boolean const *boolean)
 {
-    return __ABPWriteByte(context, __ABPRecordTypeToByte(
-                value->value() ? kABPRecordTypeBoolTrue :
+    return this->writeByte(__ABPRecordTypeToByte(
+                boolean->value() ? kABPRecordTypeBoolTrue :
                 kABPRecordTypeBoolFalse, 0));
 }
 
-static bool
-__ABPWriteDate(ABPContext *context, Date const *date)
+bool ABPWriter::
+writeDate(Date const *date)
 {
     /* Reference time is 2001/1/1 */
     static uint64_t const ReferenceTimestamp = 978307200;
@@ -94,17 +90,17 @@ __ABPWriteDate(ABPContext *context, Date const *date)
     uint64_t value;
 
     /* Write object type. */
-    if (!__ABPWriteByte(context, __ABPRecordTypeToByte(kABPRecordTypeDate, 0)))
+    if (!this->writeByte(__ABPRecordTypeToByte(kABPRecordTypeDate, 0)))
         return false;
 
-    at = date->unixTimeValue() - ReferenceTimestamp;
+    at = static_cast<double>(date->unixTimeValue() - ReferenceTimestamp);
     /* HACK(strager): We should not rely on C's representation of double. */
     memcpy(&value, &at, 8);
-    return __ABPWriteWord(context, 8, value);
+    return this->writeWord(8, value);
 }
 
-static bool
-__ABPWriteInteger(ABPContext *context, Integer const *integer)
+bool ABPWriter::
+writeInteger(Integer const *integer)
 {
     int     nbits = 3;
     int64_t value = integer->value();
@@ -118,23 +114,22 @@ __ABPWriteInteger(ABPContext *context, Integer const *integer)
     }
 
     /* Write object type. */
-    if (!__ABPWriteByte(context, __ABPRecordTypeToByte(kABPRecordTypeInteger,
-                    nbits)))
+    if (!this->writeByte(__ABPRecordTypeToByte(kABPRecordTypeInteger, nbits)))
         return false;
 
     /* Write word. */
-    return __ABPWriteWord(context, 1 << nbits, value);
+    return this->writeWord(1 << nbits, value);
 }
 
-static bool
-__ABPWriteReal(ABPContext *context, Real *real)
+bool ABPWriter::
+writeReal(Real const *real)
 {
     int         nbits;
     uint64_t    uvalue;
     double      value = real->value();
-    float       value32 = value;
+    float       value32 = static_cast<float>(value);
 
-    if ((double)value32 == value) {
+    if (static_cast<double>(value32) == value) {
         /* HACK(strager): We should not rely on C's representation of float. */
         memcpy(&uvalue, &value32, 4);
         nbits = 2;
@@ -145,29 +140,28 @@ __ABPWriteReal(ABPContext *context, Real *real)
     }
 
     /* Write object type. */
-    if (!__ABPWriteByte(context, __ABPRecordTypeToByte(kABPRecordTypeReal,
-                    nbits)))
+    if (!this->writeByte(__ABPRecordTypeToByte(kABPRecordTypeReal, nbits)))
         return false;
 
-    return __ABPWriteWord(context, 1 << nbits, uvalue);
+    return this->writeWord(1 << nbits, uvalue);
 }
 
-static bool
-__ABPWriteData(ABPContext *context, Data *data)
+bool ABPWriter::
+writeData(Data const *data)
 {
     size_t length;
 
     /* Write the object type and the length. */
     length = data->value().size();
-    if (!__ABPWriteTypeAndLength(context, kABPRecordTypeData, length))
+    if (!this->writeTypeAndLength(kABPRecordTypeData, length))
         return false;
 
     /* Write contents. */
-    return (__ABPWriteBytes(context, data->value().data(), length) == length);
+    return (this->write(data->value().data(), length) == length);
 }
 
-static bool
-__ABPWriteUID(ABPContext *context, plist::UID *uid)
+bool ABPWriter::
+writeUID(UID const *uid)
 {
     uint32_t value;
     size_t   nbytes = sizeof(uint32_t);
@@ -180,38 +174,38 @@ __ABPWriteUID(ABPContext *context, plist::UID *uid)
     }
 
     /* Write the object type and the length. */
-    if (!__ABPWriteTypeAndLength(context, kABPRecordTypeUid, nbytes))
+    if (!this->writeTypeAndLength(kABPRecordTypeUid, nbytes))
         return false;
 
     /* Write word. */
-    return __ABPWriteWord(context, nbytes, value);
+    return this->writeWord(nbytes, value);
 }
 
-static bool
-__ABPWriteStringASCII(ABPContext *context, char const *chars, size_t nchars)
+bool ABPWriter::
+writeStringASCII(char const *chars, size_t nchars)
 {
     /* Write the object type and the length. */
-    if (!__ABPWriteTypeAndLength(context, kABPRecordTypeStringASCII, nchars))
+    if (!this->writeTypeAndLength(kABPRecordTypeStringASCII, nchars))
         return false;
 
-    return (nchars == 0 || __ABPWriteBytes(context, chars, nchars) == nchars);
+    return (nchars == 0 || this->write(chars, nchars) == nchars);
 }
 
-static bool
-__ABPWriteStringUnicode(ABPContext *context, uint16_t const *chars, size_t nchars)
+bool ABPWriter::
+writeStringUnicode(uint16_t const *chars, size_t nchars)
 {
     /* Write the object type and the length. */
-    if (!__ABPWriteTypeAndLength(context, kABPRecordTypeStringUnicode, nchars))
+    if (!this->writeTypeAndLength(kABPRecordTypeStringUnicode, nchars))
         return false;
 
     if (nchars == 0)
         return true;
 
-    return (__ABPWriteBytes(context, chars, nchars * sizeof(uint16_t)) == (size_t)(nchars * sizeof(uint16_t)));
+    return (this->write(chars, nchars * sizeof(uint16_t)) == static_cast<size_t>(nchars * sizeof(uint16_t)));
 }
 
-static bool
-__ABPWriteString(ABPContext *context, String *string)
+bool ABPWriter::
+writeString(String const *string)
 {
     bool success;
 
@@ -224,24 +218,58 @@ __ABPWriteString(ABPContext *context, String *string)
     }
 
     if (ascii) {
-        success = __ABPWriteStringASCII(context, string->value().c_str(), string->value().size());
+        success = this->writeStringASCII(string->value().c_str(), string->value().size());
     } else {
         std::vector<uint8_t> buffer = std::vector<uint8_t>(string->value().begin(), string->value().end());
         buffer = Encodings::Convert(buffer, Encoding::UTF8, Encoding::UTF16BE);
-        success = __ABPWriteStringUnicode(context, reinterpret_cast<uint16_t *>(buffer.data()), buffer.size() / sizeof(uint16_t));
+        success = this->writeStringUnicode(reinterpret_cast<uint16_t *>(buffer.data()), buffer.size() / sizeof(uint16_t));
     }
 
     return success;
+}
+
+void ABPWriter::
+writeArrayReferences(Array const *array)
+{
+    for (size_t i = 0; i < array->count(); ++i) {
+        this->writeObject(array->value(i), kABPWriteObjectReference);
+    }
+}
+
+void ABPWriter::
+writeArrayValues(Array const *array)
+{
+    for (size_t i = 0; i < array->count(); ++i) {
+        this->writeObject(array->value(i), kABPWriteObjectValue);
+    }
+}
+
+bool ABPWriter::
+writeArray(Array const *array)
+{
+    int length = array->count();
+
+    /* Write the object type and the length. */
+    if (!this->writeTypeAndLength(kABPRecordTypeArray, length))
+        return false;
+
+    if (length > 0) {
+        /* Write all the references and all the values. */
+        this->writeArrayReferences(array);
+        this->writeArrayValues(array);
+    }
+
+    return true;
 }
 
 /*
  * Workaround for Dictionaries not having keys with identity. Map from integer key
  * index to key value to use as the identity when writing the key object out.
  */
-static String *
-__ABPDictionaryKeyString(ABPContext *context, Dictionary const *dict, int key)
+String const *ABPWriter::
+dictionaryKeyString(Dictionary const *dict, int key)
 {
-    std::unordered_map<int, String *> *map = &context->keyStrings[dict];
+    std::unordered_map<int, String *> *map = &this->_keyStrings[dict];
 
     auto it = map->find(key);
     if (it != map->end()) {
@@ -253,79 +281,45 @@ __ABPDictionaryKeyString(ABPContext *context, Dictionary const *dict, int key)
     }
 }
 
-static inline void
-__ABPWriteArrayReferences(ABPContext *context, Array const *array)
+void ABPWriter::
+writeDictionaryReferences(Dictionary const *dict)
 {
-    for (int i = 0; i < array->count(); ++i) {
-        _ABPWriteObject(context, array->value(i), kABPWriteObjectReference);
+    for (size_t i = 0; i < dict->count(); ++i) {
+        String const *key = this->dictionaryKeyString(dict, i);
+        this->writeObject(key, kABPWriteObjectReference);
+    }
+
+    for (size_t i = 0; i < dict->count(); ++i) {
+        this->writeObject(dict->value(i), kABPWriteObjectReference);
     }
 }
 
-static inline void
-__ABPWriteArrayValues(ABPContext *context, Array const *array)
+void ABPWriter::
+writeDictionaryValues(Dictionary const *dict)
 {
-    for (int i = 0; i < array->count(); ++i) {
-        _ABPWriteObject(context, array->value(i), kABPWriteObjectValue);
+    for (size_t i = 0; i < dict->count(); ++i) {
+        String const *key = this->dictionaryKeyString(dict, i);
+        this->writeObject(key, kABPWriteObjectValue);
+    }
+
+    for (size_t i = 0; i < dict->count(); ++i) {
+        this->writeObject(dict->value(i), kABPWriteObjectValue);
     }
 }
 
-static bool
-__ABPWriteArray(ABPContext *context, Array const *array)
-{
-    int length = array->count();
-
-    /* Write the object type and the length. */
-    if (!__ABPWriteTypeAndLength(context, kABPRecordTypeArray, length))
-        return false;
-
-    if (length > 0) {
-        /* Write all the references and all the values. */
-        __ABPWriteArrayReferences(context, array);
-        __ABPWriteArrayValues(context, array);
-    }
-
-    return true;
-}
-
-static void
-__ABPWriteDictionaryReferences(ABPContext *context, Dictionary const *dict)
-{
-    for (int i = 0; i < dict->count(); ++i) {
-        String *key = __ABPDictionaryKeyString(context, dict, i);
-        _ABPWriteObject(context, key, kABPWriteObjectReference);
-    }
-
-    for (int i = 0; i < dict->count(); ++i) {
-        _ABPWriteObject(context, dict->value(i), kABPWriteObjectReference);
-    }
-}
-
-static void
-__ABPWriteDictionaryValues(ABPContext *context, Dictionary const *dict)
-{
-    for (int i = 0; i < dict->count(); ++i) {
-        String *key = __ABPDictionaryKeyString(context, dict, i);
-        _ABPWriteObject(context, key, kABPWriteObjectValue);
-    }
-
-    for (int i = 0; i < dict->count(); ++i) {
-        _ABPWriteObject(context, dict->value(i), kABPWriteObjectValue);
-    }
-}
-
-static bool
-__ABPWriteDictionary(ABPContext *context, Dictionary const *dict)
+bool ABPWriter::
+writeDictionary(Dictionary const *dict)
 {
     int length = dict->count();
 
     /* Write the object type and the length. */
-    if (!__ABPWriteTypeAndLength(context, kABPRecordTypeDictionary, length))
+    if (!this->writeTypeAndLength(kABPRecordTypeDictionary, length))
         return false;
 
     if (length > 0) {
         /* Write all the reference and value pairs. */
-        __ABPWriteDictionaryReferences(context, dict);
-        __ABPWriteDictionaryValues(context, dict);
+        this->writeDictionaryReferences(dict);
+        this->writeDictionaryValues(dict);
     }
 
     return true;
@@ -333,41 +327,40 @@ __ABPWriteDictionary(ABPContext *context, Dictionary const *dict)
 
 /* Preflighting */
 
-static inline void
-__ABPWritePreflightArrayReferences(ABPContext *context, Array const *array)
+void ABPWriter::
+writePreflightArrayReferences(Array const *array)
 {
-    for (int i = 0; i < array->count(); ++i) {
-        _ABPWritePreflightObject(context, array->value(i), 0);
+    for (size_t i = 0; i < array->count(); ++i) {
+        this->writePreflightObject(array->value(i), 0);
     }
 }
 
-static bool
-__ABPWritePreflightArray(ABPContext *context, Array const *array)
+bool ABPWriter::
+writePreflightArray(Array const *array)
 {
     /* Preflight all the values. */
-    __ABPWritePreflightArrayReferences(context, array);
+    this->writePreflightArrayReferences(array);
     return true;
 }
 
-static void
-__ABPWritePreflightDictionaryReferences(ABPContext *context,
-        Dictionary const *dict)
+void ABPWriter::
+writePreflightDictionaryReferences(Dictionary const *dict)
 {
-    for (int i = 0; i < dict->count(); ++i) {
-        String *key = __ABPDictionaryKeyString(context, dict, i);
-        _ABPWritePreflightObject(context, key, 0);
+    for (size_t i = 0; i < dict->count(); ++i) {
+        String const *key = this->dictionaryKeyString(dict, i);
+        this->writePreflightObject(key, 0);
     }
 
-    for (int i = 0; i < dict->count(); ++i) {
-        _ABPWritePreflightObject(context, dict->value(i), 0);
+    for (size_t i = 0; i < dict->count(); ++i) {
+        this->writePreflightObject(dict->value(i), 0);
     }
 }
 
-static bool
-__ABPWritePreflightDictionary(ABPContext *context, Dictionary const *dict)
+bool ABPWriter::
+writePreflightDictionary(Dictionary const *dict)
 {
     /* Preflight all the keys and values. */
-    __ABPWritePreflightDictionaryReferences(context, dict);
+    this->writePreflightDictionaryReferences(dict);
     return true;
 }
 
@@ -380,32 +373,31 @@ __ABPWritePreflightDictionary(ABPContext *context, Dictionary const *dict)
  * If 'userProcess' is set, when an object is cached, the object
  * field is set to null and only the reference number is returned.
  */
-static bool
-_ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *refno,
-        bool userProcess)
+bool ABPWriter::
+processObject(Object const **object, uint32_t *refno, bool userProcess)
 {
     Object const *newObject;
     Object const *origObject = *object;
 
     /* Is this object already mapped? */
-    auto mit = context->mappings.find(origObject);
-    if (mit != context->mappings.end()) {
+    auto mit = this->_mappings.find(origObject);
+    if (mit != this->_mappings.end()) {
         newObject = mit->second;
     } else {
         newObject = origObject;
 
         /* Process the object for mapping. */
-        if (userProcess && (*(context->processCallBacks.process))(
-                    context->processCallBacks.opaque, &newObject)) {
+        if (userProcess) {
             ObjectType type = newObject->type();
-            /* Cache mapping, but do so only if newObject is different
+            /*
+             * Cache mapping, but do so only if newObject is different
              * than the origObject or origObject is not a container.
              */
             if (newObject != origObject || (type != Array::Type() &&
                                             type != Dictionary::Type() &&
                                             type != Null::Type() &&
                                             type != Boolean::Type())) {
-                context->mappings.insert({ origObject, newObject });
+                this->_mappings.insert({ origObject, newObject });
             }
         } else {
             /*
@@ -418,8 +410,8 @@ _ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *re
     assert(newObject != NULL);
 
     /* Is this new object already written? */
-    auto it = context->references.find(newObject);
-    if (it != context->references.end()) {
+    auto it = this->_references.find(newObject);
+    if (it != this->_references.end()) {
         *refno = it->second;
 
         /*
@@ -433,8 +425,8 @@ _ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *re
         /*
          * No, add a new reference for this newObject.
          */
-        *refno = context->references.size();
-        context->references.insert({ newObject, *refno });
+        *refno = this->_references.size();
+        this->_references.insert({ newObject, *refno });
     }
 
     /* Return the new object to the user. */
@@ -450,20 +442,18 @@ _ABPWriterProcessObject(ABPContext *context, Object const **object, uint32_t *re
  * opened by any tool (although you can simply use our own which are
  * more than happy to process a "broken" plist).
  */
-static bool
-_ABPWritePreflightObject(ABPContext *context, Object const *object,
-        uint32_t flags)
+bool ABPWriter::
+writePreflightObject(Object const *object, uint32_t flags)
 {
-    ObjectType type;
-    bool  success = true;
-    uint32_t   refno   = 0;
+    bool success = true;
+    uint32_t refno = 0;
 
     /*
      * Process the object; if returned object is non-null, it
      * is the first time the object has been seen, otherwise
      * only refno is valid.
      */
-    if (!_ABPWriterProcessObject(context, &object, &refno, true))
+    if (!this->processObject(&object, &refno, true))
         return false;
 
     if (object == NULL)
@@ -471,31 +461,28 @@ _ABPWritePreflightObject(ABPContext *context, Object const *object,
 
     /* If this is the top level object, store reference in the header. */
     if (flags & kABPWriteObjectTopLevel) {
-        context->trailer.topLevelObject = refno;
+        this->_trailer.topLevelObject = refno;
     }
 
     /* Add this object to the offsets table. */
-    if (refno >= context->trailer.objectsCount) {
-        context->trailer.objectsCount = refno + 1;
+    if (refno >= this->_trailer.objectsCount) {
+        this->_trailer.objectsCount = refno + 1;
     }
 
     /* Preflight dictionaries and arrays. */
-    type = object->type();
-    if (type == Array::Type()) {
-        success = __ABPWritePreflightArray(context, (Array const *)object);
-    } else if (type == Dictionary::Type()) {
-        success = __ABPWritePreflightDictionary(context,
-                (Dictionary const *)object);
+    if (auto array = plist::CastTo<Array>(object)) {
+        success = this->writePreflightArray(array);
+    } else if (auto dict = plist::CastTo<Dictionary>(object)) {
+        success = this->writePreflightDictionary(dict);
     }
 
     if (!success) abort();
     return success;
 }
 
-static bool
-_ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
+bool ABPWriter::
+writeObject(Object const *object, uint32_t flags)
 {
-    ObjectType type;
     off_t        offset;
     bool         success;
     uint32_t     refno = 0;
@@ -505,10 +492,10 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
      * is the first time the object has been seen, otherwise
      * only refno is valid.
      */
-    if (!_ABPWriterProcessObject(context, &object, &refno, false))
+    if (!this->processObject(&object, &refno, false))
         return false;
 
-    if (context->written.find(object) != context->written.end()) {
+    if (this->_written.find(object) != this->_written.end()) {
         if (flags & kABPWriteObjectValue)
             return true;
 
@@ -516,45 +503,41 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
     }
 
     if (flags & kABPWriteObjectReference) {
-        return __ABPWriteReference(context, refno);
+        return this->writeReference(refno);
     }
 
     /* Cache written object. */
-    context->written.insert(object);
+    this->_written.insert(object);
 
-    type = object->type();
-    offset = __ABPTell(context);
+    offset = this->tell();
 
-    static const struct { ObjectType type; void *cb; } typeToCB[] = {
-        { Array::Type(), (void *)__ABPWriteArray },
-        { Dictionary::Type(), (void *)__ABPWriteDictionary },
-        { Integer::Type(), (void *)__ABPWriteInteger },
-        { Real::Type(), (void *)__ABPWriteReal },
-        { String::Type(), (void *)__ABPWriteString },
-        { Boolean::Type(), (void *)__ABPWriteBool },
-        { Null::Type(), (void *)__ABPWriteNullWithArg },
-        { Data::Type(), (void *)__ABPWriteData },
-        { Date::Type(), (void *)__ABPWriteDate },
-        { UID::Type(), (void *)__ABPWriteUID },
-    };
-
-    bool (*writer)(ABPContext *, Object const *) = nullptr;
-    for (auto const &it : typeToCB) {
-        if (it.type == type) {
-            writer = (bool(*)(ABPContext *, Object const *))it.cb;
-            break;
-        }
-    }
-
-    if (writer) {
-        success = writer(context, object);
+    if (auto array = plist::CastTo<Array>(object)) {
+        success = this->writeArray(array);
+    } else if (auto dict = plist::CastTo<Dictionary>(object)) {
+        success = this->writeDictionary(dict);
+    } else if (auto integer = plist::CastTo<Integer>(object)) {
+        success = this->writeInteger(integer);
+    } else if (auto real = plist::CastTo<Real>(object)) {
+        success = this->writeReal(real);
+    } else if (auto string = plist::CastTo<String>(object)) {
+        success = this->writeString(string);
+    } else if (auto boolean = plist::CastTo<Boolean>(object)) {
+        success = this->writeBool(boolean);
+    } else if (auto null = plist::CastTo<Null>(object)) {
+        success = this->writeNull(null);
+    } else if (auto data = plist::CastTo<Data>(object)) {
+        success = this->writeData(data);
+    } else if (auto date = plist::CastTo<Date>(object)) {
+        success = this->writeDate(date);
+    } else if (auto uid = plist::CastTo<UID>(object)) {
+        success = this->writeUID(uid);
     } else {
-        success = false;
+        abort();
     }
 
     if (success) {
         /* Update offsets table. */
-        context->offsets[refno] = offset;
+        this->_offsets[refno] = offset;
     }
 
     return success;
@@ -564,160 +547,244 @@ _ABPWriteObject(ABPContext *context, Object const *object, uint32_t flags)
  * Public Writer API
  */
 
-bool
-ABPWriterInit(ABPContext *context, ABPStreamCallBacks const *streamCallBacks,
-        ABPProcessCallBacks const *callbacks)
+ABPWriter::
+ABPWriter(std::vector<uint8_t> *contents) :
+    ABPContext      (contents),
+    _mutableContents(contents)
 {
-    if (context == NULL || streamCallBacks == NULL || callbacks == NULL)
-        return false;
-
-    if (streamCallBacks->version != 0)
-        return false;
-    if (streamCallBacks->seek == NULL || streamCallBacks->write == NULL)
-        return false;
-    if (callbacks->version != 0)
-        return false;
-    if (callbacks->process == NULL)
-        return false;
-
-    memset(context, 0, sizeof(*context));
-    context->streamCallBacks  = *streamCallBacks;
-    context->processCallBacks = *callbacks;
-    context->flags            = 0;
-    context->references       = std::unordered_map<plist::Object const *, int>();
-    context->mappings         = std::unordered_map<plist::Object const *, plist::Object const *>();
-    context->written          = std::unordered_set<plist::Object const *>();
-    context->keyStrings       = std::unordered_map<plist::Dictionary const *, std::unordered_map<int, plist::String *>>();
-
-    return true;
 }
 
-bool
-ABPWriterOpen(ABPContext *context)
+bool ABPWriter::
+open()
 {
-    if (context == NULL)
-        return false;
-
-    if (context->flags & (kABPContextReader | kABPContextOpened |
-                kABPContextComplete))
+    if (this->_flags & (kABPContextOpened | kABPContextComplete))
         return false;
 
     /* Initialize the header struct and write it. */
-    memset(&context->header, 0, sizeof(context->header));
-    memcpy(context->header.magic, ABPLIST_MAGIC,
-           sizeof(context->header.magic));
-    memcpy(context->header.version, ABPLIST_VERSION,
-           sizeof(context->header.version));
+    memset(&this->_header, 0, sizeof(this->_header));
+    memcpy(this->_header.magic, ABPLIST_MAGIC, sizeof(this->_header.magic));
+    memcpy(this->_header.version, ABPLIST_VERSION, sizeof(this->_header.version));
 
-    if (!__ABPWriteHeader(context)) {
+    if (!this->writeHeader()) {
         return false;
     }
 
     /* Initialize the trailer struct. */
-    memset(&context->trailer, 0, sizeof(context->trailer));
+    memset(&this->_trailer, 0, sizeof(this->_trailer));
 
-    context->flags |= kABPContextOpened;
+    this->_flags |= kABPContextOpened;
 
     return true;
 }
 
-bool
-ABPWriterFinalize(ABPContext *context)
+bool ABPWriter::
+finalize()
 {
-    if (context == NULL)
-        return false;
-
-    /* Fail if a reader, not opened or not complete. */
-    if ((context->flags & kABPContextReader) != 0 ||
-            (context->flags & (kABPContextOpened | kABPContextComplete)) !=
-             (kABPContextOpened | kABPContextComplete))
+    /* Fail if not opened or not complete. */
+    if ((this->_flags & (kABPContextOpened | kABPContextComplete)) != (kABPContextOpened | kABPContextComplete))
         return false;
 
     /* If we finalized already, do nothing. */
-    if (context->flags & kABPContextFlushed)
+    if (this->_flags & kABPContextFlushed)
         return true;
 
     /* Write offset table and trailer. */
-    if (!__ABPWriteOffsetTable(context))
+    if (!this->writeOffsetTable())
         return false;
 
-    if (!__ABPWriteTrailer(context, false))
+    if (!this->writeTrailer(false))
         return false;
 
-    context->flags |= kABPContextFlushed;
+    this->_flags |= kABPContextFlushed;
     return true;
 }
 
-bool
-ABPWriterClose(ABPContext *context)
+bool ABPWriter::
+close()
 {
-    if (context == NULL)
+    /* Fail if not opened. */
+    if ((this->_flags & kABPContextOpened) == 0)
         return false;
 
-    /* Fail if a reader or not opened. */
-    if ((context->flags & kABPContextReader) != 0 ||
-            (context->flags & kABPContextOpened) == 0)
-        return false;
-
-    if ((context->flags & kABPContextFlushed) == 0) {
-        if (!ABPWriterFinalize(context))
+    if ((this->_flags & kABPContextFlushed) == 0) {
+        if (!this->finalize())
             return false;
     }
 
-    for (auto const &map : context->keyStrings) {
+    for (auto const &map : this->_keyStrings) {
         for (auto const &item : map.second) {
             item.second->release();
         }
     }
 
-    _ABPContextFree(context);
     return true;
 }
 
-bool
-ABPWriteTopLevelObject(ABPContext *context, Object const *object)
+bool ABPWriter::
+writeTopLevelObject(Object const *object)
 {
     bool success;
 
-    if (context == NULL || object == NULL)
+    if (object == NULL)
         return false;
 
-    /* Fail if a reader, complete, or not opened. */
-    if ((context->flags & (kABPContextReader | kABPContextComplete)) != 0 ||
-            (context->flags & kABPContextOpened) == 0)
+    /* Fail if complete or not opened. */
+    if ((this->_flags & kABPContextComplete) != 0 || (this->_flags & kABPContextOpened) == 0)
         return false;
 
     /*
      * Preflight objects... the standard seems to support only binary plists
      * whose offsets are increasing *sigh*
      */
-    success = _ABPWritePreflightObject(context, object,
-            kABPWriteObjectTopLevel);
+    success = this->writePreflightObject(object, kABPWriteObjectTopLevel);
     if (success) {
         /* Estimate the object reference size. */
-        uint64_t nrefs = context->references.size();
+        uint64_t nrefs = this->_references.size();
         if (nrefs > UINT32_MAX) {
-            context->trailer.objectRefByteSize = sizeof(uint64_t);
+            this->_trailer.objectRefByteSize = sizeof(uint64_t);
         } else if (nrefs > UINT16_MAX) {
-            context->trailer.objectRefByteSize = sizeof(uint32_t);
+            this->_trailer.objectRefByteSize = sizeof(uint32_t);
         } else if (nrefs > UINT8_MAX) {
-            context->trailer.objectRefByteSize = sizeof(uint16_t);
+            this->_trailer.objectRefByteSize = sizeof(uint16_t);
         } else {
-            context->trailer.objectRefByteSize = sizeof(uint8_t);
+            this->_trailer.objectRefByteSize = sizeof(uint8_t);
         }
 
         /* Allocate enough space for the offsets table. */
-        context->offsets = (uint64_t *)calloc(
-                context->trailer.objectsCount, sizeof(uint64_t));
-        if (context->offsets == NULL)
+        this->_offsets = static_cast<uint64_t *>(calloc(static_cast<size_t>(this->_trailer.objectsCount), sizeof(uint64_t)));
+        if (this->_offsets == NULL)
             return false;
 
         /* Write all the objects. */
-        success = _ABPWriteObject(context, object, kABPWriteObjectTopLevel);
+        success = this->writeObject(object, kABPWriteObjectTopLevel);
         if (success) {
-            context->flags |= kABPContextComplete;
+            this->_flags |= kABPContextComplete;
         }
     }
 
     return success;
+}
+
+int ABPWriter::
+write(void const *data, size_t length)
+{
+    int needed = (this->_mutableContents->size() - this->_offset + length);
+    if (needed > 0) {
+        this->_mutableContents->resize(this->_mutableContents->size() + needed);
+    }
+
+    /* Copy into write buffer. */
+    ::memcpy(this->_mutableContents->data() + this->_offset, data, length);
+
+    this->_offset += length;
+    return length;
+}
+
+bool ABPWriter::
+writeByte(uint8_t byte)
+{
+    return (this->write(&byte, sizeof(byte)) == sizeof(byte));
+}
+
+bool ABPWriter::
+writeWord0(size_t nbytes, uint64_t value, bool swap)
+{
+    size_t   n;
+    uint8_t *p, bytes[8];
+
+    assert(nbytes <= 8);
+    memset(bytes, 0, sizeof(bytes));
+    p = bytes;
+
+    for (n = 0; n < nbytes; n++) {
+        size_t m = swap ? n : (nbytes - n - 1);
+        *p++ = static_cast<uint8_t>(value >> (m << 3));
+    }
+
+    return (this->write(bytes, nbytes) == nbytes);
+}
+
+bool ABPWriter::
+writeWord(size_t nbytes, uint64_t value)
+{
+    return this->writeWord0(nbytes, value, false);
+}
+
+bool ABPWriter::
+writeTypeAndLength(ABPRecordType type, uint64_t length)
+{
+    uint8_t marker       = 0;
+    uint8_t directLength = 0;
+    int     nbits        = 3;
+
+    assert(length >= 0);
+    if (length >= 0x0f) {
+        /* Prepare marker byte. */
+        if ((length & 0xFF) == length) {
+            nbits = 0;
+        } else if ((length & 0xFFFF) == length) {
+            nbits = 1;
+        } else if ((length & 0xFFFFFFFF) == length) {
+            nbits = 2;
+        }
+
+        marker = 0x10 | nbits;
+        directLength = 0xf;
+    } else {
+        directLength = static_cast<uint8_t>(length);
+    }
+
+    /* Write the object type and direct length. */
+    if (!this->writeByte(__ABPRecordTypeToByte(type, directLength)))
+        return false;
+
+    /* Write the marker and complete length if needed. */
+    if (marker != 0) {
+        if (!this->writeByte(marker))
+            return false;
+
+        if (!this->writeWord(1 << nbits, length))
+            return false;
+    }
+
+    return true;
+}
+
+bool ABPWriter::
+writeOffset(uint64_t offset)
+{
+    return this->writeWord(this->_trailer.offsetIntByteSize, offset);
+}
+
+bool ABPWriter::
+writeReference(uint64_t offset)
+{
+    return this->writeWord(this->_trailer.objectRefByteSize, offset);
+}
+
+bool ABPWriter::
+writeHeader()
+{
+    if (this->seek(0, SEEK_SET) == EOF)
+        return false;
+
+    return (this->write(&this->_header, sizeof(this->_header)) == sizeof(this->_header));
+}
+
+bool ABPWriter::
+writeTrailer(bool replace)
+{
+    if (this->seek(replace ? -static_cast<off_t>(sizeof(this->_trailer)) : 0, SEEK_END) == EOF)
+        return false;
+
+    if (this->write(this->_trailer.__filler, 8) != 8)
+        return false;
+    if (!this->writeWord(8, this->_trailer.objectsCount))
+        return false;
+    if (!this->writeWord(8, this->_trailer.topLevelObject))
+        return false;
+    if (!this->writeWord(8, this->_trailer.offsetTableEndOffset))
+        return false;
+
+    return true;
 }

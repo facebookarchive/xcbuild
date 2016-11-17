@@ -17,6 +17,21 @@ using plist::Dictionary;
 
 TEST(Binary, UnicodeString)
 {
+    /*
+     * UTF-8 encoding of these emoji:
+     *
+     *   U+1F643 U+1F636 U+1F62E U+1F62D
+     *   U+1F626 U+1F610 U+1F602 U+1F644
+     *   U+1F62E U+1F604 U+1F605 U+1F61B
+     */
+    static char const *expected =
+        "\xf0\x9f\x99\x83" "\xf0\x9f\x98\xb6" "\xf0\x9f\x98\xae" "\xf0\x9f\x98\xad"
+        "\xf0\x9f\x98\xa6" "\xf0\x9f\x98\x90" "\xf0\x9f\x98\x82" "\xf0\x9f\x99\x84"
+        "\xf0\x9f\x98\xae" "\xf0\x9f\x98\x84" "\xf0\x9f\x98\x85" "\xf0\x9f\x98\x9b";
+
+    /*
+     * Binary property list containing the above characters.
+     */
     std::vector<uint8_t> contents = {
         0x62, 0x70, 0x6c, 0x69, 0x73, 0x74, 0x30, 0x30, 0x6f, 0x10, 0x18, 0xd8,
         0x3d, 0xde, 0x43, 0xd8, 0x3d, 0xde, 0x36, 0xd8, 0x3d, 0xde, 0x2e, 0xd8,
@@ -34,7 +49,7 @@ TEST(Binary, UnicodeString)
     auto deserialize = Binary::Deserialize(contents, Binary::Create());
     ASSERT_NE(deserialize.first, nullptr);
 
-    auto string = String::New("\U0001F643\U0001F636\U0001F62E\U0001F62D\U0001F626\U0001F610\U0001F602\U0001F644\U0001F62E\U0001F604\U0001F605\U0001F61B");
+    auto string = String::New(expected);
     EXPECT_TRUE(deserialize.first->equals(string.get()));
 
     auto serialize = Binary::Serialize(deserialize.first.get(), Binary::Create());
