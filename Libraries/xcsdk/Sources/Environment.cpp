@@ -105,7 +105,7 @@ WriteDeveloperRoot(libutil::Filesystem *filesystem, ext::optional<std::string> c
          */
         std::string normalized = FSUtil::NormalizePath(*path);
         std::string resolved = ResolveDeveloperRoot(filesystem, normalized);
-        if (!filesystem->writeSymbolicLink(normalized, PrimaryDeveloperRootLink())) {
+        if (!filesystem->writeSymbolicLink(normalized, PrimaryDeveloperRootLink(), true)) {
             return false;
         }
     }

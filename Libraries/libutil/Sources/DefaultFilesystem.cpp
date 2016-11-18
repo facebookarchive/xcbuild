@@ -17,6 +17,9 @@
 #include <cstring>
 #include <cerrno>
 
+#if _WIN32
+#include <windows.h>
+#else
 #include <unistd.h>
 #include <libgen.h>
 #include <dirent.h>
@@ -24,20 +27,141 @@
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #include <copyfile.h>
 #endif
+#endif
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
 using libutil::Permissions;
 
+#if _WIN32
+using WideString = std::basic_string<std::remove_const<std::remove_pointer<LPCWSTR>::type>::type>;
+
+static std::string
+WideStringToString(WideString const &str)
+{
+    int size = WideCharToMultiByte(CP_UTF8, 0, str.data(), (int)str.size(), NULL, 0, NULL, NULL);
+    std::string multi = std::string();
+    multi.resize(size);
+    WideCharToMultiByte(CP_UTF8, 0, str.data(), (int)str.size(), &multi[0], size, NULL, NULL);
+    return multi;
+}
+
+static WideString
+StringToWideString(std::string const &str)
+{
+    int size = MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.size(), NULL, 0);
+    WideString wide = WideString();
+    wide.resize(size);
+    MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.size(), &wide[0], size);
+    return wide;
+}
+#endif
+
+#if _WIN32
+#if _MSC_VER
+#define __PACKED_STRUCT_BEGIN __pragma(pack(push, 1))
+#define __PACKED_STRUCT_END __pragma(pack(pop))
+#else
+#define __PACKED_STRUCT_BEGIN
+#define __PACKED_STRUCT_END __attribute__((packed))
+#endif
+
+#if _MSC_VER
+__pragma(warning(push))
+__pragma(warning(disable: 4201))
+#endif
+
+__PACKED_STRUCT_BEGIN struct _REPARSE_DATA_BUFFER {
+    ULONG  ReparseTag;
+    USHORT ReparseDataLength;
+    USHORT Reserved;
+    union {
+        struct {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            ULONG  Flags;
+            WCHAR  PathBuffer[1];
+        } SymbolicLinkReparseBuffer;
+        struct {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            WCHAR  PathBuffer[1];
+        } MountPointReparseBuffer;
+        struct {
+            UCHAR DataBuffer[1];
+        } GenericReparseBuffer;
+    };
+} __PACKED_STRUCT_END;
+
+typedef _REPARSE_DATA_BUFFER REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+
+#if _MSC_VER
+__pragma(warning(pop))
+#endif
+#endif
+
 bool DefaultFilesystem::
 exists(std::string const &path) const
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+    DWORD attributes = GetFileAttributesW(wide.data());
+    return (attributes != INVALID_FILE_ATTRIBUTES);
+#else
     return ::access(path.c_str(), F_OK) == 0;
+#endif
 }
 
 ext::optional<Filesystem::Type> DefaultFilesystem::
 type(std::string const &path) const
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+
+    static DWORD const share = (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE);
+    static DWORD const flags = (FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS);
+    HANDLE handle = CreateFileW(wide.c_str(), 0, share, nullptr, OPEN_EXISTING, flags, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return ext::nullopt;
+    }
+
+    BY_HANDLE_FILE_INFORMATION information;
+    if (!GetFileInformationByHandle(handle, &information)) {
+        CloseHandle(handle);
+        return ext::nullopt;
+    }
+
+    if ((information.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0) {
+        BYTE buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+        REPARSE_DATA_BUFFER *data = reinterpret_cast<REPARSE_DATA_BUFFER *>(&buffer);
+
+        DWORD ignored = 0;
+        if (!DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, nullptr, 0, data, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &ignored, nullptr)) {
+            CloseHandle(handle);
+            return ext::nullopt;
+        }
+
+        if ((data->ReparseTag & IO_REPARSE_TAG_SYMLINK) != 0) {
+            CloseHandle(handle);
+            return Type::SymbolicLink;
+        } else {
+            /* Some other type of reparse point. */
+            CloseHandle(handle);
+            return ext::nullopt;
+        }
+    } else if ((information.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+        CloseHandle(handle);
+        return Type::Directory;
+    } else {
+        /* No flag for files; assume as default. */
+        CloseHandle(handle);
+        return Type::File;
+    }
+#else
     struct stat st;
     if (::lstat(path.c_str(), &st) < 0) {
         return ext::nullopt;
@@ -53,24 +177,64 @@ type(std::string const &path) const
         /* Unsupported file type, e.g. character or block device. */
         return ext::nullopt;
     }
+#endif
 }
 
 bool DefaultFilesystem::
 isReadable(std::string const &path) const
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+
+    static DWORD const share = (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE);
+    static DWORD const flags = (FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS);
+    HANDLE handle = CreateFileW(wide.c_str(), GENERIC_READ, share, nullptr, OPEN_EXISTING, flags, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+
+    CloseHandle(handle);
+    return true;
+#else
     return ::access(path.c_str(), R_OK) == 0;
+#endif
 }
 
 bool DefaultFilesystem::
 isWritable(std::string const &path) const
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+
+    static DWORD const share = (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE);
+    static DWORD const flags = (FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS);
+    HANDLE handle = CreateFileW(wide.c_str(), GENERIC_WRITE, share, nullptr, OPEN_EXISTING, flags, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+
+    CloseHandle(handle);
+    return true;
+#else
     return ::access(path.c_str(), W_OK) == 0;
+#endif
 }
 
 bool DefaultFilesystem::
 isExecutable(std::string const &path) const
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+
+    DWORD type = 0;
+    if (!GetBinaryTypeW(wide.c_str(), &type)) {
+        return false;
+    }
+
+    return true;
+#else
     return ::access(path.c_str(), X_OK) == 0;
+#endif
 }
 
 static Permissions
@@ -247,6 +411,19 @@ writeDirectoryPermissions(std::string const &path, Permissions::Operation operat
 bool DefaultFilesystem::
 createFile(std::string const &path)
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+
+    static DWORD const share = (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE);
+    HANDLE handle = CreateFileW(wide.c_str(), 0, share, nullptr, OPEN_ALWAYS, 0, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+
+
+    CloseHandle(handle);
+    return true;
+#else
     if (this->isWritable(path)) {
         return true;
     }
@@ -258,11 +435,51 @@ createFile(std::string const &path)
 
     std::fclose(fp);
     return true;
+#endif
 }
 
 bool DefaultFilesystem::
 read(std::vector<uint8_t> *contents, std::string const &path, size_t offset, ext::optional<size_t> length) const
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+
+    static DWORD const share = (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE);
+    HANDLE handle = CreateFileW(wide.c_str(), GENERIC_READ, share, nullptr, OPEN_EXISTING, 0, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+
+    DWORD size = GetFileSize(handle, nullptr);
+    if (size == INVALID_FILE_SIZE) {
+        CloseHandle(handle);
+        return false;
+    }
+
+    if (SetFilePointer(handle, offset, nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+        CloseHandle(handle);
+        return false;
+    }
+
+    if (length) {
+        if (offset + *length > static_cast<size_t>(size)) {
+            CloseHandle(handle);
+            return false;
+        }
+
+        size = *length;
+    }
+
+    *contents = std::vector<uint8_t>(size);
+
+    if (!ReadFile(handle, contents->data(), size, nullptr, nullptr)) {
+        CloseHandle(handle);
+        return false;
+    }
+
+    CloseHandle(handle);
+    return true;
+#else
     FILE *fp = std::fopen(path.c_str(), "rb");
     if (fp == nullptr) {
         return false;
@@ -280,7 +497,7 @@ read(std::vector<uint8_t> *contents, std::string const &path, size_t offset, ext
     }
 
     if (length) {
-        if (offset + *length > size) {
+        if (offset + *length > static_cast<size_t>(size)) {
             std::fclose(fp);
             return false;
         }
@@ -303,12 +520,31 @@ read(std::vector<uint8_t> *contents, std::string const &path, size_t offset, ext
     }
 
     std::fclose(fp);
+
     return true;
+#endif
 }
 
 bool DefaultFilesystem::
 write(std::vector<uint8_t> const &contents, std::string const &path)
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+
+    static DWORD const share = (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE);
+    HANDLE handle = CreateFileW(wide.c_str(), GENERIC_WRITE, share, nullptr, CREATE_ALWAYS, 0, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+
+    if (!WriteFile(handle, contents.data(), contents.size(), nullptr, nullptr)) {
+        CloseHandle(handle);
+        return false;
+    }
+
+    CloseHandle(handle);
+    return true;
+#else
     FILE *fp = std::fopen(path.c_str(), "wb");
     if (fp == nullptr) {
         return false;
@@ -324,13 +560,36 @@ write(std::vector<uint8_t> const &contents, std::string const &path)
     }
 
     std::fclose(fp);
+
     return true;
+#endif
 }
 
 bool DefaultFilesystem::
 copyFile(std::string const &from, std::string const &to)
 {
-#if defined(__APPLE__) || defined(__FreeBSD__)
+#if _WIN32
+    ext::optional<Type> fromType = this->type(from);
+    if (fromType != Type::File && fromType != Type::SymbolicLink) {
+        return false;
+    }
+
+    ext::optional<Type> toType = this->type(to);
+    if (toType == Type::SymbolicLink) {
+        /* CopyFile() will otherwise copy to the target. */
+        if (!this->removeSymbolicLink(to)) {
+            return false;
+        }
+    }
+
+    WideString fwide = StringToWideString(from);
+    WideString twide = StringToWideString(to);
+    if (!CopyFileW(fwide.c_str(), twide.c_str(), FALSE)) {
+        return false;
+    }
+
+    return true;
+#elif defined(__APPLE__) || defined(__FreeBSD__)
     ext::optional<Type> fromType = this->type(from);
     if (fromType != Type::File && fromType != Type::SymbolicLink) {
         return false;
@@ -370,39 +629,149 @@ copyFile(std::string const &from, std::string const &to)
 bool DefaultFilesystem::
 removeFile(std::string const &path)
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+    if (!DeleteFileW(wide.c_str())) {
+        return false;
+    }
+
+    return true;
+#else
     if (::unlink(path.c_str()) < 0) {
         return false;
     }
+
     return true;
+#endif
 }
 
 ext::optional<std::string> DefaultFilesystem::
-readSymbolicLink(std::string const &path) const
+readSymbolicLink(std::string const &path, bool *directory) const
 {
-    char buffer[PATH_MAX];
-    ssize_t len = ::readlink(path.c_str(), buffer, sizeof(buffer) - 1);
-    if (len == -1) {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+
+    static DWORD const share = (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE);
+    static DWORD const flags = (FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS);
+    HANDLE handle = CreateFileW(wide.c_str(), 0, share, nullptr, OPEN_EXISTING, flags, nullptr);
+    if (handle == INVALID_HANDLE_VALUE) {
         return ext::nullopt;
     }
 
-    buffer[len] = '\0';
-    return std::string(buffer);
+    BY_HANDLE_FILE_INFORMATION information;
+    if (!GetFileInformationByHandle(handle, &information)) {
+        CloseHandle(handle);
+        return ext::nullopt;
+    }
+
+    if ((information.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) == 0) {
+        CloseHandle(handle);
+        return ext::nullopt;
+    }
+
+    BYTE buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+    REPARSE_DATA_BUFFER *data = reinterpret_cast<REPARSE_DATA_BUFFER *>(&buffer);
+
+    DWORD ignored = 0;
+    if (!DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, nullptr, 0, data, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &ignored, nullptr)) {
+        CloseHandle(handle);
+        return ext::nullopt;
+    }
+
+    if ((data->ReparseTag & IO_REPARSE_TAG_SYMLINK) == 0) {
+        CloseHandle(handle);
+        return ext::nullopt;
+    }
+
+    CloseHandle(handle);
+
+    if (directory) {
+        *directory = (information.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+    }
+
+    size_t offset = (data->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(WCHAR));
+    size_t length = (data->SymbolicLinkReparseBuffer.SubstituteNameLength / sizeof(WCHAR));
+    WCHAR *pathBuffer = data->SymbolicLinkReparseBuffer.PathBuffer;
+    WideString target = WideString(&pathBuffer[offset], &pathBuffer[offset + length]);
+    return WideStringToString(target);
+#else
+    for (size_t size = PATH_MAX; true; size *= 2) {
+        std::string current = std::string();
+        current.resize(size);
+
+        ssize_t len = ::readlink(path.c_str(), &current[0], current.size());
+        if (len == current.size()) {
+            /* May need more space. */
+        } else if (len != -1) {
+            /* Success. */
+            if (directory) {
+                *directory = (this->type(this->resolvePath(path)) == Type::Directory);
+            }
+            return std::string(current.c_str());
+        } else {
+            return ext::nullopt;
+        }
+    }
+#endif
 }
 
 bool DefaultFilesystem::
-writeSymbolicLink(std::string const &target, std::string const &path)
+writeSymbolicLink(std::string const &target, std::string const &path, bool directory)
 {
+#if _WIN32
+    WideString twide = StringToWideString(target);
+    WideString pwide = StringToWideString(path);
+
+#if __MINGW32__
+#if !defined(CreateSymbolicLink)
+    static BOOL(*CreateSymbolicLinkW)(LPCWSTR, LPCWSTR, DWORD) = nullptr;
+    if (CreateSymbolicLinkW == nullptr) {
+        CreateSymbolicLinkW = reinterpret_cast<decltype(CreateSymbolicLinkW)>(GetProcAddress(GetModuleHandle("kernel32.dll"), "CreateSymbolicLinkW"));
+    }
+#endif
+#if !defined(SYMBOLIC_LINK_FLAG_DIRECTORY)
+#define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
+#endif
+#endif
+
+    DWORD flags = (directory ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0);
+    if (!CreateSymbolicLinkW(pwide.c_str(), twide.c_str(), flags)) {
+        return false;
+    }
+
+    return true;
+#else
     if (::symlink(target.c_str(), path.c_str()) != 0) {
         return false;
     }
 
     return true;
+#endif
 }
 
 bool DefaultFilesystem::
 copySymbolicLink(std::string const &from, std::string const &to)
 {
-#if defined(__APPLE__) || defined(__FreeBSD__)
+#if _WIN32
+    ext::optional<Type> fromType = this->type(from);
+    if (fromType != Type::SymbolicLink) {
+        return false;
+    }
+
+#if __MINGW32__
+#if !defined(COPY_FILE_COPY_SYMLINK)
+#define COPY_FILE_COPY_SYMLINK 0x00000800
+#endif
+#endif
+
+    WideString fwide = StringToWideString(from);
+    WideString twide = StringToWideString(to);
+    if (!CopyFileExW(fwide.c_str(), twide.c_str(), nullptr, nullptr, nullptr, COPY_FILE_COPY_SYMLINK)) {
+        return false;
+    }
+
+    return true;
+#elif defined(__APPLE__) || defined(__FreeBSD__)
     if (this->type(from) != Type::SymbolicLink) {
         return false;
     }
@@ -430,9 +799,18 @@ bool DefaultFilesystem::
 removeSymbolicLink(std::string const &path)
 {
     if (this->type(path) == Type::SymbolicLink) {
+#if _WIN32
+        WideString wide = StringToWideString(path);
+        if (!DeleteFileW(wide.c_str())) {
+            return false;
+        }
+
+        return true;
+#else
         if (::unlink(path.c_str()) != 0) {
             return false;
         }
+#endif
     }
 
     return true;
@@ -441,12 +819,14 @@ removeSymbolicLink(std::string const &path)
 bool DefaultFilesystem::
 createDirectory(std::string const &path, bool recursive)
 {
+#if !_WIN32
     /* Get and re-set current mode mask. */
     mode_t mask = ::umask(0);
     ::umask(mask);
 
     /* Mode is most allowed by mask. */
     mode_t mode = (S_IRWXU | S_IRWXG | S_IRWXO) & ~mask;
+#endif
 
     if (recursive) {
         std::string current = path;
@@ -462,16 +842,30 @@ createDirectory(std::string const &path, bool recursive)
         while (!create.empty()) {
             std::string const &directory = create.top();
 
+#if _WIN32
+            WideString wide = StringToWideString(directory);
+            if (!CreateDirectoryW(wide.c_str(), nullptr)) {
+                return false;
+            }
+#else
             if (::mkdir(directory.c_str(), mode) != 0) {
                 return false;
             }
+#endif
 
             create.pop();
         }
     } else {
-        if (::mkdir(path.c_str(), mode) != 0) {
-            return false;
-        }
+#if _WIN32
+            WideString wide = StringToWideString(path);
+            if (!CreateDirectoryW(wide.c_str(), nullptr)) {
+                return false;
+            }
+#else
+            if (::mkdir(path.c_str(), mode) != 0) {
+                return false;
+            }
+#endif
     }
 
     return true;
@@ -482,43 +876,97 @@ readDirectory(std::string const &path, bool recursive, std::function<void(std::s
 {
     std::function<bool(std::string const &, ext::optional<std::string> const &)> process =
         [this, &recursive, &cb, &process](std::string const &absolute, ext::optional<std::string> const &relative) -> bool {
-        DIR *dp = ::opendir(absolute.c_str());
-        if (dp == NULL) {
+#if _WIN32
+        WideString wide = StringToWideString(absolute);
+        wide += static_cast<wchar_t>('\\');
+        wide += static_cast<wchar_t>('*');
+
+        WIN32_FIND_DATAW data;
+        HANDLE handle = FindFirstFileW(wide.c_str(), &data);
+        if (handle == INVALID_HANDLE_VALUE) {
             return false;
         }
+#else
+        DIR *dp = ::opendir(absolute.c_str());
+        if (dp == nullptr) {
+            return false;
+        }
+#endif
 
         /* Report children. */
+#if _WIN32
+        do {
+            std::string name_ = WideStringToString(WideString(data.cFileName));
+            char const *name = name_.c_str();
+#else
         while (struct dirent *entry = ::readdir(dp)) {
-            if (::strcmp(entry->d_name, ".") == 0 || ::strcmp(entry->d_name, "..") == 0) {
+            char const *name = entry->d_name;
+#endif
+            if (::strcmp(name, ".") == 0 || ::strcmp(name, "..") == 0) {
                 continue;
             }
 
-            std::string path = (relative ? *relative + "/" + entry->d_name : entry->d_name);
+            std::string path = (relative ? *relative + "/" + name : name);
             cb(path);
         }
+#if _WIN32
+        while (FindNextFileW(handle, &data));
+        if (GetLastError() != ERROR_NO_MORE_FILES) {
+            return false;
+        }
+#endif
 
         /* Process subdirectories. */
         if (recursive) {
+#if _WIN32
+            FindClose(handle);
+            handle = FindFirstFileW(wide.c_str(), &data);
+            if (handle == INVALID_HANDLE_VALUE) {
+                return false;
+            }
+#else
             ::rewinddir(dp);
+#endif
 
+#if _WIN32
+            do {
+                std::string name_ = WideStringToString(WideString(data.cFileName));
+                char const *name = name_.c_str();
+#else
             while (struct dirent *entry = ::readdir(dp)) {
-                if (::strcmp(entry->d_name, ".") == 0 || ::strcmp(entry->d_name, "..") == 0) {
+                char const *name = entry->d_name;
+#endif
+                if (::strcmp(name, ".") == 0 || ::strcmp(name, "..") == 0) {
                     continue;
                 }
 
-                std::string full = absolute + "/" + entry->d_name;
+                std::string full = absolute + "/" + name;
 
                 if (this->type(full) == Type::Directory) {
-                    std::string path = (relative ? *relative + "/" + entry->d_name : entry->d_name);
+                    std::string path = (relative ? *relative + "/" + name : name);
                     if (!process(full, path)) {
+#if _WIN32
+                        FindClose(handle);
+#else
                         ::closedir(dp);
+#endif
                         return false;
                     }
                 }
             }
+#if _WIN32
+            while (FindNextFileW(handle, &data));
+            if (GetLastError() != ERROR_NO_MORE_FILES) {
+                return false;
+            }
+#endif
         }
 
+#if _WIN32
+        FindClose(handle);
+#else
         ::closedir(dp);
+#endif
         return true;
     };
 
@@ -595,9 +1043,16 @@ removeDirectory(std::string const &path, bool recursive)
         }
     }
 
+#if _WIN32
+    WideString wide = StringToWideString(path);
+    if (!RemoveDirectoryW(wide.c_str())) {
+        return false;
+    }
+#else
     if (::rmdir(path.c_str()) != 0) {
         return false;
     }
+#endif
 
     return true;
 }
@@ -605,10 +1060,70 @@ removeDirectory(std::string const &path, bool recursive)
 std::string DefaultFilesystem::
 resolvePath(std::string const &path) const
 {
+#if _WIN32
+    WideString wide = StringToWideString(path);
+
+    static DWORD const flags = FILE_FLAG_BACKUP_SEMANTICS;
+    static DWORD const share = (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE);
+    HANDLE handle = CreateFileW(wide.c_str(), 0, share, NULL, OPEN_EXISTING, flags, NULL);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return std::string();
+    }
+
+#if __MINGW32__
+#if !defined(GetFinalPathNameByHandle)
+    static DWORD(*GetFinalPathNameByHandleW)(HANDLE, LPWSTR, DWORD, DWORD) = nullptr;
+    if (GetFinalPathNameByHandleW == nullptr) {
+        GetFinalPathNameByHandleW = reinterpret_cast<decltype(GetFinalPathNameByHandleW)>(GetProcAddress(GetModuleHandle("kernel32.dll"), "GetFinalPathNameByHandleW"));
+    }
+#endif
+#endif
+
+    static DWORD const options = (FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+    DWORD size = GetFinalPathNameByHandleW(handle, nullptr, 0, options);
+    if (size == 0) {
+        CloseHandle(handle);
+        return std::string();
+    }
+
+    WideString buffer;
+    buffer.resize(size);
+    if (GetFinalPathNameByHandleW(handle, &buffer[0], buffer.size(), options) == 0) {
+        CloseHandle(handle);
+        return std::string();
+    }
+
+    /*
+     * The size returned from `GetFinalPathNameByHandleW()` is one too big on some versions.
+     * Rather than try and detect those versions, just detect a too-big buffer and truncate.
+     */
+    size_t length = wcslen(buffer.c_str());
+    if (size > length) {
+        buffer.resize(length);
+    }
+
+    CloseHandle(handle);
+
+    std::string result = WideStringToString(buffer);
+
+    /*
+     * Convert from NT path to DOS path. Otherwise, anything using this path will lose
+     * normalization, which will break with any forward slashes that end up in the path.
+     */
+    if (result.size() >= 7 &&
+        (result[0] == '\\' && result[1] == '\\' && result[2] == '?' && result[3] == '\\') &&
+        (::isalpha(result[4]) && result[5] == ':' && result[6] == '\\')) {
+        /* Trim the NT path designator. */
+        result = result.substr(4);
+    }
+
+    return result;
+#else
     char realPath[PATH_MAX + 1];
     if (::realpath(path.c_str(), realPath) == nullptr) {
         return std::string();
     } else {
         return realPath;
     }
+#endif
 }
