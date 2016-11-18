@@ -4,7 +4,7 @@
   xcbuild
 </h1>
 
-**xcbuild** is an Xcode-compatible build tool with the goal of providing faster builds, better documentation of the build process and running on multiple platforms (in particular OS X and Linux)
+**xcbuild** is an Xcode-compatible build tool with the goal of providing faster builds, better documentation of the build process and running on multiple platforms (macOS, Linux, and Windows)
 
 ### Why xcbuild?
 
@@ -22,7 +22,7 @@
   <tr><td>:gift_heart:</td><td>Fully compatible with <a href="https://github.com/supermarin/xcpretty">xcpretty</a></td></tr>
   <tr><td>:tophat:</td><td>Uses <a href="https://ninja-build.org/">Ninja</a> and <a href="https://github.com/apple/swift-llbuild">llbuild</a></td><th rowspan="3">Incremental Build</th><td rowspan="3">2.190s</td><td rowspan="3">0.046s :zap:</td></tr>
   <tr><td>:octocat:</td><td>Open source under the BSD license</td></tr>
-  <tr><td>:penguin:</td><td>Builds on Linux</td></tr>
+  <tr><td>:penguin:</td><td>Builds on Linux and Windows</td></tr>
 </table>
 
 ### xcbuild and other build tools
@@ -35,19 +35,39 @@ xcbuild and [xctool](https://github.com/facebook/xctool) are both Xcode-compatib
 
 [![Build Status](https://travis-ci.org/facebook/xcbuild.svg?branch=master)](https://travis-ci.org/facebook/xcbuild)
 
-- Xcode 7 or later, on OS X.
+- Xcode 7 or later, on macOS.
 - GCC 4.8 or later, on Linux. `libpng16-dev`, `zlib1g-dev`, `libxml2-dev`, and `pkg-config` are also required.
+- Visual Studio 2015 or later, on Windows. A `zlib` DLL is also required.
 - [CMake](http://www.cmake.org) and [Ninja](https://ninja-build.org/) (or [llbuild](https://github.com/apple/swift-llbuild)).
   - With [Homebrew](http://brew.sh/): `brew install cmake ninja`
+  - With [Chocolatey](https://chocolatey.org): `choco install cmake ninja`
 
-```sh
-git clone https://github.com/facebook/xcbuild
-cd xcbuild
-git submodule update --init
-make
-```
+To build:
 
-Build output will be in the `build` directory. Run xcbuild with `./build/xcbuild`.
+ - All platforms:
+
+       ```sh
+       git clone https://github.com/facebook/xcbuild
+       cd xcbuild
+       git submodule update --init
+       ```
+
+ - Linux and macOS:
+
+       ```sh
+       make
+       ```
+
+   Build output will be in the `build` directory. Run xcbuild with `./build/xcbuild`.
+
+ - Windows (experimental):
+
+       ```sh
+       cmake -Bbuild -H. -G "Visual Studio 14 2015" -DZLIB_ROOT=<path>
+       ```
+
+    Open `build\xcbuild.sln` and build.
+
 
 ## Usage
 
