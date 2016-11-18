@@ -13,6 +13,7 @@
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/Context.h>
 #include <libutil/Filesystem.h>
+#include <libutil/DefaultFilesystem.h>
 #include <libutil/FSUtil.h>
 
 #include <algorithm>
@@ -77,13 +78,20 @@ ResolveInternal(
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options, std::string(), args);
 
+    std::vector<std::string> toolInputPaths = toolEnvironment.inputs(toolContext->workingDirectory());
+
     // TODO(grp): This should be generic for all tools.
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
     if (tool->deeplyStatInputDirectories()) {
         for (std::string const &inputPath : inputPaths) {
             /* Create a dependency info file to track the input directory contents. */
-            auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, inputPath);
-            dependencyInfo.push_back(info);
+            libutil::DefaultFilesystem filesystem = libutil::DefaultFilesystem();
+            if (filesystem.isDirectory(inputPath)) {
+                auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, inputPath);
+                dependencyInfo.push_back(info);
+            } else {
+                toolInputPaths.push_back(inputPath);
+            }
         }
     }
 
@@ -95,7 +103,7 @@ ResolveInternal(
     invocation.arguments() = tokens.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
+    invocation.inputs() = toolInputPaths;
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();
