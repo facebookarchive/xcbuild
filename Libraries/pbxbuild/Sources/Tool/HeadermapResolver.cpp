@@ -14,8 +14,15 @@
 #include <pbxbuild/FileTypeResolver.h>
 #include <pbxbuild/HeaderMap.h>
 #include <pbxsetting/Type.h>
+#include <plist/Array.h>
+#include <plist/Dictionary.h>
+#include <plist/Integer.h>
+#include <plist/String.h>
+#include <plist/Format/JSON.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+
+#include <array>
 
 namespace Tool = pbxbuild::Tool;
 using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
@@ -72,6 +79,111 @@ HeadermapSearchPaths(pbxspec::Manager::shared_ptr const &specManager, pbxsetting
     return orderedHeaderSearchPaths;
 }
 
+static std::unique_ptr<plist::Dictionary>
+VFSFileReference(std::string const &fileName, std::string const &sourcePath)
+{
+    auto file = plist::Dictionary::New();
+    file->set("type", plist::String::New("file"));
+    file->set("name", plist::String::New(fileName));
+    file->set("external-contents", plist::String::New(sourcePath));
+    return file;
+}
+
+static std::unique_ptr<plist::Dictionary>
+VFSDirectoryReference(std::string const &directoryPath, std::unique_ptr<plist::Array> &&contents)
+{
+    auto directory = plist::Dictionary::New();
+    directory->set("type", plist::String::New("directory"));
+    directory->set("name", plist::String::New(directoryPath));
+    directory->set("contents", std::move(contents));
+    return directory;
+}
+
+static std::array<std::unique_ptr<plist::Dictionary>, 2>
+VFSHeadersDirectories(pbxspec::Manager::shared_ptr const &specManager, pbxproj::PBX::Target::shared_ptr const &target, std::string const &targetRoot, pbxsetting::Environment const &environment)
+{
+    std::unique_ptr<plist::Array> publicHeadersContents = plist::Array::New();
+    std::unique_ptr<plist::Array> privateHeadersContents = plist::Array::New();
+
+    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : target->buildPhases()) {
+        if (buildPhase->type() != pbxproj::PBX::BuildPhase::Type::Headers) {
+            continue;
+        }
+
+        for (pbxproj::PBX::BuildFile::shared_ptr const &buildFile : buildPhase->files()) {
+            if (buildFile->fileRef() == nullptr || buildFile->fileRef()->type() != pbxproj::PBX::GroupItem::Type::FileReference) {
+                continue;
+            }
+
+            pbxproj::PBX::FileReference::shared_ptr const &fileReference = std::static_pointer_cast <pbxproj::PBX::FileReference> (buildFile->fileRef());
+            std::string filePath = environment.expand(fileReference->resolve());
+            pbxspec::PBX::FileType::shared_ptr fileType = FileTypeResolver::Resolve(specManager, { pbxspec::Manager::AnyDomain() }, fileReference, filePath);
+            if (fileType == nullptr || (fileType->identifier() != "sourcecode.c.h" && fileType->identifier() != "sourcecode.cpp.h")) {
+                continue;
+            }
+
+            std::string fileName = FSUtil::GetBaseName(filePath);
+
+            std::vector<std::string> const &attributes = buildFile->attributes();
+            bool isPublic  = std::find(attributes.begin(), attributes.end(), "Public") != attributes.end();
+            bool isPrivate = std::find(attributes.begin(), attributes.end(), "Private") != attributes.end();
+
+            if (isPublic) {
+                std::unique_ptr<plist::Dictionary> file = VFSFileReference(fileName, filePath);
+                publicHeadersContents->append(std::move(file));
+            } else if (isPrivate) {
+                std::unique_ptr<plist::Dictionary> file = VFSFileReference(fileName, filePath);
+                privateHeadersContents->append(std::move(file));
+            }
+        }
+    }
+
+    std::string publicHeadersRoot = targetRoot + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH");
+    std::string privateHeadersRoot = targetRoot + "/" + environment.resolve("PRIVATE_HEADERS_FOLDER_PATH");
+
+    std::string swiftObjCInterfaceHeader = environment.resolve("SWIFT_OBJC_INTERFACE_HEADER_NAME");
+    if (!swiftObjCInterfaceHeader.empty()) {
+        std::string swiftObjCInterfacePath = publicHeadersRoot + "/" + swiftObjCInterfaceHeader;
+        std::unique_ptr<plist::Dictionary> swiftObjCInterface = VFSFileReference(swiftObjCInterfaceHeader, swiftObjCInterfacePath);
+        publicHeadersContents->append(std::move(swiftObjCInterface));
+    }
+
+    std::unique_ptr<plist::Dictionary> publicHeaders = VFSDirectoryReference(publicHeadersRoot, std::move(publicHeadersContents));
+    std::unique_ptr<plist::Dictionary> privateHeaders = VFSDirectoryReference(privateHeadersRoot, std::move(privateHeadersContents));
+    return {{ std::move(publicHeaders), std::move(privateHeaders) }};
+}
+
+static std::unique_ptr<plist::Dictionary>
+VFSModulesDirectory(pbxsetting::Environment const &environment, std::string const &targetRoot)
+{
+    std::string moduleMapSourceRoot = environment.resolve("TARGET_TEMP_DIR");
+    std::unique_ptr<plist::Array> modulesContents = plist::Array::New();
+
+    {
+        std::string moduleMapName = "module.modulemap";
+        std::string moduleMapSource = moduleMapSourceRoot + "/" + moduleMapName;
+
+        std::unique_ptr<plist::Dictionary> moduleMap = VFSFileReference(moduleMapName, moduleMapSource);
+        modulesContents->append(std::move(moduleMap));
+    }
+
+    std::string privateModuleMapFile = environment.resolve("MODULEMAP_PRIVATE_FILE");
+    if (!privateModuleMapFile.empty()) {
+        std::string privateModuleMapName = "module.private.modulemap";
+        std::string privateModuleMapSource = moduleMapSourceRoot + "/" + privateModuleMapName;
+
+        std::unique_ptr<plist::Dictionary> privateModuleMap = VFSFileReference(privateModuleMapName, privateModuleMapSource);
+        modulesContents->append(std::move(privateModuleMap));
+    }
+
+    if (!modulesContents->empty()) {
+        std::string modulesRoot = targetRoot + "/" + "Modules";
+        return VFSDirectoryReference(modulesRoot, std::move(modulesContents));
+    } else {
+        return nullptr;
+    }
+}
+
 void Tool::HeadermapResolver::
 resolve(
     Tool::Context *toolContext,
@@ -87,8 +199,32 @@ resolve(
         return;
     }
 
-    if (pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_USES_VFS"))) {
-        // TODO(grp): Support VFS-based header maps.
+    bool definesModule = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("DEFINES_MODULE"));
+    bool requiresVFS = definesModule || pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_USES_VFS"));
+
+    std::unique_ptr<plist::Dictionary> allProjectHeaders = nullptr;
+    if (requiresVFS) {
+        // TODO(grp): Create VFS here.
+        std::unique_ptr<plist::Array> roots = plist::Array::New();
+
+        // TODO: do this for every target
+        std::string targetRoot = compilerEnvironment.resolve("BUILT_PRODUCTS_DIR") + "/" + compilerEnvironment.resolve("WRAPPER_NAME");
+
+        auto headerDirectories = VFSHeadersDirectories(_specManager, target, targetRoot, compilerEnvironment);
+        for (auto it = headerDirectories.begin(); it != headerDirectories.end(); ++it) {
+            roots->append(std::move(*it));
+        }
+
+        if (definesModule) {
+            if (std::unique_ptr<plist::Dictionary> modules = VFSModulesDirectory(compilerEnvironment, targetRoot)) {
+                roots->append(std::move(modules));
+            }
+        }
+
+        allProjectHeaders = plist::Dictionary::New();
+        allProjectHeaders->set("version", plist::Integer::New(0));
+        allProjectHeaders->set("case-sensitive", plist::String::New("false"));
+        allProjectHeaders->set("roots", std::move(roots));
     }
 
     HeaderMap targetName;
@@ -100,6 +236,8 @@ resolve(
     bool includeFlatEntriesForTargetBeingBuilt     = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT"));
     bool includeFrameworkEntriesForAllProductTypes = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES"));
     bool includeProjectHeaders                     = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_INCLUDES_PROJECT_HEADERS"));
+    // TODO
+    // bool useFrameworkPrefixEntries                 = pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("HEADERMAP_USES_FRAMEWORK_PREFIX_ENTRIES"));
 
     // TODO(grp): Populate generated headers.
     HeaderMap generatedFiles;
@@ -207,6 +345,19 @@ resolve(
         AuxiliaryFile::Data(headermapFileForProjectFiles, projectHeaders.write()),
     };
 
+    std::string vfsAllProductHeaders = compilerEnvironment.resolve("CPP_HEADERMAP_PRODUCT_HEADERS_VFS_FILE");
+
+    if (allProjectHeaders) {
+        // TODO(grp): This should be YAML, not JSON, but JSON works for now.
+        auto result = plist::Format::JSON::Serialize(allProjectHeaders.get(), plist::Format::JSON::Create());
+        if (!result.first) {
+            fprintf(stderr, "error: unable to serialize VFS: %s\n", result.second.c_str());
+        } else {
+            auto auxiliaryFile = AuxiliaryFile::Data(vfsAllProductHeaders, *result.first);
+            auxiliaryFiles.push_back(auxiliaryFile);
+        }
+    }
+
     Tool::Invocation invocation;
     invocation.auxiliaryFiles().insert(invocation.auxiliaryFiles().end(), auxiliaryFiles.begin(), auxiliaryFiles.end());
 
@@ -219,10 +370,10 @@ resolve(
         if (includeFlatEntriesForTargetBeingBuilt) {
             systemHeadermapFiles.push_back(headermapFileForOwnTargetHeaders);
         }
-        if (includeFrameworkEntriesForAllProductTypes) {
-            systemHeadermapFiles.push_back(headermapFileForAllTargetHeaders);
-        } else {
+        if (requiresVFS) {
             systemHeadermapFiles.push_back(headermapFileForAllNonFrameworkTargetHeaders);
+        } else {
+            systemHeadermapFiles.push_back(headermapFileForAllTargetHeaders);
         }
 
         userHeadermapFiles.push_back(headermapFileForGeneratedFiles);
@@ -236,6 +387,7 @@ resolve(
     Tool::HeadermapInfo *headermapInfo = &toolContext->headermapInfo();
     headermapInfo->systemHeadermapFiles().insert(headermapInfo->systemHeadermapFiles().end(), systemHeadermapFiles.begin(), systemHeadermapFiles.end());
     headermapInfo->userHeadermapFiles().insert(headermapInfo->userHeadermapFiles().end(), userHeadermapFiles.begin(), userHeadermapFiles.end());
+    headermapInfo->overlayVFS() = vfsAllProductHeaders;
 }
 
 std::unique_ptr<Tool::HeadermapResolver> Tool::HeadermapResolver::

@@ -33,6 +33,11 @@ AppendIncludePathFlags(std::vector<std::string> *args, pbxsetting::Environment c
     AppendCompoundFlags(args, "-I", true, headermapInfo.systemHeadermapFiles());
     AppendCompoundFlags(args, "-iquote", false, headermapInfo.userHeadermapFiles());
 
+    if (headermapInfo.overlayVFS()) {
+        args->push_back("-ivfsoverlay");
+        args->push_back(*headermapInfo.overlayVFS());
+    }
+
     if (environment.resolve("USE_HEADER_SYMLINKS") == "YES") {
         // TODO(grp): Create this symlink tree as needed.
         AppendCompoundFlags(args, "-I", true, { environment.resolve("CPP_HEADER_SYMLINKS_DIR") });
