@@ -35,7 +35,8 @@ copyFile(std::string const &from, std::string const &to)
 bool Filesystem::
 copySymbolicLink(std::string const &from, std::string const &to)
 {
-    ext::optional<std::string> target = this->readSymbolicLink(from);
+    bool directory = false;
+    ext::optional<std::string> target = this->readSymbolicLink(from, &directory);
     if (!target) {
         return false;
     }
@@ -50,7 +51,7 @@ copySymbolicLink(std::string const &from, std::string const &to)
         }
     }
 
-    if (!this->writeSymbolicLink(to, *target)) {
+    if (!this->writeSymbolicLink(to, *target, directory)) {
         return false;
     }
 

@@ -326,13 +326,13 @@ removeFile(std::string const &path)
 }
 
 ext::optional<std::string> MemoryFilesystem::
-readSymbolicLink(std::string const &path) const
+readSymbolicLink(std::string const &path, bool *directory) const
 {
     return ext::nullopt;
 }
 
 bool MemoryFilesystem::
-writeSymbolicLink(std::string const &target, std::string const &path)
+writeSymbolicLink(std::string const &target, std::string const &path, bool directory)
 {
     return false;
 }

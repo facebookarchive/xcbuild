@@ -117,12 +117,12 @@ public:
     /*
      * Read the destination of the symbolic link, relative to its containing directory.
      */
-    virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const = 0;
+    virtual ext::optional<std::string> readSymbolicLink(std::string const &path, bool *directory = nullptr) const = 0;
 
     /*
      * Write a symbolic link to a target, relative to the containing directory.
      */
-    virtual bool writeSymbolicLink(std::string const &target, std::string const &path) = 0;
+    virtual bool writeSymbolicLink(std::string const &target, std::string const &path, bool directory) = 0;
 
     /*
      * Copy a symbolic link to a new path.
