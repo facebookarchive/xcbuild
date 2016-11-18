@@ -239,7 +239,10 @@ Load(
         }
     }
 
-    rendition.fileName() = std::string(value->metadata.name, sizeof(value->metadata.name));
+    /* Truncate in case string was padded to fit the name field. */
+    std::string name = std::string(value->metadata.name, sizeof(value->metadata.name));
+    rendition.fileName() = std::string(name.c_str());
+
     rendition.width() = value->width;
     rendition.height() = value->height;
     rendition.scale() = static_cast<double>(value->scale_factor) / 100.0;
@@ -467,6 +470,11 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
             }
         }
         deflateEnd(&zlibStream);
+
+        /* The gzip header includes an operating system field. For consistent results, clear it. */
+        if (compressed_vector.size() > 9) {
+            compressed_vector[9] = 0;
+        }
     }
 
     std::vector<uint8_t> output = std::vector<uint8_t>(sizeof(struct car_rendition_data_header1));
