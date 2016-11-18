@@ -77,9 +77,9 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h" || arg == "--help") {
-        return libutil::Options::Current<bool>(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg);
     } else if (arg == "-v" || arg == "--version") {
-        return libutil::Options::Current<bool>(&_version, arg, it);
+        return libutil::Options::Current<bool>(&_version, arg);
     } else if (arg == "-o" || arg == "--output") {
         return libutil::Options::Next<std::string>(&_output, args, it);
     } else if (arg == "-n" || arg == "--name") {

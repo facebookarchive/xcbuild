@@ -16,6 +16,7 @@ TEST(FSUtil, GetDirectoryName)
 {
     EXPECT_EQ("", FSUtil::GetDirectoryName(""));
     EXPECT_EQ("", FSUtil::GetDirectoryName("a"));
+    EXPECT_EQ("/", FSUtil::GetDirectoryName("/a"));
     EXPECT_EQ("/a", FSUtil::GetDirectoryName("/a/b"));
     EXPECT_EQ("/a/b", FSUtil::GetDirectoryName("/a/b/c"));
 }

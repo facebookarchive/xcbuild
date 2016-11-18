@@ -13,6 +13,7 @@
 #include <sstream>
 
 namespace Tool = pbxbuild::Tool;
+namespace Phase = pbxbuild::Phase;
 using libutil::FSUtil;
 
 Tool::Environment::

@@ -27,17 +27,17 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-V") {
-        return libutil::Options::Current<bool>(&_verbose, arg, it);
+        return libutil::Options::Current<bool>(&_verbose, arg);
     } else if (arg == "-preserve-hfs-data") {
-        return libutil::Options::Current<bool>(&_preserveHFSData, arg, it);
+        return libutil::Options::Current<bool>(&_preserveHFSData, arg);
     } else if (arg == "-ignore-missing-inputs") {
-        return libutil::Options::Current<bool>(&_ignoreMissingInputs, arg, it);
+        return libutil::Options::Current<bool>(&_ignoreMissingInputs, arg);
     } else if (arg == "-resolve-src-symlinks") {
-        return libutil::Options::Current<bool>(&_resolveSrcSymlinks, arg, it);
+        return libutil::Options::Current<bool>(&_resolveSrcSymlinks, arg);
     } else if (arg == "-exclude") {
         return libutil::Options::AppendNext<std::string>(&_excludes, args, it);
     } else if (arg == "-strip-debug-symbols") {
-        return libutil::Options::Current<bool>(&_stripDebugSymbols, arg, it);
+        return libutil::Options::Current<bool>(&_stripDebugSymbols, arg);
     } else if (arg == "-strip-tool") {
         return libutil::Options::Next<std::string>(&_stripTool, args, it);
     } else if (arg == "-bitcode-strip") {

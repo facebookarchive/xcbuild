@@ -15,6 +15,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::LegacyTarget;
+using pbxproj::Context;
 
 LegacyTarget::
 LegacyTarget() :
@@ -54,7 +55,7 @@ parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::s
     }
 
     if (PBSIE != nullptr) {
-        _passBuildSettingsInEnvironment = PBSIE->value();
+        _passBuildSettingsInEnvironment = (PBSIE->value() != 0);
     }
 
     return true;

@@ -33,7 +33,7 @@ public:
     virtual ~BuildSettings();
 
 public:
-    inline char const *type() const override
+    inline SpecificationType type() const override
     { return BuildSettings::Type(); }
 
 public:
@@ -56,8 +56,8 @@ protected:
     static BuildSettings::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Type()
-    { return Types::BuildSettings; }
+    static inline SpecificationType Type()
+    { return SpecificationType::BuildSettings; }
 };
 
 } }

@@ -18,6 +18,7 @@
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
+namespace Phase = pbxbuild::Phase;
 using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
 using pbxbuild::HeaderMap;
 using pbxbuild::FileTypeResolver;

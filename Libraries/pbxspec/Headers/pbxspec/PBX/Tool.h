@@ -75,7 +75,7 @@ public:
     virtual ~Tool();
 
 public:
-    inline char const *type() const override
+    inline SpecificationType type() const override
     { return Tool::Type(); }
 
 public:
@@ -227,8 +227,8 @@ protected:
     static Tool::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Type()
-    { return Types::Tool; }
+    static inline SpecificationType Type()
+    { return SpecificationType::Tool; }
 };
 
 } }

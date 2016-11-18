@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 
 using xcexecution::SimpleExecutor;
+using xcexecution::Parameters;
 using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::Permissions;
@@ -77,7 +78,7 @@ build(
         if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             xcformatter::Formatter::Print(_formatter->finishTarget(*buildContext, target));
-            continue;
+            return false;
         }
 
         xcformatter::Formatter::Print(_formatter->beginCheckDependencies(target));

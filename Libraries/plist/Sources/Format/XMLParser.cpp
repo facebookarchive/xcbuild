@@ -306,7 +306,7 @@ endDictionary()
             if (key == "CF$UID" && value->type() == Integer::Type()) {
                 Integer const *integer = CastTo<Integer>(value);
 
-                uint32_t value = integer->value();
+                uint32_t value = static_cast<uint32_t>(integer->value());
                 _state.current->release();
                 _state.current = UID::New(value).release();
             }

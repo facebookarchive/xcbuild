@@ -121,23 +121,23 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h" || arg == "--help") {
-        return libutil::Options::Current<bool>(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg);
     } else if (arg == "-b") {
-        return libutil::Options::Current<bool>(&_includeBlockDevices, arg, it);
+        return libutil::Options::Current<bool>(&_includeBlockDevices, arg);
     } else if (arg == "-c") {
-        return libutil::Options::Current<bool>(&_includeCharacterDevices, arg, it);
+        return libutil::Options::Current<bool>(&_includeCharacterDevices, arg);
     } else if (arg == "-d") {
-        return libutil::Options::Current<bool>(&_includeDirectories, arg, it);
+        return libutil::Options::Current<bool>(&_includeDirectories, arg);
     } else if (arg == "-f") {
-        return libutil::Options::Current<bool>(&_includeFiles, arg, it);
+        return libutil::Options::Current<bool>(&_includeFiles, arg);
     } else if (arg == "-l") {
-        return libutil::Options::Current<bool>(&_includeSymbolicLinks, arg, it);
+        return libutil::Options::Current<bool>(&_includeSymbolicLinks, arg);
     } else if (arg == "-m") {
-        return libutil::Options::Current<bool>(&_printMTime, arg, it);
+        return libutil::Options::Current<bool>(&_printMTime, arg);
     } else if (arg == "-s") {
-        return libutil::Options::Current<bool>(&_onlyPath, arg, it);
+        return libutil::Options::Current<bool>(&_onlyPath, arg);
     } else if (arg == "-x") {
-        return libutil::Options::Current<bool>(&_noModes, arg, it);
+        return libutil::Options::Current<bool>(&_noModes, arg);
     } else if (arg == "--arch") {
         return libutil::Options::Next<std::string>(&_arch, args, it);
     } else if (arg == "-p") {
@@ -437,13 +437,13 @@ main(int argc, char **argv)
             std::string UID = std::to_string(ntohl(path_info_2_value->user));
             std::string GID = std::to_string(ntohl(path_info_2_value->group));
             printf("%s\t%s\t%s/%s", path.c_str(), mode.c_str(), UID.c_str(), GID.c_str());
-            
+
             if (path_info_2_value->type == bom_path_type_file) {
                 std::string size = std::to_string(ntohl(path_info_2_value->size));
                 std::string checksum = std::to_string(ntohl(path_info_2_value->checksum));
                 printf("\t%s\t%s", size.c_str(), checksum.c_str());
             }
-            
+
             printf("\n");
         }
     }, reinterpret_cast<void *>(&context));

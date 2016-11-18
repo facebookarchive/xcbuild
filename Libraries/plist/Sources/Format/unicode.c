@@ -227,7 +227,7 @@ utf16_to_utf8(char *dst, size_t dst_len, uint16_t const *src, size_t src_len,
     for (spos = 0; spos < src_len; spos++) {
         if (src[spos] < 0x80) {
             CHECK_LENGTH(1);
-            ADD_BYTE(src[spos]);
+            ADD_BYTE((char)src[spos]);
         } else if (src[spos] < 0x800) {
             CHECK_LENGTH(2);
             ADD_BYTE(0xc0 | (src[spos]>>6));

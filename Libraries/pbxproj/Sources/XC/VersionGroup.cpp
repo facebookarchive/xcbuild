@@ -12,6 +12,7 @@
 #include <pbxproj/Context.h>
 
 using pbxproj::XC::VersionGroup;
+using pbxproj::Context;
 
 VersionGroup::
 VersionGroup() :

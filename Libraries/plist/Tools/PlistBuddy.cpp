@@ -94,9 +94,9 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h") {
-        return libutil::Options::Current(&_help, arg, it);
+        return libutil::Options::Current(&_help, arg);
     } else if (arg == "-x") {
-        return libutil::Options::Current(&_xml, arg, it);
+        return libutil::Options::Current(&_xml, arg);
     } else if (arg == "-c") {
         return libutil::Options::Next<std::string>(&_command, args, it);
     } else if (!arg.empty() && arg[0] != '-') {
@@ -265,7 +265,7 @@ GetObjectAtKeyPath(plist::Object *object, std::queue<std::string> *remainingKeys
                 return nullptr;
             }
 
-            subObject = plist::CastTo<plist::Array>(object)->value(index);
+            subObject = plist::CastTo<plist::Array>(object)->value(static_cast<size_t>(index));
             break;
         }
         default:
@@ -379,11 +379,11 @@ Set(plist::Object *object, std::queue<std::string> &keyPath, plist::ObjectType t
                 return false;
             }
             plist::Array *array = plist::CastTo<plist::Array>(target);
-            if (!overwrite && array->value(index)) {
+            if (!overwrite && array->value(static_cast<size_t>(index))) {
                 fprintf(stderr, "Cannot overwrite key path\n");
                 return false;
             }
-            array->insert(index, std::move(newObj));
+            array->insert(static_cast<size_t>(index), std::move(newObj));
             return true;
         }
         default:
@@ -451,7 +451,7 @@ Delete(plist::Object *object, std::queue<std::string> *keyPath) {
             }
 
             plist::Array *array = plist::CastTo<plist::Array>(target);
-            array->remove(index);
+            array->remove(static_cast<size_t>(index));
             return true;
         }
         default:

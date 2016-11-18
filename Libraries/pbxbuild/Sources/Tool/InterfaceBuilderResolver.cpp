@@ -19,6 +19,7 @@
 #include <pbxsetting/Type.h>
 
 namespace Tool = pbxbuild::Tool;
+namespace Phase = pbxbuild::Phase;
 
 Tool::InterfaceBuilderResolver::
 InterfaceBuilderResolver(pbxspec::PBX::Compiler::shared_ptr const &tool) :

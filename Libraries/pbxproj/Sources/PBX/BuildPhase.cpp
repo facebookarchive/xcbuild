@@ -17,6 +17,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BuildPhase;
+using pbxproj::Context;
 
 BuildPhase::
 BuildPhase(std::string const &isa, Type type) :
