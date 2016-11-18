@@ -1,0 +1,54 @@
+#
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree. An additional grant
+# of patent rights can be found in the PATENTS file in the same directory.
+#
+
+os: Visual Studio 2015
+
+version: "{build}"
+clone_folder: C:\projects\xcbuild
+
+platform:
+  - Win32
+  # Needs a matching zlib.
+  # - x64
+
+configuration:
+ - Debug
+ - Release
+
+init:
+  - cmd: cmake --version
+  - cmd: msbuild /version
+
+install:
+  # zlib
+  - cmd: cd C:\projects
+  - cmd: md zlib
+  - cmd: cd zlib
+  - cmd: appveyor DownloadFile http://zlib.net/zlib128-dll.zip
+  - cmd: 7z x zlib128-dll.zip
+
+before_build:
+  - cmd: cd C:\projects\xcbuild
+  - cmd: git submodule update --init
+  - cmd: if "%platform%"=="Win32" set CMAKE_GENERATOR_NAME=Visual Studio 14 2015
+  - cmd: if "%platform%"=="x64"   set CMAKE_GENERATOR_NAME=Visual Studio 14 2015 Win64
+  - cmd: cmake -Bbuild -H. -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE=%configuration% -DZLIB_ROOT=C:\projects\zlib
+  # zlib
+  - cmd: md build\%configuration%\
+  - cmd: cp C:\projects\zlib\zlib1.dll build\%configuration%\
+
+build:
+  project: build\xcbuild.sln
+
+test_script:
+  - cmd: cd build
+  - cmd: ctest -C %configuration% --verbose .
+
+artifacts:
+  - path: build/%configuration%
