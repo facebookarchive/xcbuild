@@ -47,7 +47,9 @@ findTarget(std::string const &name) const
 
         /* If the platform name matches but no targets do, use any target. */
         if (platform->name() == name || platform->path() == name) {
-            return platform->targets().back();
+            if (!platform->targets().empty()) {
+                return platform->targets().back();
+            }
         }
     }
 
