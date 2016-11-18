@@ -66,11 +66,11 @@ target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHea
 install(TARGETS plist DESTINATION usr/lib)
 
 add_executable(plutil Tools/plutil.cpp)
-target_link_libraries(plutil plist process util)
+target_link_libraries(plutil PRIVATE plist process util)
 install(TARGETS plutil DESTINATION usr/bin)
 
 add_executable(PlistBuddy Tools/PlistBuddy.cpp)
-target_link_libraries(PlistBuddy plist util)
+target_link_libraries(PlistBuddy PRIVATE plist util)
 install(TARGETS PlistBuddy DESTINATION usr/bin)
 
 set(LINENOISE_ROOT "${CMAKE_SOURCE_DIR}/ThirdParty/linenoise")
@@ -82,7 +82,7 @@ if (EXISTS "${LINENOISE_SOURCE}")
     target_compile_definitions(linenoise PRIVATE _GNU_SOURCE)
   endif ()
 
-  target_link_libraries(PlistBuddy linenoise)
+  target_link_libraries(PlistBuddy PRIVATE linenoise)
   target_compile_definitions(PlistBuddy PRIVATE HAVE_LINENOISE)
 endif ()
 
