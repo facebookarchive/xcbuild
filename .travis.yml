@@ -1,3 +1,12 @@
+#
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree. An additional grant
+# of patent rights can be found in the PATENTS file in the same directory.
+#
+
 language: generic
 
 script:
@@ -6,8 +15,57 @@ script:
 
 sudo: false
 
+build-shared:
+  build-sources:
+    linux: &linux-build-sources
+      - george-edison55-precise-backports
+    wine: &wine-build-sources
+      - *linux-build-sources
+  build-packages:
+    linux: &linux-build-packages
+      - pkg-config
+      - ninja-build
+      - cmake
+      - cmake-data
+    wine: &wine-build-packages
+      - *linux-build-packages
+      - binutils-mingw-w64-i686
+  build-env:
+    linux: &linux-build-env
+      - NINJA_FLAGS=-j2 # Travis is so parallel it runs out of memory. Limit that.
+    wine: &wine-build-env
+      - *linux-build-env
+      - CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=Windows -DCMAKE_RC_COMPILER=i686-w64-mingw32-windres -DCMAKE_LINKER=i686-w64-mingw32-ld -DZLIB_ROOT=/home/travis/build/facebook/xcbuild/zlib"
+
+shared:
+  env:
+    wine: &wine-env
+      - TEST_RUNNER=wine # Use Wine to run Windows tests.
+  packages:
+    linux: &linux-packages
+      - zlib1g-dev
+      - libpng-dev
+      - libxml2-dev
+
 matrix:
   include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      compiler: clang3.8
+      env:
+        - CC=clang-3.8
+        - CXX=clang++-3.8
+        - *linux-build-env
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-precise-3.8
+            - *linux-build-sources
+          packages:
+            - clang-3.8
+            - *linux-build-packages
+            - *linux-packages
     - os: linux
       dist: trusty
       compiler: gcc4.8
@@ -15,24 +73,17 @@ matrix:
       env:
         - CC=gcc-4.8
         - CXX=g++-4.8
-
-        # Travis is so parallel it runs out of memory. Limit that.
-        - NINJA_JOBS=2
+        - *linux-build-env
       addons:
         apt:
           sources:
-            - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
+            - *linux-build-sources
           packages:
             - gcc-4.8
             - g++-4.8
-            - pkg-config
-            - zlib1g-dev
-            - libpng-dev
-            - libxml2-dev
-            - ninja-build
-            - cmake
-            - cmake-data
+            - *linux-build-packages
+            - *linux-packages
     - os: osx
       osx_image: xcode7.2
       compiler: clang
@@ -41,3 +92,39 @@ matrix:
       install:
         - brew reinstall cmake
         - brew reinstall ninja
+    - os: linux
+      dist: trusty
+      compiler: mingw32
+      sudo: required
+      env:
+        - CC=i686-w64-mingw32-gcc
+        - CXX=i686-w64-mingw32-g++
+        - *wine-build-env
+        - *wine-env
+      before_install:
+        # Wine
+        - sudo dpkg --add-architecture i386
+        - sudo add-apt-repository -y ppa:wine/wine-builds
+        - sudo apt-get update -qq || true
+        - sudo apt-get install -qq -y --no-install-recommends winehq-devel
+        # zlib
+        - mkdir -p zlib
+        - pushd zlib
+        - pwd
+        - wget http://zlib.net/zlib128-dll.zip
+        - unzip zlib128-dll.zip
+        - popd
+        - mkdir -p build
+        - cp zlib/zlib1.dll build
+        # MinGW runtime
+        - cp /usr/lib/gcc/i686-w64-mingw32/4.8/libgcc_s_sjlj-1.dll build
+        - cp /usr/lib/gcc/i686-w64-mingw32/4.8/libstdc++-6.dll build
+        - cp /usr/i686-w64-mingw32/lib/libwinpthread-1.dll build
+      addons:
+        apt:
+          sources:
+            - *wine-build-sources
+          packages:
+            - gcc-mingw-w64-i686
+            - g++-mingw-w64-i686
+            - *wine-build-packages
