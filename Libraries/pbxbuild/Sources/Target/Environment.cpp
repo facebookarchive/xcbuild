@@ -128,12 +128,23 @@ ConfigurationFile(WorkspaceContext const &workspaceContext, pbxproj::XC::BuildCo
 static std::vector<std::string>
 SDKSpecificationDomains(xcsdk::SDK::Target::shared_ptr const &sdk)
 {
+    std::string const &platformName = sdk->platform()->name();
+
     std::vector<std::string> domains;
-    domains.push_back(sdk->platform()->name());
+    domains.push_back(platformName);
+
+    // TODO(grp): Find a better way to get corresponding device platform.
+    std::string::size_type simulator = platformName.find("simulator");
+    if (simulator != std::string::npos) {
+        std::string device = platformName.substr(0, simulator) + "os";
+        domains.push_back(device + "-shared");
+    } else {
+        domains.push_back(platformName + "-shared");
+    }
 
     // TODO(grp): Find a better way to determine what's embedded.
-    if (sdk->platform()->name() != "macosx") {
-        if (sdk->platform()->name().find("simulator") != std::string::npos) {
+    if (platformName != "macosx") {
+        if (simulator != std::string::npos) {
             domains.push_back("embedded-simulator");
         } else {
             domains.push_back("embedded");
