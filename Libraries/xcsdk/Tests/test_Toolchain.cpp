@@ -42,17 +42,17 @@ TEST(Toolchain, Info)
     });
 
     /* ToolchainInfo.plist is preferred. */
-    auto toolchain1 = Toolchain::Open(&filesystem, "/" + name1);
+    auto toolchain1 = Toolchain::Open(&filesystem, filesystem.path("") + name1);
     ASSERT_NE(toolchain1, nullptr);
     EXPECT_EQ(toolchain1->identifier(), identifier);
 
     /* Info.plist is supported. */
-    auto toolchain2 = Toolchain::Open(&filesystem, "/" + name2);
+    auto toolchain2 = Toolchain::Open(&filesystem, filesystem.path("") + name2);
     ASSERT_NE(toolchain2, nullptr);
     EXPECT_EQ(toolchain2->identifier(), identifier);
 
     /* Some info is required. */
-    auto toolchain3 = Toolchain::Open(&filesystem, "/" + name3);
+    auto toolchain3 = Toolchain::Open(&filesystem, filesystem.path("") + name3);
     ASSERT_EQ(toolchain3, nullptr);
 }
 

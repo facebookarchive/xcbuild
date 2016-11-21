@@ -68,6 +68,9 @@ public:
     { return _root; }
 
 public:
+    std::string path(std::string const &path) const;
+
+public:
     virtual bool exists(std::string const &path) const;
     virtual ext::optional<Type> type(std::string const &path) const;
 

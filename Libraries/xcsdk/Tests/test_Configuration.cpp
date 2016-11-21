@@ -29,7 +29,7 @@ TEST(Configuration, Load)
         }")),
     });
 
-    auto configuration = Configuration::Load(&filesystem, { "/Configuration.plist" });
+    auto configuration = Configuration::Load(&filesystem, { filesystem.path("Configuration.plist") });
     ASSERT_NE(configuration, ext::nullopt);
     EXPECT_EQ(configuration->extraPlatformsPaths(), std::vector<std::string>({ "one", "three" }));
     EXPECT_EQ(configuration->extraToolchainsPaths(), std::vector<std::string>({ "two", "four" }));
@@ -44,7 +44,7 @@ TEST(Configuration, LoadRealFile)
         }")),
     });
 
-    auto configuration = Configuration::Load(&filesystem, { "/FakeConfiguration.plist", "/Configuration.plist" });
+    auto configuration = Configuration::Load(&filesystem, { filesystem.path("FakeConfiguration.plist"), filesystem.path("Configuration.plist") });
     ASSERT_NE(configuration, ext::nullopt);
     EXPECT_EQ(configuration->extraPlatformsPaths(), std::vector<std::string>({ "one", "three" }));
     EXPECT_EQ(configuration->extraToolchainsPaths(), std::vector<std::string>({ "two", "four" }));
@@ -63,7 +63,7 @@ TEST(Configuration, LoadFirstValidFile)
         }")),
     });
 
-    auto configuration = Configuration::Load(&filesystem, { "/Configuration.plist", "/Configuration2.plist" });
+    auto configuration = Configuration::Load(&filesystem, { filesystem.path("Configuration.plist"), filesystem.path("Configuration2.plist") });
     ASSERT_NE(configuration, ext::nullopt);
     EXPECT_EQ(configuration->extraPlatformsPaths(), std::vector<std::string>({ "one", "three" }));
     EXPECT_EQ(configuration->extraToolchainsPaths(), std::vector<std::string>({ "two", "four" }));
