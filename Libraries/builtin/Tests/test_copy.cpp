@@ -27,16 +27,6 @@ Contents(std::string const &string)
     return std::vector<uint8_t>(string.begin(), string.end());
 }
 
-static process::MemoryContext
-Process(std::string const &executable, std::vector<std::string> const &arguments)
-{
-    return process::MemoryContext(
-        executable,
-        "/",
-        arguments,
-        std::unordered_map<std::string, std::string>());
-}
-
 TEST(copy, Name)
 {
     Driver driver;
@@ -53,15 +43,15 @@ TEST(copy, CopyFiles)
     });
 
     Driver driver;
-    auto process = Process(driver.name(), { "in1", "in2", "output", });
+    auto process = process::MemoryContext(filesystem.path(driver.name()), filesystem.path(""), { "in1", "in2", "output", }, std::unordered_map<std::string, std::string>());
     EXPECT_EQ(0, driver.run(&process, &filesystem));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/in1"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in1")));
     EXPECT_EQ(contents, Contents("one"));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/in2"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in2")));
     EXPECT_EQ(contents, Contents("two"));
 }
 
@@ -77,16 +67,16 @@ TEST(copy, CopyDirectory)
     });
 
     Driver driver;
-    auto process = Process(driver.name(), { "input", "output", });
+    auto process = process::MemoryContext(filesystem.path(driver.name()), filesystem.path(""), { "input", "output", }, std::unordered_map<std::string, std::string>());
     EXPECT_EQ(0, driver.run(&process, &filesystem));
-    EXPECT_EQ(filesystem.type("/output"), Filesystem::Type::Directory);
+    EXPECT_EQ(filesystem.type(filesystem.path("output")), Filesystem::Type::Directory);
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/input/in1"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/input/in1")));
     EXPECT_EQ(contents, Contents("one"));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/input/in2"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/input/in2")));
     EXPECT_EQ(contents, Contents("two"));
 }
 
@@ -101,11 +91,11 @@ TEST(copy, IgnoreMissingOutput)
     Driver driver;
 
     /* Missing input should fail if not allowed. */
-    auto fail = Process(driver.name(), { "exists", "missing", "output", });
+    auto fail = process::MemoryContext(filesystem.path(driver.name()), filesystem.path(""), { "exists", "missing", "output", }, std::unordered_map<std::string, std::string>());
     EXPECT_NE(0, driver.run(&fail, &filesystem));
 
     /* Missing input should succeed when allowed. */
-    auto succeed = Process(driver.name(), { "-ignore-missing-inputs", "exists", "missing", "output", });
+    auto succeed = process::MemoryContext(filesystem.path(driver.name()), filesystem.path(""), { "-ignore-missing-inputs", "exists", "missing", "output", }, std::unordered_map<std::string, std::string>());
     EXPECT_EQ(0, driver.run(&succeed, &filesystem));
 }
 
