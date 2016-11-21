@@ -413,7 +413,7 @@ TEST(MemoryFilesystem, ResolvePath)
     EXPECT_EQ(filesystem.resolvePath("/./"), "/");
     EXPECT_EQ(filesystem.resolvePath("//file1"), "/file1");
     EXPECT_EQ(filesystem.resolvePath("/dir1"), "/dir1");
-    EXPECT_EQ(filesystem.resolvePath("/dir1/"), "/dir1/");
+    EXPECT_EQ(filesystem.resolvePath("/dir1/"), "/dir1");
     EXPECT_EQ(filesystem.resolvePath("/dir1/.."), "/");
     EXPECT_EQ(filesystem.resolvePath("/dir1//file2"), "/dir1/file2");
     EXPECT_EQ(filesystem.resolvePath("/dir2/.././dir1/file2"), "/dir1/file2");

@@ -8,6 +8,8 @@
  */
 
 #include <libutil/FSUtil.h>
+#include <libutil/Absolute.h>
+#include <libutil/Relative.h>
 
 #include <cstring>
 
@@ -16,137 +18,63 @@
 #endif
 
 using libutil::FSUtil;
+namespace Path = libutil::Path;
 
 std::string FSUtil::
 GetDirectoryName(std::string const &path)
 {
-    std::string::size_type pos = path.rfind('/');
-    if (pos == std::string::npos) {
-        return std::string();
-    } else if (pos == 0) {
-        return "/";
-    } else {
-        return path.substr(0, pos);
-    }
+    return Path::Relative(path).parent().raw();
 }
 
 std::string FSUtil::
 GetBaseName(std::string const &path)
 {
-    std::string::size_type pos = path.rfind('/');
-    if (pos == std::string::npos) {
-        return path;
-    } else {
-        return path.substr(pos + 1);
-    }
+    return Path::Relative(path).base();
 }
 
 std::string FSUtil::
 GetBaseNameWithoutExtension(std::string const &path)
 {
-    std::string base = GetBaseName(path);
-
-    size_t pos = base.rfind('.');
-    if (pos == std::string::npos) {
-        return base;
-    }
-
-    return base.substr(0, pos);
+    return Path::Relative(path).base(false);
 }
 
 std::string FSUtil::
 GetRelativePath(std::string const &path, std::string const &to)
 {
-    std::string::size_type po = 0;
-    std::string::size_type oo = 0;
-
-    std::string result;
-
-    bool found = false;
-    while (!found) {
-        std::string::size_type npo = path.find('/', po);
-        std::string::size_type noo = to.find('/', oo);
-
-        std::string spo = path.substr(po, (npo == std::string::npos ? path.size() : npo) - po);
-        std::string soo = to.substr(oo, (noo == std::string::npos ? to.size() : noo) - oo);
-
-        if (spo == soo) {
-            po = (npo == std::string::npos ? std::string::npos : npo + 1);
-            oo = (noo == std::string::npos ? std::string::npos : noo + 1);
-        } else {
-            break;
-        }
-
-        if (npo == std::string::npos || noo == std::string::npos) {
-            break;
-        }
+    ext::optional<Path::Absolute> absolute = Path::Absolute::Create(path);
+    ext::optional<Path::Absolute> from = Path::Absolute::Create(to);
+    if (!absolute || !from) {
+        abort();
     }
 
-    while (oo != std::string::npos && oo != to.size()) {
-        result += "../";
-        oo = to.find('/', oo + 1);
+    ext::optional<Path::Relative> relative = absolute->from(*from);
+    if (!relative) {
+        abort();
     }
 
-    if (po != std::string::npos && po != path.size()) {
-        result += path.substr(po);
-    }
-
-    return result;
+    return relative->raw();
 }
 
 std::string FSUtil::
 GetFileExtension(std::string const &path)
 {
-    std::string base = GetBaseName(path);
-
-    size_t pos = base.rfind('.');
-    if (pos == std::string::npos) {
-        return std::string();
-    }
-
-    return base.substr(pos + 1);
+    return Path::Relative(path).extension();
 }
 
 bool FSUtil::
 IsFileExtension(std::string const &path, std::string const &extension, bool insensitive)
 {
-    std::string pathExtension = GetFileExtension(path);
-    if (pathExtension.empty()) {
-        return extension.empty();
-    }
-
-    if (insensitive) {
-#if _WIN32
-        return ::_stricmp(pathExtension.c_str(), extension.c_str()) == 0;
-#else
-        return ::strcasecmp(pathExtension.c_str(), extension.c_str()) == 0;
-#endif
-    } else {
-        return pathExtension == extension;
-    }
+    return Path::Relative(path).extension(extension, insensitive);
 }
 
 bool FSUtil::
 IsFileExtension(std::string const &path, std::initializer_list<std::string> const &extensions, bool insensitive)
 {
-    std::string pathExtension = GetFileExtension(path);
-    if (pathExtension.empty()) {
-        return false;
-    }
-
+    Path::Relative relative = Path::Relative(path);
     for (auto const &extension : extensions) {
-        bool match = false;
-        if (insensitive) {
-#if _WIN32
-            match = ::_stricmp(pathExtension.c_str(), extension.c_str()) == 0;
-#else
-            match = ::strcasecmp(pathExtension.c_str(), extension.c_str()) == 0;
-#endif
-        } else {
-            match = pathExtension == extension;
-        }
-        if (match)
+        if (relative.extension(extension, insensitive)) {
             return true;
+        }
     }
 
     return false;
@@ -155,105 +83,22 @@ IsFileExtension(std::string const &path, std::initializer_list<std::string> cons
 bool FSUtil::
 IsAbsolutePath(std::string const &path)
 {
-    return !path.empty() && path[0] == '/';
+    return Path::Relative(path).absolute() != ext::nullopt;
 }
 
 std::string FSUtil::
 ResolveRelativePath(std::string const &path, std::string const &workingDirectory)
 {
-    if (IsAbsolutePath(path)) {
-        return path;
-    } else if (path.empty()) {
-        return workingDirectory;
-    } else if (workingDirectory.empty()) {
-        return path;
-    } else {
-        return NormalizePath(workingDirectory + "/" + path);
-    }
-}
-
-static size_t
-SimplePathNormalize(
-    char const *in,
-    char *out,
-    size_t outSize,
-    char separator,
-    char const *invalidCharSet,
-    bool dontWantRoot,
-    bool relative,
-    char replacementChar)
-{
-    char const *i = in;
-    char *o = out;
-
-    while (i[0] != 0) {
-        if (i[0] == separator) {
-            while (i[1] != 0 && i[1] == separator)
-                i++;
-
-            i++;
-            if (o == out || *(o - 1) != separator) {
-                if (o != out || !dontWantRoot)
-                    *o++ = separator, *o = 0;
-            }
-        } else if (!relative && (i == in || i[-1] == separator) && i[0] == '.') {
-            if (i[1] == '.' && (i[2] == separator || i[2] == 0)) {
-                int cnt = 2;
-                for (;;) {
-                    if (cnt > 0 && *o == separator) {
-                        if (o == out || --cnt == 0) {
-                            o++;
-                            break;
-                        }
-                    } else if (o == out) {
-                        if (!dontWantRoot)
-                            *o++ = separator, *o = 0;
-                        break;
-                    }
-                    *o-- = 0;
-                }
-
-                i += (i[2] == 0 ? 2 : 3);
-            } else if (i[1] == separator || i[1] == 0) {
-                if (o == out) {
-                    *o++ = '.', *o++ = separator;
-                }
-                *o = 0, i += (i[1] == 0 ? 1 : 2);
-            } else {
-                i++, *o++ = '.', *o = 0;
-            }
-        } else {
-            if (invalidCharSet != NULL
-                && strchr(invalidCharSet, *i) != NULL)
-                *o++ = replacementChar, i++;
-            else
-                *o++ = *i++;
-        }
+    ext::optional<Path::Absolute> absolute = Path::Absolute::Create(workingDirectory);
+    if (!absolute) {
+        abort();
     }
 
-    *o = 0;
-
-    return (o - out);
-}
-
-static size_t
-POSIXPathNormalize(char const * in, char *out, size_t outSize, bool relative)
-{
-    return SimplePathNormalize(in, out, outSize, '/', NULL, false, relative, '-');
+    return Path::Relative(path).resolved(*absolute).raw();
 }
 
 std::string FSUtil::
 NormalizePath(std::string const &path)
 {
-    std::string outputPath;
-
-    if (path.empty()) {
-        return std::string();
-    }
-
-    outputPath.resize(path.size() * 2);
-    size_t size = ::POSIXPathNormalize(path.c_str(), &outputPath[0], outputPath.size(), path[0] != '/');
-    outputPath.resize(size);
-
-    return outputPath;
+    return Path::Relative(path).normalized();
 }

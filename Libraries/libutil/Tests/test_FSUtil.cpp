@@ -77,11 +77,11 @@ TEST(FSUtil, IsAbsolutePath)
 
 TEST(FSUtil, ResolveRelativePath)
 {
-    EXPECT_EQ("", FSUtil::ResolveRelativePath("", ""));
-    EXPECT_EQ("a", FSUtil::ResolveRelativePath("", "a"));
-    EXPECT_EQ("a/b", FSUtil::ResolveRelativePath("a/b", ""));
+    EXPECT_EQ("/", FSUtil::ResolveRelativePath("", "/"));
+    EXPECT_EQ("/a", FSUtil::ResolveRelativePath("", "/a"));
+    EXPECT_EQ("/a/b", FSUtil::ResolveRelativePath("a/b", "/"));
     EXPECT_EQ("/c/a/b", FSUtil::ResolveRelativePath("a/b", "/c"));
-    EXPECT_EQ("c/a/b", FSUtil::ResolveRelativePath("a/b", "c"));
+    EXPECT_EQ("/c/a/b", FSUtil::ResolveRelativePath("a/b", "/c"));
     EXPECT_EQ("/a/b", FSUtil::ResolveRelativePath("/a/b", "/c"));
 }
 
