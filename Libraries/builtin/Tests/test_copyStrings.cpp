@@ -40,7 +40,7 @@ TEST(copyStrings, CopyMultiple)
     Driver driver;
     process::MemoryContext processContext = process::MemoryContext(
         driver.name(),
-        "/",
+        filesystem.path(""),
         {
             "in1.strings",
             "in2.strings",
@@ -51,11 +51,11 @@ TEST(copyStrings, CopyMultiple)
     EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/in1.strings"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in1.strings")));
     EXPECT_EQ(contents, Contents("string1 = value1;\n"));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/in2.strings"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in2.strings")));
     EXPECT_EQ(contents, Contents("string2 = value2;\n"));
 }
 
@@ -82,7 +82,7 @@ TEST(copyStrings, InputOutputEncoding)
             Driver driver;
             process::MemoryContext processContext = process::MemoryContext(
                 driver.name(),
-                "/",
+                filesystem.path(""),
                 {
                     "in.strings",
                     "--outdir", "output",
@@ -93,7 +93,7 @@ TEST(copyStrings, InputOutputEncoding)
             EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
             std::vector<uint8_t> contents;
-            EXPECT_TRUE(filesystem.read(&contents, "/output/in.strings"));
+            EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in.strings")));
 
             /* Expect output in each encoding. */
             EXPECT_EQ(contents, plist::Format::Encodings::Convert(

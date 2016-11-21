@@ -12,6 +12,9 @@
 
 using libutil::FSUtil;
 
+// TODO: remove these tests once FSUtil is unused
+#if !_WIN32
+
 TEST(FSUtil, GetDirectoryName)
 {
     EXPECT_EQ("", FSUtil::GetDirectoryName(""));
@@ -102,3 +105,5 @@ TEST(FSUtil, IsFileExtension)
     EXPECT_FALSE(FSUtil::IsFileExtension("/a/b/c.sub.ext", ""));
     EXPECT_TRUE(FSUtil::IsFileExtension("/a/b/c.sub.ext", "ext"));
 }
+
+#endif

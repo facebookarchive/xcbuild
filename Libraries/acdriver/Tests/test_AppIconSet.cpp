@@ -100,7 +100,7 @@ TEST(AppIconSet, Compile)
     /* Load asset. */
     auto asset = xcassets::Asset::Asset::Load(
         &filesystem,
-        "/AppIcon.appiconset",
+        filesystem.path("AppIcon.appiconset"),
         { },
         xcassets::Asset::AppIconSet::Extension());
     auto appIconSet = libutil::static_unique_pointer_cast<xcassets::Asset::AppIconSet>(std::move(asset));
@@ -108,26 +108,26 @@ TEST(AppIconSet, Compile)
 
     /* Compile asset. */
     Result result;
-    Output output = Output("/output", Output::Format::Compiled, std::string("AppIcon"), ext::nullopt);
+    Output output = Output(filesystem.path("output"), Output::Format::Compiled, std::string("AppIcon"), ext::nullopt);
     ASSERT_TRUE(AppIconSet::Compile(appIconSet.get(), &output, &result));
     EXPECT_TRUE(result.success());
 
     /* Should copy images to output. */
     using Copy = std::pair<std::string, std::string>;
     EXPECT_EQ(output.copies(), std::vector<Copy>({
-        { "/AppIcon.appiconset/small.png", "/output/AppIcon29x29@2x.png" },
-        { "/AppIcon.appiconset/two.png", "/output/AppIcon60x60@2x.png" },
-        { "/AppIcon.appiconset/three.png", "/output/AppIcon60x60@3x.png" },
-        { "/AppIcon.appiconset/pad.png", "/output/AppIcon76x76~ipad.png" },
+        { filesystem.path("AppIcon.appiconset/small.png"), filesystem.path("output/AppIcon29x29@2x.png") },
+        { filesystem.path("AppIcon.appiconset/two.png"), filesystem.path("output/AppIcon60x60@2x.png") },
+        { filesystem.path("AppIcon.appiconset/three.png"), filesystem.path("output/AppIcon60x60@3x.png") },
+        { filesystem.path("AppIcon.appiconset/pad.png"), filesystem.path("output/AppIcon76x76~ipad.png") },
     }));
 
     /* Should note outputs. Only the root asset catalog is an input. */
     EXPECT_EQ(output.inputs(), std::vector<std::string>());
     EXPECT_EQ(output.outputs(), std::vector<std::string>({
-        "/output/AppIcon29x29@2x.png",
-        "/output/AppIcon60x60@2x.png",
-        "/output/AppIcon60x60@3x.png",
-        "/output/AppIcon76x76~ipad.png",
+        filesystem.path("output/AppIcon29x29@2x.png"),
+        filesystem.path("output/AppIcon60x60@2x.png"),
+        filesystem.path("output/AppIcon60x60@3x.png"),
+        filesystem.path("output/AppIcon76x76~ipad.png"),
     }));
 
     /* Should generate additional info. */

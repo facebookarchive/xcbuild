@@ -37,7 +37,7 @@ TEST(Group, ProvidesNamespace)
     });
 
     /* Load asset. */
-    auto asset = xcassets::Asset::Asset::Load(&filesystem, "/Namespaced", { }, xcassets::Asset::Group::Extension());
+    auto asset = xcassets::Asset::Asset::Load(&filesystem, filesystem.path("Namespaced"), { }, xcassets::Asset::Group::Extension());
     auto group = libutil::static_unique_pointer_cast<xcassets::Asset::Group>(std::move(asset));
     ASSERT_NE(group, nullptr);
 
@@ -60,7 +60,7 @@ TEST(Group, FlatNamespace)
     });
 
     /* Load asset. */
-    auto asset = xcassets::Asset::Asset::Load(&filesystem, "/Flat", { }, xcassets::Asset::Group::Extension());
+    auto asset = xcassets::Asset::Asset::Load(&filesystem, filesystem.path("Flat"), { }, xcassets::Asset::Group::Extension());
     auto group = libutil::static_unique_pointer_cast<xcassets::Asset::Group>(std::move(asset));
     ASSERT_NE(group, nullptr);
 

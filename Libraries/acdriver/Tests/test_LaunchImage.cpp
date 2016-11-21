@@ -121,7 +121,7 @@ TEST(LaunchImage, Compile)
     /* Load asset. */
     auto asset = xcassets::Asset::Asset::Load(
         &filesystem,
-        "/LaunchImage.launchimage",
+        filesystem.path("LaunchImage.launchimage"),
         { },
         xcassets::Asset::LaunchImage::Extension());
     auto launchImage = libutil::static_unique_pointer_cast<xcassets::Asset::LaunchImage>(std::move(asset));
@@ -129,28 +129,28 @@ TEST(LaunchImage, Compile)
 
     /* Compile asset. */
     Result result;
-    Output output = Output("/output", Output::Format::Compiled, ext::nullopt, std::string("LaunchImage"));
+    Output output = Output(filesystem.path("output"), Output::Format::Compiled, ext::nullopt, std::string("LaunchImage"));
     ASSERT_TRUE(LaunchImage::Compile(launchImage.get(), &output, &result));
     EXPECT_TRUE(result.success());
 
     /* Should copy images to output. */
     using Copy = std::pair<std::string, std::string>;
     EXPECT_EQ(output.copies(), std::vector<Copy>({
-        { "/LaunchImage.launchimage/phone.png", "/output/LaunchImage-700.png" },
-        { "/LaunchImage.launchimage/giraffe.png", "/output/LaunchImage-800-568h@2x.png" },
-        { "/LaunchImage.launchimage/phone-landscape.png", "/output/LaunchImage-800-Landscape-736h@3x.png" },
-        { "/LaunchImage.launchimage/pad-portrait.png", "/output/LaunchImage-700-Portrait~ipad.png" },
-        { "/LaunchImage.launchimage/pad-landscape.png", "/output/LaunchImage-700-Landscape~ipad.png" },
+        { filesystem.path("LaunchImage.launchimage/phone.png"), filesystem.path("output/LaunchImage-700.png") },
+        { filesystem.path("LaunchImage.launchimage/giraffe.png"), filesystem.path("output/LaunchImage-800-568h@2x.png") },
+        { filesystem.path("LaunchImage.launchimage/phone-landscape.png"), filesystem.path("output/LaunchImage-800-Landscape-736h@3x.png") },
+        { filesystem.path("LaunchImage.launchimage/pad-portrait.png"), filesystem.path("output/LaunchImage-700-Portrait~ipad.png") },
+        { filesystem.path("LaunchImage.launchimage/pad-landscape.png"), filesystem.path("output/LaunchImage-700-Landscape~ipad.png") },
     }));
 
     /* Should note outputs. Only the root asset catalog is an input. */
     EXPECT_EQ(output.inputs(), std::vector<std::string>());
     EXPECT_EQ(output.outputs(), std::vector<std::string>({
-        "/output/LaunchImage-700.png",
-        "/output/LaunchImage-800-568h@2x.png",
-        "/output/LaunchImage-800-Landscape-736h@3x.png",
-        "/output/LaunchImage-700-Portrait~ipad.png",
-        "/output/LaunchImage-700-Landscape~ipad.png",
+        filesystem.path("output/LaunchImage-700.png"),
+        filesystem.path("output/LaunchImage-800-568h@2x.png"),
+        filesystem.path("output/LaunchImage-800-Landscape-736h@3x.png"),
+        filesystem.path("output/LaunchImage-700-Portrait~ipad.png"),
+        filesystem.path("output/LaunchImage-700-Landscape~ipad.png"),
     }));
 
     /* Should generate additional info. */
@@ -205,7 +205,7 @@ TEST(LaunchImage, CompileLegacy)
     /* Load asset. */
     auto asset = xcassets::Asset::Asset::Load(
         &filesystem,
-        "/LaunchImage.launchimage",
+        filesystem.path("LaunchImage.launchimage"),
         { },
         xcassets::Asset::LaunchImage::Extension());
     auto launchImage = libutil::static_unique_pointer_cast<xcassets::Asset::LaunchImage>(std::move(asset));
@@ -213,22 +213,22 @@ TEST(LaunchImage, CompileLegacy)
 
     /* Compile asset. */
     Result result;
-    Output output = Output("/output", Output::Format::Compiled, ext::nullopt, std::string("LaunchImage"));
+    Output output = Output(filesystem.path("output"), Output::Format::Compiled, ext::nullopt, std::string("LaunchImage"));
     ASSERT_TRUE(LaunchImage::Compile(launchImage.get(), &output, &result));
     EXPECT_TRUE(result.success());
 
     /* Should copy images to output. */
     using Copy = std::pair<std::string, std::string>;
     EXPECT_EQ(output.copies(), std::vector<Copy>({
-        { "/LaunchImage.launchimage/legacy.png", "/output/LaunchImage.png" },
-        { "/LaunchImage.launchimage/modern.png", "/output/LaunchImage-700.png" },
+        { filesystem.path("LaunchImage.launchimage/legacy.png"), filesystem.path("output/LaunchImage.png") },
+        { filesystem.path("LaunchImage.launchimage/modern.png"), filesystem.path("output/LaunchImage-700.png") },
     }));
 
     /* Should note outputs. Only the root asset catalog is an input. */
     EXPECT_EQ(output.inputs(), std::vector<std::string>());
     EXPECT_EQ(output.outputs(), std::vector<std::string>({
-        "/output/LaunchImage.png",
-        "/output/LaunchImage-700.png",
+        filesystem.path("output/LaunchImage.png"),
+        filesystem.path("output/LaunchImage-700.png"),
     }));
 
     /* Should generate additional info, including legacy info. */
