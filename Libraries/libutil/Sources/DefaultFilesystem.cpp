@@ -237,6 +237,7 @@ isExecutable(std::string const &path) const
 #endif
 }
 
+#if !_WIN32
 static Permissions
 ModePermissions(mode_t mode)
 {
@@ -255,40 +256,57 @@ ModePermissions(mode_t mode)
     permissions.other(Permissions::Permission::Execute, (mode & S_IXOTH) != 0);
     return permissions;
 }
+#endif
 
 ext::optional<Permissions> DefaultFilesystem::
 readFilePermissions(std::string const &path) const
 {
+#if _WIN32
+    // TODO: Support file permssions on Windows.
+    return ext::nullopt;
+#else
     struct stat st;
     if (::stat(path.c_str(), &st) < 0) {
         return ext::nullopt;
     }
 
     return ModePermissions(st.st_mode);
+#endif
 }
 
 ext::optional<Permissions> DefaultFilesystem::
 readSymbolicLinkPermissions(std::string const &path) const
 {
+#if _WIN32
+    // TODO: Support file permssions on Windows.
+    return ext::nullopt;
+#else
     struct stat st;
     if (::lstat(path.c_str(), &st) < 0) {
         return ext::nullopt;
     }
 
     return ModePermissions(st.st_mode);
+#endif
 }
 
 ext::optional<Permissions> DefaultFilesystem::
 readDirectoryPermissions(std::string const &path) const
 {
+#if _WIN32
+    // TODO: Support file permssions on Windows.
+    return ext::nullopt;
+#else
     struct stat st;
     if (::stat(path.c_str(), &st) < 0) {
         return ext::nullopt;
     }
 
     return ModePermissions(st.st_mode);
+#endif
 }
 
+#if !_WIN32
 static mode_t
 PermissionsMode(Permissions permissions)
 {
@@ -307,10 +325,15 @@ PermissionsMode(Permissions permissions)
     mode |= (permissions.other(Permissions::Permission::Execute) ? S_IXUSR : 0);
     return mode;
 }
+#endif
 
 bool DefaultFilesystem::
 writeFilePermissions(std::string const &path, Permissions::Operation operation, Permissions permissions)
 {
+#if _WIN32
+    // TODO: Support file permssions on Windows.
+    return true;
+#else
     ext::optional<Permissions> updated = this->readFilePermissions(path);
     if (!updated) {
         return false;
@@ -324,12 +347,16 @@ writeFilePermissions(std::string const &path, Permissions::Operation operation, 
     }
 
     return true;
+#endif
 }
 
 bool DefaultFilesystem::
 writeSymbolicLinkPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions)
 {
-#if defined(__APPLE__) || defined(__FreeBSD__)
+#if _WIN32
+    // TODO: Support file permssions on Windows.
+    return true;
+#elif defined(__APPLE__) || defined(__FreeBSD__)
     ext::optional<Permissions> updated = this->readSymbolicLinkPermissions(path);
     if (!updated) {
         return false;
@@ -358,11 +385,17 @@ writeDirectoryPermissions(std::string const &path, Permissions::Operation operat
     }
 
     updated->combine(operation, permissions);
+
+#if _WIN32
+    // TODO: Support file permssions on Windows.
+    return true;
+#else
     mode_t mode = PermissionsMode(*updated);
 
     if (::chmod(path.c_str(), mode) != 0) {
         return false;
     }
+#endif
 
     if (recursive) {
         bool success = true;
