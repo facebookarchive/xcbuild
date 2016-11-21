@@ -42,6 +42,9 @@ Environment(process::User const *user, process::Context const *processContext)
     settings.push_back(Setting::Create("USER", user->userName()));
     settings.push_back(Setting::Create("GID", user->groupID()));
     settings.push_back(Setting::Create("GROUP", user->groupName()));
+    if (ext::optional<std::string> home = user->userHomeDirectory()) {
+        settings.push_back(Setting::Create("HOME", *home));
+    }
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));
