@@ -38,7 +38,7 @@ ResolveBuildFiles(Filesystem const *filesystem, Phase::Environment const &phaseE
             continue;
         }
 
-        std::string fileNameDisambiguator;
+        ext::optional<std::string> fileNameDisambiguator;
         auto it = targetEnvironment.buildFileDisambiguation().find(buildFile);
         if (it != targetEnvironment.buildFileDisambiguation().end()) {
             fileNameDisambiguator = it->second;
