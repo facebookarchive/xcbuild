@@ -294,6 +294,82 @@ extern "C" {
     } __attribute__((packed));
 }
 
+static std::string
+PrintItemToString(Options::PrintItem item, std::string path, struct bom_path_info_2 *info)
+{
+    switch (item) {
+        case Options::PrintItem::Checksum:
+            if (info->type == bom_path_type_directory) {
+                return "";
+            }
+            return std::to_string(ntohl(info->checksum));
+        case Options::PrintItem::FileName:
+            return path;
+        case Options::PrintItem::FileNameQuoted:
+            return "\"" + path + "\"";
+        case Options::PrintItem::GroupID:
+            return std::to_string(ntohl(info->group));
+        case Options::PrintItem::GroupName:
+            return std::string(); // TODO: implement
+        case Options::PrintItem::Permissions: {
+            std::stringstream stream;
+            stream << std::oct << ntohs(info->mode);
+            return stream.str();
+            }
+        case Options::PrintItem::PermissionsText:
+            return std::string(); // TODO: implement
+        case Options::PrintItem::FileSize:
+            if (info->type == bom_path_type_directory) {
+                return "";
+            }
+            return std::to_string(ntohl(info->size));
+        case Options::PrintItem::FileSizeFormatted:
+            return std::string(); // TODO: implement
+        case Options::PrintItem::ModificationTime:
+            return std::to_string(ntohl(info->modtime));
+        case Options::PrintItem::ModificationTimeFormatted:
+            return std::string(); // TODO: implement
+        case Options::PrintItem::UserID:
+            return std::to_string(ntohl(info->user));
+        case Options::PrintItem::UserName:
+            return std::string(); // TODO: implement
+        case Options::PrintItem::UserGroupID:
+            return std::to_string(ntohl(info->user)) + "/" + std::to_string(ntohl(info->group));
+        case Options::PrintItem::UserGroupName:
+            return std::string(); // TODO: implement
+        default:
+            return "";
+    }
+    return "";
+}
+
+static std::vector<Options::PrintItem>
+GetDefaultPrintFormat()
+{
+    return {
+        Options::PrintItem::FileName,
+        Options::PrintItem::Permissions,
+        Options::PrintItem::UserGroupID,
+        Options::PrintItem::FileSize,
+        Options::PrintItem::Checksum,
+    };
+}
+
+static std::string
+PrintItemsToString(std::vector<Options::PrintItem> format, std::string path, struct bom_path_info_2 *info)
+{
+    std::string toReturn;
+    bool first = true;
+
+    for (Options::PrintItem item : format) {
+        toReturn += first ? "" : "\t";
+        toReturn += PrintItemToString(item, path, info);
+        first = false;
+    }
+
+    return toReturn;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -449,25 +525,10 @@ main(int argc, char **argv)
         /*
          * Print out requested details.
          */
-        if (options->onlyPath()) {
-            printf("%s\n", path.c_str());
-        } else {
-            // TODO: Respect options about what to print.
-            std::stringstream stream;
-            stream << std::oct << ntohs(path_info_2_value->mode);
-            std::string mode = stream.str();
-            std::string UID = std::to_string(ntohl(path_info_2_value->user));
-            std::string GID = std::to_string(ntohl(path_info_2_value->group));
-            printf("%s\t%s\t%s/%s", path.c_str(), mode.c_str(), UID.c_str(), GID.c_str());
-            
-            if (path_info_2_value->type == bom_path_type_file) {
-                std::string size = std::to_string(ntohl(path_info_2_value->size));
-                std::string checksum = std::to_string(ntohl(path_info_2_value->checksum));
-                printf("\t%s\t%s", size.c_str(), checksum.c_str());
-            }
-            
-            printf("\n");
-        }
+        std::string toPrint;
+        std::vector<Options::PrintItem> printFormat = options->onlyPath() ? std::vector<Options::PrintItem>({Options::PrintItem::FileName}) : options->printFormat().value_or(GetDefaultPrintFormat());
+        toPrint = PrintItemsToString(printFormat, path, path_info_2_value);
+        printf("%s\n", toPrint.c_str());
     }, reinterpret_cast<void *>(&context));
 
     return 0;
