@@ -23,4 +23,7 @@ install(FILES
         com.apple.compilers.llvm.clang.1_0.xcspec
         com.apple.compilers.model.coredata.xcspec
         com.apple.compilers.model.coredatamapping.xcspec
+        com.apple.xcode.tools.ibtool.compiler.xcspec
+        com.apple.xcode.tools.ibtool.storyboard.compiler.xcspec
+        com.apple.xcode.tools.ibtool.storyboard.linker.xcspec
         DESTINATION Library/Xcode/Specifications)
