@@ -453,7 +453,7 @@ createDirectory(std::string const &path, bool recursive)
         std::stack<std::string> create;
 
         /* Build up list of directories to create. */
-        while (this->type(current) != Type::Directory) {
+        while (this->type(current) != Type::Directory && current != "") {
             create.push(current);
             current = FSUtil::GetDirectoryName(current);
         }
