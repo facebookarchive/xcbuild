@@ -125,7 +125,7 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
         if (variantEnvironment.resolve("DEBUG_INFORMATION_FORMAT") == "dwarf-with-dsym" && (binaryType != "staticlib" && binaryType != "mh_object")) {
             Tool::Input outputInput = Tool::Input(variantProductsOutput, nullptr);
             std::string dsymfile = variantEnvironment.resolve("DWARF_DSYM_FOLDER_PATH") + "/" + variantEnvironment.resolve("DWARF_DSYM_FILE_NAME");
-            dsymutilResolver->resolve(&phaseContext->toolContext(), variantEnvironment, { outputInput }, dsymfile);
+            dsymutilResolver->resolve(&phaseContext->toolContext(), variantEnvironment, { outputInput }, std::vector<std::string>({dsymfile}));
         }
     }
 
