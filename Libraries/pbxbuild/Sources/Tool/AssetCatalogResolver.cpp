@@ -92,14 +92,6 @@ resolve(
     arguments.erase(std::remove(arguments.begin(), arguments.end(), "--optimization"), arguments.end());
     arguments.erase(std::remove(arguments.begin(), arguments.end(), ""), arguments.end());
 
-    // TODO(grp): These should be handled generically for all tools.
-    std::unordered_map<std::string, std::string> environmentVariables = options.environment();
-    if (_tool->environmentVariables()) {
-        for (auto const &variable : *_tool->environmentVariables()) {
-            environmentVariables.insert({ variable.first, environment.expand(variable.second) });
-        }
-    }
-
     // TODO(grp): This should be handled generically for all tools.
     if (_tool->generatedInfoPlistContentFilePath()) {
         std::string infoPlistContent = environment.expand(*_tool->generatedInfoPlistContentFilePath());
@@ -128,7 +120,7 @@ resolve(
     Tool::Invocation invocation;
     invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
-    invocation.environment() = environmentVariables;
+    invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = absoluteInputPaths;
     invocation.outputs() = outputs;

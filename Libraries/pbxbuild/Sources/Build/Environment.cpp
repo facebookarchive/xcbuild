@@ -12,16 +12,22 @@
 #include <xcsdk/Environment.h>
 #include <pbxsetting/DefaultSettings.h>
 #include <pbxsetting/Environment.h>
+#include <process/Context.h>
 #include <libutil/Filesystem.h>
 
 namespace Build = pbxbuild::Build;
 using libutil::Filesystem;
 
 Build::Environment::
-Environment(pbxspec::Manager::shared_ptr const &specManager, std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager, pbxsetting::Environment const &baseEnvironment) :
+Environment(
+    pbxspec::Manager::shared_ptr const &specManager,
+    std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager,
+    pbxsetting::Environment const &baseEnvironment,
+    std::vector<std::string> const &baseExecutablePaths) :
     _specManager(specManager),
     _sdkManager(sdkManager),
-    _baseEnvironment(baseEnvironment)
+    _baseEnvironment(baseEnvironment),
+    _baseExecutablePaths(baseExecutablePaths)
 {
 }
 
@@ -91,5 +97,5 @@ Default(process::Context const *processContext, Filesystem const *filesystem)
         baseEnvironment.insertBack(level, false);
     }
 
-    return Build::Environment(specManager, sdkManager, baseEnvironment);
+    return Build::Environment(specManager, sdkManager, baseEnvironment, processContext->executableSearchPaths());
 }

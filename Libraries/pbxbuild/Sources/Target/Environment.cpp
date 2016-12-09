@@ -264,6 +264,22 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
     return pbxsetting::Level(settings);
 }
 
+static pbxsetting::Level
+ExecutablePathsLevel(std::vector<std::string> const &executablePaths)
+{
+    std::string path;
+    for (std::string const &executablePath : executablePaths) {
+        path += executablePath;
+        if (&executablePath != &executablePaths.back()) {
+            path += ":";
+        }
+    }
+
+    return pbxsetting::Level({
+        pbxsetting::Setting::Create("PATH", path),
+    });
+}
+
 ext::optional<Target::Environment> Target::Environment::
 Create(Build::Environment const &buildEnvironment, Build::Context const &buildContext, pbxproj::PBX::Target::shared_ptr const &target)
 {
@@ -451,6 +467,8 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     /* Tool search directories. Use the toolchains just discovered. */
     std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager = buildEnvironment.sdkManager();
     std::vector<std::string> executablePaths = sdkManager->executablePaths(sdk->platform(), sdk, toolchains);
+    executablePaths.insert(executablePaths.end(), buildEnvironment.baseExecutablePaths().begin(), buildEnvironment.baseExecutablePaths().end());
+    environment.insertFront(ExecutablePathsLevel(executablePaths), false);
 
     auto buildRules = Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target);
     auto buildFileDisambiguation = BuildFileDisambiguation(target);
