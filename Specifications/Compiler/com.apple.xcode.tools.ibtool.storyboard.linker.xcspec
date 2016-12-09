@@ -36,5 +36,5 @@
             CommandLineFlag = "--link";
         },
         /* TODO: Complete. */
-    };
+    );
 }
