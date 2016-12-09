@@ -119,6 +119,7 @@ executablePaths() const
 {
     return {
         _path + "/usr/bin",
+        _path + "/usr/local/bin",
         _path + "/Tools",
     };
 }

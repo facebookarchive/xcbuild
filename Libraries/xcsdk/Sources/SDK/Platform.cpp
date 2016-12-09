@@ -150,7 +150,12 @@ settings() const
 std::vector<std::string> Platform::
 executablePaths() const
 {
-    return { _path + "/Developer/usr/bin" };
+    return {
+        _path + "/Developer/usr/bin",
+        _path + "/usr/local/bin",
+        _path + "/usr/bin",
+        _path + "/usr/local/bin",
+    };
 }
 
 bool Platform::

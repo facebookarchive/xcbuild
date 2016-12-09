@@ -253,10 +253,24 @@ Create(
     std::string const &workingDirectory,
     pbxspec::PBX::FileType::shared_ptr const &fileType)
 {
-    return Create(
+    Tool::OptionsResult optionsResult = Create(
         toolEnvironment.environment(),
         workingDirectory,
         toolEnvironment.tool()->options().value_or(pbxspec::PBX::PropertyOption::vector()),
         fileType,
         toolEnvironment.tool()->deletedProperties().value_or(std::unordered_set<std::string>()));
+
+    /* Add tool-level environment variables. */
+    std::unordered_map<std::string, std::string> environmentVariables = optionsResult.environment();
+    if (toolEnvironment.tool()->environmentVariables()) {
+        for (auto const &variable : *toolEnvironment.tool()->environmentVariables()) {
+            environmentVariables.insert({ variable.first, toolEnvironment.environment().expand(variable.second) });
+        }
+    }
+
+    /* Copy important environment variables for all tools. */
+    environmentVariables["PATH"] = toolEnvironment.environment().resolve("PATH");
+    environmentVariables["DEVELOPER_DIR"] = toolEnvironment.environment().resolve("DEVELOPER_DIR");
+
+    return Tool::OptionsResult(optionsResult.arguments(), environmentVariables, optionsResult.linkerArgs());
 }
