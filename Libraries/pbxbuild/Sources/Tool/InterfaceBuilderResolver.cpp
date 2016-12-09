@@ -11,6 +11,7 @@
 #include <pbxbuild/Tool/InterfaceBuilderCommon.h>
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
+#include <pbxbuild/Tool/ResolverCommon.h>
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/Context.h>
 #include <pbxsetting/Environment.h>
@@ -100,7 +101,7 @@ resolve(
     Tool::Invocation invocation;
     invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
-    invocation.environment() = environmentVariables;
+    invocation.environment() = Tool::ResolverCommon::commonExtendedEnvironmentVariables(toolEnvironment.environment(), environmentVariables);
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = outputs;

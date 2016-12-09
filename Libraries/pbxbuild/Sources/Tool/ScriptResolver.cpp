@@ -10,6 +10,7 @@
 #include <pbxbuild/Tool/ScriptResolver.h>
 #include <pbxbuild/Tool/Context.h>
 #include <pbxsetting/Environment.h>
+#include <pbxbuild/Tool/ResolverCommon.h>
 #include <pbxsetting/Level.h>
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/Type.h>
@@ -181,7 +182,7 @@ resolve(
     Tool::Invocation invocation;
     invocation.executable() = Tool::Invocation::Executable::External("/bin/sh");
     invocation.arguments() = { "-c", buildRule->script() };
-    invocation.environment() = environmentVariables;
+    invocation.environment() = Tool::ResolverCommon::scriptExtendedEnvironmentVariables(ruleEnvironment, environmentVariables);
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = { inputAbsolutePath };
     invocation.outputs() = outputFiles;

@@ -16,6 +16,7 @@
 #include <pbxbuild/Tool/SearchPaths.h>
 #include <pbxbuild/Tool/Environment.h>
 #include <pbxbuild/Tool/OptionsResult.h>
+#include <pbxbuild/Tool/ResolverCommon.h>
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxsetting/Environment.h>
 #include <pbxsetting/Type.h>
@@ -183,7 +184,7 @@ resolvePrecompiledHeader(
     Tool::Invocation invocation;
     invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
-    invocation.environment() = options.environment();
+    invocation.environment() = Tool::ResolverCommon::commonExtendedEnvironmentVariables(toolEnvironment.environment(), options.environment());
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
