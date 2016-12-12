@@ -162,6 +162,11 @@ LoadDependencyInfo(Filesystem const *filesystem, std::string const &path, depend
         dependencyInfo->push_back(binaryInfo->dependencyInfo());
         return true;
     } else if (format == dependency::DependencyInfoFormat::Directory) {
+        if (filesystem->type(path) != Filesystem::Type::Directory) {
+            fprintf(stderr, "warning: ignoring non-directory %s\n", path.c_str());
+            return true;
+        }
+
         auto directoryInfo = dependency::DirectoryDependencyInfo::Deserialize(filesystem, path);
         if (!directoryInfo) {
             fprintf(stderr, "error: invalid directory\n");
