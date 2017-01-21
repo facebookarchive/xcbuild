@@ -108,8 +108,16 @@ readReal(size_t nbytes)
             *(double *)&value);
 
     switch (nbytes) {
-        case 4:  return plist::Real::New(*reinterpret_cast<float *>(&value)).release();
-        case 8:  return plist::Real::New(*reinterpret_cast<double *>(&value)).release();
+        case 4: {
+            float converted;
+            memcpy(&converted, &value, sizeof(converted));
+            return plist::Real::New(converted).release();
+        }
+        case 8: {
+            double converted;
+            memcpy(&converted, &value, sizeof(converted));
+            return plist::Real::New(converted).release();
+        }
         default: return plist::Real::New(0.0).release();
     }
 }
