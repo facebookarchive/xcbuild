@@ -26,4 +26,5 @@ install(FILES
         com.apple.xcode.tools.ibtool.compiler.xcspec
         com.apple.xcode.tools.ibtool.storyboard.compiler.xcspec
         com.apple.xcode.tools.ibtool.storyboard.linker.xcspec
+        com.apple.xcode.tools.swift.compiler.xcspec
         DESTINATION Library/Xcode/Specifications)
