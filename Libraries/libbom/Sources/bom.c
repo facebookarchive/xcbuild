@@ -338,7 +338,7 @@ bom_variable_iterate(struct bom_context *context, bom_variable_iterator iterator
 
     ptrdiff_t var_offset = 0;
     for (size_t i = 0; i < ntohl(vars->count); i++) {
-        struct bom_variable *var = (struct bom_variable *)((uintptr_t)vars + sizeof(struct bom_variable) + var_offset);
+        struct bom_variable *var = (struct bom_variable *)((uintptr_t)vars + sizeof(struct bom_variables) + var_offset);
         var_offset += (sizeof(struct bom_variable) + var->length);
 
         char *var_name = malloc(var->length + 1);
@@ -400,7 +400,7 @@ bom_variable_add(struct bom_context *context, const char *name, int data_index)
     /* Find the end of the variables section. */
     ptrdiff_t var_offset = 0;
     for (size_t i = 0; i < ntohl(vars->count); i++) {
-        struct bom_variable *var = (struct bom_variable *)((uintptr_t)vars + sizeof(struct bom_variable) + var_offset);
+        struct bom_variable *var = (struct bom_variable *)((uintptr_t)vars + sizeof(struct bom_variables) + var_offset);
         var_offset += (sizeof(struct bom_variable) + var->length);
     }
 
@@ -415,7 +415,7 @@ bom_variable_add(struct bom_context *context, const char *name, int data_index)
     vars = (struct bom_variables *)((uintptr_t)header + ntohl(header->variables_offset));
 
     /* Update values in newly inserted variable. */
-    struct bom_variable *var = (struct bom_variable *)((uintptr_t)vars + sizeof(struct bom_variable) + var_offset);
+    struct bom_variable *var = (struct bom_variable *)((uintptr_t)vars + sizeof(struct bom_variables) + var_offset);
     var->index = htonl(data_index);
     var->length = (uint8_t)strlen(name);
     strncpy(var->name, name, var->length);
