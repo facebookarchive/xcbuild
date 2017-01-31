@@ -184,7 +184,9 @@ ParseCommandKeyPathString(std::string const &keyPathString, std::queue<std::stri
         bool emptyInitialKey = (prev == 0 && pos == 0);
         if (!emptyInitialKey) {
             std::string key = keyPathString.substr(prev, end);
-            keyPath->push(key);
+            if (key.length()) {  // Ignore empty string component
+                keyPath->push(key);
+            }
         }
 
         prev = (pos == std::string::npos ? pos : pos + 1);
