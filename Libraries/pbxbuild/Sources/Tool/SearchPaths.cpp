@@ -64,7 +64,7 @@ AppendPaths(std::vector<std::string> *args, pbxsetting::Environment const &envir
 
                 std::string absolute = absoluteRoot + "/" + relative;
                 if (filesystem->type(absolute) == Filesystem::Type::Directory) {
-                    args->push_back(relative);
+                    args->push_back(root + "/" + relative);
                 }
                 return true;
             });

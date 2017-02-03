@@ -20,6 +20,8 @@
 #include <libutil/FSUtil.h>
 
 using xcsdk::SDK::Target;
+using xcsdk::SDK::Manager;
+using xcsdk::SDK::Platform;
 using libutil::Filesystem;
 using libutil::FSUtil;
 

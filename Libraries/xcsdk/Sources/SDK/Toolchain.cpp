@@ -35,7 +35,10 @@ Toolchain::
 std::vector<std::string> Toolchain::
 executablePaths() const
 {
-    return { _path + "/usr/bin" };
+    return {
+        _path + "/usr/bin",
+        _path + "/usr/libexec",
+    };
 }
 
 bool Toolchain::

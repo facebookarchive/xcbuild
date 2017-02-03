@@ -8,6 +8,7 @@
  */
 
 #include <libutil/Permissions.h>
+#include <stdlib.h>
 
 using libutil::Permissions;
 

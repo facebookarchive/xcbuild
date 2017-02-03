@@ -33,7 +33,7 @@ public:
     virtual ~Linker();
 
 public:
-    inline char const *type() const override
+    inline SpecificationType type() const override
     { return Linker::Type(); }
 
 public:
@@ -67,8 +67,8 @@ protected:
     static Linker::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Type()
-    { return Types::Linker; }
+    static inline SpecificationType Type()
+    { return SpecificationType::Linker; }
 };
 
 } }

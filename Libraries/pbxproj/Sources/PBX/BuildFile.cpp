@@ -21,6 +21,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BuildFile;
+using pbxproj::Context;
 
 BuildFile::
 BuildFile() :

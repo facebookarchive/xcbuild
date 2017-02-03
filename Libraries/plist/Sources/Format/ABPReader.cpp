@@ -7,7 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-#include <plist/Format/ABPReaderPrivate.h>
+#include <plist/Format/ABPReader.h>
+#include <plist/Format/ABPRecordType.h>
+#include <plist/Format/Encoding.h>
+
+#include <cassert>
 
 #if 0
 #define dprintf(...) fprintf(stderr, __VA_ARGS__)
@@ -15,25 +19,31 @@
 #define dprintf(...)
 #endif
 
-static bool
-_ABPReadOffsetTable(ABPContext *context)
+void ABPReader::
+error(std::string const &error)
+{
+    this->_error = error;
+}
+
+bool ABPReader::
+readOffsetTable()
 {
     off_t        offset;
     uint64_t     n, *offsets;
     plist::Object **objects;
 
-    offset = -(sizeof(context->trailer) + context->trailer.offsetIntByteSize
-            * context->trailer.objectsCount);
+    offset = -static_cast<off_t>(sizeof(this->_trailer) + this->_trailer.offsetIntByteSize * this->_trailer.objectsCount);
 
-    if (__ABPSeek(context, offset, SEEK_END) < 0)
+    if (this->seek(offset, SEEK_END) < 0)
         return false;
 
-    offsets = new uint64_t[context->trailer.objectsCount];
-    objects = new plist::Object *[context->trailer.objectsCount];
+    size_t objectsCount = static_cast<size_t>(this->_trailer.objectsCount);
+    offsets = new uint64_t[objectsCount];
+    objects = new plist::Object *[objectsCount];
 
-    for (n = 0; n < context->trailer.objectsCount; n++) {
+    for (n = 0; n < this->_trailer.objectsCount; n++) {
         objects[n] = nullptr;
-        if (!__ABPReadOffset(context, offsets + n)) {
+        if (!this->readOffset(offsets + n)) {
             delete[] objects;
             delete[] offsets;
             return false;
@@ -43,389 +53,565 @@ _ABPReadOffsetTable(ABPContext *context)
         dprintf("Object #%-5llu: %llx%s\n",
                 (unsigned long long)n,
                 (unsigned long long)offsets[n],
-                (n == context->trailer.topLevelObject)
+                (n == this->_trailer.topLevelObject)
                 ? " [TOP LEVEL OBJECT]" : "");
 #endif
     }
 
-    context->offsets = offsets;
-    context->objects = objects;
+    this->_offsets = offsets;
+    this->_objects = objects;
 
     return true;
 }
 
-static inline plist::Date *
-__ABPReadDate(ABPContext *context)
+plist::Date *ABPReader::
+readDate()
 {
     uint64_t date;
-    if (!__ABPReadWord(context, 8, &date)) {
-        __ABPError(context, "EOF reading date value");
+    if (!this->readWord(8, &date)) {
+        this->error("EOF reading date value");
         return NULL;
     }
 
-    return __ABPCreateDate(context, date);
+    /* Reference time is 2001/1/1 */
+    static uint64_t const ReferenceTimestamp = 978307200;
+    return plist::Date::New(date - ReferenceTimestamp).release();
 }
 
-static inline plist::Integer *
-__ABPReadInteger(ABPContext *context, size_t nbytes)
+plist::Integer *ABPReader::
+readInteger(size_t nbytes)
 {
     uint64_t value;
 
-    if (!__ABPReadWord(context, nbytes, &value)) {
-        __ABPError(context, "EOF reading integer value");
+    if (!this->readWord(nbytes, &value)) {
+        this->error("EOF reading integer value");
         return NULL;
     }
 
     dprintf("int(%zu) - %llu\n", nbytes,
             (unsigned long long)value);
 
-    return __ABPCreateInteger(context, value, nbytes);
+    return plist::Integer::New(value).release();
 }
 
-static inline plist::Real *
-__ABPReadReal(ABPContext *context, size_t nbytes)
+plist::Real *ABPReader::
+readReal(size_t nbytes)
 {
     uint64_t value;
 
-    if (!__ABPReadWord(context, nbytes, &value)) {
-        __ABPError(context, "EOF reading real value");
+    if (!this->readWord(nbytes, &value)) {
+        this->error("EOF reading real value");
         return NULL;
     }
 
     dprintf("real(%zu) - %g\n", nbytes,
             *(double *)&value);
 
-    return __ABPCreateReal(context, value, nbytes);
+    switch (nbytes) {
+        case 4: {
+            float converted;
+            memcpy(&converted, &value, sizeof(converted));
+            return plist::Real::New(converted).release();
+        }
+        case 8: {
+            double converted;
+            memcpy(&converted, &value, sizeof(converted));
+            return plist::Real::New(converted).release();
+        }
+        default: return plist::Real::New(0.0).release();
+    }
 }
 
-static inline plist::Data *
-__ABPReadData(ABPContext *context, size_t nbytes)
+plist::Data *ABPReader::
+readData(size_t nbytes)
 {
-    plist::Data *data;
-    off_t        offset;
-
-    if (!__ABPReadLength(context, &nbytes)) {
-        __ABPError(context, "EOF reading data length value");
+    if (!this->readLength(&nbytes)) {
+        this->error("EOF reading data length value");
         return NULL;
     }
 
     dprintf("data - %zu bytes\n", nbytes);
 
-    offset = __ABPTell(context);
-    data = __ABPCreateData(context, offset, nbytes);
-    __ABPSeek(context, offset + nbytes, SEEK_SET);
+    std::vector<uint8_t> bytes;
 
-    return data;
+    if (nbytes > 0) {
+        bytes.resize(nbytes);
+        size_t nread = this->read(bytes.data(), nbytes);
+        if (nread < nbytes) {
+            return nullptr;
+        }
+    }
+
+    return plist::Data::New(std::move(bytes)).release();
 }
 
-static inline plist::UID *
-__ABPReadUid(ABPContext *context, size_t nbytes)
+plist::UID *ABPReader::
+readUid(size_t nbytes)
 {
     uint64_t value = 0;
 
-    if (!__ABPReadLength(context, &nbytes))
+    if (!this->readLength(&nbytes))
         return NULL;
 
     dprintf("uid - %lu bytes", nbytes);
 
     if (nbytes > 4) {
-        __ABPError(context, "too many bytes in UID");
+        this->error("too many bytes in UID");
         return NULL;
     }
 
-    if (nbytes > 0 && !__ABPReadWord(context, nbytes, &value)) {
-        __ABPError(context, "error reading word for UID");
+    if (nbytes > 0 && !this->readWord(nbytes, &value)) {
+        this->error("error reading word for UID");
         return NULL;
     }
 
-    return __ABPCreateUid(context, value);
+    return plist::UID::New(static_cast<uint32_t>(value)).release();
 }
 
-static inline plist::String *
-__ABPReadStringASCII(ABPContext *context, size_t nchars)
+plist::String *ABPReader::
+readStringASCII(size_t nchars)
 {
-    off_t          offset;
-    plist::String *string = NULL;
-
-    if (!__ABPReadLength(context, &nchars)) {
-        __ABPError(context, "EOF reading ASCII string length value");
+    if (!this->readLength(&nchars)) {
+        this->error("EOF reading ASCII string length value");
         return NULL;
     }
 
     dprintf("ascii string - %zu(0x%zx) chars\n", nchars, nchars);
 
-    offset = __ABPTell(context);
-    string = __ABPCreateString(context, offset, nchars, false);
-    __ABPSeek(context, offset + nchars, SEEK_SET);
+    std::string string;
 
-    return string;
+    if (nchars > 0) {
+        size_t nbytes = sizeof(char) * nchars;
+        string.resize(nbytes);
+        size_t nread = this->read(&string[0], nbytes);
+        if (nread < nbytes) {
+            return nullptr;
+        }
+    }
+
+    return plist::String::New(std::move(string)).release();
 }
 
-static inline plist::String *
-__ABPReadStringUnicode(ABPContext *context, size_t nchars)
+plist::String *ABPReader::
+readStringUnicode(size_t nchars)
 {
-    size_t      offset;
-    plist::String *string = NULL;
-
-    if (!__ABPReadLength(context, &nchars)) {
-        __ABPError(context, "EOF reading Unicode string length value");
+    if (!this->readLength(&nchars)) {
+        this->error("EOF reading Unicode string length value");
         return NULL;
     }
 
     dprintf("unicode string - %zu chars\n", nchars);
 
-    offset = __ABPTell(context);
-    string = __ABPCreateString(context, offset, nchars, true);
-    __ABPSeek(context, offset + (nchars * sizeof(unsigned short)), SEEK_SET);
+    std::vector<uint8_t> buffer;
 
-    return string;
+    if (nchars > 0) {
+        size_t nbytes = sizeof(uint16_t) * nchars;
+        buffer.resize(nbytes);
+        size_t nread = this->read(buffer.data(), nbytes);
+        if (nread < nbytes) {
+            return nullptr;
+        }
+    }
+
+    buffer = plist::Format::Encodings::Convert(buffer, plist::Format::Encoding::UTF16BE, plist::Format::Encoding::UTF8);
+
+    std::string string = std::string(buffer.begin(), buffer.end());
+    return plist::String::New(std::move(string)).release();
 }
 
-static plist::Array *
-_ABPReadArray(ABPContext *context, size_t nitems)
+plist::Array *ABPReader::
+readArray(size_t nitems)
 {
-    size_t     n;
-    uint64_t  *objrefs;
-    plist::Array *array = NULL;
+    std::unique_ptr<plist::Array> array;
 
-    if (!__ABPReadLength(context, &nitems)) {
-        __ABPError(context, "EOF reading array count value");
+    if (!this->readLength(&nitems)) {
+        this->error("EOF reading array count value");
         return NULL;
     }
 
-    objrefs = new uint64_t[nitems];
     dprintf("array - %zu items\n", nitems);
 
-    for (n = 0; n < nitems; n++) {
+    auto objrefs = new uint64_t[nitems];
+    for (size_t n = 0; n < nitems; n++) {
         uint64_t objref;
-        if (!__ABPReadReference(context, &objref)) {
-            __ABPError(context, "corrupted array's object references table");
+        if (!this->readReference(&objref)) {
+            this->error("corrupted array's object references table");
             goto fail;
         }
 
         dprintf("\titem #%zu: obj ref %llu\n", n,
                 (unsigned long long)objref);
+
         objrefs[n] = objref;
     }
 
-    array = __ABPCreateArray(context, objrefs, nitems);
+    array = plist::Array::New();
+    for (size_t n = 0; n < nitems; n++) {
+        uint64_t objref = objrefs[n];
+        auto object = this->readObject(objref);
+        if (object == nullptr) {
+            goto fail;
+        }
+
+        //
+        // Due to the memory layout of the `plist' objects,
+        // we must always copy objects.
+        //
+        if (this->_seen.find(object) != this->_seen.end()) {
+            this->_seen.insert(object);
+        }
+        object = object->copy().release();
+
+        array->append(std::unique_ptr<plist::Object>(object));
+    }
 
 fail:
     delete[] objrefs;
-    return array;
+    return array.release();
 }
 
-static plist::Dictionary *
-_ABPReadDictionary(ABPContext *context, size_t nitems)
+plist::Dictionary *ABPReader::
+readDictionary(size_t nitems)
 {
-    size_t          n;
-    uint64_t       *kvrefs;
-    plist::Dictionary *dict = NULL;
+    std::unique_ptr<plist::Dictionary> dict;
 
-    if (!__ABPReadLength(context, &nitems)) {
-        __ABPError(context, "EOF reading dictionary count value");
+    if (!this->readLength(&nitems)) {
+        this->error("EOF reading dictionary count value");
         return NULL;
     }
 
-    kvrefs = new uint64_t[nitems * 2];
-
+    uint64_t *kvrefs = new uint64_t[nitems * 2];
     dprintf("dictionary - %zu items\n", nitems);
-    for (n = 0; n < nitems; n++) {
+
+    for (size_t n = 0; n < nitems; n++) {
         uint64_t keyref;
 
-        if (!__ABPReadReference(context, &keyref)) {
-            __ABPError(context, "corrupted dictionary's key references table");
+        if (!this->readReference(&keyref)) {
+            this->error("corrupted dictionary's key references table");
             goto fail;
         }
 
-        kvrefs[n*2+0] = keyref;
+        kvrefs[n * 2 + 0] = keyref;
     }
 
-    for (n = 0; n < nitems; n++) {
+    for (size_t n = 0; n < nitems; n++) {
         uint64_t objref;
 
-        if (!__ABPReadReference(context, &objref)) {
-            __ABPError(context, "corrupted dictionary's object references table");
+        if (!this->readReference(&objref)) {
+            this->error("corrupted dictionary's object references table");
             goto fail;
         }
 
-        kvrefs[n*2+1] = objref;
+        kvrefs[n * 2 + 1] = objref;
     }
 
-    dict = __ABPCreateDictionary(context, kvrefs, nitems);
+    dict = plist::Dictionary::New();
+    for (size_t n = 0; n < nitems; n++) {
+        auto keyObject = this->readObject(kvrefs[n * 2 + 0]);
+        if (keyObject == nullptr) {
+            goto fail;
+        }
+
+        auto object = this->readObject(kvrefs[n * 2 + 1]);
+        if (object == nullptr) {
+            goto fail;
+        }
+
+        //
+        // Key must be of string type.
+        //
+        auto keyString = plist::CastTo<plist::String>(keyObject);
+        if (keyString == nullptr) {
+            goto fail;
+        }
+
+        //
+        // Due to the memory layout of the `plist' objects,
+        // we must always copy objects.
+        //
+        if (this->_seen.find(object) != this->_seen.end()) {
+            this->_seen.insert(object);
+        }
+        object = object->copy().release();
+
+        dict->set(keyString->value(), std::unique_ptr<plist::Object>(object));
+    }
 
 fail:
     delete[] kvrefs;
-    return dict;
+    return dict.release();
 }
 
-static inline plist::Null *
-__ABPReadNull(ABPContext *context)
+plist::Null *ABPReader::
+readNull()
 {
-    return __ABPCreateNull(context);
+    return plist::Null::New().release();
 }
 
-static inline plist::Boolean *
-__ABPReadBool(ABPContext *context, bool value)
+plist::Boolean *ABPReader::
+readBool(bool value)
 {
-    return __ABPCreateBool(context, value);
+    return plist::Boolean::New(value).release();
 }
 
-static plist::Object *
-_ABPReadObject(ABPContext *context)
+plist::Object *ABPReader::
+_readObject()
 {
     int byte;
 
     for (;;) {
-        byte = __ABPReadByte(context);
-        if (byte == EOF)
+        byte = this->readByte();
+        if (byte == EOF) {
             return NULL;
+        }
 
         switch (__ABPByteToRecordType(byte)) {
             case kABPRecordTypeNull:
-                return __ABPReadNull(context);
+                return this->readNull();
             case kABPRecordTypeBoolFalse:
-                return __ABPReadBool(context, false);
+                return this->readBool(false);
             case kABPRecordTypeBoolTrue:
-                return __ABPReadBool(context, true);
+                return this->readBool(true);
             case kABPRecordTypeFill:
                 break;
             case kABPRecordTypeDate:
-                return __ABPReadDate(context);
+                return this->readDate();
             case kABPRecordTypeInteger:
-                return __ABPReadInteger(context, 1 << (byte & 0x0f));
+                return this->readInteger(1 << (byte & 0x0f));
             case kABPRecordTypeReal:
-                return __ABPReadReal(context, 1 << (byte & 0x0f));
+                return this->readReal(1 << (byte & 0x0f));
             case kABPRecordTypeData:
-                return __ABPReadData(context, byte & 0x0f);
+                return this->readData(byte & 0x0f);
             case kABPRecordTypeStringASCII:
-                return __ABPReadStringASCII(context, byte & 0x0f);
+                return this->readStringASCII(byte & 0x0f);
             case kABPRecordTypeStringUnicode:
-                return __ABPReadStringUnicode(context, byte & 0x0f);
+                return this->readStringUnicode(byte & 0x0f);
             case kABPRecordTypeUid:
-                return __ABPReadUid(context, (byte & 0x0f) + 1);
+                return this->readUid((byte & 0x0f) + 1);
             case kABPRecordTypeArray:
-                return _ABPReadArray(context, byte & 0x0f);
+                return this->readArray(byte & 0x0f);
             case kABPRecordTypeDictionary:
-                return _ABPReadDictionary(context, byte & 0x0f);
+                return this->readDictionary(byte & 0x0f);
             default:
-                __ABPError(context, "unsupported type id %x", byte);
+                this->error("unsupported type id");
                 return NULL;
         }
     }
 }
 
-/*
- * Public Reader API
- */
-
-bool
-ABPReaderInit(ABPContext *context, ABPStreamCallBacks const *streamCallBacks,
-        ABPCreateCallBacks const *callbacks)
+ABPReader::
+ABPReader(std::vector<uint8_t> const *contents) :
+    ABPContext(contents),
+    _objects (nullptr)
 {
-    if (context == NULL || streamCallBacks == NULL || callbacks == NULL)
+}
+
+ABPReader::
+~ABPReader()
+{
+    if (this->_objects != NULL) {
+        for (size_t n = 0; n < this->_trailer.objectsCount; n++) {
+            if (this->_objects[n] != NULL) {
+                this->_objects[n]->release();
+            }
+        }
+        delete[] this->_objects;
+    }
+}
+
+bool ABPReader::
+open()
+{
+    if ((this->_flags & (kABPContextOpened | kABPContextComplete)) != 0)
         return false;
 
-    if (streamCallBacks->version != 0)
+    if (!this->readHeader()) {
+        this->error("not a binary property list or corrupted header");
         return false;
-    if (streamCallBacks->seek == NULL || streamCallBacks->read == NULL)
-        return false;
-    if (callbacks->version != 0)
-        return false;
-    if (callbacks->create == NULL)
-        return false;
+    }
 
-    memset(context, 0, sizeof(*context));
-    context->streamCallBacks = *streamCallBacks;
-    context->createCallBacks = *callbacks;
-    context->flags           = kABPContextReader;
+    if (!this->readTrailer()) {
+        this->error("corrupted trailer");
+        return false;
+    }
+
+    if (!this->readOffsetTable()) {
+        this->error("corrupted offsets table");
+        return false;
+    }
+
+    this->_flags |= kABPContextOpened;
 
     return true;
 }
 
-bool
-ABPReaderOpen(ABPContext *context)
+bool ABPReader::
+close()
 {
-    if (context == NULL)
+    /* Fail if not opened. */
+    if ((this->_flags & kABPContextOpened) == 0)
         return false;
-
-    if ((context->flags & (kABPContextOpened | kABPContextComplete)) != 0)
-        return false;
-
-    if (!__ABPReadHeader(context)) {
-        __ABPError(context, "not a binary property list or corrupted header");
-        return false;
-    }
-
-    if (!__ABPReadTrailer(context)) {
-        __ABPError(context, "corrupted trailer");
-        return false;
-    }
-
-    if (!_ABPReadOffsetTable(context)) {
-        __ABPError(context, "corrupted offsets table");
-        return false;
-    }
-
-    context->flags |= kABPContextOpened;
 
     return true;
 }
 
-bool
-ABPReaderClose(ABPContext *context)
-{
-    if (context == NULL)
-        return false;
-
-    /* Fail if not reader or not opened. */
-    if ((context->flags & kABPContextReader) == 0 ||
-            (context->flags & kABPContextOpened) == 0)
-        return false;
-
-    _ABPContextFree(context);
-    return true;
-}
-
-plist::Object *
-ABPReadObject(ABPContext *context, uint64_t reference)
+plist::Object *ABPReader::
+readObject(uint64_t reference)
 {
     plist::Object *object;
 
-    if (context == NULL)
+    /* Fail if complete, or not opened. */
+    if ((this->_flags & kABPContextComplete) != 0 ||
+        (this->_flags & kABPContextOpened) == 0)
         return NULL;
 
-    /* Fail if not a reader, complete, or not opened. */
-    if ((context->flags & kABPContextComplete) != 0 ||
-        (context->flags & kABPContextOpened) == 0)
-        return NULL;
-
-    if (reference >= context->trailer.objectsCount) {
-        __ABPError(context, "reference out of range");
+    if (reference >= this->_trailer.objectsCount) {
+        this->error("reference out of range");
         return NULL;
     }
 
-    object = context->objects[reference];
+    object = this->_objects[reference];
     if (object == NULL) {
-        if (__ABPSeek(context, context->offsets[reference], SEEK_SET) < 0) {
-            __ABPError(context, "object reference's offset out of range");
+        if (this->seek(static_cast<size_t>(this->_offsets[reference]), SEEK_SET) < 0) {
+            this->error("object reference's offset out of range");
             return NULL;
         }
 
-        object = _ABPReadObject(context);
+        object = this->_readObject();
         if (object == NULL) {
-            __ABPError(context, "failed to create object");
+            this->error("failed to create object");
             return NULL;
         }
 
-        context->objects[reference] = object;
+        this->_objects[reference] = object;
     }
 
     return object;
 }
 
-plist::Object *
-ABPReadTopLevelObject(ABPContext *context)
+plist::Object *ABPReader::
+readTopLevelObject()
 {
-    return ABPReadObject(context, context->trailer.topLevelObject);
+    return this->readObject(this->_trailer.topLevelObject);
+}
+
+int ABPReader::
+read(void *data, size_t length)
+{
+    /* Adjust size for remaining contents. */
+    size_t remaining = this->_contents->size() - this->_offset;
+    if (remaining < length) {
+        length = remaining;
+    }
+
+    /* Copy into read buffer. */
+    ::memcpy(data, this->_contents->data() + this->_offset, length);
+
+    this->_offset += length;
+    return length;
+}
+
+int ABPReader::
+readByte()
+{
+    uint8_t byte;
+
+    if (this->read(&byte, sizeof(byte)) != sizeof(byte))
+        return EOF;
+
+    return byte;
+}
+
+bool ABPReader::
+readWord(size_t nbytes, uint64_t *result)
+{
+    uint8_t  *p, bytes[8];
+    uint64_t  v;
+
+    if (this->read(bytes, nbytes) != nbytes)
+        return false;
+
+    p = bytes, v = 0;
+    switch (nbytes) {
+        default: return false;
+        case 8: v |= (uint64_t)*p++ << 56;
+        case 7: v |= (uint64_t)*p++ << 48;
+        case 6: v |= (uint64_t)*p++ << 40;
+        case 5: v |= (uint64_t)*p++ << 32;
+        case 4: v |= (uint64_t)*p++ << 24;
+        case 3: v |= (uint64_t)*p++ << 16;
+        case 2: v |= (uint64_t)*p++ << 8;
+        case 1: v |= (uint64_t)*p++;
+        case 0: break;
+    }
+
+    *result = v;
+    return true;
+}
+
+
+bool ABPReader::
+readLength(size_t *nitems)
+{
+    if (*nitems == 0x0f) {
+        int marker = this->readByte();
+        if (marker == EOF)
+            return false;
+
+        if ((marker & 0xf0) == 0x10) {
+            uint64_t value;
+
+            if (!this->readWord(1 << (marker & 0x0f), &value))
+                return false;
+
+            *nitems = static_cast<size_t>(value);
+        } else {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ABPReader::
+readOffset(uint64_t *offset)
+{
+    return this->readWord(this->_trailer.offsetIntByteSize, offset);
+}
+
+bool ABPReader::
+readReference(uint64_t *offset)
+{
+    return this->readWord(this->_trailer.objectRefByteSize, offset);
+}
+
+bool ABPReader::
+readHeader()
+{
+    if (this->seek(0, SEEK_SET) == EOF)
+        return false;
+
+    if (this->read(&this->_header, sizeof(this->_header)) != sizeof(this->_header))
+        return false;
+
+    return (memcmp(this->_header.magic, ABPLIST_MAGIC, sizeof(this->_header.magic)) == 0 &&
+            memcmp(this->_header.version, ABPLIST_VERSION, sizeof(this->_header.version)) == 0);
+}
+
+bool ABPReader::
+readTrailer()
+{
+    if (this->seek(-static_cast<off_t>(sizeof(this->_trailer)), SEEK_END) == EOF)
+        return false;
+
+    if (this->read(this->_trailer.__filler, 8) != 8)
+        return false;
+    if (!this->readWord(8, &this->_trailer.objectsCount))
+        return false;
+    if (!this->readWord(8, &this->_trailer.topLevelObject))
+        return false;
+    if (!this->readWord(8, &this->_trailer.offsetTableEndOffset))
+        return false;
+
+    return true;
 }

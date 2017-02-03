@@ -128,12 +128,23 @@ ConfigurationFile(WorkspaceContext const &workspaceContext, pbxproj::XC::BuildCo
 static std::vector<std::string>
 SDKSpecificationDomains(xcsdk::SDK::Target::shared_ptr const &sdk)
 {
+    std::string const &platformName = sdk->platform()->name();
+
     std::vector<std::string> domains;
-    domains.push_back(sdk->platform()->name());
+    domains.push_back(platformName);
+
+    // TODO(grp): Find a better way to get corresponding device platform.
+    std::string::size_type simulator = platformName.find("simulator");
+    if (simulator != std::string::npos) {
+        std::string device = platformName.substr(0, simulator) + "os";
+        domains.push_back(device + "-shared");
+    } else {
+        domains.push_back(platformName + "-shared");
+    }
 
     // TODO(grp): Find a better way to determine what's embedded.
-    if (sdk->platform()->name() != "macosx") {
-        if (sdk->platform()->name().find("simulator") != std::string::npos) {
+    if (platformName != "macosx") {
+        if (simulator != std::string::npos) {
             domains.push_back("embedded-simulator");
         } else {
             domains.push_back("embedded");
@@ -262,6 +273,22 @@ ArchitecturesVariantsLevel(std::vector<std::string> const &architectures, std::v
     }
 
     return pbxsetting::Level(settings);
+}
+
+static pbxsetting::Level
+ExecutablePathsLevel(std::vector<std::string> const &executablePaths)
+{
+    std::string path;
+    for (std::string const &executablePath : executablePaths) {
+        path += executablePath;
+        if (&executablePath != &executablePaths.back()) {
+            path += ":";
+        }
+    }
+
+    return pbxsetting::Level({
+        pbxsetting::Setting::Create("PATH", path),
+    });
 }
 
 ext::optional<Target::Environment> Target::Environment::
@@ -451,6 +478,8 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     /* Tool search directories. Use the toolchains just discovered. */
     std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager = buildEnvironment.sdkManager();
     std::vector<std::string> executablePaths = sdkManager->executablePaths(sdk->platform(), sdk, toolchains);
+    executablePaths.insert(executablePaths.end(), buildEnvironment.baseExecutablePaths().begin(), buildEnvironment.baseExecutablePaths().end());
+    environment.insertFront(ExecutablePathsLevel(executablePaths), false);
 
     auto buildRules = Target::BuildRules::Create(buildEnvironment.specManager(), specDomains, target);
     auto buildFileDisambiguation = BuildFileDisambiguation(target);

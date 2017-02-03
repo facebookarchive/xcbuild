@@ -26,7 +26,7 @@ public:
     virtual ~BuildPhase();
 
 public:
-    inline char const *type() const override
+    inline SpecificationType type() const override
     { return BuildPhase::Type(); }
 
 public:
@@ -45,8 +45,8 @@ protected:
     static BuildPhase::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
 
 public:
-    static inline char const *Type()
-    { return Types::BuildPhase; }
+    static inline SpecificationType Type()
+    { return SpecificationType::BuildPhase; }
 };
 
 } }

@@ -20,6 +20,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BaseGroup;
+using pbxproj::Context;
 
 BaseGroup::
 BaseGroup(std::string const &isa, GroupItem::Type type) :

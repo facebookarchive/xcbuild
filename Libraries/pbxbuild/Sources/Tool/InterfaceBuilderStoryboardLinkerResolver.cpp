@@ -68,21 +68,13 @@ resolve(
     std::vector<std::string> deploymentTargetArguments = InterfaceBuilderCommon::DeploymentTargetArguments(environment);
     arguments.insert(arguments.end(), deploymentTargetArguments.begin(), deploymentTargetArguments.end());
 
-    // TODO(grp): These should be handled generically for all tools.
-    std::unordered_map<std::string, std::string> environmentVariables = options.environment();
-    if (_tool->environmentVariables()) {
-        for (auto const &variable : *_tool->environmentVariables()) {
-            environmentVariables.insert({ variable.first, environment.expand(variable.second) });
-        }
-    }
-
     /*
      * Create the invocation.
      */
     Tool::Invocation invocation;
     invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
-    invocation.environment() = environmentVariables;
+    invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = outputs;

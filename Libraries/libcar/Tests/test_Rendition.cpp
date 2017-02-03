@@ -21,8 +21,7 @@ EmptyAttributeList()
 
 TEST(Rendition, TestRenditionDeSerializeSerialize)
 {
-    size_t rendition_len = 598;
-    const unsigned char rendition_value[598] = {
+    std::vector<uint8_t> rendition_value = {
         0x49, 0x53, 0x54, 0x43, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
         0x10, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0x42, 0x47, 0x52, 0x41, 0x01, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00, 0x64, 0x6f, 0x74, 0x2e, 0x70, 0x6e, 0x67, 0x00,
@@ -42,7 +41,7 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3f, 0xee, 0x03, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00,
         0x01, 0x00, 0x00, 0x00, 0xef, 0x03, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00,
         0x4d, 0x4c, 0x45, 0x43, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x26, 0x01, 0x00, 0x00,
-        0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xa5, 0x93, 0x4f, 0x8e, 0x01, 0x41,
+        0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5, 0x93, 0x4f, 0x8e, 0x01, 0x41,
         0x14, 0xc6, 0x7f, 0x1d, 0xd3, 0xdd, 0x24, 0xc2, 0x0e, 0x67, 0xf0, 0xf7, 0x08, 0x93, 0xd9, 0x9a,
         0xc8, 0xac, 0xd9, 0x99, 0x03, 0x60, 0xa9, 0x37, 0x9d, 0x71, 0x01, 0x2c, 0x48, 0x1c, 0x02, 0x17,
         0x10, 0xb7, 0x10, 0xdc, 0x00, 0x6b, 0x16, 0x58, 0x4d, 0xbe, 0x45, 0x25, 0x48, 0x7a, 0x46, 0xb7,
@@ -63,7 +62,7 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
         0x83, 0xa9, 0x00, 0x04, 0x00, 0x00,
     };
 
-    car::Rendition rendition = car::Rendition::Load(EmptyAttributeList(), (struct car_rendition_value *)rendition_value);
+    car::Rendition rendition = car::Rendition::Load(EmptyAttributeList(), reinterpret_cast<struct car_rendition_value *>(rendition_value.data()));
 
     car::Rendition::Data::Format format = car::Rendition::Data::Format::PremultipliedBGRA8;
     std::vector<uint8_t> test_bitmap_bytes = {
@@ -133,12 +132,12 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     };
 
-    // Check the data decoded from rendition_value, and check that it matches test_bitmap_bytes
+    /* Check the data decoded from rendition_value, and check that it matches test_bitmap_bytes. */
     auto decodeData = rendition.data();
     auto decodeDataVector = decodeData->data();
-    EXPECT_TRUE(decodeDataVector.size() == test_bitmap_bytes.size());
-    for (int i = 0; i < test_bitmap_bytes.size(); i++) {
-        EXPECT_TRUE(decodeDataVector[i] == test_bitmap_bytes[i]);
+    EXPECT_EQ(decodeDataVector.size(), test_bitmap_bytes.size());
+    for (size_t i = 0; i < test_bitmap_bytes.size(); i++) {
+        EXPECT_EQ(decodeDataVector[i], test_bitmap_bytes[i]);
     }
 
     // Construct an identical Rendition instance using test_bitmap_bytes
@@ -150,30 +149,29 @@ TEST(Rendition, TestRenditionDeSerializeSerialize)
     new_rendition.fileName() = std::string("dot.png");
     new_rendition.layout() = car_rendition_value_layout_one_part_scale;
 
-    EXPECT_TRUE(rendition.width() == new_rendition.width());
-    EXPECT_TRUE(rendition.height() == new_rendition.height());
-    EXPECT_TRUE(rendition.scale() == new_rendition.scale());
-    EXPECT_TRUE(0 == strcmp(rendition.fileName().c_str(), new_rendition.fileName().c_str()));
-    EXPECT_TRUE(rendition.layout() == new_rendition.layout());
+    EXPECT_EQ(rendition.width(), new_rendition.width());
+    EXPECT_EQ(rendition.height(), new_rendition.height());
+    EXPECT_EQ(rendition.scale(), new_rendition.scale());
+    EXPECT_EQ(rendition.fileName(), new_rendition.fileName());
+    EXPECT_EQ(rendition.layout(), new_rendition.layout());
 
-    // Serialise new_rendition.
+    /* Serialise new_rendition. */
     auto new_rendition_value = new_rendition.write();
 
-    // Check that rendition_value matches the serialized rendition created using test_bitmap_bytes.
-    EXPECT_TRUE(0 == memcmp(rendition_value, &new_rendition_value[0], rendition_len));
+    /* Check that rendition_value matches the serialized rendition created using test_bitmap_bytes. */
+    EXPECT_EQ(rendition_value, new_rendition_value);
 
-    // Decode the serialized copy of new_rendition.
+    /* Decode the serialized copy of new_rendition. */
     car::Rendition new_rendition_check = car::Rendition::Load(
         EmptyAttributeList(),
         reinterpret_cast<struct car_rendition_value *>(new_rendition_value.data()));
     auto check_data = new_rendition_check.data();
 
-    // Check that the encoded and decoded data is the same length
-    EXPECT_TRUE(check_data->data().size() == test_bitmap_bytes.size());
+    /* Check that the encoded and decoded data is the same length. */
+    EXPECT_EQ(check_data->data().size(), test_bitmap_bytes.size());
 
-    // Check that the encoded and decoded test_bitmap_bytes is the same as the original
-    auto v = check_data->data();
-    EXPECT_TRUE(v == test_bitmap_bytes);
+    /* Check that the encoded and decoded test_bitmap_bytes is the same as the original. */
+    EXPECT_EQ(check_data->data(), test_bitmap_bytes);
 }
 
 TEST(Rendition, SerializeJPEG)

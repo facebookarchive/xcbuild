@@ -31,12 +31,14 @@ private:
     pbxspec::Manager::shared_ptr         _specManager;
     std::shared_ptr<xcsdk::SDK::Manager> _sdkManager;
     pbxsetting::Environment              _baseEnvironment;
+    std::vector<std::string>             _baseExecutablePaths;
 
 public:
     Environment(
         pbxspec::Manager::shared_ptr const &specManager,
         std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager,
-        pbxsetting::Environment const &baseEnvironment);
+        pbxsetting::Environment const &baseEnvironment,
+        std::vector<std::string> const &baseExecutablePaths);
 
 public:
     /*
@@ -57,6 +59,12 @@ public:
      */
     pbxsetting::Environment const &baseEnvironment() const
     { return _baseEnvironment; }
+
+    /*
+     * The base executable paths from the system.
+     */
+    std::vector<std::string> const &baseExecutablePaths() const
+    { return _baseExecutablePaths; }
 
 public:
     /*

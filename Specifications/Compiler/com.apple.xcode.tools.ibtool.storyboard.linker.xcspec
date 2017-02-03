@@ -1,0 +1,40 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Compiler;
+    Identifier = "com.apple.xcode.tools.ibtool.storyboard.linker";
+    Name = "Storyboard Linker";
+
+    RuleName = "LinkStoryboards $(InputFile)";
+
+    InputFileTypes = (
+        "wrapper.storyboardc"
+    );
+
+    CommandLine = "ibtool [options] [special-args] [inputs]";
+
+    SynthesizeBuildRule = YES;
+
+    Options = (
+        {
+            Name = "IBTOOL_OUTPUT_FORMAT";
+            Type = String;
+            DefaultValue = "human-readable-text";
+            CommandLineFlag = "--output-format";
+        },
+        {
+            Name = "STORYBOARD_LINK_OUTPUT_DIRECTORY_PATH";
+            Type = Path;
+            DefaultValue = "$(ProductResourcesDir)";
+            CommandLineFlag = "--link";
+        },
+        /* TODO: Complete. */
+    );
+}

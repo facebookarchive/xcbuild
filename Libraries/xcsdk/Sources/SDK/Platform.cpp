@@ -22,6 +22,8 @@
 #include <algorithm>
 
 using xcsdk::SDK::Platform;
+using xcsdk::SDK::Manager;
+using xcsdk::SDK::Target;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -126,7 +128,7 @@ settings() const
     settings.push_back(pbxsetting::Setting::Create("DEPLOYMENT_TARGET_SETTING_NAME", settingName + "_DEPLOYMENT_TARGET"));
     settings.push_back(pbxsetting::Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_NAME", "m" + flagName + "-version-min"));
     settings.push_back(pbxsetting::Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_PREFIX", "-m" + flagName + "-version-min="));
-    settings.push_back(pbxsetting::Setting::Create("DEPLOYMENT_TARGET_CLANG_FLAG_ENV", envName + "_DEPLOYMENT_TARGET"));
+    settings.push_back(pbxsetting::Setting::Create("DEPLOYMENT_TARGET_CLANG_ENV_NAME", envName + "_DEPLOYMENT_TARGET"));
     settings.push_back(pbxsetting::Setting::Create("SWIFT_PLATFORM_TARGET_PREFIX", swiftName));
 
     settings.push_back(pbxsetting::Setting::Parse("EFFECTIVE_PLATFORM_NAME", (_name == "macosx" ? "" : "-$(PLATFORM_NAME)")));
@@ -150,7 +152,12 @@ settings() const
 std::vector<std::string> Platform::
 executablePaths() const
 {
-    return { _path + "/Developer/usr/bin" };
+    return {
+        _path + "/Developer/usr/bin",
+        _path + "/usr/local/bin",
+        _path + "/usr/bin",
+        _path + "/usr/local/bin",
+    };
 }
 
 bool Platform::

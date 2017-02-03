@@ -17,11 +17,10 @@ namespace pbxspec {
 class Context {
 public:
     std::string domain;
-
-public:
-    std::string defaultType;
 };
 
 }
+
+using pbxspec::Context;
 
 #endif  // !__pbxspec_Context_h

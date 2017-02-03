@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 
 using xcexecution::SimpleExecutor;
+using xcexecution::Parameters;
 using libutil::Filesystem;
 using libutil::FSUtil;
 using libutil::Permissions;
@@ -77,7 +78,7 @@ build(
         if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             xcformatter::Formatter::Print(_formatter->finishTarget(*buildContext, target));
-            continue;
+            return false;
         }
 
         xcformatter::Formatter::Print(_formatter->beginCheckDependencies(target));
@@ -277,11 +278,15 @@ performInvocations(
                 if (path) {
                     xcformatter::Formatter::Print(_formatter->beginInvocation(invocation, *path, createProductStructure));
 
+                    /* Create the execution environment from the process and invocation environments, preferring the invocation. */
+                    std::unordered_map<std::string, std::string> environment = invocation.environment();
+                    environment.insert(processContext->environmentVariables().begin(), processContext->environmentVariables().end());
+
                     process::MemoryContext context = process::MemoryContext(
                         *path,
                         invocation.workingDirectory(),
                         invocation.arguments(),
-                        invocation.environment(),
+                        environment,
                         processContext->userID(),
                         processContext->groupID(),
                         processContext->userName(),

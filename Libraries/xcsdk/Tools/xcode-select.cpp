@@ -75,17 +75,17 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h" || arg == "--help") {
-        return libutil::Options::Current<bool>(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg);
     } else if (arg == "-v" || arg == "--version" || arg == "-version") {
-        return libutil::Options::Current<bool>(&_version, arg, it);
+        return libutil::Options::Current<bool>(&_version, arg);
     } else if (arg == "-p" || arg == "--print-path" || arg == "-print-path") {
-        return libutil::Options::Current<bool>(&_printPath, arg, it);
+        return libutil::Options::Current<bool>(&_printPath, arg);
     } else if (arg == "-r" || arg == "--reset") {
-        return libutil::Options::Current<bool>(&_resetPath, arg, it);
+        return libutil::Options::Current<bool>(&_resetPath, arg);
     } else if (arg == "-s" || arg == "--switch" || arg == "-switch") {
         return libutil::Options::Next<std::string>(&_switchPath, args, it);
     } else if (arg == "--install") {
-        return libutil::Options::Current<bool>(&_install, arg, it);
+        return libutil::Options::Current<bool>(&_install, arg);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }

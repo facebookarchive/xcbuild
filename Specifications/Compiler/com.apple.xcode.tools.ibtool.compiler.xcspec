@@ -1,0 +1,44 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Compiler;
+    Identifier = "com.apple.xcode.tools.ibtool.compiler";
+    Name = "XIB Compiler";
+
+    RuleName = "CompileXIB $(InputFile)";
+
+    InputFileTypes = (
+        "file.xib"
+    );
+
+    CommandLine = "ibtool [options] [special-args] [input]";
+
+    Outputs = (
+        "$(XIB_COMPILE_OUTPUT_PATH)",
+    );
+
+    SynthesizeBuildRule = YES;
+
+    Options = (
+        {
+            Name = "IBTOOL_OUTPUT_FORMAT";
+            Type = String;
+            DefaultValue = "human-readable-text";
+            CommandLineFlag = "--output-format";
+        },
+        {
+            Name = "XIB_COMPILE_OUTPUT_PATH";
+            Type = Path;
+            DefaultValue = "$(ProductResourcesDir)/$(InputFileBase).nib";
+            CommandLineFlag = "--compile";
+        },
+        /* TODO: Complete. */
+    );
+}

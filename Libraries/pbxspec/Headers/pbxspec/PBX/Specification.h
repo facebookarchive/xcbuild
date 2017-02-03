@@ -10,7 +10,7 @@
 #ifndef __pbxspec_PBX_Specification_h
 #define __pbxspec_PBX_Specification_h
 
-#include <pbxspec/Types.h>
+#include <pbxspec/SpecificationType.h>
 
 #include <memory>
 #include <string>
@@ -47,7 +47,7 @@ protected:
     Specification();
 
 public:
-    virtual char const *type() const = 0;
+    virtual SpecificationType type() const = 0;
 
 public:
     inline Specification::shared_ptr base() const
@@ -91,13 +91,17 @@ protected:
     virtual bool inherit(Specification::shared_ptr const &base);
 
 protected:
-    static bool ParseType(Context *context, plist::Dictionary const *dict, std::string const &expectedType, std::string *determinedType = nullptr);
+    static bool ParseType(Context *context, plist::Dictionary const *dict, SpecificationType expectedType);
 
 public:
-    static ext::optional<Specification::vector> Open(libutil::Filesystem const *filesystem, Context *context, std::string const &filename);
+    static ext::optional<Specification::vector> Open(
+        libutil::Filesystem const *filesystem,
+        Context *context,
+        std::string const &filename,
+        ext::optional<SpecificationType> defaultType = ext::nullopt);
 
 private:
-    static Specification::shared_ptr Parse(Context *context, plist::Dictionary const *dict);
+    static Specification::shared_ptr Parse(Context *context, plist::Dictionary const *dict, ext::optional<SpecificationType> defaultType);
 };
 
 } }

@@ -16,6 +16,8 @@
 #include <xcsdk/SDK/PlatformVersion.h>
 #include <xcsdk/SDK/Product.h>
 #include <xcsdk/SDK/Target.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 #include <libutil/Filesystem.h>
 #include <process/Context.h>
 
@@ -60,36 +62,56 @@ Run(process::Context const *processContext, Filesystem const *filesystem, Option
             return 1;
         }
 
-        printf("%s - %s (%s)\n",
+        /* Use over a standard map to preserve key order. */
+        auto values = plist::Dictionary::New();
+
+        if (target->version()) {
+            values->set("SDKVersion", plist::String::New(*target->version()));
+        }
+        values->set("Path", plist::String::New(target->path()));
+        if (target->platform()->version()) {
+            values->set("PlatformVersion", plist::String::New(*target->platform()->version()));
+        }
+        values->set("PlatformPath", plist::String::New(target->platform()->path()));
+        if (auto product = target->product()) {
+            if (product->buildVersion()) {
+                values->set("ProductBuildVersion", plist::String::New(*product->buildVersion()));
+            }
+            if (product->copyright()) {
+                values->set("ProductCopyright", plist::String::New(*product->copyright()));
+            }
+            if (product->name()) {
+                values->set("ProductName", plist::String::New(*product->name()));
+            }
+            if (product->userVisibleVersion()) {
+                values->set("ProductUserVisibleVersion", plist::String::New(*product->userVisibleVersion()));
+            }
+            if (product->version()) {
+                values->set("ProductVersion", plist::String::New(*product->version()));
+            }
+        }
+
+        if (options.actions().empty()) {
+            fprintf(stdout,
+                "%s - %s (%s)\n",
                 target->bundleName().c_str(),
                 target->displayName().value_or(target->bundleName()).c_str(),
                 target->canonicalName().value_or(target->bundleName()).c_str());
-        if (target->version()) {
-            printf("SDKVersion: %s\n", target->version()->c_str());
-        }
-        printf("Path: %s\n", target->path().c_str());
-        if (target->platform()->version()) {
-            printf("PlatformVersion: %s\n", target->platform()->version()->c_str());
-        }
-        printf("PlatformPath: %s\n", target->platform()->path().c_str());
-        if (auto product = target->product()) {
-            if (product->buildVersion()) {
-                printf("ProductBuildVersion: %s\n", product->buildVersion()->c_str());
+
+            for (size_t n = 0; n < values->count(); n++) {
+                if (plist::String const *value = values->value<plist::String>(n)) {
+                    fprintf(stdout, "%s: %s\n", values->key(n).c_str(), value->value().c_str());
+                }
             }
-            if (product->copyright()) {
-                printf("ProductCopyright: %s\n", product->copyright()->c_str());
-            }
-            if (product->name()) {
-                printf("ProductName: %s\n", product->name()->c_str());
-            }
-            if (product->userVisibleVersion()) {
-                printf("ProductUserVisibleVersion: %s\n", product->userVisibleVersion()->c_str());
-            }
-            if (product->version()) {
-                printf("ProductVersion: %s\n", product->version()->c_str());
+
+            fprintf(stdout, "\n");
+        } else {
+            for (std::string const &action : options.actions()) {
+                if (plist::String const *value = values->value<plist::String>(action)) {
+                    fprintf(stdout, "%s\n", value->value().c_str());
+                }
             }
         }
-        printf("\n");
     }
 
     return 0;

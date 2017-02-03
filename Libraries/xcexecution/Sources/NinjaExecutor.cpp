@@ -513,7 +513,7 @@ buildAction(
      * rules at the Ninja level. Instead, add a single rule that just passes through from
      * the build command that calls it.
      */
-    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env -i $env $exec && $depexec"));
+    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env $env $exec && $depexec"));
 
     /*
      * Go over each target and write out Ninja targets for the start and end of each.
@@ -806,9 +806,9 @@ buildInvocation(
     }
 
     /*
-     * Build the invocation environment. To set the environment, we use standard shell syntax.
-     * Use `env` to avoid Bash-specific limitations on environment variables. Specifically, some
-     * versions of Bash don't allow setting "UID". Pass -i to clear out the environment.
+     * Build the invocation environment. To set the environment, we use standard shell tools:
+     * `env` to avoid Bash-specific limitations on environment variables (some versions of Bash
+     * don't allow setting "UID"). Intentionally add to, not replace, the process environment.
      */
     std::string environment;
     for (auto it = invocation.environment().begin(); it != invocation.environment().end(); ++it) {
