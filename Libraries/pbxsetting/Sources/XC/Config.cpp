@@ -153,8 +153,10 @@ Load(Filesystem const *filesystem, Environment const &environment, std::string c
         if (c == '/') {
             if (slash) {
                 /* Two slashes, start comment. */
-                line.pop_back();
-                comment = true;
+                if (!comment) {
+                    line.pop_back();
+                    comment = true;
+                }
             } else {
                 /* One slash, prepare for comment. */
                 slash = true;
