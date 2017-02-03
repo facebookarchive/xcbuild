@@ -529,10 +529,6 @@ main(int argc, char **argv)
         std::vector<Options::PrintItem> printFormat = options->onlyPath() ? std::vector<Options::PrintItem>({Options::PrintItem::FileName}) : options->printFormat().value_or(GetDefaultPrintFormat());
         toPrint = PrintItemsToString(printFormat, path, path_info_2_value);
         printf("%s\n", toPrint.c_str());
-<<<<<<< HEAD
-=======
-
->>>>>>> master
     }, reinterpret_cast<void *>(&context));
 
     return 0;
