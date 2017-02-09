@@ -14,6 +14,8 @@
 
 namespace process {
 
+class LaunchResult;
+
 /*
  * In-memory simulated process launcher.
  */
@@ -22,7 +24,8 @@ public:
     /*
      * Handler for a simulated process launch.
      */
-    using Handler = std::function<ext::optional<int>(libutil::Filesystem *filesystem, Context const *context)>;
+    using Handler = std::function<ext::optional<LaunchResult>(libutil::Filesystem *filesystem,
+                                                              Context const *context)>;
 
 private:
     std::unordered_map<std::string, Handler> _handlers;
@@ -32,7 +35,8 @@ public:
     ~MemoryLauncher();
 
 public:
-    virtual ext::optional<int> launch(libutil::Filesystem *filesystem, Context const *context);
+    virtual ext::optional<LaunchResult> launch(libutil::Filesystem *filesystem,
+                                               Context const *context);
 };
 
 }

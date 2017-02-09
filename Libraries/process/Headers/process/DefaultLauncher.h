@@ -16,6 +16,8 @@ namespace libutil { class Filesystem; }
 
 namespace process {
 
+class LaunchResult;
+
 /*
  * Abstract process launcher.
  */
@@ -25,7 +27,8 @@ public:
     ~DefaultLauncher();
 
 public:
-    virtual ext::optional<int> launch(libutil::Filesystem *filesystem, Context const *context);
+    virtual ext::optional<LaunchResult> launch(libutil::Filesystem *filesystem,
+                                               Context const *context);
 };
 
 }

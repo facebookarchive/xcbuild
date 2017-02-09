@@ -8,9 +8,11 @@
  */
 
 #include <process/MemoryLauncher.h>
+#include <process/LaunchResult.h>
 #include <libutil/Filesystem.h>
 
 using process::MemoryLauncher;
+using process::LaunchResult;
 using libutil::Filesystem;
 
 MemoryLauncher::
@@ -25,7 +27,7 @@ MemoryLauncher::
 {
 }
 
-ext::optional<int> MemoryLauncher::
+ext::optional<LaunchResult> MemoryLauncher::
 launch(Filesystem *filesystem, Context const *context)
 {
     auto it = _handlers.find(context->executablePath());

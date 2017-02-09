@@ -21,6 +21,7 @@
 #include <process/Context.h>
 #include <process/MemoryContext.h>
 #include <process/Launcher.h>
+#include <process/LaunchResult.h>
 #include <libutil/md5.h>
 
 #include <sstream>
@@ -462,8 +463,8 @@ build(
             processContext->userName(),
             processContext->groupName());
 
-        ext::optional<int> exitCode = processLauncher->launch(filesystem, &ninja);
-        if (!exitCode || *exitCode != 0) {
+        auto result = processLauncher->launch(filesystem, &ninja);
+        if (!result || result->exitCode() != 0) {
             return false;
         }
     }

@@ -19,6 +19,7 @@
 #include <process/DefaultContext.h>
 #include <process/MemoryContext.h>
 #include <process/Launcher.h>
+#include <process/LaunchResult.h>
 #include <process/DefaultLauncher.h>
 #include <pbxsetting/Type.h>
 
@@ -451,13 +452,13 @@ static int Run(Filesystem *filesystem, process::Context const *processContext, p
                 processContext->userName(),
                 processContext->groupName());
 
-            ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
-            if (!exitCode) {
+            auto result = processLauncher->launch(filesystem, &context);
+            if (!result) {
                 fprintf(stderr, "error: unable to execute tool '%s'\n", options.tool()->c_str());
                 return -1;
             }
 
-            return *exitCode;
+            return result->exitCode();
         }
     }
 }

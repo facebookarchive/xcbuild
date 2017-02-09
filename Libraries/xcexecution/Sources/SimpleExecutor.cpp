@@ -18,6 +18,7 @@
 #include <process/Context.h>
 #include <process/MemoryContext.h>
 #include <process/Launcher.h>
+#include <process/LaunchResult.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -291,8 +292,8 @@ performInvocations(
                         processContext->groupID(),
                         processContext->userName(),
                         processContext->groupName());
-                    ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
-                    success = (exitCode && *exitCode == 0);
+                    auto result = processLauncher->launch(filesystem, &context);
+                    success = (result && result->exitCode() == 0);
 
                     xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, *path, createProductStructure));
                 } else {
