@@ -381,7 +381,7 @@ bool MemoryFilesystem::
 readDirectory(std::string const &path, bool recursive, std::function<void(std::string const &)> const &cb) const
 {
     std::function<void(ext::optional<std::string> const &, MemoryFilesystem::Entry const *)> process =
-        [&path, &recursive, &cb, &process](ext::optional<std::string> const &subpath, MemoryFilesystem::Entry const *entry) {
+        [&recursive, &cb, &process](ext::optional<std::string> const &subpath, MemoryFilesystem::Entry const *entry) {
         /* Report children. */
         for (MemoryFilesystem::Entry const &child : entry->children()) {
             std::string path = (subpath ? *subpath + "/" + child.name() : child.name());
