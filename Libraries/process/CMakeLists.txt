@@ -12,6 +12,7 @@ add_library(process SHARED
             Sources/DefaultContext.cpp
             Sources/MemoryContext.cpp
             Sources/Launcher.cpp
+            Sources/LaunchResult.cpp
             Sources/DefaultLauncher.cpp
             Sources/MemoryLauncher.cpp
             )
@@ -22,3 +23,7 @@ install(TARGETS process DESTINATION usr/lib)
 
 find_package(Threads REQUIRED)
 target_link_libraries(process PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+if (BUILD_TESTING)
+  ADD_UNIT_GTEST(process DefaultLauncher Tests/test_DefaultLauncher.cpp)
+endif ()

@@ -19,6 +19,8 @@ namespace libutil { class Filesystem; }
 
 namespace process {
 
+class LaunchResult;
+
 /*
  * Abstract process launcher.
  */
@@ -32,7 +34,8 @@ public:
      * Launch and wait for a process. The filesystem is symbolic, to note
      * that launching a process could arbitrarily affect the filesystem.
      */
-    virtual ext::optional<int> launch(libutil::Filesystem *filesystem, Context const *context) = 0;
+    virtual ext::optional<LaunchResult> launch(libutil::Filesystem *filesystem,
+                                               Context const *context) = 0;
 };
 
 }

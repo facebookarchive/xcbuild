@@ -8,12 +8,15 @@
  */
 
 #include <process/DefaultLauncher.h>
+#include <process/LaunchResult.h>
 #include <libutil/Filesystem.h>
 
+#include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 using process::DefaultLauncher;
+using process::LaunchResult;
 using libutil::Filesystem;
 
 DefaultLauncher::
@@ -27,7 +30,7 @@ DefaultLauncher::
 {
 }
 
-ext::optional<int> DefaultLauncher::
+ext::optional<LaunchResult> DefaultLauncher::
 launch(Filesystem *filesystem, Context const *context)
 {
     /*
@@ -71,6 +74,16 @@ launch(Filesystem *filesystem, Context const *context)
     uid_t uid = context->userID();
     gid_t gid = context->groupID();
 
+    /* Prepare pipes for forked process's stdout and stderr output. */
+    const int readEnd = 0;
+    const int writeEnd = 1;
+    int stdoutPipe[2];
+    int stderrPipe[2];
+    if (::pipe(stdoutPipe) == -1 || ::pipe(stderrPipe) == -1) {
+        /* Could not create pipes. */
+        return ext::nullopt;
+    }
+
     /*
      * Fork new process.
      */
@@ -95,6 +108,14 @@ launch(Filesystem *filesystem, Context const *context)
             ::_exit(1);
         }
 
+        /* Redirect stdout and stderr. */
+        ::dup2(stdoutPipe[writeEnd], STDOUT_FILENO);
+        ::close(stdoutPipe[readEnd]);
+        ::close(stderrPipe[writeEnd]);
+        ::dup2(stderrPipe[writeEnd], STDERR_FILENO);
+        ::close(stderrPipe[readEnd]);
+        ::close(stderrPipe[writeEnd]);
+
         ::execve(cPath, cExecArgs, cExecEnv);
         ::_exit(-1);
 
@@ -103,6 +124,27 @@ launch(Filesystem *filesystem, Context const *context)
         /* Fork succeeded, existing process. */
         int status;
         ::waitpid(pid, &status, 0);
-        return WEXITSTATUS(status);
+
+        /* Read stdout and stderr. */
+        ::close(stdoutPipe[writeEnd]);
+        ::close(stderrPipe[writeEnd]);
+
+        std::string standardOutput = "";
+        char stdoutBuffer[32];
+        while (ssize_t bytes = ::read(stdoutPipe[readEnd], stdoutBuffer, sizeof(stdoutBuffer))) {
+            standardOutput.append(stdoutBuffer, bytes);
+            ::memset(stdoutBuffer, 0, sizeof(stdoutBuffer));
+        }
+        ::close(stdoutPipe[readEnd]);
+
+        std::string standardError = "";
+        char stderrBuffer[32];
+        while (ssize_t bytes = ::read(stderrPipe[readEnd], stderrBuffer, sizeof(stderrBuffer))) {
+            standardError.append(stderrBuffer, bytes);
+            ::memset(stderrBuffer, 0, sizeof(stderrBuffer));
+        }
+        ::close(stderrPipe[readEnd]);
+
+        return LaunchResult(WEXITSTATUS(status), standardOutput, standardError);
     }
 }

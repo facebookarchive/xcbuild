@@ -13,6 +13,7 @@
 #include <pbxbuild/Tool/Invocation.h>
 #include <builtin/Driver.h>
 #include <builtin/Registry.h>
+#include <process/LaunchResult.h>
 #include <process/MemoryContext.h>
 #include <process/MemoryLauncher.h>
 #include <libutil/MemoryFilesystem.h>
@@ -54,11 +55,11 @@ TEST(SimpleExecutor, PropagateToolResult)
     });
 
     auto launcher = process::MemoryLauncher({
-        { "/fail-tool", [](Filesystem *filesystem, process::Context const *context) -> ext::optional<int> {
-            return 1;
+        { "/fail-tool", [](Filesystem *filesystem, process::Context const *context) -> ext::optional<process::LaunchResult> {
+            return process::LaunchResult(1, "", "");
         } },
-        { "/success-tool", [](Filesystem *filesystem, process::Context const *context) -> ext::optional<int> {
-            return 0;
+        { "/success-tool", [](Filesystem *filesystem, process::Context const *context) -> ext::optional<process::LaunchResult> {
+            return process::LaunchResult(0, "", "");
         } },
     });
 
