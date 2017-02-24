@@ -15,6 +15,9 @@
     ExecPath = "$(SWIFT_EXEC)";
     SynthesizeBuildRule = YES;
 
+    InputFileGroupings = (
+        tool,
+    );
     InputFileTypes = (
         "sourcecode.swift",
     );
@@ -64,7 +67,7 @@
         {
             Name = "SWIFT_OBJC_INTERFACE_HEADER_NAME";
             Type = String;
-            DefaultValue = "";
+            DefaultValue = "$(SWIFT_MODULE_NAME)-Swift.h";
         },
         {
             Name = "SWIFT_INSTALL_OBJC_HEADER";
@@ -106,6 +109,12 @@
             Name = "SDKROOT";
             Type = Path;
             CommandLineFlag = "-sdk";
+        },
+        {
+            Name = "SWIFT_DEPLOYMENT_TARGET";
+            Type = String;
+            DefaultValue = "$($(DEPLOYMENT_TARGET_SETTING_NAME))";
+            CommandLineArgs = ( "-target", "$(CURRENT_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$(value)" );
         },
         {
             Name = "GCC_GENERATE_DEBUGGING_SYMBOLS";
