@@ -118,6 +118,8 @@ settings() const
 
         envName = _name;
         std::transform(envName.begin(), envName.end(), envName.begin(), ::toupper);
+
+        swiftName = _name;
     }
 
     bool simulator = EndsWith(_name, "simulator");
