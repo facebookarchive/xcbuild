@@ -131,7 +131,7 @@ public:
 
 private:
     void addSpecification(PBX::Specification::shared_ptr const &specification);
-    bool inheritSpecification(PBX::Specification::shared_ptr const &specification);
+    bool inheritSpecification(PBX::Specification::shared_ptr const &specification, std::vector<PBX::Specification::shared_ptr>);
 
 private:
     template <typename T>
