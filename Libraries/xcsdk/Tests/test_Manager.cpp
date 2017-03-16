@@ -46,8 +46,8 @@ TEST(Manager, ConfigurationExtraPaths)
         }),
     });
 
-    auto configuration = Configuration({ "/ExtraPlatforms" }, { "/ExtraToolchains" });
-    auto manager = Manager::Open(&filesystem, "/", configuration);
+    auto configuration = Configuration({ filesystem.path("ExtraPlatforms") }, { filesystem.path("ExtraToolchains") });
+    auto manager = Manager::Open(&filesystem, filesystem.path(""), configuration);
     ASSERT_NE(manager, nullptr);
 
     ASSERT_EQ(manager->platforms().size(), 1);

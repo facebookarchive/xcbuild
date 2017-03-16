@@ -12,8 +12,13 @@
 #include <xcdriver/Options.h>
 #include <libutil/Filesystem.h>
 #include <process/Context.h>
+#include <process/User.h>
 
+#if _WIN32
+#include <cstring>
+#else
 #include <strings.h>
+#endif
 
 using xcdriver::ListAction;
 using xcdriver::Options;
@@ -30,9 +35,9 @@ ListAction::
 }
 
 int ListAction::
-Run(process::Context const *processContext, Filesystem const *filesystem, Options const &options)
+Run(process::User const *user, process::Context const *processContext, Filesystem const *filesystem, Options const &options)
 {
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(processContext, filesystem);
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(user, processContext, filesystem);
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
@@ -41,7 +46,7 @@ Run(process::Context const *processContext, Filesystem const *filesystem, Option
     std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(processContext, filesystem, buildEnvironment->baseEnvironment(), options, processContext->currentDirectory());
     xcexecution::Parameters parameters = Action::CreateParameters(options, overrideLevels);
 
-    ext::optional<pbxbuild::WorkspaceContext> context = parameters.loadWorkspace(filesystem, processContext->userName(), *buildEnvironment, processContext->currentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> context = parameters.loadWorkspace(filesystem, user->userName(), *buildEnvironment, processContext->currentDirectory());
     if (!context) {
         return -1;
     }
@@ -53,7 +58,11 @@ Run(process::Context const *processContext, Filesystem const *filesystem, Option
     }
 
     std::sort(schemes.begin(), schemes.end(), [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool {
+#if _WIN32
+        return ::_stricmp(a->name().c_str(), b->name().c_str()) < 0;
+#else
         return ::strcasecmp(a->name().c_str(), b->name().c_str()) < 0;
+#endif
     });
 
     auto I = std::unique(schemes.begin(), schemes.end(), [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool {

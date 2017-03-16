@@ -40,26 +40,22 @@ TEST(copyStrings, CopyMultiple)
     Driver driver;
     process::MemoryContext processContext = process::MemoryContext(
         driver.name(),
-        "/",
+        filesystem.path(""),
         {
             "in1.strings",
             "in2.strings",
             "--outdir", "output",
             "--outputencoding", "utf-8",
         },
-        std::unordered_map<std::string, std::string>(),
-        0,
-        0,
-        "root",
-        "wheel");
+        std::unordered_map<std::string, std::string>());
     EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/in1.strings"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in1.strings")));
     EXPECT_EQ(contents, Contents("string1 = value1;\n"));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/in2.strings"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in2.strings")));
     EXPECT_EQ(contents, Contents("string2 = value2;\n"));
 }
 
@@ -86,22 +82,18 @@ TEST(copyStrings, InputOutputEncoding)
             Driver driver;
             process::MemoryContext processContext = process::MemoryContext(
                 driver.name(),
-                "/",
+                filesystem.path(""),
                 {
                     "in.strings",
                     "--outdir", "output",
                     "--inputencoding", entry1.first,
                     "--outputencoding", entry2.first,
                 },
-                std::unordered_map<std::string, std::string>(),
-                0,
-                0,
-                "root",
-                "wheel");
+                std::unordered_map<std::string, std::string>());
             EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
             std::vector<uint8_t> contents;
-            EXPECT_TRUE(filesystem.read(&contents, "/output/in.strings"));
+            EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in.strings")));
 
             /* Expect output in each encoding. */
             EXPECT_EQ(contents, plist::Format::Encodings::Convert(

@@ -68,6 +68,9 @@ public:
     { return _root; }
 
 public:
+    std::string path(std::string const &path) const;
+
+public:
     virtual bool exists(std::string const &path) const;
     virtual ext::optional<Type> type(std::string const &path) const;
 
@@ -88,8 +91,8 @@ public:
 public:
     virtual ext::optional<Permissions> readSymbolicLinkPermissions(std::string const &path) const;
     virtual bool writeSymbolicLinkPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions);
-    virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const;
-    virtual bool writeSymbolicLink(std::string const &target, std::string const &path);
+    virtual ext::optional<std::string> readSymbolicLink(std::string const &path, bool *directory = nullptr) const;
+    virtual bool writeSymbolicLink(std::string const &target, std::string const &path, bool directory);
     virtual bool copySymbolicLink(std::string const &from, std::string const &to);
     virtual bool removeSymbolicLink(std::string const &path);
 

@@ -16,20 +16,12 @@ MemoryContext(
     std::string const &executablePath,
     std::string const &currentDirectory,
     std::vector<std::string> const &commandLineArguments,
-    std::unordered_map<std::string, std::string> const &environmentVariables,
-    int32_t userID,
-    int32_t groupID,
-    std::string const &userName,
-    std::string const &groupName) :
-    Context       (),
+    std::unordered_map<std::string, std::string> const &environmentVariables) :
+    Context              (),
     _executablePath      (executablePath),
     _currentDirectory    (currentDirectory),
     _commandLineArguments(commandLineArguments),
-    _environmentVariables(environmentVariables),
-    _userID              (userID),
-    _groupID             (groupID),
-    _userName            (userName),
-    _groupName           (groupName)
+    _environmentVariables(environmentVariables)
 {
 }
 
@@ -39,11 +31,7 @@ MemoryContext(Context const *context) :
         context->executablePath(),
         context->currentDirectory(),
         context->commandLineArguments(),
-        context->environmentVariables(),
-        context->userID(),
-        context->groupID(),
-        context->userName(),
-        context->groupName())
+        context->environmentVariables())
 {
 }
 

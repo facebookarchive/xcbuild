@@ -16,6 +16,7 @@
 
 namespace libutil { class Filesystem; }
 namespace process { class Context; }
+namespace process { class User; }
 
 namespace xcsdk {
 
@@ -50,6 +51,7 @@ public:
      * The default paths for the configuration.
      */
     static std::vector<std::string> DefaultPaths(
+        process::User const *user,
         process::Context const *processContext);
 
     /*

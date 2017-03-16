@@ -16,38 +16,45 @@
 #include <string>
 #include <unordered_map>
 
+#if _WIN32
+#define CINTERFACE
+#define COBJMACROS
+#include <ole2.h>
+#include <xmllite.h>
+#else
 #include <libxml/xmlreader.h>
+#endif
 
 namespace plist {
 namespace Format {
 
 class BaseXMLParser {
 private:
+#if _WIN32
+    IXmlReader        *_reader;
+#else
     ::xmlTextReaderPtr _parser;
-    size_t             _depth;
+#endif
 
 private:
+    bool               _errored;
+    std::string        _error;
     size_t             _line;
     size_t             _column;
-    std::string        _error;
 
 public:
     BaseXMLParser();
 
 public:
-    size_t const &line() const
-    { return _line; }
-    size_t const &column() const
-    { return _column; }
     std::string const &error() const
     { return _error; }
+    size_t line() const
+    { return _line; }
+    size_t column() const
+    { return _column; }
 
 protected:
     bool parse(std::vector<uint8_t> const &contents);
-
-protected:
-    inline size_t depth() const
-    { return _depth; }
 
 protected:
     virtual void onBeginParse();

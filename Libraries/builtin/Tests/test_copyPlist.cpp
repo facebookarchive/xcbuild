@@ -57,7 +57,7 @@ TEST(copyPlist, CopyMultiple)
     Driver driver;
     process::MemoryContext processContext = process::MemoryContext(
         driver.name(),
-        "/",
+        filesystem.path(""),
         {
             "in1.plist",
             "in2.plist",
@@ -65,23 +65,19 @@ TEST(copyPlist, CopyMultiple)
             "--outdir", "output",
             "--convert", "ascii1",
         },
-        std::unordered_map<std::string, std::string>(),
-        0,
-        0,
-        "root",
-        "wheel");
+        std::unordered_map<std::string, std::string>());
     EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/in1.plist"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in1.plist")));
     EXPECT_EQ(contents, Contents("{\n\tin1 = one;\n}\n"));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/in2.plist"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in2.plist")));
     EXPECT_EQ(contents, Contents("{\n\tin2 = two;\n}\n"));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "/output/in3.plist"));
+    EXPECT_TRUE(filesystem.read(&contents, filesystem.path("output/in3.plist")));
     EXPECT_EQ(contents, Contents("{\n\tin3 = three;\n}\n"));
 }
 

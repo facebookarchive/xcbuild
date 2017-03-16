@@ -11,6 +11,7 @@
 #include <pbxbuild/Tool/Invocation.h>
 
 #include <algorithm>
+#include <iterator>
 #include <cassert>
 
 using pbxbuild::DirectedGraph;

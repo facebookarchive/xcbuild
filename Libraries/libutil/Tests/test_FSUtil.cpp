@@ -12,6 +12,9 @@
 
 using libutil::FSUtil;
 
+// TODO: remove these tests once FSUtil is unused
+#if !_WIN32
+
 TEST(FSUtil, GetDirectoryName)
 {
     EXPECT_EQ("", FSUtil::GetDirectoryName(""));
@@ -77,11 +80,11 @@ TEST(FSUtil, IsAbsolutePath)
 
 TEST(FSUtil, ResolveRelativePath)
 {
-    EXPECT_EQ("", FSUtil::ResolveRelativePath("", ""));
-    EXPECT_EQ("a", FSUtil::ResolveRelativePath("", "a"));
-    EXPECT_EQ("a/b", FSUtil::ResolveRelativePath("a/b", ""));
+    EXPECT_EQ("/", FSUtil::ResolveRelativePath("", "/"));
+    EXPECT_EQ("/a", FSUtil::ResolveRelativePath("", "/a"));
+    EXPECT_EQ("/a/b", FSUtil::ResolveRelativePath("a/b", "/"));
     EXPECT_EQ("/c/a/b", FSUtil::ResolveRelativePath("a/b", "/c"));
-    EXPECT_EQ("c/a/b", FSUtil::ResolveRelativePath("a/b", "c"));
+    EXPECT_EQ("/c/a/b", FSUtil::ResolveRelativePath("a/b", "/c"));
     EXPECT_EQ("/a/b", FSUtil::ResolveRelativePath("/a/b", "/c"));
 }
 
@@ -102,3 +105,5 @@ TEST(FSUtil, IsFileExtension)
     EXPECT_FALSE(FSUtil::IsFileExtension("/a/b/c.sub.ext", ""));
     EXPECT_TRUE(FSUtil::IsFileExtension("/a/b/c.sub.ext", "ext"));
 }
+
+#endif

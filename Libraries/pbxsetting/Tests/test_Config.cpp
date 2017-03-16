@@ -32,9 +32,9 @@ TEST(Config, Empty)
         MemoryFilesystem::Entry::File("empty.xcconfig", Contents("")),
     });
 
-    auto config = Config::Load(&filesystem, environment, "/empty.xcconfig");
+    auto config = Config::Load(&filesystem, environment, filesystem.path("empty.xcconfig"));
     ASSERT_NE(config, ext::nullopt);
-    EXPECT_EQ(config->path(), "/empty.xcconfig");
+    EXPECT_EQ(config->path(), filesystem.path("empty.xcconfig"));
     EXPECT_TRUE(config->contents().empty());
 }
 
@@ -47,9 +47,9 @@ TEST(Config, Setting)
             "NAME2 = VALUE2\n")),
     });
 
-    auto config = Config::Load(&filesystem, environment, "/settings.xcconfig");
+    auto config = Config::Load(&filesystem, environment, filesystem.path("settings.xcconfig"));
     ASSERT_NE(config, ext::nullopt);
-    EXPECT_EQ(config->path(), "/settings.xcconfig");
+    EXPECT_EQ(config->path(), filesystem.path("settings.xcconfig"));
 
     ASSERT_EQ(config->contents().size(), 2);
     ASSERT_EQ(config->contents().at(0).type(), Config::Entry::Type::Setting);
@@ -82,13 +82,13 @@ TEST(Config, Include)
         MemoryFilesystem::Entry::File("include.xcconfig", Contents("#include \"common.xcconfig\"")),
     });
 
-    auto config = Config::Load(&filesystem, environment, "/include.xcconfig");
+    auto config = Config::Load(&filesystem, environment, filesystem.path("include.xcconfig"));
     ASSERT_NE(config, ext::nullopt);
-    EXPECT_EQ(config->path(), "/include.xcconfig");
+    EXPECT_EQ(config->path(), filesystem.path("include.xcconfig"));
 
     ASSERT_EQ(config->contents().size(), 1);
     ASSERT_EQ(config->contents().at(0).type(), Config::Entry::Type::Include);
-    EXPECT_EQ(config->contents().at(0).config()->path(), "/common.xcconfig");
+    EXPECT_EQ(config->contents().at(0).config()->path(), filesystem.path("common.xcconfig"));
     ASSERT_EQ(config->contents().at(0).config()->contents().size(), 1);
     ASSERT_EQ(config->contents().at(0).config()->contents().at(0).type(), Config::Entry::Type::Setting);
     EXPECT_EQ(config->contents().at(0).config()->contents().at(0).setting()->name(), "NAME");

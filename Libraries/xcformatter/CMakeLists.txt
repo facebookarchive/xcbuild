@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(xcformatter SHARED
+add_library(xcformatter
             Sources/Formatter.cpp
             Sources/DefaultFormatter.cpp
             Sources/NullFormatter.cpp

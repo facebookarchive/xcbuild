@@ -59,12 +59,12 @@ private:
 private:
     inline bool inArray() const;
     inline bool inDictionary() const;
-    inline bool inContainer() const;
+    inline bool inContainer(size_t depth) const;
     inline bool isExpectingKey() const;
     inline bool isExpectingCDATA() const;
 
 private:
-    bool beginObject(std::string const &name);
+    bool beginObject(std::string const &name, size_t depth);
     bool beginArray();
     bool beginDictionary();
     bool beginString();

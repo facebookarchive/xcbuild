@@ -19,7 +19,9 @@
 #include <libutil/Filesystem.h>
 #include <process/Context.h>
 
+#if !_WIN32
 #include <unistd.h>
+#endif
 
 using xcdriver::BuildAction;
 using xcdriver::Options;
@@ -39,8 +41,13 @@ static std::shared_ptr<xcformatter::Formatter>
 CreateFormatter(ext::optional<std::string> const &formatter)
 {
     if (!formatter || *formatter == "default") {
+#if _WIN32
+        // TODO: Support color output on Windows.
+        bool color = false;
+#else
         /* Only use color if attached to a terminal. */
         bool color = isatty(fileno(stdout));
+#endif
 
         auto formatter = xcformatter::DefaultFormatter::Create(color);
         return std::static_pointer_cast<xcformatter::Formatter>(formatter);
@@ -116,7 +123,7 @@ VerifySupportedOptions(Options const &options)
 }
 
 int BuildAction::
-Run(process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem, Options const &options)
+Run(process::User const *user, process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem, Options const &options)
 {
     // TODO(grp): Implement these options.
     if (!VerifySupportedOptions(options)) {
@@ -149,7 +156,7 @@ Run(process::Context const *processContext, process::Launcher *processLauncher, 
     /*
      * Use the default build environment. We don't need anything custom here.
      */
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(processContext, filesystem);
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(user, processContext, filesystem);
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
@@ -172,7 +179,7 @@ Run(process::Context const *processContext, process::Launcher *processLauncher, 
     /*
      * Perform the build!
      */
-    bool success = executor->build(processContext, processLauncher, filesystem, *buildEnvironment, parameters);
+    bool success = executor->build(user, processContext, processLauncher, filesystem, *buildEnvironment, parameters);
     if (!success) {
         return 1;
     }

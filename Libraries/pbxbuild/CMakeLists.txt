@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(pbxbuild SHARED
+add_library(pbxbuild
             Sources/DirectedGraph.cpp
             Sources/HeaderMap.cpp
             Sources/DerivedDataHash.cpp

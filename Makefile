@@ -11,10 +11,10 @@ build := build
 project := project
 
 cmake := cmake
-cmake_flags := -DCMAKE_INSTALL_PREFIX=
+cmake_flags := -DCMAKE_INSTALL_PREFIX= $(shell echo "$$CMAKE_FLAGS")
 
 ninja := $(if $(shell which llbuild),llbuild ninja build,ninja)
-ninja_flags := $(if $(shell echo "$$NINJA_JOBS"),-j$(shell echo "$$NINJA_JOBS"),)
+ninja_flags := $(shell echo "$$NINJA_FLAGS")
 
 all:
 	mkdir -p $(build)
@@ -30,7 +30,7 @@ project:
 	$(cmake) -B$(project) -H. -G Xcode $(cmake_flags)
 
 test: all
-	set -e; for test in build/test_*; do echo; echo "$$test"; ./$$test; done
+	set -e; for test in build/test_*; do echo; echo "$$test"; $$TEST_RUNNER ./$$test; done
 
 clean:
 	rm -rf $(build)

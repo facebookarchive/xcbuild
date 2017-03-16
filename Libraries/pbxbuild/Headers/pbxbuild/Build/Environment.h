@@ -18,6 +18,7 @@
 
 namespace libutil { class Filesystem; }
 namespace process { class Context; }
+namespace process { class User; }
 
 namespace pbxbuild {
 namespace Build {
@@ -73,6 +74,7 @@ public:
      */
     static ext::optional<Environment>
     Default(
+        process::User const *user,
         process::Context const *processContext,
         libutil::Filesystem const *filesystem);
 };

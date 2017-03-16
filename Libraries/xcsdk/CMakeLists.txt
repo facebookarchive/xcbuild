@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(xcsdk SHARED
+add_library(xcsdk
             Sources/Configuration.cpp
             Sources/Environment.cpp
             Sources/SDK/Manager.cpp

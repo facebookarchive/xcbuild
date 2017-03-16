@@ -20,7 +20,11 @@
 #include <libutil/FSUtil.h>
 #include <process/Context.h>
 
+#if _WIN32
+#include <cstring>
+#else
 #include <strings.h>
+#endif
 
 using builtin::copyStrings::Driver;
 using builtin::copyStrings::Options;
@@ -46,18 +50,34 @@ name()
 static bool
 ParseStringsEncoding(std::string const &string, plist::Format::Any *format)
 {
-    if (strcasecmp(string.c_str(), "binary") == 0) {
+#if _WIN32
+    if (::_stricmp(string.c_str(), "binary") == 0) {
+#else
+    if (::strcasecmp(string.c_str(), "binary") == 0) {
+#endif
         *format = plist::Format::Any::Create(plist::Format::Binary::Create());
         return true;
-    } else if (strcasecmp(string.c_str(), "utf-8") == 0) {
+#if _WIN32
+    } else if (::_stricmp(string.c_str(), "utf-8") == 0) {
+#else
+    } else if (::strcasecmp(string.c_str(), "utf-8") == 0) {
+#endif
         plist::Format::Encoding encoding = plist::Format::Encoding::UTF8;
         *format = plist::Format::Any::Create(plist::Format::ASCII::Create(true, encoding));
         return true;
-    } else if (strcasecmp(string.c_str(), "utf-16") == 0) {
+#if _WIN32
+    } else if (::_stricmp(string.c_str(), "utf-16") == 0) {
+#else
+    } else if (::strcasecmp(string.c_str(), "utf-16") == 0) {
+#endif
         plist::Format::Encoding encoding = plist::Format::Encoding::UTF16LE;
         *format = plist::Format::Any::Create(plist::Format::ASCII::Create(true, encoding));
         return true;
-    } else if (strcasecmp(string.c_str(), "utf-32") == 0) {
+#if _WIN32
+    } else if (::_stricmp(string.c_str(), "utf-32") == 0) {
+#else
+    } else if (::strcasecmp(string.c_str(), "utf-32") == 0) {
+#endif
         plist::Format::Encoding encoding = plist::Format::Encoding::UTF32LE;
         *format = plist::Format::Any::Create(plist::Format::ASCII::Create(true, encoding));
         return true;

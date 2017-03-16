@@ -54,10 +54,10 @@ TEST(SimpleExecutor, PropagateToolResult)
     });
 
     auto launcher = process::MemoryLauncher({
-        { "/fail-tool", [](Filesystem *filesystem, process::Context const *context) -> ext::optional<int> {
+        { filesystem.path("fail-tool"), [](Filesystem *filesystem, process::Context const *context) -> ext::optional<int> {
             return 1;
         } },
-        { "/success-tool", [](Filesystem *filesystem, process::Context const *context) -> ext::optional<int> {
+        { filesystem.path("success-tool"), [](Filesystem *filesystem, process::Context const *context) -> ext::optional<int> {
             return 0;
         } },
     });
@@ -73,13 +73,9 @@ TEST(SimpleExecutor, PropagateToolResult)
 
     auto context = process::MemoryContext(
         "",
-        "/",
+        filesystem.path(""),
         std::vector<std::string>(),
-        std::unordered_map<std::string, std::string>(),
-        0,
-        0,
-        "user",
-        "group");
+        std::unordered_map<std::string, std::string>());
 
     /* Create invocations to execute. */
     auto builtinSuccess = pbxbuild::Tool::Invocation();
@@ -94,7 +90,7 @@ TEST(SimpleExecutor, PropagateToolResult)
 
     /* Create test executor. */
     auto formatter = xcformatter::NullFormatter::Create();
-    std::vector<std::string> const executablePaths = { "/" };
+    std::vector<std::string> const executablePaths = { filesystem.path("") };
     SimpleExecutor executor = SimpleExecutor(formatter, false, registry);
 
     /* Succeed if all tools succeed. */

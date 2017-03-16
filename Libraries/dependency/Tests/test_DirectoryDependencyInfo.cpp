@@ -27,13 +27,13 @@ TEST(DirectoryDependencyInfo, Deserialize)
         }),
     });
 
-    auto info = DirectoryDependencyInfo::Deserialize(&filesystem, "/root");
+    auto info = DirectoryDependencyInfo::Deserialize(&filesystem, filesystem.path("root"));
     ASSERT_TRUE(info);
     EXPECT_EQ(info->dependencyInfo().inputs(), std::vector<std::string>({
-        "/root/file1",
-        "/root/file2",
-        "/root/dir",
-        "/root/dir/file3",
+        filesystem.path("root/file1"),
+        filesystem.path("root/file2"),
+        filesystem.path("root/dir"),
+        filesystem.path("root/dir/file3"),
     }));
     EXPECT_TRUE(info->dependencyInfo().outputs().empty());
 }
@@ -44,6 +44,6 @@ TEST(DirectoryDependencyInfo, File)
         MemoryFilesystem::Entry::File("file1", { }),
     });
 
-    auto info = DirectoryDependencyInfo::Deserialize(&filesystem, "/file");
+    auto info = DirectoryDependencyInfo::Deserialize(&filesystem, filesystem.path("file"));
     ASSERT_EQ(info, ext::nullopt);
 }

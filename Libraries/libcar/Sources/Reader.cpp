@@ -48,10 +48,7 @@ _car_tree_iterator(Reader const *reader, const char *tree_variable, bom_tree_ite
         return;
     }
 
-    struct _car_iterator_ctx iterator_ctx = {
-        .reader = reader,
-        .iterator = iterator,
-    };
+    struct _car_iterator_ctx iterator_ctx = { reader, iterator };
     bom_tree_iterate(tree, tree_iterator, &iterator_ctx);
     bom_tree_free(tree);
 }
@@ -140,7 +137,7 @@ dump() const
     for (uint32_t i = 0; i < keyfmt->num_identifiers; i++) {
         uint32_t identifier = keyfmt->identifier_list[i];
         if (identifier < sizeof(car_attribute_identifier_names) / sizeof(*car_attribute_identifier_names)) {
-            printf("Identifier: %s (%d)\n", car_attribute_identifier_names[identifier] ?: "(unknown)", identifier);
+            printf("Identifier: %s (%d)\n", car_attribute_identifier_names[identifier] ? car_attribute_identifier_names[identifier] : "(unknown)", identifier);
         } else {
             printf("Identifier: (unknown) (%d)\n", identifier);
         }

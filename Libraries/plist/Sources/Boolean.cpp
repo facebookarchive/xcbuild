@@ -12,7 +12,11 @@
 #include <plist/Integer.h>
 #include <plist/Real.h>
 
+#if _WIN32
+#include <cstring>
+#else
 #include <strings.h>
+#endif
 
 using plist::Object;
 using plist::Boolean;
@@ -55,8 +59,13 @@ Coerce(Object const *obj)
         return boolean->copy();
     } else if (String const *string = CastTo<String>(obj)) {
         bool value = (
+#if _WIN32
+            _stricmp(string->value().c_str(), "yes") == 0 ||
+            _stricmp(string->value().c_str(), "true") == 0 ||
+#else
             strcasecmp(string->value().c_str(), "yes") == 0 ||
             strcasecmp(string->value().c_str(), "true") == 0 ||
+#endif
             string->value() == "1");
         return Boolean::New(value);
     } else if (Integer const *integer = CastTo<Integer>(obj)) {

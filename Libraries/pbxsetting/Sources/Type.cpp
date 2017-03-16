@@ -13,7 +13,11 @@
 #include <iomanip>
 #include <sstream>
 
+#if _WIN32
+#include <cstring>
+#else
 #include <strings.h>
+#endif
 
 using pbxsetting::Type;
 using libutil::Wildcard;
@@ -31,7 +35,11 @@ Type::
 bool Type::
 ParseBoolean(std::string const &value)
 {
-    return strcasecmp(value.c_str(), "yes") == 0 || strcasecmp(value.c_str(), "true") == 0;
+#if _WIN32
+    return ::_stricmp(value.c_str(), "yes") == 0 || ::_stricmp(value.c_str(), "true") == 0;
+#else
+    return ::strcasecmp(value.c_str(), "yes") == 0 || ::strcasecmp(value.c_str(), "true") == 0;
+#endif
 }
 
 int64_t Type::

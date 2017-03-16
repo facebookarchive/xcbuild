@@ -13,6 +13,7 @@
 #include <pbxsetting/DefaultSettings.h>
 #include <pbxsetting/Environment.h>
 #include <process/Context.h>
+#include <process/User.h>
 #include <libutil/Filesystem.h>
 
 namespace Build = pbxbuild::Build;
@@ -32,9 +33,9 @@ Environment(
 }
 
 ext::optional<Build::Environment> Build::Environment::
-Default(process::Context const *processContext, Filesystem const *filesystem)
+Default(process::User const *user, process::Context const *processContext, Filesystem const *filesystem)
 {
-    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
+    ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(user, processContext, filesystem);
     if (!developerRoot) {
         fprintf(stderr, "error: couldn't find developer dir\n");
         return ext::nullopt;
@@ -62,7 +63,7 @@ Default(process::Context const *processContext, Filesystem const *filesystem)
      */
     specManager->registerDomains(filesystem, pbxspec::Manager::DefaultDomains(*developerRoot));
 
-    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(processContext));
+    auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(user, processContext));
     auto sdkManager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
     if (sdkManager == nullptr) {
         fprintf(stderr, "error: couldn't create SDK manager\n");
@@ -92,7 +93,7 @@ Default(process::Context const *processContext, Filesystem const *filesystem)
     pbxsetting::Environment baseEnvironment;
     baseEnvironment.insertBack(buildSystem->defaultSettings(), true);
     baseEnvironment.insertBack(sdkManager->computedSettings(), false);
-    std::vector<pbxsetting::Level> defaultLevels = pbxsetting::DefaultSettings::Levels(processContext);
+    std::vector<pbxsetting::Level> defaultLevels = pbxsetting::DefaultSettings::Levels(user, processContext);
     for (pbxsetting::Level const &level : defaultLevels) {
         baseEnvironment.insertBack(level, false);
     }

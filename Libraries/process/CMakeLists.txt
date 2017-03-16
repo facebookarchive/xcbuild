@@ -7,13 +7,16 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(process SHARED
+add_library(process
             Sources/Context.cpp
             Sources/DefaultContext.cpp
             Sources/MemoryContext.cpp
             Sources/Launcher.cpp
             Sources/DefaultLauncher.cpp
             Sources/MemoryLauncher.cpp
+            Sources/User.cpp
+            Sources/DefaultUser.cpp
+            Sources/MemoryUser.cpp
             )
 
 target_link_libraries(process PUBLIC ext util)
@@ -22,3 +25,7 @@ install(TARGETS process DESTINATION usr/lib)
 
 find_package(Threads REQUIRED)
 target_link_libraries(process PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+  target_link_libraries(process PRIVATE userenv)
+endif ()

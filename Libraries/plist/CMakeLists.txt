@@ -7,7 +7,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
-add_library(plist SHARED
+add_library(plist
             Sources/ObjectType.cpp
             Sources/Array.cpp
             Sources/Boolean.cpp
@@ -56,10 +56,19 @@ add_library(plist SHARED
             Sources/Format/Any.cpp
             )
 
-find_package(LibXml2 REQUIRED)
-target_include_directories(plist PRIVATE "${LIBXML2_INCLUDE_DIR}")
-target_compile_definitions(plist PRIVATE "${LIBXML2_DEFINITIONS}")
-target_link_libraries(plist PRIVATE ${LIBXML2_LIBRARIES})
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+  if ("${CMAKE_CXX_PLATFORM_ID}" STREQUAL "MinGW")
+    # MinGW is missing the library for XmlLite.
+    target_link_libraries(plist PRIVATE ole32)
+  else ()
+    target_link_libraries(plist PRIVATE XmlLite ole32)
+  endif ()
+else ()
+  find_package(LibXml2 REQUIRED)
+  target_include_directories(plist PRIVATE "${LIBXML2_INCLUDE_DIR}")
+  target_compile_definitions(plist PRIVATE "${LIBXML2_DEFINITIONS}")
+  target_link_libraries(plist PRIVATE ${LIBXML2_LIBRARIES})
+endif ()
 
 target_include_directories(plist PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
@@ -73,17 +82,21 @@ add_executable(PlistBuddy Tools/PlistBuddy.cpp)
 target_link_libraries(PlistBuddy PRIVATE plist util)
 install(TARGETS PlistBuddy DESTINATION usr/bin)
 
-set(LINENOISE_ROOT "${CMAKE_SOURCE_DIR}/ThirdParty/linenoise")
-set(LINENOISE_SOURCE "${LINENOISE_ROOT}/linenoise.c")
-if (EXISTS "${LINENOISE_SOURCE}")
-  add_library(linenoise "${LINENOISE_SOURCE}")
-  target_include_directories(linenoise PUBLIC "${LINENOISE_ROOT}")
-  if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
-    target_compile_definitions(linenoise PRIVATE _GNU_SOURCE)
-  endif ()
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+  # TODO
+else ()
+  set(LINENOISE_ROOT "${CMAKE_SOURCE_DIR}/ThirdParty/linenoise")
+  set(LINENOISE_SOURCE "${LINENOISE_ROOT}/linenoise.c")
+  if (EXISTS "${LINENOISE_SOURCE}")
+    add_library(linenoise "${LINENOISE_SOURCE}")
+    target_include_directories(linenoise PUBLIC "${LINENOISE_ROOT}")
+    if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+      target_compile_definitions(linenoise PRIVATE _GNU_SOURCE)
+    endif ()
 
-  target_link_libraries(PlistBuddy PRIVATE linenoise)
-  target_compile_definitions(PlistBuddy PRIVATE HAVE_LINENOISE)
+    target_link_libraries(PlistBuddy PRIVATE linenoise)
+    target_compile_definitions(PlistBuddy PRIVATE HAVE_LINENOISE)
+  endif ()
 endif ()
 
 if (BUILD_TESTING)

@@ -173,7 +173,7 @@ resolveInheritance(Condition const &condition, InheritanceContext const &context
 std::string Environment::
 resolveAssignment(Condition const &condition, std::string const &setting) const
 {
-    InheritanceContext context = { .valid = true, .setting = setting };
+    InheritanceContext context = { true, setting };
 
     for (context.it = _levels.begin(); context.it != _levels.end(); ++context.it) {
         Level const &level = *context.it;
@@ -193,7 +193,7 @@ resolveAssignment(Condition const &condition, std::string const &setting) const
 std::string Environment::
 expand(Value const &value, Condition const &condition) const
 {
-    return resolveValue(condition, value, { .valid = false });
+    return resolveValue(condition, value, { false });
 }
 
 std::string Environment::

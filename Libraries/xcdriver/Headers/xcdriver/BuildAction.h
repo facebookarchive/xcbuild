@@ -13,6 +13,7 @@
 namespace libutil { class Filesystem; }
 namespace process { class Context; }
 namespace process { class Launcher; }
+namespace process { class User; }
 
 namespace xcdriver {
 
@@ -25,7 +26,7 @@ private:
 
 public:
     static int
-    Run(process::Context const *processContext, process::Launcher *processLauncher, libutil::Filesystem *filesystem, Options const &options);
+    Run(process::User const *user, process::Context const *processContext, process::Launcher *processLauncher, libutil::Filesystem *filesystem, Options const &options);
 };
 
 }
