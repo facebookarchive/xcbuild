@@ -40,7 +40,7 @@ Specification()
 bool Specification::
 operator==(Specification const &rhs) const
 {
-    return _identifier == rhs._identifier && _domain == rhs._domain;
+    return _identifier.compare(rhs._identifier) == 0 && _domain.compare(rhs._domain) == 0;
 }
 
 bool Specification::

@@ -285,7 +285,7 @@ addSpecification(PBX::Specification::shared_ptr const &spec)
 }
 
 bool Manager::
-inheritSpecification(PBX::Specification::shared_ptr const &specification)
+inheritSpecification(PBX::Specification::shared_ptr const &specification, std::vector<PBX::Specification::shared_ptr> visited)
 {
     if (specification->basedOnIdentifier() && specification->basedOnDomain() && specification->base() == nullptr) {
         /* Find the base specification. */
@@ -308,8 +308,22 @@ inheritSpecification(PBX::Specification::shared_ptr const &specification)
              * <any>:identifier and potentially find foo:identifier again.
              */
             auto I = std::find_if(candidates.begin(), candidates.end(),
-                                  [&specification](PBX::Specification::shared_ptr const &spec) -> bool {
-                                      return specification != spec;
+                                  [&specification, &visited](PBX::Specification::shared_ptr const &spec) -> bool {
+                                      for (auto duplicate : visited) {
+                                          // check if specification exists in current inheritance chain.
+                                          if (specification == duplicate) {
+                                              return false;
+                                          }
+                                          // check if base candidate already inherited from specification in question.
+                                          auto base = duplicate->base();
+                                          while (base) {
+                                              if (specification == base) {
+                                                  return false;
+                                              }
+                                              base = base->base();
+                                          }
+                                      }
+                                      return true;
                                   });
             if (I != candidates.end()) {
                 base = *I;
@@ -330,7 +344,10 @@ inheritSpecification(PBX::Specification::shared_ptr const &specification)
          * Ensure the base specification itself has been inherited. Since inheritance
          * copies values from the base, the base must have its own values set first.
          */
-        if (!inheritSpecification(base)) {
+        visited.push_back(base);
+        bool success = inheritSpecification(base, visited);
+        visited.pop_back();
+        if (!success) {
             return false;
         }
 
@@ -439,7 +456,8 @@ registerDomains(Filesystem const *filesystem, std::vector<std::pair<std::string,
      * Inherit from existing and newly added specifications.
      */
     for (PBX::Specification::shared_ptr const &specification : specifications) {
-        if (!inheritSpecification(specification)) {
+        std::vector<PBX::Specification::shared_ptr> visited { specification };
+        if (!inheritSpecification(specification, visited)) {
             /* Unfortunately, not much useful error handling to do here. */
             continue;
         }
