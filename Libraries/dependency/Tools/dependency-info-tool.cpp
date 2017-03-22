@@ -21,6 +21,7 @@
 #include <dependency/MakefileDependencyInfo.h>
 
 #include <cassert>
+#include <cstdlib>
 
 using libutil::Escape;
 using libutil::DefaultFilesystem;
@@ -133,14 +134,14 @@ Help(std::string const &error = std::string())
     fprintf(stderr, "\n");
 #undef INDENT
 
-    return (error.empty() ? 0 : -1);
+    return (error.empty() ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
 static int
 Version()
 {
     printf("dependency-info-tool version 1\n");
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 static bool
@@ -253,7 +254,7 @@ main(int argc, char **argv)
          */
         std::vector<dependency::DependencyInfo> info;
         if (!LoadDependencyInfo(&filesystem, input.second, input.first, &info)) {
-            return -1;
+            return EXIT_FAILURE;
         }
 
         for (dependency::DependencyInfo const &dependencyInfo : info) {
@@ -271,8 +272,8 @@ main(int argc, char **argv)
      */
     std::vector<uint8_t> makefileContents = std::vector<uint8_t>(contents.begin(), contents.end());
     if (!filesystem.write(makefileContents, *options.output())) {
-        return false;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
