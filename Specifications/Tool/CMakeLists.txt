@@ -10,6 +10,7 @@
 install(FILES
         com.apple.build-tools.nmedit.xcspec
         com.apple.build-tools.strip.xcspec
+        com.apple.build-tools.swift-stdlib-tool.xcspec
         com.apple.commands.built-in.compilation-database-generator.xcspec
         com.apple.commands.built-in.headermap-generator.xcspec
         com.apple.commands.built-in.validate.xcspec
