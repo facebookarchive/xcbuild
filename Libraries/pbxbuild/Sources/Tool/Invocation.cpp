@@ -66,7 +66,8 @@ Determine(std::string const &executable)
 Tool::Invocation::
 Invocation() :
     _showEnvironmentInLog   (true),
-    _createsProductStructure(false)
+    _createsProductStructure(false),
+    _waitForSwiftArtifacts  (false)
 {
 }
 

@@ -289,6 +289,8 @@ resolveSource(
     invocation.inputDependencies() = inputDependencies;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = logMessage;
+    // Wait for swift artifacts to be available before running this invocation
+    invocation.waitForSwiftArtifacts() = true;
 
     /* Add the compilation invocation to the context. */
     toolContext->invocations().push_back(invocation);
