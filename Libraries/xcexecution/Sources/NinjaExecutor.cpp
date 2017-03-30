@@ -115,6 +115,29 @@ NinjaHash(std::string const &input)
 }
 
 static ext::optional<std::string>
+NinjaBuiltinExecutablePath(
+    process::Context const *processContext,
+    Filesystem const *filesystem,
+    std::string builtinExecutable)
+{
+    std::vector<std::string> builtinExecutablePaths;
+    ext::optional<std::string> processExecutablePath = processContext->executablePath();
+    while (true) {
+        if (!processExecutablePath) {
+            break;
+        }
+        std::string builtinExecutablePathDirectory = FSUtil::GetDirectoryName(*processExecutablePath);
+        builtinExecutablePaths.push_back(builtinExecutablePathDirectory);
+        if (filesystem->type(*processExecutablePath) == Filesystem::Type::SymbolicLink) {
+            processExecutablePath = filesystem->readSymbolicLink(*processExecutablePath);
+        } else {
+            break;
+        }
+    }
+    return filesystem->findExecutable(builtinExecutable, builtinExecutablePaths);
+}
+
+static ext::optional<std::string>
 NinjaExecutablePath(
     process::Context const *processContext,
     Filesystem const *filesystem,
@@ -122,12 +145,7 @@ NinjaExecutablePath(
     pbxbuild::Tool::Invocation::Executable const &executable)
 {
     if (ext::optional<std::string> const &builtin = executable.builtin()) {
-        std::string path = FSUtil::GetDirectoryName(processContext->executablePath()) + "/" + *builtin;
-        if (filesystem->isExecutable(path)) {
-            return path;
-        } else {
-            return ext::nullopt;
-        }
+        return NinjaBuiltinExecutablePath(processContext, filesystem, *builtin);
     } else if (ext::optional<std::string> const &external = executable.external()) {
         if (FSUtil::IsAbsolutePath(*external)) {
             return *external;
@@ -344,7 +362,7 @@ build(
      * Find the dependency info tool.
      */
     std::string executableRoot = FSUtil::GetDirectoryName(processContext->executablePath());
-    std::string dependencyInfoToolPath = executableRoot + "/" + "dependency-info-tool";
+    std::string dependencyInfoToolPath = *NinjaBuiltinExecutablePath(processContext, filesystem, "dependency-info-tool");
 
     /*
      * If the Ninja file needs to be generated, generate it.
