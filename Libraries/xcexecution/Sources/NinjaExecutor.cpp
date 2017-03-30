@@ -97,11 +97,11 @@ NinjaDescription(std::string const &description)
 }
 
 static std::string
-NinjaHash(std::string const &input)
+NinjaHashInternal(const char *data, size_t size)
 {
     md5_state_t state;
     md5_init(&state);
-    md5_append(&state, reinterpret_cast<const md5_byte_t *>(input.data()), input.size());
+    md5_append(&state, reinterpret_cast<const md5_byte_t *>(data), size);
     uint8_t digest[16];
     md5_finish(&state, reinterpret_cast<md5_byte_t *>(&digest));
 
@@ -112,6 +112,12 @@ NinjaHash(std::string const &input)
     }
 
     return ss.str();
+}
+
+static std::string
+NinjaHash(std::string const &input)
+{
+    return NinjaHashInternal(input.data(), input.size());
 }
 
 static ext::optional<std::string>
@@ -282,6 +288,23 @@ WriteNinja(Filesystem *filesystem, ninja::Writer const &writer, std::string cons
 
     return true;
 }
+
+static bool
+WriteAuxiliaryFiles(Filesystem *filesystem, std::map<std::string, pbxbuild::Tool::AuxiliaryFile::Chunk const *> &auxiliaryFileChunks)
+{
+    for (auto it : auxiliaryFileChunks) {
+        if (!filesystem->createDirectory(FSUtil::GetDirectoryName(it.first), true)) {
+            return false;
+        }
+
+        if (!filesystem->write(*it.second->data(), it.first)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 static bool
 ShouldGenerateNinja(Filesystem const *filesystem, bool generate, Parameters const &buildParameters, std::string const &ninjaPath, std::string const &configurationHashPath)
@@ -706,8 +729,9 @@ buildTargetInvocations(
     /*
      * Write auxiliary files to run first.
      */
+    std::map<std::string, pbxbuild::Tool::AuxiliaryFile::Chunk const *> auxiliaryFileChunks;
     for (pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile : auxiliaryFiles) {
-        if (!buildAuxiliaryFile(&writer, auxiliaryFile, targetBegin)) {
+        if (!buildAuxiliaryFile(&writer, auxiliaryFile, targetBegin, temporaryDirectory, auxiliaryFileChunks)) {
             return false;
         }
     }
@@ -741,6 +765,10 @@ buildTargetInvocations(
         fprintf(stderr, "error: unable to write target ninja: %s\n", path.c_str());
         return false;
     }
+    if (!WriteAuxiliaryFiles(filesystem, auxiliaryFileChunks)) {
+        fprintf(stderr, "error: unable to write auxiliary files\n");
+        return false;
+    }
 
     return true;
 }
@@ -749,7 +777,9 @@ bool NinjaExecutor::
 buildAuxiliaryFile(
     ninja::Writer *writer,
     pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile,
-    std::string const &after)
+    std::string const &after,
+    std::string const &temporaryDirectory,
+    std::map<std::string, pbxbuild::Tool::AuxiliaryFile::Chunk const *> &auxiliaryFileChunks)
 {
     std::vector<ninja::Value> inputs;
     std::vector<ninja::Value> outputs = { ninja::Value::String(auxiliaryFile.path()) };
@@ -765,11 +795,11 @@ buildAuxiliaryFile(
 
         switch (chunk.type()) {
             case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::Data: {
-                // FIXME: use base64 directly, rather than through plist
-                auto data = plist::Data::New(*chunk.data());
-                exec += "echo " + data->base64Value();
-                exec += " | ";
-                exec += "base64 --decode";
+                // Cache auxiliary file path and data, so that we can write them in build directory later.
+                const std::string auxiliaryFileChunkPath = temporaryDirectory + "/" + ".ninja-auxiliary-file-" + NinjaHashInternal(reinterpret_cast<const char *>(chunk.data()->data()), chunk.data()->size()) + ".chunk";
+                auxiliaryFileChunks.insert(std::make_pair(auxiliaryFileChunkPath, &chunk));
+                exec += "cat " + Escape::Shell(auxiliaryFileChunkPath);
+                inputs.push_back(ninja::Value::String(auxiliaryFileChunkPath));
                 break;
             }
             case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::File: {

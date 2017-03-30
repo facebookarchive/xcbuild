@@ -60,6 +60,9 @@ parse(plist::Dictionary const *dict)
     auto PSV  = unpack.coerce <plist::Boolean> ("ProvidesSwiftVersion");
     auto OBS  = unpack.cast <plist::Dictionary> ("OverrideBuildSettings");
 
+    /* Ignored */
+    (void)unpack.cast <plist::String> ("DTSDKBuild");
+
     if (!unpack.complete(true)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
     }

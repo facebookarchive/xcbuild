@@ -64,7 +64,9 @@ private:
     bool buildAuxiliaryFile(
         ninja::Writer *writer,
         pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile,
-        std::string const &after);
+        std::string const &after,
+        std::string const &temporaryDirectory,
+        std::map<std::string, pbxbuild::Tool::AuxiliaryFile::Chunk const *> &auxiliaryFileChunks);
     bool buildInvocation(
         ninja::Writer *writer,
         pbxbuild::Tool::Invocation const &invocation,
