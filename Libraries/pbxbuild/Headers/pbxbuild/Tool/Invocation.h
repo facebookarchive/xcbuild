@@ -110,6 +110,9 @@ private:
 private:
     bool                                         _createsProductStructure;
 
+private:
+    bool                                         _waitForSwiftArtifacts;
+
 public:
     Invocation();
     ~Invocation();
@@ -194,6 +197,14 @@ public:
 public:
     bool &createsProductStructure()
     { return _createsProductStructure; }
+
+public:
+    bool waitForSwiftArtifacts() const
+    { return _waitForSwiftArtifacts; }
+
+public:
+    bool &waitForSwiftArtifacts()
+    { return _waitForSwiftArtifacts; }
 };
 
 }

@@ -62,7 +62,9 @@ CopySwiftModules(Phase::Environment const &phaseEnvironment, Phase::Context *pha
         }
     }
 
-    for (Tool::SwiftModuleInfo const &moduleInfo : toolContext->swiftModuleInfo()) {
+    for (Tool::SwiftModuleInfo &moduleInfo : toolContext->swiftModuleInfo()) {
+        moduleInfo.copiedArtifacts().clear();
+
         /* Output into the framework or the products directory. */
         std::string outputBase;
         if (isFramework) {
@@ -82,16 +84,19 @@ CopySwiftModules(Phase::Environment const &phaseEnvironment, Phase::Context *pha
         /* Copy the module to let modules import it. */
         std::string outputPath = outputBase + "/" + outputName + ".swiftmodule";
         dittoResolver->resolve(toolContext, moduleInfo.modulePath(), outputPath);
+        moduleInfo.copiedArtifacts().push_back(outputPath);
 
         /* Copy the swiftdoc. It's next to the module. */
         std::string docOutputPath = outputBase + "/" + outputName + ".swiftdoc";
         dittoResolver->resolve(toolContext, moduleInfo.docPath(), docOutputPath);
+        moduleInfo.copiedArtifacts().push_back(docOutputPath);
 
         /* Copy the generated header, if requested. */
         if (moduleInfo.installHeader()) {
             std::string headerName = FSUtil::GetBaseName(moduleInfo.headerPath());
-            std::string installedHeaderPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH") + "/" + headerName;
+            std::string installedHeaderPath = environment.resolve("DERIVED_FILE_DIR") + "/" + headerName;
             dittoResolver->resolve(toolContext, moduleInfo.headerPath(), installedHeaderPath);
+            moduleInfo.copiedArtifacts().push_back(installedHeaderPath);
         }
     }
 
@@ -172,6 +177,21 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
      */
     if (!CopySwiftModules(phaseEnvironment, phaseContext)) {
         return false;
+    }
+
+    /*
+     * Add dependencies to invocations marked to wait for swift artifacts.
+     */
+    for (auto &invocation : phaseContext->toolContext().invocations()) {
+        if (invocation.waitForSwiftArtifacts()) {
+            for (auto &swiftModuleInfo : phaseContext->toolContext().swiftModuleInfo()) {
+                invocation.inputDependencies().insert(
+                    invocation.inputDependencies().end(),
+                    swiftModuleInfo.copiedArtifacts().begin(),
+                    swiftModuleInfo.copiedArtifacts().end()
+                );
+            }
+        }
     }
 
     return true;
