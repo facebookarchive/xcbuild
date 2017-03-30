@@ -461,19 +461,22 @@ Create(Build::Environment const &buildEnvironment, Build::Context const &buildCo
     std::vector<std::string> variants = ResolveVariants(environment);
     environment.insertFront(ArchitecturesVariantsLevel(architectures, variants), false);
 
-    /* At the target level and below, the SDKROOT changes to always be a SDK path. */
-    environment.insertFront(pbxsetting::Level({
-        pbxsetting::Setting::Create("SDKROOT", sdk->path()),
-    }), false);
-
     /* Determine toolchains. Must be after the SDK levels are added, so they can be a fallback. */
     std::vector<xcsdk::SDK::Toolchain::shared_ptr> toolchains;
+    std::vector<std::string> effectiveToolchainPaths;
     for (std::string const &toolchainName : pbxsetting::Type::ParseList(environment.resolve("TOOLCHAINS"))) {
         if (xcsdk::SDK::Toolchain::shared_ptr toolchain = buildEnvironment.sdkManager()->findToolchain(toolchainName)) {
             // TODO: Apply toolchain override build settings.
             toolchains.push_back(toolchain);
+            effectiveToolchainPaths.push_back(toolchain->path());
         }
     }
+
+    environment.insertFront(pbxsetting::Level({
+        /* At the target level and below, the SDKROOT changes to always be a SDK path. */
+        pbxsetting::Setting::Create("SDKROOT", sdk->path()),
+        pbxsetting::Setting::Create("EFFECTIVE_TOOLCHAINS_DIRS", pbxsetting::Type::FormatList(effectiveToolchainPaths)),
+    }), false);
 
     /* Tool search directories. Use the toolchains just discovered. */
     std::shared_ptr<xcsdk::SDK::Manager> const &sdkManager = buildEnvironment.sdkManager();

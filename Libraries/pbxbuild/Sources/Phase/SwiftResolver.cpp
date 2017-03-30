@@ -64,7 +64,7 @@ ShouldBundleSwiftRuntime(Tool::Context const *toolContext, pbxsetting::Environme
      * Need a place to put the runtime libraries. If the product is not a wrapper, then
      * there isn't a frameworks directory to include Swift in.
      */
-    if (productType->isWrapper()) {
+    if (!productType->isWrapper()) {
         return false;
     }
 
