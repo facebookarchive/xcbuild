@@ -499,7 +499,14 @@ Merge(plist::Object *object, std::string const &mergeSource, std::queue<std::str
 
     if (auto targetDictionary = plist::CastTo<plist::Dictionary>(target)) {
         if (auto mergeObjectDictionary = plist::CastTo<plist::Dictionary>(mergeObject.get())) {
-            targetDictionary->merge(mergeObjectDictionary);
+            // Check to see if duplicate keys exists between target and merge dictionary,
+            // and print warning that those keys will be skipped.
+            for (auto const &mergeKey : *mergeObjectDictionary) {
+                if (targetDictionary->value(mergeKey)) {
+                    fprintf(stderr, "Skipping duplicate key: %s\n", mergeKey.c_str());
+                }
+            }
+            targetDictionary->merge(mergeObjectDictionary, false);
             return true;
         } else if (auto mergeObjectArray = plist::CastTo<plist::Array>(mergeObject.get())) {
             (void)mergeObjectArray;
