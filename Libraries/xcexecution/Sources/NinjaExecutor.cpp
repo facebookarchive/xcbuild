@@ -97,7 +97,7 @@ NinjaDescription(std::string const &description)
 }
 
 static std::string
-NinjaHashInternal(const char *data, size_t size)
+NinjaHash(char const *data, size_t size)
 {
     md5_state_t state;
     md5_init(&state);
@@ -112,12 +112,6 @@ NinjaHashInternal(const char *data, size_t size)
     }
 
     return ss.str();
-}
-
-static std::string
-NinjaHash(std::string const &input)
-{
-    return NinjaHashInternal(input.data(), input.size());
 }
 
 static ext::optional<std::string>
@@ -193,7 +187,7 @@ NinjaInvocationPhonyOutput(pbxbuild::Tool::Invocation const &invocation)
         key += " " + arg;
     }
 
-    return ".ninja-phony-output-" + NinjaHash(key);
+    return ".ninja-phony-output-" + NinjaHash(key.data(), key.size());
 }
 
 static std::vector<std::string>
@@ -796,7 +790,7 @@ buildAuxiliaryFile(
         switch (chunk.type()) {
             case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::Data: {
                 // Cache auxiliary file path and data, so that we can write them in build directory later.
-                const std::string auxiliaryFileChunkPath = temporaryDirectory + "/" + ".ninja-auxiliary-file-" + NinjaHashInternal(reinterpret_cast<const char *>(chunk.data()->data()), chunk.data()->size()) + ".chunk";
+                const std::string auxiliaryFileChunkPath = temporaryDirectory + "/" + ".ninja-auxiliary-file-" + NinjaHash(reinterpret_cast<const char *>(chunk.data()->data()), chunk.data()->size()) + ".chunk";
                 auxiliaryFileChunks.insert(std::make_pair(auxiliaryFileChunkPath, &chunk));
                 exec += "cat " + Escape::Shell(auxiliaryFileChunkPath);
                 inputs.push_back(ninja::Value::String(auxiliaryFileChunkPath));
@@ -883,7 +877,7 @@ buildInvocation(
         std::string output = NinjaInvocationOutputs(invocation).front();
 
         /* Find where the generated dependency info should go. */
-        dependencyInfoFile = temporaryDirectory + "/" + ".ninja-dependency-info-" + NinjaHash(output) + ".d";
+        dependencyInfoFile = temporaryDirectory + "/" + ".ninja-dependency-info-" + NinjaHash(output.data(), output.size()) + ".d";
 
         /* Build the dependency info rewriter arguments. */
         std::vector<std::string> dependencyInfoArguments = {
