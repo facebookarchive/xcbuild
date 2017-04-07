@@ -32,11 +32,16 @@
             Values = (
                 none,
                 verbose,
+                extra-verbose,
             );
             DefaultValue = "verbose";
             CommandLineArgs = {
                 none = ();
                 verbose = (
+                    "--verbose",
+                );
+                extra-verbose = (
+                    "--verbose",
                     "--verbose",
                 );
             };
