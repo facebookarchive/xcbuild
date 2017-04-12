@@ -32,8 +32,8 @@ TEST(DirectoryDependencyInfo, Deserialize)
     EXPECT_EQ(info->dependencyInfo().inputs(), std::vector<std::string>({
         "/root/file1",
         "/root/file2",
-        "/root/dir",
         "/root/dir/file3",
+        "/root/dir",
     }));
     EXPECT_TRUE(info->dependencyInfo().outputs().empty());
 }

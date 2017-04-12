@@ -302,7 +302,7 @@ TEST(MemoryFilesystem, ReadDirectory)
     /* List root contents, recursive. */
     files.clear();
     EXPECT_TRUE(filesystem.readDirectory("/", true, accumulate));
-    EXPECT_EQ(files, std::vector<std::string>({ "file1", "dir1", "dir2", "dir1/file2", "dir2/file2", "dir2/dir3" }));
+    EXPECT_EQ(files, std::vector<std::string>({ "file1", "dir1/file2", "dir1", "dir2/file2", "dir2/dir3", "dir2" }));
 
     /* List file. */
     files.clear();

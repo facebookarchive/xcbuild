@@ -385,17 +385,13 @@ readDirectory(std::string const &path, bool recursive, std::function<void(std::s
         /* Report children. */
         for (MemoryFilesystem::Entry const &child : entry->children()) {
             std::string path = (subpath ? *subpath + "/" + child.name() : child.name());
-            cb(path);
-        }
 
-        /* Process subdirectories. */
-        if (recursive) {
-            for (MemoryFilesystem::Entry const &child : entry->children()) {
-                if (child.type() == Type::Directory) {
-                    std::string path = (subpath ? *subpath + "/" + child.name() : child.name());
-                    process(path, &child);
-                }
+            /* Process subdirectories first. */
+            if (recursive) {
+                process(path, &child);
             }
+
+            cb(path);
         }
     };
 
