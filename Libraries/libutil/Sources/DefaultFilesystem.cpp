@@ -494,28 +494,19 @@ readDirectory(std::string const &path, bool recursive, std::function<void(std::s
             }
 
             std::string path = (relative ? *relative + "/" + entry->d_name : entry->d_name);
-            cb(path);
-        }
 
-        /* Process subdirectories. */
-        if (recursive) {
-            ::rewinddir(dp);
-
-            while (struct dirent *entry = ::readdir(dp)) {
-                if (::strcmp(entry->d_name, ".") == 0 || ::strcmp(entry->d_name, "..") == 0) {
-                    continue;
-                }
-
+            /* Process subdirectories first. */
+            if (recursive) {
                 std::string full = absolute + "/" + entry->d_name;
-
                 if (this->type(full) == Type::Directory) {
-                    std::string path = (relative ? *relative + "/" + entry->d_name : entry->d_name);
                     if (!process(full, path)) {
                         ::closedir(dp);
                         return false;
                     }
                 }
             }
+
+            cb(path);
         }
 
         ::closedir(dp);
