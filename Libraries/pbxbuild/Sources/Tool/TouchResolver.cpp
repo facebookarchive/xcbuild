@@ -48,6 +48,7 @@ resolve(
     invocation.outputs() = { output };
     invocation.inputDependencies() = inputDependencies;
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 

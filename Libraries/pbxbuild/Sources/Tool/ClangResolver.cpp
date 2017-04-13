@@ -189,6 +189,7 @@ resolvePrecompiledHeader(
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 
     toolContext->auxiliaryFiles().push_back(serializedFile);
@@ -289,6 +290,7 @@ resolveSource(
     invocation.inputDependencies() = inputDependencies;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     // Wait for swift artifacts to be available before running this invocation
     invocation.waitForSwiftArtifacts() = true;
 

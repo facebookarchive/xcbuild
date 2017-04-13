@@ -72,6 +72,7 @@ resolve(
     invocation.inputDependencies() = toolContext->additionalInfoPlistContents();
     invocation.logMessage() = tokens.logMessage();
     invocation.showEnvironmentInLog() = false; /* Hide build settings from log. */
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 

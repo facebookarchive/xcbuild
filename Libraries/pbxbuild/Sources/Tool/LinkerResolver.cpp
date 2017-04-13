@@ -128,6 +128,7 @@ resolve(
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 
     toolContext->auxiliaryFiles().insert(toolContext->auxiliaryFiles().end(), auxiliaries.begin(), auxiliaries.end());

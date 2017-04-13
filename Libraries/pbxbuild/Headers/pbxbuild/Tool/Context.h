@@ -24,6 +24,9 @@
 #include <string>
 #include <vector>
 
+#define PHASE_INVOCATION_PRIORITY_BASE 0x100
+#define PHASE_INVOCATION_PRIORITY_INCREMENT 0x100
+
 namespace pbxbuild {
 namespace Tool {
 
@@ -49,6 +52,9 @@ private:
 
 private:
     std::vector<Tool::AuxiliaryFile> _auxiliaryFiles;
+
+private:
+    uint32_t                         _currentPhaseInvocationPriority;
 
 public:
     Context(
@@ -113,6 +119,15 @@ public:
 public:
     std::vector<Tool::AuxiliaryFile> &auxiliaryFiles()
     { return _auxiliaryFiles; }
+
+public:
+    uint32_t currentPhaseInvocationPriority() const
+    { return _currentPhaseInvocationPriority; }
+
+public:
+    uint32_t &currentPhaseInvocationPriority()
+    { return _currentPhaseInvocationPriority; }
+
 };
 
 }

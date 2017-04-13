@@ -52,6 +52,7 @@ resolve(
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = { }; // TODO(grp): Outputs are not known at build time.
     invocation.logMessage() = tokens.logMessage();
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 

@@ -17,10 +17,11 @@ Context(
     std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains,
     std::string const &workingDirectory,
     Tool::SearchPaths const &searchPaths) :
-    _sdk             (sdk),
-    _toolchains      (toolchains),
-    _workingDirectory(workingDirectory),
-    _searchPaths     (searchPaths)
+    _sdk                            (sdk),
+    _toolchains                     (toolchains),
+    _workingDirectory               (workingDirectory),
+    _searchPaths                    (searchPaths),
+    _currentPhaseInvocationPriority (0)
 {
 }
 

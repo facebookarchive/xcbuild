@@ -38,6 +38,7 @@ resolve(
     invocation.outputs() = { FSUtil::ResolveRelativePath(symlinkPath, workingDirectory) };
     invocation.logMessage() = logMessage;
     invocation.createsProductStructure() = productStructure;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 

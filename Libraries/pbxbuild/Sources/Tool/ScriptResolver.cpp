@@ -75,6 +75,7 @@ resolve(
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = fullWorkingDirectory;
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
@@ -124,6 +125,7 @@ resolve(
     invocation.outputs() = outputFiles;
     invocation.logMessage() = phaseEnvironment.expand(logMessage);
     invocation.showEnvironmentInLog() = buildPhase->showEnvVarsInLog();
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 
     toolContext->auxiliaryFiles().push_back(scriptFile);
@@ -187,6 +189,7 @@ resolve(
     invocation.outputs() = outputFiles;
     invocation.logMessage() = ruleEnvironment.expand(logMessage);
     invocation.showEnvironmentInLog() = true;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 

@@ -59,6 +59,7 @@ resolve(
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = resolvedLogMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
@@ -83,6 +84,7 @@ resolve(
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.logMessage() = resolvedLogMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 

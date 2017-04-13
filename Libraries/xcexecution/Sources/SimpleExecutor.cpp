@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <set>
+
 using xcexecution::SimpleExecutor;
 using xcexecution::Parameters;
 using libutil::Filesystem;
@@ -104,10 +106,12 @@ static ext::optional<std::vector<pbxbuild::Tool::Invocation>>
 SortInvocations(std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
     std::unordered_map<std::string, pbxbuild::Tool::Invocation const *> outputToInvocation;
+    std::set<uint32_t, std::less<uint32_t>> orderedPhasePriorities;
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
         for (std::string const &output : invocation.outputs()) {
             outputToInvocation.insert({ output, &invocation });
         }
+        orderedPhasePriorities.insert(invocation.priority());
     }
 
     pbxbuild::DirectedGraph<pbxbuild::Tool::Invocation const *> graph;
@@ -131,6 +135,15 @@ SortInvocations(std::vector<pbxbuild::Tool::Invocation> const &invocations)
             auto it = outputToInvocation.find(inputDependency);
             if (it != outputToInvocation.end()) {
                 graph.insert(&invocation, { it->second });
+            }
+        }
+
+        auto it = orderedPhasePriorities.find(invocation.priority());
+        if (it != orderedPhasePriorities.end() && std::next(it) != orderedPhasePriorities.end()) {
+            for (pbxbuild::Tool::Invocation const &otherInvocation : invocations) {
+                if (otherInvocation.priority() == *std::next(it)) {
+                    graph.insert(&otherInvocation, { &invocation });
+                }
             }
         }
     }
