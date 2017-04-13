@@ -79,6 +79,7 @@ resolve(
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = outputs;
     invocation.logMessage() = tokens.logMessage();
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 

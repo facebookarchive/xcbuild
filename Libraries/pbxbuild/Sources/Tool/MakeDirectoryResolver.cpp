@@ -35,6 +35,7 @@ resolve(
     invocation.outputs() = { FSUtil::ResolveRelativePath(directory, toolContext->workingDirectory()) };
     invocation.logMessage() = "MkDir " + directory;
     invocation.createsProductStructure() = productStructure;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 

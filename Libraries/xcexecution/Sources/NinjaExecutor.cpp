@@ -65,6 +65,18 @@ TargetNinjaFinish(pbxproj::PBX::Target::shared_ptr const &target)
 }
 
 static std::string
+TargetPhaseNinjaBegin(pbxproj::PBX::Target::shared_ptr const &target, int phasePriority)
+{
+    return "begin-target-" + target->name() + "-phase-priority-" + std::to_string(phasePriority);
+}
+
+static std::string
+TargetPhaseNinjaFinish(pbxproj::PBX::Target::shared_ptr const &target, int phasePriority)
+{
+    return "finish-target-" + target->name() + "-phase-priority-" + std::to_string(phasePriority);
+}
+
+static std::string
 TargetNinjaPath(pbxproj::PBX::Target::shared_ptr const &target, pbxbuild::Target::Environment const &targetEnvironment)
 {
     /*
@@ -655,12 +667,12 @@ buildAction(
         /*
          * Add the phony target for ending this target's build.
          */
-        std::string targetFinish = TargetNinjaFinish(target);
-        std::vector<ninja::Value> invocationOutputsValues;
-        for (std::string const &output : invocationOutputs) {
-            invocationOutputsValues.push_back(ninja::Value::String(output));
+        uint32_t maxInvocationPriority = 0;
+        for (pbxbuild::Tool::Invocation const &invocation : phaseInvocations.invocations()) {
+            maxInvocationPriority = std::max(maxInvocationPriority, invocation.priority());
         }
-        writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputsValues);
+        std::string targetFinish = TargetNinjaFinish(target);
+        writer.build({ ninja::Value::String(targetFinish) }, "phony", { ninja::Value::String(TargetPhaseNinjaFinish(target, maxInvocationPriority)) });
     }
 
     /*
@@ -731,6 +743,42 @@ buildTargetInvocations(
     }
 
     /*
+     * Group every invocation in target by its phase priority.
+     */
+    std::map<int, std::unordered_set<std::string>, std::less<uint32_t>> priorityToOutputs;
+    for (pbxbuild::Tool::Invocation const &invocation : invocations) {
+        std::vector<std::string> invocationOutputs = NinjaInvocationOutputs(invocation);
+        if (!invocationOutputs.empty()) {
+            priorityToOutputs[invocation.priority()].insert(invocationOutputs.begin(), invocationOutputs.end());
+        }
+    }
+
+    /*
+     * Write phony targets for start and end of each phase priorities.
+     */
+    ninja::Value previousPhase = ninja::Value::String(targetWriteAuxiliaryFiles);
+    for (auto const &priorityMappedOutputs : priorityToOutputs) {
+        // begin phase phony target.
+        ninja::Value targetPhaseBegin = ninja::Value::String(TargetPhaseNinjaBegin(target, priorityMappedOutputs.first));
+        writer.build({ targetPhaseBegin }, "phony", { previousPhase });
+
+        // finish phase phony target.
+        ninja::Value targetPhaseFinish = ninja::Value::String(TargetPhaseNinjaFinish(target, priorityMappedOutputs.first));
+        std::vector<ninja::Value> phaseFinishDependency;
+
+        // make sure phase orders are kept by having phase begin as dependency of phase finish.
+        phaseFinishDependency.push_back(targetPhaseBegin);
+
+        for (std::string const &output: priorityMappedOutputs.second) {
+            phaseFinishDependency.push_back(ninja::Value::String(output));
+        }
+        writer.build({ targetPhaseFinish }, "phony", phaseFinishDependency);
+
+        // update previous phase so that next phase can depend upon it.
+        previousPhase = targetPhaseFinish;
+    }
+
+    /*
      * Add the build command for each invocation.
      */
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
@@ -745,7 +793,7 @@ buildTargetInvocations(
             }
 
             /* Write invocations to run after auxiliary files. */
-            if (!buildInvocation(&writer, invocation, *executablePath, dependencyInfoToolPath, temporaryDirectory, targetWriteAuxiliaryFiles)) {
+            if (!buildInvocation(&writer, invocation, *executablePath, dependencyInfoToolPath, temporaryDirectory, TargetPhaseNinjaBegin(target, invocation.priority()))) {
                 return false;
             }
         }

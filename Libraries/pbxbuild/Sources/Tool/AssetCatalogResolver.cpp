@@ -126,6 +126,7 @@ resolve(
     invocation.outputs() = outputs;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 

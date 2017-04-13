@@ -404,6 +404,7 @@ resolve(
     invocation.outputs() = outputs;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 
     auto variantArchitectureKey = std::make_pair(environment.resolve("variant"), environment.resolve("arch"));

@@ -113,6 +113,9 @@ private:
 private:
     bool                                         _waitForSwiftArtifacts;
 
+private:
+    uint32_t                                     _priority;
+
 public:
     Invocation();
     ~Invocation();
@@ -205,6 +208,14 @@ public:
 public:
     bool &waitForSwiftArtifacts()
     { return _waitForSwiftArtifacts; }
+
+public:
+    uint32_t priority() const
+    { return _priority; }
+
+public:
+    uint32_t &priority()
+    { return _priority; }
 };
 
 }

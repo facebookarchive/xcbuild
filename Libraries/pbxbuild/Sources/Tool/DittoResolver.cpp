@@ -35,6 +35,7 @@ resolve(
     invocation.inputs() = { FSUtil::ResolveRelativePath(sourcePath, toolContext->workingDirectory()) };
     invocation.outputs() = { FSUtil::ResolveRelativePath(targetPath, toolContext->workingDirectory()) };
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
