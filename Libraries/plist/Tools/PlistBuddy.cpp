@@ -351,7 +351,7 @@ Print(plist::Object *object, std::queue<std::string> *keyPath, plist::Format::An
 }
 
 static bool
-Revert(std::unique_ptr<plist::Object> *root, Filesystem const *filesystem, std::string const &path)
+Revert(std::unique_ptr<plist::Object> *root, Filesystem const *filesystem, std::string const &path, ext::optional<plist::Format::Any> *format = nullptr)
 {
     if (path.empty()) {
         fprintf(stderr, "Error: no input specified\n");
@@ -368,6 +368,13 @@ Revert(std::unique_ptr<plist::Object> *root, Filesystem const *filesystem, std::
     if (!deserialize.first) {
         fprintf(stderr, "Error: %s\n", deserialize.second.c_str());
         return false;
+    }
+
+    if (format) {
+        std::unique_ptr<plist::Format::Any> identifiedFormat = plist::Format::Any::Identify(contents);
+        if (identifiedFormat != nullptr) {
+            *format = *identifiedFormat;
+        }
     }
 
     *root = std::move(deserialize.first);
@@ -558,7 +565,8 @@ static bool
 ProcessCommand(
     Filesystem *filesystem,
     std::string const &path,
-    plist::Format::Any const &format,
+    plist::Format::Any const &printFormat,
+    plist::Format::Any const &saveFormat,
     std::unique_ptr<plist::Object> *root,
     std::string const &input,
     bool *mutated,
@@ -578,9 +586,9 @@ ProcessCommand(
         if (tokens.size() > 1) {
             ParseCommandKeyPathString(tokens[1], &keyPath);
         }
-        return Print(root->get(), &keyPath, format);
+        return Print(root->get(), &keyPath, printFormat);
     } else if (command == "Save") {
-        return Save(root->get(), format, filesystem, path);
+        return Save(root->get(), saveFormat, filesystem, path);
     } else if (command == "Revert") {
         if (!Revert(root, filesystem, path)) {
             return false;
@@ -708,28 +716,37 @@ main(int argc, char **argv)
     }
 
     /*
-     * Read input.
+     * Read input, and determine format for saving.
      */
     std::unique_ptr<plist::Object> root;
+    ext::optional<plist::Format::Any> saveFormat;
     if (!options.input().empty() && !filesystem.exists(options.input())) {
         fprintf(stderr, "File does not exist, will create %s\n", options.input().c_str());
         root = plist::Dictionary::New();
     } else {
-        if (!Revert(&root, &filesystem, options.input())) {
+        if (!Revert(&root, &filesystem, options.input(), &saveFormat)) {
             return 1;
         }
     }
 
     /*
-     * Determine output format.
+     * If format of input is not found, default to XML for save format.
      */
-    ext::optional<plist::Format::Any> out;
+    if (!saveFormat) {
+        plist::Format::XML xml = plist::Format::XML::Create(plist::Format::Encoding::UTF8);
+        saveFormat = plist::Format::Any::Create<plist::Format::XML>(xml);
+    }
+
+    /*
+     * Determine format for printing.
+     */
+    ext::optional<plist::Format::Any> printFormat;
     if (options.xml()) {
         plist::Format::XML xml = plist::Format::XML::Create(plist::Format::Encoding::UTF8);
-        out = plist::Format::Any::Create<plist::Format::XML>(xml);
+        printFormat = plist::Format::Any::Create<plist::Format::XML>(xml);
     } else {
         plist::Format::ASCII ascii = plist::Format::ASCII::Create(false, plist::Format::Encoding::UTF8);
-        out = plist::Format::Any::Create<plist::Format::ASCII>(ascii);
+        printFormat = plist::Format::Any::Create<plist::Format::ASCII>(ascii);
     }
 
     bool success = true;
@@ -739,11 +756,11 @@ main(int argc, char **argv)
          */
         bool keepReading = true; /* Unused. */
         bool mutated = false;
-        success &= ProcessCommand(&filesystem, options.input(), *out, &root, *options.command(), &mutated, &keepReading);
+        success &= ProcessCommand(&filesystem, options.input(), *printFormat, *saveFormat, &root, *options.command(), &mutated, &keepReading);
         if (success && mutated) {
             /* Save result only if changed. */
             std::queue<std::string> keyPath;
-            Save(root.get(), *out, &filesystem, options.input());
+            Save(root.get(), *saveFormat, &filesystem, options.input());
         }
     } else {
         /*
@@ -761,7 +778,7 @@ main(int argc, char **argv)
             if (fgets(line, sizeof(line), stdin) == line) {
 #endif
                 bool mutated = false; /* Unused. */
-                success &= ProcessCommand(&filesystem, options.input(), *out, &root, line, &mutated, &keepReading);
+                success &= ProcessCommand(&filesystem, options.input(), *printFormat, *saveFormat, &root, line, &mutated, &keepReading);
             } else {
                 keepReading = false;
             }
