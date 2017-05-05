@@ -6,3 +6,6 @@
 /build-*/
 /project/
 
+# YCM
+.ycm_extra_conf.pyc
+
