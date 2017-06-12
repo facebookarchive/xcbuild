@@ -7,12 +7,11 @@
  of patent rights can be found in the PATENTS file in the same directory.
  */
 
+#include <libutil/Strings.h>
 #include <plist/Boolean.h>
 #include <plist/String.h>
 #include <plist/Integer.h>
 #include <plist/Real.h>
-
-#include <strings.h>
 
 using plist::Object;
 using plist::Boolean;
@@ -55,8 +54,8 @@ Coerce(Object const *obj)
         return boolean->copy();
     } else if (String const *string = CastTo<String>(obj)) {
         bool value = (
-            strcasecmp(string->value().c_str(), "yes") == 0 ||
-            strcasecmp(string->value().c_str(), "true") == 0 ||
+            libutil::strcasecmp(string->value().c_str(), "yes") == 0 ||
+            libutil::strcasecmp(string->value().c_str(), "true") == 0 ||
             string->value() == "1");
         return Boolean::New(value);
     } else if (Integer const *integer = CastTo<Integer>(obj)) {

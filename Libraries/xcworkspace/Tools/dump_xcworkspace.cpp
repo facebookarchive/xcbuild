@@ -12,6 +12,7 @@
 #include <xcworkspace/xcworkspace.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
+#include <libutil/Strings.h>
 #include <process/DefaultContext.h>
 #include <process/Context.h>
 
@@ -235,7 +236,7 @@ main(int argc, char **argv)
         std::sort(schemes.begin(), schemes.end(),
                 [](xcscheme::XC::Scheme::shared_ptr const &a, xcscheme::XC::Scheme::shared_ptr const &b) -> bool
                 {
-                    return ::strcasecmp(a->name().c_str(), b->name().c_str()) < 0;
+                    return libutil::strcasecmp(a->name().c_str(), b->name().c_str()) < 0;
                 });
 
         auto I = std::unique(schemes.begin(), schemes.end(),
