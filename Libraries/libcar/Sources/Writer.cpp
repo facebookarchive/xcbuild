@@ -16,8 +16,7 @@
 #include <vector>
 
 #include <ctime>
-
-#include <string.h>
+#include <cstring>
 
 using car::Writer;
 using car::Facet;

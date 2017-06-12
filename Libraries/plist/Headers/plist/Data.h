@@ -13,9 +13,8 @@
 #include <plist/Base.h>
 #include <plist/Object.h>
 
+#include <cstring>
 #include <vector>
-
-#include <string.h>
 
 namespace plist {
 
