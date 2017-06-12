@@ -33,18 +33,12 @@
 #ifndef _CAR_FORMAT_H
 #define _CAR_FORMAT_H
 
+#include <libutil/CompilerSupport.h>
+
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#if _MSC_VER
-#define __CAR_PACKED_STRUCT_BEGIN __pragma(pack(push, 1))
-#define __CAR_PACKED_STRUCT_END __pragma(pack(pop))
-#else
-#define __CAR_PACKED_STRUCT_BEGIN
-#define __CAR_PACKED_STRUCT_END __attribute__((packed))
 #endif
 
 #if _MSC_VER
@@ -95,10 +89,10 @@ __pragma(warning(disable: 4200))
  *
  */
 
-__CAR_PACKED_STRUCT_BEGIN struct car_attribute_pair {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_attribute_pair {
     uint16_t identifier;
     uint16_t value;
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
 enum car_attribute_identifier {
     car_attribute_identifier_element = 1,
@@ -193,7 +187,7 @@ enum car_attribute_identifier_size_class_value {
 };
 
 // values seem to be little endian, unlike BOM
-__CAR_PACKED_STRUCT_BEGIN struct car_header {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_header {
     char magic[4]; // RATC
 
     uint32_t ui_version; // 31 01 00 00
@@ -209,64 +203,64 @@ __CAR_PACKED_STRUCT_BEGIN struct car_header {
     uint32_t schema_version; // 04 00 00 00
     uint32_t color_space_id; // 01 00 00 00
     uint32_t key_semantics; // 01 00 00 00
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_extended_metadata {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_extended_metadata {
     char magic[4]; // 'META'
     char contents[1024]; // string
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_key_format {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_key_format {
     char magic[4]; // 'tmfk'
     uint32_t reserved;
     uint32_t num_identifiers;
     uint32_t identifier_list[0];
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
 // length is key length
 typedef char car_facet_key;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_facet_value {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_facet_value {
     // ????
-    __CAR_PACKED_STRUCT_BEGIN struct {
+    LIBUTIL_PACKED_STRUCT_BEGIN struct {
         uint16_t x;
         uint16_t y;
-    } hot_spot __CAR_PACKED_STRUCT_END;
+    } hot_spot LIBUTIL_PACKED_STRUCT_END;
 
     uint16_t attributes_count;
     struct car_attribute_pair attributes[0];
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_part_element_key {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_part_element_key {
     uint32_t part_element_id; // maybe id? increments
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_part_element_value {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_part_element_value {
     uint32_t unknown1;
     uint32_t unknown2;
     char name[0]; // length - 8
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
 // flat list of short values in the order of the attributes from the keyformat plus a trailing null
 typedef uint16_t car_rendition_key;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_header {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_header {
     uint32_t magic;
     uint32_t length;
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_value {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_value {
     char magic[4]; // CTSI is Core Theme Structured Image
     uint32_t version; // current known version is 1
 
-    __CAR_PACKED_STRUCT_BEGIN struct {
+    LIBUTIL_PACKED_STRUCT_BEGIN struct {
         unsigned int is_header_flagged_fpo : 1;
         unsigned int is_excluded_from_contrast_filter : 1;
         unsigned int is_vector : 1;
         unsigned int is_opaque : 1;
         unsigned int bitmap_encoding : 4;
         unsigned int reserved : 24;
-    } flags __CAR_PACKED_STRUCT_END;
+    } flags LIBUTIL_PACKED_STRUCT_END;
 
     uint32_t width;
     uint32_t height;
@@ -275,23 +269,23 @@ __CAR_PACKED_STRUCT_BEGIN struct car_rendition_value {
     uint32_t color_space_id : 4; // colorspace ID. 0 for sRGB, all else for generic rgb, used only if pixelFormat 'ARGB'
     uint32_t reserved : 28;
 
-    __CAR_PACKED_STRUCT_BEGIN struct {
+    LIBUTIL_PACKED_STRUCT_BEGIN struct {
         uint32_t modification_date;  // modification date in seconds since 1970?
         uint16_t layout; // layout/type of the rendition
         uint16_t reserved; // always zero
         char name[128];
-    } metadata __CAR_PACKED_STRUCT_END;
+    } metadata LIBUTIL_PACKED_STRUCT_END;
 
     uint32_t info_len; // size of the list of information after header but before bitmap
 
-    __CAR_PACKED_STRUCT_BEGIN struct {
+    LIBUTIL_PACKED_STRUCT_BEGIN struct {
         uint32_t bitmap_count;
         uint32_t reserved;
         uint32_t payload_size; // size of all the proceeding information info_len + data
-    } bitmaps __CAR_PACKED_STRUCT_END;
+    } bitmaps LIBUTIL_PACKED_STRUCT_END;
 
     struct car_rendition_info_header info[0];
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
 enum car_rendition_value_pixel_format {
     car_rendition_value_pixel_format_argb = 'ARGB', // color + alpha
@@ -329,55 +323,55 @@ enum car_rendition_value_layout {
     car_rendition_value_layout_asset_pack = 1004,
 };
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_slice {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_slice {
     uint32_t x;
     uint32_t y;
     uint32_t width;
     uint32_t height;
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_slices {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_slices {
     struct car_rendition_info_header header;
     uint32_t nslices;
     struct car_rendition_info_slice slices[0];
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_metrics_metric {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_metrics_metric {
     uint32_t width;
     uint32_t height;
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_metrics {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_metrics {
     struct car_rendition_info_header header;
     uint32_t nmetrics; // todo should the below be an array?
     struct car_rendition_info_metrics_metric top_right_inset;
     struct car_rendition_info_metrics_metric bottom_left_inset;
     struct car_rendition_info_metrics_metric image_size;
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_composition {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_composition {
     struct car_rendition_info_header header;
     uint32_t blend_mode;
     float opacity;
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_uti {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_uti {
     struct car_rendition_info_header header;
     uint32_t uti_length;
     char uti[0];
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_bitmap_info {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_bitmap_info {
     struct car_rendition_info_header header;
     uint32_t exif_orientation;
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_bytes_per_row {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_bytes_per_row {
     struct car_rendition_info_header header;
     uint32_t bytes_per_row;
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_reference {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_info_reference {
     struct car_rendition_info_header header;
     uint32_t magic; // INLK
     uint32_t padding; // always 0?
@@ -388,7 +382,7 @@ __CAR_PACKED_STRUCT_BEGIN struct car_rendition_info_reference {
     uint16_t layout; // since rendition header says internal link
     uint16_t key_length;
     car_rendition_key key[0]; // rendition containing data
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
 enum car_rendition_info_magic {
     car_rendition_info_magic_slices = 1001,
@@ -401,33 +395,33 @@ enum car_rendition_info_magic {
     car_rendition_info_magic_alpha_cropped_frame = 1011,
 };
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_data_header1 {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_data_header1 {
     char magic[4]; // CELM
-    __CAR_PACKED_STRUCT_BEGIN struct {
+    LIBUTIL_PACKED_STRUCT_BEGIN struct {
         unsigned int unknown1 : 1;
         unsigned int unknown2 : 1;
         unsigned int reserved : 30;
-    } flags __CAR_PACKED_STRUCT_END;
+    } flags LIBUTIL_PACKED_STRUCT_END;
     uint32_t compression; // see magic below
     uint32_t length; // length of data
     uint8_t data[0]; // length
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_data_header2 {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_data_header2 {
     char magic[4]; // KCBC
     uint32_t unknown1;
     uint32_t unknown2;
     uint32_t unknown3;
     uint32_t length;
     uint8_t data[0];
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
-__CAR_PACKED_STRUCT_BEGIN struct car_rendition_data_header_raw {
+LIBUTIL_PACKED_STRUCT_BEGIN struct car_rendition_data_header_raw {
     char magic[4]; // DWAR
     uint32_t unknown1;
     uint32_t length; // length of data
     uint8_t data[0];
-} __CAR_PACKED_STRUCT_END;
+} LIBUTIL_PACKED_STRUCT_END;
 
 enum car_rendition_data_compression_magic {
     car_rendition_data_compression_magic_rle = 0,

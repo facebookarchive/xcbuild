@@ -13,7 +13,7 @@ add_library(bom
             Sources/bom_tree.c
             )
 
-target_link_libraries(bom PUBLIC)
+target_link_libraries(bom PUBLIC util)
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   target_link_libraries(bom PRIVATE wsock32 ws2_32)
 endif ()
@@ -28,4 +28,4 @@ endif ()
 install(TARGETS lsbom DESTINATION usr/bin)
 
 add_executable(dump_bom Tools/dump_bom.c)
-target_link_libraries(dump_bom PRIVATE bom)
+target_link_libraries(dump_bom PRIVATE bom util)
