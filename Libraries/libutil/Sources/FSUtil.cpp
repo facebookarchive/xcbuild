@@ -8,10 +8,9 @@
  */
 
 #include <libutil/FSUtil.h>
+#include <libutil/Strings.h>
 
 #include <cstring>
-
-#include <strings.h>
 
 using libutil::FSUtil;
 
@@ -114,7 +113,7 @@ IsFileExtension(std::string const &path, std::string const &extension, bool inse
     }
 
     if (insensitive) {
-        return ::strcasecmp(pathExtension.c_str(), extension.c_str()) == 0;
+        return libutil::strcasecmp(pathExtension.c_str(), extension.c_str()) == 0;
     } else {
         return pathExtension == extension;
     }
@@ -131,7 +130,7 @@ IsFileExtension(std::string const &path, std::initializer_list<std::string> cons
     for (auto const &extension : extensions) {
         bool match = false;
         if (insensitive) {
-            match = ::strcasecmp(pathExtension.c_str(), extension.c_str()) == 0;
+            match = libutil::strcasecmp(pathExtension.c_str(), extension.c_str()) == 0;
         } else {
             match = pathExtension == extension;
         }

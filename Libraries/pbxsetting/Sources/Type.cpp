@@ -8,12 +8,11 @@
  */
 
 #include <pbxsetting/Type.h>
+#include <libutil/Strings.h>
 #include <libutil/Wildcard.h>
 
 #include <iomanip>
 #include <sstream>
-
-#include <strings.h>
 
 using pbxsetting::Type;
 using libutil::Wildcard;
@@ -31,7 +30,7 @@ Type::
 bool Type::
 ParseBoolean(std::string const &value)
 {
-    return strcasecmp(value.c_str(), "yes") == 0 || strcasecmp(value.c_str(), "true") == 0;
+    return libutil::strcasecmp(value.c_str(), "yes") == 0 || libutil::strcasecmp(value.c_str(), "true") == 0;
 }
 
 int64_t Type::

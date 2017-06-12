@@ -59,7 +59,7 @@ add_library(plist
 find_package(LibXml2 REQUIRED)
 target_include_directories(plist PRIVATE "${LIBXML2_INCLUDE_DIR}")
 target_compile_definitions(plist PRIVATE "${LIBXML2_DEFINITIONS}")
-target_link_libraries(plist PRIVATE ${LIBXML2_LIBRARIES})
+target_link_libraries(plist PRIVATE ${LIBXML2_LIBRARIES} util)
 
 target_include_directories(plist PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
