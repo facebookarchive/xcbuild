@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool SpriteAtlas::
 Compile(
-    std::shared_ptr<xcassets::Asset::SpriteAtlas> const &spriteAtlas,
+    xcassets::Asset::SpriteAtlas const *spriteAtlas,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)
@@ -29,7 +29,7 @@ Compile(
         spriteAtlas->path(),
         { Output::AssetReference(spriteAtlas) },
         "Not Implemented",
-        "sprite atlas yet supported");
+        "sprite atlas not yet supported");
 
     return false;
 }

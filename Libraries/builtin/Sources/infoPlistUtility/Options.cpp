@@ -31,7 +31,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     } else if (arg == "-resourcerulesfile") {
         return libutil::Options::Next<std::string>(&_resourceRulesFile, args, it);
     } else if (arg == "-expandbuildsettings") {
-        return libutil::Options::Current<bool>(&_expandBuildSettings, arg, it);
+        return libutil::Options::Current<bool>(&_expandBuildSettings, arg);
     } else if (arg == "-format") {
         return libutil::Options::Next<std::string>(&_format, args, it);
     } else if (arg == "-platform") {

@@ -10,10 +10,8 @@
 #ifndef __pbxbuild_Tool_LinkerResolver_h
 #define __pbxbuild_Tool_LinkerResolver_h
 
-#include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/Invocation.h>
-#include <pbxbuild/Phase/Environment.h>
-#include <pbxbuild/Phase/File.h>
+#include <pbxbuild/Tool/Input.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -32,8 +30,8 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::vector<std::string> const &inputFiles,
-        std::vector<Phase::File> const &inputLibraries,
+        std::vector<Tool::Input> const &inputFiles,
+        std::vector<Tool::Input> const &inputLibraries,
         std::string const &output,
         std::vector<std::string> const &additionalArguments,
         std::string const &executable = ""
@@ -53,7 +51,7 @@ public:
 
 public:
     static std::unique_ptr<LinkerResolver>
-    Create(Phase::Environment const &phaseEnvironment, std::string const &identifier);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, std::string const &identifier);
 };
 
 }

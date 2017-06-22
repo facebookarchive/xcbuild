@@ -13,44 +13,49 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <sstream>
+#include <iomanip>
 
 #include <arpa/inet.h>
 
 class Options {
-private:
-    ext::optional<bool> _help;
+public:
+    enum class PrintItem {
+        Checksum,
+        FileName,
+        FileNameQuoted,
+        GroupID,
+        GroupName,
+        Permissions,
+        PermissionsText,
+        FileSize,
+        FileSizeFormatted,
+        ModificationTime,
+        ModificationTimeFormatted,
+        UserID,
+        UserName,
+        UserGroupID,
+        UserGroupName,
+    };
 
 private:
-    ext::optional<bool> _includeBlockDevices;
-    ext::optional<bool> _includeCharacterDevices;
-    ext::optional<bool> _includeDirectories;
-    ext::optional<bool> _includeFiles;
-    ext::optional<bool> _includeSymbolicLinks;
+    ext::optional<bool>        _help;
 
 private:
-    ext::optional<bool> _printMTime;
-    ext::optional<bool> _onlyPath;
-    ext::optional<bool> _noModes;
+    ext::optional<bool>        _includeBlockDevices;
+    ext::optional<bool>        _includeCharacterDevices;
+    ext::optional<bool>        _includeDirectories;
+    ext::optional<bool>        _includeFiles;
+    ext::optional<bool>        _includeSymbolicLinks;
+
+private:
+    ext::optional<bool>        _printMTime;
+    ext::optional<bool>        _onlyPath;
+    ext::optional<bool>        _noModes;
+    ext::optional<std::vector<PrintItem>> _printFormat;
 
 private:
     ext::optional<std::string> _arch;
-
-private:
-    ext::optional<bool> _printChecksum;
-    ext::optional<bool> _printFileName;
-    ext::optional<bool> _printFileNameQuoted;
-    ext::optional<bool> _printGroupID;
-    ext::optional<bool> _printGroupName;
-    ext::optional<bool> _printPermissions;
-    ext::optional<bool> _printPermissionsText;
-    ext::optional<bool> _printFileSize;
-    ext::optional<bool> _printFileSizeFormatted;
-    ext::optional<bool> _printModificationTime;
-    ext::optional<bool> _printModificationTimeFormatted;
-    ext::optional<bool> _printUserID;
-    ext::optional<bool> _printUserName;
-    ext::optional<bool> _printUserGroupID;
-    ext::optional<bool> _printUserGroupName;
 
 private:
     ext::optional<std::string> _input;
@@ -82,42 +87,12 @@ public:
     { return _onlyPath.value_or(false); }
     bool noModes() const
     { return _noModes.value_or(false); }
+    ext::optional<std::vector<PrintItem>> const &printFormat() const
+    { return _printFormat; }
 
 public:
     ext::optional<std::string> const &arch() const
     { return _arch; }
-
-public:
-    bool printChecksum() const
-    { return _printChecksum.value_or(false); }
-    bool printFileName() const
-    { return _printFileName.value_or(false); }
-    bool printFileNameQuoted() const
-    { return _printFileNameQuoted.value_or(false); }
-    bool printGroupID() const
-    { return _printGroupID.value_or(false); }
-    bool printGroupName() const
-    { return _printGroupName.value_or(false); }
-    bool printPermissions() const
-    { return _printPermissions.value_or(false); }
-    bool printPermissionsText() const
-    { return _printPermissionsText.value_or(false); }
-    bool printFileSize() const
-    { return _printFileSize.value_or(false); }
-    bool printFileSizeFormatted() const
-    { return _printFileSizeFormatted.value_or(false); }
-    bool printModificationTime() const
-    { return _printModificationTime.value_or(false); }
-    bool printModificationTimeFormatted() const
-    { return _printModificationTimeFormatted.value_or(false); }
-    bool printUserID() const
-    { return _printUserID.value_or(false); }
-    bool printUserName() const
-    { return _printUserName.value_or(false); }
-    bool printUserGroupID() const
-    { return _printUserGroupID.value_or(false); }
-    bool printUserGroupName() const
-    { return _printUserGroupName.value_or(false); }
 
 public:
     ext::optional<std::string> const &input() const
@@ -139,66 +114,89 @@ Options::
 {
 }
 
+static ext::optional<std::vector<Options::PrintItem>>
+ParsePrintFormat(std::string const &print)
+{
+    std::vector<Options::PrintItem> format;
+
+    for (char c : print) {
+        switch (c) {
+            case 'c': format.push_back(Options::PrintItem::Checksum); break;
+            case 'f': format.push_back(Options::PrintItem::FileName); break;
+            case 'F': format.push_back(Options::PrintItem::FileNameQuoted); break;
+            case 'g': format.push_back(Options::PrintItem::GroupID); break;
+            case 'G': format.push_back(Options::PrintItem::GroupName); break;
+            case 'm': format.push_back(Options::PrintItem::Permissions); break;
+            case 'M': format.push_back(Options::PrintItem::PermissionsText); break;
+            case 's': format.push_back(Options::PrintItem::FileSize); break;
+            case 'S': format.push_back(Options::PrintItem::FileSizeFormatted); break;
+            case 't': format.push_back(Options::PrintItem::ModificationTime); break;
+            case 'T': format.push_back(Options::PrintItem::ModificationTimeFormatted); break;
+            case 'u': format.push_back(Options::PrintItem::UserID); break;
+            case 'U': format.push_back(Options::PrintItem::UserName); break;
+            case '/': format.push_back(Options::PrintItem::UserGroupID); break;
+            case '?': format.push_back(Options::PrintItem::UserGroupName); break;
+            default: return ext::nullopt;
+        }
+    }
+
+    return format;
+}
 
 std::pair<bool, std::string> Options::
 parseArgument(std::vector<std::string> const &args, std::vector<std::string>::const_iterator *it)
 {
     std::string const &arg = **it;
 
-    if (arg == "-h" || arg == "--help") {
-        return libutil::Options::Current<bool>(&_help, arg, it);
-    } else if (arg == "-b") {
-        return libutil::Options::Current<bool>(&_includeBlockDevices, arg, it);
-    } else if (arg == "-c") {
-        return libutil::Options::Current<bool>(&_includeCharacterDevices, arg, it);
-    } else if (arg == "-d") {
-        return libutil::Options::Current<bool>(&_includeDirectories, arg, it);
-    } else if (arg == "-f") {
-        return libutil::Options::Current<bool>(&_includeFiles, arg, it);
-    } else if (arg == "-l") {
-        return libutil::Options::Current<bool>(&_includeSymbolicLinks, arg, it);
-    } else if (arg == "-m") {
-        return libutil::Options::Current<bool>(&_printMTime, arg, it);
-    } else if (arg == "-s") {
-        return libutil::Options::Current<bool>(&_onlyPath, arg, it);
-    } else if (arg == "-x") {
-        return libutil::Options::Current<bool>(&_noModes, arg, it);
+    if (arg == "--help") {
+        return libutil::Options::Current<bool>(&_help, arg);
     } else if (arg == "--arch") {
         return libutil::Options::Next<std::string>(&_arch, args, it);
-    } else if (arg == "-p") {
-        ext::optional<std::string> print;
-        auto result = libutil::Options::Next<std::string>(&print, args, it);
-        if (!result.first) {
-            return result;
-        }
+    } else if (arg.empty() || arg[0] != '-') {
+        return libutil::Options::Current<std::string>(&_input, arg);
+    } else {
+        auto result = std::make_pair(true, std::string());
 
-        for (char c : *print) {
-            switch (c) {
-                case 'c': _printChecksum = true; break;
-                case 'f': _printFileName = true; break;
-                case 'F': _printFileNameQuoted = true; break;
-                case 'g': _printGroupID = true; break;
-                case 'G': _printGroupName = true; break;
-                case 'm': _printPermissions = true; break;
-                case 'M': _printPermissionsText = true; break;
-                case 's': _printFileSize = true; break;
-                case 'S': _printFileSizeFormatted = true; break;
-                case 't': _printModificationTime = true; break;
-                case 'T': _printModificationTimeFormatted = true; break;
-                case 'u': _printUserID = true; break;
-                case 'U': _printUserName = true; break;
-                case '/': _printUserGroupID = true; break;
-                case '?': _printUserGroupName = true; break;
-                default:
-                    return std::make_pair(false, "unknown print option " + std::string(1, c));
+        for (auto ait = std::next(arg.begin()), end = arg.end(); ait != end; ++ait) {
+            switch (*ait) {
+                case 'h': result = libutil::Options::Current<bool>(&_help, arg); break;
+                case 'b': result = libutil::Options::Current<bool>(&_includeBlockDevices, arg); break;
+                case 'c': result = libutil::Options::Current<bool>(&_includeCharacterDevices, arg); break;
+                case 'd': result = libutil::Options::Current<bool>(&_includeDirectories, arg); break;
+                case 'f': result = libutil::Options::Current<bool>(&_includeFiles, arg); break;
+                case 'l': result = libutil::Options::Current<bool>(&_includeSymbolicLinks, arg); break;
+                case 'm': result = libutil::Options::Current<bool>(&_printMTime, arg); break;
+                case 's': result = libutil::Options::Current<bool>(&_onlyPath, arg); break;
+                case 'x': result = libutil::Options::Current<bool>(&_noModes, arg); break;
+                case 'p': {
+                    ext::optional<std::string> print;
+                    if (ait != std::prev(arg.end())) {
+                        /* Use remaining characters and end outer loop. */
+                        print = std::string(std::next(ait), arg.end());
+                        ait = std::prev(arg.end());
+                    } else {
+                        /* No more characters, try the next option. */
+                        result = libutil::Options::Next<std::string>(&print, args, it);
+                    }
+
+                    if (print) {
+                        _printFormat = ParsePrintFormat(*print);
+                        if (!_printFormat) {
+                            result = std::make_pair(false, "invalid print format " + *print);
+                        }
+                    }
+
+                    break;
+                }
+                default: result = std::make_pair(false, "unknown argument " + arg); break;
+            }
+
+            if (!result.first) {
+                return result;
             }
         }
 
-        return std::make_pair(true, std::string());
-    } else if (!arg.empty() && arg[0] != '-') {
-        return libutil::Options::Current<std::string>(&_input, arg);
-    } else {
-        return std::make_pair(false, "unknown argument " + arg);
+        return result;
     }
 }
 
@@ -455,7 +453,20 @@ main(int argc, char **argv)
             printf("%s\n", path.c_str());
         } else {
             // TODO: Respect options about what to print.
-            printf("%s\n", path.c_str());
+            std::stringstream stream;
+            stream << std::oct << ntohs(path_info_2_value->mode);
+            std::string mode = stream.str();
+            std::string UID = std::to_string(ntohl(path_info_2_value->user));
+            std::string GID = std::to_string(ntohl(path_info_2_value->group));
+            printf("%s\t%s\t%s/%s", path.c_str(), mode.c_str(), UID.c_str(), GID.c_str());
+
+            if (path_info_2_value->type == bom_path_type_file) {
+                std::string size = std::to_string(ntohl(path_info_2_value->size));
+                std::string checksum = std::to_string(ntohl(path_info_2_value->checksum));
+                printf("\t%s\t%s", size.c_str(), checksum.c_str());
+            }
+
+            printf("\n");
         }
     }, reinterpret_cast<void *>(&context));
 

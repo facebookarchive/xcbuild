@@ -40,7 +40,7 @@ resolve(pbxspec::PBX::FileType::shared_ptr const &fileType, std::string const &f
                 return buildRule;
             }
         } else {
-            pbxspec::PBX::FileType::vector fileTypes = buildRule->fileTypes();
+            pbxspec::PBX::FileType::vector const &fileTypes = buildRule->fileTypes();
             for (pbxspec::PBX::FileType::shared_ptr FT = fileType; FT != nullptr; FT = FT->base()) {
                 if (std::find(fileTypes.begin(), fileTypes.end(), FT) != fileTypes.end()) {
                     return buildRule;
@@ -56,7 +56,7 @@ static Target::BuildRules::BuildRule::shared_ptr
 ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &domains, pbxproj::PBX::BuildRule::shared_ptr const &projBuildRule)
 {
     pbxspec::PBX::Tool::shared_ptr tool = nullptr;
-    std::string TS = projBuildRule->compilerSpec();
+    std::string const &TS = projBuildRule->compilerSpec();
     if (TS != "com.apple.compilers.proxy.script") {
         tool = specManager->tool(TS, domains);
         if (tool == nullptr) {
@@ -73,7 +73,7 @@ ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<st
     }
 
     pbxspec::PBX::FileType::vector fileTypes;
-    std::string FT = projBuildRule->fileType();
+    std::string const &FT = projBuildRule->fileType();
     if (FT != "pattern.proxy") {
         pbxspec::PBX::FileType::shared_ptr fileType = specManager->fileType(FT, domains);
         if (fileType == nullptr) {
@@ -88,7 +88,7 @@ ProjectBuildRule(pbxspec::Manager::shared_ptr const &specManager, std::vector<st
         outputFiles.push_back(pbxsetting::Value::Parse(outputFile));
     }
 
-    return std::make_shared <Target::BuildRules::BuildRule> (Target::BuildRules::BuildRule(
+    return std::make_shared<Target::BuildRules::BuildRule>(Target::BuildRules::BuildRule(
         projBuildRule->filePatterns(),
         fileTypes,
         tool,

@@ -10,9 +10,7 @@
 #ifndef __pbxbuild_Tool_InterfaceBuilderStoryboardLinkerResolver_h
 #define __pbxbuild_Tool_InterfaceBuilderStoryboardLinkerResolver_h
 
-#include <pbxbuild/Base.h>
-#include <pbxbuild/Phase/Environment.h>
-#include <pbxbuild/Phase/File.h>
+#include <pbxbuild/Tool/Input.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -30,7 +28,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::vector<std::string> const &input) const;
+        std::vector<Tool::Input> const &input) const;
 
 public:
     static std::string ToolIdentifier()
@@ -38,7 +36,7 @@ public:
 
 public:
     static std::unique_ptr<InterfaceBuilderStoryboardLinkerResolver>
-    Create(Phase::Environment const &phaseEnvironment);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains);
 };
 
 }

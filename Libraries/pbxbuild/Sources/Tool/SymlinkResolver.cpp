@@ -31,23 +31,21 @@ resolve(
     std::string logMessage = "SymLink " + targetPath + " " + symlinkPath;
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Absolute("/bin/ln");
+    invocation.executable() = Tool::Invocation::Executable::External("/bin/ln");
     invocation.arguments() = { "-sfh", targetPath, symlinkPath };
     invocation.workingDirectory() = workingDirectory;
     invocation.phonyInputs() = { FSUtil::ResolveRelativePath(targetPath, workingDirectory) };
     invocation.outputs() = { FSUtil::ResolveRelativePath(symlinkPath, workingDirectory) };
     invocation.logMessage() = logMessage;
     invocation.createsProductStructure() = productStructure;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<Tool::SymlinkResolver> Tool::SymlinkResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr symlinkTool = buildEnvironment.specManager()->tool(Tool::SymlinkResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr symlinkTool = specManager->tool(Tool::SymlinkResolver::ToolIdentifier(), specDomains);
     if (symlinkTool == nullptr) {
         fprintf(stderr, "warning: could not find symlink tool\n");
         return nullptr;

@@ -14,7 +14,7 @@ add_library(xcworkspace SHARED
             Sources/XC/GroupItem.cpp
             )
 
-target_link_libraries(xcworkspace PUBLIC pbxsetting util plist)
+target_link_libraries(xcworkspace PUBLIC pbxsetting process util plist)
 target_include_directories(xcworkspace PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS xcworkspace DESTINATION usr/lib)
 

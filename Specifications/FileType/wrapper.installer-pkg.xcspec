@@ -16,4 +16,5 @@
     Extensions = (
         "pkg",
     );
+    IsTransparent = NO;
 }

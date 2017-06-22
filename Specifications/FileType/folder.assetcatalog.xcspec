@@ -10,10 +10,11 @@
 {
     Type = FileType;
     Identifier = folder.assetcatalog;
-    BasedOn = wrapper;
+    BasedOn = folder.abstractassetcatalog;
 
     UTI = "com.apple.dt.assetcatalog";
     Extensions = (
         "xcassets",
     );
+    IsTransparent = NO;
 }

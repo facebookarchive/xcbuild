@@ -16,5 +16,6 @@
     Extensions = (
         "java",
     );
-    GccDialectName = "java";
+    CanSetIncludeInIndex = YES;
+    AppliesToBuildRules = YES;
 }

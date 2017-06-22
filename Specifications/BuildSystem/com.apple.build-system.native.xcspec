@@ -95,7 +95,7 @@
         },
         {
             Name = "EXECUTABLE_NAME";
-            Type = Path;
+            Type = String;
             DefaultValue = "";
         },
         {
@@ -105,12 +105,12 @@
         },
         {
             Name = "EXECUTABLE_SUFFIX";
-            Type = Path;
+            Type = String;
             DefaultValue = "";
         },
         {
             Name = "EXECUTABLE_VARIANT_SUFFIX";
-            Type = Path;
+            Type = String;
             DefaultValue = "";
         },
         {
@@ -444,7 +444,7 @@
         {
             Name = "COMPOSITE_SDK_DIRS";
             Type = PathList;
-            DefaultValue = "$(CACHE_ROOT)/CompositeSDKs";
+            DefaultValue = "$(OBJROOT)/CompositeSDKs";
         },
         {
             Name = "COPY_RESOURCES_FROM_STATIC_FRAMEWORKS";
@@ -497,7 +497,7 @@
         },
         {
             Name = "SYMBOL_HEADER";
-            Type = String;
+            Type = Path;
             DefaultValue = "";
         },
         {
@@ -524,6 +524,462 @@
             Name = "VERSION_INFO_STRING";
             Type = String;
             DefaultValue = "\"@(#)PROGRAM:$(PRODUCT_NAME)  PROJECT:$(PROJECT_NAME)-$(CURRENT_PROJECT_VERSION)\"";
+        },
+
+
+
+        /*
+         * Shared between the following:
+         *  - com.apple.buildsettings.standard
+         *  - com.apple.build.system.core
+         *  - com.apple.build.system.native
+         */
+
+        /* SDKs */
+        {
+            Name = "ADDITIONAL_SDKS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "SDKROOT";
+            Type = Path;
+            DefaultValue = "";
+        },
+
+
+        /* Search Paths */
+        {
+            Name = "ALWAYS_SEARCH_USER_PATHS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "FRAMEWORK_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+        {
+            Name = "HEADER_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+        {
+            Name = "LIBRARY_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+        {
+            Name = "REZ_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+        {
+            Name = "USER_HEADER_SEARCH_PATHS";
+            Type = PathList;
+            DefaultValue = "";
+        },
+
+
+        /* Recursive Search Path Expansion */
+        {
+            Name = "EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES";
+            Type = StringList;
+            DefaultValue = "*.nib *.lproj *.framework *.gch *.xcode* *.xcassets (*) .DS_Store CVS .svn .git .hg *.pbproj *.pbxproj";
+        },
+        {
+            Name = "INCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* Precompiled Headers */
+        {
+            Name = "PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "SHARED_PRECOMPS_DIR";
+            Type = Path;
+            DefaultValue = "$(OBJROOT)/SharedPrecompiledHeaders";
+        },
+
+
+        /* Debugging */
+        {
+            Name = "DEBUG_INFORMATION_FORMAT";
+            Type = Enumeration;
+            Values = (
+                "dwarf",
+                "dwarf-with-dsym",
+            );
+            DefaultValue = "dwarf";
+        },
+        {
+            Name = "DWARF_DSYM_FILE_NAME";
+            Type = String;
+            DefaultValue = "$(FULL_PRODUCT_NAME).dSYM";
+        },
+        {
+            Name = "DWARF_DSYM_FILE_SHOULD_ACCOMPANY_PRODUCT";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "DWARF_DSYM_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "$(CONFIGURATION_BUILD_DIR)";
+        },
+
+
+        /* Product Structure */
+        {
+            Name = "EXECUTABLE_EXTENSION";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "EXECUTABLE_PREFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "PRIVATE_HEADERS_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "PUBLIC_HEADERS_FOLDER_PATH";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "WRAPPER_EXTENSION";
+            Type = String;
+            DefaultValue = "";
+        },
+
+
+        /* Versioning */
+        {
+            Name = "CURRENT_PROJECT_VERSION";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSIONING_SYSTEM";
+            Type = Enumeration;
+            Values = (
+                "",
+                "apple-generic",
+            );
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_BUILDER";
+            Type = String;
+            DefaultValue = "$(USER)";
+        },
+        {
+            Name = "VERSION_INFO_EXPORT_DECL";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_FILE";
+            Type = String;
+            DefaultValue = "$(PRODUCT_NAME)_vers.c";
+        },
+        {
+            Name = "VERSION_INFO_PREFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_SUFFIX";
+            Type = String;
+            DefaultValue = "";
+        },
+
+
+        /* Jam Build System */
+        {
+            Name = "PRECOMP_DESTINATION_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/PrefixHeaders";
+        },
+
+
+        /* com.apple.pbx.linkers.ld */
+        {
+            Name = "GENERATE_PROFILING_CODE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "INIT_ROUTINE";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "ORDER_FILE";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "OTHER_LDFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "SECTORDER_FLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+        {
+            Name = "WARNING_LDFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* com.apple.compilers.pbxcp */
+        {
+            Name = "REMOVE_HEADERS_FROM_EMBEDDED_BUNDLES";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+
+
+        /* com.apple.build-tools.strip */
+        {
+            Name = "STRIPFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* com.apple.build-tasks.copy-strings-file */
+        {
+            Name = "STRINGS_FILE_OUTPUT_ENCODING";
+            Type = Enumeration;
+            Values = (
+                "UTF-16",
+                "UTF-8",
+                "binary",
+            );
+            DefaultValue = "UTF-16";
+        },
+
+
+        /* com.apple.build-tasks.copy-plist-file */
+        {
+            Name = "PLIST_FILE_OUTPUT_FORMAT";
+            Type = Enumeration;
+            Values = (
+                "same-as-input",
+                "XML",
+                "binary",
+            );
+            DefaultValue = "same-as-input";
+        },
+
+
+        /* com.apple.tools.info-plist-utility */
+        {
+            Name = "GENERATE_PKGINFO_FILE";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "INFOPLIST_EXPAND_BUILD_SETTINGS";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "INFOPLIST_FILE";
+            Type = Path;
+            DefaultValue = "";
+        },
+        {
+            Name = "INFOPLIST_OUTPUT_FORMAT";
+            Type = Enumeration;
+            Values = (
+                "same-as-input",
+                "XML",
+                "binary",
+            );
+            DefaultValue = "same-as-input";
+        },
+
+
+        /* Unsorted */
+        {
+            Name = "APPLY_RULES_IN_COPY_FILES";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "CREATE_INFOPLIST_SECTION_IN_BINARY";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "DEPLOYMENT_LOCATION";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+        {
+            Name = "DYLIB_COMPATIBILITY_VERSION";
+            Type = String;
+            DefaultValue = "";
+        },
+        {
+            Name = "DYLIB_CURRENT_VERSION";
+            Type = String;
+            DefaultValue = "";
+        },
+
+
+
+        /*
+         * Shared between the following:
+         *  - com.apple.buildsettings.standard
+         *  - com.apple.build.system.native
+         */
+
+        /* SDK */
+        {
+            Name = "SUPPORTED_PLATFORMS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+        /* com.apple.pbx.linkers.libtool */
+        {
+            Name = "OTHER_LIBTOOLFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+        },
+
+
+
+        /*
+         * Shared between the following:
+         *  - com.apple.build.system.core
+         *  - com.apple.build.system.native
+         */
+
+        /* Derived Paths */
+        {
+            Name = "DERIVED_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/DerivedSources";
+        },
+
+
+        /* Intermediate Paths */
+        {
+            Name = "OBJECT_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/Objects";
+        },
+        {
+            Name = "TEMP_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)";
+        },
+
+
+        /* Header Map */
+        {
+            Name = "USE_HEADERMAP";
+            Type = Boolean;
+            DefaultValue = YES;
+        },
+        {
+            Name = "USE_HEADER_SYMLINKS";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+
+
+        /* Compilation */
+        {
+            Name = "DEFAULT_COMPILER";
+            Type = String;
+            DefaultValue = "";
+            /* Set in code. */
+        },
+        {
+            Name = "GCC_VERSION";
+            Type = CompilerVersion;
+            DefaultValue = "";
+        },
+
+
+        /* Installation */
+        {
+            Name = "STRIP_INSTALLED_PRODUCT";
+            Type = Boolean;
+            DefaultValue = NO;
+        },
+
+
+        /* Java */
+        {
+            Name = "CLASS_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TEMP_DIR)/JavaClasses";
+        },
+
+
+
+        /*
+         * Overrides of shared properties.
+         */
+        {
+            Name = "STRIP_INSTALLED_PRODUCT";
+            Type = Boolean;
+            DefaultValue = "";
+        },
+        {
+            Name = "VERSION_INFO_BUILDER";
+            Type = String;
+            DefaultValue = "$(USER)";
+        },
+        {
+            Name = "VERSION_INFO_FILE";
+            Type = String;
+            DefaultValue = "$(PRODUCT_NAME)_vers.c";
+        },
+        {
+            Name = "CLASS_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)/JavaClasses";
+        },
+        {
+            Name = "PRECOMP_DESTINATION_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)/PrefixHeaders";
+        },
+        {
+            Name = "DERIVED_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)/DerivedSources";
+        },
+        {
+            Name = "OBJECT_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)/Objects";
+        },
+        {
+            Name = "TEMP_FILE_DIR";
+            Type = Path;
+            DefaultValue = "$(TARGET_TEMP_DIR)";
         },
     );
 }

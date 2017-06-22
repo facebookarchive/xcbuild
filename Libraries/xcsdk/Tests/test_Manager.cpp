@@ -52,10 +52,10 @@ TEST(Manager, ConfigurationExtraPaths)
 
     ASSERT_EQ(manager->platforms().size(), 1);
     Platform::shared_ptr const &platform = manager->platforms().front();
-    EXPECT_EQ(platform->identifier(), "extra");
+    EXPECT_EQ(platform->identifier(), std::string("extra"));
     EXPECT_EQ(platform->name(), "Extra");
 
     ASSERT_EQ(manager->toolchains().size(), 1);
     Toolchain::shared_ptr const &toolchain = manager->toolchains().front();
-    EXPECT_EQ(toolchain->identifier(), "extra");
+    EXPECT_EQ(toolchain->identifier(), std::string("extra"));
 }

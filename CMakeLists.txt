@@ -12,7 +12,7 @@ project(xcbuild C CXX)
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_MACOSX_RPATH 1)
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
   set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
 else ()
   set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
@@ -21,9 +21,6 @@ endif ()
 # Output into root build directory.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-
-set(CMAKE_BUILD_TYPE "Debug")
-#set(CMAKE_BUILD_TYPE "Release")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -64,4 +61,3 @@ endif ()
 
 add_subdirectory(Libraries)
 add_subdirectory(Specifications)
-

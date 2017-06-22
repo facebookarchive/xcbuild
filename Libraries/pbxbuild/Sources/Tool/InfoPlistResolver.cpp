@@ -34,7 +34,7 @@ void Tool::InfoPlistResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    std::string const &input) const
+    Tool::Input const &input) const
 {
     bool pkginfoFile = pbxsetting::Type::ParseBoolean(environment.resolve("GENERATE_PKGINFO_FILE"));
 
@@ -48,7 +48,7 @@ resolve(
         pbxsetting::Setting::Create("AdditionalInfoFileValues", ""), // TODO(grp): Determine what these are for.
     });
 
-    pbxsetting::Environment env = environment;
+    pbxsetting::Environment env = pbxsetting::Environment(environment);
     env.insertFront(level, false);
 
     std::string infoPlistPath = environment.resolve("TARGET_BUILD_DIR") + "/" + environment.resolve("INFOPLIST_PATH");
@@ -63,7 +63,7 @@ resolve(
     environmentVariables.insert(buildSettingValues.begin(), buildSettingValues.end());
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = tokens.arguments();
     invocation.environment() = environmentVariables;
     invocation.workingDirectory() = toolContext->workingDirectory();
@@ -72,16 +72,14 @@ resolve(
     invocation.inputDependencies() = toolContext->additionalInfoPlistContents();
     invocation.logMessage() = tokens.logMessage();
     invocation.showEnvironmentInLog() = false; /* Hide build settings from log. */
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<Tool::InfoPlistResolver> Tool::InfoPlistResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr infoPlistTool = buildEnvironment.specManager()->tool(Tool::InfoPlistResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr infoPlistTool = specManager->tool(Tool::InfoPlistResolver::ToolIdentifier(), specDomains);
     if (infoPlistTool == nullptr) {
         fprintf(stderr, "warning: could not find info plist tool\n");
         return nullptr;

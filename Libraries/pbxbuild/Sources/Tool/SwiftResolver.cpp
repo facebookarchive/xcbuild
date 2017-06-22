@@ -15,6 +15,8 @@
 #include <pbxbuild/Tool/Context.h>
 #include <pbxsetting/Environment.h>
 #include <pbxsetting/Type.h>
+#include <xcsdk/SDK/Platform.h>
+#include <xcsdk/SDK/Target.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>
 #include <plist/Format/JSON.h>
@@ -22,7 +24,6 @@
 #include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
-namespace Phase = pbxbuild::Phase;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -33,7 +34,7 @@ SwiftResolver(pbxspec::PBX::Compiler::shared_ptr const &compiler) :
 }
 
 static std::string
-SwiftLibraryPath(pbxsetting::Environment const &environment, xcsdk::SDK::Target::shared_ptr const &sdk, xcsdk::SDK::Toolchain::vector const &toolchains)
+SwiftLibraryPath(pbxsetting::Environment const &environment, xcsdk::SDK::Target::shared_ptr const &sdk, std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains)
 {
     std::string path = environment.resolve("SWIFT_LIBRARY_PATH");
     if (!path.empty()) {
@@ -83,11 +84,11 @@ AppendOutputs(
     std::vector<std::string> *args,
     std::vector<std::string> *outputs,
     std::vector<Tool::Invocation::DependencyInfo> *dependencyInfo,
-    std::vector<Tool::Invocation::AuxiliaryFile> *auxiliaryFiles,
+    std::vector<Tool::AuxiliaryFile> *auxiliaryFiles,
     std::string const &outputDirectory,
     std::string const &moduleName,
     std::string const &modulePath,
-    std::vector<Phase::File> const &inputs,
+    std::vector<Tool::Input> const &inputs,
     bool includeBitcode)
 {
     std::unique_ptr<plist::Dictionary> outputInfo = plist::Dictionary::New();
@@ -99,7 +100,7 @@ AppendOutputs(
     module->set("swift-dependencies", plist::String::New(moduleDependencies));
     outputInfo->set("", std::move(module));
 
-    for (Phase::File const &input : inputs) {
+    for (Tool::Input const &input : inputs) {
         std::string name = FSUtil::GetBaseNameWithoutExtension(input.path());
 
         /* Add input argument. */
@@ -150,7 +151,7 @@ AppendOutputs(
     } else {
         /* Write output map as an auxiliary file. */
         std::string outputInfoPath = outputDirectory + "/" + moduleName + "-OutputFileMap.json";
-        auto outputInfoFile = Tool::Invocation::AuxiliaryFile::Data(outputInfoPath, *serialized.first);
+        auto outputInfoFile = Tool::AuxiliaryFile::Data(outputInfoPath, *serialized.first);
         auxiliaryFiles->push_back(outputInfoFile);
 
         /* Add output info to the arguments. */
@@ -237,7 +238,7 @@ AppendObjcHeader(
 static void
 AppendUnderlyingModule(
     std::vector<std::string> *args,
-    std::vector<Tool::Invocation::AuxiliaryFile> *auxiliaryFiles,
+    std::vector<Tool::AuxiliaryFile> *auxiliaryFiles,
     Tool::Context const *toolContext,
     pbxsetting::Environment const &environment,
     std::string const &headerName)
@@ -260,10 +261,10 @@ AppendUnderlyingModule(
     unextendedModuleMap += "}\n";
 
     auto unextendedModuleMapData = std::vector<uint8_t>(unextendedModuleMap.begin(), unextendedModuleMap.end());
-    auto unextendedModuleMapChunk = Tool::Invocation::AuxiliaryFile::Chunk::Data(unextendedModuleMapData);
+    auto unextendedModuleMapChunk = Tool::AuxiliaryFile::Chunk::Data(unextendedModuleMapData);
 
     std::string unextendedModuleMapPath = environment.resolve("TARGET_TEMP_DIR") + "/" + "unextended-module.modulemap";
-    auto unextendedModuleMapFile = Tool::Invocation::AuxiliaryFile(unextendedModuleMapPath, { moduleMap->contents(), unextendedModuleMapChunk });
+    auto unextendedModuleMapFile = Tool::AuxiliaryFile(unextendedModuleMapPath, { moduleMap->contents(), unextendedModuleMapChunk });
     auxiliaryFiles->push_back(unextendedModuleMapFile);
 
     /*
@@ -288,7 +289,7 @@ AppendUnderlyingModule(
     unextendedModuleOverlay += "}\n";
 
     auto unextendedModuleOverlayData = std::vector<uint8_t>(unextendedModuleOverlay.begin(), unextendedModuleOverlay.end());
-    auto unextendedModuleOverlayFile = Tool::Invocation::AuxiliaryFile::Data(unextendedModuleOverlayPath, unextendedModuleOverlayData);
+    auto unextendedModuleOverlayFile = Tool::AuxiliaryFile::Data(unextendedModuleOverlayPath, unextendedModuleOverlayData);
     auxiliaryFiles->push_back(unextendedModuleOverlayFile);
 
     /*
@@ -305,7 +306,7 @@ void Tool::SwiftResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::vector<Phase::File> const &inputs,
+    std::vector<Tool::Input> const &inputs,
     std::string const &outputDirectory) const
 {
     /*
@@ -322,7 +323,7 @@ resolve(
      */
     std::vector<std::string> outputs;
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
-    std::vector<Tool::Invocation::AuxiliaryFile> auxiliaryFiles;
+    std::vector<Tool::AuxiliaryFile> auxiliaryFiles;
     std::vector<std::string> arguments = tokens.arguments();
 
     /*
@@ -332,7 +333,7 @@ resolve(
 
     /* Compile as a library if no main.swift. */
     bool hasMain = false;
-    for (Phase::File const &input : inputs) {
+    for (Tool::Input const &input : inputs) {
         if (FSUtil::GetBaseName(input.path()) == "main.swift") {
             hasMain = true;
             break;
@@ -395,19 +396,24 @@ resolve(
      * Add the invocation.
      */
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = outputs;
     invocation.dependencyInfo() = dependencyInfo;
-    invocation.auxiliaryFiles() = auxiliaryFiles;
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 
     auto variantArchitectureKey = std::make_pair(environment.resolve("variant"), environment.resolve("arch"));
     toolContext->variantArchitectureInvocations()[variantArchitectureKey].push_back(invocation);
+
+    /*
+     * Add the auxiliary files.
+     */
+    toolContext->auxiliaryFiles().insert(toolContext->auxiliaryFiles().end(), auxiliaryFiles.begin(), auxiliaryFiles.end());
 
     /*
      * Add the Swift module info so the module can be copied.
@@ -451,12 +457,9 @@ resolve(
 }
 
 std::unique_ptr<Tool::SwiftResolver> Tool::SwiftResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Compiler::shared_ptr swiftTool = buildEnvironment.specManager()->compiler(Tool::SwiftResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Compiler::shared_ptr swiftTool = specManager->compiler(Tool::SwiftResolver::ToolIdentifier(), specDomains);
     if (swiftTool == nullptr) {
         fprintf(stderr, "warning: could not find asset catalog compiler\n");
         return nullptr;

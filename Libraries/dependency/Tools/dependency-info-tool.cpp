@@ -12,6 +12,8 @@
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 
 #include <dependency/DependencyInfo.h>
 #include <dependency/BinaryDependencyInfo.h>
@@ -19,6 +21,7 @@
 #include <dependency/MakefileDependencyInfo.h>
 
 #include <cassert>
+#include <cstdlib>
 
 using libutil::Escape;
 using libutil::DefaultFilesystem;
@@ -75,9 +78,9 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h" || arg == "--help") {
-        return libutil::Options::Current<bool>(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg);
     } else if (arg == "-v" || arg == "--version") {
-        return libutil::Options::Current<bool>(&_version, arg, it);
+        return libutil::Options::Current<bool>(&_version, arg);
     } else if (arg == "-o" || arg == "--output") {
         return libutil::Options::Next<std::string>(&_output, args, it);
     } else if (arg == "-n" || arg == "--name") {
@@ -131,14 +134,14 @@ Help(std::string const &error = std::string())
     fprintf(stderr, "\n");
 #undef INDENT
 
-    return (error.empty() ? 0 : -1);
+    return (error.empty() ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
 static int
 Version()
 {
     printf("dependency-info-tool version 1\n");
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 static bool
@@ -160,6 +163,11 @@ LoadDependencyInfo(Filesystem const *filesystem, std::string const &path, depend
         dependencyInfo->push_back(binaryInfo->dependencyInfo());
         return true;
     } else if (format == dependency::DependencyInfoFormat::Directory) {
+        if (filesystem->type(path) != Filesystem::Type::Directory) {
+            fprintf(stderr, "warning: ignoring non-directory %s\n", path.c_str());
+            return true;
+        }
+
         auto directoryInfo = dependency::DirectoryDependencyInfo::Deserialize(filesystem, path);
         if (!directoryInfo) {
             fprintf(stderr, "error: invalid directory\n");
@@ -191,13 +199,12 @@ LoadDependencyInfo(Filesystem const *filesystem, std::string const &path, depend
 }
 
 static std::string
-SerializeMakefileDependencyInfo(std::string const &output, std::vector<std::string> const &inputs)
+SerializeMakefileDependencyInfo(std::string const &currentDirectory, std::string const &output, std::vector<std::string> const &inputs)
 {
     dependency::DependencyInfo dependencyInfo;
     dependencyInfo.outputs() = { output };
 
     /* Normalize path as Ninja requires matching paths. */
-    std::string currentDirectory = FSUtil::GetCurrentDirectory();
     for (std::string const &input : inputs) {
         std::string path = FSUtil::ResolveRelativePath(input, currentDirectory);
         dependencyInfo.inputs().push_back(path);
@@ -213,13 +220,13 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+    process::DefaultContext processContext = process::DefaultContext();
 
     /*
      * Parse out the options, or print help & exit.
      */
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext.commandLineArguments());
     if (!result.first) {
         return Help(result.second);
     }
@@ -247,7 +254,7 @@ main(int argc, char **argv)
          */
         std::vector<dependency::DependencyInfo> info;
         if (!LoadDependencyInfo(&filesystem, input.second, input.first, &info)) {
-            return -1;
+            return EXIT_FAILURE;
         }
 
         for (dependency::DependencyInfo const &dependencyInfo : info) {
@@ -258,15 +265,15 @@ main(int argc, char **argv)
     /*
      * Serialize the output.
      */
-    std::string contents = SerializeMakefileDependencyInfo(*options.name(), inputs);
+    std::string contents = SerializeMakefileDependencyInfo(processContext.currentDirectory(), *options.name(), inputs);
 
     /*
      * Write out the output.
      */
     std::vector<uint8_t> makefileContents = std::vector<uint8_t>(contents.begin(), contents.end());
     if (!filesystem.write(makefileContents, *options.output())) {
-        return false;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }

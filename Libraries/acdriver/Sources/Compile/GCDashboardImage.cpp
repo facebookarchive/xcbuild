@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool GCDashboardImage::
 Compile(
-    std::shared_ptr<xcassets::Asset::GCDashboardImage> const &gcDashboardImage,
+    xcassets::Asset::GCDashboardImage const *gcDashboardImage,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

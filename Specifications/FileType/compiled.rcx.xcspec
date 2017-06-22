@@ -13,4 +13,7 @@
     BasedOn = compiled;
 
     UTI = "com.lego.rcx";
+    Extensions = (
+        "rcx",
+    );
 }

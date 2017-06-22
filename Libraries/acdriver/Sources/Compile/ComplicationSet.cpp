@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool ComplicationSet::
 Compile(
-    std::shared_ptr<xcassets::Asset::ComplicationSet> const &complicationSet,
+    xcassets::Asset::ComplicationSet const *complicationSet,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

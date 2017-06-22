@@ -13,7 +13,7 @@ namespace Tool = pbxbuild::Tool;
 
 Tool::ModuleMapInfo::Entry::
 Entry(
-    Tool::Invocation::AuxiliaryFile::Chunk const &contents,
+    Tool::AuxiliaryFile::Chunk const &contents,
     std::string const &intermediatePath,
     std::string const &finalPath) :
     _contents        (contents),

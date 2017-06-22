@@ -18,6 +18,7 @@
 #include <cassert>
 
 using pbxproj::XC::ConfigurationList;
+using pbxproj::Context;
 
 ConfigurationList::
 ConfigurationList() :

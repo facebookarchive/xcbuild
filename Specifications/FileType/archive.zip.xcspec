@@ -12,11 +12,12 @@
     Identifier = archive.zip;
     BasedOn = archive;
 
-    UTI = "com.pkware.zip-archive";
+    UTI = "public.zip-archive";
     Extensions = (
         "zip",
     );
     MIMETypes = (
         "application/zip",
     );
+    CanSetIncludeInIndex = YES;
 }

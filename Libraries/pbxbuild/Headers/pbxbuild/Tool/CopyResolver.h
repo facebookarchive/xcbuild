@@ -10,14 +10,20 @@
 #ifndef __pbxbuild_Tool_CopyResolver_h
 #define __pbxbuild_Tool_CopyResolver_h
 
-#include <pbxbuild/Base.h>
-#include <pbxbuild/Phase/Environment.h>
-#include <pbxbuild/Phase/File.h>
+#include <pbxspec/Manager.h>
+#include <pbxspec/PBX/Tool.h>
+
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace pbxsetting { class Environment; }
 
 namespace pbxbuild {
 namespace Tool {
 
 class Context;
+class Input;
 
 class CopyResolver {
 private:
@@ -30,14 +36,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::vector<Phase::File> const &input,
-        std::string const &outputDirectory,
-        std::string const &logMessageTitle) const;
-
-    void resolve(
-        Tool::Context *toolContext,
-        pbxsetting::Environment const &environment,
-        std::vector<std::string> const &input,
+        std::vector<Tool::Input> const &input,
         std::string const &outputDirectory,
         std::string const &logMessageTitle) const;
 
@@ -47,7 +46,7 @@ public:
 
 public:
     static std::unique_ptr<CopyResolver>
-    Create(Phase::Environment const &phaseEnvironment);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains);
 };
 
 }

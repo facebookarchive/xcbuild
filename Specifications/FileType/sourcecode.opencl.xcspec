@@ -17,4 +17,5 @@
         "cl",
     );
     IsScannedForIncludes = YES;
+    AppliesToBuildRules = YES;
 }

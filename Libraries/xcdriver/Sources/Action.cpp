@@ -9,9 +9,14 @@
 
 #include <xcdriver/Action.h>
 #include <xcdriver/Options.h>
+#include <libutil/Filesystem.h>
+#include <libutil/FSUtil.h>
+#include <process/Context.h>
 
 using xcdriver::Action;
 using xcdriver::Options;
+using libutil::Filesystem;
+using libutil::FSUtil;
 
 Action::
 Action()
@@ -24,7 +29,7 @@ Action::
 }
 
 std::vector<pbxsetting::Level> Action::
-CreateOverrideLevels(Options const &options, pbxsetting::Environment const &environment)
+CreateOverrideLevels(process::Context const *processContext, Filesystem const *filesystem, pbxsetting::Environment const &environment, Options const &options, std::string const &workingDirectory)
 {
     std::vector<pbxsetting::Level> levels;
 
@@ -40,19 +45,19 @@ CreateOverrideLevels(Options const &options, pbxsetting::Environment const &envi
     levels.push_back(options.settings());
 
     if (options.xcconfig()) {
-        pbxsetting::XC::Config::shared_ptr config = pbxsetting::XC::Config::Open(*options.xcconfig(), environment);
-        if (config == nullptr) {
+        std::string path = FSUtil::ResolveRelativePath(*options.xcconfig(), workingDirectory);
+        ext::optional<pbxsetting::XC::Config> config = pbxsetting::XC::Config::Load(filesystem, environment, path);
+        if (!config) {
             fprintf(stderr, "warning: unable to open xcconfig '%s'\n", options.xcconfig()->c_str());
         } else {
             levels.push_back(config->level());
         }
     }
 
-    if (getenv("XCODE_XCCONFIG_FILE")) {
-        std::string path = getenv("XCODE_XCCONFIG_FILE");
-
-        pbxsetting::XC::Config::shared_ptr config = pbxsetting::XC::Config::Open(path, environment);
-        if (config == nullptr) {
+    if (ext::optional<std::string> configFile = processContext->environmentVariable("XCODE_XCCONFIG_FILE")) {
+        std::string path = FSUtil::ResolveRelativePath(*configFile, workingDirectory);
+        ext::optional<pbxsetting::XC::Config> config = pbxsetting::XC::Config::Load(filesystem, environment, path);
+        if (!config) {
             fprintf(stderr, "warning: unable to open xcconfig from environment '%s'\n", path.c_str());
         } else {
             levels.push_back(config->level());
@@ -69,7 +74,7 @@ CreateParameters(Options const &options, std::vector<pbxsetting::Level> const &o
         options.workspace(),
         options.project(),
         options.scheme(),
-        options.target(),
+        (!options.target().empty() ? ext::make_optional(options.target()) : ext::nullopt),
         options.allTargets(),
         options.actions(),
         options.configuration(),
@@ -81,10 +86,12 @@ VerifyBuildActions(std::vector<std::string> const &actions)
 {
     for (std::string const &action : actions) {
         if (action != "build" &&
+            action != "build-for-testing" &&
             action != "analyze" &&
             action != "archive" &&
             action != "test" &&
-            action != "installsrc" &&
+            action != "test-without-building" &&
+            action != "install-src" &&
             action != "install" &&
             action != "clean") {
             fprintf(stderr, "error: unknown build action '%s'\n", action.c_str());

@@ -13,6 +13,8 @@
 #include <dependency/MakefileDependencyInfo.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 
 #include <cassert>
 
@@ -75,9 +77,9 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+    process::DefaultContext processContext = process::DefaultContext();
 
-    for (std::string const &input : args) {
+    for (std::string const &input : processContext.commandLineArguments()) {
         if (!DumpDependencyInfo(&filesystem, input)) {
             return 1;
         }

@@ -10,7 +10,6 @@
 #ifndef __pbxbuild_Tool_SwiftModuleInfo_h
 #define __pbxbuild_Tool_SwiftModuleInfo_h
 
-#include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/PrecompiledHeaderInfo.h>
 
 namespace pbxbuild {
@@ -33,6 +32,9 @@ private:
 
 private:
     bool        _installHeader;
+
+private:
+    std::vector<std::string> _copiedArtifacts;
 
 public:
     SwiftModuleInfo(
@@ -82,6 +84,13 @@ public:
      */
     bool installHeader() const
     { return _installHeader; }
+
+public:
+    /*
+     * List of artifacts copied at time of CopySwiftModules call.
+     */
+    std::vector<std::string> &copiedArtifacts()
+    { return _copiedArtifacts; }
 };
 
 }

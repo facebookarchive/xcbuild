@@ -28,13 +28,13 @@ Deserialize(Filesystem const *filesystem, std::string const &directory)
     std::vector<std::string> inputs;
 
     /* Verify is directory. */
-    if (!filesystem->isDirectory(directory)) {
+    if (filesystem->type(directory) != Filesystem::Type::Directory) {
         return ext::nullopt;
     }
 
     /* Recursively add all paths under this directory. */
-    filesystem->enumerateRecursive(directory, [&](std::string const &path) -> bool {
-        inputs.push_back(path);
+    filesystem->readDirectory(directory, true, [&](std::string const &path) -> bool {
+        inputs.push_back(directory + "/" + path);
         return true;
     });
 

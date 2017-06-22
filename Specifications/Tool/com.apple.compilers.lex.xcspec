@@ -1,0 +1,61 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Tool;
+    Identifier = com.apple.compilers.lex;
+    Name = "Lex";
+
+    ExecPath = "$(LEX)";
+    InputFileTypes = ( "sourcecode.lex" );
+    IsArchitectureNeutral = YES;
+
+    Options = (
+        /* Generation */
+        {
+            Name = "LEX_CASE_INSENSITIVE_SCANNER";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-i";
+        },
+        {
+            Name = "LEX_INSERT_LINE_DIRECTIVES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-L";
+        },
+        {
+            Name = "LEX_SUPPRESS_DEFAULT_RULE";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-s";
+        },
+
+
+        /* Warnings */
+        {
+            Name = "LEX_SUPPRESS_WARNINGS";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-w";
+        },
+
+
+        /* Flags */
+        {
+            Name = "LEXFLAGS";
+            Type = StringList;
+            DefaultValue = "";
+            FileTypes = (
+                "sourcecode.lex",
+            );
+            /* Added in code. */
+        },
+    );
+}

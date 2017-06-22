@@ -1,0 +1,35 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Compiler;
+    Identifier = com.apple.compilers.llvm.clang.1_0.astbuilder;
+    BasedOn = com.apple.compilers.llvm.clang.1_0;
+    Name = "AST Builder";
+
+    RuleName = "Build AST from $(InputPath)";
+
+    InputFileTypes = (
+        "sourcecode.c.c",
+        "sourcecode.c.objc",
+        "sourcecode.cpp.cpp",
+        "sourcecode.cpp.objcpp",
+    );
+
+    SourceFileOption = "-fsyntax-only";
+    OutputFileExtension = "ast";
+    OverridingProperties = {
+        "CLANG_RETAIN_COMMENTS_FROM_SYSTEM_HEADERS" = YES;
+        "CLEAN_PRECOMPS" = NO;
+        "ENABLE_HEADER_DEPENDENCIES" = YES;
+        "SHARED_PRECOMPS_DIR" = "$(INDEX_PRECOMPS_DIR)";
+    };
+
+    /* TODO: Complete. */
+}

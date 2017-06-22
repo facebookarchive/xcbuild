@@ -16,6 +16,7 @@
     Extensions = (
         "aiff",
         "aif",
+        "cdda",
     );
     TypeCodes = (
         "AIFF",

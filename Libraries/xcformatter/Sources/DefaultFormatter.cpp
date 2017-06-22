@@ -62,7 +62,7 @@ begin(pbxbuild::Build::Context const &buildContext)
 {
     std::string result;
 
-    pbxsetting::Environment environment = pbxsetting::Environment::Empty();
+    pbxsetting::Environment environment = pbxsetting::Environment();
     for (pbxsetting::Level const &level : buildContext.overrideLevels()) {
         environment.insertFront(level, false);
     }

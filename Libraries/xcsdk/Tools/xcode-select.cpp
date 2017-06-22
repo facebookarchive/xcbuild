@@ -10,6 +10,8 @@
 #include <xcsdk/Environment.h>
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/Filesystem.h>
+#include <process/DefaultContext.h>
+#include <process/Context.h>
 #include <libutil/Options.h>
 #include <ext/optional>
 
@@ -73,17 +75,17 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-h" || arg == "--help") {
-        return libutil::Options::Current<bool>(&_help, arg, it);
+        return libutil::Options::Current<bool>(&_help, arg);
     } else if (arg == "-v" || arg == "--version" || arg == "-version") {
-        return libutil::Options::Current<bool>(&_version, arg, it);
+        return libutil::Options::Current<bool>(&_version, arg);
     } else if (arg == "-p" || arg == "--print-path" || arg == "-print-path") {
-        return libutil::Options::Current<bool>(&_printPath, arg, it);
+        return libutil::Options::Current<bool>(&_printPath, arg);
     } else if (arg == "-r" || arg == "--reset") {
-        return libutil::Options::Current<bool>(&_resetPath, arg, it);
+        return libutil::Options::Current<bool>(&_resetPath, arg);
     } else if (arg == "-s" || arg == "--switch" || arg == "-switch") {
         return libutil::Options::Next<std::string>(&_switchPath, args, it);
     } else if (arg == "--install") {
-        return libutil::Options::Current<bool>(&_install, arg, it);
+        return libutil::Options::Current<bool>(&_install, arg);
     } else {
         return std::make_pair(false, "unknown argument " + arg);
     }
@@ -128,13 +130,13 @@ int
 main(int argc, char **argv)
 {
     DefaultFilesystem filesystem = DefaultFilesystem();
-    std::vector<std::string> args = std::vector<std::string>(argv + 1, argv + argc);
+    process::DefaultContext processContext = process::DefaultContext();
 
     /*
      * Parse out the options, or print help & exit.
      */
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext.commandLineArguments());
     if (!result.first) {
         return Help(result.second);
     }
@@ -147,7 +149,7 @@ main(int argc, char **argv)
     } else if (options.version()) {
         return Version();
     } else if (options.printPath()) {
-        ext::optional<std::string> developer = xcsdk::Environment::DeveloperRoot(&filesystem);
+        ext::optional<std::string> developer = xcsdk::Environment::DeveloperRoot(&processContext, &filesystem);
         if (!developer) {
             fprintf(stderr, "error: no developer directory found\n");
             return 1;

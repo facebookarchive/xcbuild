@@ -17,8 +17,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::Target;
-using pbxproj::PBX::NativeTarget;
-using pbxproj::PBX::FileReference;
+using pbxproj::Context;
 
 Target::
 Target(std::string const &isa, Type type) :
@@ -37,8 +36,8 @@ settings(void) const
     };
 
     if (_type == Type::Native) {
-        NativeTarget const *nativeTarget = static_cast <NativeTarget const *> (this);
-        if (FileReference::shared_ptr const &productReference = nativeTarget->productReference()) {
+        PBX::NativeTarget const *nativeTarget = static_cast <PBX::NativeTarget const *> (this);
+        if (PBX::FileReference::shared_ptr const &productReference = nativeTarget->productReference()) {
             pbxsetting::Setting setting = pbxsetting::Setting::Create("FULL_PRODUCT_NAME", productReference->name());
             settings.push_back(setting);
         }

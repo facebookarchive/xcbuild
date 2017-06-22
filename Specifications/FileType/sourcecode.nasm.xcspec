@@ -16,4 +16,5 @@
     Extensions = (
         "nasm",
     );
+    AppliesToBuildRules = YES;
 }

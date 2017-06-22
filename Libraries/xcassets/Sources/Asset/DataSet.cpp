@@ -11,10 +11,8 @@
 #include <plist/Keys/Unpack.h>
 #include <plist/Array.h>
 #include <plist/String.h>
-#include <libutil/Filesystem.h>
 
 using xcassets::Asset::DataSet;
-using libutil::Filesystem;
 
 bool DataSet::Data::
 parse(plist::Dictionary const *dict)
@@ -22,6 +20,7 @@ parse(plist::Dictionary const *dict)
     std::unordered_set<std::string> seen;
     auto unpack = plist::Keys::Unpack("ImageSetImage", dict, &seen);
 
+    auto CS  = unpack.cast <plist::String> ("color-space");
     auto F   = unpack.cast <plist::String> ("filename");
     auto I   = unpack.cast <plist::String> ("idiom");
     auto GFS = unpack.cast <plist::String> ("graphics-feature-set");
@@ -30,6 +29,10 @@ parse(plist::Dictionary const *dict)
 
     if (!unpack.complete(true)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
+
+    if (CS != nullptr) {
+        _colorSpace = Slot::ColorSpaces::Parse(CS->value());
     }
 
     if (F != nullptr) {
@@ -56,22 +59,12 @@ parse(plist::Dictionary const *dict)
 }
 
 bool DataSet::
-load(Filesystem const *filesystem)
+parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (this->hasChildren(filesystem)) {
+    if (!this->children().empty()) {
         fprintf(stderr, "warning: unexpected child assets\n");
     }
 
-    return true;
-}
-
-bool DataSet::
-parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
-{
     if (!Asset::parse(dict, seen, false)) {
         return false;
     }

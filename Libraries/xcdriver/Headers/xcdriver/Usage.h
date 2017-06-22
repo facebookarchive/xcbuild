@@ -23,7 +23,7 @@ public:
     /*
      * Text explaining the usage of the driver.
      */
-    static std::string Text();
+    static std::string Text(std::string const &name);
 };
 
 }

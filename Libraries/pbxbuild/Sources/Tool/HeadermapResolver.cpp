@@ -25,7 +25,6 @@
 #include <array>
 
 namespace Tool = pbxbuild::Tool;
-using AuxiliaryFile = pbxbuild::Tool::Invocation::AuxiliaryFile;
 using pbxbuild::HeaderMap;
 using pbxbuild::FileTypeResolver;
 using libutil::Filesystem;
@@ -192,7 +191,7 @@ resolve(
 ) const
 {
     /* Add the compiler default environment, which contains the headermap setting defaults. */
-    pbxsetting::Environment compilerEnvironment = environment;
+    pbxsetting::Environment compilerEnvironment = pbxsetting::Environment(environment);
     compilerEnvironment.insertFront(_compiler->defaultSettings(), true);
 
     if (!pbxsetting::Type::ParseBoolean(compilerEnvironment.resolve("USE_HEADERMAP"))) {
@@ -246,7 +245,7 @@ resolve(
 
     std::vector<std::string> headermapSearchPaths = HeadermapSearchPaths(_specManager, compilerEnvironment, target, toolContext->searchPaths(), toolContext->workingDirectory());
     for (std::string const &path : headermapSearchPaths) {
-        Filesystem::GetDefaultUNSAFE()->enumerateDirectory(path, [&](std::string const &fileName) -> bool {
+        Filesystem::GetDefaultUNSAFE()->readDirectory(path, false, [&](std::string const &fileName) -> bool {
             // TODO(grp): Use FileTypeResolver when reliable.
             std::string extension = FSUtil::GetFileExtension(fileName);
             if (extension != "h" && extension != "hpp") {
@@ -336,30 +335,14 @@ resolve(
     std::string headermapFileForGeneratedFiles               = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_GENERATED_FILES");
     std::string headermapFileForProjectFiles                 = compilerEnvironment.resolve("CPP_HEADERMAP_FILE_FOR_PROJECT_FILES");
 
-    std::vector<AuxiliaryFile> auxiliaryFiles = {
-        AuxiliaryFile::Data(headermapFile, targetName.write()),
-        AuxiliaryFile::Data(headermapFileForOwnTargetHeaders, ownTargetHeaders.write()),
-        AuxiliaryFile::Data(headermapFileForAllTargetHeaders, allTargetHeaders.write()),
-        AuxiliaryFile::Data(headermapFileForAllNonFrameworkTargetHeaders, allNonFrameworkTargetHeaders.write()),
-        AuxiliaryFile::Data(headermapFileForGeneratedFiles, generatedFiles.write()),
-        AuxiliaryFile::Data(headermapFileForProjectFiles, projectHeaders.write()),
+    std::vector<Tool::AuxiliaryFile> auxiliaryFiles = {
+        Tool::AuxiliaryFile::Data(headermapFile, targetName.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForOwnTargetHeaders, ownTargetHeaders.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForAllTargetHeaders, allTargetHeaders.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForAllNonFrameworkTargetHeaders, allNonFrameworkTargetHeaders.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForGeneratedFiles, generatedFiles.write()),
+        Tool::AuxiliaryFile::Data(headermapFileForProjectFiles, projectHeaders.write()),
     };
-
-    std::string vfsAllProductHeaders = compilerEnvironment.resolve("CPP_HEADERMAP_PRODUCT_HEADERS_VFS_FILE");
-
-    if (allProjectHeaders) {
-        // TODO(grp): This should be YAML, not JSON, but JSON works for now.
-        auto result = plist::Format::JSON::Serialize(allProjectHeaders.get(), plist::Format::JSON::Create());
-        if (!result.first) {
-            fprintf(stderr, "error: unable to serialize VFS: %s\n", result.second.c_str());
-        } else {
-            auto auxiliaryFile = AuxiliaryFile::Data(vfsAllProductHeaders, *result.first);
-            auxiliaryFiles.push_back(auxiliaryFile);
-        }
-    }
-
-    Tool::Invocation invocation;
-    invocation.auxiliaryFiles().insert(invocation.auxiliaryFiles().end(), auxiliaryFiles.begin(), auxiliaryFiles.end());
 
     std::vector<std::string> systemHeadermapFiles;
     std::vector<std::string> userHeadermapFiles;
@@ -382,8 +365,6 @@ resolve(
         }
     }
 
-    toolContext->invocations().push_back(invocation);
-
     Tool::HeadermapInfo *headermapInfo = &toolContext->headermapInfo();
     headermapInfo->systemHeadermapFiles().insert(headermapInfo->systemHeadermapFiles().end(), systemHeadermapFiles.begin(), systemHeadermapFiles.end());
     headermapInfo->userHeadermapFiles().insert(headermapInfo->userHeadermapFiles().end(), userHeadermapFiles.begin(), userHeadermapFiles.end());
@@ -391,16 +372,13 @@ resolve(
 }
 
 std::unique_ptr<Tool::HeadermapResolver> Tool::HeadermapResolver::
-Create(Phase::Environment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, pbxspec::PBX::Compiler::shared_ptr const &compiler)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr headermapTool = buildEnvironment.specManager()->tool(Tool::HeadermapResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr headermapTool = specManager->tool(Tool::HeadermapResolver::ToolIdentifier(), specDomains);
     if (headermapTool == nullptr) {
         fprintf(stderr, "warning: could not find headermap tool\n");
         return nullptr;
     }
 
-    return std::unique_ptr<Tool::HeadermapResolver>(new Tool::HeadermapResolver(headermapTool, compiler, buildEnvironment.specManager()));
+    return std::unique_ptr<Tool::HeadermapResolver>(new Tool::HeadermapResolver(headermapTool, compiler, specManager));
 }

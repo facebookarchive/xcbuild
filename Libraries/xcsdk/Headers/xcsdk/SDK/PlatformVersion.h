@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <string>
+#include <ext/optional>
 
 namespace libutil { class Filesystem; };
 namespace plist { class Dictionary; }
@@ -23,23 +24,29 @@ public:
     typedef std::shared_ptr <PlatformVersion> shared_ptr;
 
 private:
-    std::string _projectName;
-    std::string _productBuildVersion;
-    std::string _buildVersion;
-    std::string _sourceVersion;
+    ext::optional<std::string> _projectName;
+    ext::optional<std::string> _productBuildVersion;
+    ext::optional<std::string> _buildVersion;
+    ext::optional<std::string> _sourceVersion;
+    ext::optional<std::string> _bundleShortVersionString;
+    ext::optional<std::string> _bundleVersion;
 
 public:
     PlatformVersion();
 
 public:
-    inline std::string const &name() const
+    inline ext::optional<std::string> const &projectName() const
     { return _projectName; }
-    inline std::string const &version() const
+    inline ext::optional<std::string> const &projectBuildVersion() const
     { return _productBuildVersion; }
-    inline std::string const &buildVersion() const
+    inline ext::optional<std::string> const &buildVersion() const
     { return _buildVersion; }
-    inline std::string const &sourceVersion() const
+    inline ext::optional<std::string> const &sourceVersion() const
     { return _sourceVersion; }
+    inline ext::optional<std::string> const &bundleShortVersionString() const
+    { return _bundleShortVersionString; }
+    inline ext::optional<std::string> const &bundleVersion() const
+    { return _bundleVersion; }
 
 public:
     static PlatformVersion::shared_ptr Open(libutil::Filesystem const *filesystem, std::string const &path);

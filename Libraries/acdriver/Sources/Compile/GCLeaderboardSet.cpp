@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool GCLeaderboardSet::
 Compile(
-    std::shared_ptr<xcassets::Asset::GCLeaderboardSet> const &gcComplicationSet,
+    xcassets::Asset::GCLeaderboardSet const *gcComplicationSet,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)
@@ -29,7 +29,7 @@ Compile(
         gcComplicationSet->path(),
         { Output::AssetReference(gcComplicationSet) },
         "Not Implemented",
-        "gc leaderboard set yet supported");
+        "gc leaderboard set not yet supported");
 
     return false;
 }

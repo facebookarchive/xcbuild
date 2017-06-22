@@ -25,6 +25,7 @@ private:
     ext::optional<bool>        _version;
     ext::optional<bool>        _printContents;
     std::vector<std::string>   _inputs;
+    ext::optional<std::string> _productType;
 
 private:
     ext::optional<std::string> _outputFormat;
@@ -34,6 +35,13 @@ private:
 
 private:
     ext::optional<std::string> _compile;
+
+    /*
+     * extension: allows changing the name of the output file, including the file extension.
+     * "Assets.car" will be used if unspecified.
+     */
+    ext::optional<std::string> _compileOutputFilename;
+
     ext::optional<std::string> _exportDependencyInfo;
 
 private:
@@ -49,6 +57,13 @@ private:
     ext::optional<std::string> _outputPartialInfoPlist;
     ext::optional<std::string> _appIcon;
     ext::optional<std::string> _launchImage;
+    ext::optional<std::string> _flattenedAppIconPath;
+
+private:
+    ext::optional<std::string> _stickerPackIdentifierPrefix;
+    ext::optional<std::string> _stickerPackStringsFile;
+    ext::optional<std::string> _leaderboardIdentifierPrefix;
+    ext::optional<std::string> _leaderboardSetIdentifierPrefix;
 
 private:
     ext::optional<bool>        _enableOnDemandResources;
@@ -56,6 +71,7 @@ private:
     ext::optional<std::string> _targetName;
     ext::optional<std::string> _filterForDeviceModel;
     ext::optional<std::string> _filterForDeviceOsVersion;
+    ext::optional<std::string> _assetPackOutputSpecifications;
 
 public:
     Options();
@@ -68,7 +84,8 @@ public:
     { return _printContents.value_or(false); }
     ext::optional<std::string> const &compile() const
     { return _compile; }
-
+    ext::optional<std::string> const &compileOutputFilename() const
+    { return _compileOutputFilename; }
 public:
     ext::optional<std::string> const &outputFormat() const
     { return _outputFormat; }
@@ -84,6 +101,8 @@ public:
     { return _exportDependencyInfo; }
     std::vector<std::string> const &inputs() const
     { return _inputs; }
+    ext::optional<std::string> const &productType() const
+    { return _productType; }
 
 public:
     ext::optional<std::string> const &optimization() const
@@ -106,6 +125,18 @@ public:
     { return _appIcon; }
     ext::optional<std::string> const &launchImage() const
     { return _launchImage; }
+    ext::optional<std::string> const &flattenedAppIconPath() const
+    { return _flattenedAppIconPath; }
+
+public:
+    ext::optional<std::string> const &stickerPackIdentifierPrefix() const
+    { return _stickerPackIdentifierPrefix; }
+    ext::optional<std::string> const &stickerPackStringsFile() const
+    { return _stickerPackStringsFile; }
+    ext::optional<std::string> const &leaderboardIdentifierPrefix() const
+    { return _leaderboardIdentifierPrefix; }
+    ext::optional<std::string> const &leaderboardSetIdentifierPrefix() const
+    { return _leaderboardSetIdentifierPrefix; }
 
 public:
     bool enableOnDemandResources() const
@@ -118,6 +149,8 @@ public:
     { return _filterForDeviceModel; }
     ext::optional<std::string> const &filterForDeviceOsVersion() const
     { return _filterForDeviceOsVersion; }
+    ext::optional<std::string> const &assetPackOutputSpecifications() const
+    { return _assetPackOutputSpecifications; }
 
 private:
     friend class libutil::Options;

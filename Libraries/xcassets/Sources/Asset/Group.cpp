@@ -8,28 +8,12 @@
  */
 
 #include <xcassets/Asset/Group.h>
-#include <libutil/Filesystem.h>
 #include <plist/Keys/Unpack.h>
 #include <plist/Array.h>
 #include <plist/String.h>
 #include <plist/Boolean.h>
 
 using xcassets::Asset::Group;
-using libutil::Filesystem;
-
-bool Group::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren(filesystem, &_children, _providesNamespace.value_or(false))) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool Group::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)

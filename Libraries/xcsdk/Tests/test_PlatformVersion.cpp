@@ -34,11 +34,11 @@ TEST(PlatformVersion, Parse)
         }),
     });
 
-    auto platformVersion = PlatformVersion::Open(&filesystem, platform);
+    auto platformVersion = PlatformVersion::Open(&filesystem, "/" + platform);
     ASSERT_NE(platformVersion, nullptr);
 
-    EXPECT_EQ(platformVersion->name(), "Name");
-    EXPECT_EQ(platformVersion->version(), "1");
-    EXPECT_EQ(platformVersion->buildVersion(), "10");
-    EXPECT_EQ(platformVersion->sourceVersion(), "100");
+    EXPECT_EQ(platformVersion->projectName(), std::string("Name"));
+    EXPECT_EQ(platformVersion->projectBuildVersion(), std::string("1"));
+    EXPECT_EQ(platformVersion->buildVersion(), std::string("10"));
+    EXPECT_EQ(platformVersion->sourceVersion(), std::string("100"));
 }

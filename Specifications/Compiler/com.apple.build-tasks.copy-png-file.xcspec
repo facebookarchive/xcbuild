@@ -1,0 +1,42 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Compiler;
+    Identifier = com.apple.build-tasks.copy-png-file;
+    Name = "Copy PNG Image";
+
+    CommandLine = "copypng [options] $(IPHONE_OPTIMIZE_OPTIONS) [input] [output]";
+    RuleName = "CopyPNGFile $(ProductResourcesDir)/$(InputFileName) $(InputFileRelativePath)";
+    InputFileTypes = (
+        "image.png",
+    );
+    Outputs = (
+        /* Always place outputs in $(ProductResourcesDir) in case
+         * this tool is used from outside a Copy Resources phase. */
+        "$(ProductResourcesDir)/$(InputFileName)",
+    );
+    SynthesizeBuildRule = YES;
+
+    Options = (
+        {
+            Name = "COMPRESS_PNG_FILES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-compress";
+        },
+        {
+            Name = "STRIP_PNG_TEXT";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "-strip-PNG-text";
+        },
+    );
+}
+

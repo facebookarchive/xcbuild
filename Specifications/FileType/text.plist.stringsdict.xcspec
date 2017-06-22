@@ -16,4 +16,5 @@
     Extensions = (
         stringsdict,
     );
+    AppliesToBuildRules = YES;
 }

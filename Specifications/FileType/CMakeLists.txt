@@ -16,7 +16,6 @@ install(FILES
         archive.jar.xcspec
         archive.macbinary.xcspec
         archive.metal-library.xcspec
-        archive.metal.xcspec
         archive.ppob.xcspec
         archive.rsrc.xcspec
         archive.stuffit.xcspec
@@ -49,14 +48,17 @@ install(FILES
         file.scp.xcspec
         file.sks.xcspec
         file.storyboard.xcspec
+        file.swiftpm-manifest.xcspec
         file.uicatalog.xcspec
         file.xcplaygroundpage.xcspec
         file.xcspec
         file.xib.xcspec
+        folder.abstractassetcatalog.xcspec
         folder.assetcatalog.xcspec
         folder.iconset.xcspec
         folder.imagecatalog.xcspec
         folder.skatlas.xcspec
+        folder.stickers.xcspec
         folder.xcspec
         image.bmp.xcspec
         image.gif.xcspec
@@ -116,7 +118,7 @@ install(FILES
         text.html.xcspec
         text.json.xcspec
         text.man.xcspec
-        text.pbxproj.xcspec
+        text.pbxproject.xcspec
         text.plist.ibClassDescription.xcspec
         text.plist.info.xcspec
         text.plist.pbfilespec.xcspec

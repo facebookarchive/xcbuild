@@ -21,6 +21,7 @@ add_library(acdriver SHARED
             Sources/Compile/AppIconSet.cpp
             Sources/Compile/BrandAssets.cpp
             Sources/Compile/ComplicationSet.cpp
+            Sources/Compile/CubeTextureSet.cpp
             Sources/Compile/DataSet.cpp
             Sources/Compile/GCDashboardImage.cpp
             Sources/Compile/GCLeaderboard.cpp
@@ -30,11 +31,17 @@ add_library(acdriver SHARED
             Sources/Compile/ImageStack.cpp
             Sources/Compile/ImageStackLayer.cpp
             Sources/Compile/LaunchImage.cpp
+            Sources/Compile/MipmapSet.cpp
             Sources/Compile/SpriteAtlas.cpp
+            Sources/Compile/Sticker.cpp
+            Sources/Compile/StickerPack.cpp
+            Sources/Compile/StickerSequence.cpp
+            Sources/Compile/StickersIconSet.cpp
+            Sources/Compile/TextureSet.cpp
             Sources/ContentsAction.cpp
             )
 
-target_link_libraries(acdriver PUBLIC xcassets util plist graphics dependency ext bom car)
+target_link_libraries(acdriver PUBLIC xcassets process util plist graphics dependency ext bom car)
 target_include_directories(acdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS acdriver DESTINATION usr/lib)
 

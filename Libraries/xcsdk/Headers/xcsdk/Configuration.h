@@ -15,6 +15,7 @@
 #include <ext/optional>
 
 namespace libutil { class Filesystem; }
+namespace process { class Context; }
 
 namespace xcsdk {
 
@@ -48,14 +49,17 @@ public:
     /*
      * The default paths for the configuration.
      */
-    static std::vector<std::string> DefaultPaths();
+    static std::vector<std::string> DefaultPaths(
+        process::Context const *processContext);
 
     /*
      * Loads a configuration from the filesystem given a list of
      * possible locations. The configuration loaded is the first valid
      * location.
      */
-    static ext::optional<Configuration> Load(libutil::Filesystem const *filesystem, std::vector<std::string> const &paths);
+    static ext::optional<Configuration> Load(
+        libutil::Filesystem const *filesystem,
+        std::vector<std::string> const &paths);
 };
 
 }

@@ -37,18 +37,21 @@ static bool
 LinkStoryboards(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext)
 {
     Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
 
-    std::unique_ptr<Tool::InterfaceBuilderStoryboardLinkerResolver> storyboardLinkerResolver = Tool::InterfaceBuilderStoryboardLinkerResolver::Create(phaseEnvironment);
+    std::unique_ptr<Tool::InterfaceBuilderStoryboardLinkerResolver> storyboardLinkerResolver = Tool::InterfaceBuilderStoryboardLinkerResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     if (storyboardLinkerResolver == nullptr) {
         return false;
     }
 
-    std::vector<std::string> storyboardOutputs;
+    std::vector<Tool::Input> storyboardOutputs;
     for (Tool::Invocation const &invocation : phaseContext->toolContext().invocations()) {
         for (std::string const &output : invocation.outputs()) {
             // TODO(grp): Is this the right set of storyboards to link?
+            // TODO(grp): Use the compiled storyboard file type and include in input.
             if (FSUtil::GetFileExtension(output) == "storyboardc") {
-                storyboardOutputs.push_back(output);
+                Tool::Input outputInput = Tool::Input(output, nullptr);
+                storyboardOutputs.push_back(outputInput);
             }
         }
     }
@@ -65,8 +68,8 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     pbxsetting::Environment const &environment = phaseEnvironment.targetEnvironment().environment();
     std::string resourcesDirectory = environment.resolve("BUILT_PRODUCTS_DIR") + "/" + environment.resolve("UNLOCALIZED_RESOURCES_FOLDER_PATH");
 
-    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
-    std::vector<std::vector<Phase::File>> groups = Phase::Context::Group(files);
+    std::vector<Tool::Input> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
+    std::vector<std::vector<Tool::Input>> groups = Phase::Context::Group(files);
     if (!phaseContext->resolveBuildFiles(phaseEnvironment, environment, _buildPhase, groups, resourcesDirectory, Tool::CopyResolver::ToolIdentifier())) {
         return false;
     }

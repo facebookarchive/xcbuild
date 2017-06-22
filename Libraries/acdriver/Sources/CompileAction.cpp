@@ -185,6 +185,10 @@ CreateWriter(std::string const &path)
 static void
 WarnUnsupportedOptions(Options const &options, Result *result)
 {
+    if (options.productType()) {
+        result->normal(Result::Severity::Warning, "product type not supported");
+    }
+
     if (options.optimization()) {
         result->normal(Result::Severity::Warning, "optimization not supported");
     }
@@ -195,6 +199,19 @@ WarnUnsupportedOptions(Options const &options, Result *result)
 
     if (options.platform()) {
         result->normal(Result::Severity::Warning, "platform not supported");
+    }
+
+    if (options.flattenedAppIconPath()) {
+        result->normal(Result::Severity::Warning, "flattened app icon not supported");
+    }
+
+    if (options.stickerPackIdentifierPrefix() || options.stickerPackStringsFile()) {
+        /* Strings file format: `sticker-pack-name:language-identifier:path`. */
+        result->normal(Result::Severity::Warning, "sticker pack not supported");
+    }
+
+    if (options.leaderboardIdentifierPrefix() || options.leaderboardSetIdentifierPrefix()) {
+        result->normal(Result::Severity::Warning, "leaderboard set not supportd");
     }
 
     if (!options.targetDevice().empty()) {
@@ -250,7 +267,8 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
      * If necessary, create output archive to write into.
      */
     if (compileOutput.format() == Compile::Output::Format::Compiled) {
-        std::string path = compileOutput.root() + "/" + "Assets.car";
+        std::string outputFilename = options.compileOutputFilename().value_or("Assets.car");
+        std::string path = compileOutput.root() + "/" + outputFilename;
 
         ext::optional<car::Writer> writer = CreateWriter(path);
         if (!writer) {
@@ -283,7 +301,7 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
         /*
          * Compile the asset catalog.
          */
-        if (!Compile::Asset::Compile(catalog, filesystem, &compileOutput, result)) {
+        if (!Compile::Asset::Compile(catalog.get(), filesystem, &compileOutput, result)) {
             /* Error already printed. */
             continue;
         }

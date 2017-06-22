@@ -18,8 +18,9 @@
 #include <libutil/Escape.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/Subprocess.h>
-#include <libutil/SysUtil.h>
+#include <process/Context.h>
+#include <process/MemoryContext.h>
+#include <process/Launcher.h>
 #include <libutil/md5.h>
 
 #include <sstream>
@@ -33,8 +34,6 @@ using xcexecution::Parameters;
 using libutil::Escape;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::Subprocess;
-using libutil::SysUtil;
 
 NinjaExecutor::
 NinjaExecutor(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, bool generate) :
@@ -63,6 +62,18 @@ static std::string
 TargetNinjaFinish(pbxproj::PBX::Target::shared_ptr const &target)
 {
     return "finish-target-" + target->name();
+}
+
+static std::string
+TargetPhaseNinjaBegin(pbxproj::PBX::Target::shared_ptr const &target, int phasePriority)
+{
+    return "begin-target-" + target->name() + "-phase-priority-" + std::to_string(phasePriority);
+}
+
+static std::string
+TargetPhaseNinjaFinish(pbxproj::PBX::Target::shared_ptr const &target, int phasePriority)
+{
+    return "finish-target-" + target->name() + "-phase-priority-" + std::to_string(phasePriority);
 }
 
 static std::string
@@ -98,11 +109,11 @@ NinjaDescription(std::string const &description)
 }
 
 static std::string
-NinjaHash(std::string const &input)
+NinjaHash(char const *data, size_t size)
 {
     md5_state_t state;
     md5_init(&state);
-    md5_append(&state, reinterpret_cast<const md5_byte_t *>(input.data()), input.size());
+    md5_append(&state, reinterpret_cast<const md5_byte_t *>(data), size);
     uint8_t digest[16];
     md5_finish(&state, reinterpret_cast<md5_byte_t *>(&digest));
 
@@ -113,6 +124,49 @@ NinjaHash(std::string const &input)
     }
 
     return ss.str();
+}
+
+static ext::optional<std::string>
+NinjaBuiltinExecutablePath(
+    process::Context const *processContext,
+    Filesystem const *filesystem,
+    std::string builtinExecutable)
+{
+    std::vector<std::string> builtinExecutablePaths;
+    ext::optional<std::string> processExecutablePath = processContext->executablePath();
+    while (true) {
+        if (!processExecutablePath) {
+            break;
+        }
+        std::string builtinExecutablePathDirectory = FSUtil::GetDirectoryName(*processExecutablePath);
+        builtinExecutablePaths.push_back(builtinExecutablePathDirectory);
+        if (filesystem->type(*processExecutablePath) == Filesystem::Type::SymbolicLink) {
+            processExecutablePath = filesystem->readSymbolicLink(*processExecutablePath);
+        } else {
+            break;
+        }
+    }
+    return filesystem->findExecutable(builtinExecutable, builtinExecutablePaths);
+}
+
+static ext::optional<std::string>
+NinjaExecutablePath(
+    process::Context const *processContext,
+    Filesystem const *filesystem,
+    std::vector<std::string> const &executablePaths,
+    pbxbuild::Tool::Invocation::Executable const &executable)
+{
+    if (ext::optional<std::string> const &builtin = executable.builtin()) {
+        return NinjaBuiltinExecutablePath(processContext, filesystem, *builtin);
+    } else if (ext::optional<std::string> const &external = executable.external()) {
+        if (FSUtil::IsAbsolutePath(*external)) {
+            return *external;
+        } else {
+            return filesystem->findExecutable(*external, executablePaths);
+        }
+    } else {
+        abort();
+    }
 }
 
 static std::string
@@ -129,12 +183,23 @@ NinjaInvocationPhonyOutput(pbxbuild::Tool::Invocation const &invocation)
      */
 
     // TODO(grp): Handle identical phony output invocations in a build.
-    std::string key = invocation.executable().path();
+    std::string key;
+
+    if (invocation.executable()) {
+        if (invocation.executable()->builtin()) {
+            key += *invocation.executable()->builtin();
+        } else if (invocation.executable()->external()) {
+            key += *invocation.executable()->external();
+        } else {
+            abort();
+        }
+    }
+
     for (std::string const &arg : invocation.arguments()) {
         key += " " + arg;
     }
 
-    return ".ninja-phony-output-" + NinjaHash(key);
+    return ".ninja-phony-output-" + NinjaHash(key.data(), key.size());
 }
 
 static std::vector<std::string>
@@ -152,7 +217,14 @@ NinjaInvocationOutputs(pbxbuild::Tool::Invocation const &invocation)
 }
 
 static void
-WriteNinjaRegenerate(ninja::Writer *writer, Parameters const &buildParameters, std::string const &ninjaPath, std::string const &configurationHashPath, std::vector<std::string> const &inputPaths)
+WriteNinjaRegenerate(
+    ninja::Writer *writer,
+    Parameters const &buildParameters,
+    std::string const &executablePath,
+    std::string const &workingDirectory,
+    std::string const &ninjaPath,
+    std::string const &configurationHashPath,
+    std::vector<std::string> const &inputPaths)
 {
     /*
      * Regenerate using this executor. Force regeneration to avoid recursively
@@ -170,7 +242,7 @@ WriteNinjaRegenerate(ninja::Writer *writer, Parameters const &buildParameters, s
      * Re-run the current executable to re-generate the Ninja file. There is an
      * implicit assumption here that this executable takes the parameters above.
      */
-    std::string exec = Escape::Shell(SysUtil::GetExecutablePath());
+    std::string exec = Escape::Shell(executablePath);
 
     /*
      * Escape executable and input parameters for Ninja.
@@ -185,12 +257,17 @@ WriteNinjaRegenerate(ninja::Writer *writer, Parameters const &buildParameters, s
     }
 
     /*
+     * If the generator has changed, the ninja file needs to be regenerated as well.
+     */
+    inputPathValues.push_back(ninja::Value::String(executablePath));
+
+    /*
      * Write out the Ninja rule to regenerate sources.
      */
     std::string ruleName = "regenerate";
     writer->rule(ruleName, ninja::Value::Expression("cd $dir && $exec"));
     writer->build({ ninja::Value::String(ninjaPath) }, ruleName, inputPathValues, {
-        { "dir", ninja::Value::String(Escape::Shell(FSUtil::GetCurrentDirectory())) },
+        { "dir", ninja::Value::String(Escape::Shell(workingDirectory)) },
         { "exec", ninja::Value::String(exec) },
         { "description", ninja::Value::String("Regenerating Ninja files...") },
 
@@ -205,7 +282,7 @@ WriteNinjaRegenerate(ninja::Writer *writer, Parameters const &buildParameters, s
 static bool
 WriteNinja(Filesystem *filesystem, ninja::Writer const &writer, std::string const &path)
 {
-    if (!filesystem->createDirectory(FSUtil::GetDirectoryName(path))) {
+    if (!filesystem->createDirectory(FSUtil::GetDirectoryName(path), true)) {
         return false;
     }
 
@@ -217,6 +294,23 @@ WriteNinja(Filesystem *filesystem, ninja::Writer const &writer, std::string cons
 
     return true;
 }
+
+static bool
+WriteAuxiliaryFiles(Filesystem *filesystem, std::map<std::string, pbxbuild::Tool::AuxiliaryFile::Chunk const *> &auxiliaryFileChunks)
+{
+    for (auto it : auxiliaryFileChunks) {
+        if (!filesystem->createDirectory(FSUtil::GetDirectoryName(it.first), true)) {
+            return false;
+        }
+
+        if (!filesystem->write(*it.second->data(), it.first)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 static bool
 ShouldGenerateNinja(Filesystem const *filesystem, bool generate, Parameters const &buildParameters, std::string const &ninjaPath, std::string const &configurationHashPath)
@@ -264,6 +358,8 @@ ShouldGenerateNinja(Filesystem const *filesystem, bool generate, Parameters cons
 
 bool NinjaExecutor::
 build(
+    process::Context const *processContext,
+    process::Launcher *processLauncher,
     Filesystem *filesystem,
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
@@ -280,7 +376,7 @@ build(
     /*
      * This environment contains only settings shared for the entire build.
      */
-    pbxsetting::Environment environment = buildEnvironment.baseEnvironment();
+    pbxsetting::Environment environment = pbxsetting::Environment(buildEnvironment.baseEnvironment());
     environment.insertFront(derivedDataLevel, false);
 
     /*
@@ -292,6 +388,12 @@ build(
     std::string configurationHashPath = intermediatesDirectory + "/" + ".ninja-configuration";
 
     /*
+     * Find the dependency info tool.
+     */
+    std::string executableRoot = FSUtil::GetDirectoryName(processContext->executablePath());
+    std::string dependencyInfoToolPath = *NinjaBuiltinExecutablePath(processContext, filesystem, "dependency-info-tool");
+
+    /*
      * If the Ninja file needs to be generated, generate it.
      */
     if (ShouldGenerateNinja(filesystem, _generate, buildParameters, ninjaPath, configurationHashPath)) {
@@ -301,7 +403,7 @@ build(
          * Load the workspace. This can be quite slow, so only do it if it's needed to generate
          * the Ninja file. Similarly, only resolve dependencies in that case.
          */
-        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, FSUtil::GetCurrentDirectory());
+        ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, processContext->userName(), buildEnvironment, processContext->currentDirectory());
         if (!workspaceContext) {
             fprintf(stderr, "error: unable to load workspace\n");
             return false;
@@ -323,11 +425,13 @@ build(
          * Generate the Ninja file.
          */
         bool result = buildAction(
+            processContext,
             filesystem,
             buildParameters,
             buildEnvironment,
             *buildContext,
             *targetGraph,
+            dependencyInfoToolPath,
             ninjaPath,
             configurationHashPath,
             intermediatesDirectory);
@@ -361,12 +465,12 @@ build(
         /*
          * Find the path to the Ninja executable to use.
          */
-        ext::optional<std::string> executable = filesystem->findExecutable("ninja", FSUtil::GetExecutablePaths());
+        ext::optional<std::string> executable = filesystem->findExecutable("ninja", processContext->executableSearchPaths());
         if (!executable) {
             /*
              * Couldn't find standard Ninja, try with llbuild.
              */
-            executable = filesystem->findExecutable("llbuild", FSUtil::GetExecutablePaths());
+            executable = filesystem->findExecutable("llbuild", processContext->executableSearchPaths());
 
             /*
              * If neither Ninja or llbuild are available, can't start the build.
@@ -393,16 +497,20 @@ build(
         // TODO(grp): Pass number of jobs if specified.
 
         /*
-         * Pass through all environment variables, in case they affect Ninja or build settings
-         * when re-generating the Ninja files.
-         */
-        std::unordered_map<std::string, std::string> environmentVariables = SysUtil::EnvironmentVariables();
-
-        /*
          * Run Ninja and return if it failed. Ninja itself does the build.
          */
-        Subprocess ninja;
-        if (!ninja.execute(filesystem, *executable, arguments, environmentVariables, intermediatesDirectory) || ninja.exitcode() != 0) {
+        process::MemoryContext ninja = process::MemoryContext(
+            *executable,
+            intermediatesDirectory,
+            arguments,
+            processContext->environmentVariables(),
+            processContext->userID(),
+            processContext->groupID(),
+            processContext->userName(),
+            processContext->groupName());
+
+        ext::optional<int> exitCode = processLauncher->launch(filesystem, &ninja);
+        if (!exitCode || *exitCode != 0) {
             return false;
         }
     }
@@ -412,11 +520,13 @@ build(
 
 bool NinjaExecutor::
 buildAction(
+    process::Context const *processContext,
     Filesystem *filesystem,
     Parameters const &buildParameters,
     pbxbuild::Build::Environment const &buildEnvironment,
     pbxbuild::Build::Context const &buildContext,
     pbxbuild::DirectedGraph<pbxproj::PBX::Target::shared_ptr> const &targetGraph,
+    std::string const &dependencyInfoToolPath,
     std::string const &ninjaPath,
     std::string const &configurationHashPath,
     std::string const &intermediatesDirectory)
@@ -450,12 +560,7 @@ buildAction(
      * rules at the Ninja level. Instead, add a single rule that just passes through from
      * the build command that calls it.
      */
-    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env -i $env $exec && $depexec"));
-
-    /*
-     * Build up a list of all of the inputs to the build, so Ninja can regenerate as necessary.
-     */
-    std::vector<std::string> inputPaths = buildContext.workspaceContext().loadedFilePaths();
+    writer.rule(NinjaRuleName(), ninja::Value::Expression("cd $dir && env $env $exec && $depexec"));
 
     /*
      * Go over each target and write out Ninja targets for the start and end of each.
@@ -512,17 +617,15 @@ buildAction(
          */
         std::string targetWriteAuxiliaryFiles = TargetNinjaWriteAuxiliaryFiles(target);
         std::vector<ninja::Value> auxiliaryFileOutputs = { ninja::Value::String(targetBegin) };
-        for (pbxbuild::Tool::Invocation const &invocation : phaseInvocations.invocations()) {
-            for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-                auxiliaryFileOutputs.push_back(ninja::Value::String(auxiliaryFile.path()));
-            }
+        for (pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile : phaseInvocations.auxiliaryFiles()) {
+            auxiliaryFileOutputs.push_back(ninja::Value::String(auxiliaryFile.path()));
         }
         writer.build({ ninja::Value::String(targetWriteAuxiliaryFiles) }, "phony", auxiliaryFileOutputs);
 
         /*
          * Write out the Ninja file to build this target.
          */
-        if (!buildTargetInvocations(filesystem, target, *targetEnvironment, phaseInvocations.invocations())) {
+        if (!buildTargetInvocations(processContext, filesystem, dependencyInfoToolPath, target, *targetEnvironment, phaseInvocations.auxiliaryFiles(), phaseInvocations.invocations())) {
             fprintf(stderr, "error: failed to build target ninja\n");
             return false;
         }
@@ -538,7 +641,7 @@ buildAction(
          */
         std::unordered_set<std::string> invocationOutputs;
         for (pbxbuild::Tool::Invocation const &invocation : phaseInvocations.invocations()) {
-            if (invocation.executable().path().empty()) {
+            if (!invocation.executable()) {
                 /* No outputs. */
                 continue;
             }
@@ -564,28 +667,30 @@ buildAction(
         /*
          * Add the phony target for ending this target's build.
          */
+        uint32_t maxInvocationPriority = 0;
+        for (pbxbuild::Tool::Invocation const &invocation : phaseInvocations.invocations()) {
+            maxInvocationPriority = std::max(maxInvocationPriority, invocation.priority());
+        }
         std::string targetFinish = TargetNinjaFinish(target);
-        std::vector<ninja::Value> invocationOutputsValues;
-        for (std::string const &output : invocationOutputs) {
-            invocationOutputsValues.push_back(ninja::Value::String(output));
-        }
-        writer.build({ ninja::Value::String(targetFinish) }, "phony", { }, { }, invocationOutputsValues);
-
-        /*
-         * Add loaded files for the target configuration to the inputs.
-         */
-        if (targetEnvironment->projectConfigurationFile() != nullptr) {
-            inputPaths.push_back(targetEnvironment->projectConfigurationFile()->path());
-        }
-        if (targetEnvironment->targetConfigurationFile() != nullptr) {
-            inputPaths.push_back(targetEnvironment->targetConfigurationFile()->path());
-        }
+        writer.build({ ninja::Value::String(targetFinish) }, "phony", { ninja::Value::String(TargetPhaseNinjaFinish(target, maxInvocationPriority)) });
     }
+
+    /*
+     * Build up a list of all of the inputs to the build, so Ninja can regenerate as necessary.
+     */
+    std::vector<std::string> inputPaths = buildContext.workspaceContext().loadedFilePaths();
 
     /*
      * Add a Ninja rule to regenerate the build.ninja file itself.
      */
-    WriteNinjaRegenerate(&writer, buildParameters, ninjaPath, configurationHashPath, inputPaths);
+    WriteNinjaRegenerate(
+        &writer,
+        buildParameters,
+        processContext->executablePath(),
+        processContext->currentDirectory(),
+        ninjaPath,
+        configurationHashPath,
+        inputPaths);
 
     /*
      * Serialize the Ninja file into the build root.
@@ -605,9 +710,12 @@ buildAction(
 
 bool NinjaExecutor::
 buildTargetInvocations(
+    process::Context const *processContext,
     Filesystem *filesystem,
+    std::string const &dependencyInfoToolPath,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
+    std::vector<pbxbuild::Tool::AuxiliaryFile> const &auxiliaryFiles,
     std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
     /*
@@ -625,20 +733,67 @@ buildTargetInvocations(
     std::string temporaryDirectory = environment.resolve("TARGET_TEMP_DIR");
 
     /*
+     * Write auxiliary files to run first.
+     */
+    std::map<std::string, pbxbuild::Tool::AuxiliaryFile::Chunk const *> auxiliaryFileChunks;
+    for (pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile : auxiliaryFiles) {
+        if (!buildAuxiliaryFile(&writer, auxiliaryFile, targetBegin, temporaryDirectory, auxiliaryFileChunks)) {
+            return false;
+        }
+    }
+
+    /*
+     * Group every invocation in target by its phase priority.
+     */
+    std::map<int, std::unordered_set<std::string>, std::less<uint32_t>> priorityToOutputs;
+    for (pbxbuild::Tool::Invocation const &invocation : invocations) {
+        std::vector<std::string> invocationOutputs = NinjaInvocationOutputs(invocation);
+        if (!invocationOutputs.empty()) {
+            priorityToOutputs[invocation.priority()].insert(invocationOutputs.begin(), invocationOutputs.end());
+        }
+    }
+
+    /*
+     * Write phony targets for start and end of each phase priorities.
+     */
+    ninja::Value previousPhase = ninja::Value::String(targetWriteAuxiliaryFiles);
+    for (auto const &priorityMappedOutputs : priorityToOutputs) {
+        // begin phase phony target.
+        ninja::Value targetPhaseBegin = ninja::Value::String(TargetPhaseNinjaBegin(target, priorityMappedOutputs.first));
+        writer.build({ targetPhaseBegin }, "phony", { previousPhase });
+
+        // finish phase phony target.
+        ninja::Value targetPhaseFinish = ninja::Value::String(TargetPhaseNinjaFinish(target, priorityMappedOutputs.first));
+        std::vector<ninja::Value> phaseFinishDependency;
+
+        // make sure phase orders are kept by having phase begin as dependency of phase finish.
+        phaseFinishDependency.push_back(targetPhaseBegin);
+
+        for (std::string const &output: priorityMappedOutputs.second) {
+            phaseFinishDependency.push_back(ninja::Value::String(output));
+        }
+        writer.build({ targetPhaseFinish }, "phony", phaseFinishDependency);
+
+        // update previous phase so that next phase can depend upon it.
+        previousPhase = targetPhaseFinish;
+    }
+
+    /*
      * Add the build command for each invocation.
      */
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
-        /* Write auxiliary files to run first. */
-        for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-            if (!buildAuxiliaryFile(&writer, auxiliaryFile, targetBegin)) {
+        // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
+        if (invocation.executable()) {
+            /* Find invocation executable. */
+            ext::optional<std::string> executablePath = NinjaExecutablePath(processContext, filesystem, targetEnvironment.executablePaths(), *invocation.executable());
+            if (!executablePath) {
+                fprintf(stderr, "unable to find executable: %s\n", invocation.executable()->builtin().value_or(invocation.executable()->external().value_or("<NONE>")).c_str());
+
                 return false;
             }
-        }
 
-        /* Write invocations to run after auxiliary files. */
-        // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
-        if (!invocation.executable().path().empty()) {
-            if (!buildInvocation(&writer, invocation, temporaryDirectory, targetWriteAuxiliaryFiles)) {
+            /* Write invocations to run after auxiliary files. */
+            if (!buildInvocation(&writer, invocation, *executablePath, dependencyInfoToolPath, temporaryDirectory, TargetPhaseNinjaBegin(target, invocation.priority()))) {
                 return false;
             }
         }
@@ -652,28 +807,21 @@ buildTargetInvocations(
         fprintf(stderr, "error: unable to write target ninja: %s\n", path.c_str());
         return false;
     }
+    if (!WriteAuxiliaryFiles(filesystem, auxiliaryFileChunks)) {
+        fprintf(stderr, "error: unable to write auxiliary files\n");
+        return false;
+    }
 
     return true;
-}
-
-static std::string
-LocalExecutable(std::string const &executable)
-{
-    std::string executableRoot = FSUtil::GetDirectoryName(SysUtil::GetExecutablePath());
-    return executableRoot + "/" + executable;
-}
-
-static std::string
-NinjaDependencyInfoExecutable()
-{
-    return LocalExecutable("dependency-info-tool");
 }
 
 bool NinjaExecutor::
 buildAuxiliaryFile(
     ninja::Writer *writer,
-    pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile,
-    std::string const &after)
+    pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile,
+    std::string const &after,
+    std::string const &temporaryDirectory,
+    std::map<std::string, pbxbuild::Tool::AuxiliaryFile::Chunk const *> &auxiliaryFileChunks)
 {
     std::vector<ninja::Value> inputs;
     std::vector<ninja::Value> outputs = { ninja::Value::String(auxiliaryFile.path()) };
@@ -684,19 +832,19 @@ buildAuxiliaryFile(
      */
     std::string escapedPath = Escape::Shell(auxiliaryFile.path());
     std::string exec = "echo -n > " + escapedPath;
-    for (pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
+    for (pbxbuild::Tool::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
         exec += " && ";
 
         switch (chunk.type()) {
-            case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::Data: {
-                // FIXME: use base64 directly, rather than through plist
-                auto data = plist::Data::New(*chunk.data());
-                exec += "echo " + data->base64Value();
-                exec += " | ";
-                exec += "base64 --decode";
+            case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::Data: {
+                // Cache auxiliary file path and data, so that we can write them in build directory later.
+                const std::string auxiliaryFileChunkPath = temporaryDirectory + "/" + ".ninja-auxiliary-file-" + NinjaHash(reinterpret_cast<const char *>(chunk.data()->data()), chunk.data()->size()) + ".chunk";
+                auxiliaryFileChunks.insert(std::make_pair(auxiliaryFileChunkPath, &chunk));
+                exec += "cat " + Escape::Shell(auxiliaryFileChunkPath);
+                inputs.push_back(ninja::Value::String(auxiliaryFileChunkPath));
                 break;
             }
-            case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::File: {
+            case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::File: {
                 exec += "cat " + Escape::Shell(*chunk.file());
                 inputs.push_back(ninja::Value::String(*chunk.file()));
                 break;
@@ -733,6 +881,8 @@ bool NinjaExecutor::
 buildInvocation(
     ninja::Writer *writer,
     pbxbuild::Tool::Invocation const &invocation,
+    std::string const &executablePath,
+    std::string const &dependencyInfoToolPath,
     std::string const &temporaryDirectory,
     std::string const &after)
 {
@@ -740,15 +890,15 @@ buildInvocation(
      * Build the invocation arguments. Must escape for shell arguments as Ninja passes
      * the command string directly to the shell, which would interpret spaces, etc as meaningful.
      */
-    std::string exec = Escape::Shell(invocation.executable().path());
+    std::string exec = Escape::Shell(executablePath);
     for (std::string const &arg : invocation.arguments()) {
         exec += " " + Escape::Shell(arg);
     }
 
     /*
-     * Build the invocation environment. To set the environment, we use standard shell syntax.
-     * Use `env` to avoid Bash-specific limitations on environment variables. Specifically, some
-     * versions of Bash don't allow setting "UID". Pass -i to clear out the environment.
+     * Build the invocation environment. To set the environment, we use standard shell tools:
+     * `env` to avoid Bash-specific limitations on environment variables (some versions of Bash
+     * don't allow setting "UID"). Intentionally add to, not replace, the process environment.
      */
     std::string environment;
     for (auto it = invocation.environment().begin(); it != invocation.environment().end(); ++it) {
@@ -761,7 +911,8 @@ buildInvocation(
     /*
      * Determine the status message for Ninja to print for this invocation.
      */
-    std::string description = NinjaDescription(_formatter->beginInvocation(invocation, invocation.executable().displayName(), false));
+    std::string executableDisplayName = invocation.executable()->builtin().value_or(executablePath);
+    std::string description = NinjaDescription(_formatter->beginInvocation(invocation, executableDisplayName, false));
 
     /*
      * Add the dependency info converter & file.
@@ -774,10 +925,9 @@ buildInvocation(
         std::string output = NinjaInvocationOutputs(invocation).front();
 
         /* Find where the generated dependency info should go. */
-        dependencyInfoFile = temporaryDirectory + "/" + ".ninja-dependency-info-" + NinjaHash(output) + ".d";
+        dependencyInfoFile = temporaryDirectory + "/" + ".ninja-dependency-info-" + NinjaHash(output.data(), output.size()) + ".d";
 
         /* Build the dependency info rewriter arguments. */
-        std::string dependencyInfoExecutable = NinjaDependencyInfoExecutable();
         std::vector<std::string> dependencyInfoArguments = {
             "--name", output,
             "--output", dependencyInfoFile,
@@ -794,7 +944,7 @@ buildInvocation(
         }
 
         /* Create the command for converting the dependency info. */
-        dependencyInfoExec = Escape::Shell(dependencyInfoExecutable);
+        dependencyInfoExec = Escape::Shell(dependencyInfoToolPath);
         for (std::string const &arg : dependencyInfoArguments) {
             dependencyInfoExec += " " + Escape::Shell(arg);
         }

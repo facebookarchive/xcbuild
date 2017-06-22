@@ -233,7 +233,7 @@ png_user_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
 std::pair<ext::optional<Image>, std::string> PNG::
 Read(std::vector<uint8_t> const &contents)
 {
-    if (contents.size() < 8 || png_sig_cmp(static_cast<png_const_bytep>(contents.data()), 0, 8)) {
+    if (contents.size() < 8 || png_sig_cmp(const_cast<png_bytep>(static_cast<png_byte const *>(contents.data())), 0, 8)) {
         return std::make_pair(ext::nullopt, "contents is not a PNG");
     }
 
@@ -480,7 +480,7 @@ Write(Image const &image)
     strm.next_in = buffer.data();
 
     /* Maximum compressed size is x1.01 + 12 the uncompressed size. */
-    std::vector<uint8_t> compressed = std::vector<uint8_t>(buffer.size() * 1.01 + 12);
+    std::vector<uint8_t> compressed = std::vector<uint8_t>(static_cast<size_t>(buffer.size() * 1.01) + 12);
 
     do {
         strm.avail_out = compressed.size() - strm.total_out;

@@ -15,6 +15,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::NativeTarget;
+using pbxproj::Context;
 
 NativeTarget::
 NativeTarget() :

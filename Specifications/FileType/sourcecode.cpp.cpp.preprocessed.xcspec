@@ -10,9 +10,9 @@
 {
     Type = FileType;
     Identifier = sourcecode.cpp.cpp.preprocessed;
-    BasedOn = sourcecode.cpp;
+    BasedOn = sourcecode.cpp.cpp;
 
-    UTI = "public.c-plus-plus-source-preprocessed";
+    UTI = "public.c-plus-plus-source.preprocessed";
     Extensions = (
         "ii",
     );

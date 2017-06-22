@@ -15,6 +15,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::ShellScriptBuildPhase;
+using pbxproj::Context;
 
 ShellScriptBuildPhase::
 ShellScriptBuildPhase() :

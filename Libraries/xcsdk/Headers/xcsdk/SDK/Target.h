@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <ext/optional>
 
 namespace libutil { class Filesystem; };
 namespace plist { class Dictionary; }
@@ -29,27 +30,40 @@ class Platform;
 class Target {
 public:
     typedef std::shared_ptr <Target> shared_ptr;
-    typedef std::weak_ptr <Target> weak_ptr;
-    typedef std::vector <shared_ptr> vector;
 
-protected:
-    std::weak_ptr<Manager>  _manager;
-    std::weak_ptr<Platform> _platform;
+private:
+    std::weak_ptr<Manager>                  _manager;
+    std::weak_ptr<Platform>                 _platform;
 
-public:
-    Product::shared_ptr      _product;
-    std::string              _path;
-    std::string              _bundleName;
-    std::string              _version;
-    std::string              _canonicalName;
-    std::string              _displayName;
-    std::string              _minimalDisplayName;
-    std::string              _maximumDeploymentTarget;
-    std::vector<std::string> _supportedBuildToolsVersion;
-    pbxsetting::Level        _customProperties;
-    pbxsetting::Level        _defaultProperties;
-    bool                     _isBaseSDK;
-    Toolchain::vector        _toolchains;
+private:
+    Product::shared_ptr                     _product;
+    std::vector<Toolchain::shared_ptr>      _toolchains;
+
+private:
+    std::string                             _path;
+    std::string                             _bundleName;
+
+private:
+    ext::optional<std::string>              _canonicalName;
+    ext::optional<std::string>              _displayName;
+    ext::optional<std::string>              _minimalDisplayName;
+    ext::optional<std::string>              _version;
+
+private:
+    ext::optional<bool>                     _isBaseSDK;
+    ext::optional<std::string>              _defaultDeploymentTarget;
+    ext::optional<std::string>              _maximumDeploymentTarget;
+    ext::optional<pbxsetting::Level>        _defaultProperties;
+    ext::optional<pbxsetting::Level>        _customProperties;
+    ext::optional<std::vector<std::string>> _propertyConditionFallbackNames;
+
+private:
+    ext::optional<std::string>              _docSetFeedName;
+    ext::optional<std::string>              _docSetFeedURL;
+
+private:
+    ext::optional<std::string>              _minimumSupportedToolsVersion;
+    ext::optional<std::vector<std::string>> _supportedBuildToolComponents;
 
 public:
     Target();
@@ -61,60 +75,61 @@ public:
     inline std::shared_ptr<Platform> platform() const
     { return _platform.lock(); }
 
+public:
+    inline Product::shared_ptr const &product() const
+    { return _product; }
+    inline std::vector<Toolchain::shared_ptr> const &toolchains() const
+    { return _toolchains; }
+
+public:
     inline std::string const &path() const
     { return _path; }
     inline std::string const &bundleName() const
     { return _bundleName; }
 
 public:
-    inline Product::shared_ptr const &product() const
-    { return _product; }
-
-public:
-    inline std::string const &version() const
+    inline ext::optional<std::string> const &canonicalName() const
+    { return _canonicalName; }
+    inline ext::optional<std::string> const &displayName() const
+    { return _displayName; }
+    inline ext::optional<std::string> const &minimalDisplayName() const
+    { return _minimalDisplayName; }
+    inline ext::optional<std::string> const &version() const
     { return _version; }
 
 public:
-    inline std::string const &canonicalName() const
-    { return _canonicalName; }
-
-public:
-    inline std::string const &displayName() const
-    { return _displayName; }
-
-    inline std::string const &minimalDisplayName() const
-    { return _minimalDisplayName; }
-
-public:
-    inline std::string const &maximumDeploymentTarget() const
-    { return _maximumDeploymentTarget; }
-
-public:
-    inline std::vector<std::string> const &supportedBuildToolsVersion() const
-    { return _supportedBuildToolsVersion; }
-    inline std::vector<std::string> &supportedBuildToolsVersion()
-    { return _supportedBuildToolsVersion; }
-
-public:
-    inline pbxsetting::Level const &customProperties() const
-    { return _customProperties; }
-
-    inline pbxsetting::Level const &defaultProperties() const
-    { return _defaultProperties; }
-
-public:
     inline bool isBaseSDK() const
+    { return _isBaseSDK.value_or(false); }
+    inline ext::optional<bool> isBaseSDKOptional() const
     { return _isBaseSDK; }
+    inline ext::optional<std::string> const &defaultDeploymentTarget() const
+    { return _defaultDeploymentTarget; }
+    inline ext::optional<std::string> const &maximumDeploymentTarget() const
+    { return _maximumDeploymentTarget; }
+    inline ext::optional<pbxsetting::Level> const &defaultProperties() const
+    { return _defaultProperties; }
+    inline ext::optional<pbxsetting::Level> const &customProperties() const
+    { return _customProperties; }
+    inline ext::optional<std::vector<std::string>> const &propertyConditionFallbackNames()
+    { return _propertyConditionFallbackNames; }
 
 public:
-    inline Toolchain::vector const &toolchains() const
-    { return _toolchains; }
+    inline ext::optional<std::string> const &docSetFeedName()
+    { return _docSetFeedName; }
+    inline ext::optional<std::string> const &docSetFeedURL()
+    { return _docSetFeedURL; }
+
+public:
+    inline ext::optional<std::string> const &minimumSupportedToolsVersion()
+    { return _minimumSupportedToolsVersion; }
+    inline ext::optional<std::vector<std::string>> &supportedBuildToolComponents()
+    { return _supportedBuildToolComponents; }
 
 public:
     pbxsetting::Level settings(void) const;
 
 public:
-    std::vector<std::string> executablePaths(Toolchain::vector const &overrideToolchains = { }) const;
+    std::vector<std::string> executablePaths() const;
 
 public:
     static Target::shared_ptr Open(libutil::Filesystem const *filesystem, std::shared_ptr<Manager> manager, std::shared_ptr<Platform>, std::string const &path);

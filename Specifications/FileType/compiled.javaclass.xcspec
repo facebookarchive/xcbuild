@@ -16,4 +16,6 @@
     Extensions = (
         "class",
     );
+    IncludeInIndex = YES;
+    CanSetIncludeInIndex = YES;
 }

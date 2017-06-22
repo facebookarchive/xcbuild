@@ -16,4 +16,7 @@
     Extensions = (
         "storyboard",
     );
+    IncludeInIndex = YES;
+    CanSetIncludeInIndex = YES;
+    AppliesToBuildRules = YES;
 }

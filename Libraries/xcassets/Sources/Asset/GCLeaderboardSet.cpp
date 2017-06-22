@@ -8,27 +8,10 @@
  */
 
 #include <xcassets/Asset/GCLeaderboardSet.h>
-#include <xcassets/Asset/ImageStack.h>
-#include <libutil/Filesystem.h>
+#include <plist/String.h>
 #include <plist/Keys/Unpack.h>
 
 using xcassets::Asset::GCLeaderboardSet;
-using xcassets::Asset::ImageStack;
-using libutil::Filesystem;
-
-bool GCLeaderboardSet::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren<ImageStack>(filesystem, &_children)) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool GCLeaderboardSet::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
@@ -52,6 +35,7 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
             auto unpack = plist::Keys::Unpack("Properties", P, &seen);
 
             auto CR = unpack.cast <plist::Dictionary> ("content-reference");
+            auto I  = unpack.cast <plist::String> ("identifier");
 
             if (!unpack.complete(true)) {
                 fprintf(stderr, "%s", unpack.errorText().c_str());
@@ -62,6 +46,10 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
                 if (contentReference.parse(CR)) {
                     _contentReference = contentReference;
                 }
+            }
+
+            if (I != nullptr) {
+                _identifier = I->value();
             }
         }
     }

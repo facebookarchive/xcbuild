@@ -20,6 +20,7 @@ using plist::Integer;
 using plist::Real;
 using plist::Boolean;
 using plist::Data;
+using plist::Date;
 using plist::UID;
 using plist::Array;
 using plist::Dictionary;
@@ -193,7 +194,7 @@ handleDictionary(Dictionary const *dictionary)
 
     _indent++;
 
-    for (int i = 0; i < dictionary->count(); ++i) {
+    for (size_t i = 0; i < dictionary->count(); ++i) {
         if (!writeString("\n", false)) {
             return false;
         }
@@ -239,7 +240,7 @@ handleArray(Array const *array)
 
     _indent++;
 
-    for (int i = 0; i < array->count(); ++i) {
+    for (size_t i = 0; i < array->count(); ++i) {
         if (!writeString("\n", false)) {
             return false;
         }

@@ -14,6 +14,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::ContainerItemProxy;
+using pbxproj::Context;
 
 ContainerItemProxy::
 ContainerItemProxy() :

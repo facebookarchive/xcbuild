@@ -12,6 +12,7 @@
 #include <plist/Object.h>
 #include <plist/Format/Any.h>
 #include <libutil/Filesystem.h>
+#include <process/Context.h>
 #include <libutil/FSUtil.h>
 
 using builtin::copyPlist::Driver;
@@ -36,10 +37,10 @@ name()
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
         fprintf(stderr, "error: %s\n", result.second.c_str());
         return 1;
@@ -91,7 +92,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     for (std::string const &inputPath : options.inputs()) {
         /* Read in the input. */
         std::vector<uint8_t> inputContents;
-        if (!filesystem->read(&inputContents, FSUtil::ResolveRelativePath(inputPath, workingDirectory))) {
+        if (!filesystem->read(&inputContents, FSUtil::ResolveRelativePath(inputPath, processContext->currentDirectory()))) {
             fprintf(stderr, "error: unable to read input %s\n", inputPath.c_str());
             return 1;
         }
@@ -132,7 +133,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         }
 
         /* Output to the same name as the input, but in the output directory. */
-        std::string outputPath = FSUtil::ResolveRelativePath(*options.outputDirectory(), workingDirectory) + "/" + FSUtil::GetBaseName(inputPath);
+        std::string outputPath = FSUtil::ResolveRelativePath(*options.outputDirectory(), processContext->currentDirectory()) + "/" + FSUtil::GetBaseName(inputPath);
 
         /* Write out the output. */
         if (!filesystem->write(outputContents, outputPath)) {

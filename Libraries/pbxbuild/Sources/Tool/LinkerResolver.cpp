@@ -32,33 +32,43 @@ void Tool::LinkerResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    std::vector<std::string> const &inputFiles,
-    std::vector<Phase::File> const &inputLibraries,
+    std::vector<Tool::Input> const &inputFiles,
+    std::vector<Tool::Input> const &inputLibraries,
     std::string const &output,
     std::vector<std::string> const &additionalArguments,
     std::string const &executable)
 {
     std::vector<std::string> special;
-    std::vector<Tool::Invocation::AuxiliaryFile> auxiliaries;
+    std::vector<Tool::AuxiliaryFile> auxiliaries;
 
     special.insert(special.end(), additionalArguments.begin(), additionalArguments.end());
 
     if (_linker->supportsInputFileList() || _linker->identifier() == Tool::LinkerResolver::LibtoolToolIdentifier()) {
         std::string path = environment.expand(pbxsetting::Value::Parse("$(LINK_FILE_LIST_$(variant)_$(arch))"));
         std::string contents;
-        for (std::string const &input : inputFiles) {
-            contents += input + "\n";
+        for (Tool::Input const &input : inputFiles) {
+            contents += input.path() + "\n";
         }
-        auto fileList = Tool::Invocation::AuxiliaryFile::Data(path, std::vector<uint8_t>(contents.begin(), contents.end()));
+        auto fileList = Tool::AuxiliaryFile::Data(path, std::vector<uint8_t>(contents.begin(), contents.end()));
         auxiliaries.push_back(fileList);
     }
 
-    std::unordered_set<std::string> libraryPaths;
-    for (Phase::File const &library : inputLibraries) {
-        if (!library.fileType()->isFrameworkWrapper()) {
-            libraryPaths.insert(FSUtil::GetDirectoryName(library.path()));
+    /*
+     * Use an std::vector from which we'll remove duplicates later so we can
+     * preserve the ordering of our library search paths.
+     */
+    std::vector<std::string> libraryPaths;
+    libraryPaths.reserve(inputLibraries.size());
+    for (Tool::Input const &library : inputLibraries) {
+        if (library.fileType() == nullptr || !library.fileType()->isFrameworkWrapper()) {
+            libraryPaths.push_back(FSUtil::GetDirectoryName(library.path()));
         }
     }
+
+    // Eliminate duplicates.
+    libraryPaths.erase(std::unique(libraryPaths.begin(), libraryPaths.end()),
+                       libraryPaths.end());
+
     for (std::string const &libraryPath : libraryPaths) {
         special.push_back("-L" + libraryPath);
     }
@@ -67,9 +77,9 @@ resolve(
         special.push_back("-F" + environment.resolve("BUILT_PRODUCTS_DIR"));
     }
 
-    for (Phase::File const &library : inputLibraries) {
+    for (Tool::Input const &library : inputLibraries) {
         std::string base = FSUtil::GetBaseNameWithoutExtension(library.path());
-        if (library.fileType()->isFrameworkWrapper()) {
+        if (library.fileType() != nullptr && library.fileType()->isFrameworkWrapper()) {
             special.push_back("-framework");
             special.push_back(base);
         } else {
@@ -83,15 +93,18 @@ resolve(
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
     if (_linker->identifier() == Tool::LinkerResolver::LinkerToolIdentifier()) {
         if (_linker->dependencyInfoFile()) {
-            auto info = Tool::Invocation::DependencyInfo(
-                dependency::DependencyInfoFormat::Binary,
-                environment.expand(*_linker->dependencyInfoFile()));
-            dependencyInfo.push_back(info);
+            auto dependencyInfoFile = environment.expand(*_linker->dependencyInfoFile());
+            if (!dependencyInfoFile.empty()) {
+                auto info = Tool::Invocation::DependencyInfo(
+                    dependency::DependencyInfoFormat::Binary,
+                    dependencyInfoFile);
+                dependencyInfo.push_back(info);
 
-            special.push_back("-Xlinker");
-            special.push_back("-dependency_info");
-            special.push_back("-Xlinker");
-            special.push_back(info.path());
+                special.push_back("-Xlinker");
+                special.push_back("-dependency_info");
+                special.push_back("-Xlinker");
+                special.push_back(info.path());
+            }
         }
     }
 
@@ -107,25 +120,24 @@ resolve(
     }
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
-    invocation.auxiliaryFiles() = auxiliaries;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
+
+    toolContext->auxiliaryFiles().insert(toolContext->auxiliaryFiles().end(), auxiliaries.begin(), auxiliaries.end());
 }
 
 std::unique_ptr<Tool::LinkerResolver> Tool::LinkerResolver::
-Create(Phase::Environment const &phaseEnvironment, std::string const &identifier)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, std::string const &identifier)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Linker::shared_ptr linker = buildEnvironment.specManager()->linker(identifier, targetEnvironment.specDomains());
+    pbxspec::PBX::Linker::shared_ptr linker = specManager->linker(identifier, specDomains);
     if (linker == nullptr) {
         fprintf(stderr, "warning: could not find linker %s\n", identifier.c_str());
         return nullptr;

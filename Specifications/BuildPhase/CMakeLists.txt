@@ -15,6 +15,6 @@ install(FILES
         com.apple.buildphase.java-archive.xcspec
         com.apple.buildphase.resources.xcspec
         com.apple.buildphase.rez.xcspec
-        com.apple.buildphase.shellscript.xcspec
+        com.apple.buildphase.shell-script.xcspec
         com.apple.buildphase.sources.xcspec
         DESTINATION Library/Xcode/Specifications)

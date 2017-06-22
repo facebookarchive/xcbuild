@@ -17,6 +17,7 @@
         "appex",
         "pluginkit",
     );
+    IsTransparent = NO;
     IsEmbeddable = YES;
     IsExecutable = YES;
     CodeSignOnCopy = NO;

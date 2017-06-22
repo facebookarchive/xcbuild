@@ -9,7 +9,7 @@
 
 add_library(pbxspec SHARED
             Sources/Manager.cpp
-            Sources/Types.cpp
+            Sources/SpecificationType.cpp
             Sources/PBX/Architecture.cpp
             Sources/PBX/BuildPhase.cpp
             Sources/PBX/BuildPhaseInjection.cpp
@@ -22,7 +22,6 @@ add_library(pbxspec SHARED
             Sources/PBX/Linker.cpp
             Sources/PBX/PackageType.cpp
             Sources/PBX/ProductType.cpp
-            Sources/PBX/PropertyConditionFlavor.cpp
             Sources/PBX/PropertyOption.cpp
             Sources/PBX/Specification.cpp
             Sources/PBX/Tool.cpp

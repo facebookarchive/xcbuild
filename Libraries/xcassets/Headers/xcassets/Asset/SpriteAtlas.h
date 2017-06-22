@@ -11,6 +11,7 @@
 #define __xcassets_Asset_SpriteAtlas_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Compression.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -21,13 +22,9 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageSet;
-
 class SpriteAtlas : public Asset {
 private:
-    std::vector<std::shared_ptr<ImageSet>>  _children;
-
-private:
+    ext::optional<Compression>              _compression;
     ext::optional<std::vector<std::string>> _onDemandResourceTags;
     ext::optional<bool>                     _providesNamespace;
 
@@ -36,10 +33,8 @@ private:
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<ImageSet>> const &children() const
-    { return _children; }
-
-public:
+    ext::optional<Compression> const &compression() const
+    { return _compression; }
     ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
     { return _onDemandResourceTags; }
     bool providesNamespace() const
@@ -50,7 +45,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::SpriteAtlas; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::SpriteAtlas; }
 
 public:
@@ -58,7 +53,6 @@ public:
     { return std::string("spriteatlas"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

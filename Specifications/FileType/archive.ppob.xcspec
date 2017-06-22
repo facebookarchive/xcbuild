@@ -10,7 +10,7 @@
 {
     Type = FileType;
     Identifier = archive.ppob;
-    BasedOn = archive;
+    BasedOn = archive.rsrc;
 
     UTI = "com.apple.ppob-archive";
     Extensions = (

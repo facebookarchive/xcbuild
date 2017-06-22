@@ -9,6 +9,7 @@
 
 #include <pbxspec/PBX/PackageType.h>
 #include <pbxspec/Inherit.h>
+#include <pbxspec/Context.h>
 #include <plist/Boolean.h>
 #include <plist/Dictionary.h>
 #include <plist/String.h>

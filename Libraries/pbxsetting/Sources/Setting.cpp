@@ -13,6 +13,7 @@
 
 using pbxsetting::Setting;
 using pbxsetting::Condition;
+using pbxsetting::Value;
 
 Setting::
 Setting(std::string const &name, Condition const &condition, Value const &value) :
@@ -45,13 +46,16 @@ Create(std::string const &key, std::string const &value)
     return Setting(key, Condition::Empty(), Value::String(value));
 }
 
-Setting Setting::
+ext::optional<Setting> Setting::
 Parse(std::string const &string)
 {
     size_t equal = 0;
     size_t sqbo  = 0;
     size_t sqbc  = 0;
-    size_t comma = std::string::npos;
+
+    /*
+     * Parse conditions.
+     */
     std::unordered_map<std::string, std::string> conditions;
 
     do {
@@ -60,6 +64,8 @@ Parse(std::string const &string)
         sqbc  = string.find(']', sqbo);
 
         if (sqbo < sqbc && equal > sqbo && equal < sqbc) {
+            size_t comma = std::string::npos;
+
             do {
                 size_t start = (comma != std::string::npos && comma > sqbo ? comma : sqbo);
                 comma = string.find(',', start + 1);
@@ -73,8 +79,17 @@ Parse(std::string const &string)
         }
     } while (sqbo < sqbc && equal > sqbo && equal < sqbc);
 
-    sqbo = string.find('[');
+    /*
+     * No equals is not a valid setting.
+     */
+    if (equal == std::string::npos) {
+        return ext::nullopt;
+    }
 
+    /*
+     * Parse setting key and value.
+     */
+    sqbo = string.find('[');
     std::string key = string.substr(0, sqbo != std::string::npos ? sqbo : equal);
     std::string value = string.substr(equal + 1);
 
@@ -87,5 +102,5 @@ Parse(std::string const &string)
 Setting Setting::
 Parse(std::string const &key, std::string const &value)
 {
-    return Parse(key + "=" + value);
+    return Setting(key, Condition::Empty(), Value::Parse(value));
 }

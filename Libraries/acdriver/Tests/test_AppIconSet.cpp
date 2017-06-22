@@ -103,13 +103,13 @@ TEST(AppIconSet, Compile)
         "/AppIcon.appiconset",
         { },
         xcassets::Asset::AppIconSet::Extension());
-    auto appIconSet = std::static_pointer_cast<xcassets::Asset::AppIconSet>(asset);
+    auto appIconSet = libutil::static_unique_pointer_cast<xcassets::Asset::AppIconSet>(std::move(asset));
     ASSERT_NE(appIconSet, nullptr);
 
     /* Compile asset. */
     Result result;
     Output output = Output("/output", Output::Format::Compiled, std::string("AppIcon"), ext::nullopt);
-    ASSERT_TRUE(AppIconSet::Compile(appIconSet, &output, &result));
+    ASSERT_TRUE(AppIconSet::Compile(appIconSet.get(), &output, &result));
     EXPECT_TRUE(result.success());
 
     /* Should copy images to output. */

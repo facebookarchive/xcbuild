@@ -10,72 +10,17 @@
 #ifndef __pbxbuild_Tool_Invocation_h
 #define __pbxbuild_Tool_Invocation_h
 
-#include <pbxbuild/Base.h>
 #include <dependency/DependencyInfoFormat.h>
+
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <ext/optional>
 
 namespace pbxbuild {
 namespace Tool {
 
 class Invocation {
-public:
-    class AuxiliaryFile {
-    public:
-        class Chunk {
-        public:
-            enum class Type {
-                Data,
-                File,
-            };
-
-        private:
-            Type                                _type;
-
-        private:
-            ext::optional<std::vector<uint8_t>> _data;
-            ext::optional<std::string>          _file;
-
-        private:
-            Chunk(
-                Type type,
-                ext::optional<std::vector<uint8_t>> const &data,
-                ext::optional<std::string> const &file);
-
-        public:
-            Type type() const
-            { return _type; }
-
-        public:
-            ext::optional<std::vector<uint8_t>> const &data() const
-            { return _data; }
-            ext::optional<std::string> const &file() const
-            { return _file; }
-
-        public:
-            static Chunk Data(std::vector<uint8_t> const &data);
-            static Chunk File(std::string const &file);
-        };
-
-    private:
-        std::string        _path;
-        std::vector<Chunk> _chunks;
-        bool               _executable;
-
-    public:
-        AuxiliaryFile(std::string const &path, std::vector<Chunk> const &chunks, bool executable = false);
-
-    public:
-        std::string const &path() const
-        { return _path; }
-        std::vector<Chunk> const &chunks() const
-        { return _chunks; }
-        bool executable() const
-        { return _executable; }
-
-    public:
-        static AuxiliaryFile Data(std::string const &path, std::vector<uint8_t> const &data, bool executable = false);
-        static AuxiliaryFile File(std::string const &path, std::string const &file, bool executable = false);
-    };
-
 public:
     class DependencyInfo {
     private:
@@ -98,57 +43,50 @@ public:
      */
     class Executable {
     private:
-        std::string _path;
-        std::string _builtin;
+        ext::optional<std::string> _external;
+        ext::optional<std::string> _builtin;
 
-    public:
-        Executable(std::string const &path, std::string const &builtin);
+    private:
+        Executable(
+            ext::optional<std::string> const &external,
+            ext::optional<std::string> const &builtin);
 
     public:
         /*
-         * The path to the executable. If this executable is a bulitin tool, points
-         * to a standalone executable verison of that tool.
+         * An external executable, relative or absolute path.
          */
-        std::string const &path() const
-        { return _path; }
+        ext::optional<std::string> const &external() const
+        { return _external; }
 
         /*
-         * The name of the builtin tool this executable corresponds to.
+         * A builtin executable name.
          */
-        std::string const &builtin() const
+        ext::optional<std::string> const &builtin() const
         { return _builtin; }
 
     public:
         /*
-         * The user-facing name to show for the executable. For builtin tools, this
-         * uses the shorter name of the bulitin tool rather than the filesystem path.
-         */
-        std::string const &displayName() const;
-
-    public:
-        /*
-         * Creates an executable from an unknown string. The executable could
-         * be a builtin tool (starts with "builtin-"), an absolute path to a tool,
-         * or a relative path to search in the executable paths.
+         * Creates an executable with a known external path.
          */
         static Executable
-        Determine(std::string const &executable, std::vector<std::string> const &executablePaths);
-
-        /*
-         * Creates an executable with a known absolute path.
-         */
-        static Executable
-        Absolute(std::string const &path);
+        External(std::string const &path);
 
         /*
          * Creates an executable for a known built-in tool.
          */
         static Executable
         Builtin(std::string const &name);
+
+        /*
+         * Creates an executable from an unknown string. The executable could
+         * be a builtin tool (starts with "builtin-") or an external tool path.
+         */
+        static ext::optional<Executable>
+        Determine(std::string const &executable);
     };
 
 private:
-    Executable                                   _executable;
+    ext::optional<Executable>                    _executable;
     std::vector<std::string>                     _arguments;
     std::unordered_map<std::string, std::string> _environment;
     std::string                                  _workingDirectory;
@@ -164,7 +102,6 @@ private:
 
 private:
     std::vector<DependencyInfo>                  _dependencyInfo;
-    std::vector<AuxiliaryFile>                   _auxiliaryFiles;
 
 private:
     std::string                                  _logMessage;
@@ -173,12 +110,18 @@ private:
 private:
     bool                                         _createsProductStructure;
 
+private:
+    bool                                         _waitForSwiftArtifacts;
+
+private:
+    uint32_t                                     _priority;
+
 public:
     Invocation();
     ~Invocation();
 
 public:
-    Executable const &executable() const
+    ext::optional<Executable> const &executable() const
     { return _executable; }
     std::vector<std::string> const &arguments() const
     { return _arguments; }
@@ -188,7 +131,7 @@ public:
     { return _workingDirectory; }
 
 public:
-    Executable &executable()
+    ext::optional<Executable> &executable()
     { return _executable; }
     std::vector<std::string> &arguments()
     { return _arguments; }
@@ -233,14 +176,10 @@ public:
 public:
     std::vector<DependencyInfo> const &dependencyInfo() const
     { return _dependencyInfo; }
-    std::vector<AuxiliaryFile> const &auxiliaryFiles() const
-    { return _auxiliaryFiles; }
 
 public:
     std::vector<DependencyInfo> &dependencyInfo()
     { return _dependencyInfo; }
-    std::vector<AuxiliaryFile> &auxiliaryFiles()
-    { return _auxiliaryFiles; }
 
 public:
     std::string const &logMessage() const
@@ -261,6 +200,22 @@ public:
 public:
     bool &createsProductStructure()
     { return _createsProductStructure; }
+
+public:
+    bool waitForSwiftArtifacts() const
+    { return _waitForSwiftArtifacts; }
+
+public:
+    bool &waitForSwiftArtifacts()
+    { return _waitForSwiftArtifacts; }
+
+public:
+    uint32_t priority() const
+    { return _priority; }
+
+public:
+    uint32_t &priority()
+    { return _priority; }
 };
 
 }

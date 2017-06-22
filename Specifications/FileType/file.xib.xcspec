@@ -16,4 +16,7 @@
     Extensions = (
         "xib",
     );
+    IncludeInIndex = YES;
+    CanSetIncludeInIndex = YES;
+    AppliesToBuildRules = YES;
 }

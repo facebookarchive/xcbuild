@@ -19,7 +19,7 @@ using libutil::Filesystem;
 
 bool BrandAssets::
 Compile(
-    std::shared_ptr<xcassets::Asset::BrandAssets> const &brandAssets,
+    xcassets::Asset::BrandAssets const *brandAssets,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)

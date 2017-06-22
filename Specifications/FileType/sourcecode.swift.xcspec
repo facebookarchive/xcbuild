@@ -17,4 +17,7 @@
         "swift",
     );
     IsSwiftSourceCode = YES;
+    IsScannedForIncludes = NO;
+    CanSetIncludeInIndex = YES;
+    AppliesToBuildRules = YES;
 }

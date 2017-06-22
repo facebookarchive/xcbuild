@@ -10,7 +10,8 @@
 #ifndef __pbxbuild_Tool_Tokens_h
 #define __pbxbuild_Tool_Tokens_h
 
-#include <pbxbuild/Base.h>
+#include <string>
+#include <vector>
 
 namespace pbxbuild {
 namespace Tool {
@@ -85,7 +86,7 @@ public:
     static Tool::Tokens::ToolExpansions
     ExpandTool(
         Tool::Environment const &toolEnvironment,
-        Tool::OptionsResult options,
+        Tool::OptionsResult const &options,
         std::string const &executable = "",
         std::vector<std::string> const &specialArguments = { });
 };

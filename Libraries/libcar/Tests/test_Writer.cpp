@@ -132,7 +132,7 @@ TEST(Writer, TestWriter100)
         car::Rendition rendition = car::Rendition::Create(attributes, data);
         rendition.width() = width;
         rendition.height() = height;
-        rendition.scale() = scale;
+        rendition.scale() = static_cast<double>(scale);
         rendition.fileName() = "testpattern_" + std::to_string(facet_identifier) + "@" + std::to_string(scale) + "x.png";
         rendition.layout() = car_rendition_value_layout_one_part_scale;
         writer->addRendition(rendition);
@@ -211,7 +211,7 @@ TEST(Writer, TestWriter100Optimal)
         car::Rendition rendition = car::Rendition::Create(attributes, data);
         rendition.width() = width;
         rendition.height() = height;
-        rendition.scale() = scale;
+        rendition.scale() = static_cast<double>(scale);
         rendition.fileName() = "testpattern_" + std::to_string(facet_identifier) + "@" + std::to_string(scale) + "x.png";
         rendition.layout() = car_rendition_value_layout_one_part_scale;
         writer->addRendition(rendition);

@@ -29,22 +29,20 @@ resolve(
     std::string logMessage = "MkDir " + directory;
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Absolute("/bin/mkdir");
+    invocation.executable() = Tool::Invocation::Executable::External("/bin/mkdir");
     invocation.arguments() = { "-p", directory };
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.outputs() = { FSUtil::ResolveRelativePath(directory, toolContext->workingDirectory()) };
     invocation.logMessage() = "MkDir " + directory;
     invocation.createsProductStructure() = productStructure;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<Tool::MakeDirectoryResolver> Tool::MakeDirectoryResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr mkdirTool = buildEnvironment.specManager()->tool(Tool::MakeDirectoryResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr mkdirTool = specManager->tool(Tool::MakeDirectoryResolver::ToolIdentifier(), specDomains);
     if (mkdirTool == nullptr) {
         fprintf(stderr, "warning: could not find mkdir tool\n");
         return nullptr;

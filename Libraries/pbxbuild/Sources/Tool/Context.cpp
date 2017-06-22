@@ -14,15 +14,14 @@ namespace Tool = pbxbuild::Tool;
 Tool::Context::
 Context(
     xcsdk::SDK::Target::shared_ptr const &sdk,
-    xcsdk::SDK::Toolchain::vector const &toolchains,
-    std::vector<std::string> const &executablePaths,
+    std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains,
     std::string const &workingDirectory,
     Tool::SearchPaths const &searchPaths) :
-    _sdk             (sdk),
-    _toolchains      (toolchains),
-    _executablePaths (executablePaths),
-    _workingDirectory(workingDirectory),
-    _searchPaths     (searchPaths)
+    _sdk                            (sdk),
+    _toolchains                     (toolchains),
+    _workingDirectory               (workingDirectory),
+    _searchPaths                    (searchPaths),
+    _currentPhaseInvocationPriority (0)
 {
 }
 

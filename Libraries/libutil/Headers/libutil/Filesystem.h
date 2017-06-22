@@ -10,6 +10,8 @@
 #ifndef __libutil_Filesystem_h
 #define __libutil_Filesystem_h
 
+#include <libutil/Permissions.h>
+
 #include <functional>
 #include <string>
 #include <vector>
@@ -20,20 +22,33 @@ namespace libutil {
 class Filesystem {
 public:
     /*
-     * Test if a file exists.
+     * The type of a filesystem entry.
      */
-    virtual bool exists(std::string const &path) const = 0;
+    enum class Type {
+        /*
+         * A regular file with contents.
+         */
+        File,
+        /*
+         * A symbolic link to another entry.
+         */
+        SymbolicLink,
+        /*
+         * A directory containing other entries.
+         */
+        Directory,
+    };
 
 public:
     /*
-     * Test if a path is a directory.
+     * Test if a filesystem entry exists.
      */
-    virtual bool isDirectory(std::string const &path) const = 0;
+    virtual bool exists(std::string const &path) const = 0;
 
     /*
-     * Test if a path is a symbolic link.
+     * Get the type of a filesystem entry.
      */
-    virtual bool isSymbolicLink(std::string const &path) const = 0;
+    virtual ext::optional<Type> type(std::string const &path) const = 0;
 
 public:
     /*
@@ -53,16 +68,21 @@ public:
 
 public:
     /*
+     * Retrieve permissions for a file.
+     */
+    virtual ext::optional<Permissions> readFilePermissions(std::string const &path) const = 0;
+
+    /*
+     * Set permissions for a file.
+     */
+    virtual bool writeFilePermissions(std::string const &path, Permissions::Operation operation, Permissions permissions) = 0;
+
+public:
+    /*
      * Create a file. Succeeds if created or already exists.
      */
     virtual bool createFile(std::string const &path) = 0;
 
-    /*
-     * Create a directory. Succeeds if created or already exists.
-     */
-    virtual bool createDirectory(std::string const &path) = 0;
-
-public:
     /*
      * Read from a file.
      */
@@ -74,6 +94,27 @@ public:
     virtual bool write(std::vector<uint8_t> const &contents, std::string const &path) = 0;
 
     /*
+     * Copy a file to a new path.
+     */
+    virtual bool copyFile(std::string const &from, std::string const &to);
+
+    /*
+     * Delete a file.
+     */
+    virtual bool removeFile(std::string const &path) = 0;
+
+public:
+    /*
+     * Retrieve permissions for a symbolic link.
+     */
+    virtual ext::optional<Permissions> readSymbolicLinkPermissions(std::string const &path) const = 0;
+
+    /*
+     * Set permissions for a symbolic link.
+     */
+    virtual bool writeSymbolicLinkPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions) = 0;
+
+    /*
      * Read the destination of the symbolic link, relative to its containing directory.
      */
     virtual ext::optional<std::string> readSymbolicLink(std::string const &path) const = 0;
@@ -83,32 +124,52 @@ public:
      */
     virtual bool writeSymbolicLink(std::string const &target, std::string const &path) = 0;
 
+    /*
+     * Copy a symbolic link to a new path.
+     */
+    virtual bool copySymbolicLink(std::string const &from, std::string const &to);
+
+    /*
+     * Remove a symbolic link.
+     */
+    virtual bool removeSymbolicLink(std::string const &path) = 0;
+
 public:
     /*
-     * Delete a file.
+     * Retrieve permissions for a directory.
      */
-    virtual bool removeFile(std::string const &path) = 0;
+    virtual ext::optional<Permissions> readDirectoryPermissions(std::string const &path) const = 0;
+
+    /*
+     * Set permissions for a directory.
+     */
+    virtual bool writeDirectoryPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions, bool recursive) = 0;
+
+    /*
+     * Create a directory. Succeeds if created or already exists.
+     */
+    virtual bool createDirectory(std::string const &path, bool recursive) = 0;
+
+    /*
+     * Enumerate contents of a directory.
+     */
+    virtual bool readDirectory(std::string const &path, bool recursive, std::function<void(std::string const &)> const &cb) const = 0;
+
+    /*
+     * Copy a directory to a new path, optionally recursively.
+     */
+    virtual bool copyDirectory(std::string const &from, std::string const &to, bool recursive);
+
+    /*
+     * Remove a directory, optionally recursively..
+     */
+    virtual bool removeDirectory(std::string const &path, bool recursive) = 0;
 
 public:
     /*
      * Resolves and normalizes a path through symbolic links.
      */
     virtual std::string resolvePath(std::string const &path) const = 0;
-
-public:
-    /*
-     * Enumerate contents of a directory.
-     */
-    virtual bool enumerateDirectory(
-        std::string const &path,
-        std::function<void(std::string const &)> const &cb) const = 0;
-
-    /*
-     * Enumerate the contents of a directory recursively.
-     */
-    bool enumerateRecursive(
-        std::string const &path,
-        std::function<bool(std::string const &)> const &cb) const;
 
 public:
     /*

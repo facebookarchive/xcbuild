@@ -19,4 +19,5 @@
     MIMETypes = (
         "model/vnd.collada+xml",
     );
+    AppliesToBuildRules = YES;
 }

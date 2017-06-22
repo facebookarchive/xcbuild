@@ -15,6 +15,7 @@
 #include <acdriver/CompileAction.h>
 #include <acdriver/ContentsAction.h>
 #include <libutil/Filesystem.h>
+#include <process/Context.h>
 
 #include <algorithm>
 #include <iterator>
@@ -74,7 +75,7 @@ OptionsOutputFormat(Options const &options, Result *result)
 }
 
 int Driver::
-Run(Filesystem *filesystem, std::vector<std::string> const &args)
+Run(process::Context const *processContext, Filesystem *filesystem)
 {
     Result result;
     Output output;
@@ -83,7 +84,7 @@ Run(Filesystem *filesystem, std::vector<std::string> const &args)
      * Parse input options.
      */
     Options options;
-    std::pair<bool, std::string> optionsResult = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> optionsResult = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!optionsResult.first) {
         result.normal(Result::Severity::Error, optionsResult.second, std::string("unknown option"));
     }

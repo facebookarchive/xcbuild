@@ -8,27 +8,9 @@
  */
 
 #include <xcassets/Asset/GCDashboardImage.h>
-#include <xcassets/Asset/ImageSet.h>
-#include <libutil/Filesystem.h>
 #include <plist/Keys/Unpack.h>
 
 using xcassets::Asset::GCDashboardImage;
-using xcassets::Asset::ImageSet;
-using libutil::Filesystem;
-
-bool GCDashboardImage::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren<ImageSet>(filesystem, &_children)) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool GCDashboardImage::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)

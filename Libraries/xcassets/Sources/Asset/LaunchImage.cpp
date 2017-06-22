@@ -11,24 +11,8 @@
 #include <plist/Keys/Unpack.h>
 #include <plist/Array.h>
 #include <plist/String.h>
-#include <libutil/Filesystem.h>
 
 using xcassets::Asset::LaunchImage;
-using libutil::Filesystem;
-
-bool LaunchImage::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (this->hasChildren(filesystem)) {
-        fprintf(stderr, "warning: unexpected child assets\n");
-    }
-
-    return true;
-}
 
 bool LaunchImage::Image::
 parse(plist::Dictionary const *dict)
@@ -82,6 +66,10 @@ parse(plist::Dictionary const *dict)
 bool LaunchImage::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
+    if (!this->children().empty()) {
+        fprintf(stderr, "warning: unexpected child assets\n");
+    }
+
     if (!Asset::parse(dict, seen, false)) {
         return false;
     }

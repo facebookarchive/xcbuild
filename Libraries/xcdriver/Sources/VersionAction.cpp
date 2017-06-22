@@ -16,7 +16,10 @@
 #include <xcsdk/SDK/PlatformVersion.h>
 #include <xcsdk/SDK/Product.h>
 #include <xcsdk/SDK/Target.h>
+#include <plist/Dictionary.h>
+#include <plist/String.h>
 #include <libutil/Filesystem.h>
+#include <process/Context.h>
 
 using xcdriver::VersionAction;
 using xcdriver::Options;
@@ -33,20 +36,20 @@ VersionAction::
 }
 
 int VersionAction::
-Run(Filesystem const *filesystem, Options const &options)
+Run(process::Context const *processContext, Filesystem const *filesystem, Options const &options)
 {
     if (!options.sdk()) {
         // TODO(grp): Real version numbers.
         printf("xcbuild version 0.1\n");
         printf("Build version 1\n");
     } else {
-        ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(filesystem);
+        ext::optional<std::string> developerRoot = xcsdk::Environment::DeveloperRoot(processContext, filesystem);
         if (!developerRoot) {
             fprintf(stderr, "error: unable to find developer dir\n");
             return 1;
         }
 
-        auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths());
+        auto configuration = xcsdk::Configuration::Load(filesystem, xcsdk::Configuration::DefaultPaths(processContext));
         auto manager = xcsdk::SDK::Manager::Open(filesystem, *developerRoot, configuration);
         if (manager == nullptr) {
             fprintf(stderr, "error: unable to open developer directory\n");
@@ -59,36 +62,56 @@ Run(Filesystem const *filesystem, Options const &options)
             return 1;
         }
 
-        printf("%s - %s (%s)\n",
-                target->bundleName().c_str(),
-                target->displayName().c_str(),
-                target->canonicalName().c_str());
-        if (!target->version().empty()) {
-            printf("SDKVersion: %s\n", target->version().c_str());
+        /* Use over a standard map to preserve key order. */
+        auto values = plist::Dictionary::New();
+
+        if (target->version()) {
+            values->set("SDKVersion", plist::String::New(*target->version()));
         }
-        printf("Path: %s\n", target->path().c_str());
-        if (!target->platform()->version().empty()) {
-            printf("PlatformVersion: %s\n", target->platform()->version().c_str());
+        values->set("Path", plist::String::New(target->path()));
+        if (target->platform()->version()) {
+            values->set("PlatformVersion", plist::String::New(*target->platform()->version()));
         }
-        printf("PlatformPath: %s\n", target->platform()->path().c_str());
+        values->set("PlatformPath", plist::String::New(target->platform()->path()));
         if (auto product = target->product()) {
-            if (!product->buildVersion().empty()) {
-                printf("ProductBuildVersion: %s\n", product->buildVersion().c_str());
+            if (product->buildVersion()) {
+                values->set("ProductBuildVersion", plist::String::New(*product->buildVersion()));
             }
-            if (!product->copyright().empty()) {
-                printf("ProductCopyright: %s\n", product->copyright().c_str());
+            if (product->copyright()) {
+                values->set("ProductCopyright", plist::String::New(*product->copyright()));
             }
-            if (!product->name().empty()) {
-                printf("ProductName: %s\n", product->name().c_str());
+            if (product->name()) {
+                values->set("ProductName", plist::String::New(*product->name()));
             }
-            if (!product->userVisibleVersion().empty()) {
-                printf("ProductUserVisibleVersion: %s\n", product->userVisibleVersion().c_str());
+            if (product->userVisibleVersion()) {
+                values->set("ProductUserVisibleVersion", plist::String::New(*product->userVisibleVersion()));
             }
-            if (!product->version().empty()) {
-                printf("ProductVersion: %s\n", product->version().c_str());
+            if (product->version()) {
+                values->set("ProductVersion", plist::String::New(*product->version()));
             }
         }
-        printf("\n");
+
+        if (options.actions().empty()) {
+            fprintf(stdout,
+                "%s - %s (%s)\n",
+                target->bundleName().c_str(),
+                target->displayName().value_or(target->bundleName()).c_str(),
+                target->canonicalName().value_or(target->bundleName()).c_str());
+
+            for (size_t n = 0; n < values->count(); n++) {
+                if (plist::String const *value = values->value<plist::String>(n)) {
+                    fprintf(stdout, "%s: %s\n", values->key(n).c_str(), value->value().c_str());
+                }
+            }
+
+            fprintf(stdout, "\n");
+        } else {
+            for (std::string const &action : options.actions()) {
+                if (plist::String const *value = values->value<plist::String>(action)) {
+                    fprintf(stdout, "%s\n", value->value().c_str());
+                }
+            }
+        }
     }
 
     return 0;

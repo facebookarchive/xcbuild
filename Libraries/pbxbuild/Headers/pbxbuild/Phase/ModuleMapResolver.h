@@ -10,7 +10,7 @@
 #ifndef __pbxbuild_Phase_ModuleMapResolver_h
 #define __pbxbuild_Phase_ModuleMapResolver_h
 
-#include <pbxbuild/Tool/Invocation.h>
+#include <pbxbuild/Tool/AuxiliaryFile.h>
 #include <pbxproj/PBX/Target.h>
 
 #include <string>
@@ -33,7 +33,7 @@ public:
     bool resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext) const;
 
 public:
-    static ext::optional<Tool::Invocation::AuxiliaryFile::Chunk>
+    static ext::optional<Tool::AuxiliaryFile::Chunk>
     Contents(pbxsetting::Environment const &environment, pbxproj::PBX::Target::shared_ptr const &target, std::string const &workingDirectory);
 };
 

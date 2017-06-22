@@ -19,4 +19,5 @@
     IsLibrary = YES;
     IsDynamicLibrary = YES;
     CodeSignOnCopy = YES;
+    AppliesToBuildRules = NO;
 }

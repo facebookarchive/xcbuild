@@ -10,10 +10,8 @@
 #ifndef __pbxbuild_Tool_ToolResolver_h
 #define __pbxbuild_Tool_ToolResolver_h
 
-#include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/Invocation.h>
-#include <pbxbuild/Phase/Environment.h>
-#include <pbxbuild/Phase/File.h>
+#include <pbxbuild/Tool/Input.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -36,19 +34,19 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::vector<Phase::File> const &inputs,
+        std::vector<Tool::Input> const &inputs,
         std::string const &outputDirectory,
         std::string const &logMessage = "") const;
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::vector<std::string> const &inputs,
+        std::vector<Tool::Input> const &inputs,
         std::vector<std::string> const &outputs,
         std::string const &logMessage = "") const;
 
 public:
     static std::unique_ptr<ToolResolver>
-    Create(Phase::Environment const &phaseEnvironment, std::string const &identifier);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, std::string const &identifier);
 };
 
 }

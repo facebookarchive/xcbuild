@@ -16,4 +16,5 @@
     Extensions = (
         "xcworkspace",
     );
+    IsTransparent = NO;
 }

@@ -10,13 +10,20 @@
 #ifndef __pbxbuild_Tool_InfoPlistResolver_h
 #define __pbxbuild_Tool_InfoPlistResolver_h
 
-#include <pbxbuild/Base.h>
-#include <pbxbuild/Phase/Environment.h>
+#include <pbxspec/Manager.h>
+#include <pbxspec/PBX/Tool.h>
+
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace pbxsetting { class Environment; }
 
 namespace pbxbuild {
 namespace Tool {
 
 class Context;
+class Input;
 
 class InfoPlistResolver {
 private:
@@ -34,7 +41,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::string const &input) const;
+        Tool::Input const &input) const;
 
 public:
     static std::string ToolIdentifier()
@@ -42,7 +49,7 @@ public:
 
 public:
     static std::unique_ptr<InfoPlistResolver>
-    Create(Phase::Environment const &phaseEnvironment);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains);
 };
 
 }

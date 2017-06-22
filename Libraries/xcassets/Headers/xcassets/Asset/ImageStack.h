@@ -11,6 +11,7 @@
 #define __xcassets_Asset_ImageStack_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Asset/ImageStackLayer.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -21,34 +22,41 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageStackLayer;
-
 class ImageStack : public Asset {
-private:
-    std::vector<std::shared_ptr<ImageStackLayer>> _children;
+public:
+    class Layer {
+    private:
+        ext::optional<std::string>     _fileName;
+
+    public:
+        ext::optional<std::string> const &fileName() const
+        { return _fileName; }
+
+    private:
+        friend class ImageStack;
+        bool parse(plist::Dictionary const *dict);
+    };
 
 private:
-    // TODO layers
+    ext::optional<std::vector<Layer>>       _layers;
     // TODO canvasSize
-    // TODO on-demand-resource-tags
+    ext::optional<std::vector<std::string>> _onDemandResourceTags;
 
 private:
     friend class Asset;
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<ImageStackLayer>> const &children() const
-    { return _children; }
-
-public:
-    // TODO layers
+    ext::optional<std::vector<Layer>> const &layers() const
+    { return _layers; }
     // TODO canvasSize
-    // TODO on-demand-resource-tags
+    ext::optional<std::vector<std::string>> const &onDemandResourceTags() const
+    { return _onDemandResourceTags; }
 
 public:
     static AssetType Type()
     { return AssetType::ImageStack; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::ImageStack; }
 
 public:
@@ -56,7 +64,6 @@ public:
     { return std::string("imagestack"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

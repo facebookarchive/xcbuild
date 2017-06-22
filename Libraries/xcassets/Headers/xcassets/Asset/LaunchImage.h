@@ -77,7 +77,7 @@ public:
 public:
     static AssetType Type()
     { return AssetType::LaunchImage; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::LaunchImage; }
 
 public:
@@ -85,7 +85,6 @@ public:
     { return std::string("launchimage"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

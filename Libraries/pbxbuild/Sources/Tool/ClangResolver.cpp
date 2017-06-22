@@ -8,7 +8,6 @@
  */
 
 #include <pbxbuild/Tool/ClangResolver.h>
-#include <pbxbuild/Tool/HeadermapResolver.h>
 #include <pbxbuild/Tool/CompilerCommon.h>
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
@@ -128,7 +127,7 @@ CompileLogMessage(
     pbxspec::PBX::Compiler::shared_ptr const &compiler,
     std::string const &logTitle,
     std::string const &input,
-    pbxspec::PBX::FileType::shared_ptr const &fileType,
+    ext::optional<std::string> const &dialect,
     std::string const &output,
     pbxsetting::Environment const &environment,
     std::string const &workingDirectory
@@ -140,8 +139,8 @@ CompileLogMessage(
     logMessage += FSUtil::GetRelativePath(input, workingDirectory) + " ";
     logMessage += environment.resolve("variant") + " ";
     logMessage += environment.resolve("arch") + " ";
-    if (fileType->GCCDialectName()) {
-        logMessage += *fileType->GCCDialectName() + " ";
+    if (dialect) {
+        logMessage += *dialect + " ";
     }
     logMessage += compiler->identifier();
     return logMessage;
@@ -151,28 +150,26 @@ void Tool::ClangResolver::
 resolvePrecompiledHeader(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    Tool::PrecompiledHeaderInfo const &precompiledHeaderInfo
-) const
+    Tool::PrecompiledHeaderInfo const &precompiledHeaderInfo) const
 {
-    std::string const &input = precompiledHeaderInfo.prefixHeader();
-    pbxspec::PBX::FileType::shared_ptr const &fileType = precompiledHeaderInfo.fileType();
+    Tool::Input input = Tool::Input(precompiledHeaderInfo.prefixHeader(), precompiledHeaderInfo.fileType());
     std::string output = environment.expand(precompiledHeaderInfo.compileOutputPath());
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
     Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.environment();
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), input.fileType());
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
     std::vector<std::string> arguments = precompiledHeaderInfo.arguments();
     AppendDependencyInfoFlags(&arguments, _compiler, env);
-    AppendInputOutputFlags(&arguments, _compiler, input, output);
+    AppendInputOutputFlags(&arguments, _compiler, input.path(), output);
 
-    ext::optional<std::string> const &dialect = fileType->GCCDialectName();
+    ext::optional<std::string> const &dialect = (input.fileType() != nullptr ? input.fileType()->GCCDialectName() : ext::nullopt);
     std::string logTitle = DialectIsCPlusPlus(dialect) ? "ProcessPCH++" : "ProcessPCH";
-    std::string logMessage = CompileLogMessage(_compiler, logTitle, input, fileType, output, env, toolContext->workingDirectory());
+    std::string logMessage = CompileLogMessage(_compiler, logTitle, input.path(), dialect, output, env, toolContext->workingDirectory());
 
-    auto serializedFile = Tool::Invocation::AuxiliaryFile::Data(
+    auto serializedFile = Tool::AuxiliaryFile::Data(
         env.expand(precompiledHeaderInfo.serializedOutputPath()),
         precompiledHeaderInfo.serialize());
 
@@ -184,23 +181,25 @@ resolvePrecompiledHeader(
     }
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = toolEnvironment.outputs(toolContext->workingDirectory());
     invocation.dependencyInfo() = dependencyInfo;
-    invocation.auxiliaryFiles().push_back(serializedFile);
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
+
+    toolContext->auxiliaryFiles().push_back(serializedFile);
 }
 
 void Tool::ClangResolver::
 resolveSource(
     Tool::Context *toolContext,
     pbxsetting::Environment const &environment,
-    Phase::File const &input,
+    Tool::Input const &input,
     std::string const &outputDirectory) const
 {
     Tool::HeadermapInfo const &headermapInfo = toolContext->headermapInfo();
@@ -215,19 +214,19 @@ resolveSource(
     std::string outputExtension = _compiler->outputFileExtension().value_or("o");
 
     std::string outputBaseName = FSUtil::GetBaseNameWithoutExtension(input.path());
-    if (!input.fileNameDisambiguator().empty()) {
-        outputBaseName = input.fileNameDisambiguator();
+    if (input.fileNameDisambiguator()) {
+        outputBaseName = *input.fileNameDisambiguator();
     }
     std::string output = resolvedOutputDirectory + "/" + outputBaseName + "." + outputExtension;
 
-    pbxspec::PBX::FileType::shared_ptr const &fileType = input.fileType();
-    std::vector<std::string> const &inputArguments = input.buildFile()->compilerFlags();
+    ext::optional<std::string> const &dialect = (input.fileType() != nullptr ? input.fileType()->GCCDialectName() : ext::nullopt);
+    std::vector<std::string> inputArguments = input.compilerFlags().value_or(std::vector<std::string>());
 
     pbxspec::PBX::Tool::shared_ptr tool = std::static_pointer_cast <pbxspec::PBX::Tool> (_compiler);
     Tool::Environment toolEnvironment = Tool::Environment::Create(tool, environment, toolContext->workingDirectory(), { input }, { output });
     pbxsetting::Environment const &env = toolEnvironment.environment();
 
-    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), fileType);
+    Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), input.fileType());
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
     std::vector<std::string> inputDependencies;
@@ -235,13 +234,13 @@ resolveSource(
     inputDependencies.insert(inputDependencies.end(), headermapInfo.userHeadermapFiles().begin(), headermapInfo.userHeadermapFiles().end());
 
     std::vector<std::string> arguments;
-    AppendDialectFlags(&arguments, fileType->GCCDialectName());
+    AppendDialectFlags(&arguments, dialect);
     size_t dialectOffset = arguments.size();
 
     arguments.insert(arguments.end(), tokens.arguments().begin(), tokens.arguments().end());
     Tool::CompilerCommon::AppendIncludePathFlags(&arguments, env, toolContext->searchPaths(), headermapInfo);
     AppendFrameworkPathFlags(&arguments, env, toolContext->searchPaths());
-    AppendCustomFlags(&arguments, env, fileType->GCCDialectName());
+    AppendCustomFlags(&arguments, env, dialect);
 
     bool precompilePrefixHeader = pbxsetting::Type::ParseBoolean(env.resolve("GCC_PRECOMPILE_PREFIX_HEADER"));
     std::string prefixHeader = env.resolve("GCC_PREFIX_HEADER");
@@ -252,12 +251,12 @@ resolveSource(
 
         if (precompilePrefixHeader) {
             std::vector<std::string> precompiledHeaderArguments;
-            AppendDialectFlags(&precompiledHeaderArguments, fileType->GCCDialectName(), "-header");
+            AppendDialectFlags(&precompiledHeaderArguments, dialect, "-header");
             precompiledHeaderArguments.insert(precompiledHeaderArguments.end(), arguments.begin() + dialectOffset, arguments.end());
             // Added below, but need to have here in case it affects the precompiled header (as it often does).
             precompiledHeaderArguments.insert(precompiledHeaderArguments.end(), inputArguments.begin(), inputArguments.end());
 
-            precompiledHeaderInfo = std::make_shared<Tool::PrecompiledHeaderInfo>(PrecompiledHeaderInfo::Create(_compiler, prefixHeaderFile, fileType, precompiledHeaderArguments));
+            precompiledHeaderInfo = std::make_shared<Tool::PrecompiledHeaderInfo>(PrecompiledHeaderInfo::Create(_compiler, prefixHeaderFile, input.fileType(), precompiledHeaderArguments));
             AppendPrefixHeaderFlags(&arguments, env.expand(precompiledHeaderInfo->logicalOutputPath()));
             inputDependencies.push_back(env.expand(precompiledHeaderInfo->compileOutputPath()));
         } else {
@@ -272,7 +271,7 @@ resolveSource(
     AppendDependencyInfoFlags(&arguments, _compiler, env);
     AppendInputOutputFlags(&arguments, _compiler, input.path(), output);
 
-    std::string logMessage = CompileLogMessage(_compiler, "CompileC", input.path(), fileType, output, env, toolContext->workingDirectory());
+    std::string logMessage = CompileLogMessage(_compiler, "CompileC", input.path(), dialect, output, env, toolContext->workingDirectory());
 
     std::vector<Tool::Invocation::DependencyInfo> dependencyInfo;
     if (_compiler->dependencyInfoFile()) {
@@ -282,7 +281,7 @@ resolveSource(
     }
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
@@ -291,6 +290,9 @@ resolveSource(
     invocation.inputDependencies() = inputDependencies;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
+    // Wait for swift artifacts to be available before running this invocation
+    invocation.waitForSwiftArtifacts() = true;
 
     /* Add the compilation invocation to the context. */
     toolContext->invocations().push_back(invocation);
@@ -316,7 +318,7 @@ resolveSource(
         }
     }
 
-    if (DialectIsCPlusPlus(fileType->GCCDialectName()) && _compiler->execCPlusPlusLinkerPath()) {
+    if (DialectIsCPlusPlus(dialect) && _compiler->execCPlusPlusLinkerPath()) {
         /* If a single C++ file is seen, use the C++ linker driver. */
         compilationInfo->linkerDriver() = *_compiler->execCPlusPlusLinkerPath();
     } else if (compilationInfo->linkerDriver().empty() && _compiler->execPath()) {
@@ -335,19 +337,13 @@ resolveSource(
 }
 
 std::unique_ptr<Tool::ClangResolver> Tool::ClangResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, std::string const &compilerIdentifier)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    // TODO(grp): This should probably try a number of other compilers if it's not clang.
-    std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
-
     // TODO(grp): Depending on the build action, add a different suffix than ".compiler".
-    pbxspec::PBX::Compiler::shared_ptr defaultCompiler = buildEnvironment.specManager()->compiler(gccVersion + ".compiler", targetEnvironment.specDomains());
+    pbxspec::PBX::Compiler::shared_ptr defaultCompiler = specManager->compiler(compilerIdentifier + ".compiler", specDomains);
     if (defaultCompiler == nullptr) {
         // TODO(grp): Should this fallback to a hardcoded default compiler here?
-        defaultCompiler = buildEnvironment.specManager()->compiler("com.apple.compilers.llvm.clang.1_0.compiler", targetEnvironment.specDomains());
+        defaultCompiler = specManager->compiler("com.apple.compilers.llvm.clang.1_0.compiler", specDomains);
         if (defaultCompiler == nullptr) {
             fprintf(stderr, "error: couldn't get default compiler\n");
             return nullptr;

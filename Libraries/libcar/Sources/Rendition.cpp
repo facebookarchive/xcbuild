@@ -31,6 +31,7 @@
 #endif
 
 using car::Rendition;
+using car::AttributeList;
 
 Rendition::Data::
 Data(std::vector<uint8_t> const &data, Format format) :
@@ -130,7 +131,7 @@ static ext::optional<std::vector<uint8_t>> Encode(Rendition const *rendition, ex
 static Rendition::ResizeMode
 ResizeModeFromLayout(enum car_rendition_value_layout layout)
 {
-    switch(layout) {
+    switch (layout) {
         case car_rendition_value_layout_one_part_fixed_size:
         case car_rendition_value_layout_three_part_horizontal_uniform:
         case car_rendition_value_layout_three_part_vertical_uniform:
@@ -149,6 +150,7 @@ ResizeModeFromLayout(enum car_rendition_value_layout layout)
             return Rendition::ResizeMode::HorizontalUniformVerticalScale;
         case car_rendition_value_layout_nine_part_horizontal_scale_vertical_uniform:
             return Rendition::ResizeMode::HorizontalScaleVerticalUniform;
+        case car_rendition_value_layout_nine_part_edges_only:
         case car_rendition_value_layout_six_part:
         case car_rendition_value_layout_gradient:
         case car_rendition_value_layout_effect:
@@ -237,12 +239,15 @@ Load(
         }
     }
 
-    rendition.fileName() = std::string(value->metadata.name, sizeof(value->metadata.name));
+    /* Truncate in case string was padded to fit the name field. */
+    std::string name = std::string(value->metadata.name, sizeof(value->metadata.name));
+    rendition.fileName() = std::string(name.c_str());
+
     rendition.width() = value->width;
     rendition.height() = value->height;
-    rendition.scale() = (float)value->scale_factor / 100.0;
-    rendition.isVector() = (int)value->flags.is_vector;
-    rendition.isOpaque() = (int)value->flags.is_opaque;
+    rendition.scale() = static_cast<double>(value->scale_factor) / 100.0;
+    rendition.isVector() = static_cast<bool>(value->flags.is_vector);
+    rendition.isOpaque() = static_cast<bool>(value->flags.is_opaque);
 
     enum car_rendition_value_layout layout = (enum car_rendition_value_layout)value->metadata.layout;
     rendition.layout() = layout;
@@ -291,7 +296,6 @@ Decode(struct car_rendition_value *value)
     } else if (value->pixel_format == car_rendition_value_pixel_format_jpeg) {
         format = Rendition::Data::Format::JPEG;
     } else {
-        format = Rendition::Data::Format::Data;
         fprintf(stderr, "error: unsupported pixel format %.4s\n", (char const *)&value->pixel_format);
         return ext::nullopt;
     }
@@ -312,13 +316,13 @@ Decode(struct car_rendition_value *value)
     size_t bytes_per_pixel = Rendition::Data::FormatSize(format);
     size_t uncompressed_length = value->width * value->height * bytes_per_pixel;
     Rendition::Data data = Rendition::Data(std::vector<uint8_t>(uncompressed_length), format);
-    void *uncompressed_data = static_cast<void *>(data.data().data());
+    uint8_t *uncompressed_data = static_cast<uint8_t *>(data.data().data());
 
     /* Advance past the header and the info section. We just want the data. */
     struct car_rendition_data_header1 *header1 = (struct car_rendition_data_header1 *)((uintptr_t)value + sizeof(struct car_rendition_value) + value->info_len);
 
     if (strncmp(header1->magic, "MLEC", sizeof(header1->magic)) != 0) {
-        fprintf(stderr, "error: header1 magic is wrong, can't possibly decode\n");
+        fprintf(stderr, "error: header1 magic is wrong (%.4s), can't possibly decode\n", header1->magic);
         return ext::nullopt;
     }
 
@@ -348,15 +352,15 @@ Decode(struct car_rendition_value *value)
             strm.zfree = Z_NULL;
             strm.opaque = Z_NULL;
             strm.avail_in = compressed_length;
-            strm.next_in = (Bytef *)compressed_data;
+            strm.next_in = static_cast<Bytef *>(compressed_data);
 
-            int ret = inflateInit2(&strm, 16+MAX_WBITS);
+            int ret = inflateInit2(&strm, 16 + MAX_WBITS);
             if (ret != Z_OK) {
                return ext::nullopt;
             }
 
             strm.avail_out = uncompressed_length;
-            strm.next_out = (Bytef *)uncompressed_data;
+            strm.next_out = static_cast<Bytef *>(uncompressed_data);
 
             ret = inflate(&strm, Z_NO_FLUSH);
             if (ret != Z_OK && ret != Z_STREAM_END) {
@@ -378,16 +382,11 @@ Decode(struct car_rendition_value *value)
             return ext::nullopt;
         } else if (header1->compression == car_rendition_data_compression_magic_lzvn || header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
 #if HAVE_LIBCOMPRESSION
-            compression_algorithm algorithm;
-            if (header1->compression == car_rendition_data_compression_magic_lzvn) {
-                algorithm = (compression_algorithm)_COMPRESSION_LZVN;
-            } else if (header1->compression == car_rendition_data_compression_magic_jpeg_lzfse) {
-                algorithm = COMPRESSION_LZFSE;
-            } else {
-                assert(false);
-            }
+            compression_algorithm algorithm = header1->compression == car_rendition_data_compression_magic_lzvn ?
+                (compression_algorithm)_COMPRESSION_LZVN :
+                COMPRESSION_LZFSE;
 
-            size_t compression_result = compression_decode_buffer((uint8_t *)uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, algorithm);
+            size_t compression_result = compression_decode_buffer(uncompressed_data + offset, uncompressed_length - offset, (uint8_t *)compressed_data, compressed_length, NULL, algorithm);
             if (compression_result != 0) {
                 offset += compression_result;
                 compressed_data = (void *)((uintptr_t)compressed_data + compressed_length);
@@ -432,7 +431,7 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
         return data->data();
     }
 
-    // The selected algorithm, only zlib for now
+    /* The selected algorithm, only zlib for now. */
     enum car_rendition_data_compression_magic compression_magic = car_rendition_data_compression_magic_zlib;
     size_t bytes_per_pixel = Rendition::Data::FormatSize(data->format());
 
@@ -441,16 +440,18 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
 
     std::vector<uint8_t> compressed_vector;
     if (compression_magic == car_rendition_data_compression_magic_zlib) {
-        int deflateLevel = Z_DEFAULT_COMPRESSION;
-        int windowSize = 16+MAX_WBITS;
         z_stream zlibStream;
         memset(&zlibStream, 0, sizeof(zlibStream));
-        zlibStream.next_in = (Bytef*)uncompressed_data;
-        zlibStream.avail_in = (uInt)uncompressed_length;
+        zlibStream.next_in = static_cast<Bytef *>(uncompressed_data);
+        zlibStream.avail_in = static_cast<uInt>(uncompressed_length);
+
+        int deflateLevel = Z_DEFAULT_COMPRESSION;
+        int windowSize = 16 + MAX_WBITS;
         int err = deflateInit2(&zlibStream, deflateLevel, Z_DEFLATED, windowSize, 8, Z_DEFAULT_STRATEGY);
         if (err != Z_OK) {
             return ext::nullopt;
         }
+
         while (true) {
             uint8_t tmp[4096];
             zlibStream.next_out = (Bytef*)&tmp;
@@ -469,6 +470,11 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
             }
         }
         deflateEnd(&zlibStream);
+
+        /* The gzip header includes an operating system field. For consistent results, clear it. */
+        if (compressed_vector.size() > 9) {
+            compressed_vector[9] = 0;
+        }
     }
 
     std::vector<uint8_t> output = std::vector<uint8_t>(sizeof(struct car_rendition_data_header1));
@@ -503,7 +509,7 @@ write() const
 {
     // Create header
     struct car_rendition_value header;
-    bzero(&header, sizeof(struct car_rendition_value));
+    memset(static_cast<void *>(&header), 0, sizeof(struct car_rendition_value));
     strncpy(header.magic, "ISTC", 4);
     header.version = 1;
     // header.flags.is_header_flagged_fpo = 0;
@@ -515,7 +521,7 @@ write() const
 
     header.width = _width;
     header.height = _height;
-    header.scale_factor = (uint32_t)(_scale * 100);
+    header.scale_factor = static_cast<uint32_t>(_scale * 100);
     header.color_space_id = 1;
 
     header.metadata.layout = _layout;
@@ -632,6 +638,7 @@ write() const
 
     memcpy(output_bytes, info_slices, info_slices_size);
     output_bytes += info_slices_size;
+    free(info_slices);
 
     memcpy(output_bytes, &info_metrics, sizeof(struct car_rendition_info_metrics));
     output_bytes += sizeof(struct car_rendition_info_metrics);

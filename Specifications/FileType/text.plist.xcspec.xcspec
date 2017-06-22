@@ -16,4 +16,5 @@
     Extensions = (
         "xcspec",
     );
+    AppliesToBuildRules = YES;
 }

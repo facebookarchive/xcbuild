@@ -40,7 +40,7 @@ _bom_tree_alloc(struct bom_context *context, const char *variable_name)
     tree_context->context = context;
     tree_context->tree_iterating = 0;
 
-    tree_context->variable_name = malloc(strlen(variable_name));
+    tree_context->variable_name = malloc(strlen(variable_name) + 1);
     if (tree_context->variable_name == NULL) {
         bom_tree_free(tree_context);
         return NULL;

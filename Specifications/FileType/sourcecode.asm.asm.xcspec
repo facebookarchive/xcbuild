@@ -17,4 +17,5 @@
         "asm",
     );
     GccDialectName = "assembler-with-cpp";
+    AppliesToBuildRules = YES;
 }

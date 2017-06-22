@@ -12,5 +12,5 @@
     Identifier = compiled.mach-o.dylinker;
     BasedOn = compiled.mach-o;
 
-    UTI = "com.apple.mach-o-dylinker";
+    AppliesToBuildRules = NO;
 }

@@ -17,4 +17,5 @@
         "defs",
         "mig",
     );
+    AppliesToBuildRules = YES;
 }

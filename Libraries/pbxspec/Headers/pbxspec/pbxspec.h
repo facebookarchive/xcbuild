@@ -20,7 +20,6 @@
 #include <pbxspec/PBX/Linker.h>
 #include <pbxspec/PBX/PackageType.h>
 #include <pbxspec/PBX/ProductType.h>
-#include <pbxspec/PBX/PropertyConditionFlavor.h>
 #include <pbxspec/PBX/PropertyOption.h>
 #include <pbxspec/PBX/Specification.h>
 #include <pbxspec/PBX/Tool.h>

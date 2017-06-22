@@ -39,7 +39,7 @@ Output(
 }
 
 std::string Output::
-AssetReference(std::shared_ptr<xcassets::Asset::Asset> const &asset)
+AssetReference(xcassets::Asset::Asset const *asset)
 {
     // TODO: include [] for each key
     return asset->path();

@@ -18,4 +18,5 @@
         "mm",
     );
     GccDialectName = "objective-c++";
+    AppliesToBuildRules = NO;
 }

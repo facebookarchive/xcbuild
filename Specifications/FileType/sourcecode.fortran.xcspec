@@ -18,4 +18,5 @@
         "for",
     );
     GccDialectName = "fortran";
+    AppliesToBuildRules = YES;
 }

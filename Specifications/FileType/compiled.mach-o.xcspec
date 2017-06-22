@@ -14,4 +14,5 @@
 
     UTI = "public.object-code";
     ContainsNativeCode = YES;
+    AppliesToBuildRules = YES;
 }
