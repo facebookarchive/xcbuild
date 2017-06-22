@@ -30,12 +30,16 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::Current<bool>(&_usage, arg);
     } else if (arg == "-help") {
         return libutil::Options::Current<bool>(&_help, arg);
-    } else if (arg == "-verbose") {
-        return libutil::Options::Current<bool>(&_verbose, arg);
     } else if (arg == "-license") {
         return libutil::Options::Current<bool>(&_license, arg);
     } else if (arg == "-checkFirstLaunchStatus") {
         return libutil::Options::Current<bool>(&_checkFirstLaunchStatus, arg);
+    } else if (arg == "-verbose") {
+        return libutil::Options::Current<bool>(&_verbose, arg);
+    } else if (arg == "-quiet") {
+        return libutil::Options::Current<bool>(&_quiet, arg);
+    } else if (arg == "-json") {
+        return libutil::Options::Current<bool>(&_json, arg);
     } else if (arg == "-project") {
         return libutil::Options::Next<std::string>(&_project, args, it);
     } else if (arg == "-target") {
@@ -58,7 +62,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::Next<std::string>(&_toolchain, args, it);
     } else if (arg == "-destination") {
         return libutil::Options::Next<std::string>(&_destination, args, it);
-    } else if (arg == "-destinationtimeout") {
+    } else if (arg == "-destination-timeout") {
         return libutil::Options::Next<std::string>(&_destinationTimeout, args, it);
     } else if (arg == "-parallelizeTargets") {
         return libutil::Options::Current<bool>(&_parallelizeTargets, arg);
@@ -82,6 +86,8 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::Current<bool>(&_version, arg);
     } else if (arg == "-enableAddressSanitizer") {
         return libutil::Options::Next<bool>(&_enableAddressSanitizer, args, it);
+    } else if (arg == "-enableThreadSanitizer") {
+        return libutil::Options::Next<bool>(&_enableThreadSanitizer, args, it);
     } else if (arg == "-resultBundlePath") {
         return libutil::Options::Next<std::string>(&_resultBundlePath, args, it);
     } else if (arg == "-derivedDataPath") {
@@ -94,6 +100,16 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::Next<std::string>(&_exportOptionsPlist, args, it);
     } else if (arg == "-enableCodeCoverage") {
         return libutil::Options::Next<bool>(&_enableCodeCoverage, args, it);
+    } else if (arg == "-xctestrun") {
+        return libutil::Options::Next<std::string>(&_xctestrun, args, it);
+    } else if (arg.find("-only-testing:") == 0) {
+        std::string value = arg.substr(arg.find(':') + 1);
+        _onlyTesting.push_back(value);
+        return std::make_pair(true, std::string());
+    } else if (arg.find("-skip-testing:") == 0) {
+        std::string value = arg.substr(arg.find(':') + 1);
+        _skipTesting.push_back(value);
+        return std::make_pair(true, std::string());
     } else if (arg == "-exportPath") {
         return libutil::Options::Next<std::string>(&_exportPath, args, it);
     } else if (arg == "-skipUnavailableActions") {
@@ -116,8 +132,12 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
         return libutil::Options::Current<bool>(&_generate, arg);
     } else if (!arg.empty() && arg[0] != '-') {
         if (arg.find('=') != std::string::npos) {
-            _settings.push_back(pbxsetting::Setting::Parse(arg));
-            return std::make_pair(true, std::string());
+            if (ext::optional<pbxsetting::Setting> setting = pbxsetting::Setting::Parse(arg)) {
+                _settings.push_back(*setting);
+                return std::make_pair(true, std::string());
+            } else {
+                return std::make_pair(false, "unknown argument " + arg);
+            }
         } else {
             _actions.push_back(arg);
             return std::make_pair(true, std::string());

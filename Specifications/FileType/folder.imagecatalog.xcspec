@@ -16,4 +16,5 @@
     Extensions = (
         "imagecatalog",
     );
+    IsTransparent = NO;
 }

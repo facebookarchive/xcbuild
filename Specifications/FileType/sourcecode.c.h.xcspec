@@ -17,4 +17,7 @@
         "h",
         "pch",
     );
+    AppliesToBuildRules = NO;
+    IncludeInIndex = NO;
+    CanSetIncludeInIndex = NO;
 }

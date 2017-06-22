@@ -9,6 +9,7 @@
 
 #include <plist/String.h>
 #include <plist/Boolean.h>
+#include <plist/Date.h>
 #include <plist/Real.h>
 #include <plist/Integer.h>
 
@@ -52,6 +53,8 @@ Coerce(Object const *obj)
         return String::New(std::to_string(integer->value()));
     } else if (Boolean const *boolean = CastTo<Boolean>(obj)) {
         return String::New(boolean->value() ? "YES" : "NO");
+    } else if (Date const *date = CastTo<Date>(obj)) {
+        return String::New(date->stringValue());
     }
 
     return nullptr;

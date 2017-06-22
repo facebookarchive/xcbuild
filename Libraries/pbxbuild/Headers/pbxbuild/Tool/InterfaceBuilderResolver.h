@@ -10,9 +10,7 @@
 #ifndef __pbxbuild_Tool_InterfaceBuilderResolver_h
 #define __pbxbuild_Tool_InterfaceBuilderResolver_h
 
-#include <pbxbuild/Base.h>
-#include <pbxbuild/Phase/Environment.h>
-#include <pbxbuild/Phase/File.h>
+#include <pbxbuild/Tool/Input.h>
 
 namespace pbxbuild {
 namespace Tool {
@@ -30,7 +28,7 @@ public:
     void resolve(
         Tool::Context *toolContext,
         pbxsetting::Environment const &environment,
-        std::vector<Phase::File> const &input) const;
+        std::vector<Tool::Input> const &input) const;
 
 public:
     static std::string CompilerToolIdentifier()
@@ -46,7 +44,7 @@ public:
 
 public:
     static std::unique_ptr<InterfaceBuilderResolver>
-    Create(Phase::Environment const &phaseEnvironment, std::string const &toolIdentifier);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, std::string const &toolIdentifier);
 };
 
 }

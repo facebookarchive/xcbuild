@@ -29,8 +29,9 @@ namespace Tool = pbxbuild::Tool;
 namespace Target = pbxbuild::Target;
 
 Phase::PhaseInvocations::
-PhaseInvocations(std::vector<Tool::Invocation> const &invocations) :
-    _invocations(invocations)
+PhaseInvocations(std::vector<Tool::Invocation> const &invocations, std::vector<Tool::AuxiliaryFile> const &auxiliaryFiles) :
+    _invocations   (invocations),
+    _auxiliaryFiles(auxiliaryFiles)
 {
 }
 
@@ -52,7 +53,6 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
     Tool::Context toolContext = Tool::Context(
         targetEnvironment.sdk(),
         targetEnvironment.toolchains(),
-        targetEnvironment.executablePaths(),
         targetEnvironment.workingDirectory(),
         searchPaths);
 
@@ -72,50 +72,52 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
         buildPhases.push_back(buildPhase);
     }
 
-    pbxproj::PBX::SourcesBuildPhase::shared_ptr sourcesPhase = nullptr;
-    for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
-        if (buildPhase->type() == pbxproj::PBX::BuildPhase::Type::Sources) {
-            auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
-            sourcesPhase = BP;
-
-            Phase::SourcesResolver sourcesResolver = Phase::SourcesResolver(BP);
-            if (!sourcesResolver.resolve(phaseEnvironment, &phaseContext)) {
-                fprintf(stderr, "error: unable to resolve sources\n");
-            }
-            break;
-        }
-    }
-
-    if (sourcesPhase != nullptr && !sourcesPhase->files().empty()) {
-        pbxproj::PBX::BuildPhase::shared_ptr buildPhase;
-        pbxproj::PBX::FrameworksBuildPhase::shared_ptr frameworksPhase;
-
-        auto it = std::find_if(buildPhases.begin(), buildPhases.end(), [](pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase) -> bool {
+    /*
+     * Find sources phase, and synthesize framework phase for linking, if it does not exist
+     */
+    auto it_sources = std::find_if(buildPhases.begin(), buildPhases.end(), [](pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase) -> bool {
+        return (buildPhase->type() == pbxproj::PBX::BuildPhase::Type::Sources);
+    });
+    if (it_sources != buildPhases.end()) {
+        auto it_frameworks = std::find_if(buildPhases.begin(), buildPhases.end(), [](pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase) -> bool {
             return (buildPhase->type() == pbxproj::PBX::BuildPhase::Type::Frameworks);
         });
-
-        if (it == buildPhases.end()) {
-            /* The target does not have an explicit frameworks phase, so synthesize an empty one. */
-            frameworksPhase = std::make_shared <pbxproj::PBX::FrameworksBuildPhase> ();
-            buildPhase = std::static_pointer_cast <pbxproj::PBX::BuildPhase> (frameworksPhase);
-        } else {
-            /* Use the frameworks phase from the target. */
-            buildPhase = *it;
-            frameworksPhase = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
-        }
-
-        Phase::FrameworksResolver link = Phase::FrameworksResolver(frameworksPhase);
-        if (!link.resolve(phaseEnvironment, &phaseContext)) {
-            fprintf(stderr, "error: unable to resolve linking\n");
+        if (it_frameworks == buildPhases.end()) {
+            pbxproj::PBX::FrameworksBuildPhase::shared_ptr frameworksPhase = std::make_shared<pbxproj::PBX::FrameworksBuildPhase> ();
+            buildPhases.insert(std::next(it_sources), frameworksPhase);
         }
     }
 
+    /*
+     * Resolve all build phases.
+     */
+    phaseContext.toolContext().currentPhaseInvocationPriority() = PHASE_INVOCATION_PRIORITY_BASE;
+    uint32_t targetLevelPhaseInsertionPoint = phaseContext.toolContext().currentPhaseInvocationPriority();
     for (pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase : buildPhases) {
+        bool updateTargetLevelPhaseInsertionPoint = false;
         switch (buildPhase->type()) {
-            case pbxproj::PBX::BuildPhase::Type::Sources:
-            case pbxproj::PBX::BuildPhase::Type::Frameworks:
-                /* Handled above. */
+            case pbxproj::PBX::BuildPhase::Type::Sources: {
+                auto BP = std::static_pointer_cast <pbxproj::PBX::SourcesBuildPhase> (buildPhase);
+
+                Phase::SourcesResolver sources = Phase::SourcesResolver(BP);
+                if (!sources.resolve(phaseEnvironment, &phaseContext)) {
+                    fprintf(stderr, "error: unable to resolve sources\n");
+                }
+
+                updateTargetLevelPhaseInsertionPoint = true;
                 break;
+            }
+            case pbxproj::PBX::BuildPhase::Type::Frameworks: {
+                auto BP = std::static_pointer_cast <pbxproj::PBX::FrameworksBuildPhase> (buildPhase);
+
+                Phase::FrameworksResolver frameworks = Phase::FrameworksResolver(BP);
+                if (!frameworks.resolve(phaseEnvironment, &phaseContext)) {
+                    fprintf(stderr, "error: unable to resolve linking\n");
+                }
+
+                updateTargetLevelPhaseInsertionPoint = true;
+                break;
+            }
             case pbxproj::PBX::BuildPhase::Type::ShellScript: {
                 auto BP = std::static_pointer_cast <pbxproj::PBX::ShellScriptBuildPhase> (buildPhase);
 
@@ -132,6 +134,8 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 if (!copyFiles.resolve(phaseEnvironment, &phaseContext)) {
                     fprintf(stderr, "error: unable to resolve copy files\n");
                 }
+
+                updateTargetLevelPhaseInsertionPoint = true;
                 break;
             }
             case pbxproj::PBX::BuildPhase::Type::Headers: {
@@ -141,6 +145,8 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 if (!headers.resolve(phaseEnvironment, &phaseContext)) {
                     fprintf(stderr, "error: unable to resolve headers\n");
                 }
+
+                updateTargetLevelPhaseInsertionPoint = true;
                 break;
             }
             case pbxproj::PBX::BuildPhase::Type::Resources: {
@@ -150,6 +156,8 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 if (!resources.resolve(phaseEnvironment, &phaseContext)) {
                     fprintf(stderr, "error: unable to resolve resources\n");
                 }
+
+                updateTargetLevelPhaseInsertionPoint = true;
                 break;
             }
             case pbxproj::PBX::BuildPhase::Type::AppleScript: {
@@ -163,7 +171,31 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
                 break;
             }
         }
+
+        phaseContext.toolContext().currentPhaseInvocationPriority() += PHASE_INVOCATION_PRIORITY_INCREMENT;
+
+        /*
+         * At the end of iteration, every invocation with priority equal to or greater than
+         * targetLevelPhaseInsertionPoint will be bumped up to next priority level to accomodate
+         * room for target level phase invocations.
+         */
+        if (updateTargetLevelPhaseInsertionPoint) {
+            targetLevelPhaseInsertionPoint = std::max(
+                targetLevelPhaseInsertionPoint,
+                phaseContext.toolContext().currentPhaseInvocationPriority()
+            );
+        }
     }
+
+    for (auto invocation : phaseContext.toolContext().invocations()) {
+        if (invocation.priority() >= targetLevelPhaseInsertionPoint) {
+            invocation.priority() += PHASE_INVOCATION_PRIORITY_INCREMENT;
+        }
+    }
+
+    /* Temporarily override phase invocation priority to add target level invocations */
+    uint32_t currentPhaseInvocationPriorityCache = phaseContext.toolContext().currentPhaseInvocationPriority();
+    phaseContext.toolContext().currentPhaseInvocationPriority() = targetLevelPhaseInsertionPoint;
 
     /*
      * Add target-level invocations. Note these must come last as they use the context values set
@@ -209,6 +241,9 @@ Create(Phase::Environment const &phaseEnvironment, pbxproj::PBX::Target::shared_
             break;
     }
 
-    return Phase::PhaseInvocations(phaseContext.toolContext().invocations());
+    /* Restore current phase invocation priority level */
+    phaseContext.toolContext().currentPhaseInvocationPriority() = currentPhaseInvocationPriorityCache;
+
+    return Phase::PhaseInvocations(phaseContext.toolContext().invocations(), phaseContext.toolContext().auxiliaryFiles());
 }
 

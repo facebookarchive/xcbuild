@@ -11,16 +11,16 @@ TEST(Environment, Layering)
 {
     Environment layered;
     layered.insertBack(Level({
-        Setting::Parse("LAYERED = command line, $(LAYERED)"),
+        Setting::Parse("LAYERED", "command line, $(LAYERED)"),
     }), false);
     layered.insertBack(Level({
-        Setting::Parse("LAYERED = target, $(LAYERED)"),
+        Setting::Parse("LAYERED", "target, $(LAYERED)"),
     }), false);
     layered.insertBack(Level({
-        Setting::Parse("LAYERED = project, $(LAYERED)"),
+        Setting::Parse("LAYERED", "project, $(LAYERED)"),
     }), false);
     layered.insertBack(Level({
-        Setting::Parse("LAYERED = environment"),
+        Setting::Parse("LAYERED", "environment"),
     }), false);
     EXPECT_EQ(layered.resolve("LAYERED"), "command line, target, project, environment");
 }
@@ -29,18 +29,18 @@ TEST(Environment, Staggered)
 {
     Environment staggered;
     staggered.insertBack(Level({
-        Setting::Parse("LAYERED = command line, $(LAYERED)"),
+        Setting::Parse("LAYERED", "command line, $(LAYERED)"),
     }), false);
     staggered.insertBack(Level({
-        Setting::Parse("STAGGERED = $(CAPTION): $(LAYERED)"),
-        Setting::Parse("LAYERED = target, $(LAYERED)"),
+        Setting::Parse("STAGGERED", "$(CAPTION): $(LAYERED)"),
+        Setting::Parse("LAYERED", "target, $(LAYERED)"),
     }), false);
     staggered.insertBack(Level({
-        Setting::Parse("LAYERED = project, $(LAYERED)"),
-        Setting::Parse("CAPTION = evaluation order"),
+        Setting::Parse("LAYERED", "project, $(LAYERED)"),
+        Setting::Parse("CAPTION", "evaluation order"),
     }), false);
     staggered.insertBack(Level({
-        Setting::Parse("LAYERED = environment"),
+        Setting::Parse("LAYERED", "environment"),
     }), false);
     EXPECT_EQ(staggered.resolve("STAGGERED"), "evaluation order: command line, target, project, environment");
 }
@@ -49,19 +49,19 @@ TEST(Environment, StaggeredOverride)
 {
     Environment staggered;
     staggered.insertBack(Level({
-        Setting::Parse("LAYERED = command line, $(LAYERED)"),
+        Setting::Parse("LAYERED", "command line, $(LAYERED)"),
     }), false);
     staggered.insertBack(Level({
-        Setting::Parse("STAGGERED = $(CAPTION): $(LAYERED)"),
-        Setting::Parse("LAYERED = target, $(LAYERED)"),
-        Setting::Parse("CAPTION = order of evaluation"),
+        Setting::Parse("STAGGERED", "$(CAPTION): $(LAYERED)"),
+        Setting::Parse("LAYERED", "target, $(LAYERED)"),
+        Setting::Parse("CAPTION", "order of evaluation"),
     }), false);
     staggered.insertBack(Level({
-        Setting::Parse("LAYERED = project, $(LAYERED)"),
-        Setting::Parse("CAPTION = evaluation order"),
+        Setting::Parse("LAYERED", "project, $(LAYERED)"),
+        Setting::Parse("CAPTION", "evaluation order"),
     }), false);
     staggered.insertBack(Level({
-        Setting::Parse("LAYERED = environment"),
+        Setting::Parse("LAYERED", "environment"),
     }), false);
     EXPECT_EQ(staggered.resolve("STAGGERED"), "order of evaluation: command line, target, project, environment");
 }
@@ -70,12 +70,12 @@ TEST(Environment, Concatenation)
 {
     Environment concat;
     concat.insertBack(Level({
-        Setting::Parse("CURRENT_PROJECT_VERSION_app = 15.3.9"),
-        Setting::Parse("CURRENT_PROJECT_VERSION_xctest = 1.0.0"),
-        Setting::Parse("CURRENT_PROJECT_VERSION = $(CURRENT_PROJECT_VERSION_$(WRAPPER_EXTENSION))"),
+        Setting::Parse("CURRENT_PROJECT_VERSION_app", "15.3.9"),
+        Setting::Parse("CURRENT_PROJECT_VERSION_xctest", "1.0.0"),
+        Setting::Parse("CURRENT_PROJECT_VERSION", "$(CURRENT_PROJECT_VERSION_$(WRAPPER_EXTENSION))"),
     }), false);
     concat.insertBack(Level({
-        Setting::Parse("WRAPPER_EXTENSION = app"),
+        Setting::Parse("WRAPPER_EXTENSION", "app"),
     }), false);
     EXPECT_EQ(concat.resolve("CURRENT_PROJECT_VERSION"), "15.3.9");
 }
@@ -84,10 +84,10 @@ TEST(Environment, Inherited)
 {
     Environment inherited;
     inherited.insertBack(Level({
-        Setting::Parse("OTHER_LDFLAGS = $(inherited) -framework Security"),
+        Setting::Parse("OTHER_LDFLAGS", "$(inherited) -framework Security"),
     }), false);
     inherited.insertBack(Level({
-        Setting::Parse("OTHER_LDFLAGS = -ObjC"),
+        Setting::Parse("OTHER_LDFLAGS", "-ObjC"),
     }), false);
     EXPECT_EQ(inherited.resolve("OTHER_LDFLAGS"), "-ObjC -framework Security");
 }
@@ -97,10 +97,10 @@ TEST(Environment, InheritedWithLevelInFront)
     Environment inherited;
     inherited.insertBack(Level({ }), false);
     inherited.insertBack(Level({
-        Setting::Parse("OTHER_LDFLAGS = $(inherited) -framework Security"),
+        Setting::Parse("OTHER_LDFLAGS", "$(inherited) -framework Security"),
     }), false);
     inherited.insertBack(Level({
-        Setting::Parse("OTHER_LDFLAGS = -ObjC"),
+        Setting::Parse("OTHER_LDFLAGS", "-ObjC"),
     }), false);
     EXPECT_EQ(inherited.resolve("OTHER_LDFLAGS"), "-ObjC -framework Security");
 }
@@ -143,8 +143,8 @@ TEST(Environment, Value)
 {
     Environment env;
     env.insertBack(Level({
-        Setting::Parse("ONE = one"),
-        Setting::Parse("TWO = two"),
+        Setting::Parse("ONE", "one"),
+        Setting::Parse("TWO", "two"),
     }), false);
     EXPECT_EQ(env.expand(Value::Parse("$(ONE)-$(TWO)")), "one-two");
 }
@@ -153,19 +153,19 @@ TEST(Environment, Default)
 {
     Environment env;
     env.insertBack(Level({
-        Setting::Parse("ONE = one"),
-        Setting::Parse("TWO = two"),
+        Setting::Parse("ONE", "one"),
+        Setting::Parse("TWO", "two"),
     }), true);
     env.insertFront(Level({
-        Setting::Parse("ONE = 1"),
-        Setting::Parse("THREE = three"),
+        Setting::Parse("ONE", "1"),
+        Setting::Parse("THREE", "three"),
     }), true);
     env.insertBack(Level({
-        Setting::Parse("ONE = one1"),
-        Setting::Parse("THREE = 3"),
+        Setting::Parse("ONE", "one1"),
+        Setting::Parse("THREE", "3"),
     }), false);
     env.insertFront(Level({
-        Setting::Parse("ONE = 1one"),
+        Setting::Parse("ONE", "1one"),
     }), false);
     EXPECT_EQ(env.resolve("ONE"), "1one");
     EXPECT_EQ(env.resolve("TWO"), "two");

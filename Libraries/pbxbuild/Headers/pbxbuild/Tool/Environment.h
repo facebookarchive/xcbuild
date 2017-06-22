@@ -10,8 +10,7 @@
 #ifndef __pbxbuild_Tool_Environment_h
 #define __pbxbuild_Tool_Environment_h
 
-#include <pbxbuild/Base.h>
-#include <pbxbuild/Phase/File.h>
+#include <pbxbuild/Tool/Input.h>
 #include <pbxsetting/Environment.h>
 
 namespace pbxbuild {
@@ -56,14 +55,7 @@ public:
         pbxspec::PBX::Tool::shared_ptr const &tool,
         pbxsetting::Environment const &environment,
         std::string const &workingDirectory,
-        std::vector<Phase::File> const &inputs,
-        std::vector<std::string> const &outputs = { });
-    static Tool::Environment
-    Create(
-        pbxspec::PBX::Tool::shared_ptr const &tool,
-        pbxsetting::Environment const &environment,
-        std::string const &workingDirectory,
-        std::vector<std::string> const &inputs,
+        std::vector<Tool::Input> const &inputs,
         std::vector<std::string> const &outputs = { });
 };
 

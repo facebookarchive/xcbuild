@@ -34,7 +34,7 @@ using libutil::FSUtil;
 
 bool ImageSet::
 Compile(
-    std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
+    xcassets::Asset::ImageSet const *imageSet,
     Filesystem *filesystem,
     Output *compileOutput,
     Result *result)
@@ -61,7 +61,7 @@ GenerateIdentifier(void) {
 
 bool ImageSet::
 CompileAsset(
-    std::shared_ptr<xcassets::Asset::ImageSet> const &imageSet,
+    xcassets::Asset::ImageSet const *imageSet,
     xcassets::Asset::ImageSet::Image const &image,
     Filesystem *filesystem,
     Output *compileOutput,

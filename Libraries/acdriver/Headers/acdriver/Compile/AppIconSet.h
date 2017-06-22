@@ -30,7 +30,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::AppIconSet> const &appIconSet,
+        xcassets::Asset::AppIconSet const *appIconSet,
         Output *compileOutput,
         Result *result);
 };

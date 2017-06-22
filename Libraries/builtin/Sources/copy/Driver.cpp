@@ -9,18 +9,19 @@
 
 #include <builtin/copy/Driver.h>
 #include <builtin/copy/Options.h>
-
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/Subprocess.h>
+#include <process/Context.h>
+#include <process/MemoryContext.h>
+#include <process/Launcher.h>
 
 #include <unordered_set>
 
 using builtin::copy::Driver;
 using builtin::copy::Options;
 using libutil::Filesystem;
+using libutil::Permissions;
 using libutil::FSUtil;
-using libutil::Subprocess;
 
 Driver::
 Driver()
@@ -41,22 +42,54 @@ name()
 static bool
 CopyPath(Filesystem *filesystem, std::string const &inputPath, std::string const &outputPath)
 {
-    if (!filesystem->createDirectory(FSUtil::GetDirectoryName(outputPath))) {
+    /* Must be writable once copied to allow subsequent builds to overwrite. */
+    Permissions permissions;
+    permissions.user(Permissions::Permission::Write, true);
+    Permissions::Operation operation = Permissions::Operation::Add;
+
+    ext::optional<Filesystem::Type> type = filesystem->type(inputPath);
+    if (!type) {
+        /* Unknown type or doesn't exist. */
         return false;
     }
 
-    Subprocess cp;
-    if (!cp.execute(filesystem, "/bin/cp", { "-R", inputPath, outputPath }) || cp.exitcode() != 0) {
-        return false;
+    switch (*type) {
+        case Filesystem::Type::File: {
+            if (!filesystem->copyFile(inputPath, outputPath)) {
+                return false;
+            }
+
+            if (!filesystem->writeFilePermissions(outputPath, operation, permissions)) {
+                return false;
+            }
+
+            return true;
+        }
+        case Filesystem::Type::SymbolicLink: {
+            if (!filesystem->copySymbolicLink(inputPath, outputPath)) {
+                return false;
+            }
+
+            if (!filesystem->writeSymbolicLinkPermissions(outputPath, operation, permissions)) {
+                return false;
+            }
+
+            return true;
+        }
+        case Filesystem::Type::Directory: {
+            if (!filesystem->copyDirectory(inputPath, outputPath, true)) {
+                return false;
+            }
+
+            if (!filesystem->writeDirectoryPermissions(outputPath, operation, permissions, true)) {
+                return false;
+            }
+
+            return true;
+        }
     }
 
-    /* Should preserve permissions but make writable. */
-    Subprocess chmod;
-    if (!chmod.execute(filesystem, "/bin/chmod", { "-R", "+w", outputPath }) || chmod.exitcode() != 0) {
-        return false;
-    }
-
-    return true;
+    abort();
 }
 
 static int
@@ -79,7 +112,14 @@ Run(Filesystem *filesystem, Options const &options, std::string const &workingDi
     }
 
     std::string const &output = FSUtil::ResolveRelativePath(*options.output(), workingDirectory);
+    if (!filesystem->createDirectory(output, true)) {
+        return false;
+    }
+
+#if 0
+    // TODO: handle excludes paths
     auto excludes = std::unordered_set<std::string>(options.excludes().begin(), options.excludes().end());
+#endif
 
     for (std::string input : options.inputs()) {
         input = FSUtil::ResolveRelativePath(input, workingDirectory);
@@ -88,7 +128,7 @@ Run(Filesystem *filesystem, Options const &options, std::string const &workingDi
             input = filesystem->resolvePath(input);
         }
 
-        if (!filesystem->isDirectory(input) && !filesystem->isReadable(input)) {
+        if (filesystem->type(input) != Filesystem::Type::Directory && !filesystem->isReadable(input)) {
             if (options.ignoreMissingInputs()) {
                 continue;
             } else {
@@ -111,14 +151,14 @@ Run(Filesystem *filesystem, Options const &options, std::string const &workingDi
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
         fprintf(stderr, "error: %s\n", result.second.c_str());
         return 1;
     }
 
-    return Run(filesystem, options, workingDirectory);
+    return Run(filesystem, options, processContext->currentDirectory());
 }

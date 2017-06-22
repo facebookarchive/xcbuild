@@ -10,7 +10,6 @@
 #ifndef __pbxbuild_Tool_Context_h
 #define __pbxbuild_Tool_Context_h
 
-#include <pbxbuild/Base.h>
 #include <pbxbuild/Tool/Invocation.h>
 #include <pbxbuild/Tool/HeadermapInfo.h>
 #include <pbxbuild/Tool/CompilationInfo.h>
@@ -21,35 +20,46 @@
 #include <xcsdk/SDK/Target.h>
 #include <xcsdk/SDK/Toolchain.h>
 
+#include <map>
+#include <string>
+#include <vector>
+
+#define PHASE_INVOCATION_PRIORITY_BASE 0x100
+#define PHASE_INVOCATION_PRIORITY_INCREMENT 0x100
+
 namespace pbxbuild {
 namespace Tool {
 
 class Context {
 private:
-    xcsdk::SDK::Target::shared_ptr      _sdk;
-    xcsdk::SDK::Toolchain::vector       _toolchains;
-    std::vector<std::string>            _executablePaths;
-    std::string                         _workingDirectory;
+    xcsdk::SDK::Target::shared_ptr   _sdk;
+    std::vector<xcsdk::SDK::Toolchain::shared_ptr> _toolchains;
+    std::string                      _workingDirectory;
 
 private:
-    SearchPaths                         _searchPaths;
+    SearchPaths                      _searchPaths;
 
 private:
-    HeadermapInfo                       _headermapInfo;
-    ModuleMapInfo                       _moduleMapInfo;
-    CompilationInfo                     _compilationInfo;
-    std::vector<SwiftModuleInfo>        _swiftModuleInfo;
-    std::vector<std::string>            _additionalInfoPlistContents;
+    HeadermapInfo                    _headermapInfo;
+    ModuleMapInfo                    _moduleMapInfo;
+    CompilationInfo                  _compilationInfo;
+    std::vector<SwiftModuleInfo>     _swiftModuleInfo;
+    std::vector<std::string>         _additionalInfoPlistContents;
 
 private:
-    std::vector<Tool::Invocation> _invocations;
+    std::vector<Tool::Invocation>    _invocations;
     std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation>> _variantArchitectureInvocations;
+
+private:
+    std::vector<Tool::AuxiliaryFile> _auxiliaryFiles;
+
+private:
+    uint32_t                         _currentPhaseInvocationPriority;
 
 public:
     Context(
         xcsdk::SDK::Target::shared_ptr const &sdk,
-        xcsdk::SDK::Toolchain::vector const &toolchains,
-        std::vector<std::string> const &executablePaths,
+        std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains,
         std::string const &workingDirectory,
         SearchPaths const &searchPaths);
     ~Context();
@@ -57,10 +67,8 @@ public:
 public:
     xcsdk::SDK::Target::shared_ptr const &sdk() const
     { return _sdk; }
-    xcsdk::SDK::Toolchain::vector const &toolchains() const
+    std::vector<xcsdk::SDK::Toolchain::shared_ptr> const &toolchains() const
     { return _toolchains; }
-    std::vector<std::string> const &executablePaths() const
-    { return _executablePaths; }
     std::string const &workingDirectory() const
     { return _workingDirectory; }
 
@@ -103,6 +111,23 @@ public:
     { return _invocations; }
     std::map<std::pair<std::string, std::string>, std::vector<Tool::Invocation>> &variantArchitectureInvocations()
     { return _variantArchitectureInvocations; }
+
+public:
+    std::vector<Tool::AuxiliaryFile> const &auxiliaryFiles() const
+    { return _auxiliaryFiles; }
+
+public:
+    std::vector<Tool::AuxiliaryFile> &auxiliaryFiles()
+    { return _auxiliaryFiles; }
+
+public:
+    uint32_t currentPhaseInvocationPriority() const
+    { return _currentPhaseInvocationPriority; }
+
+public:
+    uint32_t &currentPhaseInvocationPriority()
+    { return _currentPhaseInvocationPriority; }
+
 };
 
 }

@@ -17,4 +17,8 @@
         "nib",
         "nib~",
     );
+    IsTransparent = NO;
+    IncludeInIndex = YES;
+    CanSetIncludeInIndex = YES;
+    AppliesToBuildRules = YES;
 }

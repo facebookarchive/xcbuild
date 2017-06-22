@@ -32,7 +32,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::DataSet> const &dataSet,
+        xcassets::Asset::DataSet const *dataSet,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

@@ -12,24 +12,8 @@
 #include <plist/Array.h>
 #include <plist/Boolean.h>
 #include <plist/String.h>
-#include <libutil/Filesystem.h>
 
 using xcassets::Asset::ImageSet;
-using libutil::Filesystem;
-
-bool ImageSet::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (this->hasChildren(filesystem)) {
-        fprintf(stderr, "warning: unexpected child assets\n");
-    }
-
-    return true;
-}
 
 bool ImageSet::Image::
 parse(plist::Dictionary const *dict)
@@ -37,13 +21,15 @@ parse(plist::Dictionary const *dict)
     std::unordered_set<std::string> seen;
     auto unpack = plist::Keys::Unpack("ImageSetImage", dict, &seen);
 
+    auto CS  = unpack.cast <plist::String> ("color-space");
+    auto CT  = unpack.cast <plist::String> ("compression-type");
     auto F   = unpack.cast <plist::String> ("filename");
     auto GFS = unpack.cast <plist::String> ("graphics-feature-set");
     auto I   = unpack.cast <plist::String> ("idiom");
     auto M   = unpack.cast <plist::String> ("memory");
     auto S   = unpack.cast <plist::String> ("scale");
     auto ST  = unpack.cast <plist::String> ("subtype");
-    // TODO: screen-width
+    auto SW  = unpack.cast <plist::String> ("screen-width");
     auto WC  = unpack.cast <plist::String> ("width-class");
     auto HC  = unpack.cast <plist::String> ("height-class");
     auto U   = unpack.cast <plist::Boolean> ("unassigned");
@@ -52,6 +38,14 @@ parse(plist::Dictionary const *dict)
 
     if (!unpack.complete(true)) {
         fprintf(stderr, "%s", unpack.errorText().c_str());
+    }
+
+    if (CS != nullptr) {
+        _colorSpace = Slot::ColorSpaces::Parse(CS->value());
+    }
+
+    if (CT != nullptr) {
+        _compression = Compressions::Parse(CT->value());
     }
 
     if (F != nullptr) {
@@ -76,6 +70,10 @@ parse(plist::Dictionary const *dict)
 
     if (ST != nullptr) {
         _subtype = Slot::DeviceSubtypes::Parse(ST->value());
+    }
+
+    if (SW != nullptr) {
+        _screenWidth = Slot::WatchSubtypes::ParseScreenWidth(SW->value());
     }
 
     if (WC != nullptr) {
@@ -110,6 +108,10 @@ parse(plist::Dictionary const *dict)
 bool ImageSet::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
+    if (!this->children().empty()) {
+        fprintf(stderr, "warning: unexpected child assets\n");
+    }
+
     if (!Asset::parse(dict, seen, false)) {
         return false;
     }

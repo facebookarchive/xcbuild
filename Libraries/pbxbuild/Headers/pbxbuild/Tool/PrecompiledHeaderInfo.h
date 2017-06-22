@@ -10,7 +10,12 @@
 #ifndef __pbxbuild_Tool_PrecompiledHeaderInfo_h
 #define __pbxbuild_Tool_PrecompiledHeaderInfo_h
 
-#include <pbxbuild/Base.h>
+#include <pbxspec/PBX/Compiler.h>
+#include <pbxspec/PBX/FileType.h>
+#include <pbxsetting/Value.h>
+
+#include <string>
+#include <vector>
 
 namespace pbxbuild {
 namespace Tool {

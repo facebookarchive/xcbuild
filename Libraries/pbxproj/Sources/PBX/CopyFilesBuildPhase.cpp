@@ -14,6 +14,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::CopyFilesBuildPhase;
+using pbxproj::Context;
 
 CopyFilesBuildPhase::
 CopyFilesBuildPhase() :

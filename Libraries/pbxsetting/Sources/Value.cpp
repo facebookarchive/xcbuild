@@ -20,28 +20,28 @@
 using pbxsetting::Value;
 
 Value::Entry::
-Entry(Type type, std::string const &string) :
-    type  (type),
-    string(string)
+Entry(std::string const &string) :
+    _type  (Type::String),
+    _string(string)
 {
 }
 
 Value::Entry::
-Entry(Type type, std::shared_ptr<class Value> const &value) :
-    type (type),
-    value(value)
+Entry(std::shared_ptr<Value> const &value) :
+    _type (Type::Value),
+    _value(value)
 {
 }
 
 bool Value::Entry::
 operator==(Entry const &rhs) const
 {
-    if (type != rhs.type) {
+    if (_type != rhs._type) {
         return false;
-    } else if (type == Value::Entry::String) {
-        return string == rhs.string;
-    } else if (type == Value::Entry::Value) {
-        return *value == *rhs.value;
+    } else if (_type == Entry::Type::String) {
+        return *_string == *rhs._string;
+    } else if (_type == Entry::Type::Value) {
+        return *_value == *rhs._value;
     } else {
         assert(false);
         return false;
@@ -70,13 +70,13 @@ raw() const
 {
     std::string out;
     for (Value::Entry const &entry : _entries) {
-        switch (entry.type) {
-            case Value::Entry::String: {
-                out += entry.string;
+        switch (entry.type()) {
+            case Value::Entry::Type::String: {
+                out += *entry.string();
                 break;
             }
-            case Value::Entry::Value: {
-                out += "$(" + entry.value->raw() + ")";
+            case Value::Entry::Type::Value: {
+                out += "$(" + entry.value()->raw() + ")";
                 break;
             }
         }
@@ -104,8 +104,8 @@ operator+(Value const &rhs) const
 
     auto it = rhs.entries().begin();
     if (!entries.empty() && !rhs.entries().empty()) {
-        if (entries.back().type == Value::Entry::String && it->type == Value::Entry::String) {
-            entries.back().string += it->string;
+        if (entries.back().type() == Value::Entry::Type::String && it->type() == Value::Entry::Type::String) {
+            entries.back() = Entry(*entries.back().string() + *it->string());
             ++it;
         }
     }
@@ -195,7 +195,7 @@ ParseValue(std::string const &value, size_t from, ValueDelimiter end = kDelimite
         if (open == std::string::npos || start == kDelimiterNone || open >= to) {
             length = to - append_offset;
             if (length > 0) {
-                entries.push_back(Value::Entry(Value::Entry::String, value.substr(append_offset, length)));
+                entries.push_back(Value::Entry(value.substr(append_offset, length)));
             }
 
             return { .found = true, .end = to, .value = Value(entries) };
@@ -205,10 +205,10 @@ ParseValue(std::string const &value, size_t from, ValueDelimiter end = kDelimite
         if (result.found) {
             length = open - append_offset;
             if (length > 0) {
-                entries.push_back(Value::Entry(Value::Entry::String, value.substr(append_offset, length)));
+                entries.push_back(Value::Entry(value.substr(append_offset, length)));
             }
 
-            entries.push_back(Value::Entry(Value::Entry::Value, std::make_shared<Value>(result.value)));
+            entries.push_back(Value::Entry(std::make_shared<Value>(result.value)));
 
             append_offset = result.end + closelen;
             search_offset = result.end + closelen;
@@ -232,7 +232,7 @@ String(std::string const &value)
     }
 
     return Value({
-        Entry(Value::Entry::String, value),
+        Entry(value),
     });
 }
 
@@ -240,8 +240,8 @@ Value Value::
 Variable(std::string const &value)
 {
     return Value({
-        Entry(Value::Entry::Value, std::make_shared<Value>(Value({
-            Entry(Value::Entry::String, value),
+        Entry(std::make_shared<Value>(Value({
+            Entry(value),
         }))),
     });
 }

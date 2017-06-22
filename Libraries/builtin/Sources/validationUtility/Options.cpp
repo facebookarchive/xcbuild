@@ -27,7 +27,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     std::string const &arg = **it;
 
     if (arg == "-validate-for-store") {
-        return libutil::Options::Current<bool>(&_validateForStore, arg, it);
+        return libutil::Options::Current<bool>(&_validateForStore, arg);
     } else if (!arg.empty() && arg[0] != '-') {
         return libutil::Options::Current<std::string>(&_input, arg);
     } else {

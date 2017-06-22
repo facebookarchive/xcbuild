@@ -27,5 +27,4 @@
         "#!/usr/local/bin/python",
         "#! /usr/local/bin/python",
     );
-    IsExecutable = YES;
 }

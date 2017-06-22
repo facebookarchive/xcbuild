@@ -10,7 +10,8 @@
 #ifndef __pbxbuild_Tool_OptionsResult_h
 #define __pbxbuild_Tool_OptionsResult_h
 
-#include <pbxbuild/Base.h>
+#include <pbxspec/PBX/FileType.h>
+#include <pbxspec/PBX/PropertyOption.h>
 
 #include <string>
 #include <unordered_map>

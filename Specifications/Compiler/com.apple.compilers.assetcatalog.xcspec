@@ -12,15 +12,19 @@
     Identifier = com.apple.compilers.assetcatalog;
     Name = "Asset Catalog Compiler";
 
-    CommandLine = "actool [options] [special-args] [inputs] --compile $(ProductResourcesDir)";
-    RuleName = "CompileAssetCatalog $(ProductResourcesDir) [inputs]";
+    CommandLine = "actool --product-type $(PRODUCT_TYPE) [options] [special-args] --compile $(ProductResourcesDir) $(ASSETCATALOG_COMPILER_INPUTS)";
+    RuleName = "CompileAssetCatalog $(ProductResourcesDir) $(ASSETCATALOG_COMPILER_INPUTS)";
 
-    InputFileGroupings = ( "tool" );
+    InputFileGroupings = ( "actool" );
     InputFileTypes = (
         "folder.assetcatalog",
         "folder.imagecatalog",
+        "folder.stickers",
     );
     Outputs = ( ); /* Dynamic based on inputs. */
+    AdditionalDirectoriesToCreate = (
+        "$(ProductResourcesDir)",
+    );
     DeeplyStatInputDirectories = YES;
     DependencyInfoFile = "$(ASSETCATALOG_COMPILER_DEPENDENCY_INFO_FILE)";
     GeneratedInfoPlistContentFilePath = "$(ASSETCATALOG_COMPILER_INFOPLIST_CONTENT_FILE)";
@@ -72,7 +76,6 @@
         {
             Name = "RESOURCES_TARGETED_DEVICE_FAMILY";
             Type = StringList;
-            DefaultValue = "$(TARGETED_DEVICE_FAMILY)";
             CommandLineFlag = "--target-device";
         },
 
@@ -89,6 +92,21 @@
             Type = String;
             DefaultValue = "";
             CommandLineFlag = "--launch-image";
+        },
+
+
+        /* Stickers */
+        {
+            Name = "ASSETCATALOG_COMPILER_STICKER_PACK_STRINGS";
+            Type = PathList;
+            DefaultValue = "";
+            CommandLineFlag = "--sticker-pack-strings-file";
+        },
+        {
+            Name = "ASSETCATALOG_COMPILER_STICKER_PACK_IDENTIFIER_PREFIX";
+            Type = String;
+            DefaultValue = "$(PRODUCT_BUNDLE_IDENTIFIER).sticker-pack.";
+            CommandLineFlag = "--sticker-pack-identifier-prefix";
         },
 
 

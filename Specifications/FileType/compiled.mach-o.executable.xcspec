@@ -15,4 +15,5 @@
     UTI = "com.apple.mach-o-executable";
     IsExecutable = YES;
     CodeSignOnCopy = YES;
+    AppliesToBuildRules = NO;
 }

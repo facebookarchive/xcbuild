@@ -24,7 +24,7 @@ public:
     virtual std::string name();
 
 public:
-    virtual int run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, libutil::Filesystem *filesystem, std::string const &workingDirectory);
+    virtual int run(process::Context const *processContext, libutil::Filesystem *filesystem);
 };
 
 }

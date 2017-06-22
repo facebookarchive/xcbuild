@@ -12,13 +12,18 @@ If you're new to xcbuild, we have a [list of issues](https://github.com/facebook
 
 To make xcbuild useful as more than just a build tool, it's built as a collection of libraries. Each of these libraries has its headers under `Headers` and `PrivateHeaders`, source code under `Sources`, and unit tests under `Tests`. Under `Tools` are the executables that use the xcbuild libraries, including `xcbuild` itself.
 
-High level overview of each component library:
+Shared components:
 
- - `ext`: *Standalone.* Standard library extensions from the future.
- - `plist`: *Standalone.* Reader, writer, and model for ASCII, binary, and XML property lists.
- - `ninja`: *Standalone.* Generator for Ninja build files.
- - `dependency`: *Standalone.* Parse dependency info from various tools.
+ - `ext`: Standard library extensions from the future.
+ - `plist`: Reader, writer, and model for ASCII, binary, and XML property lists.
  - `libutil`: Common utilities and platform abstractions.
+ - `process`: Process launching and parameter abstraction.
+ - `graphics`: Image loading, color conversion, and serialization.
+
+Build components:
+
+ - `ninja`: Generator for Ninja build files.
+ - `dependency`: Parse dependency info from various tools.
  - `pbxsetting`: Build setting parsing, levels, and resolution.
  - `xcsdk`: Loads the available platforms, SDKs, and toolchains in a developer root.
  - `pbxspec`: Parses available build settings, tools, and file types into strongly-typed structures.
@@ -34,6 +39,13 @@ High level overview of each component library:
  - `xcformatter`: Build log formatting styles.
  - `xcexecution`: Build execution engines.
  - `xcdriver`: Parses command line options and drives the build.
+
+Asset components:
+
+ - `xcassets`: Parses asset catalogs into strongly-typed structures.
+ - `libbom`: Reads and writes standard BOM archives.
+ - `libcar`: Reads and writes asset archives archives within a BOM.
+ - `acdriver`: Parses command line options and compiles asset catalogs.
 
 ## Style
 

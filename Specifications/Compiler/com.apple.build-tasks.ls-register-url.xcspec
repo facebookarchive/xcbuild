@@ -12,9 +12,12 @@
     Identifier = com.apple.build-tasks.ls-register-url;
     Name = "Register with Launch Services";
 
-    CommandLine = "builtin-lsRegisterURL [input]";
+    CommandLine = "builtin-lsRegisterURL [options] [input]";
     RuleName = "RegisterWithLaunchServices $(InputFile)";
     SynthesizeBuildRule = YES;
+    Outputs = (
+        "$(OutputPath)",
+    );
 
     Options = (
         /* No options. */

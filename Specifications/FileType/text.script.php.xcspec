@@ -33,5 +33,4 @@
         "#!/usr/local/bin/php",
         "#! /usr/local/bin/php",
     );
-    IsExecutable = YES;
 }

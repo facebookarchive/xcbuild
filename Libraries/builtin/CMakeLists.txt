@@ -49,7 +49,7 @@ if ("${CORE_SERVICES}" STREQUAL "CORE_SERVICES-NOTFOUND")
   set(CORE_SERVICES "")
 endif ()
 
-target_link_libraries(builtin PUBLIC util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
+target_link_libraries(builtin PUBLIC dependency util plist pbxsetting ${CORE_FOUNDATION} ${CORE_SERVICES})
 target_include_directories(builtin PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS builtin DESTINATION usr/lib)
 
@@ -90,5 +90,7 @@ target_link_libraries(builtin-embeddedBinaryValidationUtility builtin)
 install(TARGETS builtin-embeddedBinaryValidationUtility DESTINATION usr/bin)
 
 if (BUILD_TESTING)
+  ADD_UNIT_GTEST(builtin copy Tests/test_copy.cpp)
   ADD_UNIT_GTEST(builtin copyStrings Tests/test_copyStrings.cpp)
+  ADD_UNIT_GTEST(builtin copyPlist Tests/test_copyPlist.cpp)
 endif ()

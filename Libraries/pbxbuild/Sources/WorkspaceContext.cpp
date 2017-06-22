@@ -24,13 +24,15 @@ WorkspaceContext(
     xcworkspace::XC::Workspace::shared_ptr const &workspace,
     pbxproj::PBX::Project::shared_ptr const &project,
     std::vector<xcscheme::SchemeGroup::shared_ptr> const &schemeGroups,
-    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects) :
+    std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects,
+    std::unordered_map<pbxproj::XC::BuildConfiguration::shared_ptr, pbxsetting::XC::Config> const &configs) :
     _basePath       (basePath),
     _derivedDataHash(derivedDataHash),
     _workspace      (workspace),
     _project        (project),
     _schemeGroups   (schemeGroups),
-    _projects       (projects)
+    _projects       (projects),
+    _configs        (configs)
 {
 }
 
@@ -96,6 +98,13 @@ loadedFilePaths() const
         }
     }
 
+    /*
+     * Add all config file paths.
+     */
+    for (auto const &entry : _configs) {
+        loadedFilePaths.push_back(entry.second.path());
+    }
+
     return loadedFilePaths;
 }
 
@@ -143,7 +152,38 @@ LoadWorkspaceProjects(Filesystem const *filesystem, std::vector<pbxproj::PBX::Pr
 }
 
 static void
-LoadNestedProjects(Filesystem const *filesystem, std::vector<pbxproj::PBX::Project::shared_ptr> *projects, pbxsetting::Environment const &baseEnvironment, std::vector<pbxproj::PBX::Project::shared_ptr> const &rootProjects)
+LoadConfigurationFiles(
+    Filesystem const *filesystem,
+    std::unordered_map<pbxproj::XC::BuildConfiguration::shared_ptr, pbxsetting::XC::Config> *configs,
+    pbxsetting::Environment const &environment,
+    pbxproj::XC::ConfigurationList::shared_ptr const &configurationList)
+{
+    if (configurationList == nullptr) {
+        return;
+    }
+
+    /*
+     * Load all configuration files in the list.
+     */
+    for (pbxproj::XC::BuildConfiguration::shared_ptr const &buildConfiguration : configurationList->buildConfigurations()) {
+        if (pbxproj::PBX::FileReference::shared_ptr const &configurationReference = buildConfiguration->baseConfigurationReference()) {
+            std::string configurationPath = environment.expand(configurationReference->resolve());
+
+            /* Load the configuration file. */
+            if (ext::optional<pbxsetting::XC::Config> configuration = pbxsetting::XC::Config::Load(filesystem, environment, configurationPath)) {
+                configs->insert({ buildConfiguration, *configuration });
+            }
+        }
+    }
+}
+
+static void
+LoadNestedProjects(
+    Filesystem const *filesystem,
+    std::vector<pbxproj::PBX::Project::shared_ptr> *projects,
+    std::unordered_map<pbxproj::XC::BuildConfiguration::shared_ptr, pbxsetting::XC::Config> *configs,
+    pbxsetting::Environment const &baseEnvironment,
+    std::vector<pbxproj::PBX::Project::shared_ptr> const &rootProjects)
 {
     std::vector<pbxproj::PBX::Project::shared_ptr> nestedProjects;
 
@@ -156,8 +196,16 @@ LoadNestedProjects(Filesystem const *filesystem, std::vector<pbxproj::PBX::Proje
          * but it's unclear exactly what settings are available here. Notably, we don't yet know what
          * the configuration or what target to use, so just the project settings seems reasonable.
          */
-        pbxsetting::Environment environment = baseEnvironment;
+        pbxsetting::Environment environment = pbxsetting::Environment(baseEnvironment);
         environment.insertFront(project->settings(), false);
+
+        /*
+         * Load project and target configurations.
+         */
+        LoadConfigurationFiles(filesystem, configs, environment, project->buildConfigurationList());
+        for (pbxproj::PBX::Target::shared_ptr const &target : project->targets()) {
+            LoadConfigurationFiles(filesystem, configs, environment, target->buildConfigurationList());
+        }
 
         /*
          * Find the nested projects.
@@ -185,18 +233,18 @@ LoadNestedProjects(Filesystem const *filesystem, std::vector<pbxproj::PBX::Proje
         /*
          * Load nested projects of the nested projects.
          */
-        LoadNestedProjects(filesystem, projects, baseEnvironment, nestedProjects);
+        LoadNestedProjects(filesystem, projects, configs, baseEnvironment, nestedProjects);
     }
 }
 
 static void
-LoadProjectSchemes(Filesystem const *filesystem, std::vector<xcscheme::SchemeGroup::shared_ptr> *schemeGroups, std::vector<pbxproj::PBX::Project::shared_ptr> const &projects)
+LoadProjectSchemes(Filesystem const *filesystem, std::string const &userName, std::vector<xcscheme::SchemeGroup::shared_ptr> *schemeGroups, std::vector<pbxproj::PBX::Project::shared_ptr> const &projects)
 {
     /*
      * Load the schemes inside the projects.
      */
     for (pbxproj::PBX::Project::shared_ptr const &project : projects) {
-        xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(filesystem, project->basePath(), project->projectFile(), project->name());
+        xcscheme::SchemeGroup::shared_ptr projectGroup = xcscheme::SchemeGroup::Open(filesystem, userName, project->basePath(), project->projectFile(), project->name());
         if (projectGroup != nullptr) {
             schemeGroups->push_back(projectGroup);
         }
@@ -218,15 +266,16 @@ CreateProjectMap(std::vector<pbxproj::PBX::Project::shared_ptr> const &projects)
 }
 
 WorkspaceContext WorkspaceContext::
-Workspace(Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace)
+Workspace(Filesystem const *filesystem, std::string const &userName, pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace)
 {
     std::vector<pbxproj::PBX::Project::shared_ptr> projects;
     std::vector<xcscheme::SchemeGroup::shared_ptr> schemeGroups;
+    std::unordered_map<pbxproj::XC::BuildConfiguration::shared_ptr, pbxsetting::XC::Config> configs;
 
     /*
      * Add the schemes from the workspace itself.
      */
-    xcscheme::SchemeGroup::shared_ptr workspaceGroup = xcscheme::SchemeGroup::Open(filesystem, workspace->basePath(), workspace->projectFile(), workspace->name());
+    xcscheme::SchemeGroup::shared_ptr workspaceGroup = xcscheme::SchemeGroup::Open(filesystem, userName, workspace->basePath(), workspace->projectFile(), workspace->name());
     if (workspaceGroup != nullptr) {
         schemeGroups.push_back(workspaceGroup);
     }
@@ -239,26 +288,27 @@ Workspace(Filesystem const *filesystem, pbxsetting::Environment const &baseEnvir
     /*
      * Recursively load nested projects within those projects.
      */
-    LoadNestedProjects(filesystem, &projects, baseEnvironment, projects);
+    LoadNestedProjects(filesystem, &projects, &configs, baseEnvironment, projects);
 
     /*
      * Load schemes for all projects, including nested projects.
      */
-    LoadProjectSchemes(filesystem, &schemeGroups, projects);
+    LoadProjectSchemes(filesystem, userName, &schemeGroups, projects);
 
     /*
      * Determine the DerivedData path for the workspace.
      */
     DerivedDataHash derivedDataHash = DerivedDataHash::Create(workspace->projectFile());
 
-    return WorkspaceContext(workspace->basePath(), derivedDataHash, workspace, nullptr, schemeGroups, CreateProjectMap(projects));
+    return WorkspaceContext(workspace->basePath(), derivedDataHash, workspace, nullptr, schemeGroups, CreateProjectMap(projects), configs);
 }
 
 WorkspaceContext WorkspaceContext::
-Project(Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project)
+Project(Filesystem const *filesystem, std::string const &userName, pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project)
 {
     std::vector<pbxproj::PBX::Project::shared_ptr> projects;
     std::vector<xcscheme::SchemeGroup::shared_ptr> schemeGroups;
+    std::unordered_map<pbxproj::XC::BuildConfiguration::shared_ptr, pbxsetting::XC::Config> configs;
 
     /*
      * The root is a project, so it should be in the projects list.
@@ -268,17 +318,17 @@ Project(Filesystem const *filesystem, pbxsetting::Environment const &baseEnviron
     /*
      * Recursively load nested projects within the project.
      */
-    LoadNestedProjects(filesystem, &projects, baseEnvironment, projects);
+    LoadNestedProjects(filesystem, &projects, &configs, baseEnvironment, projects);
 
     /*
      * Load schemes for all projects, including the root and nested projects.
      */
-    LoadProjectSchemes(filesystem, &schemeGroups, projects);
+    LoadProjectSchemes(filesystem, userName, &schemeGroups, projects);
 
     /*
      * Determine the DerivedData path for the root project.
      */
     DerivedDataHash derivedDataHash = DerivedDataHash::Create(project->projectFile());
 
-    return WorkspaceContext(project->basePath(), derivedDataHash, nullptr, project, schemeGroups, CreateProjectMap(projects));
+    return WorkspaceContext(project->basePath(), derivedDataHash, nullptr, project, schemeGroups, CreateProjectMap(projects), configs);
 }

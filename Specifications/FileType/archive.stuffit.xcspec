@@ -12,7 +12,7 @@
     Identifier = archive.stuffit;
     BasedOn = archive;
 
-    UTI = "com.allume.stuffit-archive";
+    UTI = "com.stuffit.archive.sit";
     Extensions = (
         "sit",
         "sitx",

@@ -13,6 +13,7 @@
 #include <libutil/FSUtil.h>
 
 using xcassets::Asset::IconSet;
+namespace Slot = xcassets::Slot;
 using libutil::Filesystem;
 using libutil::FSUtil;
 
@@ -98,11 +99,7 @@ load(Filesystem const *filesystem)
         return false;
     }
 
-    if (this->hasChildren(filesystem)) {
-        fprintf(stderr, "warning: unexpected child assets\n");
-    }
-
-    filesystem->enumerateDirectory(this->path(), [this](std::string const &name) {
+    filesystem->readDirectory(this->path(), false, [this](std::string const &name) {
         std::string path = this->path() + "/" + name;
         if (ext::optional<Icon> icon = Icon::Parse(path)) {
             _icons.push_back(*icon);
@@ -115,6 +112,10 @@ load(Filesystem const *filesystem)
 bool IconSet::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
 {
+    if (!this->children().empty()) {
+        fprintf(stderr, "warning: unexpected child assets\n");
+    }
+
     if (!Asset::parse(dict, seen, false)) {
         return false;
     }

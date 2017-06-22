@@ -10,25 +10,9 @@
 #include <xcassets/Asset/Catalog.h>
 #include <plist/Keys/Unpack.h>
 #include <libutil/Filesystem.h>
-#include <libutil/FSUtil.h>
 
 using xcassets::Asset::Catalog;
 using libutil::Filesystem;
-using libutil::FSUtil;
-
-bool Catalog::
-load(Filesystem const *filesystem)
-{
-    if (!Asset::load(filesystem)) {
-        return false;
-    }
-
-    if (!loadChildren(filesystem, &_children)) {
-        fprintf(stderr, "error: failed to load children\n");
-    }
-
-    return true;
-}
 
 bool Catalog::
 parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check)
@@ -37,7 +21,7 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         return false;
     }
 
-    /* No contents is allowed for . */
+    /* No contents is allowed for catalogs. */
     if (dict != nullptr) {
         auto unpack = plist::Keys::Unpack("Catalog", dict, seen);
 
@@ -51,10 +35,10 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
     return true;
 }
 
-std::shared_ptr<Catalog> Catalog::
+std::unique_ptr<Catalog> Catalog::
 Load(libutil::Filesystem const *filesystem, std::string const &path)
 {
     auto asset = Asset::Load(filesystem, path, { }, Catalog::Extension());
-    return std::static_pointer_cast<Catalog>(asset);
+    return libutil::static_unique_pointer_cast<Catalog>(std::move(asset));
 }
 

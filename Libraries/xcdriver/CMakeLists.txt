@@ -31,7 +31,7 @@ if ("${PROJECT_SOURCE_DIR}/LICENSE" IS_NEWER_THAN "${CMAKE_CURRENT_BINARY_DIR}/L
 endif ()
 target_include_directories(xcdriver PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
-target_link_libraries(xcdriver PUBLIC xcexecution xcformatter pbxbuild xcworkspace xcsdk pbxsetting util plist builtin)
+target_link_libraries(xcdriver PUBLIC xcexecution xcformatter pbxbuild xcworkspace xcsdk pbxsetting process util plist builtin)
 target_include_directories(xcdriver PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS xcdriver DESTINATION usr/lib)
 

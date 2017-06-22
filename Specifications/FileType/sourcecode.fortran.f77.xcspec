@@ -16,5 +16,5 @@
     Extensions = (
         "f77",
     );
-    GccDialectName = "f77";
+    AppliesToBuildRules = NO;
 }

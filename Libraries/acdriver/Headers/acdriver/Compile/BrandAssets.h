@@ -32,7 +32,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::BrandAssets> const &brandAssets,
+        xcassets::Asset::BrandAssets const *brandAssets,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

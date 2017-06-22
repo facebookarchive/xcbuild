@@ -15,15 +15,20 @@
 #include <pbxbuild/Phase/PhaseInvocations.h>
 #include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
-#include <libutil/Subprocess.h>
+#include <process/Context.h>
+#include <process/MemoryContext.h>
+#include <process/Launcher.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <set>
+
 using xcexecution::SimpleExecutor;
+using xcexecution::Parameters;
 using libutil::Filesystem;
 using libutil::FSUtil;
-using libutil::Subprocess;
+using libutil::Permissions;
 
 SimpleExecutor::
 SimpleExecutor(std::shared_ptr<xcformatter::Formatter> const &formatter, bool dryRun, builtin::Registry const &builtins) :
@@ -39,11 +44,13 @@ SimpleExecutor::
 
 bool SimpleExecutor::
 build(
-    libutil::Filesystem *filesystem,
+    process::Context const *processContext,
+    process::Launcher *processLauncher,
+    Filesystem *filesystem,
     pbxbuild::Build::Environment const &buildEnvironment,
     Parameters const &buildParameters)
 {
-    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, buildEnvironment, FSUtil::GetCurrentDirectory());
+    ext::optional<pbxbuild::WorkspaceContext> workspaceContext = buildParameters.loadWorkspace(filesystem, processContext->userName(), buildEnvironment, processContext->currentDirectory());
     if (!workspaceContext) {
         return false;
     }
@@ -73,7 +80,7 @@ build(
         if (!targetEnvironment) {
             fprintf(stderr, "error: couldn't create target environment for %s\n", target->name().c_str());
             xcformatter::Formatter::Print(_formatter->finishTarget(*buildContext, target));
-            continue;
+            return false;
         }
 
         xcformatter::Formatter::Print(_formatter->beginCheckDependencies(target));
@@ -81,7 +88,7 @@ build(
         pbxbuild::Phase::PhaseInvocations phaseInvocations = pbxbuild::Phase::PhaseInvocations::Create(phaseEnvironment, target);
         xcformatter::Formatter::Print(_formatter->finishCheckDependencies(target));
 
-        auto result = buildTarget(filesystem, target, *targetEnvironment, phaseInvocations.invocations());
+        auto result = buildTarget(processContext, processLauncher, filesystem, target, *targetEnvironment, phaseInvocations.auxiliaryFiles(), phaseInvocations.invocations());
         if (!result.first) {
             xcformatter::Formatter::Print(_formatter->finishTarget(*buildContext, target));
             xcformatter::Formatter::Print(_formatter->failure(*buildContext, result.second));
@@ -99,10 +106,12 @@ static ext::optional<std::vector<pbxbuild::Tool::Invocation>>
 SortInvocations(std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
     std::unordered_map<std::string, pbxbuild::Tool::Invocation const *> outputToInvocation;
+    std::set<uint32_t, std::less<uint32_t>> orderedPhasePriorities;
     for (pbxbuild::Tool::Invocation const &invocation : invocations) {
         for (std::string const &output : invocation.outputs()) {
             outputToInvocation.insert({ output, &invocation });
         }
+        orderedPhasePriorities.insert(invocation.priority());
     }
 
     pbxbuild::DirectedGraph<pbxbuild::Tool::Invocation const *> graph;
@@ -128,6 +137,15 @@ SortInvocations(std::vector<pbxbuild::Tool::Invocation> const &invocations)
                 graph.insert(&invocation, { it->second });
             }
         }
+
+        auto it = orderedPhasePriorities.find(invocation.priority());
+        if (it != orderedPhasePriorities.end() && std::next(it) != orderedPhasePriorities.end()) {
+            for (pbxbuild::Tool::Invocation const &otherInvocation : invocations) {
+                if (otherInvocation.priority() == *std::next(it)) {
+                    graph.insert(&otherInvocation, { &invocation });
+                }
+            }
+        }
     }
 
     std::vector<pbxbuild::Tool::Invocation> result;
@@ -146,123 +164,162 @@ SortInvocations(std::vector<pbxbuild::Tool::Invocation> const &invocations)
 bool SimpleExecutor::
 writeAuxiliaryFiles(
     Filesystem *filesystem,
-    pbxproj::PBX::Target::shared_ptr const &target,
-    pbxbuild::Target::Environment const &targetEnvironment,
-    std::vector<pbxbuild::Tool::Invocation> const &invocations)
+    std::vector<pbxbuild::Tool::AuxiliaryFile> const &auxiliaryFiles)
 {
-    xcformatter::Formatter::Print(_formatter->beginWriteAuxiliaryFiles(target));
-    for (pbxbuild::Tool::Invocation const &invocation : invocations) {
-        for (pbxbuild::Tool::Invocation::AuxiliaryFile const &auxiliaryFile : invocation.auxiliaryFiles()) {
-            std::string directory = FSUtil::GetDirectoryName(auxiliaryFile.path());
-            if (!filesystem->isDirectory(directory)) {
-                xcformatter::Formatter::Print(_formatter->createAuxiliaryDirectory(directory));
-
-                if (!_dryRun) {
-                    if (!filesystem->createDirectory(directory)) {
-                        return false;
-                    }
-                }
-            }
-
-            xcformatter::Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
+    for (pbxbuild::Tool::AuxiliaryFile const &auxiliaryFile : auxiliaryFiles) {
+        std::string directory = FSUtil::GetDirectoryName(auxiliaryFile.path());
+        if (filesystem->type(directory) != Filesystem::Type::Directory) {
+            xcformatter::Formatter::Print(_formatter->createAuxiliaryDirectory(directory));
 
             if (!_dryRun) {
-                std::vector<uint8_t> data;
-
-                for (pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
-                    switch (chunk.type()) {
-                        case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::Data: {
-                            data.insert(data.end(), chunk.data()->begin(), chunk.data()->end());
-                            break;
-                        }
-                        case pbxbuild::Tool::Invocation::AuxiliaryFile::Chunk::Type::File: {
-                            std::vector<uint8_t> contents;
-                            if (!filesystem->read(&contents, *chunk.file())) {
-                                return false;
-                            }
-                            data.insert(data.end(), contents.begin(), contents.end());
-                            break;
-                        }
-                        default: abort();
-                    }
-                }
-
-                if (!filesystem->write(data, auxiliaryFile.path())) {
+                if (!filesystem->createDirectory(directory, true)) {
                     return false;
                 }
             }
+        }
 
-            if (auxiliaryFile.executable() && !filesystem->isExecutable(auxiliaryFile.path())) {
-                xcformatter::Formatter::Print(_formatter->setAuxiliaryExecutable(auxiliaryFile.path()));
+        xcformatter::Formatter::Print(_formatter->writeAuxiliaryFile(auxiliaryFile.path()));
 
-                if (!_dryRun) {
-                    // FIXME: This should use the filesystem.
-                    if (::chmod(auxiliaryFile.path().c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0) {
-                        return false;
+        if (!_dryRun) {
+            std::vector<uint8_t> data;
+
+            for (pbxbuild::Tool::AuxiliaryFile::Chunk const &chunk : auxiliaryFile.chunks()) {
+                switch (chunk.type()) {
+                    case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::Data: {
+                        data.insert(data.end(), chunk.data()->begin(), chunk.data()->end());
+                        break;
                     }
+                    case pbxbuild::Tool::AuxiliaryFile::Chunk::Type::File: {
+                        std::vector<uint8_t> contents;
+                        if (!filesystem->read(&contents, *chunk.file())) {
+                            return false;
+                        }
+                        data.insert(data.end(), contents.begin(), contents.end());
+                        break;
+                    }
+                    default: abort();
+                }
+            }
+
+            if (!filesystem->write(data, auxiliaryFile.path())) {
+                return false;
+            }
+        }
+
+        if (auxiliaryFile.executable() && !filesystem->isExecutable(auxiliaryFile.path())) {
+            xcformatter::Formatter::Print(_formatter->setAuxiliaryExecutable(auxiliaryFile.path()));
+
+            if (!_dryRun) {
+                Permissions permissions = Permissions(
+                    { Permissions::Permission::Read, Permissions::Permission::Write, Permissions::Permission::Execute },
+                    { Permissions::Permission::Read, Permissions::Permission::Execute },
+                    { Permissions::Permission::Read, Permissions::Permission::Execute });
+                if (!filesystem->writeFilePermissions(auxiliaryFile.path(), Permissions::Operation::Set, permissions)) {
+                    return false;
                 }
             }
         }
     }
-    xcformatter::Formatter::Print(_formatter->finishWriteAuxiliaryFiles(target));
 
     return true;
 }
 
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 performInvocations(
+    process::Context const *processContext,
+    process::Launcher *processLauncher,
     Filesystem *filesystem,
-    pbxproj::PBX::Target::shared_ptr const &target,
-    pbxbuild::Target::Environment const &targetEnvironment,
+    std::vector<std::string> const &executablePaths,
     std::vector<pbxbuild::Tool::Invocation> const &orderedInvocations,
     bool createProductStructure)
 {
     for (pbxbuild::Tool::Invocation const &invocation : orderedInvocations) {
         // TODO(grp): This should perhaps be a separate flag for a 'phony' invocation.
-        if (invocation.executable().path().empty()) {
+        if (!invocation.executable()) {
             continue;
         }
+        pbxbuild::Tool::Invocation::Executable const &executable = *invocation.executable();
 
         if (invocation.createsProductStructure() != createProductStructure) {
             continue;
         }
 
-        std::map<std::string, std::string> sortedEnvironment = std::map<std::string, std::string>(invocation.environment().begin(), invocation.environment().end());
-
-        xcformatter::Formatter::Print(_formatter->beginInvocation(invocation, invocation.executable().displayName(), createProductStructure));
-
         if (!_dryRun) {
+            bool success = true;
+
             for (std::string const &output : invocation.outputs()) {
                 std::string directory = FSUtil::GetDirectoryName(output);
 
-                if (!filesystem->createDirectory(directory)) {
+                if (!filesystem->createDirectory(directory, true)) {
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
             }
 
-            if (!invocation.executable().builtin().empty()) {
-                /* For built-in tools, run them in-process. */
-                std::shared_ptr<builtin::Driver> driver = _builtins.driver(invocation.executable().builtin());
-                if (driver == nullptr) {
-                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
+            if (ext::optional<std::string> const &builtin = executable.builtin()) {
+                /* Builtin tool, find and run in-process. */
+                if (std::shared_ptr<builtin::Driver> driver = _builtins.driver(*builtin)) {
+                    xcformatter::Formatter::Print(_formatter->beginInvocation(invocation, *builtin, createProductStructure));
+
+                    process::MemoryContext context = process::MemoryContext(
+                        *builtin,
+                        invocation.workingDirectory(),
+                        invocation.arguments(),
+                        invocation.environment(),
+                        processContext->userID(),
+                        processContext->groupID(),
+                        processContext->userName(),
+                        processContext->groupName());
+                    int exitCode = driver->run(&context, filesystem);
+                    success = (exitCode == 0);
+
+                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, *builtin, createProductStructure));
+                } else {
+                    /* Failed to find builtin tool. */
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
+            } else if (ext::optional<std::string> const &external = executable.external()) {
+                /* External tool, find on the filesystem. */
+                ext::optional<std::string> path;
+                if (FSUtil::IsAbsolutePath(*external)) {
+                    if (filesystem->isExecutable(*external)) {
+                        path = external;
+                    }
+                } else {
+                    path = filesystem->findExecutable(*external, executablePaths);
+                }
 
-                if (driver->run(invocation.arguments(), invocation.environment(), filesystem, invocation.workingDirectory()) != 0) {
-                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
+                if (path) {
+                    xcformatter::Formatter::Print(_formatter->beginInvocation(invocation, *path, createProductStructure));
+
+                    /* Create the execution environment from the process and invocation environments, preferring the invocation. */
+                    std::unordered_map<std::string, std::string> environment = invocation.environment();
+                    environment.insert(processContext->environmentVariables().begin(), processContext->environmentVariables().end());
+
+                    process::MemoryContext context = process::MemoryContext(
+                        *path,
+                        invocation.workingDirectory(),
+                        invocation.arguments(),
+                        environment,
+                        processContext->userID(),
+                        processContext->groupID(),
+                        processContext->userName(),
+                        processContext->groupName());
+                    ext::optional<int> exitCode = processLauncher->launch(filesystem, &context);
+                    success = (exitCode && *exitCode == 0);
+
+                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, *path, createProductStructure));
+                } else {
+                    /* Failed to find executable. */
                     return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
                 }
             } else {
-                /* External tool, run the tool externally. */
-                Subprocess process;
-                if (!process.execute(filesystem, invocation.executable().path(), invocation.arguments(), invocation.environment(), invocation.workingDirectory()) || process.exitcode() != 0) {
-                    xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
-                    return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
-                }
+                abort();
+            }
+
+            if (!success) {
+                return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>({ invocation }));
             }
         }
-
-        xcformatter::Formatter::Print(_formatter->finishInvocation(invocation, invocation.executable().displayName(), createProductStructure));
     }
 
     return std::make_pair(true, std::vector<pbxbuild::Tool::Invocation>());
@@ -270,12 +327,18 @@ performInvocations(
 
 std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> SimpleExecutor::
 buildTarget(
+    process::Context const *processContext,
+    process::Launcher *processLauncher,
     Filesystem *filesystem,
     pbxproj::PBX::Target::shared_ptr const &target,
     pbxbuild::Target::Environment const &targetEnvironment,
+    std::vector<pbxbuild::Tool::AuxiliaryFile> const &auxiliaryFiles,
     std::vector<pbxbuild::Tool::Invocation> const &invocations)
 {
-    if (!writeAuxiliaryFiles(filesystem, target, targetEnvironment, invocations)) {
+    xcformatter::Formatter::Print(_formatter->beginWriteAuxiliaryFiles(target));
+    bool auxiliaryFilesSuccess = this->writeAuxiliaryFiles(filesystem, auxiliaryFiles);
+    xcformatter::Formatter::Print(_formatter->finishWriteAuxiliaryFiles(target));
+    if (!auxiliaryFilesSuccess) {
         return std::make_pair(false, std::vector<pbxbuild::Tool::Invocation>());
     }
 
@@ -286,13 +349,13 @@ buildTarget(
     }
 
     xcformatter::Formatter::Print(_formatter->beginCreateProductStructure(target));
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(filesystem, target, targetEnvironment, *orderedInvocations, true);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> structureResult = performInvocations(processContext, processLauncher, filesystem, targetEnvironment.executablePaths(), *orderedInvocations, true);
     xcformatter::Formatter::Print(_formatter->finishCreateProductStructure(target));
     if (!structureResult.first) {
         return structureResult;
     }
 
-    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(filesystem, target, targetEnvironment, *orderedInvocations, false);
+    std::pair<bool, std::vector<pbxbuild::Tool::Invocation>> invocationsResult = performInvocations(processContext, processLauncher, filesystem, targetEnvironment.executablePaths(), *orderedInvocations, false);
     if (!invocationsResult.first) {
         return invocationsResult;
     }

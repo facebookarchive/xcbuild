@@ -14,6 +14,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::AppleScriptBuildPhase;
+using pbxproj::Context;
 
 AppleScriptBuildPhase::
 AppleScriptBuildPhase() :

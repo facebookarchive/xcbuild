@@ -30,17 +30,17 @@ void Tool::InterfaceBuilderResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::vector<Phase::File> const &inputs) const
+    std::vector<Tool::Input> const &inputs) const
 {
     /*
      * Filter arguments as either a real input or a localization-specific strings file.
      */
-    std::vector<Phase::File> primaryInputs;
+    std::vector<Tool::Input> primaryInputs;
     std::vector<std::string> localizationStringsFiles;
-    for (Phase::File const &input : inputs) {
-        if (input.fileType()->identifier() == "text.plist.strings") {
+    for (Tool::Input const &input : inputs) {
+        if (input.fileType() != nullptr && input.fileType()->identifier() == "text.plist.strings") {
             /* The format here is as expected by ibtool. */
-            localizationStringsFiles.push_back(input.localization() + ":" + input.path());
+            localizationStringsFiles.push_back(input.localization().value_or("") + ":" + input.path());
         } else {
             primaryInputs.push_back(input);
         }
@@ -53,7 +53,7 @@ resolve(
         InterfaceBuilderCommon::TargetedDeviceSetting(baseEnvironment),
         pbxsetting::Setting::Create("IBC_REGIONS_AND_STRINGS_FILES", pbxsetting::Type::FormatList(localizationStringsFiles)),
     });
-    pbxsetting::Environment interfaceBuilderEnvironment = baseEnvironment;
+    pbxsetting::Environment interfaceBuilderEnvironment = pbxsetting::Environment(baseEnvironment);
     interfaceBuilderEnvironment.insertFront(level, false);
 
     /*
@@ -79,14 +79,6 @@ resolve(
         outputs = { outputs.front() };
     }
 
-    // TODO(grp): These should be handled generically for all tools.
-    std::unordered_map<std::string, std::string> environmentVariables = options.environment();
-    if (_tool->environmentVariables()) {
-        for (auto const &variable : *_tool->environmentVariables()) {
-            environmentVariables.insert({ variable.first, environment.expand(variable.second) });
-        }
-    }
-
     // TODO(grp): This should be handled generically for all tools.
     if (_tool->generatedInfoPlistContentFilePath()) {
         std::string infoPlistContent = environment.expand(*_tool->generatedInfoPlistContentFilePath());
@@ -98,23 +90,21 @@ resolve(
      * Create the invocation.
      */
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
-    invocation.environment() = environmentVariables;
+    invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = outputs;
     invocation.logMessage() = tokens.logMessage();
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<Tool::InterfaceBuilderResolver> Tool::InterfaceBuilderResolver::
-Create(Phase::Environment const &phaseEnvironment, std::string const &toolIdentifier)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, std::string const &toolIdentifier)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Compiler::shared_ptr interfaceBuilderTool = buildEnvironment.specManager()->compiler(toolIdentifier, targetEnvironment.specDomains());
+    pbxspec::PBX::Compiler::shared_ptr interfaceBuilderTool = specManager->compiler(toolIdentifier, specDomains);
     if (interfaceBuilderTool == nullptr) {
         fprintf(stderr, "warning: could not find interface builder tool\n");
         return nullptr;

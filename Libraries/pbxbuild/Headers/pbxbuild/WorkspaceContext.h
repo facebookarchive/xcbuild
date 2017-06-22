@@ -12,6 +12,7 @@
 
 #include <pbxbuild/Base.h>
 #include <pbxbuild/DerivedDataHash.h>
+#include <pbxsetting/XC/Config.h>
 
 namespace pbxsetting { class Environment; }
 namespace libutil { class Filesystem; }
@@ -35,6 +36,7 @@ private:
     pbxproj::PBX::Project::shared_ptr              _project;
     std::vector<xcscheme::SchemeGroup::shared_ptr> _schemeGroups;
     std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> _projects;
+    std::unordered_map<pbxproj::XC::BuildConfiguration::shared_ptr, pbxsetting::XC::Config> _configs;
 
 public:
     WorkspaceContext(
@@ -43,7 +45,8 @@ public:
         xcworkspace::XC::Workspace::shared_ptr const &workspace,
         pbxproj::PBX::Project::shared_ptr const &project,
         std::vector<xcscheme::SchemeGroup::shared_ptr> const &schemeGroups,
-        std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects);
+        std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects,
+        std::unordered_map<pbxproj::XC::BuildConfiguration::shared_ptr, pbxsetting::XC::Config> const &configs);
     ~WorkspaceContext();
 
 public:
@@ -85,6 +88,12 @@ public:
     std::unordered_map<std::string, pbxproj::PBX::Project::shared_ptr> const &projects() const
     { return _projects; }
 
+    /*
+     * All configuration files, including for all loaded projects and targets.
+     */
+    std::unordered_map<pbxproj::XC::BuildConfiguration::shared_ptr, pbxsetting::XC::Config> const &configs() const
+    { return _configs; }
+
 public:
     /*
      * Find a project in the workspace. Could be the root project (for a legacy build), a project
@@ -113,13 +122,13 @@ public:
      * Creates a workspace context from a real workspace.
      */
     static WorkspaceContext
-    Workspace(libutil::Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace);
+    Workspace(libutil::Filesystem const *filesystem, std::string const &userName, pbxsetting::Environment const &baseEnvironment, xcworkspace::XC::Workspace::shared_ptr const &workspace);
 
     /*
      * Creates a workspace context for a legacy project-only build.
      */
     static WorkspaceContext
-    Project(libutil::Filesystem const *filesystem, pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project);
+    Project(libutil::Filesystem const *filesystem, std::string const &userName, pbxsetting::Environment const &baseEnvironment, pbxproj::PBX::Project::shared_ptr const &project);
 };
 
 }

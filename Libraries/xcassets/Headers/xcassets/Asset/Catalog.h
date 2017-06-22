@@ -17,20 +17,13 @@ namespace Asset {
 
 class Catalog : public Asset {
 private:
-    std::vector<std::shared_ptr<Asset>> _children;
-
-private:
     friend class Asset;
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<Asset>> const &children() const
-    { return _children; }
-
-public:
     static AssetType Type()
     { return AssetType::Catalog; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::Catalog; }
 
 public:
@@ -41,10 +34,9 @@ public:
     /*
      * Load an asset catalog from a directory.
      */
-    static std::shared_ptr<Catalog> Load(libutil::Filesystem const *filesystem, std::string const &path);
+    static std::unique_ptr<Catalog> Load(libutil::Filesystem const *filesystem, std::string const &path);
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

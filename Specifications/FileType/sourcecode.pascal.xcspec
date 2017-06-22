@@ -18,4 +18,5 @@
         "pp",
         "pas",
     );
+    AppliesToBuildRules = YES;
 }

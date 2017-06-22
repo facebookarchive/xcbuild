@@ -11,6 +11,8 @@
 #define __xcassets_Asset_ComplicationSet_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Slot/Idiom.h>
+#include <xcassets/WatchComplicationRole.h>
 #include <plist/Dictionary.h>
 
 #include <memory>
@@ -21,30 +23,42 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageSet;
-
 class ComplicationSet : public Asset {
-private:
-    std::vector<std::shared_ptr<ImageSet>>  _children;
+public:
+    class ComplicationAsset {
+    private:
+        ext::optional<Slot::Idiom>           _idiom;
+        ext::optional<std::string>           _fileName;
+        ext::optional<WatchComplicationRole> _role;
+
+    public:
+        ext::optional<Slot::Idiom> const &idiom() const
+        { return _idiom; }
+        ext::optional<std::string> const &fileName() const
+        { return _fileName; }
+        ext::optional<WatchComplicationRole> const &role() const
+        { return _role; }
+
+    private:
+        friend class ComplicationSet;
+        bool parse(plist::Dictionary const *dict);
+    };
 
 private:
-    // TODO: assets
+    ext::optional<std::vector<ComplicationAsset>> _assets;
 
 private:
     friend class Asset;
     using Asset::Asset;
 
 public:
-    std::vector<std::shared_ptr<ImageSet>> const &children() const
-    { return _children; }
-
-public:
-    // TODO: assets
+    ext::optional<std::vector<ComplicationAsset>> const &assets() const
+    { return _assets; }
 
 public:
     static AssetType Type()
     { return AssetType::ComplicationSet; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::ComplicationSet; }
 
 public:
@@ -52,7 +66,6 @@ public:
     { return std::string("complicationset"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

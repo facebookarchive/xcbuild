@@ -1,0 +1,38 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Compiler;
+    Identifier = com.apple.build-tasks.copy-tiff-file;
+    Name = "Copy Tiff Image";
+
+    CommandLine = "builtin-copyTiff [options] --outdir $(ProductResourcesDir) -- $(InputFileRelativePath)";
+    RuleName = "CopyTiffFile $(ProductResourcesDir)/$(InputFileName) $(InputFileRelativePath)";
+    InputFileTypes = (
+        "image.tiff",
+    );
+    Outputs = (
+        /* Always place outputs in $(ProductResourcesDir) in case
+         * this tool is used from outside a Copy Resources phase. */
+        "$(ProductResourcesDir)/$(InputFileName)",
+    );
+    SynthesizeBuildRule = YES;
+
+    Options = (
+        {
+            Name = "COMPRESS_TIFF_FILES_WHILE_COPYING";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineArgs = {
+                YES = ( "--compression", "lzw" );
+            };
+        },
+    );
+}
+

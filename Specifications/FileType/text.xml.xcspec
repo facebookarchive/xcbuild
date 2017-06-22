@@ -19,8 +19,12 @@
     Extensions = (
         "xml",
         "dtd",
+        "xsl",
         "xslt",
         "xhtml",
+        "xconf",
+        "xmap",
+        "xsp",
     );
     MagicWord = (
         /* UTF-8 */

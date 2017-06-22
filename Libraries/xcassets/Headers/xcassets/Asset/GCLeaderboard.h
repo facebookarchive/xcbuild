@@ -11,6 +11,7 @@
 #define __xcassets_Asset_GCLeaderboard_h
 
 #include <xcassets/Asset/Asset.h>
+#include <xcassets/Asset/ImageStack.h>
 #include <xcassets/ContentReference.h>
 #include <plist/Dictionary.h>
 
@@ -22,12 +23,9 @@
 namespace xcassets {
 namespace Asset {
 
-class ImageStack;
-
 class GCLeaderboard : public Asset {
 private:
-    ext::optional<ContentReference>          _contentReference;
-    std::vector<std::shared_ptr<ImageStack>> _children;
+    ext::optional<ContentReference> _contentReference;
 
 private:
     friend class Asset;
@@ -36,13 +34,15 @@ private:
 public:
     ext::optional<ContentReference> const &contentReference() const
     { return _contentReference; }
-    std::vector<std::shared_ptr<ImageStack>> const &children() const
-    { return _children; }
+
+public:
+    ImageStack const *contentEmbedded() const
+    { return this->child<ImageStack>(); }
 
 public:
     static AssetType Type()
     { return AssetType::GCLeaderboard; }
-    virtual AssetType type()
+    virtual AssetType type() const
     { return AssetType::GCLeaderboard; }
 
 public:
@@ -50,7 +50,6 @@ public:
     { return std::string("gcleaderboard"); }
 
 protected:
-    virtual bool load(libutil::Filesystem const *filesystem);
     virtual bool parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check);
 };
 

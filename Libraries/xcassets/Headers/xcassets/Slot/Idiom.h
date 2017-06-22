@@ -27,6 +27,7 @@ enum class Idiom {
     TV,
     Watch,
     Car,
+    iOSMarketing,
 };
 
 class Idioms {

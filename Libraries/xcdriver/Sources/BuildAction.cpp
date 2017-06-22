@@ -13,9 +13,11 @@
 #include <xcexecution/NinjaExecutor.h>
 #include <xcexecution/SimpleExecutor.h>
 #include <xcformatter/DefaultFormatter.h>
+#include <xcformatter/NullFormatter.h>
 #include <builtin/Registry.h>
 #include <libutil/Base.h>
 #include <libutil/Filesystem.h>
+#include <process/Context.h>
 
 #include <unistd.h>
 
@@ -41,6 +43,9 @@ CreateFormatter(ext::optional<std::string> const &formatter)
         bool color = isatty(fileno(stdout));
 
         auto formatter = xcformatter::DefaultFormatter::Create(color);
+        return std::static_pointer_cast<xcformatter::Formatter>(formatter);
+    } else if (*formatter == "null") {
+        auto formatter = xcformatter::NullFormatter::Create();
         return std::static_pointer_cast<xcformatter::Formatter>(formatter);
     }
 
@@ -73,6 +78,10 @@ VerifySupportedOptions(Options const &options)
         fprintf(stderr, "warning: toolchain option not implemented\n");
     }
 
+    if (options.quiet() || options.verbose() || options.json() || options.hideShellScriptEnvironment()) {
+        fprintf(stderr, "warning: output options not implemented\n");
+    }
+
     if (options.destination() || options.destinationTimeout()) {
         fprintf(stderr, "warning: destination option not implemented\n");
     }
@@ -81,11 +90,7 @@ VerifySupportedOptions(Options const &options)
         fprintf(stderr, "warning: job control option not implemented\n");
     }
 
-    if (options.hideShellScriptEnvironment()) {
-        fprintf(stderr, "warning: output control option not implemented\n");
-    }
-
-    if (options.enableAddressSanitizer() || options.enableCodeCoverage()) {
+    if (options.enableAddressSanitizer() || options.enableThreadSanitizer() || options.enableCodeCoverage()) {
         fprintf(stderr, "warning: build mode option not implemented\n");
     }
 
@@ -97,11 +102,21 @@ VerifySupportedOptions(Options const &options)
         fprintf(stderr, "warning: result bundle path not implemented\n");
     }
 
+    if (options.xctestrun() || !options.onlyTesting().empty() || !options.skipTesting().empty()) {
+        fprintf(stderr, "warning: testing options not implemented\n");
+    }
+
+    for (std::string const &action : options.actions()) {
+        if (action != "build") {
+            fprintf(stderr, "warning: non-build action %s not implemented\n", action.c_str());
+        }
+    }
+
     return true;
 }
 
 int BuildAction::
-Run(Filesystem *filesystem, Options const &options)
+Run(process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem, Options const &options)
 {
     // TODO(grp): Implement these options.
     if (!VerifySupportedOptions(options)) {
@@ -134,14 +149,19 @@ Run(Filesystem *filesystem, Options const &options)
     /*
      * Use the default build environment. We don't need anything custom here.
      */
-    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(filesystem);
+    ext::optional<pbxbuild::Build::Environment> buildEnvironment = pbxbuild::Build::Environment::Default(processContext, filesystem);
     if (!buildEnvironment) {
         fprintf(stderr, "error: couldn't create build environment\n");
         return -1;
     }
 
     /* The build settings passed in on the command line override all others. */
-    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(options, buildEnvironment->baseEnvironment());
+    std::vector<pbxsetting::Level> overrideLevels = Action::CreateOverrideLevels(
+        processContext,
+        filesystem,
+        buildEnvironment->baseEnvironment(),
+        options,
+        processContext->currentDirectory());
 
     /*
      * Create the build parameters. The executor uses this to load a workspace and create a
@@ -152,7 +172,7 @@ Run(Filesystem *filesystem, Options const &options)
     /*
      * Perform the build!
      */
-    bool success = executor->build(filesystem, *buildEnvironment, parameters);
+    bool success = executor->build(processContext, processLauncher, filesystem, *buildEnvironment, parameters);
     if (!success) {
         return 1;
     }

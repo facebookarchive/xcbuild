@@ -8,10 +8,17 @@
  */
 
 #include <builtin/copyTiff/Driver.h>
+#include <libutil/DefaultFilesystem.h>
+#include <process/DefaultContext.h>
+
+using libutil::DefaultFilesystem;
 
 int
 main(int argc, char **argv, char **envp)
 {
+    DefaultFilesystem filesystem = DefaultFilesystem();
+    process::DefaultContext processContext = process::DefaultContext();
+
     builtin::copyTiff::Driver driver;
-    return driver.runc(argc, argv, envp);
+    return driver.run(&processContext, &filesystem);
 }

@@ -39,7 +39,7 @@ add_library(plist SHARED
             Sources/Format/SimpleXMLParser.cpp
             Sources/Format/SimpleXML.cpp
             #
-            Sources/Format/ABPCommon.cpp
+            Sources/Format/ABPContext.cpp
             Sources/Format/ABPReader.cpp
             Sources/Format/ABPWriter.cpp
             Sources/Format/Binary.cpp
@@ -58,16 +58,33 @@ add_library(plist SHARED
 
 find_package(LibXml2 REQUIRED)
 target_include_directories(plist PRIVATE "${LIBXML2_INCLUDE_DIR}")
+target_compile_definitions(plist PRIVATE "${LIBXML2_DEFINITIONS}")
 target_link_libraries(plist PRIVATE ${LIBXML2_LIBRARIES})
-set_target_properties(plist PROPERTIES COMPILE_DEFINITIONS "${LIBXML2_DEFINITIONS}")
 
 target_include_directories(plist PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 target_include_directories(plist PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/PrivateHeaders")
 install(TARGETS plist DESTINATION usr/lib)
 
 add_executable(plutil Tools/plutil.cpp)
-target_link_libraries(plutil plist util)
+target_link_libraries(plutil PRIVATE plist process util)
 install(TARGETS plutil DESTINATION usr/bin)
+
+add_executable(PlistBuddy Tools/PlistBuddy.cpp)
+target_link_libraries(PlistBuddy PRIVATE plist util)
+install(TARGETS PlistBuddy DESTINATION usr/bin)
+
+set(LINENOISE_ROOT "${CMAKE_SOURCE_DIR}/ThirdParty/linenoise")
+set(LINENOISE_SOURCE "${LINENOISE_ROOT}/linenoise.c")
+if (EXISTS "${LINENOISE_SOURCE}")
+  add_library(linenoise "${LINENOISE_SOURCE}")
+  target_include_directories(linenoise PUBLIC "${LINENOISE_ROOT}")
+  if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+    target_compile_definitions(linenoise PRIVATE _GNU_SOURCE)
+  endif ()
+
+  target_link_libraries(PlistBuddy PRIVATE linenoise)
+  target_compile_definitions(PlistBuddy PRIVATE HAVE_LINENOISE)
+endif ()
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(plist Boolean Tests/test_Boolean.cpp)
@@ -75,6 +92,7 @@ if (BUILD_TESTING)
   ADD_UNIT_GTEST(plist String Tests/test_String.cpp)
   ADD_UNIT_GTEST(plist Encoding Tests/Format/test_Encoding.cpp)
   ADD_UNIT_GTEST(plist ASCII Tests/Format/test_ASCII.cpp)
+  ADD_UNIT_GTEST(plist Binary Tests/Format/test_Binary.cpp)
   ADD_UNIT_GTEST(plist JSON Tests/Format/test_JSON.cpp)
   ADD_UNIT_GTEST(plist XML Tests/Format/test_XML.cpp)
 endif ()

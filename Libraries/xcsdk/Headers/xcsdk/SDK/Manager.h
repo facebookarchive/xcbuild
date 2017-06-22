@@ -29,9 +29,9 @@ namespace xcsdk { namespace SDK {
  */
 class Manager {
 private:
-    std::string       _path;
-    Platform::vector  _platforms;
-    Toolchain::vector _toolchains;
+    std::string                        _path;
+    std::vector<Platform::shared_ptr>  _platforms;
+    std::vector<Toolchain::shared_ptr> _toolchains;
 
 public:
     Manager();
@@ -41,13 +41,13 @@ public:
     /*
      * Platforms included in the developer root.
      */
-    inline Platform::vector const &platforms() const
+    inline std::vector<Platform::shared_ptr> const &platforms() const
     { return _platforms; }
 
     /*
      * Toolchains included in the developer root.
      */
-    inline Toolchain::vector const &toolchains() const
+    inline std::vector<Toolchain::shared_ptr> const &toolchains() const
     { return _toolchains; }
 
 public:
@@ -80,7 +80,7 @@ public:
     /*
      * Default settings for the contents of the developer root.
      */
-    pbxsetting::Level computedSettings(void) const;
+    pbxsetting::Level computedSettings() const;
 
 public:
     /*
@@ -88,6 +88,15 @@ public:
      * root, rather than within a toolchain or a platform.
      */
     std::vector<std::string> executablePaths() const;
+
+    /*
+     * Conglomeration of executable paths that optionally includes extra toolchains
+     * and the paths from an SDK target.
+     */
+    std::vector<std::string> executablePaths(
+        Platform::shared_ptr const &platform,
+        Target::shared_ptr const &target,
+        std::vector<Toolchain::shared_ptr> const &toolchains) const;
 
 public:
     /*

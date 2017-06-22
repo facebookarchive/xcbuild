@@ -19,4 +19,6 @@
         "sourcecode.cpp.cpp",
         "sourcecode.cpp.objcpp",
     );
+    SupportsHeadermaps = YES;
+    SupportsIsysroot = NO;
 }

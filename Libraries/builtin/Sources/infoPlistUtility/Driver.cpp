@@ -9,8 +9,10 @@
 
 #include <builtin/infoPlistUtility/Driver.h>
 #include <builtin/infoPlistUtility/Options.h>
-#include <libutil/Filesystem.h>
-#include <libutil/FSUtil.h>
+#include <pbxsetting/Environment.h>
+#include <pbxsetting/Setting.h>
+#include <pbxsetting/Type.h>
+#include <pbxsetting/Value.h>
 #include <plist/Array.h>
 #include <plist/Dictionary.h>
 #include <plist/Integer.h>
@@ -20,10 +22,9 @@
 #include <plist/Format/ASCII.h>
 #include <plist/Format/Binary.h>
 #include <plist/Format/XML.h>
-#include <pbxsetting/Environment.h>
-#include <pbxsetting/Setting.h>
-#include <pbxsetting/Type.h>
-#include <pbxsetting/Value.h>
+#include <libutil/Filesystem.h>
+#include <libutil/FSUtil.h>
+#include <process/Context.h>
 
 using builtin::infoPlistUtility::Driver;
 using builtin::infoPlistUtility::Options;
@@ -96,6 +97,8 @@ ExpandBuildSettings(plist::Object *value, pbxsetting::Environment const &environ
 static void
 AddBuildEnvironment(plist::Dictionary *root, pbxsetting::Environment const &environment)
 {
+    // TODO: This should use `xcsdk::SDK::Platform::additionalInfo()`.
+
     root->set("DTCompiler", plist::String::New(environment.resolve("DEFAULT_COMPILER")));
     root->set("DTXcode", plist::String::New(environment.resolve("XCODE_VERSION_ACTUAL")));
     root->set("DTXcodeBuild", plist::String::New(environment.resolve("XCODE_PRODUCT_BUILD_VERSION")));
@@ -108,7 +111,10 @@ AddBuildEnvironment(plist::Dictionary *root, pbxsetting::Environment const &envi
     root->set("DTSDKName", plist::String::New(environment.resolve("SDK_NAME")));
     root->set("DTSDKBuild", plist::String::New(environment.resolve("SDK_PRODUCT_BUILD_VERSION")));
 
-    root->set("MinimumOSVersion", plist::String::New(environment.resolve(environment.resolve("DEPLOYMENT_TARGET_SETTING_NAME"))));
+    std::string deploymentTarget = environment.resolve(environment.resolve("DEPLOYMENT_TARGET_SETTING_NAME"));
+    if (!deploymentTarget.empty()) {
+        root->set("MinimumOSVersion", plist::String::New(deploymentTarget));
+    }
 
     std::string targetedDeviceFamily = environment.resolve("TARGETED_DEVICE_FAMILY");
     if (!targetedDeviceFamily.empty()) {
@@ -120,7 +126,7 @@ AddBuildEnvironment(plist::Dictionary *root, pbxsetting::Environment const &envi
             std::string entry = (noff == std::string::npos ? targetedDeviceFamily.substr(off) : targetedDeviceFamily.substr(off, noff));
 
             if (!entry.empty()) {
-                int value = pbxsetting::Type::ParseInteger(entry);
+                int64_t value = pbxsetting::Type::ParseInteger(entry);
                 deviceFamily->append(plist::Integer::New(value));
             }
 
@@ -149,10 +155,10 @@ CreateBuildEnvironment(std::unordered_map<std::string, std::string> const &envir
 }
 
 int Driver::
-run(std::vector<std::string> const &args, std::unordered_map<std::string, std::string> const &environment, Filesystem *filesystem, std::string const &workingDirectory)
+run(process::Context const *processContext, libutil::Filesystem *filesystem)
 {
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
         fprintf(stderr, "error: %s\n", result.second.c_str());
         return 1;
@@ -169,11 +175,11 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         return 1;
     }
 
-    pbxsetting::Environment settingsEnvironment = CreateBuildEnvironment(environment);
+    pbxsetting::Environment settingsEnvironment = CreateBuildEnvironment(processContext->environmentVariables());
 
     /* Read in the input. */
     std::vector<uint8_t> inputContents;
-    if (!filesystem->read(&inputContents, FSUtil::ResolveRelativePath(*options.input(), workingDirectory))) {
+    if (!filesystem->read(&inputContents, FSUtil::ResolveRelativePath(*options.input(), processContext->currentDirectory()))) {
         fprintf(stderr, "error: unable to read input %s\n", options.input()->c_str());
         return 1;
     }
@@ -212,7 +218,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      */
     for (std::string const &additionalContentFile : options.additionalContentFiles()) {
         std::vector<uint8_t> contents;
-        if (!filesystem->read(&contents, FSUtil::ResolveRelativePath(additionalContentFile, workingDirectory))) {
+        if (!filesystem->read(&contents, FSUtil::ResolveRelativePath(additionalContentFile, processContext->currentDirectory()))) {
             fprintf(stderr, "error: unable to read additional content file: %s\n", additionalContentFile.c_str());
             return 1;
         }
@@ -256,7 +262,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
      * Write the PkgInfo file. This is just the package type and signature.
      */
     if (options.genPkgInfo()) {
-        auto result = WritePkgInfo(filesystem, root, FSUtil::ResolveRelativePath(*options.genPkgInfo(), workingDirectory));
+        auto result = WritePkgInfo(filesystem, root, FSUtil::ResolveRelativePath(*options.genPkgInfo(), processContext->currentDirectory()));
         if (!result.first) {
             fprintf(stderr, "error: %s\n", result.second.c_str());
             return 1;
@@ -270,12 +276,12 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
         std::string resourceRulesInputPath = settingsEnvironment.resolve("CODE_SIGN_RESOURCE_RULES_PATH");
         if (!resourceRulesInputPath.empty()) {
             std::vector<uint8_t> contents;
-            if (!filesystem->read(&contents, FSUtil::ResolveRelativePath(resourceRulesInputPath, workingDirectory))) {
+            if (!filesystem->read(&contents, FSUtil::ResolveRelativePath(resourceRulesInputPath, processContext->currentDirectory()))) {
                 fprintf(stderr, "error: unable to read input %s\n", resourceRulesInputPath.c_str());
                 return 1;
             }
 
-            if (!filesystem->write(contents, FSUtil::ResolveRelativePath(*options.resourceRulesFile(), workingDirectory))) {
+            if (!filesystem->write(contents, FSUtil::ResolveRelativePath(*options.resourceRulesFile(), processContext->currentDirectory()))) {
                 fprintf(stderr, "error: could not open output path %s to write\n", options.resourceRulesFile()->c_str());
                 return 1;
             }
@@ -307,7 +313,7 @@ run(std::vector<std::string> const &args, std::unordered_map<std::string, std::s
     }
 
     /* Write out the output. */
-    if (!filesystem->write(*serialize.first, FSUtil::ResolveRelativePath(*options.output(), workingDirectory))) {
+    if (!filesystem->write(*serialize.first, FSUtil::ResolveRelativePath(*options.output(), processContext->currentDirectory()))) {
         fprintf(stderr, "error: could not open output path %s to write\n", options.output()->c_str());
         return 1;
     }

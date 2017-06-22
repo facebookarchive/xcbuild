@@ -124,13 +124,13 @@ TEST(LaunchImage, Compile)
         "/LaunchImage.launchimage",
         { },
         xcassets::Asset::LaunchImage::Extension());
-    auto launchImage = std::static_pointer_cast<xcassets::Asset::LaunchImage>(asset);
+    auto launchImage = libutil::static_unique_pointer_cast<xcassets::Asset::LaunchImage>(std::move(asset));
     ASSERT_NE(launchImage, nullptr);
 
     /* Compile asset. */
     Result result;
     Output output = Output("/output", Output::Format::Compiled, ext::nullopt, std::string("LaunchImage"));
-    ASSERT_TRUE(LaunchImage::Compile(launchImage, &output, &result));
+    ASSERT_TRUE(LaunchImage::Compile(launchImage.get(), &output, &result));
     EXPECT_TRUE(result.success());
 
     /* Should copy images to output. */
@@ -208,13 +208,13 @@ TEST(LaunchImage, CompileLegacy)
         "/LaunchImage.launchimage",
         { },
         xcassets::Asset::LaunchImage::Extension());
-    auto launchImage = std::static_pointer_cast<xcassets::Asset::LaunchImage>(asset);
+    auto launchImage = libutil::static_unique_pointer_cast<xcassets::Asset::LaunchImage>(std::move(asset));
     ASSERT_NE(launchImage, nullptr);
 
     /* Compile asset. */
     Result result;
     Output output = Output("/output", Output::Format::Compiled, ext::nullopt, std::string("LaunchImage"));
-    ASSERT_TRUE(LaunchImage::Compile(launchImage, &output, &result));
+    ASSERT_TRUE(LaunchImage::Compile(launchImage.get(), &output, &result));
     EXPECT_TRUE(result.success());
 
     /* Should copy images to output. */

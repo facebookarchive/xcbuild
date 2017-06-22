@@ -27,27 +27,12 @@ public:
     ConfigurationList();
 
 public:
-    inline void setDefaultConfigurationName(std::string const &name)
-    { _defaultConfigurationName = name; }
+    inline BuildConfiguration::vector const &buildConfigurations() const
+    { return _buildConfigurations; }
     inline std::string const &defaultConfigurationName() const
     { return _defaultConfigurationName; }
-
-public:
-    inline void setDefaultConfigurationIsVisible(bool visible)
-    { _defaultConfigurationIsVisible = visible; }
     inline bool defaultConfigurationIsVisible() const
     { return _defaultConfigurationIsVisible; }
-
-public:
-    inline BuildConfiguration::vector::const_iterator begin() const
-    { return _buildConfigurations.begin(); }
-    inline BuildConfiguration::vector::const_iterator end() const
-    { return _buildConfigurations.end(); }
-
-    inline BuildConfiguration::vector::iterator begin()
-    { return _buildConfigurations.begin(); }
-    inline BuildConfiguration::vector::iterator end()
-    { return _buildConfigurations.end(); }
 
 protected:
     bool parse(Context &context, plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool check) override;

@@ -12,5 +12,6 @@
     Identifier = compiled.mach-o.corefile;
     BasedOn = compiled.mach-o;
 
-    UTI = "com.apple.mach-o-corefile";
+    UTI = "com.apple.mach-o-core";
+    AppliesToBuildRules = NO;
 }

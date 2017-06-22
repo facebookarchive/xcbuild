@@ -10,6 +10,7 @@
 add_library(xcformatter SHARED
             Sources/Formatter.cpp
             Sources/DefaultFormatter.cpp
+            Sources/NullFormatter.cpp
             )
 
 target_link_libraries(xcformatter PUBLIC pbxbuild pbxproj pbxsetting)

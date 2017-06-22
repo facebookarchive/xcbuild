@@ -21,6 +21,9 @@
         "rsrc",
         "RSRC",
         "view",
+        "SF20",
+        "aLib",
+        "BAPd",
     );
     FallbackAutoroutingBuildPhase = "Resources";
 }

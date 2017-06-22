@@ -12,11 +12,11 @@
     Identifier = com.apple.build-tasks.copy-strings-file;
     Name = "Copy Strings Utility";
 
-    CommandLine = "builtin-copyStrings [options] --outdir $(ProductResourcesDir)/$(InputFileName) -- $(InputFileRelativePath)";
+    CommandLine = "builtin-copyStrings [options] --outdir $(ProductResourcesDir) -- $(InputFileRelativePath)";
     RuleName = "CopyStringsFile $(ProductResourcesDir)/$(InputFileName) $(InputFileRelativePath)";
     InputFileTypes = (
-        "text.strings",
-        "text.stringsdict",
+        "text.plist.strings",
+        "text.plist.stringsdict",
     );
     Outputs = (
         /* Always place outputs in $(ProductResourcesDir) in case
@@ -49,6 +49,12 @@
                 "binary" = ( "--outputencoding", "binary" );
                 "<<otherwise>>" = ( "--outputencoding", "$(value)" );
             };
+        },
+        {
+            Name = "VALIDATE_STRINGS_FILES_WHILE_COPYING";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlag = "--validate";
         },
     );
 }

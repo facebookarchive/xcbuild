@@ -15,4 +15,6 @@
     UTI = "public.c-source";
     GccDialectName = "c";
     IsScannedForIncludes = YES;
+    CanSetIncludeInIndex = YES;
+    AppliesToBuildRules = YES;
 }

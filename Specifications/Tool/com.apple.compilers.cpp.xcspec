@@ -11,7 +11,7 @@
     Type = Tool;
     Identifier = com.apple.compilers.cpp;
     Name = "C Preprocessor";
-    CommandLine = "cpp -E -P -x c -Wno-trigraphs [input] [options] -o [output]";
+    CommandLine = "cpp -E -P -x c -F$(BUILT_PRODUCTS_DIR) -Wno-trigraphs [input] [options] -o [output]";
     RuleName = "Preprocess $(OutputPath) $(InputPath)";
 
     Options = (

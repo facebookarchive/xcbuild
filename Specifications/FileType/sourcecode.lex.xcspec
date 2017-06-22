@@ -21,4 +21,5 @@
         "lpp",
         "lxx",
     );
+    AppliesToBuildRules = YES;
 }

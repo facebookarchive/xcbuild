@@ -16,5 +16,6 @@
     Extensions = (
         "mdimporter",
     );
+    IsTransparent = NO;
     IsEmbeddable = YES;
 }

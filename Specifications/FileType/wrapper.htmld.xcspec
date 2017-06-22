@@ -16,4 +16,5 @@
     Extensions = (
         "htmld",
     );
+    IsTransparent = NO;
 }

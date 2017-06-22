@@ -85,7 +85,7 @@ Tool::Tokens::ToolExpansions::
 Tool::Tokens::ToolExpansions Tool::Tokens::
 ExpandTool(
     Tool::Environment const &toolEnvironment,
-    Tool::OptionsResult options,
+    Tool::OptionsResult const &options,
     std::string const &executable,
     std::vector<std::string> const &specialArguments)
 {

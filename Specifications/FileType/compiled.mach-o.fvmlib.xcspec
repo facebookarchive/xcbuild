@@ -13,4 +13,5 @@
     BasedOn = compiled.mach-o;
 
     UTI = "com.apple.mach-o-fvmlib";
+    AppliesToBuildRules = NO;
 }

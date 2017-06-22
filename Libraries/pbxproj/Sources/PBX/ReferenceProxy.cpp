@@ -11,6 +11,7 @@
 #include <pbxproj/Context.h>
 
 using pbxproj::PBX::ReferenceProxy;
+using pbxproj::Context;
 
 ReferenceProxy::
 ReferenceProxy() :

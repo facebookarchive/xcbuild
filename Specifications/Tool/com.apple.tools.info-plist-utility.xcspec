@@ -12,12 +12,13 @@
     Identifier = com.apple.tools.info-plist-utility;
     Name = "Info Property List Utility";
     CommandLine = "builtin-infoPlistUtility [input] [options] -o [output]";
+    RuleName = "ProcessInfoPlistFile $(OutputPath) $(InputPath)";
     AdditionalInputFiles = "$(AdditionalContentFilePaths)";
 
     Options = (
         {
             Name = "GeneratedPkgInfoFile";
-            Type = String;
+            Type = Path;
             CommandLineFlag = "-genpkginfo";
             OutputDependencies = "$(GeneratedPkgInfoFile)";
         },

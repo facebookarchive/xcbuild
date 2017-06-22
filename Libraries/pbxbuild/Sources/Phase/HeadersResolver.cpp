@@ -44,10 +44,10 @@ resolve(Phase::Environment const &phaseEnvironment, Phase::Context *phaseContext
     std::string publicOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PUBLIC_HEADERS_FOLDER_PATH");
     std::string privateOutputDirectory = targetBuildDirectory + "/" + environment.resolve("PRIVATE_HEADERS_FOLDER_PATH");
 
-    std::vector<Phase::File> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
+    std::vector<Tool::Input> files = Phase::File::ResolveBuildFiles(Filesystem::GetDefaultUNSAFE(), phaseEnvironment, environment, _buildPhase->files());
 
-    for (Phase::File const &file : files) {
-        std::vector<std::string> const &attributes = file.buildFile()->attributes();
+    for (Tool::Input const &file : files) {
+        std::vector<std::string> const &attributes = file.attributes().value_or(std::vector<std::string>());
         bool isPublic  = std::find(attributes.begin(), attributes.end(), "Public") != attributes.end();
         bool isPrivate = std::find(attributes.begin(), attributes.end(), "Private") != attributes.end();
 

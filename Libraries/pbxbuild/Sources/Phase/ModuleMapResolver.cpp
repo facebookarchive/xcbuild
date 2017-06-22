@@ -37,16 +37,13 @@ ProcessModuleMap(
     Tool::CopyResolver const *copyResolver,
     Tool::ModuleMapInfo::Entry const &entry)
 {
-    auto auxiliaryFile = Tool::Invocation::AuxiliaryFile(entry.intermediatePath(), { entry.contents() });
-
     /* Define source module map. */
-    // TODO: it would be nicer to attach this to the copy invocation created below
-    Tool::Invocation invocation;
-    invocation.auxiliaryFiles().push_back(auxiliaryFile);
-    toolContext->invocations().push_back(invocation);
+    auto auxiliaryFile = Tool::AuxiliaryFile(entry.intermediatePath(), { entry.contents() });
+    toolContext->auxiliaryFiles().push_back(auxiliaryFile);
 
     /* Copy in the module map as part of the build. */
-    copyResolver->resolve(toolContext, environment, { entry.intermediatePath() }, FSUtil::GetDirectoryName(entry.finalPath()), "Ditto");
+    Tool::Input input = Tool::Input(entry.intermediatePath(), nullptr);
+    copyResolver->resolve(toolContext, environment, { input }, FSUtil::GetDirectoryName(entry.finalPath()), "Ditto");
 }
 
 bool Phase::ModuleMapResolver::

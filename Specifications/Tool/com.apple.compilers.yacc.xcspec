@@ -1,0 +1,59 @@
+/**
+ Copyright (c) 2015-present, Facebook, Inc.
+ All rights reserved.
+
+ This source code is licensed under the BSD-style license found in the
+ LICENSE file in the root directory of this source tree. An additional grant
+ of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+{
+    Type = Tool;
+    Identifier = com.apple.compilers.yacc;
+    Name = "Yacc";
+
+    ExecPath = "$(YACC)";
+    InputFileTypes = ( "sourcecode.yacc" );
+    IsArchitectureNeutral = YES;
+
+    Options = (
+        /* Output */
+        {
+            Name = "YACC_GENERATED_FILE_STEM";
+            Type = Enumeration;
+            Values = (
+                "Standard",
+                "InputFileStem",
+            );
+            DefaultValue = "Standard";
+            /* Used in code. */
+        },
+
+
+        /* Generation */
+        {
+            Name = "YACC_GENERATE_DEBUGGING_DIRECTIVES";
+            Type = Boolean;
+            DefaultValue = NO;
+            CommandLineFlag = "-t";
+        },
+        {
+            Name = "YACC_INSERT_LINE_DIRECTIVES";
+            Type = Boolean;
+            DefaultValue = YES;
+            CommandLineFlagIfFalse = "-l";
+        },
+
+
+        /* Flags */
+        {
+            Name = "YACCFLAGS";
+            Type = StringList;
+            FileTypes = (
+                "sourcecode.yacc",
+            );
+            DefaultValue = "";
+            /* Added in code. */
+        },
+    );
+}

@@ -19,6 +19,7 @@
     TypeCodes = (
         "APPL",
     );
+    IsTransparent = NO;
     IsApplication = YES;
     IsEmbeddable = YES;
     IsExecutable = YES;

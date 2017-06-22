@@ -8,15 +8,12 @@
  */
 
 #include <gtest/gtest.h>
-#include <builtin/copyStrings/Options.h>
 #include <builtin/copyStrings/Driver.h>
-#include <libutil/Filesystem.h>
 #include <libutil/MemoryFilesystem.h>
+#include <process/MemoryContext.h>
 #include <plist/Format/Encoding.h>
 
 using builtin::copyStrings::Driver;
-using builtin::copyStrings::Options;
-using libutil::Filesystem;
 using libutil::MemoryFilesystem;
 
 static std::vector<uint8_t>
@@ -25,7 +22,7 @@ Contents(std::string const &string)
     return std::vector<uint8_t>(string.begin(), string.end());
 }
 
-TEST(copyString, Name)
+TEST(copyStrings, Name)
 {
     Driver driver;
     EXPECT_EQ(driver.name(), "builtin-copyStrings");
@@ -41,19 +38,28 @@ TEST(copyStrings, CopyMultiple)
     });
 
     Driver driver;
-    EXPECT_EQ(0, driver.run({
-        "in1.strings",
-        "in2.strings",
-        "--outdir", "output",
-        "--outputencoding", "utf-8",
-    }, std::unordered_map<std::string, std::string>(), &filesystem, "/"));
+    process::MemoryContext processContext = process::MemoryContext(
+        driver.name(),
+        "/",
+        {
+            "in1.strings",
+            "in2.strings",
+            "--outdir", "output",
+            "--outputencoding", "utf-8",
+        },
+        std::unordered_map<std::string, std::string>(),
+        0,
+        0,
+        "root",
+        "wheel");
+    EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "output/in1.strings"));
+    EXPECT_TRUE(filesystem.read(&contents, "/output/in1.strings"));
     EXPECT_EQ(contents, Contents("string1 = value1;\n"));
 
     contents.clear();
-    EXPECT_TRUE(filesystem.read(&contents, "output/in2.strings"));
+    EXPECT_TRUE(filesystem.read(&contents, "/output/in2.strings"));
     EXPECT_EQ(contents, Contents("string2 = value2;\n"));
 }
 
@@ -78,15 +84,24 @@ TEST(copyStrings, InputOutputEncoding)
             });
 
             Driver driver;
-            EXPECT_EQ(0, driver.run({
-                "in.strings",
-                "--outdir", "output",
-                "--inputencoding", entry1.first,
-                "--outputencoding", entry2.first,
-            }, std::unordered_map<std::string, std::string>(), &filesystem, "/"));
+            process::MemoryContext processContext = process::MemoryContext(
+                driver.name(),
+                "/",
+                {
+                    "in.strings",
+                    "--outdir", "output",
+                    "--inputencoding", entry1.first,
+                    "--outputencoding", entry2.first,
+                },
+                std::unordered_map<std::string, std::string>(),
+                0,
+                0,
+                "root",
+                "wheel");
+            EXPECT_EQ(0, driver.run(&processContext, &filesystem));
 
             std::vector<uint8_t> contents;
-            EXPECT_TRUE(filesystem.read(&contents, "output/in.strings"));
+            EXPECT_TRUE(filesystem.read(&contents, "/output/in.strings"));
 
             /* Expect output in each encoding. */
             EXPECT_EQ(contents, plist::Format::Encodings::Convert(

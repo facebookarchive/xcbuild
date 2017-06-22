@@ -37,7 +37,6 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         auto unpack = plist::Keys::Unpack("Properties", P, &seen);
 
         auto CR = unpack.cast <plist::Dictionary> ("content-reference");
-        // TODO: content-reference
         // TODO: frame-size
         // TODO: frame-center
 
@@ -53,8 +52,5 @@ parse(plist::Dictionary const *dict, std::unordered_set<std::string> *seen, bool
         }
     }
 
-    // TODO: children image set
-
     return true;
 }
-

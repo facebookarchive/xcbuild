@@ -23,4 +23,7 @@
         "ipp",
         "pch++",
     );
+    IncludeInIndex = NO;
+    CanSetIncludeInIndex = NO;
+    AppliesToBuildRules = NO;
 }

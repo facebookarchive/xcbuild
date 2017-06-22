@@ -3,5 +3,6 @@
 
 # Build
 /build/
+/build-*/
 /project/
 

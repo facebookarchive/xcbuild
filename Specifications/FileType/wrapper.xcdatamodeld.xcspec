@@ -16,7 +16,10 @@
     Extensions = (
         "xcdatamodeld",
     );
-    IsFolder = NO;
+    IsFolder = YES;
     IsWrapperFolder = YES;
     IsTextFile = NO;
+    IncludeInIndex = YES;
+    CanSetIncludeInIndex = YES;
+    AppliesToBuildRules = YES;
 }

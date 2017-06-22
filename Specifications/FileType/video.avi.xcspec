@@ -15,14 +15,8 @@
     UTI = "public.avi";
     Extensions = (
         "avi",
-        "vfw",
-    );
-    TypeCodes = (
-        "Vfw ",
     );
     MIMETypes = (
         "video/avi",
-        "video/msvideo",
-        "video/x-msvideo",
     );
 }

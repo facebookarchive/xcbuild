@@ -9,11 +9,14 @@
 
 #include <xcdriver/HelpAction.h>
 #include <xcdriver/Usage.h>
+#include <libutil/FSUtil.h>
+#include <process/Context.h>
 
 #include <cstdio>
 
 using xcdriver::HelpAction;
 using xcdriver::Usage;
+using libutil::FSUtil;
 
 HelpAction::
 HelpAction()
@@ -26,9 +29,11 @@ HelpAction::
 }
 
 int HelpAction::
-Run()
+Run(process::Context const *processContext)
 {
-    fprintf(stdout, "%s", Usage::Text().c_str());
+    std::string path = processContext->executablePath();
+    std::string text = Usage::Text(FSUtil::GetBaseName(path));
+    fprintf(stdout, "%s", text.c_str());
 
     fprintf(stdout, "Options:\n");
     fprintf(

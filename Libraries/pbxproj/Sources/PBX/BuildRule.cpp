@@ -15,6 +15,7 @@
 #include <plist/Keys/Unpack.h>
 
 using pbxproj::PBX::BuildRule;
+using pbxproj::Context;
 
 BuildRule::BuildRule() :
     Object(Isa())

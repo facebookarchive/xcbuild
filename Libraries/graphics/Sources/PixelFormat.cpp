@@ -141,14 +141,16 @@ Premultiply(uint8_t value, bool inPremultiplied, bool outPremultiplied, uint8_t 
         return value;
     }
 
-    float v = (value / 255.0);
-    float a = (alpha / 255.0);
+    double v = (value / 255.0);
+    double a = (alpha / 255.0);
     if (inPremultiplied) {
         /* Unpremultiply. */
-        return std::round((a ? v / a : 0) * 255.0);
+        double rounded = std::round((a ? v / a : 0) * 255.0);
+        return static_cast<uint8_t>(rounded);
     } else if (outPremultiplied) {
         /* Premultply. */
-        return std::round((v * a) * 255.0);
+        double rounded = std::round((v * a) * 255.0);
+        return static_cast<uint8_t>(rounded);
     }
 
     abort();
@@ -244,8 +246,9 @@ Convert(std::vector<uint8_t> const &pixels, PixelFormat const &from, PixelFormat
 
             /* If converting to grayscale, average the channels. */
             if (convertingToGrayscale) {
-                float value = ((red / 255.0) + (green / 255.0) + (blue / 255.0)) / 3.0;
-                red = green = blue = std::round(value * 255.0);
+                double value = ((red / 255.0) + (green / 255.0) + (blue / 255.0)) / 3.0;
+                double rounded = std::round(value * 255.0);
+                red = green = blue = static_cast<uint8_t>(rounded);
             }
 
             toPixel[toRed] = Premultiply(red, fromAlphaPremultiplied, toPremultiplied, alpha);

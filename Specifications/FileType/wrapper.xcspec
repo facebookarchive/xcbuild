@@ -12,6 +12,8 @@
     Identifier = wrapper;
     BasedOn = folder;
 
-    IsWrapperFolder = YES;
     UTI = "com.apple.package";
+    IsWrapperFolder = YES;
+    IncludeInIndex = NO;
+    CanSetIncludeInIndex = NO;
 }

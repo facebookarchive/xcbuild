@@ -10,7 +10,7 @@
 #include <pbxsetting/DefaultSettings.h>
 #include <pbxsetting/Type.h>
 #include <libutil/FSUtil.h>
-#include <libutil/SysUtil.h>
+#include <process/Context.h>
 
 #include <cstdlib>
 
@@ -21,14 +21,13 @@ using pbxsetting::Level;
 using pbxsetting::Setting;
 using pbxsetting::Type;
 using libutil::FSUtil;
-using libutil::SysUtil;
 
 Level DefaultSettings::
-Environment(void)
+Environment(process::Context const *processContext)
 {
     std::vector<Setting> settings;
 
-    for (auto const &variable : SysUtil::EnvironmentVariables()) {
+    for (auto const &variable : processContext->environmentVariables()) {
         // TODO(grp): Is this right? Should this be filtered at another level?
         if (variable.first.front() != '_') {
             Setting setting = Setting::Create(variable.first, variable.second);
@@ -36,15 +35,16 @@ Environment(void)
         }
     }
 
-    settings.push_back(Setting::Create("UID", Type::FormatInteger(SysUtil::GetUserID())));
-    settings.push_back(Setting::Create("USER", SysUtil::GetUserName()));
-    settings.push_back(Setting::Create("GID", Type::FormatInteger(SysUtil::GetGroupID())));
-    settings.push_back(Setting::Create("GROUP", SysUtil::GetGroupName()));
+    settings.push_back(Setting::Create("UID", Type::FormatInteger(processContext->userID())));
+    settings.push_back(Setting::Create("USER", processContext->userName()));
+    settings.push_back(Setting::Create("GID", Type::FormatInteger(processContext->groupID())));
+    settings.push_back(Setting::Create("GROUP", processContext->groupName()));
 
     settings.push_back(Setting::Parse("USER_APPS_DIR", "$(HOME)/Applications"));
     settings.push_back(Setting::Parse("USER_LIBRARY_DIR", "$(HOME)/Library"));
 
 #if defined(__APPLE__)
+    // TODO(grp): This is reading system information directly.
     size_t len = confstr(_CS_DARWIN_USER_CACHE_DIR, NULL, 0);
     char *cache = (char *)malloc(len);
     confstr(_CS_DARWIN_USER_CACHE_DIR, cache, len);
@@ -113,7 +113,6 @@ System(void)
         Setting::Parse("SYSTEM_DEVELOPER_USR_DIR", "$(DEVELOPER_USR_DIR)"),
         Setting::Parse("SYSTEM_DEVELOPER_UTILITIES_DIR", "$(DEVELOPER_DIR)/Applications/Utilities"),
         Setting::Parse("SYSTEM_DOCUMENTATION_DIR", "/Library/Documentation"),
-        Setting::Parse("SYSTEM_KEXT_INSTALL_PATH", "/System/Library/Extensions"),
         Setting::Parse("SYSTEM_LIBRARY_DIR", "/System/Library"),
 
         Setting::Create("OS", "MACOS"),
@@ -171,10 +170,10 @@ Build(void)
 }
 
 std::vector<Level> DefaultSettings::
-Levels(void)
+Levels(process::Context const *processContext)
 {
     return {
-        Environment(),
+        Environment(processContext),
         Internal(),
         Local(),
         System(),

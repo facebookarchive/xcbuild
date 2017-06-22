@@ -13,8 +13,10 @@ add_library(pbxbuild SHARED
             Sources/DerivedDataHash.cpp
             Sources/WorkspaceContext.cpp
             Sources/FileTypeResolver.cpp
+            Sources/Tool/AuxiliaryFile.cpp
             Sources/Tool/Context.cpp
             Sources/Tool/Environment.cpp
+            Sources/Tool/Input.cpp
             Sources/Tool/Invocation.cpp
             Sources/Tool/Tokens.cpp
             Sources/Tool/OptionsResult.cpp
@@ -64,7 +66,7 @@ add_library(pbxbuild SHARED
             Sources/Build/DependencyResolver.cpp
             )
 
-target_link_libraries(pbxbuild PUBLIC xcsdk xcworkspace xcscheme pbxproj pbxspec pbxsetting dependency util plist ext)
+target_link_libraries(pbxbuild PUBLIC xcsdk xcworkspace xcscheme pbxproj pbxspec pbxsetting dependency process util plist ext)
 target_include_directories(pbxbuild PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS pbxbuild DESTINATION usr/lib)
 
@@ -73,8 +75,8 @@ target_link_libraries(dump_hmap pbxbuild util plist)
 
 if (BUILD_TESTING)
   ADD_UNIT_GTEST(pbxbuild DirectedGraph Tests/test_DirectedGraph.cpp)
-  ADD_UNIT_GTEST(pbxbuild OptionsResolver Tests/test_OptionsResolver.cpp)
-  target_link_libraries(test_pbxbuild_OptionsResolver PRIVATE pbxspec pbxsetting plist)
+  ADD_UNIT_GTEST(pbxbuild OptionsResult Tests/test_OptionsResult.cpp)
+  target_link_libraries(test_pbxbuild_OptionsResult PRIVATE pbxspec pbxsetting plist)
   ADD_UNIT_GTEST(pbxbuild DerivedDataHash Tests/test_DerivedDataHash.cpp)
 endif ()
 

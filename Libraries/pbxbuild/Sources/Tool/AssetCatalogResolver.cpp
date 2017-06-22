@@ -13,8 +13,11 @@
 #include <pbxbuild/Tool/OptionsResult.h>
 #include <pbxbuild/Tool/Tokens.h>
 #include <pbxbuild/Tool/Context.h>
+#include <pbxsetting/Type.h>
+#include <libutil/FSUtil.h>
 
 namespace Tool = pbxbuild::Tool;
+using libutil::FSUtil;
 
 Tool::AssetCatalogResolver::
 AssetCatalogResolver(pbxspec::PBX::Compiler::shared_ptr const &tool) :
@@ -26,21 +29,43 @@ void Tool::AssetCatalogResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::vector<Phase::File> const &inputs) const
+    std::vector<Tool::Input> const &inputs) const
 {
+    std::vector<std::string> absoluteInputPaths;
+    std::vector<std::string> assetPaths;
+    std::vector<std::string> stickerPackStrings;
+    for (Tool::Input const &input : inputs) {
+        if (input.fileType() != nullptr && input.fileType()->identifier() == "text.plist.strings") {
+            std::string strings;
+            strings += FSUtil::GetBaseNameWithoutExtension(input.path());
+            strings += ":";
+            strings += input.localization().value_or("");
+            strings += ":";
+            strings += input.path();
+            stickerPackStrings.push_back(strings);
+        } else {
+            assetPaths.push_back(input.path());
+        }
+
+        std::string absoluteInputPath = FSUtil::ResolveRelativePath(input.path(), toolContext->workingDirectory());
+        absoluteInputPaths.push_back(absoluteInputPath);
+    }
+
     /*
      * Create the custom environment with the tool options.
      */
     pbxsetting::Level level = pbxsetting::Level({
         InterfaceBuilderCommon::TargetedDeviceSetting(baseEnvironment),
+        pbxsetting::Setting::Create("ASSETCATALOG_COMPILER_INPUTS", pbxsetting::Type::FormatList(assetPaths)),
+        pbxsetting::Setting::Create("ASSETCATALOG_COMPILER_STICKER_PACK_STRINGS", pbxsetting::Type::FormatList(stickerPackStrings)),
     });
-    pbxsetting::Environment assetCatalogEnvironment = baseEnvironment;
+    pbxsetting::Environment assetCatalogEnvironment = pbxsetting::Environment(baseEnvironment);
     assetCatalogEnvironment.insertFront(level, false);
 
     /*
      * Resolve the tool options.
      */
-    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, assetCatalogEnvironment, toolContext->workingDirectory(), inputs);
+    Tool::Environment toolEnvironment = Tool::Environment::Create(_tool, assetCatalogEnvironment, toolContext->workingDirectory(), std::vector<Tool::Input>());
     Tool::OptionsResult options = Tool::OptionsResult::Create(toolEnvironment, toolContext->workingDirectory(), nullptr);
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
@@ -67,14 +92,6 @@ resolve(
     arguments.erase(std::remove(arguments.begin(), arguments.end(), "--optimization"), arguments.end());
     arguments.erase(std::remove(arguments.begin(), arguments.end(), ""), arguments.end());
 
-    // TODO(grp): These should be handled generically for all tools.
-    std::unordered_map<std::string, std::string> environmentVariables = options.environment();
-    if (_tool->environmentVariables()) {
-        for (auto const &variable : *_tool->environmentVariables()) {
-            environmentVariables.insert({ variable.first, environment.expand(variable.second) });
-        }
-    }
-
     // TODO(grp): This should be handled generically for all tools.
     if (_tool->generatedInfoPlistContentFilePath()) {
         std::string infoPlistContent = environment.expand(*_tool->generatedInfoPlistContentFilePath());
@@ -90,7 +107,7 @@ resolve(
             environment.expand(*_tool->dependencyInfoFile())));
     }
     if (_tool->deeplyStatInputDirectories()) {
-        for (Phase::File const &input : inputs) {
+        for (Tool::Input const &input : inputs) {
             /* Create a dependency info file to track the input directory contents. */
             auto info = Tool::Invocation::DependencyInfo(dependency::DependencyInfoFormat::Directory, input.path());
             dependencyInfo.push_back(info);
@@ -101,24 +118,22 @@ resolve(
      * Create the asset catalog invocation.
      */
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = arguments;
-    invocation.environment() = environmentVariables;
+    invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
-    invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
+    invocation.inputs() = absoluteInputPaths;
     invocation.outputs() = outputs;
     invocation.dependencyInfo() = dependencyInfo;
     invocation.logMessage() = tokens.logMessage();
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<Tool::AssetCatalogResolver> Tool::AssetCatalogResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Compiler::shared_ptr assetCatalogTool = buildEnvironment.specManager()->compiler(Tool::AssetCatalogResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Compiler::shared_ptr assetCatalogTool = specManager->compiler(Tool::AssetCatalogResolver::ToolIdentifier(), specDomains);
     if (assetCatalogTool == nullptr) {
         fprintf(stderr, "warning: could not find asset catalog compiler\n");
         return nullptr;

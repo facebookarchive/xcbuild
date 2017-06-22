@@ -116,6 +116,7 @@ public:
      */
     ext::optional<pbxbuild::WorkspaceContext> loadWorkspace(
         libutil::Filesystem const *filesystem,
+        std::string const &userName,
         pbxbuild::Build::Environment const &buildEnvironment,
         std::string const &workingDirectory) const;
 

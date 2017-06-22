@@ -29,13 +29,13 @@ void Tool::SwiftStandardLibraryResolver::
 resolve(
     Tool::Context *toolContext,
     pbxsetting::Environment const &baseEnvironment,
-    std::string const &executable,
+    Tool::Input const &executable,
     std::vector<std::string> const &directories) const
 {
     pbxsetting::Level level = pbxsetting::Level({
         pbxsetting::Setting::Create("SWIFT_STDLIB_TOOL_FOLDERS_TO_SCAN", pbxsetting::Type::FormatList(directories)),
     });
-    pbxsetting::Environment env = baseEnvironment;
+    pbxsetting::Environment env = pbxsetting::Environment(baseEnvironment);
     env.insertFront(level, false);
 
     std::string outputPath = env.resolve("TARGET_BUILD_DIR") + "/" + env.resolve("FULL_PRODUCT_NAME");
@@ -45,23 +45,21 @@ resolve(
     Tool::Tokens::ToolExpansions tokens = Tool::Tokens::ExpandTool(toolEnvironment, options);
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable(), toolContext->executablePaths());
+    invocation.executable() = Tool::Invocation::Executable::Determine(tokens.executable());
     invocation.arguments() = tokens.arguments();
     invocation.environment() = options.environment();
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = toolEnvironment.inputs(toolContext->workingDirectory());
     invocation.outputs() = { }; // TODO(grp): Outputs are not known at build time.
     invocation.logMessage() = tokens.logMessage();
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<Tool::SwiftStandardLibraryResolver> Tool::SwiftStandardLibraryResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr swiftStandardLibraryTool = buildEnvironment.specManager()->tool(Tool::SwiftStandardLibraryResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr swiftStandardLibraryTool = specManager->tool(Tool::SwiftStandardLibraryResolver::ToolIdentifier(), specDomains);
     if (swiftStandardLibraryTool == nullptr) {
         fprintf(stderr, "warning: could not find swift standard library tool\n");
         return nullptr;

@@ -94,6 +94,8 @@ LaunchImageSupportsLandscape(xcassets::Slot::Idiom idiom, ext::optional<xcassets
             return false;
         case xcassets::Slot::Idiom::Car:
             return false;
+        case xcassets::Slot::Idiom::iOSMarketing:
+            return false;
     }
 
     abort();
@@ -150,6 +152,8 @@ LaunchImageScreenSize(xcassets::Slot::Idiom idiom, ext::optional<xcassets::Slot:
                 return false;
             case xcassets::Slot::Idiom::Car:
                 return false;
+            case xcassets::Slot::Idiom::iOSMarketing:
+                return false;
         }
     }
 
@@ -196,7 +200,7 @@ ImageSizeValue(size_t width, size_t height)
 
 bool LaunchImage::
 Compile(
-    std::shared_ptr<xcassets::Asset::LaunchImage> const &launchImage,
+    xcassets::Asset::LaunchImage const *launchImage,
     Output *compileOutput,
     Result *result)
 {

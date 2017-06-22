@@ -32,7 +32,7 @@ private:
 
 public:
     static bool Compile(
-        std::shared_ptr<xcassets::Asset::GCLeaderboard> const &gcLeaderboard,
+        xcassets::Asset::GCLeaderboard const *gcLeaderboard,
         libutil::Filesystem *filesystem,
         Output *compileOutput,
         Result *result);

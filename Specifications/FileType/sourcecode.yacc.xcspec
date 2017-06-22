@@ -21,4 +21,5 @@
         "ypp",
         "yxx",
     );
+    AppliesToBuildRules = YES;
 }

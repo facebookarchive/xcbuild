@@ -20,6 +20,10 @@
 #include <xcdriver/UsageAction.h>
 #include <xcdriver/VersionAction.h>
 #include <libutil/Filesystem.h>
+#include <process/Context.h>
+
+#include <string>
+#include <vector>
 
 using xcdriver::Driver;
 using xcdriver::Action;
@@ -37,10 +41,10 @@ Driver::
 }
 
 int Driver::
-Run(Filesystem *filesystem, std::vector<std::string> const &args)
+Run(process::Context const *processContext, process::Launcher *processLauncher, Filesystem *filesystem)
 {
     Options options;
-    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, args);
+    std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
         fprintf(stderr, "error: %s\n", result.second.c_str());
         return 1;
@@ -49,26 +53,26 @@ Run(Filesystem *filesystem, std::vector<std::string> const &args)
     Action::Type action = Action::Determine(options);
     switch (action) {
         case Action::Build:
-            return BuildAction::Run(filesystem, options);
+            return BuildAction::Run(processContext, processLauncher, filesystem, options);
         case Action::ShowBuildSettings:
-            return ShowBuildSettingsAction::Run(filesystem, options);
+            return ShowBuildSettingsAction::Run(processContext, filesystem, options);
         case Action::List:
-            return ListAction::Run(filesystem, options);
+            return ListAction::Run(processContext, filesystem, options);
         case Action::Version:
-            return VersionAction::Run(filesystem, options);
+            return VersionAction::Run(processContext, filesystem, options);
         case Action::Usage:
-            return UsageAction::Run();
+            return UsageAction::Run(processContext);
         case Action::Help:
-            return HelpAction::Run();
+            return HelpAction::Run(processContext);
         case Action::License:
             return LicenseAction::Run();
         case Action::CheckFirstLaunch:
             fprintf(stderr, "warning: check first launch not implemented\n");
             break;
         case Action::ShowSDKs:
-            return ShowSDKsAction::Run(filesystem, options);
+            return ShowSDKsAction::Run(processContext, filesystem, options);
         case Action::Find:
-            return FindAction::Run(filesystem, options);
+            return FindAction::Run(processContext, filesystem, options);
         case Action::ExportArchive:
             fprintf(stderr, "warning: export archive not implemented\n");
             break;

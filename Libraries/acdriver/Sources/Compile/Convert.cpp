@@ -32,6 +32,9 @@ IdiomSuffix(xcassets::Slot::Idiom idiom)
             return "~watch";
         case xcassets::Slot::Idiom::Car:
             return "~car";
+        case xcassets::Slot::Idiom::iOSMarketing:
+            // TODO: what does this mean here?
+            return std::string();
     }
 
     abort();

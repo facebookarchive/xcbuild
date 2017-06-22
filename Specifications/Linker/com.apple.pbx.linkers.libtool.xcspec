@@ -12,10 +12,10 @@
     Identifier = com.apple.pbx.linkers.libtool;
     Name = "Create Static Library Tool";
 
-    CommandLine = "$(LIBTOOL) $(arch) [options] [special-args] -o $(OutputPath)";
+    CommandLine = "$(LIBTOOL) -static -arch_only $(arch) [options] [special-args] -o $(OutputPath)";
     RuleName = "Libtool $(OutputPath) $(variant) $(arch)";
 
-    SupportsInputFileList = YES;
+    BinaryFormats = ( "mach-o" );
     InputFileTypes = (
         "compiled.mach-o.objfile",
     );
@@ -36,32 +36,23 @@
             DefaultValue = "libtool";
         },
         {
-            Name = "__LIBTOOL_FORMAT__";
-            Type = String;
-            DefaultValue = "staticlib";
-            CommandLineArgs = {
-                "staticlib" = ( "-static" );
-                "mh_dylib" = ( "-dynamic" );
-            };
-        },
-        {
-            Name = "__LIBTOOL_ARCH__";
-            Type = String;
-            DefaultValue = "$(arch)";
-            CommandLineFlag = "-arch_only";
-        },
-        {
-            Name = "__LIBTOOL_FILELIST__";
-            Type = String;
+            Name = "__INPUT_FILE_LIST_PATH__";
+            Type = Path;
             DefaultValue = "$(LINK_FILE_LIST_$(variant)_$(arch))";
             CommandLineFlag = "-filelist";
             IsInputDependency = YES;
         },
+        {
+            Name = "AdditionalCommandLineArguments";
+            Type = StringList;
+            CommandLinePrefixFlag = "";
+        },
+
 
         /* Built-in flags. */
         {
             Name = "SDKROOT";
-            Type = String;
+            Type = Path;
             CommandLineFlag = "-syslibroot";
             IsInputDependency = YES;
         },
@@ -85,6 +76,7 @@
             CommandLineFlag = "-unexported_symbols_list";
             IsInputDependency = YES;
         },
+
 
         /* Custom flags. */
         {

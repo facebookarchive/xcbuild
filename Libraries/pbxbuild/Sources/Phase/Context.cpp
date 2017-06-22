@@ -8,6 +8,7 @@
  */
 
 #include <pbxbuild/Phase/Context.h>
+#include <pbxbuild/Phase/Environment.h>
 #include <pbxbuild/Tool/Context.h>
 #include <pbxbuild/Tool/AssetCatalogResolver.h>
 #include <pbxbuild/Tool/ClangResolver.h>
@@ -47,7 +48,10 @@ Tool::AssetCatalogResolver const *Phase::Context::
 assetCatalogResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_assetCatalogResolver == nullptr) {
-        _assetCatalogResolver = Tool::AssetCatalogResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _assetCatalogResolver = Tool::AssetCatalogResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _assetCatalogResolver.get();
@@ -57,7 +61,12 @@ Tool::ClangResolver const *Phase::Context::
 clangResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_clangResolver == nullptr) {
-        _clangResolver = Tool::ClangResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        // TODO(grp): This should probably try a number of other compilers if it's not clang.
+        std::string gccVersion = targetEnvironment.environment().resolve("GCC_VERSION");
+        _clangResolver = Tool::ClangResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), gccVersion);
     }
 
     return _clangResolver.get();
@@ -67,7 +76,10 @@ Tool::CopyResolver const *Phase::Context::
 copyResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_copyResolver == nullptr) {
-        _copyResolver = Tool::CopyResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _copyResolver = Tool::CopyResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _copyResolver.get();
@@ -77,7 +89,10 @@ Tool::DittoResolver const *Phase::Context::
 dittoResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_dittoResolver == nullptr) {
-        _dittoResolver = Tool::DittoResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _dittoResolver = Tool::DittoResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _dittoResolver.get();
@@ -87,7 +102,10 @@ Tool::InfoPlistResolver const *Phase::Context::
 infoPlistResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_infoPlistResolver == nullptr) {
-        _infoPlistResolver = Tool::InfoPlistResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _infoPlistResolver = Tool::InfoPlistResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _infoPlistResolver.get();
@@ -97,7 +115,10 @@ Tool::InterfaceBuilderResolver const *Phase::Context::
 interfaceBuilderCompilerResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_interfaceBuilderCompilerResolver == nullptr) {
-        _interfaceBuilderCompilerResolver = Tool::InterfaceBuilderResolver::Create(phaseEnvironment, Tool::InterfaceBuilderResolver::CompilerToolIdentifier());
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _interfaceBuilderCompilerResolver = Tool::InterfaceBuilderResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), Tool::InterfaceBuilderResolver::CompilerToolIdentifier());
     }
 
     return _interfaceBuilderCompilerResolver.get();
@@ -107,7 +128,10 @@ Tool::InterfaceBuilderResolver const *Phase::Context::
 interfaceBuilderStoryboardCompilerResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_interfaceBuilderStoryboardCompilerResolver == nullptr) {
-        _interfaceBuilderStoryboardCompilerResolver = Tool::InterfaceBuilderResolver::Create(phaseEnvironment, Tool::InterfaceBuilderResolver::StoryboardCompilerToolIdentifier());
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _interfaceBuilderStoryboardCompilerResolver = Tool::InterfaceBuilderResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), Tool::InterfaceBuilderResolver::StoryboardCompilerToolIdentifier());
     }
 
     return _interfaceBuilderStoryboardCompilerResolver.get();
@@ -117,7 +141,10 @@ Tool::MakeDirectoryResolver const *Phase::Context::
 makeDirectoryResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_makeDirectoryResolver == nullptr) {
-        _makeDirectoryResolver = Tool::MakeDirectoryResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _makeDirectoryResolver = Tool::MakeDirectoryResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _makeDirectoryResolver.get();
@@ -127,7 +154,10 @@ Tool::ScriptResolver const *Phase::Context::
 scriptResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_scriptResolver == nullptr) {
-        _scriptResolver = Tool::ScriptResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _scriptResolver = Tool::ScriptResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _scriptResolver.get();
@@ -137,7 +167,10 @@ Tool::SwiftResolver const *Phase::Context::
 swiftResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_swiftResolver == nullptr) {
-        _swiftResolver = Tool::SwiftResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _swiftResolver = Tool::SwiftResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _swiftResolver.get();
@@ -147,7 +180,10 @@ Tool::SymlinkResolver const *Phase::Context::
 symlinkResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_symlinkResolver == nullptr) {
-        _symlinkResolver = Tool::SymlinkResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _symlinkResolver = Tool::SymlinkResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _symlinkResolver.get();
@@ -157,7 +193,10 @@ Tool::TouchResolver const *Phase::Context::
 touchResolver(Phase::Environment const &phaseEnvironment)
 {
     if (_touchResolver == nullptr) {
-        _touchResolver = Tool::TouchResolver::Create(phaseEnvironment);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        _touchResolver = Tool::TouchResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains());
     }
 
     return _touchResolver.get();
@@ -167,7 +206,10 @@ Tool::ToolResolver const *Phase::Context::
 toolResolver(Phase::Environment const &phaseEnvironment, std::string const &identifier)
 {
     if (_toolResolvers.find(identifier) == _toolResolvers.end()) {
-        std::unique_ptr<Tool::ToolResolver> toolResolver = Tool::ToolResolver::Create(phaseEnvironment, identifier);
+        Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
+        Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
+
+        std::unique_ptr<Tool::ToolResolver> toolResolver = Tool::ToolResolver::Create(buildEnvironment.specManager(), targetEnvironment.specDomains(), identifier);
         if (toolResolver == nullptr) {
             return nullptr;
         }
@@ -178,18 +220,18 @@ toolResolver(Phase::Environment const &phaseEnvironment, std::string const &iden
     return &_toolResolvers.at(identifier);
 }
 
-std::vector<std::vector<Phase::File>> Phase::Context::
-Group(std::vector<Phase::File> const &files)
+std::vector<std::vector<Tool::Input>> Phase::Context::
+Group(std::vector<Tool::Input> const &files)
 {
-    std::vector<Phase::File> ungrouped;
-    std::unordered_map<std::string, std::vector<Phase::File>> groupedTool;
-    std::unordered_map<std::string, std::unordered_map<std::string, std::vector<Phase::File>>> groupedCommonBase;
-    std::vector<Phase::File> groupedBaseRegion;
+    std::vector<Tool::Input> ungrouped;
+    std::unordered_map<std::string, std::vector<Tool::Input>> groupedTool;
+    std::unordered_map<std::string, std::unordered_map<std::string, std::vector<Tool::Input>>> groupedCommonBase;
+    std::vector<Tool::Input> groupedBaseRegion;
 
     /*
      * Determine which grouping method to use for each file.
      */
-    for (Phase::File const &file : files) {
+    for (Tool::Input const &file : files) {
         /* Get the tool used for the file. If null, then no grouping possible. */
         Target::BuildRules::BuildRule::shared_ptr const &buildRule = file.buildRule();
         if (buildRule == nullptr || buildRule->tool() == nullptr || buildRule->tool()->type() != pbxspec::PBX::Compiler::Type()) {
@@ -217,9 +259,12 @@ Group(std::vector<Phase::File> const &files)
             /* Keyed on both the file name and tool. */
             std::string base = FSUtil::GetBaseNameWithoutExtension(file.path());
             groupedCommonBase[compiler->identifier()][base].push_back(file);
+        } else if (grouping == "actool") {
+            groupedTool[compiler->identifier()].push_back(file);
+            // TODO: group strings files with a base name matching a sticker pack in an asset catalog. how?
         } else if (grouping == "ib-base-region-and-strings") {
             /* Only "Base" region files. See below for finding additional grouped files. */
-            if (file.localization() == "Base") {
+            if (file.localization() && *file.localization() == "Base") {
                 groupedBaseRegion.push_back(file);
             } else {
                 ungrouped.push_back(file);
@@ -233,7 +278,7 @@ Group(std::vector<Phase::File> const &files)
     /*
      * Build up the result, a list of each set of grouped inputs.
      */
-    std::vector<std::vector<Phase::File>> result;
+    std::vector<std::vector<Tool::Input>> result;
 
     /*
      * Add tool groupings to the result.
@@ -254,17 +299,17 @@ Group(std::vector<Phase::File> const &files)
     /*
      * Add base region groupings to the result.
      */
-    for (Phase::File const &file : groupedBaseRegion) {
-        std::vector<Phase::File> inputs = { file };
+    for (Tool::Input const &file : groupedBaseRegion) {
+        std::vector<Tool::Input> inputs = { file };
 
         /*
          * Find all .strings files from the same build file (i.e. same variant group)
          * as the base. Add them to the inputs for this group, and remove them from
          * the ungrouped  inputs so they don't get added again to the result.
          */
-        ungrouped.erase(std::remove_if(ungrouped.begin(), ungrouped.end(), [&](Phase::File const &ungroupedFile) {
-            if (ungroupedFile.fileType()->identifier() == "text.plist.strings") {
-                if (ungroupedFile.buildFile() == file.buildFile()) {
+        ungrouped.erase(std::remove_if(ungrouped.begin(), ungrouped.end(), [&](Tool::Input const &ungroupedFile) {
+            if (ungroupedFile.fileType() != nullptr && ungroupedFile.fileType()->identifier() == "text.plist.strings") {
+                if (ungroupedFile.localizationGroupIdentifier() == file.localizationGroupIdentifier()) {
                     inputs.push_back(ungroupedFile);
                     return true;
                 }
@@ -280,7 +325,7 @@ Group(std::vector<Phase::File> const &files)
      * Add ungrouped files to the result, one grouping per file. Note this must come
      * after the base region grouping above as the base region modifies the ungrouped.
      */
-    for (Phase::File const &file : ungrouped) {
+    for (Tool::Input const &file : ungrouped) {
         result.push_back({ file });
     }
 
@@ -292,22 +337,23 @@ resolveBuildFiles(
     Phase::Environment const &phaseEnvironment,
     pbxsetting::Environment const &environment,
     pbxproj::PBX::BuildPhase::shared_ptr const &buildPhase,
-    std::vector<std::vector<Phase::File>> const &groups,
+    std::vector<std::vector<Tool::Input>> const &groups,
     std::string const &outputDirectory,
     std::string const &fallbackToolIdentifier)
 {
-    for (std::vector<Phase::File> const &files : groups) {
+    for (std::vector<Tool::Input> const &files : groups) {
         assert(!files.empty());
-        Phase::File const &first = files.front();
+        Tool::Input const &first = files.front();
 
         std::string fileOutputDirectory = outputDirectory;
-        if (!first.localization().empty()) {
-            fileOutputDirectory += "/" + first.localization() + ".lproj";
+        if (first.localization()) {
+            fileOutputDirectory += "/" + *first.localization() + ".lproj";
         }
 
         Target::BuildRules::BuildRule::shared_ptr const &buildRule = first.buildRule();
         if (buildRule == nullptr && fallbackToolIdentifier.empty()) {
-            fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", first.path().c_str(), first.fileType()->identifier().c_str());
+            std::string fileTypeName = (first.fileType() != nullptr ? first.fileType()->identifier() : "unknown");
+            fprintf(stderr, "warning: no matching build rule for %s (type %s)\n", first.path().c_str(), fileTypeName.c_str());
             continue;
         }
 
@@ -323,17 +369,28 @@ resolveBuildFiles(
 
             if (buildRule != nullptr) {
                 if (pbxspec::PBX::Tool::shared_ptr const &tool = buildRule->tool()) {
-                    // Some tools additionally limit their file types beyond what their build rule allows.
-                    // For example, the default compiler limits itself to just source files, despite its
-                    // default build rule specifying that it accepts all C-family inputs, including headers.
+                    /*
+                     * Some tools additionally limit their file types beyond what their build rule allows.
+                     * For example, the default compiler limits itself to just source files, despite its
+                     * default build rule specifying that it accepts all C-family inputs, including headers.
+                     */
                     // TODO(grp): Is this the right way to make .h files not get compiled as resources?
-                    if (tool->fileTypes()) {
-                        std::string inputFileType = first.fileType()->identifier();
-                        std::vector<std::string> const &toolFileTypes = *tool->fileTypes();
-                        bool toolAcceptsInputFileType = (toolFileTypes.empty() || std::find(toolFileTypes.begin(), toolFileTypes.end(), inputFileType) != toolFileTypes.end());
+                    if (tool->fileTypes() || tool->inputFileTypes()) {
+                        if (first.fileType() != nullptr) {
+                            std::vector<std::string> toolFileTypes;
+                            if (tool->fileTypes()) {
+                                toolFileTypes.insert(toolFileTypes.end(), tool->fileTypes()->begin(), tool->fileTypes()->end());
+                            }
+                            if (tool->inputFileTypes()) {
+                                toolFileTypes.insert(toolFileTypes.end(), tool->inputFileTypes()->begin(), tool->inputFileTypes()->end());
+                            }
 
-                        if (toolAcceptsInputFileType) {
-                            toolIdentifier = tool->identifier();
+                            std::string inputFileType = first.fileType()->identifier();
+                            bool toolAcceptsInputFileType = (toolFileTypes.empty() || std::find(toolFileTypes.begin(), toolFileTypes.end(), inputFileType) != toolFileTypes.end());
+
+                            if (toolAcceptsInputFileType) {
+                                toolIdentifier = tool->identifier();
+                            }
                         }
                     } else {
                         toolIdentifier = tool->identifier();

@@ -29,22 +29,20 @@ resolve(
     std::string logMessage = "Ditto " + targetPath + " " + sourcePath;
 
     Tool::Invocation invocation;
-    invocation.executable() = Tool::Invocation::Executable::Absolute("/usr/bin/ditto"); // TODO(grp): Ditto is not portable.
+    invocation.executable() = Tool::Invocation::Executable::External("/usr/bin/ditto"); // TODO(grp): Ditto is not portable.
     invocation.arguments() = { "-rsrc", sourcePath, targetPath };
     invocation.workingDirectory() = toolContext->workingDirectory();
     invocation.inputs() = { FSUtil::ResolveRelativePath(sourcePath, toolContext->workingDirectory()) };
     invocation.outputs() = { FSUtil::ResolveRelativePath(targetPath, toolContext->workingDirectory()) };
     invocation.logMessage() = logMessage;
+    invocation.priority() = toolContext->currentPhaseInvocationPriority();
     toolContext->invocations().push_back(invocation);
 }
 
 std::unique_ptr<Tool::DittoResolver> Tool::DittoResolver::
-Create(Phase::Environment const &phaseEnvironment)
+Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains)
 {
-    Build::Environment const &buildEnvironment = phaseEnvironment.buildEnvironment();
-    Target::Environment const &targetEnvironment = phaseEnvironment.targetEnvironment();
-
-    pbxspec::PBX::Tool::shared_ptr dittoTool = buildEnvironment.specManager()->tool(Tool::DittoResolver::ToolIdentifier(), targetEnvironment.specDomains());
+    pbxspec::PBX::Tool::shared_ptr dittoTool = specManager->tool(Tool::DittoResolver::ToolIdentifier(), specDomains);
     if (dittoTool == nullptr) {
         fprintf(stderr, "warning: could not find ditto tool\n");
         return nullptr;

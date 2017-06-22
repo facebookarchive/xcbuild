@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <string>
+#include <ext/optional>
 
 namespace libutil { class Filesystem; }
 
@@ -27,6 +28,8 @@ private:
     std::string                      _basePath;
     std::string                      _path;
     std::string                      _name;
+
+private:
     xcscheme::XC::Scheme::vector     _schemes;
     xcscheme::XC::Scheme::shared_ptr _defaultScheme;
 
@@ -44,21 +47,22 @@ public:
 public:
     inline xcscheme::XC::Scheme::vector const &schemes() const
     { return _schemes; }
-    inline xcscheme::XC::Scheme::vector &schemes()
-    { return _schemes; }
-
-public:
     inline xcscheme::XC::Scheme::shared_ptr const &defaultScheme() const
     { return _defaultScheme; }
-    inline xcscheme::XC::Scheme::shared_ptr &defaultScheme()
-    { return _defaultScheme; }
 
 public:
-    /* Finds a scheme inside the group. */
+    /*
+     * Find a scheme inside the group.
+     */
     xcscheme::XC::Scheme::shared_ptr scheme(std::string const &name) const;
 
 public:
-    static SchemeGroup::shared_ptr Open(libutil::Filesystem const *filesystem, std::string const &basePath, std::string const &path, std::string const &name);
+    static SchemeGroup::shared_ptr Open(
+        libutil::Filesystem const *filesystem,
+        ext::optional<std::string> const &userName,
+        std::string const &basePath,
+        std::string const &path,
+        std::string const &name);
 };
 
 }

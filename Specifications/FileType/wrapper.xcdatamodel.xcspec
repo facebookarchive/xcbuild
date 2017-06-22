@@ -19,4 +19,7 @@
     IsFolder = NO;
     IsWrapperFolder = YES;
     IsTextFile = NO;
+    IncludeInIndex = YES;
+    CanSetIncludeInIndex = YES;
+    AppliesToBuildRules = YES;
 }

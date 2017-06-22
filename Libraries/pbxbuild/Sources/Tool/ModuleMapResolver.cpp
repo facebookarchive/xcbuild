@@ -61,7 +61,7 @@ FindUmbrellaHeaderName(pbxsetting::Environment const &environment, std::string c
     return ext::nullopt;
 }
 
-static ext::optional<Tool::Invocation::AuxiliaryFile::Chunk>
+static ext::optional<Tool::AuxiliaryFile::Chunk>
 Contents(pbxsetting::Environment const &environment, pbxproj::PBX::Target::shared_ptr const &target, std::string const &workingDirectory)
 {
     std::string inputModuleMapPath = environment.resolve("MODULEMAP_FILE");
@@ -71,7 +71,7 @@ Contents(pbxsetting::Environment const &environment, pbxproj::PBX::Target::share
          * Copy in the input module map as an auxiliary file.
          */
         std::string path = FSUtil::ResolveRelativePath(inputModuleMapPath, workingDirectory);
-        return Tool::Invocation::AuxiliaryFile::Chunk::File(path);
+        return Tool::AuxiliaryFile::Chunk::File(path);
     } else {
         /*
          * Find umbrella header: a header with the same name as the target's module.
@@ -92,7 +92,7 @@ Contents(pbxsetting::Environment const &environment, pbxproj::PBX::Target::share
             contents += "}\n";
 
             auto data = std::vector<uint8_t>(contents.begin(), contents.end());
-            return Tool::Invocation::AuxiliaryFile::Chunk::Data(data);
+            return Tool::AuxiliaryFile::Chunk::Data(data);
         } else {
             return ext::nullopt;
         }
@@ -114,10 +114,10 @@ resolve(
     /*
      * Handle the standard module map, either copied or generated.
      */
-    ext::optional<Tool::Invocation::AuxiliaryFile::Chunk> contents = Contents(environment, target, workingDirectory);
+    ext::optional<Tool::AuxiliaryFile::Chunk> contents = Contents(environment, target, workingDirectory);
     if (contents) {
         std::string intermediateModuleMapPath = intermediateModuleMapRoot + "/" + "module.modulemap";
-        auto moduleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile(intermediateModuleMapPath, { *contents });
+        auto moduleMapAuxiliaryFile = Tool::AuxiliaryFile(intermediateModuleMapPath, { *contents });
 
         std::string finalModuleMapPath = finalModuleMapRoot + "/" + "module.modulemap";
         auto entry = Tool::ModuleMapInfo::Entry(*contents, intermediateModuleMapPath, finalModuleMapPath);
@@ -132,11 +132,11 @@ resolve(
         /*
          * Copy in the private module map.
          */
-        auto privateContents = Tool::Invocation::AuxiliaryFile::Chunk::File(
+        auto privateContents = Tool::AuxiliaryFile::Chunk::File(
             FSUtil::ResolveRelativePath(inputPrivateModuleMapPath, workingDirectory));
 
         std::string intermediatePrivateModuleMapPath = intermediateModuleMapRoot + "/" + "module.private.modulemap";
-        auto privateModuleMapAuxiliaryFile = Tool::Invocation::AuxiliaryFile(intermediatePrivateModuleMapPath, { privateContents });
+        auto privateModuleMapAuxiliaryFile = Tool::AuxiliaryFile(intermediatePrivateModuleMapPath, { privateContents });
 
         std::string finalPrivateModuleMapPath = finalModuleMapRoot + "/" + "module.private.modulemap";
         auto entry = Tool::ModuleMapInfo::Entry(privateContents, intermediatePrivateModuleMapPath, finalPrivateModuleMapPath);

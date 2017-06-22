@@ -10,9 +10,16 @@
 #ifndef __pbxbuild_Tool_HeadermapResolver_h
 #define __pbxbuild_Tool_HeadermapResolver_h
 
-#include <pbxbuild/Base.h>
-#include <pbxbuild/Tool/Invocation.h>
-#include <pbxbuild/Phase/Environment.h>
+#include <pbxspec/Manager.h>
+#include <pbxspec/PBX/Compiler.h>
+#include <pbxspec/PBX/Tool.h>
+#include <pbxproj/PBX/Target.h>
+
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace pbxsetting { class Environment; }
 
 namespace pbxbuild {
 namespace Tool {
@@ -45,7 +52,7 @@ public:
 
 public:
     static std::unique_ptr<HeadermapResolver>
-    Create(Phase::Environment const &phaseEnvironment, pbxspec::PBX::Compiler::shared_ptr const &compiler);
+    Create(pbxspec::Manager::shared_ptr const &specManager, std::vector<std::string> const &specDomains, pbxspec::PBX::Compiler::shared_ptr const &compiler);
 };
 
 }

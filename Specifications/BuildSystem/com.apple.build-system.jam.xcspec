@@ -31,7 +31,7 @@
         {
             Name = "PRECOMP_DESTINATION_DIR";
             Type = Path;
-            DefaultValue = "$(TEMP_DIR)/PrefixHeaders";
+            DefaultValue = "$(TARGET_TEMP_DIR)/PrefixHeaders";
         },
         {
             Name = "PREFIX_CFLAG_BASE";

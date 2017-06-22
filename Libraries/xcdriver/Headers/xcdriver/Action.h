@@ -18,6 +18,9 @@
 #include <vector>
 #include <ext/optional>
 
+namespace libutil { class Filesystem; }
+namespace process { class Context; }
+
 namespace xcdriver {
 
 class Options;
@@ -63,7 +66,7 @@ public:
 
 public:
     static std::vector<pbxsetting::Level>
-    CreateOverrideLevels(Options const &options, pbxsetting::Environment const &environment);
+    CreateOverrideLevels(process::Context const *processContext, libutil::Filesystem const *filesystem, pbxsetting::Environment const &environment, Options const &options, std::string const &workingDirectory);
 
 public:
     static xcexecution::Parameters
