@@ -18,8 +18,11 @@ namespace Tool {
 
 class HeadermapInfo {
 private:
-    std::vector<std::string> _systemHeadermapFiles;
-    std::vector<std::string> _userHeadermapFiles;
+    std::vector<std::string>   _systemHeadermapFiles;
+    std::vector<std::string>   _userHeadermapFiles;
+
+private:
+    ext::optional<std::string> _overlayVFS;
 
 public:
     HeadermapInfo();
@@ -36,6 +39,14 @@ public:
     { return _systemHeadermapFiles; }
     std::vector<std::string> &userHeadermapFiles()
     { return _userHeadermapFiles; }
+
+public:
+    ext::optional<std::string> const &overlayVFS() const
+    { return _overlayVFS; }
+
+public:
+    ext::optional<std::string> &overlayVFS()
+    { return _overlayVFS; }
 };
 
 }
