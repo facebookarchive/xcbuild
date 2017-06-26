@@ -46,27 +46,27 @@ To build:
 
  - All platforms:
 
-       ```sh
-       git clone https://github.com/facebook/xcbuild
-       cd xcbuild
-       git submodule update --init
-       ```
+```sh
+git clone https://github.com/facebook/xcbuild
+cd xcbuild
+git submodule update --init
+```
 
  - Linux and macOS:
 
-       ```sh
-       make
-       ```
+```sh
+make
+```
 
-   Build output will be in the `build` directory. Run xcbuild with `./build/xcbuild`.
+Build output will be in the `build` directory. Run xcbuild with `./build/xcbuild`.
 
  - Windows (experimental):
 
-       ```sh
-       cmake -Bbuild -H. -G "Visual Studio 14 2015" -DZLIB_ROOT=<path>
-       ```
+```sh
+cmake -Bbuild -H. -G "Visual Studio 14 2015" -DZLIB_ROOT=<path>
+```
 
-    Open `build\xcbuild.sln` and build.
+Open `build\xcbuild.sln` and build.
 
 
 ## Usage
