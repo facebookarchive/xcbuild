@@ -67,6 +67,9 @@ bom_index_reserve(struct bom_context *context, size_t count);
 uint32_t
 bom_index_add(struct bom_context *context, const void *data, size_t data_len);
 
+uint32_t
+bom_free_indices_add(struct bom_context *context, size_t count);
+
 void
 bom_index_append(struct bom_context *context, uint32_t index, size_t data_len);
 

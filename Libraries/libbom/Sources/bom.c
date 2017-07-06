@@ -243,14 +243,19 @@ bom_index_reserve(struct bom_context *context, size_t count)
     struct bom_header *header = (struct bom_header *)context->memory.data;
 
     /* Insert space for extra indexes at the end of the currently allocated space. */
-    uint32_t index_point = ntohl(header->index_offset) + ntohl(header->index_length);
-    size_t new_index_length = ntohl(header->index_length) + sizeof(struct bom_index) * count;
+    size_t old_index_length = ntohl(header->index_length);
+    uint32_t index_point = ntohl(header->index_offset) + old_index_length;
     ptrdiff_t index_delta = sizeof(struct bom_index) * count;
+    size_t new_index_length = old_index_length + index_delta;
     _bom_address_resize(context, index_point, index_delta);
 
     /* Re-fetch, invalidated by resize. */
     header = (struct bom_header *)context->memory.data;
     header->index_length = htonl(new_index_length);
+
+    /* Reset the memory in the reallocated space */
+    void *memory_to_reset = (void *)((uintptr_t)header + ntohl(header->index_offset) + old_index_length);
+    memset(memory_to_reset, 0, index_delta);
 }
 
 uint32_t
@@ -264,16 +269,20 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
     struct bom_index_header *index_header = (struct bom_index_header *)((uintptr_t)header + ntohl(header->index_offset));
 
     /* Insert index at the end of the list. */
-    uint32_t index_point = ntohl(header->index_offset) + sizeof(struct bom_index_header) + sizeof(struct bom_index) * ntohl(index_header->count);
-    size_t new_index_length = sizeof(struct bom_index_header) + sizeof(struct bom_index) * (ntohl(index_header->count) + 1);
+    size_t index_to_add = ntohl(index_header->count);
+    uint32_t index_point = ntohl(header->index_offset) + sizeof(struct bom_index_header) + sizeof(struct bom_index) * index_to_add;
+    size_t new_index_length = sizeof(struct bom_index_header) + sizeof(struct bom_index) * (index_to_add + 1);
     if (new_index_length > ntohl(header->index_length) - (sizeof(struct bom_index) * 2) ) {
         ptrdiff_t index_delta = sizeof(struct bom_index);
         _bom_address_resize(context, index_point, index_delta);
 
         /* Re-fetch, invalidated by resize. */
         header = (struct bom_header *)context->memory.data;
-
         header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));
+
+        /* Reset the memory in the last dummy index index */
+        index_header = (struct bom_index_header *)((uintptr_t)header + ntohl(header->index_offset));
+        memset((void *)&index_header->index[index_to_add+1], 0, index_delta);
     }
 
     /* Insert data at the very end. */
@@ -285,8 +294,7 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
     index_header = (struct bom_index_header *)((uintptr_t)header + ntohl(header->index_offset));
 
     /* Update values in newly inserted index. */
-    size_t added_index = ntohl(index_header->count);
-    struct bom_index *index = &index_header->index[added_index];
+    struct bom_index *index = &index_header->index[index_to_add];
     index->address = htonl(data_point);
     index->length = htonl(data_len);
 
@@ -295,9 +303,46 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
 
     /* Update length for newly added index. */
     index_header->count = htonl(ntohl(index_header->count) + 1);
-    header->block_count++;
+    header->block_count = index_header->count;
 
-    return added_index;
+    return index_to_add;
+}
+
+uint32_t
+bom_free_indices_add(struct bom_context *context, size_t count)
+{
+    assert(count);
+    assert(context->iteration_count == 0 && "cannot mutate while iterating");
+
+    struct bom_header *header = (struct bom_header *)context->memory.data;
+    struct bom_index_header *index_header = (struct bom_index_header *)((uintptr_t)header + ntohl(header->index_offset));
+
+    /* Insert index at the end of the list. */
+    uint32_t index_point = ntohl(header->index_offset) + sizeof(struct bom_index_header) + sizeof(struct bom_index) * ntohl(index_header->count);
+    size_t new_index_length = sizeof(struct bom_index_header) + sizeof(struct bom_index) * (ntohl(index_header->count) + count);
+    if (new_index_length > ntohl(header->index_length) - (sizeof(struct bom_index) * 2) ) {
+        ptrdiff_t index_delta = sizeof(struct bom_index);
+        _bom_address_resize(context, index_point, index_delta);
+
+        /* Re-fetch, invalidated by resize. */
+        header = (struct bom_header *)context->memory.data;
+        header->index_length = htonl(ntohl(header->index_length) + (count * sizeof(struct bom_index)));
+        index_header = (struct bom_index_header *)((uintptr_t)header + ntohl(header->index_offset));
+    }
+
+    /* Update values in newly inserted index. */
+    size_t first_new_index = ntohl(index_header->count);
+    for (size_t i = 0; i < count; ++i) {
+        struct bom_index *index = &index_header->index[first_new_index + i];
+        index->address = 0;
+        index->length = 0;
+    }
+
+    /* Update length for newly added index. Only update the header count, as
+       block_count tracks the number of useful indices. */
+    index_header->count = htonl(ntohl(index_header->count) + count);
+
+    return first_new_index + (count-1);
 }
 
 void
