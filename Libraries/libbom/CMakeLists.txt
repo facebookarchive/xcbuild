@@ -37,3 +37,4 @@ install(TARGETS lsbom DESTINATION usr/bin)
 
 add_executable(dump_bom Tools/dump_bom.c)
 target_link_libraries(dump_bom PRIVATE bom util)
+install(TARGETS dump_bom DESTINATION usr/bin)
