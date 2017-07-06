@@ -84,12 +84,12 @@ write() const
 {
     /*
      * A fast write has pre-allocated space for BOM indexes
-     * A baseline of 6 indexes are required: CAR Header (1), Key Format (1), and FACET (2) and RENDITION (2) trees
+     * A baseline of 8 indexes are required: CAR Header (1), Key Format (1), FACET (2) and RENDITION (2) trees, and 2 freelist entries.
      * Each tree entry (facet or rendition) requires 2: one key index, one value index.
      */
     uint32_t facet_count = _facets.size();
     uint32_t rendition_count = _renditions.size() + _rawRenditions.size();
-    uint32_t bom_index_count = 6 + facet_count * 2 + rendition_count * 2;
+    uint32_t bom_index_count = 8 + facet_count * 2 + rendition_count * 2;
     bom_index_reserve(_bom.get(), bom_index_count);
 
     /* Write header. */
@@ -183,8 +183,10 @@ write() const
         bom_tree_free(renditions_tree_context);
     }
 
+    /* Add freelist entries. */
+    bom_free_indices_add(_bom.get(), 2);
+
     if (_keyfmt == ext::nullopt) {
       free(keyfmt);
     }
 }
-
