@@ -233,6 +233,8 @@ bom_tree_add(struct bom_tree_context *tree_context, const void *key, size_t key_
     size_t start_range = 0;
     size_t end_range = last_index;
 
+    /* BOM trees store their keys sorted. Figure out the index for the new entry
+       using binary search. start_range and end_range are inclusive possibilities. */
     while (start_range < end_range) {
         size_t delta = end_range - start_range;
         entry_index = delta / 2 + start_range;
@@ -241,24 +243,25 @@ bom_tree_add(struct bom_tree_context *tree_context, const void *key, size_t key_
         size_t other_len;
         void *other_key = bom_index_get(tree_context->context, ntohl(other_index->key_index), &other_len);
 
+        /* Check the ordering for the candidate key and the existing key value. If the values are
+           seemingly identical, order shorter keys first. */
         int result = other_key == NULL ? -1 : memcmp(key, other_key, other_len < key_len ? other_len : key_len);
-
         if (result == 0 && key_len != other_len) {
             result = key_len < other_len ? -1 : 1;
         }
 
         if (result < 0) {
-            if (delta <= 1) {
-                entry_index = start_range;
-                break;
-            }
+            /* If comparing c in [a,b,c,d,e], then choose [a,b,c] as the
+               potential part of the tree the new key may live in. The candidate index
+               is always less than the end range candidate, so the range always shrinks. */
             end_range = entry_index;
         } else if (result > 0) {
-            if (delta >= 1) {
-                entry_index = end_range;
-                break;
-            }
-            start_range = entry_index;
+            /* If comparing c in [a,b,c,d,e], then choose [d,e] as the
+               potential part of the tree the new key may live in. The new key's index
+               must be greater than c's index. */
+            start_range = entry_index + 1;
+        } else {
+            break;
         }
     }
 

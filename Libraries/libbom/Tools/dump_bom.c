@@ -13,6 +13,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#if _WIN32
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
 
 static void
 _bom_tree_dump(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
@@ -55,20 +60,20 @@ main(int argc, char **argv)
         return 1;
     }
 
-    struct bom_header *header = (struct bom_header *)context->memory.data;
+    struct bom_header *header = (struct bom_header *)bom_memory(context)->data;
     struct bom_index_header *index_header = (struct bom_index_header *)((uintptr_t)header + ntohl(header->index_offset));
     struct bom_variables *vars = (struct bom_variables *)((uintptr_t)header + ntohl(header->variables_offset));
 
     printf("Start of memory: %p\n", header);
-    printf("Start of index header: %p - %d bytes\n", index_header, ntohl(header->index_length));
-    printf("Start of variable header: %p - %d bytes\n", vars, ntohl(header->trailer_len));
+    printf("Start of index header: %p - %u bytes\n", index_header, (uint32_t)ntohl(header->index_length));
+    printf("Start of variable header: %p - %u bytes\n", vars, (uint32_t)ntohl(header->trailer_len));
     printf("\n");
 
     printf("variables:\n");
     bom_variable_iterate(context, &_bom_variable_dump, NULL);
     printf("\n");
 
-    printf("Number of useful index blocks: %d\n", ntohl(header->block_count));
+    printf("Number of useful index blocks: %u\n", (uint32_t)ntohl(header->block_count));
     printf("\n");
 
     printf("index:\n");
