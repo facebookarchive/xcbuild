@@ -122,6 +122,10 @@ LIBUTIL_PACKED_STRUCT_BEGIN struct bom_tree_entry {
   struct bom_tree_entry_indexes indexes[0];
 } LIBUTIL_PACKED_STRUCT_END;
 
+struct bom_context {
+  struct bom_context_memory memory;
+  unsigned int iteration_count;
+};
 
 #if _MSC_VER
 __pragma(warning(pop))

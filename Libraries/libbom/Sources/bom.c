@@ -23,11 +23,6 @@
 #include <arpa/inet.h>
 #endif
 
-struct bom_context {
-    struct bom_context_memory memory;
-    unsigned int iteration_count;
-};
-
 struct bom_context *
 _bom_alloc(struct bom_context_memory memory)
 {
@@ -278,7 +273,7 @@ bom_index_add(struct bom_context *context, const void *data, size_t data_len)
         /* Re-fetch, invalidated by resize. */
         header = (struct bom_header *)context->memory.data;
 
-        header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));        
+        header->index_length = htonl(ntohl(header->index_length) + sizeof(struct bom_index));
     }
 
     /* Insert data at the very end. */
@@ -429,4 +424,3 @@ bom_variable_add(struct bom_context *context, const char *name, int data_index)
     vars->count = htonl(ntohl(vars->count) + 1);
     header->trailer_len = htonl(ntohl(header->trailer_len) + variable_delta);
 }
-

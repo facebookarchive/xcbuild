@@ -8,21 +8,35 @@
  */
 
 #include <bom/bom.h>
+#include <bom/bom_format.h>
 
 #include <stdio.h>
 #include <stdbool.h>
+
+
+static void
+_bom_tree_dump(struct bom_tree_context *tree, void *key, size_t key_len, void *value, size_t value_len, void *ctx)
+{
+    printf("\t\tEntry with key of size %zu and value of size %zu\n", key_len, value_len);
+}
 
 static bool
 _bom_variable_dump(struct bom_context *context, const char *name, int data_index, void *ctx)
 {
     printf("\t%s: index %x\n", name, data_index);
+
+    struct bom_tree_context *tree_context = bom_tree_alloc_load(context, name);
+    if (tree_context != NULL) {
+        printf("\tFound BOM Tree:\n");
+        bom_tree_iterate(tree_context, _bom_tree_dump, NULL);
+    }
     return true;
 }
 
 static bool
 _bom_index_dump(struct bom_context *context, uint32_t index, void *data, size_t data_len, void *ctx)
 {
-    printf("\t%x: data (%zx bytes)\n", index, data_len);
+    printf("\t%d: data at %p (%zx bytes)\n", index, data, data_len);
     return true;
 }
 
@@ -41,9 +55,20 @@ main(int argc, char **argv)
         return 1;
     }
 
+    struct bom_header *header = (struct bom_header *)context->memory.data;
+    struct bom_index_header *index_header = (struct bom_index_header *)((uintptr_t)header + ntohl(header->index_offset));
+    struct bom_variables *vars = (struct bom_variables *)((uintptr_t)header + ntohl(header->variables_offset));
+
+    printf("Start of memory: %p\n", header);
+    printf("Start of index header: %p - %d bytes\n", index_header, ntohl(header->index_length));
+    printf("Start of variable header: %p - %d bytes\n", vars, ntohl(header->trailer_len));
+    printf("\n");
+
     printf("variables:\n");
     bom_variable_iterate(context, &_bom_variable_dump, NULL);
+    printf("\n");
 
+    printf("Number of useful index blocks: %d\n", ntohl(header->block_count));
     printf("\n");
 
     printf("index:\n");
@@ -51,4 +76,3 @@ main(int argc, char **argv)
 
     return 0;
 }
-
