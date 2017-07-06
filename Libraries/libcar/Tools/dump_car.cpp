@@ -20,6 +20,12 @@
 
 #include <cassert>
 
+#if _WIN32
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
+
 static void
 rendition_dump(car::Rendition const &rendition, std::string const &path)
 {
@@ -134,4 +140,3 @@ main(int argc, char **argv)
     printf("Found %d facets and %d renditions\n", facet_count, rendition_count);
     return 0;
 }
-

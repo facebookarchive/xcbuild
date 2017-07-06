@@ -23,6 +23,11 @@
 #include <arpa/inet.h>
 #endif
 
+struct bom_context {
+    struct bom_context_memory memory;
+    unsigned int iteration_count;
+};
+
 struct bom_context *
 _bom_alloc(struct bom_context_memory memory)
 {
