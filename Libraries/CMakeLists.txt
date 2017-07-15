@@ -7,6 +7,10 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 #
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  add_compile_options(-Wmissing-prototypes)
+endif ()
+
 set(OLD_DEFAULT_COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME libraries)
 
