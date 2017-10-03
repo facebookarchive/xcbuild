@@ -27,5 +27,5 @@ find_package(Threads REQUIRED)
 target_link_libraries(process PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
-  target_link_libraries(process PRIVATE userenv)
+  target_link_libraries(process PRIVATE userenv shell32 advapi32)
 endif ()

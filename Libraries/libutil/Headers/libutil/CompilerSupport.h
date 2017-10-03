@@ -10,7 +10,7 @@
 #ifndef __libutil_CompilerSupport_h
 #define __libutil_CompilerSupport_h
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__)
 #define LIBUTIL_PACKED_STRUCT_BEGIN __pragma(pack(push, 1))
 #define LIBUTIL_PACKED_STRUCT_END __pragma(pack(pop))
 #else
