@@ -134,7 +134,7 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
 {
     std::string const &arg = **it;
 
-    if (!_separator) {
+    if (!_separator && !_tool) {
         if (arg == "-h" || arg == "--help" || arg == "-help") {
             return libutil::Options::Current<bool>(&_help, arg);
         } else if (arg == "--version" || arg == "-version") {
