@@ -38,6 +38,58 @@ StringToWideString(std::string const &str)
     MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.size(), &wide[0], size);
     return wide;
 }
+
+static WideString
+EscapedToken(const WideString &token)
+{
+    if (token.find_first_of(StringToWideString(" \t\n\v\"")) == std::string::npos) {
+        return token;
+    }
+
+    WideString escapedToken = StringToWideString("\"");
+    WideString special = StringToWideString("\"\\");
+    for (auto it = token.begin(); it != token.end(); ++it) {
+        /* Find the first backslash or quote. */
+        size_t first_ = token.find_first_of(special, it - token.begin());
+        auto first = (first_ == std::string::npos ? token.end() : token.begin() + first_);
+
+        /* Copy up to the first special character. */
+        escapedToken.insert(escapedToken.end(), it, first);
+
+        if (first == token.end()) {
+            /* Nothing special; jump to the end. */
+            it = std::prev(first);
+        } else if (*first == L'"') {
+            /* Escape and append the quote itself. */
+            escapedToken += L'\\';
+            escapedToken += *first;
+
+            /* Move past the quote. */
+            it = first;
+        } else if (*first == L'\\') {
+            /* Find next non-backslash character after the first backslash. */
+            size_t after_ = token.find_first_not_of(L'\\', first - token.begin());
+            auto after = (after_ == std::string::npos ? token.end() : token.begin() + after_);
+
+            if (after == token.end() || *after == L'"') {
+                /* Duplicate (escape) all backslashes before (possibly ending) quote. */
+                escapedToken.insert(escapedToken.end(), first, after);
+                escapedToken.insert(escapedToken.end(), first, after);
+            } else {
+                /* Not before quote, no need to escape backslashes. */
+                escapedToken.insert(escapedToken.end(), first, after);
+            }
+
+            /* Jump to the next non-backslash character. */
+            it = std::prev(after);
+        } else {
+            abort();
+        }
+    }
+
+    escapedToken += L'"';
+    return escapedToken;
+}
 #endif
 
 DefaultLauncher::
@@ -55,60 +107,12 @@ ext::optional<int> DefaultLauncher::
 launch(Filesystem *filesystem, Context const *context)
 {
 #if _WIN32
-    WideString arguments;
+    WideString executablePath = StringToWideString(context->executablePath());
+
+    WideString arguments = EscapedToken(executablePath);
     for (std::string const &argument : context->commandLineArguments()) {
-        if (&argument != &context->commandLineArguments().front()) {
-            arguments += static_cast<wchar_t>(' ');
-        }
-
-        if (!argument.empty() && argument.find_first_of(" \t\n\v\"") == std::string::npos) {
-            arguments += StringToWideString(argument);
-        } else {
-            arguments += static_cast<wchar_t>('"');
-
-            WideString wide = StringToWideString(argument);
-            WideString special = StringToWideString("\"\\");
-            for (auto it = wide.begin(); it != wide.end(); ++it) {
-                /* Find the first backslash or quote. */
-                size_t first_ = wide.find_first_of(special, it - wide.begin());
-                auto first = (first_ == std::string::npos ? wide.end() : wide.begin() + first_);
-
-                /* Copy up to the first special character. */
-                arguments.insert(arguments.end(), it, first);
-
-                if (first == wide.end()) {
-                    /* Nothing special; jump to the end. */
-                    it = std::prev(first);
-                } else if (*first == static_cast<wchar_t>('"')) {
-                    /* Escape and append the quote itself. */
-                    arguments += static_cast<wchar_t>('\\');
-                    arguments += *first;
-
-                    /* Move past the quote. */
-                    it = first;
-                } else if (*first == static_cast<wchar_t>('\\')) {
-                    /* Find next non-backslash character after the first backslash. */
-                    size_t after_ = wide.find_first_not_of(static_cast<wchar_t>('\\'), first - wide.begin());
-                    auto after = (after_ == std::string::npos ? wide.end() : wide.begin() + after_);
-
-                    if (after == wide.end() || *after == static_cast<wchar_t>('"')) {
-                        /* Duplicate (escape) all backslashes before (possibly ending) quote. */
-                        arguments.insert(arguments.end(), first, after);
-                        arguments.insert(arguments.end(), first, after);
-                    } else {
-                        /* Not before quote, no need to escape backslashes. */
-                        arguments.insert(arguments.end(), first, after);
-                    }
-
-                    /* Jump to the next non-backslash character. */
-                    it = std::prev(after);
-                } else {
-                    abort();
-                }
-            }
-
-            arguments += static_cast<wchar_t>('"');
-        }
+        arguments += L' ';
+        arguments += EscapedToken(StringToWideString(argument));
     }
 
     WideString environment;
@@ -116,10 +120,9 @@ launch(Filesystem *filesystem, Context const *context)
         environment += StringToWideString(entry.first);
         environment += StringToWideString("=");
         environment += StringToWideString(entry.second);
-        environment += static_cast<wchar_t>('\0');
+        environment += L'\0';
     }
 
-    WideString executablePath = StringToWideString(context->executablePath());
     WideString currentDirectory = StringToWideString(context->currentDirectory());
 
     STARTUPINFOW startup;
@@ -141,15 +144,22 @@ launch(Filesystem *filesystem, Context const *context)
         return ext::nullopt;
     }
 
-    if (!CloseHandle(process.hThread)) {
-        /* Error, but process started. Ignore. */
-    }
+    /* Wait until the spawned process finishes */
+    WaitForSingleObject(process.hProcess, INFINITE);
 
-    if (!CloseHandle(process.hProcess)) {
-        /* Error, but process started. Ignore. */
-    }
+    /* Get the exit code of the process */
+    DWORD status;
+    bool getExitCodeProcessSuccess = GetExitCodeProcess(process.hProcess, &status);
 
-    return static_cast<int>(process.dwProcessId);
+    /* Close process handles */
+    CloseHandle(process.hThread);
+    CloseHandle(process.hProcess);
+
+    if (getExitCodeProcessSuccess) {
+        return static_cast<int>(status);
+    } else {
+        return ext::nullopt;
+    }
 #else
     /*
      * Extract input data for exec, so no C++ is required after fork.
