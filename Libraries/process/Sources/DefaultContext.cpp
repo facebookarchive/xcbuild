@@ -93,7 +93,8 @@ currentDirectory() const
 
         auto buffer = WideString();
         buffer.resize(length - 1);
-        if (GetCurrentDirectoryW(buffer.size(), &buffer[0]) == 0) {
+        /* Size of the buffer should incremented to account for ending null byte */
+        if (GetCurrentDirectoryW(buffer.size() + sizeof(decltype(buffer)::value_type), &buffer[0]) == 0) {
             abort();
         }
 
