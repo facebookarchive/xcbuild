@@ -15,7 +15,11 @@ add_library(bom
 
 target_link_libraries(bom PUBLIC util)
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-  target_link_libraries(bom PRIVATE wsock32 ws2_32)
+  if ("${CMAKE_CXX_PLATFORM_ID}" STREQUAL "MinGW")
+    target_link_libraries(bom PRIVATE wsock32 ws2_32)
+  else ()
+    target_link_libraries(bom PRIVATE WSock32 WS2_32)
+  endif ()
 endif ()
 target_include_directories(bom PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
 install(TARGETS bom DESTINATION usr/lib)

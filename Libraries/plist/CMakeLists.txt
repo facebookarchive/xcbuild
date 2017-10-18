@@ -63,7 +63,7 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
     # MinGW is missing the library for XmlLite.
     target_link_libraries(plist PRIVATE ole32)
   else ()
-    target_link_libraries(plist PRIVATE XmlLite ole32)
+    target_link_libraries(plist PRIVATE xmllite Ole32)
   endif ()
 else ()
   find_package(LibXml2 REQUIRED)
