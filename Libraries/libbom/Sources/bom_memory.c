@@ -71,6 +71,9 @@ struct _bom_context_memory_mmap_context {
 static void
 _bom_context_memory_mremap(struct bom_context_memory *memory, size_t size)
 {
+    assert(memory != NULL);
+    assert(size > 0);
+
     struct _bom_context_memory_mmap_context *context = memory->ctx;
 
 #if _WIN32
@@ -151,7 +154,7 @@ bom_context_memory_file(const char *fn, bool writeable, size_t minimum_size)
     }
 
     DWORD size = GetFileSize(handle, NULL);
-    if (size == INVALID_FILE_SIZE) {
+    if (size == INVALID_FILE_SIZE || size == 0) {
         CloseHandle(handle);
         return invalid;
     }
