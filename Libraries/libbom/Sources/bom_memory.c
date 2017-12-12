@@ -89,7 +89,7 @@ _bom_context_memory_mremap(struct bom_context_memory *memory, size_t size)
     memory->size = size;
 
     context->mapping = CreateFileMapping(context->handle, NULL, (context->writeable ? PAGE_READWRITE : PAGE_READONLY), 0, size, NULL);
-    assert(context->mapping != INVALID_HANDLE_VALUE);
+    assert(context->mapping != NULL);
 
     memory->data = (void *)MapViewOfFile(context->mapping, (context->writeable ? FILE_MAP_WRITE | FILE_MAP_READ : FILE_MAP_READ), 0, 0, 0);
     assert(memory->data != NULL);
@@ -171,7 +171,7 @@ bom_context_memory_file(const char *fn, bool writeable, size_t minimum_size)
     }
 
     HANDLE mapping = CreateFileMapping(handle, NULL, (writeable ? PAGE_READWRITE : PAGE_READONLY), 0, size, NULL);
-    if (mapping == INVALID_HANDLE_VALUE) {
+    if (mapping == NULL) {
         CloseHandle(handle);
         return invalid;
     }
