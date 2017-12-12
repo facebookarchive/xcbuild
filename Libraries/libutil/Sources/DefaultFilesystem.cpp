@@ -505,7 +505,8 @@ read(std::vector<uint8_t> *contents, std::string const &path, size_t offset, ext
 
     *contents = std::vector<uint8_t>(size);
 
-    if (!ReadFile(handle, contents->data(), size, nullptr, nullptr)) {
+    DWORD bytesRead;
+    if (!ReadFile(handle, contents->data(), size, &bytesRead, nullptr)) {
         CloseHandle(handle);
         return false;
     }
@@ -570,7 +571,8 @@ write(std::vector<uint8_t> const &contents, std::string const &path)
         return false;
     }
 
-    if (!WriteFile(handle, contents.data(), contents.size(), nullptr, nullptr)) {
+    DWORD bytesWritten;
+    if (!WriteFile(handle, contents.data(), contents.size(), &bytesWritten, nullptr)) {
         CloseHandle(handle);
         return false;
     }
