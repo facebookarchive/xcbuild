@@ -44,10 +44,12 @@ void AttributeList::
 dump() const
 {
     for (auto const &entry : _values) {
+        constexpr auto num_identifiers =
+            sizeof(car_attribute_identifier_names) / sizeof(*car_attribute_identifier_names);
         enum car_attribute_identifier identifier = entry.first;
         uint16_t value = entry.second;
 
-        if (identifier < sizeof(car_attribute_identifier_names) / sizeof(*car_attribute_identifier_names)) {
+        if (static_cast<decltype(num_identifiers)>(identifier) < num_identifiers) {
             printf("[%02d] %-24s = %-6d | %-4x\n", identifier, car_attribute_identifier_names[identifier] ? car_attribute_identifier_names[identifier] : "(unknown)", value, value);
         } else {
             printf("[%02d] %-24s = %-6d | %-4x\n", identifier, "(unknown)", value, value);
