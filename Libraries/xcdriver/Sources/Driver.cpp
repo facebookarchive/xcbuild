@@ -46,7 +46,8 @@ Run(process::User const *user, process::Context const *processContext, process::
     Options options;
     std::pair<bool, std::string> result = libutil::Options::Parse<Options>(&options, processContext->commandLineArguments());
     if (!result.first) {
-        fprintf(stderr, "error: %s\n", result.second.c_str());
+        fprintf(stderr, "error: %s\n\n", result.second.c_str());
+        UsageAction::Run(processContext);
         return 1;
     }
 
