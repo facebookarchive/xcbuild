@@ -13,6 +13,13 @@
 #include <ext/optional>
 #include <string>
 
+#ifdef major
+# undef major
+#endif
+#ifdef minor
+# undef minor
+#endif
+
 namespace xcassets {
 namespace Slot {
 
