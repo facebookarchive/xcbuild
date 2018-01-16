@@ -13,6 +13,10 @@
 #include <ext/optional>
 #include <string>
 
+/*
+ * for legacy reasons, the GNU C Library might define major & minor,
+ * breaking the compilation unless we undefine them.
+ */
 #ifdef major
 # undef major
 #endif
