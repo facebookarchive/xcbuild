@@ -77,6 +77,8 @@ Text(std::string const &name) {
         "-localizationPath <path> "
         "-project <projectname>" << std::endl;
 
+    result << "       " << name << " -help" << std::endl;
+
     result << std::endl;
 
     return result.str();
