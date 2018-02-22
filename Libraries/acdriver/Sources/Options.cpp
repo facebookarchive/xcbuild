@@ -87,7 +87,20 @@ parseArgument(std::vector<std::string> const &args, std::vector<std::string>::co
     } else if (!arg.empty() && arg[0] != '-') {
         return libutil::Options::AppendCurrent<std::string>(&_inputs, arg);
     } else {
+        ext::optional<std::pair<bool, std::string>> nonStandardResult = _nonStandardOptions.parseArgument(args, it);
+        if (nonStandardResult) {
+            return *nonStandardResult;
+        }
         return std::make_pair(false, "unknown argument " + arg);
     }
 }
 
+
+bool Options::
+isValid(Result *result) const
+{
+    if (!nonStandardOptions().isValid(result)) {
+        return false;
+    }
+    return true;
+}

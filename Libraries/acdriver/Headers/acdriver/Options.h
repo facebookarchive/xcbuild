@@ -10,6 +10,8 @@
 #ifndef __acdriver_Options_h
 #define __acdriver_Options_h
 
+#include <acdriver/NonStandard.h>
+#include <acdriver/Result.h>
 #include <libutil/Options.h>
 
 #include <string>
@@ -72,6 +74,10 @@ private:
     ext::optional<std::string> _filterForDeviceModel;
     ext::optional<std::string> _filterForDeviceOsVersion;
     ext::optional<std::string> _assetPackOutputSpecifications;
+
+private:
+    // Options not compatible with Apple's actool
+    NonStandard::ActoolOptions  _nonStandardOptions;
 
 public:
     Options();
@@ -151,6 +157,15 @@ public:
     { return _filterForDeviceOsVersion; }
     ext::optional<std::string> const &assetPackOutputSpecifications() const
     { return _assetPackOutputSpecifications; }
+
+public:
+    NonStandard::ActoolOptions const &nonStandardOptions() const
+    { return _nonStandardOptions; }
+
+public:
+
+    bool
+    isValid(Result *result) const;
 
 private:
     friend class libutil::Options;

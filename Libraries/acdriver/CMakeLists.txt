@@ -10,6 +10,7 @@
 add_library(acdriver
             Sources/Options.cpp
             Sources/Driver.cpp
+            Sources/NonStandard.cpp
             Sources/Output.cpp
             Sources/Result.cpp
             Sources/VersionAction.cpp

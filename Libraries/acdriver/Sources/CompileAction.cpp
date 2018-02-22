@@ -245,6 +245,10 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
     // TODO: support all options
     WarnUnsupportedOptions(options, result);
 
+    if (!options.isValid(result)) {
+       return;
+    }
+
     /*
      * Determine format to output compiled assets.
      */
@@ -261,7 +265,8 @@ run(Filesystem *filesystem, Options const &options, Output *output, Result *resu
         *options.compile(),
         *outputFormat,
         options.appIcon(),
-        options.launchImage());
+        options.launchImage(),
+        options.nonStandardOptions().allowImageTypes());
 
     /*
      * If necessary, create output archive to write into.

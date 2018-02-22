@@ -50,7 +50,24 @@ FormatSize(Rendition::Data::Format format)
             return 2;
         case Format::JPEG:
         case Format::Data:
+        case Format::NON_STANDARD_WEBP:
             return 1;
+    }
+
+    abort();
+}
+
+bool Rendition::Data::
+FormatSavedAsRawData(Rendition::Data::Format format)
+{
+    switch (format) {
+        case Format::PremultipliedBGRA8:
+        case Format::PremultipliedGA8:
+            return false;
+        case Format::JPEG:
+        case Format::Data:
+        case Format::NON_STANDARD_WEBP:
+            return true;
     }
 
     abort();
@@ -295,13 +312,15 @@ Decode(struct car_rendition_value *value)
         format = Rendition::Data::Format::Data;
     } else if (value->pixel_format == car_rendition_value_pixel_format_jpeg) {
         format = Rendition::Data::Format::JPEG;
+    } else if (value->pixel_format == car_rendition_value_pixel_format_non_standard_webp) {
+        format = Rendition::Data::Format::NON_STANDARD_WEBP;
     } else {
         fprintf(stderr, "error: unsupported pixel format %.4s\n", (char const *)&value->pixel_format);
         return ext::nullopt;
     }
 
-    /* JPEG format embeds the file within another header. */
-    if (format == Rendition::Data::Format::JPEG || format == Rendition::Data::Format::Data) {
+    /* Raw format (as jpeg) embeds the file within another header. */
+    if (Rendition::Data::FormatSavedAsRawData(format)) {
         struct car_rendition_data_header_raw *header_raw = (struct car_rendition_data_header_raw *)((uintptr_t)value + sizeof(struct car_rendition_value) + value->info_len);
         if (strncmp(header_raw->magic, "DWAR", sizeof(header_raw->magic)) != 0) {
             fprintf(stderr, "error: raw data header magic is wrong, can't possibly decode\n");
@@ -427,7 +446,7 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
     /*
      * If the format is already as required, nothing to do.
      */
-    if (data->format() == Rendition::Data::Format::JPEG || data->format() == Rendition::Data::Format::Data) {
+    if (Rendition::Data::FormatSavedAsRawData(data->format())) {
         return data->data();
     }
 
@@ -596,6 +615,9 @@ write() const
         case Rendition::Data::Format::Data:
             header.pixel_format = car_rendition_value_pixel_format_raw_data;
             break;
+        case Rendition::Data::Format::NON_STANDARD_WEBP:
+            header.pixel_format = car_rendition_value_pixel_format_non_standard_webp;
+            break;
     }
 
     struct car_rendition_info_bytes_per_row info_bytes_per_row;
@@ -625,8 +647,7 @@ write() const
     header.bitmaps.bitmap_count = 1;
     header.bitmaps.payload_size = compressed_data_length;
 
-    if (header.pixel_format == car_rendition_value_pixel_format_jpeg ||
-        header.pixel_format == car_rendition_value_pixel_format_raw_data) {
+    if (Rendition::Data::FormatSavedAsRawData(renditionData->format())) {
         extra_headers_size += sizeof(struct car_rendition_data_header_raw);
     }
 
@@ -652,9 +673,8 @@ write() const
     memcpy(output_bytes, &info_bytes_per_row, sizeof(struct car_rendition_info_bytes_per_row));
     output_bytes += sizeof(struct car_rendition_info_bytes_per_row);
 
-    /* JPEG/RAW format adds one more header at the end */
-    if (header.pixel_format == car_rendition_value_pixel_format_jpeg ||
-        header.pixel_format == car_rendition_value_pixel_format_raw_data) {
+    /* JPEG, RAW and non-standard formats adds one more header at the end */
+    if (Rendition::Data::FormatSavedAsRawData(renditionData->format())) {
         struct car_rendition_data_header_raw raw_header;
         strncpy(raw_header.magic, "DWAR", 4);
         raw_header.length = compressed_data_length;

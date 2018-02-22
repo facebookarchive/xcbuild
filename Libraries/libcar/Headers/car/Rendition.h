@@ -44,12 +44,21 @@ public:
              * Raw data.
              */
             Data,
+            /*
+             * Non-standard formats
+             */
+            NON_STANDARD_WEBP,
         };
 
         /*
          * The size of a pixel in the format.
          */
         static size_t FormatSize(Format format);
+
+        /*
+         * If the format is saved as raw data, that requires additional headers
+         */
+        static bool FormatSavedAsRawData(Format format);
 
     private:
         std::vector<uint8_t> _data;
