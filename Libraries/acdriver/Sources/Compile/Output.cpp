@@ -29,12 +29,14 @@ Output(
     std::string const &root,
     Format format,
     ext::optional<std::string> const &appIcon,
-    ext::optional<std::string> const &launchImage) :
-    _root          (root),
-    _format        (format),
-    _appIcon       (appIcon),
-    _launchImage   (launchImage),
-    _additionalInfo(plist::Dictionary::New())
+    ext::optional<std::string> const &launchImage,
+    NonStandard::ImageTypeSet const &allowedNonStandardImageTypes) :
+    _root                        (root),
+    _format                      (format),
+    _appIcon                     (appIcon),
+    _launchImage                 (launchImage),
+    _allowedNonStandardImageTypes (allowedNonStandardImageTypes),
+    _additionalInfo              (plist::Dictionary::New())
 {
 }
 
@@ -44,4 +46,3 @@ AssetReference(xcassets::Asset::Asset const *asset)
     // TODO: include [] for each key
     return asset->path();
 }
-

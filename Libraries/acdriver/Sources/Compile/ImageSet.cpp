@@ -151,11 +151,29 @@ CompileAsset(
 
         format = car::Rendition::Data::Format::JPEG;
     } else {
-        result->normal(
-            Result::Severity::Error,
-            "unknown file type",
-            filename);
-        return false;
+        ext::optional<NonStandard::ImageType> type = NonStandard::ImageTypeFromFileExtension(FSUtil::GetFileExtension(filename));
+        if (!type) {
+            result->normal(
+                Result::Severity::Error,
+                "unknown file type",
+                filename);
+            return false;
+        }
+        if (!compileOutput->allowedNonStandardImageTypes().count(*type)) {
+            result->normal(
+                Result::Severity::Error,
+                "forbidden file type",
+                filename);
+            return false;
+        }
+        if (!filesystem->read(&pixels, filename)) {
+            result->normal(
+                Result::Severity::Error,
+                "unable to read image file",
+                filename);
+            return false;
+        }
+        format = NonStandard::ImageTypeToDataFormat(*type);
     }
 
     bool createFacet = false;

@@ -293,6 +293,7 @@ enum car_rendition_value_pixel_format {
     car_rendition_value_pixel_format_pdf = 'PDF ', // pdf document
     car_rendition_value_pixel_format_raw_data = 'DATA', // raw data
     car_rendition_value_pixel_format_jpeg = 'JPEG', // jpeg image
+    car_rendition_value_pixel_format_non_standard_webp = 'WEBP', // webp image
 };
 
 enum car_rendition_value_layout {

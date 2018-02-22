@@ -10,6 +10,7 @@
 #ifndef __acdriver_Compile_Output_h
 #define __acdriver_Compile_Output_h
 
+#include <acdriver/NonStandard.h>
 #include <plist/Dictionary.h>
 #include <car/Writer.h>
 
@@ -48,6 +49,7 @@ private:
 private:
     ext::optional<std::string>         _appIcon;
     ext::optional<std::string>         _launchImage;
+    NonStandard::ImageTypeSet          _allowedNonStandardImageTypes;
 
 private:
     ext::optional<car::Writer>         _car;
@@ -63,7 +65,8 @@ public:
         std::string const &root,
         Format format,
         ext::optional<std::string> const &appIcon,
-        ext::optional<std::string> const &launchImage);
+        ext::optional<std::string> const &launchImage,
+        NonStandard::ImageTypeSet const &allowedNonStandardImageTypes = NonStandard::ImageTypeSet());
 
 public:
     /*
@@ -90,6 +93,13 @@ public:
      */
     ext::optional<std::string> const &launchImage()
     { return _launchImage; }
+
+    /*
+     * List of non-standard image formats that are allowed into an image set
+     * when non-standard behavior are enabled.
+     */
+    NonStandard::ImageTypeSet const &allowedNonStandardImageTypes() const
+    { return _allowedNonStandardImageTypes; }
 
 public:
     /*
