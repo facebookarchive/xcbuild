@@ -249,9 +249,12 @@ static int Run(Filesystem *filesystem, process::User const *user, process::Conte
     /*
      * Parse fallback options from the environment.
      */
+    bool toolchainSpecified = false;
     ext::optional<std::string> toolchainsInput = options.toolchain();
     if (!toolchainsInput) {
         toolchainsInput = processContext->environmentVariable("TOOLCHAINS");
+    } else {
+        toolchainSpecified = true;
     }
     ext::optional<std::string> SDK = options.SDK();
     if (!SDK) {
@@ -297,18 +300,20 @@ static int Run(Filesystem *filesystem, process::User const *user, process::Conte
      */
     const std::string defaultSDK = "macosx";
     xcsdk::SDK::Target::shared_ptr target = nullptr;
-    if (SDK) {
-        target = manager->findTarget(*SDK);
-        if (target == nullptr) {
-             printf("error: unable to find sdk: '%s'\n", SDK->c_str());
-             return -1;
-        }
-    } else {
-        target = manager->findTarget(defaultSDK);
-        /* nullptr target is not an error (except later on if SDK information is requested) */
-        if (showSDKValue && target == nullptr) {
-            printf("error: unable os find default sdk: '%s'\n", defaultSDK.c_str());
-            return -1;
+    if (!toolchainSpecified) {
+        if (SDK) {
+            target = manager->findTarget(*SDK);
+            if (target == nullptr) {
+                printf("error: unable to find sdk: '%s'\n", SDK->c_str());
+                return -1;
+            }
+        } else {
+            target = manager->findTarget(defaultSDK);
+            /* nullptr target is not an error (except later on if SDK information is requested) */
+            if (showSDKValue && target == nullptr) {
+                printf("error: unable os find default sdk: '%s'\n", defaultSDK.c_str());
+                return -1;
+            }
         }
     }
 
@@ -469,4 +474,3 @@ main(int argc, char **argv)
     process::DefaultUser user = process::DefaultUser();
     return Run(&filesystem, &user, &processContext, &processLauncher);
 }
-
