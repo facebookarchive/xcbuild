@@ -95,9 +95,9 @@ parse(plist::Dictionary const *dict)
         if (std::shared_ptr<Manager> manager = _manager.lock()) {
             for (size_t n = 0; n < Ts ->count(); n++) {
                 if (auto T = Ts ->value <plist::String> (n)) {
-                    if (auto toolchain = manager->findToolchain(T->value())) {
+                    if (auto toolchain = manager->findToolchain(nullptr, T->value())) {
                         _toolchains.push_back(toolchain);
-                    } else if (auto defaultToolchain = manager->findToolchain(Toolchain::DefaultIdentifier())) {
+                    } else if (auto defaultToolchain = manager->findToolchain(nullptr, Toolchain::DefaultIdentifier())) {
                         _toolchains.push_back(defaultToolchain);
                     }
                 }
@@ -105,7 +105,7 @@ parse(plist::Dictionary const *dict)
         }
     } else {
         if (std::shared_ptr<Manager> manager = _manager.lock()) {
-            if (auto defaultToolchain = manager->findToolchain(Toolchain::DefaultIdentifier())) {
+            if (auto defaultToolchain = manager->findToolchain(nullptr, Toolchain::DefaultIdentifier())) {
                 _toolchains.push_back(defaultToolchain);
             }
         }

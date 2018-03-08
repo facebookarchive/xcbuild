@@ -51,3 +51,8 @@ environmentVariable(std::string const &variable) const
     }
 }
 
+ext::optional<std::string> const MemoryContext::
+shellExpand(std::string const &s) const
+{
+    return s;
+}

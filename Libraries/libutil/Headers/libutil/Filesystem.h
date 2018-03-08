@@ -116,6 +116,12 @@ public:
 
     /*
      * Read the destination of the symbolic link, relative to its containing directory.
+     * Fully resolves the symlink path (if it is one) and returns a valid path if no error.
+     */
+    virtual ext::optional<std::string> readSymbolicLinkCanonical(std::string const &path, bool *directory = nullptr) const = 0;
+
+    /*
+     * Read the destination of the symbolic link, relative to its containing directory.
      */
     virtual ext::optional<std::string> readSymbolicLink(std::string const &path, bool *directory = nullptr) const = 0;
 

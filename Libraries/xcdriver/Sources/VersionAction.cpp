@@ -56,7 +56,7 @@ Run(process::User const *user, process::Context const *processContext, Filesyste
             return 1;
         }
 
-        xcsdk::SDK::Target::shared_ptr target = manager->findTarget(*options.sdk());
+        xcsdk::SDK::Target::shared_ptr target = manager->findTarget(filesystem, *options.sdk());
         if (target == nullptr) {
             fprintf(stderr, "error: cannot find sdk '%s'\n", options.sdk()->c_str());
             return 1;

@@ -15,6 +15,15 @@ using libutil::FSUtil;
 // TODO: remove these tests once FSUtil is unused
 #if !_WIN32
 
+template <typename T>
+void EXPECT_VECTOR_EQ(std::vector<T> const &x, std::vector<T> const &y) {
+    ASSERT_EQ(x.size(), y.size()) << "Vectors x and y are of unequal length";
+
+    for (int i = 0; i < x.size(); ++i) {
+        EXPECT_EQ(x[i], y[i]) << "Vectors x and y differ at index " << i;
+    }
+}
+
 TEST(FSUtil, GetDirectoryName)
 {
     EXPECT_EQ("", FSUtil::GetDirectoryName(""));
@@ -104,6 +113,30 @@ TEST(FSUtil, IsFileExtension)
 
     EXPECT_FALSE(FSUtil::IsFileExtension("/a/b/c.sub.ext", ""));
     EXPECT_TRUE(FSUtil::IsFileExtension("/a/b/c.sub.ext", "ext"));
+}
+
+TEST(FSUtil, Normalize)
+{
+    EXPECT_EQ("/a/b", FSUtil::NormalizePath("/a/b"));
+    EXPECT_EQ("/a/b", FSUtil::NormalizePath("/a/./b"));
+    EXPECT_EQ("/b", FSUtil::NormalizePath("/a/../b"));
+    EXPECT_EQ("a/b", FSUtil::NormalizePath("a/./b"));
+    EXPECT_EQ("..", FSUtil::NormalizePath("a/../.."));
+    EXPECT_EQ("/", FSUtil::NormalizePath("/a/../.."));
+    EXPECT_EQ("../../..", FSUtil::NormalizePath("a/../../../.."));
+    EXPECT_EQ("/", FSUtil::NormalizePath("////"));
+}
+
+TEST(FSUtil, NormalizeComponents)
+{
+    EXPECT_VECTOR_EQ({ "/", "a", "b" }, FSUtil::NormalizePathComponents("/a/b"));
+    EXPECT_VECTOR_EQ({ "a", "b" }, FSUtil::NormalizePathComponents("a/b"));
+    EXPECT_VECTOR_EQ({ "/", "a", "b" }, FSUtil::NormalizePathComponents("/a/./b"));
+    EXPECT_VECTOR_EQ({ "/", "b" }, FSUtil::NormalizePathComponents("/a/../b"));
+    EXPECT_VECTOR_EQ({ ".." }, FSUtil::NormalizePathComponents("a/../.."));
+    EXPECT_VECTOR_EQ({ "/" }, FSUtil::NormalizePathComponents("/a/../.."));
+    EXPECT_VECTOR_EQ({ "..", "..", ".." }, FSUtil::NormalizePathComponents("a/../../../.."));
+    EXPECT_VECTOR_EQ({ "/" }, FSUtil::NormalizePathComponents("////"));
 }
 
 #endif

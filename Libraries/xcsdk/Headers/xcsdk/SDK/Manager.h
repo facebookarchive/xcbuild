@@ -13,6 +13,7 @@
 #include <xcsdk/SDK/Platform.h>
 #include <xcsdk/SDK/Toolchain.h>
 #include <xcsdk/SDK/Target.h>
+#include <libutil/Filesystem.h>
 
 #include <memory>
 #include <string>
@@ -61,14 +62,18 @@ public:
     /*
      * Find an SDK by name. This does a fuzzy search, so the "name" could
      * be an SDK name or path, or even the name of a platform.
+     * The provided filesystem will attempt to resolve the name if the name is
+     * a symlinked path.
      */
-    Target::shared_ptr findTarget(std::string const &name) const;
+    Target::shared_ptr findTarget(libutil::Filesystem const *filesystem, std::string const &name) const;
 
     /*
      * Find a toolchain by name. This does a fuzzy search; the "name" could
      * be a name, path, or identifier for the toolchain.
+     * The provided filesystem will attempt to resolve the name if the name is
+     * a symlinked path.
      */
-    Toolchain::shared_ptr findToolchain(std::string const &name) const;
+    Toolchain::shared_ptr findToolchain(libutil::Filesystem const *filesystem, std::string const &name) const;
 
 public:
     /*

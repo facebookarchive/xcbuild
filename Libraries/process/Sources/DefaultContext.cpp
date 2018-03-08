@@ -18,10 +18,12 @@
 
 #if _WIN32
 #include <windows.h>
+#include <userenv.h>
 #else
 #include <unistd.h>
 #include <sys/select.h>
 #include <errno.h>
+#include <wordexp.h>
 #endif
 
 #if defined(__APPLE__)
@@ -327,4 +329,44 @@ environmentVariables() const
     });
 
     return *environment;
+}
+
+ext::optional<std::string> const DefaultContext::
+shellExpand(std::string const &s) const
+{
+    std::string expandedString = s;
+#if _WIN32
+    auto wideS = StringToWideString(expandedString);
+    auto buffer = WideString();
+
+    DWORD bufferSize = 32768;
+    bool haveExpandedString = false;
+
+    while (haveExpandedString) {
+        buffer.resize(bufferSize);
+        DWORD neededSize = ExpandEnvironmentStringsW(wideS.data(), &buffer[0], bufferSize);
+
+        if (neededSize > bufferSize) {
+            bufferSize = neededSize;
+        } else if (neededSize == 0) {
+            /* Documentation doesn't define what errors GetLastError() can return,
+               so don't bother asserting its value. */
+            return ext::nullopt;
+        } else {
+            haveExpandedString = true;
+        }
+    }
+    expandedString = WideStringToString(buffer);
+
+#else
+    wordexp_t result;
+    if (wordexp(s.c_str(), &result, 0) != 0) {
+        if (result.we_wordc != 1) {
+           abort();
+        }
+        expandedString = std::string(result.we_wordv[0]);
+        wordfree(&result);
+    }
+#endif
+    return expandedString;
 }

@@ -31,6 +31,9 @@ public:
     virtual std::vector<std::string> const &commandLineArguments() const;
     virtual std::unordered_map<std::string, std::string> const &environmentVariables() const;
     virtual ext::optional<std::string> environmentVariable(std::string const &variable) const;
+
+public:
+    virtual ext::optional<std::string> const shellExpand(std::string const &s) const;
 };
 
 }

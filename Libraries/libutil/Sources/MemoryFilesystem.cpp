@@ -362,6 +362,12 @@ removeFile(std::string const &path)
 }
 
 ext::optional<std::string> MemoryFilesystem::
+readSymbolicLinkCanonical(std::string const &path, bool *directory) const
+{
+    return ext::nullopt;
+}
+
+ext::optional<std::string> MemoryFilesystem::
 readSymbolicLink(std::string const &path, bool *directory) const
 {
     return ext::nullopt;
@@ -475,4 +481,3 @@ resolvePath(std::string const &path) const
         return std::string();
     }
 }
-

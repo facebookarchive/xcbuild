@@ -37,6 +37,7 @@ public:
 public:
     static std::string ResolveRelativePath(std::string const &path, std::string const &workingDirectory);
     static std::string NormalizePath(std::string const &path);
+    static std::vector<std::string> NormalizePathComponents(std::string const &path);
 
 public:
     static std::string FindFile(std::string const &name, std::vector<std::string> const &paths);

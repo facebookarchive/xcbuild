@@ -42,32 +42,41 @@ ResolveDeveloperRoot(Filesystem const *filesystem, std::string const &path)
     /*
      * Support finding the developer directory inside an application directory.
      */
-    std::string application = path + "/Contents/Developer";
+    std::string expandedPath = path;
+    std::string application = expandedPath + "/Contents/Developer";
     if (filesystem->type(application) == Filesystem::Type::Directory) {
-        return application;
+        expandedPath = application;
     }
 
-    return path;
+    if (auto resolvedPath = filesystem->readSymbolicLinkCanonical(expandedPath)) {
+        expandedPath = *resolvedPath;
+    }
+
+    return expandedPath;
 }
 
 ext::optional<std::string> Environment::
 DeveloperRoot(process::User const *user, process::Context const *processContext, Filesystem const *filesystem)
 {
     if (auto path = processContext->environmentVariable("DEVELOPER_DIR")) {
-        return ResolveDeveloperRoot(filesystem, *path);
+        if ((path = processContext->shellExpand(*path))) {
+            return ResolveDeveloperRoot(filesystem, *path);
+        }
     }
 
-    if (ext::optional<std::string> userHomeDirectory = user->userHomeDirectory()) {
-        if (auto path = filesystem->readSymbolicLink(UserDeveloperRootLink(*userHomeDirectory))) {
+    ext::optional<std::string> userHomeDirectory = user->userHomeDirectory();
+
+    if (userHomeDirectory) {
+        if (auto path = filesystem->readSymbolicLinkCanonical(UserDeveloperRootLink(*userHomeDirectory))) {
             return path;
         }
     }
 
-    if (auto path = filesystem->readSymbolicLink(PrimaryDeveloperRootLink())) {
+    if (auto path = filesystem->readSymbolicLinkCanonical(PrimaryDeveloperRootLink())) {
         return path;
     }
 
-    if (auto path = filesystem->readSymbolicLink(SecondaryDeveloperRootLink())) {
+    if (auto path = filesystem->readSymbolicLinkCanonical(SecondaryDeveloperRootLink())) {
         return path;
     }
 
@@ -112,4 +121,3 @@ WriteDeveloperRoot(libutil::Filesystem *filesystem, ext::optional<std::string> c
 
     return true;
 }
-

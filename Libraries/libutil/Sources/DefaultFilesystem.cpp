@@ -9,6 +9,7 @@
 
 #include <libutil/DefaultFilesystem.h>
 #include <libutil/FSUtil.h>
+#include <libutil/Relative.h>
 
 #include <stack>
 #include <climits>
@@ -28,6 +29,8 @@
 #include <copyfile.h>
 #endif
 #endif
+
+#include <iostream>
 
 using libutil::DefaultFilesystem;
 using libutil::Filesystem;
@@ -678,6 +681,46 @@ removeFile(std::string const &path)
 
     return true;
 #endif
+}
+
+ext::optional<std::string> DefaultFilesystem::
+readSymbolicLinkCanonical(std::string const &path, bool *directory) const
+{
+    /* ::readlink() is not the equivalent of "readlink -f", which recursively
+       expands the path. Furthermore, it does not successfully expand a symlink
+       if only part of the path is symbolic -- so long as the path points to a
+       real location, the invocation will fail.
+
+       If a path like /a/b/c exists, where:
+         - /a -> /foo
+         - /foo/b -> /bar/
+         - /bar/c is the real file
+
+       Expanding the path out fully must operate on each individual component.
+    */
+    std::vector<std::string> components = FSUtil::NormalizePathComponents(path);
+    std::string resolvedPath;
+    std::string pathToResolve;
+    ext::optional<std::string> current;
+
+    for (auto it = components.begin(); it != components.end(); ++it) {
+        pathToResolve = libutil::Path::Relative(resolvedPath).child(*it).raw();
+        do {
+            current = this->readSymbolicLink(pathToResolve, directory);
+            if (current) {
+                resolvedPath = *current;
+            }
+        } while (current);
+    }
+
+    if (resolvedPath.empty()) {
+        return ext::nullopt;
+    }
+
+    if (directory) {
+        *directory = (this->type(this->resolvePath(resolvedPath)) == Type::Directory);
+    }
+    return std::string(resolvedPath.c_str());
 }
 
 ext::optional<std::string> DefaultFilesystem::
