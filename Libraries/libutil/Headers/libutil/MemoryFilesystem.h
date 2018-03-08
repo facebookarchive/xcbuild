@@ -91,6 +91,7 @@ public:
 public:
     virtual ext::optional<Permissions> readSymbolicLinkPermissions(std::string const &path) const;
     virtual bool writeSymbolicLinkPermissions(std::string const &path, Permissions::Operation operation, Permissions permissions);
+    virtual ext::optional<std::string> readSymbolicLinkCanonical(std::string const &path, bool *directory = nullptr) const;
     virtual ext::optional<std::string> readSymbolicLink(std::string const &path, bool *directory = nullptr) const;
     virtual bool writeSymbolicLink(std::string const &target, std::string const &path, bool directory);
     virtual bool copySymbolicLink(std::string const &from, std::string const &to);

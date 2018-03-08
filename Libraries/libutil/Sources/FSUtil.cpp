@@ -98,3 +98,9 @@ NormalizePath(std::string const &path)
 {
     return Path::Relative(path).normalized();
 }
+
+std::vector<std::string> FSUtil::
+NormalizePathComponents(std::string const &path)
+{
+    return Path::Relative(path).normalizedComponents();
+}

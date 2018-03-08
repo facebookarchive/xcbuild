@@ -136,4 +136,3 @@ TEST(AppIconSet, Compile)
     VerifyIcons(info, "CFBundleIcons", { "AppIcon29x29", "AppIcon60x60" });
     VerifyIcons(info, "CFBundleIcons~ipad", { "AppIcon76x76" });
 }
-

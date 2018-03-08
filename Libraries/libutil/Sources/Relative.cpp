@@ -30,8 +30,8 @@ BaseRelative(std::string const &raw) :
 {
 }
 
-static std::string
-NormalizePath(
+static std::vector<std::string>
+NormalizePathComponents(
     std::string const &path,
     std::string::const_iterator start,
     std::string::const_iterator end,
@@ -40,52 +40,52 @@ NormalizePath(
     char separator,
     bool(*isSeparator)(char c))
 {
-    std::string output;
+    std::vector<std::string> output;
+    std::string component;
+    bool finished = start == end;
 
-    for (auto it = start; it != end; ++it) {
-        if (isSeparator(*it)) {
-            /* Skip runs of multiple separators. */
-            while (std::next(it) != end && isSeparator(*std::next(it))) {
-                ++it;
+    for (auto it = start; !finished; ++it) {
+        finished = it == end;
+
+        if (finished || isSeparator(*it)) {
+            bool isNewComponent = false, isPreviousComponent = false;
+            if (!component.empty()) {
+                if (!collapse) {
+                    isNewComponent = true;
+                } else if (component == "..") {
+                    isPreviousComponent = true;
+                } else if (component != ".") {
+                    isNewComponent = true;
+                }
             }
 
-            /* Only after the beginning, end, or after an existing trailing separator. */
-            if (!output.empty() && std::next(it) != end && !isSeparator(output.back())) {
-                output += separator;
-            }
-        } else if (collapse && (it == start || isSeparator(*std::prev(it))) && *it == '.') {
-            /* Handle relative paths. */
-            if (std::next(it) == end || isSeparator(*std::next(it))) {
-                /* Path component is current. */
-                if (!output.empty() && isSeparator(output.back())) {
+            /* Either there's a new valid component to add to the list... */
+            if (isNewComponent) {
+                output.push_back(component);
+            } else if (isPreviousComponent) {
+                /* ...or a component needs to be removed from the output.
+                   In cases where a component shouldn't be removed (a parent
+                   representative or an empty output) just add a token representing
+                   a directory up. */
+                if (!absolute && (output.empty() || output.back() == "..")) {
+                    /* Initial parent. Copy to output if relative. */
+                    output.push_back("..");
+                } else if (!output.empty()) {
                     output.pop_back();
                 }
-            } else if (*std::next(it) == '.' && (std::next(it, 2) == end || isSeparator(*std::next(it, 2)))) {
-                /* Path component is parent. */
-                if (output.empty()) {
-                    if (!absolute) {
-                        /* Initial parent. Copy to output if relative. */
-                        output += '.';
-                        output += '.';
-                    }
-                } else {
-                    /* Parent, remove segment. */
-                    auto separator = std::find_if(std::next(output.rbegin()), output.rend(), isSeparator);
-                    if (separator != output.rend()) {
-                        separator = std::next(separator);
-                    }
-                    output.erase(separator.base(), output.rbegin().base());
-                }
-
-                /* Skip second dot. */
-                ++it;
-            } else {
-                /* Path component starting with dot, copy. */
-                output += '.';
             }
+
+            for (; it != end; ++it) {
+                auto candidate = std::next(it);
+                if (candidate == end || !isSeparator(*candidate)) {
+                    break;
+                }
+            }
+
+            finished = it == end;
+            component.clear();
         } else {
-            /* Path entry character, just copy. */
-            output += *it;
+            component += *it;
         }
     }
 
@@ -93,20 +93,61 @@ NormalizePath(
 }
 
 template<class Traits>
-std::string Path::BaseRelative<Traits>::
-normalized() const
+std::vector<std::string> Path::BaseRelative<Traits>::
+normalizedComponents() const
 {
-    std::string output;
-    output.reserve(_raw.size());
+    std::string prefix;
+    std::vector<std::string> output;
 
     size_t start;
     bool absolute = Traits::IsAbsolute(_raw, &start);
-
     for (std::string::size_type n = 0; n < start; ++n) {
-        output += (Traits::IsSeparator(_raw[n]) ? Traits::Separator : _raw[n]);
+        prefix += (Traits::IsSeparator(_raw[n]) ? Traits::Separator : _raw[n]);
+    }
+    if (!prefix.empty()) {
+        output.push_back(prefix);
     }
 
-    output += NormalizePath(_raw, _raw.begin() + start, _raw.end(), absolute, true, Traits::Separator, &Traits::IsSeparator);
+    std::vector<std::string> relativeOutput = NormalizePathComponents(
+        _raw,
+        _raw.begin() + start,
+        _raw.end(),
+        absolute,
+        true,
+        Traits::Separator,
+        &Traits::IsSeparator
+    );
+
+    output.insert(output.end(), relativeOutput.begin(), relativeOutput.end());
+    return output;
+}
+
+template<class Traits>
+std::string Path::BaseRelative<Traits>::
+normalized() const
+{
+    std::vector<std::string> components = this->normalizedComponents();
+    std::string output;
+
+    size_t start;
+    Traits::IsAbsolute(_raw, &start);
+    bool hasPrefix = start > 0;
+    auto end = components.end();
+    auto it = components.begin();
+
+    /* Skip past the initial absolute prefix if needed; it doesn't need to be
+       split from the rest of the path with a separator. */
+    if (it != end && hasPrefix) {
+        output += *it;
+        ++it;
+    }
+
+    for (; it != end; ++it) {
+        output += *it;
+        if (std::next(it) != end) {
+          output += Traits::Separator;
+        }
+    }
 
     return output;
 }

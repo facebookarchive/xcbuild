@@ -9,12 +9,12 @@
 
 #include <xcsdk/SDK/Manager.h>
 #include <xcsdk/Configuration.h>
-#include <libutil/Filesystem.h>
 #include <libutil/FSUtil.h>
 #include <pbxsetting/Setting.h>
 #include <pbxsetting/Type.h>
 
 #include <algorithm>
+#include <iostream>
 
 using xcsdk::Configuration;
 using xcsdk::SDK::Manager;
@@ -34,19 +34,33 @@ Manager::
 {
 }
 
-Target::shared_ptr Manager::
-findTarget(std::string const &name) const
+std::string
+_resolvePath(Filesystem const *filesystem, std::string const &name)
 {
+    if (filesystem != nullptr) {
+        bool directory = false;
+        ext::optional<std::string> target = filesystem->readSymbolicLinkCanonical(name, &directory);
+        if (target) {
+          return *target;
+        }
+    }
+    return name;
+}
+
+Target::shared_ptr Manager::
+findTarget(Filesystem const *filesystem, std::string const &name) const
+{
+    std::string pathFromName = _resolvePath(filesystem, name);
     for (Platform::shared_ptr const &platform : _platforms) {
         for (Target::shared_ptr const &target : platform->targets()) {
             /* Try both the name and the path; either are valid. */
-            if (target->canonicalName() == name || target->path() == name) {
+            if (target->canonicalName() == name || target->path() == pathFromName) {
                 return target;
             }
         }
 
         /* If the platform name matches but no targets do, use any target. */
-        if (platform->name() == name || platform->path() == name) {
+        if (platform->name() == name || platform->path() == pathFromName) {
             if (!platform->targets().empty()) {
                 return platform->targets().back();
             }
@@ -57,11 +71,12 @@ findTarget(std::string const &name) const
 }
 
 Toolchain::shared_ptr Manager::
-findToolchain(std::string const &name) const
+findToolchain(Filesystem const *filesystem, std::string const &name) const
 {
+    std::string pathFromName = _resolvePath(filesystem, name);
     for (Toolchain::shared_ptr const &toolchain : _toolchains) {
         /* Match liberally: name, identifier, or path; all are valid. */
-        if (toolchain->name() == name || toolchain->identifier() == name || toolchain->path() == name) {
+        if (toolchain->name() == name || toolchain->identifier() == name || toolchain->path() == pathFromName) {
             return toolchain;
         }
     }
@@ -101,7 +116,7 @@ computedSettings(void) const
         pbxsetting::Setting::Parse("DERIVED_DATA_DIR", "$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData"),
     };
 
-    if (Toolchain::shared_ptr defaultToolchain = findToolchain(Toolchain::DefaultIdentifier())) {
+    if (Toolchain::shared_ptr defaultToolchain = findToolchain(nullptr, Toolchain::DefaultIdentifier())) {
         settings.push_back(pbxsetting::Setting::Create("DT_TOOLCHAIN_DIR", defaultToolchain->path()));
     } else {
         settings.push_back(pbxsetting::Setting::Create("DT_TOOLCHAIN_DIR", ""));
@@ -176,7 +191,8 @@ Open(Filesystem const *filesystem, std::string const &path, ext::optional<Config
                 return;
             }
 
-            auto toolchain = SDK::Toolchain::Open(filesystem, toolchainsPath + "/" + filename);
+            auto path = _resolvePath(filesystem, toolchainsPath + "/" + filename);
+            auto toolchain = SDK::Toolchain::Open(filesystem, path);
             if (toolchain != nullptr) {
                 toolchains.push_back(toolchain);
             }
@@ -197,7 +213,8 @@ Open(Filesystem const *filesystem, std::string const &path, ext::optional<Config
                 return;
             }
 
-            auto platform = SDK::Platform::Open(filesystem, manager, platformsPath + "/" + filename);
+            auto path = _resolvePath(filesystem, platformsPath + "/" + filename);
+            auto platform = SDK::Platform::Open(filesystem, manager, path);
             if (platform != nullptr) {
                 platforms.push_back(platform);
             }

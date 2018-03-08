@@ -57,6 +57,12 @@ public:
      * The default environment search paths.
      */
     std::vector<std::string> executableSearchPaths() const;
+
+public:
+    /*
+     * The path expanded with resolved shell variables and user directory.
+     */
+    virtual ext::optional<std::string> const shellExpand(std::string const &s) const = 0;
 };
 
 }

@@ -15,6 +15,7 @@
 
 #include <string>
 #include <ext/optional>
+#include <vector>
 
 namespace libutil {
 namespace Path {
@@ -51,6 +52,12 @@ public:
      * The normalized path string.
      */
     std::string normalized() const;
+
+    /*
+     * The normalized path string, split according to the components
+     * that comprise it.
+     */
+    std::vector<std::string> normalizedComponents() const;
 
 public:
     /*

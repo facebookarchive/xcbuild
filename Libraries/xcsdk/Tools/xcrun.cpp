@@ -302,13 +302,13 @@ static int Run(Filesystem *filesystem, process::User const *user, process::Conte
     xcsdk::SDK::Target::shared_ptr target = nullptr;
     if (!toolchainSpecified) {
         if (SDK) {
-            target = manager->findTarget(*SDK);
+            target = manager->findTarget(filesystem, *SDK);
             if (target == nullptr) {
                 printf("error: unable to find sdk: '%s'\n", SDK->c_str());
                 return -1;
             }
         } else {
-            target = manager->findTarget(defaultSDK);
+            target = manager->findTarget(filesystem, defaultSDK);
             /* nullptr target is not an error (except later on if SDK information is requested) */
             if (showSDKValue && target == nullptr) {
                 printf("error: unable os find default sdk: '%s'\n", defaultSDK.c_str());
@@ -373,7 +373,7 @@ static int Run(Filesystem *filesystem, process::User const *user, process::Conte
             /* If the custom toolchain exists, use it instead. */
             std::vector<std::string> toolchainTokens = pbxsetting::Type::ParseList(*toolchainsInput);
             for (std::string const &toolchainToken : toolchainTokens) {
-                if (auto TC = manager->findToolchain(toolchainToken)) {
+                if (auto TC = manager->findToolchain(filesystem, toolchainToken)) {
                     toolchains.push_back(TC);
                 }
             }

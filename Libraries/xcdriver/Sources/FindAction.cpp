@@ -48,7 +48,7 @@ Run(process::User const *user, process::Context const *processContext, Filesyste
 
     std::string sdk = options.sdk().value_or("macosx");
 
-    xcsdk::SDK::Target::shared_ptr target = manager->findTarget(sdk);
+    xcsdk::SDK::Target::shared_ptr target = manager->findTarget(filesystem, sdk);
     if (target == nullptr) {
         fprintf(stderr, "error: cannot find sdk '%s'\n", sdk.c_str());
         return 1;

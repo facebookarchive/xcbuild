@@ -58,6 +58,9 @@ public:
     { return _environmentVariables; }
 
     virtual ext::optional<std::string> environmentVariable(std::string const &variable) const;
+
+public:
+    virtual ext::optional<std::string> const shellExpand(std::string const &s) const;
 };
 
 }
