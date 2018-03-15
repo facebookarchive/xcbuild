@@ -31,28 +31,39 @@
 ----|----|---
 xcbuild and [xctool](https://github.com/facebook/xctool) are both Xcode-compatible build systems. We plan on slowly deprecating xctool's build support but keep it as a great way to run tests. | Facebook's main build system is [Buck](https://buckbuild.com). Buck has a stronger architecture and advanced features like artifact caching while having a much simpler build format. If you have a new project, it's highly recommended. | xcbuild works great with [xcpretty](https://github.com/supermarin/xcpretty). Pipe the output from xcbuild to xcpretty the same way as you would from `xcodebuild`.
 
-## Building
+## Building xcbuild
 
 [![Build Status](https://travis-ci.org/facebook/xcbuild.svg?branch=master)](https://travis-ci.org/facebook/xcbuild)
 
-- Xcode 7 or later, on macOS.
-- GCC 4.8 or later, on Linux. `libpng16-dev`, `zlib1g-dev`, `libxml2-dev`, and `pkg-config` are also required.
+### Requirements
+
+#### All platforms
+
+- [CMake](http://www.cmake.org) and [Ninja](https://ninja-build.org/) (or [llbuild](https://github.com/apple/swift-llbuild)) are required to build xcbuild.  
+
+On macOS you can install those tools with [Homebrew](https://brew.sh/): `brew install cmake ninja`.
+
+On Windows you can install those tools with [Chocolatey](https://chocolatey.org): `choco install cmake ninja`.
+
+#### Linux
+- GCC 4.8 or later. `libpng16-dev`, `zlib1g-dev`, `libxml2-dev`, and `pkg-config` are also required.
+
+#### macOS
+- Xcode 7 or later.
+
+#### Windows 
 - Visual Studio 2015 or later, on Windows. A `zlib` DLL is also required.
-- [CMake](http://www.cmake.org) and [Ninja](https://ninja-build.org/) (or [llbuild](https://github.com/apple/swift-llbuild)).
-  - With [Homebrew](http://brew.sh/): `brew install cmake ninja`
-  - With [Chocolatey](https://chocolatey.org): `choco install cmake ninja`
 
-To build:
+### Instructions 
 
- - All platforms:
+#### All platforms
 
 ```sh
-git clone https://github.com/facebook/xcbuild
+git clone --depth=1 https://github.com/facebook/xcbuild
 cd xcbuild
 git submodule update --init
 ```
-
- - Linux and macOS:
+#### Linux and macOS:
 
 ```sh
 make
@@ -60,7 +71,9 @@ make
 
 Build output will be in the `build` directory. Run xcbuild with `./build/xcbuild`.
 
- - Windows (experimental):
+You can place xcbuild in your `bin` directory to run it from other locations: `mv build/xcbuild /usr/local/bin/`.
+
+#### Windows (experimental):
 
 ```sh
 cmake -Bbuild -H. -G "Visual Studio 14 2015" -DZLIB_ROOT=<path>
