@@ -360,7 +360,7 @@ shellExpand(std::string const &s) const
 
 #else
     wordexp_t result;
-    if (wordexp(s.c_str(), &result, 0) != 0) {
+    if (wordexp(s.c_str(), &result, 0) == 0) {
         if (result.we_wordc != 1) {
            abort();
         }
