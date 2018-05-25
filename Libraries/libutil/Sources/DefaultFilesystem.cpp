@@ -708,12 +708,14 @@ readSymbolicLinkCanonical(std::string const &path, bool *directory) const
         do {
             current = this->readSymbolicLink(pathToResolve, directory);
             if (current) {
-                resolvedPath = *current;
+                pathToResolve = *current;
             }
         } while (current);
+        resolvedPath = pathToResolve;
     }
 
-    if (resolvedPath.empty()) {
+    /* Not actually a symlink */
+    if (resolvedPath == path) {
         return ext::nullopt;
     }
 
