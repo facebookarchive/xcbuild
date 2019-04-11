@@ -46,6 +46,11 @@ On macOS you can install those tools with [Homebrew](https://brew.sh/): `brew in
 On Windows you can install those tools with [Chocolatey](https://chocolatey.org): `choco install cmake ninja`.
 
 #### Linux
+
+###### Ubuntu 18.04
+`sudo apt install libpng-dev libpng16-16 libxml2-dev pkg-config ninja-build`
+
+###### All others
 - GCC 4.8 or later. `libpng16-dev`, `zlib1g-dev`, `libxml2-dev`, and `pkg-config` are also required.
 
 #### macOS
