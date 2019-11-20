@@ -32,6 +32,7 @@ private:
 
 protected:
     Object(std::string const &isa);
+    virtual ~Object() {}
 
 public:
     inline std::string const &blueprintIdentifier() const

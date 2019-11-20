@@ -77,6 +77,16 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_CXX_COMPILER_VERS
   add_compile_options(-fdiagnostics-color)
 endif ()
 
+# Port BSD gcc
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "FreeBSD|OpenBSD")
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_compile_options(-D_GLIBCXX_USE_C99 -D_GLIBCXX_USE_C99_MATH -D_GLIBCXX_USE_C99_MATH_TR1 -D_GLIBCXX_USE_CXX11_ABI=1)
+  endif ()
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND "${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER "5.0")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lstdc++")
+  endif ()
+endif ()
+
 # Enable unit testing.
 include(CTest)
 

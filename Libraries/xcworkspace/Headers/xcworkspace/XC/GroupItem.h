@@ -40,6 +40,7 @@ private:
 
 protected:
     GroupItem(Type type);
+    virtual ~GroupItem() {}
 
 public:
     inline Type type() const

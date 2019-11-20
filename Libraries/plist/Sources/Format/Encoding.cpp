@@ -79,9 +79,9 @@ enum class Endian {
     Little,
 };
 
-#if defined(__BIG_ENDIAN__) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN)
+#if defined(__BIG_ENDIAN__) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN) || (defined(_BYTE_ORDER) && _BYTE_ORDER == _BIG_ENDIAN)
 static Endian const HostEndian = Endian::Big;
-#elif defined(__LITTLE_ENDIAN__) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || _WIN32
+#elif defined(__LITTLE_ENDIAN__) || (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || _WIN32 || (defined(_BYTE_ORDER) && _BYTE_ORDER == _LITTLE_ENDIAN)
 static Endian const HostEndian = Endian::Little;
 #else
 #error Unknown endianness.
