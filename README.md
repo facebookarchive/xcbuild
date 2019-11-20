@@ -53,6 +53,16 @@ On Windows you can install those tools with [Chocolatey](https://chocolatey.org)
 ###### All others
 - GCC 4.8 or later. `libpng16-dev`, `zlib1g-dev`, `libxml2-dev`, and `pkg-config` are also required.
 
+#### FreeBSD
+
+###### FreeBSD 12.1
+`pkg install png-1.6.37 libxml2-2.9.9 pkgconf-1.6.3,1 ninja-1.9.0,2 gmake-4.2.1_3`
+
+#### OpenBSD
+
+###### OpenBSD 6.6
+`pkg_add png-1.6.37 libxml-2.9.9 pkgconf-1.6.3 ninja-1.9.0 gmake-4.2.1p4`
+
 #### macOS
 - Xcode 7 or later.
 
@@ -72,6 +82,12 @@ git submodule update --init
 
 ```sh
 make
+```
+
+#### FreeBSD and OpenBSD:
+
+```sh
+gmake
 ```
 
 Build output will be in the `build` directory. Run xcbuild with `./build/xcbuild`.

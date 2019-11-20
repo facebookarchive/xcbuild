@@ -25,6 +25,7 @@ private:
 
 public:
     Action();
+    virtual ~Action() {}
 
 public:
     inline std::string const &buildConfiguration() const

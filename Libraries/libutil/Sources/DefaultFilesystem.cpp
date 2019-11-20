@@ -24,7 +24,7 @@
 #include <libgen.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#if defined(__APPLE__) || defined(__FreeBSD__)
+#if defined(__APPLE__)
 #include <copyfile.h>
 #endif
 #endif
@@ -358,7 +358,7 @@ writeSymbolicLinkPermissions(std::string const &path, Permissions::Operation ope
 #if _WIN32
     // TODO: Support file permssions on Windows.
     return true;
-#elif defined(__APPLE__) || defined(__FreeBSD__)
+#elif defined(__APPLE__)
     ext::optional<Permissions> updated = this->readSymbolicLinkPermissions(path);
     if (!updated) {
         return false;
@@ -626,7 +626,7 @@ copyFile(std::string const &from, std::string const &to)
     }
 
     return true;
-#elif defined(__APPLE__) || defined(__FreeBSD__)
+#elif defined(__APPLE__)
     ext::optional<Type> fromType = this->type(from);
     if (fromType != Type::File && fromType != Type::SymbolicLink) {
         return false;
@@ -850,7 +850,7 @@ copySymbolicLink(std::string const &from, std::string const &to)
     }
 
     return true;
-#elif defined(__APPLE__) || defined(__FreeBSD__)
+#elif defined(__APPLE__)
     if (this->type(from) != Type::SymbolicLink) {
         return false;
     }
@@ -1057,7 +1057,7 @@ readDirectory(std::string const &path, bool recursive, std::function<void(std::s
 bool DefaultFilesystem::
 copyDirectory(std::string const &from, std::string const &to, bool recursive)
 {
-#if defined(__APPLE__) || defined(__FreeBSD__)
+#if defined(__APPLE__)
     if (this->type(from) != Type::Directory) {
         return false;
     }

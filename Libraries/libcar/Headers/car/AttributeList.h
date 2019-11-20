@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <cstdio>
 
 namespace std {
 template<> struct hash<enum car_attribute_identifier> {

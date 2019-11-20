@@ -6,9 +6,9 @@
  LICENSE file in the root directory of this source tree.
  */
 
-#include <xcassets/Slot/SystemVersion.h>
-
 #include <sstream>
+
+#include <xcassets/Slot/SystemVersion.h>
 
 using xcassets::Slot::SystemVersion;
 

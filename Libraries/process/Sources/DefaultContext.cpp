@@ -22,7 +22,11 @@
 #include <unistd.h>
 #include <sys/select.h>
 #include <errno.h>
+#ifdef __OpenBSD__
+#include <glob.h>
+#else
 #include <wordexp.h>
+#endif
 #endif
 
 #if defined(__APPLE__)
@@ -32,6 +36,11 @@
 #if __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16
 #include <sys/auxv.h>
 #endif
+#elif defined(__FreeBSD__)
+#define _LIMITS_H_
+#include <sys/syslimits.h>
+#elif defined(__OpenBSD__)
+#include <sys/sysctl.h>
 #endif
 
 #if !_WIN32
@@ -124,7 +133,7 @@ currentDirectory() const
     return *directory;
 }
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 static char initialWorkingDirectory[PATH_MAX] = { 0 };
 __attribute__((constructor))
 static void InitializeInitialWorkingDirectory()
@@ -134,12 +143,33 @@ static void InitializeInitialWorkingDirectory()
     }
 }
 
-#if !(__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16)
+#if (!(__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16) || defined(__FreeBSD__)) && !defined(__OpenBSD__)
 static char initialExecutablePath[PATH_MAX] = { 0 };
 __attribute__((constructor))
 static void InitialExecutablePathInitialize(int argc, char **argv)
 {
     strncpy(initialExecutablePath, argv[0], sizeof(initialExecutablePath));
+}
+#elif defined(__OpenBSD__)
+static char initialExecutablePath[PATH_MAX] = { 0 };
+__attribute__((constructor))
+static void InitialExecutablePathInitialize()
+{
+    int mib[4];
+    char **argv;
+    size_t len;
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROC_ARGS;
+    mib[2] = getpid();
+    mib[3] = KERN_PROC_ARGV;
+    if (sysctl(mib, 4, NULL, &len, NULL, 0) < 0)
+        abort();
+    if (!(argv = (char**) malloc(len)))
+        abort();
+    if (sysctl(mib, 4, argv, &len, NULL, 0) < 0)
+        abort();
+    strncpy(initialExecutablePath, argv[0], sizeof(initialExecutablePath));
+    free(argv);
 }
 #endif
 #endif
@@ -182,13 +212,13 @@ executablePath() const
         if (_NSGetExecutablePath(&absolutePath[0], &size) != 0) {
             abort();
         }
-#elif defined(__linux__)
-#if __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 16
         char const *path = reinterpret_cast<char const *>(getauxval(AT_EXECFN));
         if (path == NULL) {
             abort();
         }
-#elif defined(__GLIBC__)
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__GLIBC__)
         char const *path = reinterpret_cast<char const *>(initialExecutablePath);
 #else
 #error Requires glibc on Linux.
@@ -204,7 +234,7 @@ executablePath() const
     return *executablePath;
 }
 
-#if defined(__APPLE__) || defined(__linux__)
+#if defined(__APPLE__) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 static int commandLineArgumentCount = 0;
 static char **commandLineArgumentValues = NULL;
 
@@ -217,7 +247,7 @@ static void CommandLineArgumentsInitialize(int argc, char **argv)
     commandLineArgumentValues = argv;
 }
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 __attribute__((section(".init_array"))) auto commandLineArgumentInitializer = &CommandLineArgumentsInitialize;
 #endif
 #endif
@@ -246,7 +276,7 @@ commandLineArguments() const
         arguments = new std::vector<std::string>(args);
 
         LocalFree(commandLineArgumentValues);
-#elif defined(__APPLE__) || defined(__linux__)
+#elif defined(__APPLE__) || defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
         arguments = new std::vector<std::string>(commandLineArgumentValues + 1, commandLineArgumentValues + commandLineArgumentCount);
 #else
 #error Unsupported platform.
@@ -357,6 +387,15 @@ shellExpand(std::string const &s) const
     }
     expandedString = WideStringToString(buffer);
 
+#elif __OpenBSD__
+    glob_t result;
+    if (glob(s.c_str(), 0, NULL, &result) == 0) {
+        if (result.gl_pathc != 1) {
+           abort();
+	}
+	expandedString = std::string(result.gl_pathv[0]);
+	globfree(&result);
+    }
 #else
     wordexp_t result;
     if (wordexp(s.c_str(), &result, 0) == 0) {

@@ -21,7 +21,7 @@ namespace builtin {
 class Driver {
 protected:
     Driver();
-    ~Driver();
+    virtual ~Driver();
 
 public:
     virtual std::string name() = 0;
