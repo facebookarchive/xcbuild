@@ -27,7 +27,7 @@ struct bom_context {
     unsigned int iteration_count;
 };
 
-struct bom_context *
+static struct bom_context *
 _bom_alloc(struct bom_context_memory memory)
 {
     struct bom_context *context = malloc(sizeof(*context));

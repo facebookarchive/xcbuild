@@ -24,6 +24,7 @@
 using namespace pbxproj;
 using namespace libutil;
 
+namespace {
 void DumpItem(xcworkspace::XC::Workspace::shared_ptr const &W, xcworkspace::XC::GroupItem const *item, size_t indent);
 void DumpItems(xcworkspace::XC::Workspace::shared_ptr const &W, xcworkspace::XC::GroupItem::vector const &items, size_t indent);
 
@@ -149,6 +150,7 @@ ForEachFileRef(xcworkspace::XC::Workspace::shared_ptr const &W,
         std::function<void(xcworkspace::XC::Group const *, xcworkspace::XC::FileRef const &)> const &cb)
 {
     ForEachItems(W, nullptr, W->items(), cb);
+}
 }
 
 int
