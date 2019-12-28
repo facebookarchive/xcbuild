@@ -97,7 +97,7 @@ write() const
         return;
     }
 
-    strncpy(header->magic, "RATC", 4);
+    memcpy(header->magic, "RATC", 4);
     header->ui_version = 0x131; // TODO
     header->storage_version = 0xC; // TODO
     header->storage_timestamp = static_cast<uint32_t>(time(NULL)); // TODO
@@ -127,7 +127,7 @@ write() const
       std::vector<enum car_attribute_identifier> format = DetermineKeyFormat(_facets, _renditions);
       keyfmt_size = sizeof(struct car_key_format) + (format.size() * sizeof(uint32_t));
       keyfmt = (struct car_key_format *)malloc(keyfmt_size);
-      strncpy(keyfmt->magic, "tmfk", 4);
+      memcpy(keyfmt->magic, "tmfk", 4);
       keyfmt->reserved = 0;
       keyfmt->num_identifiers = format.size();
       for (size_t i = 0; i < format.size(); ++i) {
@@ -162,7 +162,11 @@ write() const
     bom_tree_reserve(renditions_tree_context, rendition_count);
     if (renditions_tree_context != NULL) {
         for (auto const &item : _renditions) {
-            auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);
+            uint32_t *unpacked_identifiers = new uint32_t[sizeof(uint32_t)*keyfmt->num_identifiers];
+	    for(size_t i = 0; i < keyfmt->num_identifiers; ++i) {
+		unpacked_identifiers[i] = keyfmt->identifier_list[i];
+            }
+            auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, unpacked_identifiers);
             auto rendition_value = item.second.write();
             bom_tree_add(
                 renditions_tree_context,

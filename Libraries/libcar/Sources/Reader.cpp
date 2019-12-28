@@ -82,7 +82,11 @@ renditionIterate(std::function<void(Rendition const &)> const &iterator) const
         KeyValuePair kv = (KeyValuePair)it.second;
         car_rendition_key *rendition_key = (car_rendition_key *)kv.key;
         struct car_rendition_value *rendition_value = (struct car_rendition_value *)kv.value;
-        AttributeList attributes = AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
+        uint32_t *unpacked_identifiers = new uint32_t[sizeof(uint32_t)*keyfmt->num_identifiers];
+	for(size_t i = 0; i < keyfmt->num_identifiers; ++i) {
+		unpacked_identifiers[i] = keyfmt->identifier_list[i];
+	}
+	AttributeList attributes = AttributeList::Load(keyfmt->num_identifiers, unpacked_identifiers, rendition_key);
         Rendition rendition = Rendition::Load(attributes, rendition_value);
         iterator(rendition);
     }
@@ -264,7 +268,11 @@ lookupRenditions(Facet const &facet) const
         KeyValuePair value = (KeyValuePair)it->second;
         car_rendition_key *rendition_key = (car_rendition_key *)value.key;
         struct car_rendition_value *rendition_value = (struct car_rendition_value *)value.value;
-        AttributeList attributes = AttributeList::Load(keyfmt->num_identifiers, keyfmt->identifier_list, rendition_key);
+        uint32_t *unpacked_identifiers = new uint32_t[sizeof(uint32_t)*keyfmt->num_identifiers];
+	for(size_t i = 0; i < keyfmt->num_identifiers; ++i) {
+		unpacked_identifiers[i] = keyfmt->identifier_list[i];
+	}
+        AttributeList attributes = AttributeList::Load(keyfmt->num_identifiers, unpacked_identifiers, rendition_key);
         Rendition rendition = Rendition::Load(attributes, rendition_value);
         result.push_back(rendition);
     }

@@ -528,7 +528,7 @@ write() const
     // Create header
     struct car_rendition_value header;
     memset(static_cast<void *>(&header), 0, sizeof(struct car_rendition_value));
-    strncpy(header.magic, "ISTC", 4);
+    memcpy(header.magic, "ISTC", 4);
     header.version = 1;
     // header.flags.is_header_flagged_fpo = 0;
     // header.flags.is_excluded_from_contrast_filter = 0;
@@ -675,7 +675,7 @@ write() const
     /* JPEG, RAW and non-standard formats adds one more header at the end */
     if (Rendition::Data::FormatSavedAsRawData(renditionData->format())) {
         struct car_rendition_data_header_raw raw_header;
-        strncpy(raw_header.magic, "DWAR", 4);
+        memcpy(raw_header.magic, "DWAR", 4);
         raw_header.length = compressed_data_length;
         memcpy(output_bytes, &raw_header, sizeof(struct car_rendition_data_header_raw));
         output_bytes += sizeof(struct car_rendition_data_header_raw);
