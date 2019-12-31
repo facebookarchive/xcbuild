@@ -162,7 +162,7 @@ write() const
     bom_tree_reserve(renditions_tree_context, rendition_count);
     if (renditions_tree_context != NULL) {
         for (auto const &item : _renditions) {
-            auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);
+            auto attributes_value = item.second.attributes().write(keyfmt);
             auto rendition_value = item.second.write();
             bom_tree_add(
                 renditions_tree_context,
