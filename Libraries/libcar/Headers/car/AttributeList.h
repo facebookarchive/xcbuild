@@ -75,6 +75,13 @@ public:
         size_t count,
         uint32_t const *identifiers) const;
 
+    /*
+     * Write an attribute list into an a vector of bytes using the identifier
+     * order in keyfmt->identifiers.
+     */
+    std::vector<uint8_t> write(
+        car_key_format const *keyfmt) const;
+
 public:
     /*
      * Print debugging information about the list.
@@ -89,6 +96,14 @@ public:
         size_t count,
         uint32_t const *identifiers,
         uint16_t const *values);
+
+    /*
+     * Load an attribute list from packed struct car_key_format members and
+     * a car_rendition_key buffer.
+     */
+    static AttributeList Load(
+        car_key_format const *keyfmt,
+        car_rendition_key const *values);
 
     /*
      * Load an attribute list from a buffer of identifier value pairs.

@@ -67,6 +67,16 @@ Load(size_t count, uint32_t const *identifiers, uint16_t const *values)
 }
 
 AttributeList AttributeList::
+Load(car_key_format const *keyfmt, car_rendition_key const *values)
+{
+    std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
+    for (size_t i = 0; i < keyfmt->num_identifiers; ++i) {
+        attributes.insert({ (enum car_attribute_identifier)keyfmt->identifier_list[i], values[i] });
+    }
+    return AttributeList(attributes);
+}
+
+AttributeList AttributeList::
 Load(size_t count, struct car_attribute_pair const *pairs)
 {
     std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
@@ -95,3 +105,20 @@ write(size_t count, uint32_t const *identifiers) const
     return output;
 }
 
+std::vector<uint8_t> AttributeList::
+write(car_key_format const *keyfmt) const
+{
+    std::vector<uint8_t> output = std::vector<uint8_t>(sizeof(uint16_t) * keyfmt->num_identifiers);
+    uint16_t *values = reinterpret_cast<uint16_t *>(output.data());
+    std::unordered_map<enum car_attribute_identifier, uint16_t> attributes;
+    for (size_t i = 0; i < keyfmt->num_identifiers; ++i) {
+        enum car_attribute_identifier identifier = (enum car_attribute_identifier) keyfmt->identifier_list[i];
+        auto result = _values.find(identifier);
+        if (result != _values.end()) {
+            values[i] = result->second;
+        } else {
+            values[i] = 0;
+        }
+    }
+    return output;
+}
