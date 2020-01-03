@@ -82,7 +82,7 @@ bom_tree_alloc_empty(struct bom_context *context, const char *variable_name)
     uint32_t entry_index = bom_index_add(tree_context->context, entry, sizeof(*entry));
     free(entry);
 
-    strncpy(tree->magic, "tree", 4);
+    memcpy(tree->magic, "tree", 4);
     tree->version = htonl(1);
     tree->child = htonl(entry_index);
     tree->node_size = htonl(4096); // todo
