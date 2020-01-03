@@ -57,7 +57,7 @@ bom_alloc_empty(struct bom_context_memory memory)
     context->memory.resize(&context->memory, header_size + index_size + freelist_size + variables_size);
 
     struct bom_header *header = (struct bom_header *)context->memory.data;
-    strncpy(header->magic, "BOMStore", 8);
+    memcpy(header->magic, "BOMStore", 8);
     header->version = htonl(1);
     header->block_count = htonl(0);
     header->index_offset = htonl(header_size);

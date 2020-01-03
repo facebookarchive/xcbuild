@@ -477,7 +477,7 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
             err = deflate(&zlibStream, Z_FINISH);
             size_t block_size = sizeof(tmp) - zlibStream.avail_out;
             compressed_vector.resize(compressed_vector.size() + block_size);
-            memcpy(&compressed_vector[compressed_vector.size() - block_size], &tmp[0], block_size);
+            std::memcpy(&compressed_vector[compressed_vector.size() - block_size], &tmp[0], block_size);
             if (err == Z_STREAM_END) {  /* Done */
                 break;
             }
@@ -498,7 +498,7 @@ Encode(Rendition const *rendition, ext::optional<Rendition::Data> data)
     std::vector<uint8_t> output = std::vector<uint8_t>(sizeof(struct car_rendition_data_header1));
 
     struct car_rendition_data_header1 *header1 = reinterpret_cast<struct car_rendition_data_header1 *>(output.data());
-    memcpy(header1->magic, "MLEC", sizeof(header1->magic));
+    std::memcpy(header1->magic, "MLEC", sizeof(header1->magic));
     header1->length = compressed_vector.size();
     header1->compression = compression_magic;
     output.insert(output.end(), compressed_vector.begin(), compressed_vector.end());
@@ -528,7 +528,7 @@ write() const
     // Create header
     struct car_rendition_value header;
     memset(static_cast<void *>(&header), 0, sizeof(struct car_rendition_value));
-    strncpy(header.magic, "ISTC", 4);
+    std::memcpy(header.magic, "ISTC", 4);
     header.version = 1;
     // header.flags.is_header_flagged_fpo = 0;
     // header.flags.is_excluded_from_contrast_filter = 0;
@@ -653,35 +653,35 @@ write() const
     std::vector<uint8_t> output = std::vector<uint8_t>(rendition_header_size + extra_headers_size + compressed_data_length);
     uint8_t *output_bytes = reinterpret_cast<uint8_t *>(output.data());
 
-    memcpy(output_bytes, &header, sizeof(struct car_rendition_value));
+    std::memcpy(output_bytes, &header, sizeof(struct car_rendition_value));
     output_bytes += sizeof(struct car_rendition_value);
 
-    memcpy(output_bytes, info_slices, info_slices_size);
+    std::memcpy(output_bytes, info_slices, info_slices_size);
     output_bytes += info_slices_size;
     free(info_slices);
 
-    memcpy(output_bytes, &info_metrics, sizeof(struct car_rendition_info_metrics));
+    std::memcpy(output_bytes, &info_metrics, sizeof(struct car_rendition_info_metrics));
     output_bytes += sizeof(struct car_rendition_info_metrics);
 
-    memcpy(output_bytes, &info_composition, sizeof(struct car_rendition_info_composition));
+    std::memcpy(output_bytes, &info_composition, sizeof(struct car_rendition_info_composition));
     output_bytes += sizeof(struct car_rendition_info_composition);
 
-    memcpy(output_bytes, &info_bitmap_info, sizeof(struct car_rendition_info_bitmap_info));
+    std::memcpy(output_bytes, &info_bitmap_info, sizeof(struct car_rendition_info_bitmap_info));
     output_bytes += sizeof(struct car_rendition_info_bitmap_info);
 
-    memcpy(output_bytes, &info_bytes_per_row, sizeof(struct car_rendition_info_bytes_per_row));
+    std::memcpy(output_bytes, &info_bytes_per_row, sizeof(struct car_rendition_info_bytes_per_row));
     output_bytes += sizeof(struct car_rendition_info_bytes_per_row);
 
     /* JPEG, RAW and non-standard formats adds one more header at the end */
     if (Rendition::Data::FormatSavedAsRawData(renditionData->format())) {
         struct car_rendition_data_header_raw raw_header;
-        strncpy(raw_header.magic, "DWAR", 4);
+        std::memcpy(raw_header.magic, "DWAR", 4);
         raw_header.length = compressed_data_length;
-        memcpy(output_bytes, &raw_header, sizeof(struct car_rendition_data_header_raw));
+        std::memcpy(output_bytes, &raw_header, sizeof(struct car_rendition_data_header_raw));
         output_bytes += sizeof(struct car_rendition_data_header_raw);
     }
 
-    memcpy(output_bytes, compressed_data, compressed_data_length);
+    std::memcpy(output_bytes, compressed_data, compressed_data_length);
 
     return output;
 }

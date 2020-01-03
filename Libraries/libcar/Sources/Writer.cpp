@@ -97,7 +97,7 @@ write() const
         return;
     }
 
-    strncpy(header->magic, "RATC", 4);
+    std::memcpy(header->magic, "RATC", 4);
     header->ui_version = 0x131; // TODO
     header->storage_version = 0xC; // TODO
     header->storage_timestamp = static_cast<uint32_t>(time(NULL)); // TODO
@@ -127,7 +127,7 @@ write() const
       std::vector<enum car_attribute_identifier> format = DetermineKeyFormat(_facets, _renditions);
       keyfmt_size = sizeof(struct car_key_format) + (format.size() * sizeof(uint32_t));
       keyfmt = (struct car_key_format *)malloc(keyfmt_size);
-      strncpy(keyfmt->magic, "tmfk", 4);
+      std::memcpy(keyfmt->magic, "tmfk", 4);
       keyfmt->reserved = 0;
       keyfmt->num_identifiers = format.size();
       for (size_t i = 0; i < format.size(); ++i) {
