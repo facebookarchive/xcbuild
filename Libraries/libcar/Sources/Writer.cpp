@@ -162,7 +162,9 @@ write() const
     bom_tree_reserve(renditions_tree_context, rendition_count);
     if (renditions_tree_context != NULL) {
         for (auto const &item : _renditions) {
-            auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, keyfmt->identifier_list);
+            std::vector<uint32_t> unpacked_identifiers(keyfmt->num_identifiers, 0ul);
+            std::memcpy(unpacked_identifiers.data(), keyfmt->identifier_list, sizeof(uint32_t) * keyfmt->num_identifiers);
+            auto attributes_value = item.second.attributes().write(keyfmt->num_identifiers, unpacked_identifiers.data());
             auto rendition_value = item.second.write();
             bom_tree_add(
                 renditions_tree_context,
