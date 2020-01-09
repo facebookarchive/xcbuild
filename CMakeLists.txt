@@ -61,8 +61,19 @@ endif ()
 # Enable all warnings.
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" OR "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
   add_compile_options(/D_CRT_SECURE_NO_WARNINGS) # TODO: /Wall /WX
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  add_compile_options(-Wall -Werror)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+        "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
+        "${CMAKE_C_COMPILER_ID}" STREQUAL "Clang" OR
+        "${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+  add_compile_options(-Wall -Werror -Wmissing-declarations
+      $<$<COMPILE_LANGUAGE:C>:-Wmissing-prototypes>
+      #Until we add explicit prototypes/declarations for definitions which 
+      #themselves provide a prototype, treating these warnings as errors will 
+      #break builds.
+      #Once prototypes and declarations are added please remove the following
+      # -Wno-error options.
+      -Wno-error=missing-declarations
+      $<$<COMPILE_LANGUAGE:C>:-Wno-error=missing-prototypes>)
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_compile_options(-Wno-multichar -Wno-sign-compare)
   endif ()
