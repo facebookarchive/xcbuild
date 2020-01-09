@@ -66,8 +66,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_compile_options(-Wno-multichar -Wno-sign-compare)
   endif ()
-elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-  add_compile_options(-Wall -Werror -Wmissing-prototypes)
 else ()
   message(WARNING "Compiler not supported to enable warnings.")
 endif ()
